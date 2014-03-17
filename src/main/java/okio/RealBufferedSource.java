@@ -75,6 +75,11 @@ final class RealBufferedSource implements BufferedSource {
     return buffer.readByteString(byteCount);
   }
 
+  @Override public void readFully(OkBuffer sink, long byteCount) throws IOException {
+    require(byteCount);
+    buffer.readFully(sink, byteCount);
+  }
+
   @Override public String readUtf8(long byteCount) throws IOException {
     require(byteCount);
     return buffer.readUtf8(byteCount);

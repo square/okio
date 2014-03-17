@@ -72,6 +72,13 @@ public interface BufferedSource extends Source {
   ByteString readByteString(long byteCount) throws IOException;
 
   /**
+   * Removes exactly {@code byteCount} bytes from this and appends them to
+   * {@code sink}. Throws an {@link java.io.EOFException} if the requested
+   * number of bytes cannot be read.
+   */
+  void readFully(OkBuffer sink, long byteCount) throws IOException;
+
+  /**
    * Removes {@code byteCount} bytes from this, decodes them as UTF-8 and
    * returns the string.
    */

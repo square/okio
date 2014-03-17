@@ -649,6 +649,14 @@ public final class OkBufferTest {
     assertFalse(a.hashCode() == c.hashCode());
   }
 
+  @Test public void readFully() throws Exception {
+    OkBuffer source = new OkBuffer().writeUtf8(repeat('a', 10000));
+    OkBuffer sink = new OkBuffer();
+    source.readFully(sink, 9999);
+    assertEquals(repeat('a', 9999), sink.readUtf8(sink.size()));
+    assertEquals("a", source.readUtf8(source.size()));
+  }
+
   /**
    * Returns a new buffer containing the data in {@code data}, and a segment
    * layout determined by {@code dice}.

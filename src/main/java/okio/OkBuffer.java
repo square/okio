@@ -277,6 +277,10 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     return new ByteString(readBytes(byteCount));
   }
 
+  @Override public void readFully(OkBuffer sink, long byteCount) throws IOException {
+    sink.write(this, byteCount);
+  }
+
   @Override public String readUtf8(long byteCount) {
     checkOffsetAndCount(this.size, 0, byteCount);
     if (byteCount > Integer.MAX_VALUE) {
