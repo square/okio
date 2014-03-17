@@ -26,10 +26,16 @@ public final class Okio {
   }
 
   public static BufferedSource buffer(Source source) {
+    if (source instanceof BufferedSource) {
+      return (BufferedSource) source;
+    }
     return new RealBufferedSource(source);
   }
 
   public static BufferedSink buffer(Sink sink) {
+    if (sink instanceof BufferedSink) {
+      return (BufferedSink) sink;
+    }
     return new RealBufferedSink(sink);
   }
 
