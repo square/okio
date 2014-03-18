@@ -15,8 +15,8 @@
  */
 package okio;
 
-public final class OkBufferReadUtf8LineTest extends ReadUtf8LineTest {
+public final class BufferReadUtf8LineTest extends ReadUtf8LineTest {
   @Override protected BufferedSource newSource(String s) {
-    return new OkBuffer().writeUtf8(s);
+    return new Buffer().writeUtf8(s);
   }
 }

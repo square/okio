@@ -28,7 +28,7 @@ import java.io.IOException;
  * {@link BufferedSource} which is both more efficient and more convenient. Use
  * {@link Okio#buffer(Source)} to wrap any source with a buffer.
  *
- * <p>Sources are easy to test: just use an {@link OkBuffer} in your tests, and
+ * <p>Sources are easy to test: just use an {@link Buffer} in your tests, and
  * fill it with the data your application is to read.
  *
  * <h3>Comparison with InputStream</h3>
@@ -65,7 +65,7 @@ public interface Source extends Closeable {
    * them to {@code sink}. Returns the number of bytes read, or -1 if this
    * source is exhausted.
    */
-  long read(OkBuffer sink, long byteCount) throws IOException;
+  long read(Buffer sink, long byteCount) throws IOException;
 
   /**
    * Sets the deadline for all operations on this source.

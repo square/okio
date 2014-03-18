@@ -22,25 +22,25 @@ import java.io.InputStream;
 import static okio.Util.checkOffsetAndCount;
 
 final class RealBufferedSource implements BufferedSource {
-  public final OkBuffer buffer;
+  public final Buffer buffer;
   public final Source source;
   private boolean closed;
 
-  public RealBufferedSource(Source source, OkBuffer buffer) {
+  public RealBufferedSource(Source source, Buffer buffer) {
     if (source == null) throw new IllegalArgumentException("source == null");
     this.buffer = buffer;
     this.source = source;
   }
 
   public RealBufferedSource(Source source) {
-    this(source, new OkBuffer());
+    this(source, new Buffer());
   }
 
-  @Override public OkBuffer buffer() {
+  @Override public Buffer buffer() {
     return buffer;
   }
 
-  @Override public long read(OkBuffer sink, long byteCount) throws IOException {
+  @Override public long read(Buffer sink, long byteCount) throws IOException {
     if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     if (closed) throw new IllegalStateException("closed");
 
@@ -75,7 +75,7 @@ final class RealBufferedSource implements BufferedSource {
     return buffer.readByteString(byteCount);
   }
 
-  @Override public void readFully(OkBuffer sink, long byteCount) throws IOException {
+  @Override public void readFully(Buffer sink, long byteCount) throws IOException {
     require(byteCount);
     buffer.readFully(sink, byteCount);
   }

@@ -47,7 +47,7 @@ class MockSink implements Sink {
     if (exception != null) throw exception;
   }
 
-  @Override public void write(OkBuffer source, long byteCount) throws IOException {
+  @Override public void write(Buffer source, long byteCount) throws IOException {
     log.add("write(" + source + ", " + byteCount + ")");
     source.skip(byteCount);
     throwIfScheduled();

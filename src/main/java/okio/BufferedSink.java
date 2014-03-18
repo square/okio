@@ -24,7 +24,7 @@ import java.io.OutputStream;
  */
 public interface BufferedSink extends Sink {
   /** Returns this sink's internal buffer. */
-  OkBuffer buffer();
+  Buffer buffer();
 
   BufferedSink write(ByteString byteString) throws IOException;
 

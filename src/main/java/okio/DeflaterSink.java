@@ -45,7 +45,7 @@ public final class DeflaterSink implements Sink {
     this.deflater = deflater;
   }
 
-  @Override public void write(OkBuffer source, long byteCount)
+  @Override public void write(Buffer source, long byteCount)
       throws IOException {
     checkOffsetAndCount(source.size, 0, byteCount);
     while (byteCount > 0) {
@@ -71,7 +71,7 @@ public final class DeflaterSink implements Sink {
 
   @IgnoreJRERequirement
   private void deflate(boolean syncFlush) throws IOException {
-    OkBuffer buffer = sink.buffer();
+    Buffer buffer = sink.buffer();
     while (true) {
       Segment s = buffer.writableSegment(1);
 

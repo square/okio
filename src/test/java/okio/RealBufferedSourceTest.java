@@ -27,7 +27,7 @@ import static org.junit.Assert.fail;
 
 public final class RealBufferedSourceTest {
   @Test public void inputStreamFromSource() throws Exception {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8("a");
     source.writeUtf8(repeat('b', Segment.SIZE));
     source.writeUtf8("c");
@@ -63,7 +63,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void inputStreamFromSourceBounds() throws IOException {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8(repeat('a', 100));
     InputStream in = new RealBufferedSource(source).inputStream();
     try {
@@ -74,7 +74,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void requireTracksBufferFirst() throws Exception {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8("bb");
 
     BufferedSource bufferedSource = new RealBufferedSource(source);
@@ -86,7 +86,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void requireIncludesBufferBytes() throws Exception {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8("b");
 
     BufferedSource bufferedSource = new RealBufferedSource(source);
@@ -97,7 +97,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void requireInsufficientData() throws Exception {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8("a");
 
     BufferedSource bufferedSource = new RealBufferedSource(source);
@@ -110,7 +110,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void requireReadsOneSegmentAtATime() throws Exception {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8(repeat('a', Segment.SIZE));
     source.writeUtf8(repeat('b', Segment.SIZE));
 
@@ -122,7 +122,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void skipInsufficientData() throws Exception {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8("a");
 
     BufferedSource bufferedSource = new RealBufferedSource(source);
@@ -134,7 +134,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void skipReadsOneSegmentAtATime() throws Exception {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8(repeat('a', Segment.SIZE));
     source.writeUtf8(repeat('b', Segment.SIZE));
     BufferedSource bufferedSource = new RealBufferedSource(source);
@@ -144,7 +144,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void skipTracksBufferFirst() throws Exception {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     source.writeUtf8("bb");
 
     BufferedSource bufferedSource = new RealBufferedSource(source);
@@ -156,7 +156,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void operationsAfterClose() throws IOException {
-    OkBuffer source = new OkBuffer();
+    Buffer source = new Buffer();
     BufferedSource bufferedSource = new RealBufferedSource(source);
     bufferedSource.close();
 

@@ -19,25 +19,25 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 final class RealBufferedSink implements BufferedSink {
-  public final OkBuffer buffer;
+  public final Buffer buffer;
   public final Sink sink;
   private boolean closed;
 
-  public RealBufferedSink(Sink sink, OkBuffer buffer) {
+  public RealBufferedSink(Sink sink, Buffer buffer) {
     if (sink == null) throw new IllegalArgumentException("sink == null");
     this.buffer = buffer;
     this.sink = sink;
   }
 
   public RealBufferedSink(Sink sink) {
-    this(sink, new OkBuffer());
+    this(sink, new Buffer());
   }
 
-  @Override public OkBuffer buffer() {
+  @Override public Buffer buffer() {
     return buffer;
   }
 
-  @Override public void write(OkBuffer source, long byteCount)
+  @Override public void write(Buffer source, long byteCount)
       throws IOException {
     if (closed) throw new IllegalStateException("closed");
     buffer.write(source, byteCount);

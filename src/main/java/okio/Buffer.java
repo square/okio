@@ -32,23 +32,23 @@ import static okio.Util.reverseBytesLong;
 /**
  * A collection of bytes in memory.
  *
- * <p><strong>Moving data from one OkBuffer to another is fast.</strong> Instead
+ * <p><strong>Moving data from one buffer to another is fast.</strong> Instead
  * of copying bytes from one place in memory to another, this class just changes
  * ownership of the underlying byte arrays.
  *
  * <p><strong>This buffer grows with your data.</strong> Just like ArrayList,
- * each OkBuffer starts small. It consumes only the memory it needs to.
+ * each buffer starts small. It consumes only the memory it needs to.
  *
  * <p><strong>This buffer pools its byte arrays.</strong> When you allocate a
  * byte array in Java, the runtime must zero-fill the requested array before
  * returning it to you. Even if you're going to write over that space anyway.
  * This class avoids zero-fill and GC churn by pooling byte arrays.
  */
-public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
+public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   Segment head;
   long size;
 
-  public OkBuffer() {
+  public Buffer() {
   }
 
   /** Returns the number of bytes currently in this buffer. */
@@ -56,7 +56,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     return size;
   }
 
-  @Override public OkBuffer buffer() {
+  @Override public Buffer buffer() {
     return this;
   }
 
@@ -67,7 +67,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
       }
 
       @Override public void write(byte[] data, int offset, int byteCount) {
-        OkBuffer.this.write(data, offset, byteCount);
+        Buffer.this.write(data, offset, byteCount);
       }
 
       @Override public void flush() {
@@ -82,7 +82,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     };
   }
 
-  @Override public OkBuffer emitCompleteSegments() {
+  @Override public Buffer emitCompleteSegments() {
     return this; // Nowhere to emit to!
   }
 
@@ -101,7 +101,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
       }
 
       @Override public int read(byte[] sink, int offset, int byteCount) {
-        return OkBuffer.this.read(sink, offset, byteCount);
+        return Buffer.this.read(sink, offset, byteCount);
       }
 
       @Override public int available() {
@@ -112,7 +112,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
       }
 
       @Override public String toString() {
-        return OkBuffer.this + ".inputStream()";
+        return Buffer.this + ".inputStream()";
       }
     };
   }
@@ -277,7 +277,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     return new ByteString(readBytes(byteCount));
   }
 
-  @Override public void readFully(OkBuffer sink, long byteCount) throws IOException {
+  @Override public void readFully(Buffer sink, long byteCount) throws IOException {
     sink.write(this, byteCount);
   }
 
@@ -408,21 +408,21 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     }
   }
 
-  @Override public OkBuffer write(ByteString byteString) {
+  @Override public Buffer write(ByteString byteString) {
     return write(byteString.data, 0, byteString.data.length);
   }
 
-  @Override public OkBuffer writeUtf8(String string) {
+  @Override public Buffer writeUtf8(String string) {
     // TODO: inline UTF-8 encoding to save allocating a byte[]?
     byte[] data = string.getBytes(Util.UTF_8);
     return write(data, 0, data.length);
   }
 
-  @Override public OkBuffer write(byte[] source) {
+  @Override public Buffer write(byte[] source) {
     return write(source, 0, source.length);
   }
 
-  @Override public OkBuffer write(byte[] source, int offset, int byteCount) {
+  @Override public Buffer write(byte[] source, int offset, int byteCount) {
     int limit = offset + byteCount;
     while (offset < limit) {
       Segment tail = writableSegment(1);
@@ -438,14 +438,14 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     return this;
   }
 
-  @Override public OkBuffer writeByte(int b) {
+  @Override public Buffer writeByte(int b) {
     Segment tail = writableSegment(1);
     tail.data[tail.limit++] = (byte) b;
     size += 1;
     return this;
   }
 
-  @Override public OkBuffer writeShort(int s) {
+  @Override public Buffer writeShort(int s) {
     Segment tail = writableSegment(2);
     byte[] data = tail.data;
     int limit = tail.limit;
@@ -460,7 +460,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     return writeShort(Util.reverseBytesShort((short) s));
   }
 
-  @Override public OkBuffer writeInt(int i) {
+  @Override public Buffer writeInt(int i) {
     Segment tail = writableSegment(4);
     byte[] data = tail.data;
     int limit = tail.limit;
@@ -477,7 +477,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     return writeInt(Util.reverseBytesInt(i));
   }
 
-  @Override public OkBuffer writeLong(long v) {
+  @Override public Buffer writeLong(long v) {
     Segment tail = writableSegment(8);
     byte[] data = tail.data;
     int limit = tail.limit;
@@ -517,7 +517,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     return tail;
   }
 
-  @Override public void write(OkBuffer source, long byteCount) {
+  @Override public void write(Buffer source, long byteCount) {
     // Move bytes from the head of the source buffer to the tail of this buffer
     // while balancing two conflicting goals: don't waste CPU and don't waste
     // memory.
@@ -526,12 +526,12 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     // Don't waste CPU (ie. don't copy data around).
     //
     // Copying large amounts of data is expensive. Instead, we prefer to
-    // reassign entire segments from one OkBuffer to the other.
+    // reassign entire segments from one buffer to the other.
     //
     //
     // Don't waste memory.
     //
-    // As an invariant, adjacent pairs of segments in an OkBuffer should be at
+    // As an invariant, adjacent pairs of segments in a buffer should be at
     // least 50% full, except for the head segment and the tail segment.
     //
     // The head segment cannot maintain the invariant because the application is
@@ -608,14 +608,14 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
     }
   }
 
-  @Override public long read(OkBuffer sink, long byteCount) {
+  @Override public long read(Buffer sink, long byteCount) {
     if (this.size == 0) return -1L;
     if (byteCount > this.size) byteCount = this.size;
     sink.write(this, byteCount);
     return byteCount;
   }
 
-  @Override public OkBuffer deadline(Deadline deadline) {
+  @Override public Buffer deadline(Deadline deadline) {
     // All operations are in memory so this class doesn't need to honor deadlines.
     return this;
   }
@@ -667,8 +667,8 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public boolean equals(Object o) {
-    if (!(o instanceof OkBuffer)) return false;
-    OkBuffer that = (OkBuffer) o;
+    if (!(o instanceof Buffer)) return false;
+    Buffer that = (Buffer) o;
     if (size != that.size) return false;
     if (size == 0) return true; // Both buffers are empty.
 
@@ -713,12 +713,12 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
 
   @Override public String toString() {
     if (size == 0) {
-      return "OkBuffer[size=0]";
+      return "Buffer[size=0]";
     }
 
     if (size <= 16) {
       ByteString data = clone().readByteString(size);
-      return String.format("OkBuffer[size=%s data=%s]", size, data.hex());
+      return String.format("Buffer[size=%s data=%s]", size, data.hex());
     }
 
     try {
@@ -727,7 +727,7 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
       for (Segment s = head.next; s != head; s = s.next) {
         md5.update(s.data, s.pos, s.limit - s.pos);
       }
-      return String.format("OkBuffer[size=%s md5=%s]",
+      return String.format("Buffer[size=%s md5=%s]",
           size, ByteString.of(md5.digest()).hex());
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError();
@@ -735,8 +735,8 @@ public final class OkBuffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /** Returns a deep copy of this buffer. */
-  @Override public OkBuffer clone() {
-    OkBuffer result = new OkBuffer();
+  @Override public Buffer clone() {
+    Buffer result = new Buffer();
     if (size() == 0) return result;
 
     result.write(head.data, head.pos, head.limit - head.pos);

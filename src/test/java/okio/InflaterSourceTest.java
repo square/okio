@@ -28,14 +28,14 @@ import static org.junit.Assert.fail;
 
 public final class InflaterSourceTest {
   @Test public void inflate() throws Exception {
-    OkBuffer deflated = decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tK"
+    Buffer deflated = decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tK"
         + "tYDAF6CD5s=");
-    OkBuffer inflated = inflate(deflated);
+    Buffer inflated = inflate(deflated);
     assertEquals("God help us, we're in the hands of engineers.", readUtf8(inflated));
   }
 
   @Test public void inflateTruncated() throws Exception {
-    OkBuffer deflated = decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tK"
+    Buffer deflated = decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tK"
         + "tYDAF6CDw==");
     try {
       inflate(deflated);
@@ -45,7 +45,7 @@ public final class InflaterSourceTest {
   }
 
   @Test public void inflateWellCompressed() throws Exception {
-    OkBuffer deflated = decodeBase64("eJztwTEBAAAAwqCs61/CEL5AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    Buffer deflated = decodeBase64("eJztwTEBAAAAwqCs61/CEL5AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -63,37 +63,37 @@ public final class InflaterSourceTest {
         + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8B"
         + "tFeWvE=\n");
     String original = repeat('a', 1024 * 1024);
-    OkBuffer inflated = inflate(deflated);
+    Buffer inflated = inflate(deflated);
     assertEquals(original, readUtf8(inflated));
   }
 
   @Test public void inflatePoorlyCompressed() throws Exception {
     ByteString original = randomBytes(1024 * 1024);
-    OkBuffer deflated = deflate(original);
-    OkBuffer inflated = inflate(deflated);
+    Buffer deflated = deflate(original);
+    Buffer inflated = inflate(deflated);
     assertEquals(original, inflated.readByteString(inflated.size()));
   }
 
-  private OkBuffer decodeBase64(String s) {
-    return new OkBuffer().write(ByteString.decodeBase64(s));
+  private Buffer decodeBase64(String s) {
+    return new Buffer().write(ByteString.decodeBase64(s));
   }
 
-  private String readUtf8(OkBuffer buffer) {
+  private String readUtf8(Buffer buffer) {
     return buffer.readUtf8(buffer.size());
   }
 
   /** Use DeflaterOutputStream to deflate source. */
-  private OkBuffer deflate(ByteString source) throws IOException {
-    OkBuffer result = new OkBuffer();
+  private Buffer deflate(ByteString source) throws IOException {
+    Buffer result = new Buffer();
     Sink sink = Okio.sink(new DeflaterOutputStream(result.outputStream()));
-    sink.write(new OkBuffer().write(source), source.size());
+    sink.write(new Buffer().write(source), source.size());
     sink.close();
     return result;
   }
 
   /** Returns a new buffer containing the inflated contents of {@code deflated}. */
-  private OkBuffer inflate(OkBuffer deflated) throws IOException {
-    OkBuffer result = new OkBuffer();
+  private Buffer inflate(Buffer deflated) throws IOException {
+    Buffer result = new Buffer();
     InflaterSource source = new InflaterSource(deflated, new Inflater());
     while (source.read(result, Integer.MAX_VALUE) != -1) {
     }

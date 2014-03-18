@@ -59,7 +59,7 @@ public final class GzipSource implements Source {
     this.inflaterSource = new InflaterSource(this.source, inflater);
   }
 
-  @Override public long read(OkBuffer sink, long byteCount) throws IOException {
+  @Override public long read(Buffer sink, long byteCount) throws IOException {
     if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     if (byteCount == 0) return 0;
 
@@ -179,7 +179,7 @@ public final class GzipSource implements Source {
   }
 
   /** Updates the CRC with the given bytes. */
-  private void updateCrc(OkBuffer buffer, long offset, long byteCount) {
+  private void updateCrc(Buffer buffer, long offset, long byteCount) {
     for (Segment s = buffer.head; byteCount > 0; s = s.next) {
       int segmentByteCount = s.limit - s.pos;
       if (offset < segmentByteCount) {

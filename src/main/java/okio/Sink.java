@@ -28,7 +28,7 @@ import java.io.IOException;
  * {@link BufferedSink} which is both more efficient and more convenient. Use
  * {@link Okio#buffer(Sink)} to wrap any sink with a buffer.
  *
- * <p>Sinks are easy to test: just use an {@link OkBuffer} in your tests, and
+ * <p>Sinks are easy to test: just use an {@link Buffer} in your tests, and
  * read from it to confirm it received the data that was expected.
  *
  * <h3>Comparison with OutputStream</h3>
@@ -49,7 +49,7 @@ import java.io.IOException;
  */
 public interface Sink extends Closeable {
   /** Removes {@code byteCount} bytes from {@code source} and appends them to this. */
-  void write(OkBuffer source, long byteCount) throws IOException;
+  void write(Buffer source, long byteCount) throws IOException;
 
   /** Pushes all buffered bytes to their final destination. */
   void flush() throws IOException;

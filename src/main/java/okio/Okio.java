@@ -34,7 +34,7 @@ public final class Okio {
   }
 
   /** Copies bytes from {@code source} to {@code sink}. */
-  public static void copy(OkBuffer source, long offset, long byteCount, OutputStream sink)
+  public static void copy(Buffer source, long offset, long byteCount, OutputStream sink)
       throws IOException {
     checkOffsetAndCount(source.size, offset, byteCount);
 
@@ -60,7 +60,7 @@ public final class Okio {
     return new Sink() {
       private Deadline deadline = Deadline.NONE;
 
-      @Override public void write(OkBuffer source, long byteCount)
+      @Override public void write(Buffer source, long byteCount)
           throws IOException {
         checkOffsetAndCount(source.size, 0, byteCount);
         while (byteCount > 0) {
@@ -105,7 +105,7 @@ public final class Okio {
     return new Source() {
       private Deadline deadline = Deadline.NONE;
 
-      @Override public long read(OkBuffer sink, long byteCount) throws IOException {
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
         if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
         deadline.throwIfReached();
         Segment tail = sink.writableSegment(1);

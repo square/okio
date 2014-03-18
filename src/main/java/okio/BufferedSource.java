@@ -25,7 +25,7 @@ import java.io.InputStream;
  */
 public interface BufferedSource extends Source {
   /** Returns this source's internal buffer. */
-  OkBuffer buffer();
+  Buffer buffer();
 
   /**
    * Returns true if there are no more bytes in this source. This will block
@@ -76,7 +76,7 @@ public interface BufferedSource extends Source {
    * {@code sink}. Throws an {@link java.io.EOFException} if the requested
    * number of bytes cannot be read.
    */
-  void readFully(OkBuffer sink, long byteCount) throws IOException;
+  void readFully(Buffer sink, long byteCount) throws IOException;
 
   /**
    * Removes {@code byteCount} bytes from this, decodes them as UTF-8 and

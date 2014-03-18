@@ -27,7 +27,7 @@ import static org.junit.Assert.fail;
 
 public final class OkioTest {
   @Test public void sinkFromOutputStream() throws Exception {
-    OkBuffer data = new OkBuffer();
+    Buffer data = new Buffer();
     data.writeUtf8("a");
     data.writeUtf8(repeat('b', 9998));
     data.writeUtf8("c");
@@ -46,7 +46,7 @@ public final class OkioTest {
 
     // Source: ab...bc
     Source source = Okio.source(in);
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
 
     // Source: b...bc. Sink: abb.
     assertEquals(3, source.read(sink, 3));
@@ -67,7 +67,7 @@ public final class OkioTest {
   @Test public void sourceFromInputStreamBounds() throws Exception {
     Source source = Okio.source(new ByteArrayInputStream(new byte[100]));
     try {
-      source.read(new OkBuffer(), -1);
+      source.read(new Buffer(), -1);
       fail();
     } catch (IllegalArgumentException expected) {
     }
