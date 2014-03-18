@@ -58,6 +58,7 @@ public final class GzipSource implements Source {
   private final CRC32 crc = new CRC32();
 
   public GzipSource(Source source) {
+    if (source == null) throw new IllegalArgumentException("source == null");
     this.inflater = new Inflater(true);
     this.source = Okio.buffer(source);
     this.inflaterSource = new InflaterSource(this.source, inflater);
