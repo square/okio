@@ -57,7 +57,7 @@ resize manually.
 And then there’s the `Selector` + `Channel` torture that allows you to scale to
 very many simultaneous connections.
 
-The most common way to tame NIO is to layer something like [Netty](1) on top.
+The most common way to tame NIO is to layer something like [Netty][1] on top.
 But Netty adds its own complexity and costs.
 
 ### Introducing Okio
