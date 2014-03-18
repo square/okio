@@ -65,11 +65,11 @@ But Netty adds its own complexity and costs.
 We do better by starting with better abstractions. Okio is inspired by
 `java.io`, but has some important changes:
 
- * Buffers that grow (and shrink) on demand. The central datatype `OkBuffer` a
-   byte sequence that reads from the front and writes to the back. No `flip()`
+ * Buffers that grow (and shrink) on demand. The central datatype, `Buffer`, is
+   a byte sequence that reads from the front and writes to the back. No `flip()`
    nonsense like NIO!
  * Moving data from one buffer to another is cheap. Instead of copying the bytes
-   between byte arrays, `OkBuffer` reassigns internal segments in bulk.
+   between byte arrays, Okio's `Buffer` reassigns internal segments in bulk.
  * No distinction between byte streams and char streams. It’s all data. Read and
    write it as bytes, UTF-8 strings, big-endian 32-bit integers, little-endian
    shorts; whatever you want.  No more `InputStreamReader`.
@@ -84,7 +84,7 @@ Every buffer is also a source and a sink, so you don’t need a
 Decoding the chunks of a PNG file demonstrates Okio in practice.
 
 ```java
-  private static ByteString PNG_HEADER = ByteString.decodeHex("89504e470d0a1a0a");
+  private static final ByteString PNG_HEADER = ByteString.decodeHex("89504e470d0a1a0a");
 
   public void decodePng(InputStream in) throws IOException {
     BufferedSource pngSource = Okio.buffer(Okio.source(in));
@@ -95,7 +95,7 @@ Decoding the chunks of a PNG file demonstrates Okio in practice.
     }
 
     while (true) {
-      OkBuffer chunk = new OkBuffer();
+      Buffer chunk = new Buffer();
 
       // Each chunk is a length, type, data, and CRC offset.
       int length = pngSource.readInt();
@@ -110,7 +110,7 @@ Decoding the chunks of a PNG file demonstrates Okio in practice.
     pngSource.close();
   }
 
-  private void decodeChunk(String type, OkBuffer chunk) {
+  private void decodeChunk(String type, Buffer chunk) {
     if (type.equals("IHDR")) {
       int width = chunk.readInt();
       int height = chunk.readInt();

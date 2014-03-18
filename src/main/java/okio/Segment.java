@@ -16,9 +16,9 @@
 package okio;
 
 /**
- * A segment of an OkBuffer.
+ * A segment of a buffer.
  *
- * <p>Each segment in an OkBuffer is a circularly-linked list node referencing
+ * <p>Each segment in a buffer is a circularly-linked list node referencing
  * the following and preceding segments in the buffer.
  *
  * <p>Each segment in the pool is a singly-linked list node referencing the rest
@@ -74,7 +74,7 @@ final class Segment {
    * Splits this head of a circularly-linked list into two segments. The first
    * segment contains the data in {@code [pos..pos+byteCount)}. The second
    * segment contains the data in {@code [pos+byteCount..limit)}. This can be
-   * useful when moving partial segments from one OkBuffer to another.
+   * useful when moving partial segments from one buffer to another.
    *
    * <p>Returns the new head of the circularly-linked list.
    */

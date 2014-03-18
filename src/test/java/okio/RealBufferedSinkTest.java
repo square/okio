@@ -26,7 +26,7 @@ import static org.junit.Assert.fail;
 
 public final class RealBufferedSinkTest {
   @Test public void outputStreamFromSink() throws Exception {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     OutputStream out = new RealBufferedSink(sink).outputStream();
     out.write('a');
     out.write(repeat('b', 9998).getBytes(UTF_8));
@@ -36,7 +36,7 @@ public final class RealBufferedSinkTest {
   }
 
   @Test public void outputStreamFromSinkBounds() throws Exception {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     OutputStream out = new RealBufferedSink(sink).outputStream();
     try {
       out.write(new byte[100], 50, 51);
@@ -46,7 +46,7 @@ public final class RealBufferedSinkTest {
   }
 
   @Test public void bufferedSinkEmitsTailWhenItIsComplete() throws IOException {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeUtf8(repeat('a', Segment.SIZE - 1));
     assertEquals(0, sink.size());
@@ -56,14 +56,14 @@ public final class RealBufferedSinkTest {
   }
 
   @Test public void bufferedSinkEmitZero() throws IOException {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeUtf8("");
     assertEquals(0, sink.size());
   }
 
   @Test public void bufferedSinkEmitMultipleSegments() throws IOException {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeUtf8(repeat('a', Segment.SIZE * 4 - 1));
     assertEquals(Segment.SIZE * 3, sink.size());
@@ -71,7 +71,7 @@ public final class RealBufferedSinkTest {
   }
 
   @Test public void bufferedSinkFlush() throws IOException {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeByte('a');
     assertEquals(0, sink.size());
@@ -81,7 +81,7 @@ public final class RealBufferedSinkTest {
   }
 
   @Test public void bytesEmittedToSinkWithFlush() throws Exception {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeUtf8("abc");
     bufferedSink.flush();
@@ -89,28 +89,28 @@ public final class RealBufferedSinkTest {
   }
 
   @Test public void bytesNotEmittedToSinkWithoutFlush() throws Exception {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeUtf8("abc");
     assertEquals(0, sink.size());
   }
 
   @Test public void completeSegmentsEmitted() throws Exception {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeUtf8(repeat('a', Segment.SIZE * 3));
     assertEquals(Segment.SIZE * 3, sink.size());
   }
 
   @Test public void incompleteSegmentsNotEmitted() throws Exception {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeUtf8(repeat('a', Segment.SIZE * 3 - 1));
     assertEquals(Segment.SIZE * 2, sink.size());
   }
 
   @Test public void closeEmitsBufferedBytes() throws IOException {
-    OkBuffer sink = new OkBuffer();
+    Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeByte('a');
     bufferedSink.close();
@@ -127,7 +127,7 @@ public final class RealBufferedSinkTest {
       fail();
     } catch (IOException expected) {
     }
-    mockSink.assertLog("write(OkBuffer[size=1 data=61], 1)", "close()");
+    mockSink.assertLog("write(Buffer[size=1 data=61], 1)", "close()");
   }
 
   @Test public void closeWithExceptionWhenClosing() throws IOException {
@@ -140,7 +140,7 @@ public final class RealBufferedSinkTest {
       fail();
     } catch (IOException expected) {
     }
-    mockSink.assertLog("write(OkBuffer[size=1 data=61], 1)", "close()");
+    mockSink.assertLog("write(Buffer[size=1 data=61], 1)", "close()");
   }
 
   @Test public void closeWithExceptionWhenWritingAndClosing() throws IOException {
@@ -155,7 +155,7 @@ public final class RealBufferedSinkTest {
     } catch (IOException expected) {
       assertEquals("first", expected.getMessage());
     }
-    mockSink.assertLog("write(OkBuffer[size=1 data=61], 1)", "close()");
+    mockSink.assertLog("write(Buffer[size=1 data=61], 1)", "close()");
   }
 
   @Test public void operationsAfterClose() throws IOException {

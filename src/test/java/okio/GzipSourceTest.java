@@ -28,7 +28,7 @@ import static org.junit.Assert.fail;
 public class GzipSourceTest {
 
   @Test public void gunzip() throws Exception {
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeader);
     gzipped.write(deflated);
     gzipped.write(gzipTrailer);
@@ -40,7 +40,7 @@ public class GzipSourceTest {
     ByteString gzipHeader = gzipHeaderWithFlags((byte) 0x02);
     hcrc.update(gzipHeader.toByteArray());
 
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeader);
     gzipped.writeShort(Util.reverseBytesShort((short) hcrc.getValue())); // little endian
     gzipped.write(deflated);
@@ -49,7 +49,7 @@ public class GzipSourceTest {
   }
 
   @Test public void gunzip_withExtra() throws Exception {
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeaderWithFlags((byte) 0x04));
     gzipped.writeShort(Util.reverseBytesShort((short) 7)); // little endian extra length
     gzipped.write("blubber".getBytes(UTF_8), 0, 7);
@@ -59,7 +59,7 @@ public class GzipSourceTest {
   }
 
   @Test public void gunzip_withName() throws Exception {
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeaderWithFlags((byte) 0x08));
     gzipped.write("foo.txt".getBytes(UTF_8), 0, 7);
     gzipped.writeByte(0); // zero-terminated
@@ -69,7 +69,7 @@ public class GzipSourceTest {
   }
 
   @Test public void gunzip_withComment() throws Exception {
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeaderWithFlags((byte) 0x10));
     gzipped.write("rubbish".getBytes(UTF_8), 0, 7);
     gzipped.writeByte(0); // zero-terminated
@@ -83,7 +83,7 @@ public class GzipSourceTest {
    * {@code echo gzipped | base64 --decode | gzip -l -v}
    */
   @Test public void gunzip_withAll() throws Exception {
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeaderWithFlags((byte) 0x1c));
     gzipped.writeShort(Util.reverseBytesShort((short) 7)); // little endian extra length
     gzipped.write("blubber".getBytes(UTF_8), 0, 7);
@@ -96,8 +96,8 @@ public class GzipSourceTest {
     assertGzipped(gzipped);
   }
 
-  private void assertGzipped(OkBuffer gzipped) throws IOException {
-    OkBuffer gunzipped = gunzip(gzipped);
+  private void assertGzipped(Buffer gzipped) throws IOException {
+    Buffer gunzipped = gunzip(gzipped);
     assertEquals("It's a UNIX system! I know this!", gunzipped.readUtf8(gunzipped.size()));
   }
 
@@ -106,7 +106,7 @@ public class GzipSourceTest {
    * CONTINUATION, not HCRC. For example, this is the case with the default gzip on osx.
    */
   @Test public void gunzipWhenHeaderCRCIncorrect() throws Exception {
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeaderWithFlags((byte) 0x02));
     gzipped.writeShort((short) 0); // wrong HCRC!
     gzipped.write(deflated);
@@ -121,7 +121,7 @@ public class GzipSourceTest {
   }
 
   @Test public void gunzipWhenCRCIncorrect() throws Exception {
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeader);
     gzipped.write(deflated);
     gzipped.writeInt(Util.reverseBytesInt(0x1234567)); // wrong CRC
@@ -136,7 +136,7 @@ public class GzipSourceTest {
   }
 
   @Test public void gunzipWhenLengthIncorrect() throws Exception {
-    OkBuffer gzipped = new OkBuffer();
+    Buffer gzipped = new Buffer();
     gzipped.write(gzipHeader);
     gzipped.write(deflated);
     gzipped.write(gzipTrailer.toByteArray(), 0, 4);
@@ -151,7 +151,7 @@ public class GzipSourceTest {
   }
 
   @Test public void gunzipExhaustsSource() throws Exception {
-    OkBuffer gzippedSource = new OkBuffer()
+    Buffer gzippedSource = new Buffer()
         .write(ByteString.decodeHex("1f8b08000000000000004b4c4a0600c241243503000000")); // 'abc'
 
     ExhaustableSource exhaustableSource = new ExhaustableSource(gzippedSource);
@@ -161,12 +161,12 @@ public class GzipSourceTest {
     assertEquals('b', gunzippedSource.readByte());
     assertEquals('c', gunzippedSource.readByte());
     assertFalse(exhaustableSource.exhausted);
-    assertEquals(-1, gunzippedSource.read(new OkBuffer(), 1));
+    assertEquals(-1, gunzippedSource.read(new Buffer(), 1));
     assertTrue(exhaustableSource.exhausted);
   }
 
   @Test public void gunzipThrowsIfSourceIsNotExhausted() throws Exception {
-    OkBuffer gzippedSource = new OkBuffer()
+    Buffer gzippedSource = new Buffer()
         .write(ByteString.decodeHex("1f8b08000000000000004b4c4a0600c241243503000000")); // 'abc'
     gzippedSource.writeByte('d'); // This byte shouldn't be here!
 
@@ -199,8 +199,8 @@ public class GzipSourceTest {
       + "20000000" // 32 in little endian.
   );
 
-  private OkBuffer gunzip(OkBuffer gzipped) throws IOException {
-    OkBuffer result = new OkBuffer();
+  private Buffer gunzip(Buffer gzipped) throws IOException {
+    Buffer result = new Buffer();
     GzipSource source = new GzipSource(gzipped);
     while (source.read(result, Integer.MAX_VALUE) != -1) {
     }
@@ -216,7 +216,7 @@ public class GzipSourceTest {
       this.source = source;
     }
 
-    @Override public long read(OkBuffer sink, long byteCount) throws IOException {
+    @Override public long read(Buffer sink, long byteCount) throws IOException {
       long result = source.read(sink, byteCount);
       if (result == -1) exhausted = true;
       return result;

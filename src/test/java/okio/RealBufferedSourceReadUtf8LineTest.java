@@ -20,10 +20,10 @@ import java.io.IOException;
 public final class RealBufferedSourceReadUtf8LineTest extends ReadUtf8LineTest {
   /** Returns a buffered source that gets bytes of {@code data} one at a time. */
   @Override protected BufferedSource newSource(String s) {
-    final OkBuffer buffer = new OkBuffer().writeUtf8(s);
+    final Buffer buffer = new Buffer().writeUtf8(s);
 
     Source slowSource = new Source() {
-      @Override public long read(OkBuffer sink, long byteCount) throws IOException {
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
         return buffer.read(sink, Math.min(1, byteCount));
       }
 

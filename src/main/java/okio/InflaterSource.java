@@ -53,7 +53,7 @@ public final class InflaterSource implements Source {
   }
 
   @Override public long read(
-      OkBuffer sink, long byteCount) throws IOException {
+      Buffer sink, long byteCount) throws IOException {
     if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     if (closed) throw new IllegalStateException("closed");
     if (byteCount == 0) return 0;
