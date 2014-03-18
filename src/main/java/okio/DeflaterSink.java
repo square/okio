@@ -41,6 +41,8 @@ public final class DeflaterSink implements Sink {
   private boolean closed;
 
   public DeflaterSink(Sink sink, Deflater deflater) {
+    if (sink == null) throw new IllegalArgumentException("sink == null");
+    if (deflater == null) throw new IllegalArgumentException("deflater == null");
     this.sink = Okio.buffer(sink);
     this.deflater = deflater;
   }
