@@ -57,7 +57,7 @@ public final class GzipSource implements Source {
   /** Checksum used to check both the GZIP header and decompressed body. */
   private final CRC32 crc = new CRC32();
 
-  public GzipSource(Source source) throws IOException {
+  public GzipSource(Source source) {
     this.inflater = new Inflater(true);
     this.source = Okio.buffer(source);
     this.inflaterSource = new InflaterSource(this.source, inflater);
