@@ -20,6 +20,10 @@ import java.io.IOException;
 import java.util.zip.CRC32;
 import java.util.zip.Inflater;
 
+/**
+ * A source that uses <a href="http://www.ietf.org/rfc/rfc1952.txt">GZIP</a> to
+ * decompress data read from another source.
+ */
 public final class GzipSource implements Source {
   private static final byte FHCRC = 1;
   private static final byte FEXTRA = 2;

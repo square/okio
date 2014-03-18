@@ -18,7 +18,6 @@
 /**
  * @author Alexander Y. Kleymenov
  */
-
 package okio;
 
 import java.io.UnsupportedEncodingException;

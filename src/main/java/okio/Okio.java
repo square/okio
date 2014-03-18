@@ -21,38 +21,27 @@ import java.io.OutputStream;
 
 import static okio.Util.checkOffsetAndCount;
 
+/** Essential APIs for working with Okio. */
 public final class Okio {
   private Okio() {
   }
 
+  /**
+   * Returns a new source that buffers reads from {@code source}. The returned
+   * source will perform bulk reads into its in-memory buffer. Use this wherever
+   * you read a source to get an ergonomic and efficient access to data.
+   */
   public static BufferedSource buffer(Source source) {
     return new RealBufferedSource(source);
   }
 
+  /**
+   * Returns a new sink that buffers writes to {@code sink}. The returned sink
+   * will batch writes to {@code sink}. Use this wherever you write to a sink to
+   * get an ergonomic and efficient access access to data.
+   */
   public static BufferedSink buffer(Sink sink) {
     return new RealBufferedSink(sink);
-  }
-
-  /** Copies bytes from {@code source} to {@code sink}. */
-  public static void copy(Buffer source, long offset, long byteCount, OutputStream sink)
-      throws IOException {
-    checkOffsetAndCount(source.size, offset, byteCount);
-
-    // Skip segments that we aren't copying from.
-    Segment s = source.head;
-    while (offset >= (s.limit - s.pos)) {
-      offset -= (s.limit - s.pos);
-      s = s.next;
-    }
-
-    // Copy from one segment at a time.
-    while (byteCount > 0) {
-      int pos = (int) (s.pos + offset);
-      int toWrite = (int) Math.min(s.limit - pos, byteCount);
-      sink.write(s.data, pos, toWrite);
-      byteCount -= toWrite;
-      offset = 0;
-    }
   }
 
   /** Returns a sink that writes to {@code out}. */
