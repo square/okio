@@ -41,9 +41,18 @@ public final class DeflaterSink implements Sink {
   private boolean closed;
 
   public DeflaterSink(Sink sink, Deflater deflater) {
-    if (sink == null) throw new IllegalArgumentException("sink == null");
-    if (deflater == null) throw new IllegalArgumentException("deflater == null");
-    this.sink = Okio.buffer(sink);
+    this(Okio.buffer(sink), deflater);
+  }
+
+  /**
+   * This package-private constructor shares a buffer with its trusted caller.
+   * In general we can't share a BufferedSource because the deflater holds input
+   * bytes until they are inflated.
+   */
+  DeflaterSink(BufferedSink sink, Deflater deflater) {
+    if (sink == null) throw new IllegalArgumentException("source == null");
+    if (deflater == null) throw new IllegalArgumentException("inflater == null");
+    this.sink = sink;
     this.deflater = deflater;
   }
 
@@ -100,6 +109,11 @@ public final class DeflaterSink implements Sink {
     sink.flush();
   }
 
+  void finishDeflate() throws IOException {
+    deflater.finish();
+    deflate(false);
+  }
+
   @Override public void close() throws IOException {
     if (closed) return;
 
@@ -107,8 +121,7 @@ public final class DeflaterSink implements Sink {
     // to close the deflater and the sink; otherwise we risk leaking resources.
     Throwable thrown = null;
     try {
-      deflater.finish();
-      deflate(false);
+      finishDeflate();
     } catch (Throwable e) {
       thrown = e;
     }
