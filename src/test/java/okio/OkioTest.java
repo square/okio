@@ -69,7 +69,7 @@ public final class OkioTest {
     try {
       source.read(new OkBuffer(), -1);
       fail();
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
