@@ -23,9 +23,22 @@ import org.junit.Test;
 
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class OkioTest {
+  @Test public void doNotDoubleBufferSink() {
+    Sink sink = new OkBuffer();
+    BufferedSink bufferedSink = Okio.buffer(sink);
+    assertTrue(sink == bufferedSink); // Assert same instance.
+  }
+
+  @Test public void doNotDoubleBufferSource() {
+    Source source = new OkBuffer();
+    BufferedSource bufferedSource = Okio.buffer(source);
+    assertTrue(source == bufferedSource); // Assert same instance.
+  }
+
   @Test public void sinkFromOutputStream() throws Exception {
     Buffer data = new Buffer();
     data.writeUtf8("a");

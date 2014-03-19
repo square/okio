@@ -32,6 +32,9 @@ public final class Okio {
    * you read a source to get an ergonomic and efficient access to data.
    */
   public static BufferedSource buffer(Source source) {
+    if (source instanceof BufferedSource) {
+      return (BufferedSource) source;
+    }
     return new RealBufferedSource(source);
   }
 
@@ -41,6 +44,9 @@ public final class Okio {
    * get an ergonomic and efficient access access to data.
    */
   public static BufferedSink buffer(Sink sink) {
+    if (sink instanceof BufferedSink) {
+      return (BufferedSink) sink;
+    }
     return new RealBufferedSink(sink);
   }
 
