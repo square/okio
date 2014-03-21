@@ -17,12 +17,12 @@ package okio;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Random;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import org.junit.Test;
 
+import static okio.TestUtil.randomBytes;
+import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -98,18 +98,5 @@ public final class InflaterSourceTest {
     while (source.read(result, Integer.MAX_VALUE) != -1) {
     }
     return result;
-  }
-
-  private ByteString randomBytes(int length) {
-    Random random = new Random(0);
-    byte[] randomBytes = new byte[length];
-    random.nextBytes(randomBytes);
-    return ByteString.of(randomBytes);
-  }
-
-  private String repeat(char c, int count) {
-    char[] array = new char[count];
-    Arrays.fill(array, c);
-    return new String(array);
   }
 }
