@@ -15,12 +15,12 @@
  */
 package okio;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
+import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -99,7 +99,7 @@ public final class BufferTest {
 
   @Test public void multipleSegmentBuffers() throws Exception {
     Buffer buffer = new Buffer();
-    buffer.writeUtf8(repeat('a',  1000));
+    buffer.writeUtf8(repeat('a', 1000));
     buffer.writeUtf8(repeat('b', 2500));
     buffer.writeUtf8(repeat('c', 5000));
     buffer.writeUtf8(repeat('d', 10000));
@@ -680,11 +680,5 @@ public final class BufferTest {
     }
 
     return result;
-  }
-
-  private String repeat(char c, int count) {
-    char[] array = new char[count];
-    Arrays.fill(array, c);
-    return new String(array);
   }
 }

@@ -18,9 +18,9 @@ package okio;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.Arrays;
 import org.junit.Test;
 
+import static okio.TestUtil.assertByteArraysEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -174,9 +174,5 @@ public class ByteStringTest {
   @Test public void toStringOnLargeByteStringIncludesMd5() {
     assertEquals("ByteString[size=17 md5=2c9728a2138b2f25e9f89f99bdccf8db]",
         ByteString.encodeUtf8("12345678901234567").toString());
-  }
-
-  private static void assertByteArraysEquals(byte[] a, byte[] b) {
-    assertEquals(Arrays.toString(a), Arrays.toString(b));
   }
 }

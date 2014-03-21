@@ -1,9 +1,9 @@
 package okio;
 
 import java.io.IOException;
-import java.util.Arrays;
 import org.junit.Test;
 
+import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -41,11 +41,5 @@ public class GzipSinkTest {
     while (source.read(result, Integer.MAX_VALUE) != -1) {
     }
     return result;
-  }
-
-  private String repeat(char c, int count) {
-    char[] array = new char[count];
-    Arrays.fill(array, c);
-    return new String(array);
   }
 }

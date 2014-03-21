@@ -18,9 +18,9 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import org.junit.Test;
 
+import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -198,11 +198,5 @@ public final class RealBufferedSourceTest {
       fail();
     } catch (IOException expected) {
     }
-  }
-
-  private String repeat(char c, int count) {
-    char[] array = new char[count];
-    Arrays.fill(array, c);
-    return new String(array);
   }
 }

@@ -17,13 +17,13 @@ package okio;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Random;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 import org.junit.Test;
 
+import static okio.TestUtil.randomBytes;
+import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -124,18 +124,5 @@ public final class DeflaterSinkTest {
       result.write(buffer, 0, count);
     }
     return result;
-  }
-
-  private ByteString randomBytes(int length) {
-    Random random = new Random(0);
-    byte[] randomBytes = new byte[length];
-    random.nextBytes(randomBytes);
-    return ByteString.of(randomBytes);
-  }
-
-  private String repeat(char c, int count) {
-    char[] array = new char[count];
-    Arrays.fill(array, c);
-    return new String(array);
   }
 }
