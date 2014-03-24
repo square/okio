@@ -84,41 +84,41 @@ Every buffer is also a source and a sink, so you don’t need a
 Decoding the chunks of a PNG file demonstrates Okio in practice.
 
 ```java
-  private static final ByteString PNG_HEADER = ByteString.decodeHex("89504e470d0a1a0a");
+private static final ByteString PNG_HEADER = ByteString.decodeHex("89504e470d0a1a0a");
 
-  public void decodePng(InputStream in) throws IOException {
-    BufferedSource pngSource = Okio.buffer(Okio.source(in));
+public void decodePng(InputStream in) throws IOException {
+  BufferedSource pngSource = Okio.buffer(Okio.source(in));
 
-    ByteString header = pngSource.readByteString(PNG_HEADER.size());
-    if (!header.equals(PNG_HEADER)) {
-      throw new IOException("Not a PNG.");
-    }
-
-    while (true) {
-      Buffer chunk = new Buffer();
-
-      // Each chunk is a length, type, data, and CRC offset.
-      int length = pngSource.readInt();
-      String type = pngSource.readUtf8(4);
-      pngSource.readFully(chunk, length);
-      int crc = pngSource.readInt();
-
-      decodeChunk(type, chunk);
-      if (type.equals("IEND")) break;
-    }
-
-    pngSource.close();
+  ByteString header = pngSource.readByteString(PNG_HEADER.size());
+  if (!header.equals(PNG_HEADER)) {
+    throw new IOException("Not a PNG.");
   }
 
-  private void decodeChunk(String type, Buffer chunk) {
-    if (type.equals("IHDR")) {
-      int width = chunk.readInt();
-      int height = chunk.readInt();
-      System.out.printf("%08x: %s %d x %d%n", chunk.size(), type, width, height);
-    } else {
-      System.out.printf("%08x: %s%n", chunk.size(), type);
-    }
+  while (true) {
+    Buffer chunk = new Buffer();
+
+    // Each chunk is a length, type, data, and CRC offset.
+    int length = pngSource.readInt();
+    String type = pngSource.readUtf8(4);
+    pngSource.readFully(chunk, length);
+    int crc = pngSource.readInt();
+
+    decodeChunk(type, chunk);
+    if (type.equals("IEND")) break;
   }
+
+  pngSource.close();
+}
+
+private void decodeChunk(String type, Buffer chunk) {
+  if (type.equals("IHDR")) {
+    int width = chunk.readInt();
+    int height = chunk.readInt();
+    System.out.printf("%08x: %s %d x %d%n", chunk.size(), type, width, height);
+  } else {
+    System.out.printf("%08x: %s%n", chunk.size(), type);
+  }
+}
 ```
 
  [1]: http://netty.io/
