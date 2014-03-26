@@ -115,7 +115,7 @@ final class Segment {
     SegmentPool.INSTANCE.recycle(this);
   }
 
-  /** Moves {@code byteCount} bytes from {@code sink} to this segment. */
+  /** Moves {@code byteCount} bytes from this segment to {@code sink}. */
   // TODO: if sink has fewer bytes than this, it may be cheaper to reverse the
   //       direction of the copy and swap the segments!
   public void writeTo(Segment sink, int byteCount) {
