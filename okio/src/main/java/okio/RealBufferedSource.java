@@ -192,16 +192,15 @@ final class RealBufferedSource implements BufferedSource {
     };
   }
 
-  @Override public Source deadline(Deadline deadline) {
-    source.deadline(deadline);
-    return this;
-  }
-
   @Override public void close() throws IOException {
     if (closed) return;
     closed = true;
     source.close();
     buffer.clear();
+  }
+
+  @Override public Timeout timeout() {
+    return source.timeout();
   }
 
   @Override public String toString() {

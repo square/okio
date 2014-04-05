@@ -73,9 +73,8 @@ public final class GzipSink implements Sink {
     deflaterSink.flush();
   }
 
-  @Override public Sink deadline(Deadline deadline) {
-    deflaterSink.deadline(deadline);
-    return this;
+  @Override public Timeout timeout() {
+    return sink.timeout();
   }
 
   @Override public void close() throws IOException {

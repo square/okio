@@ -180,9 +180,8 @@ final class RealBufferedSink implements BufferedSink {
     if (thrown != null) Util.sneakyRethrow(thrown);
   }
 
-  @Override public Sink deadline(Deadline deadline) {
-    sink.deadline(deadline);
-    return this;
+  @Override public Timeout timeout() {
+    return sink.timeout();
   }
 
   @Override public String toString() {

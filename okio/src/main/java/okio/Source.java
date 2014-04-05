@@ -67,11 +67,8 @@ public interface Source extends Closeable {
    */
   long read(Buffer sink, long byteCount) throws IOException;
 
-  /**
-   * Sets the deadline for all operations on this source.
-   * @return this source.
-   */
-  Source deadline(Deadline deadline);
+  /** Returns the timeout for this source. */
+  Timeout timeout();
 
   /**
    * Closes this source and releases the resources held by this source. It is an

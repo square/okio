@@ -222,9 +222,8 @@ public class GzipSourceTest {
       return result;
     }
 
-    @Override public Source deadline(Deadline deadline) {
-      source.deadline(deadline);
-      return this;
+    @Override public Timeout timeout() {
+      return source.timeout();
     }
 
     @Override public void close() throws IOException {

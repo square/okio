@@ -27,8 +27,8 @@ public final class RealBufferedSourceReadUtf8LineTest extends ReadUtf8LineTest {
         return buffer.read(sink, Math.min(1, byteCount));
       }
 
-      @Override public Source deadline(Deadline deadline) {
-        throw new UnsupportedOperationException();
+      @Override public Timeout timeout() {
+        return Timeout.NONE;
       }
 
       @Override public void close() throws IOException {

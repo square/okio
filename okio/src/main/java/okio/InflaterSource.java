@@ -110,9 +110,8 @@ public final class InflaterSource implements Source {
     source.skip(toRelease);
   }
 
-  @Override public Source deadline(Deadline deadline) {
-    source.deadline(deadline);
-    return this;
+  @Override public Timeout timeout() {
+    return source.timeout();
   }
 
   @Override public void close() throws IOException {

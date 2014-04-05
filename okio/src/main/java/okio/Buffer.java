@@ -615,11 +615,6 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return byteCount;
   }
 
-  @Override public Buffer deadline(Deadline deadline) {
-    // All operations are in memory so this class doesn't need to honor deadlines.
-    return this;
-  }
-
   @Override public long indexOf(byte b) {
     return indexOf(b, 0);
   }
@@ -653,6 +648,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public void close() {
+  }
+
+  @Override public Timeout timeout() {
+    return Timeout.NONE;
   }
 
   /** For testing. This returns the sizes of the segments in this buffer. */
