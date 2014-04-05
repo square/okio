@@ -54,11 +54,8 @@ public interface Sink extends Closeable {
   /** Pushes all buffered bytes to their final destination. */
   void flush() throws IOException;
 
-  /**
-   * Sets the deadline for all operations on this sink.
-   * @return this sink.
-   */
-  Sink deadline(Deadline deadline);
+  /** Returns the timeout for this sink. */
+  Timeout timeout();
 
   /**
    * Pushes all buffered bytes to their final destination and releases the

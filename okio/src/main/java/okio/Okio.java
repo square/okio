@@ -47,13 +47,12 @@ public final class Okio {
   /** Returns a sink that writes to {@code out}. */
   public static Sink sink(final OutputStream out) {
     return new Sink() {
-      private Deadline deadline = Deadline.NONE;
+      private final Timeout timeout = new Timeout();
 
-      @Override public void write(Buffer source, long byteCount)
-          throws IOException {
+      @Override public void write(Buffer source, long byteCount) throws IOException {
         checkOffsetAndCount(source.size, 0, byteCount);
         while (byteCount > 0) {
-          deadline.throwIfReached();
+          timeout.throwIfReached();
           Segment head = source.head;
           int toCopy = (int) Math.min(byteCount, head.limit - head.pos);
           out.write(head.data, head.pos, toCopy);
@@ -77,10 +76,8 @@ public final class Okio {
         out.close();
       }
 
-      @Override public Sink deadline(Deadline deadline) {
-        if (deadline == null) throw new IllegalArgumentException("deadline == null");
-        this.deadline = deadline;
-        return this;
+      @Override public Timeout timeout() {
+        return timeout;
       }
 
       @Override public String toString() {
@@ -92,11 +89,11 @@ public final class Okio {
   /** Returns a source that reads from {@code in}. */
   public static Source source(final InputStream in) {
     return new Source() {
-      private Deadline deadline = Deadline.NONE;
+      private final Timeout timeout = new Timeout();
 
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
-        deadline.throwIfReached();
+        timeout.throwIfReached();
         Segment tail = sink.writableSegment(1);
         int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
         int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
@@ -110,10 +107,8 @@ public final class Okio {
         in.close();
       }
 
-      @Override public Source deadline(Deadline deadline) {
-        if (deadline == null) throw new IllegalArgumentException("deadline == null");
-        this.deadline = deadline;
-        return this;
+      @Override public Timeout timeout() {
+        return timeout;
       }
 
       @Override public String toString() {

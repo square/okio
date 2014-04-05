@@ -58,9 +58,9 @@ class MockSink implements Sink {
     throwIfScheduled();
   }
 
-  @Override public Sink deadline(Deadline deadline) {
-    log.add("deadline()");
-    return this;
+  @Override public Timeout timeout() {
+    log.add("timeout()");
+    return Timeout.NONE;
   }
 
   @Override public void close() throws IOException {

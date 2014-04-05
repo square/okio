@@ -174,9 +174,8 @@ public final class GzipSource implements Source {
     checkEqual("ISIZE", source.readIntLe(), inflater.getTotalOut());
   }
 
-  @Override public Source deadline(Deadline deadline) {
-    source.deadline(deadline);
-    return this;
+  @Override public Timeout timeout() {
+    return source.timeout();
   }
 
   @Override public void close() throws IOException {
