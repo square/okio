@@ -18,11 +18,16 @@ package okio;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static okio.Util.checkOffsetAndCount;
 
 /** Essential APIs for working with Okio. */
 public final class Okio {
+  private static final Logger logger = Logger.getLogger(Okio.class.getName());
+
   private Okio() {
   }
 
@@ -46,9 +51,11 @@ public final class Okio {
 
   /** Returns a sink that writes to {@code out}. */
   public static Sink sink(final OutputStream out) {
-    return new Sink() {
-      private final Timeout timeout = new Timeout();
+    return sink(out, new Timeout());
+  }
 
+  private static Sink sink(final OutputStream out, final Timeout timeout) {
+    return new Sink() {
       @Override public void write(Buffer source, long byteCount) throws IOException {
         checkOffsetAndCount(source.size, 0, byteCount);
         while (byteCount > 0) {
@@ -86,11 +93,65 @@ public final class Okio {
     };
   }
 
+  /**
+   * Returns a sink that writes to {@code socket}. Prefer this over {@link
+   * #sink(OutputStream)} because this method honors timeouts. When the socket
+   * write times out, the socket is asynchronously closed by a watchdog thread.
+   */
+  public static Sink sink(final Socket socket) throws IOException {
+    final AsyncTimeout timeout = timeout(socket);
+    final Sink sink = sink(socket.getOutputStream(), timeout);
+    return new Sink() {
+      @Override public void write(Buffer source, long byteCount) throws IOException {
+        boolean throwOnTimeout = false;
+        timeout.enter();
+        try {
+          sink.write(source, byteCount);
+          throwOnTimeout = true;
+        } finally {
+          timeout.exit(throwOnTimeout);
+        }
+      }
+
+      @Override public void flush() throws IOException {
+        boolean throwOnTimeout = false;
+        timeout.enter();
+        try {
+          sink.flush();
+          throwOnTimeout = true;
+        } finally {
+          timeout.exit(throwOnTimeout);
+        }
+      }
+
+      @Override public void close() throws IOException {
+        boolean throwOnTimeout = false;
+        timeout.enter();
+        try {
+          sink.close();
+          throwOnTimeout = true;
+        } finally {
+          timeout.exit(throwOnTimeout);
+        }
+      }
+
+      @Override public Timeout timeout() {
+        return timeout;
+      }
+
+      @Override public String toString() {
+        return "sink(" + socket + ")";
+      }
+    };
+  }
+
   /** Returns a source that reads from {@code in}. */
   public static Source source(final InputStream in) {
-    return new Source() {
-      private final Timeout timeout = new Timeout();
+    return source(in, new Timeout());
+  }
 
+  private static Source source(final InputStream in, final Timeout timeout) {
+    return new Source() {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
         timeout.throwIfReached();
@@ -113,6 +174,59 @@ public final class Okio {
 
       @Override public String toString() {
         return "source(" + in + ")";
+      }
+    };
+  }
+
+  /**
+   * Returns a source that reads from {@code socket}. Prefer this over {@link
+   * #source(InputStream)} because this method honors timeouts. When the socket
+   * read times out, the socket is asynchronously closed by a watchdog thread.
+   */
+  public static Source source(final Socket socket) throws IOException {
+    final AsyncTimeout timeout = timeout(socket);
+    final Source source = source(socket.getInputStream(), timeout);
+    return new Source() {
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
+        boolean throwOnTimeout = false;
+        timeout.enter();
+        try {
+          long result = source.read(sink, byteCount);
+          throwOnTimeout = true;
+          return result;
+        } finally {
+          timeout.exit(throwOnTimeout);
+        }
+      }
+
+      @Override public void close() throws IOException {
+        boolean throwOnTimeout = false;
+        try {
+          source.close();
+          throwOnTimeout = true;
+        } finally {
+          timeout.exit(throwOnTimeout);
+        }
+      }
+
+      @Override public Timeout timeout() {
+        return timeout;
+      }
+
+      @Override public String toString() {
+        return "source(" + socket + ")";
+      }
+    };
+  }
+
+  private static AsyncTimeout timeout(final Socket socket) {
+    return new AsyncTimeout() {
+      @Override protected void timedOut() {
+        try {
+          socket.close();
+        } catch (Exception e) {
+          logger.log(Level.WARNING, "Failed to close timed out socket " + socket, e);
+        }
       }
     };
   }
