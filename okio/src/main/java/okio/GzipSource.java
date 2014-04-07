@@ -184,14 +184,19 @@ public final class GzipSource implements Source {
 
   /** Updates the CRC with the given bytes. */
   private void updateCrc(Buffer buffer, long offset, long byteCount) {
-    for (Segment s = buffer.head; byteCount > 0; s = s.next) {
-      int segmentByteCount = s.limit - s.pos;
-      if (offset < segmentByteCount) {
-        int toUpdate = (int) Math.min(byteCount, segmentByteCount - offset);
-        crc.update(s.data, (int) (s.pos + offset), toUpdate);
-        byteCount -= toUpdate;
-      }
-      offset -= segmentByteCount; // Track the offset of the current segment.
+    // Skip segments that we aren't checksumming.
+    Segment s = buffer.head;
+    for (; offset >= (s.limit - s.pos); s = s.next) {
+      offset -= (s.limit - s.pos);
+    }
+
+    // Checksum one segment at a time.
+    for (; byteCount > 0; s = s.next) {
+      int pos = (int) (s.pos + offset);
+      int toUpdate = (int) Math.min(s.limit - pos, byteCount);
+      crc.update(s.data, pos, toUpdate);
+      byteCount -= toUpdate;
+      offset = 0;
     }
   }
 
