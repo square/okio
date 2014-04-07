@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import static okio.Util.checkOffsetAndCount;
 
@@ -83,6 +84,11 @@ final class RealBufferedSource implements BufferedSource {
   @Override public String readUtf8(long byteCount) throws IOException {
     require(byteCount);
     return buffer.readUtf8(byteCount);
+  }
+
+  @Override public String readString(long byteCount, Charset charset) throws IOException {
+    require(byteCount);
+    return buffer.readString(byteCount, charset);
   }
 
   @Override public String readUtf8Line() throws IOException {

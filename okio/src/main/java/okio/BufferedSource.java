@@ -17,6 +17,7 @@ package okio;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 /**
  * A source that keeps a buffer internally so that callers can do small reads
@@ -108,6 +109,12 @@ public interface BufferedSource extends Source {
    * machine-generated data where a missing line break implies truncated input.
    */
   String readUtf8LineStrict() throws IOException;
+
+  /**
+   * Removes {@code byteCount} bytes from this, decodes them as {@code charset},
+   * and returns the string.
+   */
+  String readString(long byteCount, Charset charset) throws IOException;
 
   /**
    * Returns the index of {@code b} in the buffer, refilling it if necessary

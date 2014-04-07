@@ -19,13 +19,13 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static okio.Util.UTF_8;
 import static okio.Util.checkOffsetAndCount;
 import static okio.Util.reverseBytesLong;
 
@@ -282,6 +282,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public String readUtf8(long byteCount) {
+    return readString(byteCount, Util.UTF_8);
+  }
+
+  @Override public String readString(long byteCount, Charset charset) {
     checkOffsetAndCount(this.size, 0, byteCount);
     if (byteCount > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("byteCount > Integer.MAX_VALUE: " + byteCount);
@@ -291,10 +295,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     Segment head = this.head;
     if (head.pos + byteCount > head.limit) {
       // If the string spans multiple segments, delegate to readBytes().
-      return new String(readBytes(byteCount), Util.UTF_8);
+      return new String(readBytes(byteCount), charset);
     }
 
-    String result = new String(head.data, head.pos, (int) byteCount, UTF_8);
+    String result = new String(head.data, head.pos, (int) byteCount, charset);
     head.pos += byteCount;
     this.size -= byteCount;
 
@@ -414,7 +418,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   @Override public Buffer writeUtf8(String string) {
     // TODO: inline UTF-8 encoding to save allocating a byte[]?
-    byte[] data = string.getBytes(Util.UTF_8);
+    return writeString(string, Util.UTF_8);
+  }
+
+  @Override public Buffer writeString(String string, Charset charset) {
+    byte[] data = string.getBytes(charset);
     return write(data, 0, data.length);
   }
 
@@ -456,7 +464,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return this;
   }
 
-  @Override public BufferedSink writeShortLe(int s) {
+  @Override public Buffer writeShortLe(int s) {
     return writeShort(Util.reverseBytesShort((short) s));
   }
 
@@ -473,7 +481,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return this;
   }
 
-  @Override public BufferedSink writeIntLe(int i) {
+  @Override public Buffer writeIntLe(int i) {
     return writeInt(Util.reverseBytesInt(i));
   }
 
@@ -494,7 +502,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return this;
   }
 
-  @Override public BufferedSink writeLongLe(long v) {
+  @Override public Buffer writeLongLe(long v) {
     return writeLong(reverseBytesLong(v));
   }
 
