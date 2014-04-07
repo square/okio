@@ -17,6 +17,7 @@ package okio;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 /**
  * A sink that keeps a buffer internally so that callers can do small writes
@@ -42,6 +43,9 @@ public interface BufferedSink extends Sink {
 
   /** Encodes {@code string} in UTF-8 and writes it to this sink. */
   BufferedSink writeUtf8(String string) throws IOException;
+
+  /** Encodes {@code string} in {@code charset} and writes it to this sink. */
+  BufferedSink writeString(String string, Charset charset) throws IOException;
 
   /** Writes a byte to this sink. */
   BufferedSink writeByte(int b) throws IOException;

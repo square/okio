@@ -15,6 +15,7 @@
  */
 package okio;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Random;
 import org.junit.Test;
@@ -42,6 +43,20 @@ public final class BufferTest {
       fail();
     } catch (ArrayIndexOutOfBoundsException expected) {
     }
+  }
+
+  @Test public void readSpecificCharset() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.write(ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
+        + "000002cc000000720000006100000070000000740000025900000072"));
+    assertEquals("vəˈläsəˌraptər", buffer.readString(buffer.size(), Charset.forName("utf-32")));
+  }
+
+  @Test public void writeSpecificCharset() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.writeString("təˈranəˌsôr", Charset.forName("utf-32"));
+    assertEquals(ByteString.decodeHex("0000007400000259000002c800000072000000610000006e00000259"
+        + "000002cc00000073000000f400000072"), buffer.readByteString(buffer.size()));
   }
 
   @Test public void completeSegmentByteCountOnEmptyBuffer() throws Exception {

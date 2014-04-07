@@ -17,6 +17,7 @@ package okio;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 final class RealBufferedSink implements BufferedSink {
   public final Buffer buffer;
@@ -53,6 +54,12 @@ final class RealBufferedSink implements BufferedSink {
   @Override public BufferedSink writeUtf8(String string) throws IOException {
     if (closed) throw new IllegalStateException("closed");
     buffer.writeUtf8(string);
+    return emitCompleteSegments();
+  }
+
+  @Override public BufferedSink writeString(String string, Charset charset) throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    buffer.writeString(string, charset);
     return emitCompleteSegments();
   }
 
