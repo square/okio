@@ -1,8 +1,9 @@
 Change Log
 ==========
 
-## Version 1.0.0
+## Version 0.5.0
 
-_In Development_
+_2014-04-08_
 
- * Initial import from OkHttp.
+ * Initial public release.
+ * Imported from OkHttp.

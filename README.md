@@ -1,85 +1,76 @@
 Okio
 ====
 
-A modern I/O API for Java
+Okio is a new library that complements `java.io` and `java.nio` to make it much
+easier to access, store, and process your data.
 
-### java.io is clumsy.
+ByteStrings and Buffers
+-----------------------
 
-That said, layering streams to transform data is wonderful: decompress, decrypt,
-and frame.
+Okio is built around two types that pack a lot of capability into a
+straightforward API:
 
-But it’s lame that we need additional layers to consume our data: why do we need
-`InputStreamReader`, `BufferedReader`, `BufferedInputStream` and
-`DataInputStream`? None of these transform the stream; they just give us the
-methods we need to consume our data.
+ * **ByteString** is an immutable sequence of bytes. For character data, `String`
+   is fundamental. `ByteString` is String's long-lost brother, making it easy to
+   treat binary data as a value. This class is ergonomic: it knows how to encode
+   and decode itself as hex, base64, and UTF-8.
 
-Typical implementations of `InputStream` and `OutputStream` hold independent
-buffers that need to be sized and managed. Data is copied between buffers at
-every step in the chain. For example, a web server serving a JSON HTTP response
-makes a long journey from application code to the socket, stopping in several
-buffers along the way:
+ * **Buffer** is a mutable sequence of bytes. Like `ArrayList`, you don't need
+   to size your buffer in advance. You read and write buffers as a queue: write
+   data to the end and read it from the front. There's no obligation to manage
+   positions, limits, or capacities.
 
- * Application data
- * JSON encoder
- * Character encoder
- * HTTP encoder
- * Gzip compressor
- * Chunk encoder
- * TLS encryptor
- * Socket
+Internally, `ByteString` and `Buffer` do some clever things to save CPU and
+memory. If you encode a UTF-8 string as a `ByteString`, it caches a reference to
+that string so that if you decode it later, there's no work to do.
 
-Many of these layers do their buffering with byte arrays and char arrays.
-Creating buffers is somewhat expensive in Java because `new byte[8192]` requires
-the runtime to zero-fill the memory before it’s readable it to the application.
-When we’re only sending 128 bytes of JSON, buffer creation and management can be
-a substantial part of the overall workload.
+`Buffer` is implemented as a linked list of segments. When you move data from
+one buffer to another, it _reassigns ownership_ of the segments rather than
+copying the data across. This approach is particularly helpful for multithreaded
+programs: a thread that talks to the network can exchange data with a worker
+thread without any copying or ceremony.
 
-Other `java.io` problems:
+Sources and Sinks
+-----------------
 
- * No timeouts.
- * Many methods are badly-specified: `mark()` / `reset()`, `skip()`, and
-   `available()` all have significant flaws.
- * Inefficient defaults. The single-byte `read()` and `write()` methods are
-   traps.
- * Type system mismatches. `InputStream.read()` reads a byte (typically
-   `-128..127`) but returns an int in `-1..255`.
+An elegant part of the `java.io` design is how streams can be layered for
+transformations like encryption and compression. Okio includes its own stream
+types called `Source` and `Sink` that work like `InputStream` and `OutputStream`,
+but with some key differences:
 
-### java.nio is worse
+ * **Timeouts.** The streams provide access to the timeouts of the underlying
+   I/O mechanism. Unlike the `java.io` socket streams. both `read()` and
+   `write()` calls honor timeouts.
 
-Programming with NIO is just plain painful. The `Buffer` classes are not safe
-for encapsulation: you can’t share your buffer instances with other code without
-careful contracts on how the `pos`, `mark`, and `limit` indices will be
-manipulated.
+ * **Easy to implement.** `Source` declares three methods: `read()`, `close()`,
+   and `timeout()`. There are no hazards like `available()` or single-byte reads
+   that cause correctness and performance surprises.
 
-NIO buffers are fixed-capacity, so you have to allocate for the worst case or
-resize manually.
+ * **Easy to use.** Although _implementations_ of `Source` and `Sink` have only
+   three methods to write, _callers_ are given a rich API with the
+   `BufferedSource` and `BufferedSink` interfaces. These interfaces give you
+   everything you need in one place.
 
-And then there’s the `Selector` + `Channel` torture that allows you to scale to
-very many simultaneous connections.
+ * **No artificial distinction between byte streams and char streams.** It's all
+   data. Read and write it as bytes, UTF-8 strings, big-endian 32-bit integers,
+   little-endian shorts; whatever you want. No more `InputStreamReader`!
 
-The most common way to tame NIO is to layer something like [Netty][1] on top.
-But Netty adds its own complexity and costs.
+ * **Easy to test.** The `Buffer` class implements both `BufferedSource` and
+   `BufferedSink` so your test code is simple and clear.
 
-### Introducing Okio
+Sources and sinks interoperate with `InputStream` and `OutputStream`. You can
+view any `Source` as an `InputStream`, and you can view any `InputStream` as a
+`Source`. Similarly for `Sink` and `OutputStream`.
 
-We do better by starting with better abstractions. Okio is inspired by
-`java.io`, but has some important changes:
+Dependable
+----------
 
- * Buffers that grow (and shrink) on demand. The central datatype, `Buffer`, is
-   a byte sequence that reads from the front and writes to the back. No `flip()`
-   nonsense like NIO!
- * Moving data from one buffer to another is cheap. Instead of copying the bytes
-   between byte arrays, Okio's `Buffer` reassigns internal segments in bulk.
- * No distinction between byte streams and char streams. It’s all data. Read and
-   write it as bytes, UTF-8 strings, big-endian 32-bit integers, little-endian
-   shorts; whatever you want.  No more `InputStreamReader`.
-
-The package replaces `InputStream` with `Source`, and `OutputStream` with `Sink`.
-Every buffer is also a source and a sink, so you don’t need a
-`ByteArrayInputStream` and `ByteArrayOutputStream`.
+Okio started as a component of [OkHttp][1], the capable HTTP+SPDY client
+included in Android. It's well-exercised and ready to solve new problems.
 
 
-### Example: a PNG decoder
+Example: a PNG decoder
+----------------------
 
 Decoding the chunks of a PNG file demonstrates Okio in practice.
 
@@ -121,4 +112,18 @@ private void decodeChunk(String type, Buffer chunk) {
 }
 ```
 
- [1]: http://netty.io/
+Download
+--------
+
+Download [the latest JAR][2] or grab via Maven:
+
+```xml
+<dependency>
+    <groupId>com.squareup.okio</groupId>
+    <artifactId>okio</artifactId>
+    <version>(insert latest version)</version>
+</dependency>
+```
+
+ [1]: https://github.com/square/okhttp
+ [2]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.squareup.okio&a=okio&v=LATEST
