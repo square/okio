@@ -10,12 +10,12 @@ ByteStrings and Buffers
 Okio is built around two types that pack a lot of capability into a
 straightforward API:
 
- * **ByteString** is an immutable sequence of bytes. For character data, `String`
+ * [**ByteString**][3] is an immutable sequence of bytes. For character data, `String`
    is fundamental. `ByteString` is String's long-lost brother, making it easy to
    treat binary data as a value. This class is ergonomic: it knows how to encode
    and decode itself as hex, base64, and UTF-8.
 
- * **Buffer** is a mutable sequence of bytes. Like `ArrayList`, you don't need
+ * [**Buffer**][4] is a mutable sequence of bytes. Like `ArrayList`, you don't need
    to size your buffer in advance. You read and write buffers as a queue: write
    data to the end and read it from the front. There's no obligation to manage
    positions, limits, or capacities.
@@ -35,8 +35,8 @@ Sources and Sinks
 
 An elegant part of the `java.io` design is how streams can be layered for
 transformations like encryption and compression. Okio includes its own stream
-types called `Source` and `Sink` that work like `InputStream` and `OutputStream`,
-but with some key differences:
+types called [`Source`][5] and [`Sink`][6] that work like `InputStream` and
+`OutputStream`, but with some key differences:
 
  * **Timeouts.** The streams provide access to the timeouts of the underlying
    I/O mechanism. Unlike the `java.io` socket streams. both `read()` and
@@ -48,7 +48,7 @@ but with some key differences:
 
  * **Easy to use.** Although _implementations_ of `Source` and `Sink` have only
    three methods to write, _callers_ are given a rich API with the
-   `BufferedSource` and `BufferedSink` interfaces. These interfaces give you
+   [`BufferedSource`][7] and [`BufferedSink`][8] interfaces. These interfaces give you
    everything you need in one place.
 
  * **No artificial distinction between byte streams and char streams.** It's all
@@ -125,5 +125,12 @@ Download [the latest JAR][2] or grab via Maven:
 </dependency>
 ```
 
+
  [1]: https://github.com/square/okhttp
  [2]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.squareup.okio&a=okio&v=LATEST
+ [3]: http://square.github.io/okio/okio/ByteString.html
+ [4]: http://square.github.io/okio/okio/Buffer.html
+ [5]: http://square.github.io/okio/okio/Source.html
+ [6]: http://square.github.io/okio/okio/Sink.html
+ [7]: http://square.github.io/okio/okio/BufferedSource.html
+ [8]: http://square.github.io/okio/okio/BufferedSink.html
