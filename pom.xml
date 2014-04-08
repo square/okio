@@ -11,7 +11,7 @@
 
   <groupId>com.squareup.okio</groupId>
   <artifactId>okio-parent</artifactId>
-  <version>0.5.0</version>
+  <version>0.6.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Okio (Parent)</name>
   <description>A modern I/O API for Java</description>
@@ -36,7 +36,7 @@
     <url>https://github.com/square/okio/</url>
     <connection>scm:git:https://github.com/square/okio.git</connection>
     <developerConnection>scm:git:git@github.com:square/okio.git</developerConnection>
-    <tag>okio-parent-0.5.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
