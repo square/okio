@@ -76,7 +76,7 @@ public class ByteStringTest {
     assertEquals(ByteString.of(), ByteString.read(in, 0));
   }
 
-  @Test public void readLowerCase() throws Exception {
+  @Test public void readAndToLowercase() throws Exception {
     InputStream in = new ByteArrayInputStream("ABC".getBytes(Util.UTF_8));
     assertEquals(ByteString.encodeUtf8("ab"), ByteString.read(in, 2).toAsciiLowercase());
     assertEquals(ByteString.encodeUtf8("c"), ByteString.read(in, 1).toAsciiLowercase());
@@ -94,6 +94,17 @@ public class ByteStringTest {
 
   @Test public void toAsciiStartsLowercaseEndsUppercase() throws Exception {
     assertEquals(ByteString.encodeUtf8("abcd"), ByteString.encodeUtf8("abCD").toAsciiLowercase());
+  }
+
+  @Test public void readAndToUppercase() throws Exception {
+    InputStream in = new ByteArrayInputStream("abc".getBytes(Util.UTF_8));
+    assertEquals(ByteString.encodeUtf8("AB"), ByteString.read(in, 2).toAsciiUppercase());
+    assertEquals(ByteString.encodeUtf8("C"), ByteString.read(in, 1).toAsciiUppercase());
+    assertEquals(ByteString.EMPTY, ByteString.read(in, 0).toAsciiUppercase());
+  }
+
+  @Test public void toAsciiStartsUppercaseEndsLowercase() throws Exception {
+    assertEquals(ByteString.encodeUtf8("ABCD"), ByteString.encodeUtf8("ABcd").toAsciiUppercase());
   }
 
   @Test public void write() throws Exception {
