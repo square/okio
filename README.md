@@ -39,7 +39,7 @@ types called [`Source`][5] and [`Sink`][6] that work like `InputStream` and
 `OutputStream`, but with some key differences:
 
  * **Timeouts.** The streams provide access to the timeouts of the underlying
-   I/O mechanism. Unlike the `java.io` socket streams. both `read()` and
+   I/O mechanism. Unlike the `java.io` socket streams, both `read()` and
    `write()` calls honor timeouts.
 
  * **Easy to implement.** `Source` declares three methods: `read()`, `close()`,
