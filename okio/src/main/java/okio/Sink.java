@@ -39,7 +39,7 @@ import java.io.IOException;
  * BufferedOutputStream} for buffering, and {@code OutputStreamWriter} for
  * charset encoding. This class uses {@code BufferedSink} for all of the above.
  *
- * <p>Sink is also easier to layer: there is no {@link
+ * <p>Sink is also easier to layer: there is no {@linkplain
  * java.io.OutputStream#write(int) single-byte write} method that is awkward to
  * implement efficiently.
  *
