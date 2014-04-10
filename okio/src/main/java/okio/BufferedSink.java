@@ -30,14 +30,14 @@ public interface BufferedSink extends Sink {
   BufferedSink write(ByteString byteString) throws IOException;
 
   /**
-   * Like {@link OutputStream#write}, this writes a complete byte array to this
-   * sink.
+   * Like {@link OutputStream#write(byte[])}, this writes a complete byte array to
+   * this sink.
    */
   BufferedSink write(byte[] source) throws IOException;
 
   /**
-   * Like {@link OutputStream#write}, this writes {@code byteCount} bytes
-   * of {@code source}, starting at {@code offset}.
+   * Like {@link OutputStream#write(byte[], int, int)}, this writes {@code byteCount}
+   * bytes of {@code source}, starting at {@code offset}.
    */
   BufferedSink write(byte[] source, int offset, int byteCount) throws IOException;
 

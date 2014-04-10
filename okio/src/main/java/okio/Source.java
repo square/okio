@@ -39,15 +39,15 @@ import java.io.IOException;
  * BufferedInputStream} for buffering, and {@code InputStreamReader} for
  * strings. This class uses {@code BufferedSource} for all of the above.
  *
- * <p>Source avoids the impossible-to-implement {@link
+ * <p>Source avoids the impossible-to-implement {@linkplain
  * java.io.InputStream#available available()} method. Instead callers specify
  * how many bytes they {@link BufferedSource#require require}.
  *
- * <p>Source omits the unsafe-to-compose {@link java.io.InputStream#mark mark
- * and reset} state that's tracked by {@code InputStream}; callers instead just
- * buffer what they need.
+ * <p>Source omits the unsafe-to-compose {@linkplain java.io.InputStream#mark
+ * mark and reset} state that's tracked by {@code InputStream}; callers instead
+ * just buffer what they need.
  *
- * <p>When implementing a source, you need not worry about the {@link
+ * <p>When implementing a source, you need not worry about the {@linkplain
  * java.io.InputStream#read single-byte read} method that is awkward to
  * implement efficiently and that returns one of 257 possible values.
  *
