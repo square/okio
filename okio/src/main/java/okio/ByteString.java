@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -237,9 +238,10 @@ public final class ByteString implements Serializable {
     }
   }
 
-  // Java serialization methods
+  // Java serialization using the Serialization Proxy pattern.
+  // See "Effective Java 2nd. Ed", Item 78
 
-  private static class SerializedForm implements Serializable {
+  private static class SerializationProxy implements Serializable {
     static final long serialVersionUID = 1L;
     private ByteString wrapped;
 
@@ -251,7 +253,7 @@ public final class ByteString implements Serializable {
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-      out.writeInt(wrapped.data.length);
+      out.writeInt(wrapped.size());
       out.write(wrapped.data);
     }
 
@@ -260,9 +262,21 @@ public final class ByteString implements Serializable {
     }
   }
 
+  /**
+   * Create and return a serialization proxy for this instance.
+   *
+   * @serialData The java serialization for a {@code ByteString} is very
+   * straightforward: the length of the data it contains (as an {@code int}),
+   * followed by the raw data as that many bytes.
+   */
   Object writeReplace() {
-    SerializedForm ser = new SerializedForm();
+    SerializationProxy ser = new SerializationProxy();
     ser.wrapped = this;
     return ser;
+  }
+
+  private void readObject(ObjectInputStream stream)
+      throws InvalidObjectException {
+    throw new InvalidObjectException("Proxy required");
   }
 }
