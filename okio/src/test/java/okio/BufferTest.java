@@ -15,6 +15,7 @@
  */
 package okio;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Random;
@@ -245,6 +246,20 @@ public final class BufferTest {
     assertEquals(asList(Segment.SIZE - 20, Segment.SIZE), source.segmentSizes());
     assertEquals(30, sink.size());
     assertEquals(Segment.SIZE * 2 - 20, source.size());
+  }
+
+  @Test public void copySpanningSegments() throws Exception {
+    Buffer source = new Buffer();
+    source.writeUtf8(repeat('a', Segment.SIZE * 2));
+    source.writeUtf8(repeat('b', Segment.SIZE * 2));
+
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    source.copy(out, 10, Segment.SIZE * 3);
+
+    assertEquals(repeat('a', Segment.SIZE * 2 - 10) + repeat('b', Segment.SIZE + 10),
+        out.toString());
+    assertEquals(repeat('a', Segment.SIZE * 2) + repeat('b', Segment.SIZE * 2),
+        source.readUtf8(Segment.SIZE * 4));
   }
 
   @Test public void readExhaustedSource() throws Exception {

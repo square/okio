@@ -118,6 +118,32 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /**
+   * Write {@code byteCount} bytes from this, starting at {@code offset}, to
+   * {@code out}.
+   */
+  public Buffer copy(OutputStream out, long offset, long byteCount) throws IOException {
+    checkOffsetAndCount(size, offset, byteCount);
+    if (byteCount == 0) return this;
+
+    // Skip segments that we aren't copying from.
+    Segment s = head;
+    for (; offset >= (s.limit - s.pos); s = s.next) {
+      offset -= (s.limit - s.pos);
+    }
+
+    // Copy from one segment at a time.
+    for (; byteCount > 0; s = s.next) {
+      int pos = (int) (s.pos + offset);
+      int toWrite = (int) Math.min(s.limit - pos, byteCount);
+      out.write(s.data, pos, toWrite);
+      byteCount -= toWrite;
+      offset = 0;
+    }
+
+    return this;
+  }
+
+  /**
    * Returns the number of bytes in segments that are not writable. This is the
    * number of bytes that can be flushed immediately to an underlying sink
    * without harming throughput.
@@ -744,7 +770,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   /** Returns a deep copy of this buffer. */
   @Override public Buffer clone() {
     Buffer result = new Buffer();
-    if (size() == 0) return result;
+    if (size == 0) return result;
 
     result.write(head.data, head.pos, head.limit - head.pos);
     for (Segment s = head.next; s != head; s = s.next) {
