@@ -18,7 +18,10 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -34,12 +37,13 @@ import java.util.Arrays;
  * and other environments that run both trusted and untrusted code in the same
  * process.
  */
-public final class ByteString {
+public final class ByteString implements Serializable {
   private static final char[] HEX_DIGITS =
       { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
   /** A singleton empty {@code ByteString}. */
   public static final ByteString EMPTY = ByteString.of();
+  static final long serialVersionUID = 1L;
 
   final byte[] data;
   private transient int hashCode; // Lazily computed; 0 if unknown.
@@ -232,5 +236,33 @@ public final class ByteString {
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError();
     }
+  }
+
+  // Java serialization methods
+
+  private static class SerializedForm implements Serializable {
+    private ByteString wrapped;
+
+    private void readObject(ObjectInputStream in) throws IOException {
+      int dataLength = in.readInt();
+      byte[] data = new byte[dataLength];
+      in.read(data);
+      wrapped = new ByteString(data);
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+      out.writeInt(wrapped.data.length);
+      out.write(wrapped.data);
+    }
+
+    Object readResolve() {
+      return wrapped;
+    }
+  }
+
+  Object writeReplace() {
+    SerializedForm ser = new SerializedForm();
+    ser.wrapped = this;
+    return ser;
   }
 }
