@@ -43,7 +43,7 @@ public final class Okio {
   /**
    * Returns a new sink that buffers writes to {@code sink}. The returned sink
    * will batch writes to {@code sink}. Use this wherever you write to a sink to
-   * get an ergonomic and efficient access access to data.
+   * get an ergonomic and efficient access to data.
    */
   public static BufferedSink buffer(Sink sink) {
     return new RealBufferedSink(sink);
