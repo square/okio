@@ -43,7 +43,6 @@ public final class ByteString implements Serializable {
 
   /** A singleton empty {@code ByteString}. */
   public static final ByteString EMPTY = ByteString.of();
-  static final long serialVersionUID = 1L;
 
   final byte[] data;
   private transient int hashCode; // Lazily computed; 0 if unknown.
@@ -241,6 +240,7 @@ public final class ByteString implements Serializable {
   // Java serialization methods
 
   private static class SerializedForm implements Serializable {
+    static final long serialVersionUID = 1L;
     private ByteString wrapped;
 
     private void readObject(ObjectInputStream in) throws IOException {
