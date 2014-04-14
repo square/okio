@@ -15,7 +15,9 @@
  */
 package okio;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Random;
@@ -23,6 +25,7 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static okio.TestUtil.repeat;
+import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -248,18 +251,74 @@ public final class BufferTest {
     assertEquals(Segment.SIZE * 2 - 20, source.size());
   }
 
-  @Test public void copySpanningSegments() throws Exception {
+  @Test public void copyToSpanningSegments() throws Exception {
     Buffer source = new Buffer();
     source.writeUtf8(repeat('a', Segment.SIZE * 2));
     source.writeUtf8(repeat('b', Segment.SIZE * 2));
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    source.copy(out, 10, Segment.SIZE * 3);
+    source.copyTo(out, 10, Segment.SIZE * 3);
 
     assertEquals(repeat('a', Segment.SIZE * 2 - 10) + repeat('b', Segment.SIZE + 10),
         out.toString());
     assertEquals(repeat('a', Segment.SIZE * 2) + repeat('b', Segment.SIZE * 2),
         source.readUtf8(Segment.SIZE * 4));
+  }
+
+  @Test public void copyToStream() throws Exception {
+    Buffer buffer = new Buffer().writeUtf8("hello, world!");
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    buffer.copyTo(out);
+    String outString = new String(out.toByteArray(), UTF_8);
+    assertEquals("hello, world!", outString);
+    assertEquals("hello, world!", buffer.readUtf8(buffer.size()));
+  }
+
+  @Test public void writeToSpanningSegments() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.writeUtf8(repeat('a', Segment.SIZE * 2));
+    buffer.writeUtf8(repeat('b', Segment.SIZE * 2));
+
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    buffer.skip(10);
+    buffer.writeTo(out, Segment.SIZE * 3);
+
+    assertEquals(repeat('a', Segment.SIZE * 2 - 10) + repeat('b', Segment.SIZE + 10),
+        out.toString());
+    assertEquals(repeat('b', Segment.SIZE - 10), buffer.readUtf8(buffer.size));
+  }
+
+  @Test public void writeToStream() throws Exception {
+    Buffer buffer = new Buffer().writeUtf8("hello, world!");
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    buffer.writeTo(out);
+    String outString = new String(out.toByteArray(), UTF_8);
+    assertEquals("hello, world!", outString);
+    assertEquals(0, buffer.size());
+  }
+
+  @Test public void readFromStream() throws Exception {
+    InputStream in = new ByteArrayInputStream("hello, world!".getBytes(UTF_8));
+    Buffer buffer = new Buffer();
+    buffer.readFrom(in);
+    String out = buffer.readUtf8(buffer.size());
+    assertEquals("hello, world!", out);
+  }
+
+  @Test public void readFromSpanningSegments() throws Exception {
+    InputStream in = new ByteArrayInputStream("hello, world!".getBytes(UTF_8));
+    Buffer buffer = new Buffer().writeUtf8(repeat('a', Segment.SIZE - 10));
+    buffer.readFrom(in);
+    String out = buffer.readUtf8(buffer.size());
+    assertEquals(repeat('a', Segment.SIZE - 10) + "hello, world!", out);
+  }
+
+  @Test public void readFromStreamWithCount() throws Exception {
+    InputStream in = new ByteArrayInputStream("hello, world!".getBytes(UTF_8));
+    Buffer buffer = new Buffer();
+    buffer.readFrom(in, 10);
+    String out = buffer.readUtf8(buffer.size());
+    assertEquals("hello, wor", out);
   }
 
   @Test public void readExhaustedSource() throws Exception {

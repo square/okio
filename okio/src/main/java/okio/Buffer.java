@@ -117,11 +117,16 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     };
   }
 
+  /** Copy the contents of this to {@code out}. */
+  public Buffer copyTo(OutputStream out) throws IOException {
+    return copyTo(out, 0, size);
+  }
+
   /**
-   * Write {@code byteCount} bytes from this, starting at {@code offset}, to
+   * Copy {@code byteCount} bytes from this, starting at {@code offset}, to
    * {@code out}.
    */
-  public Buffer copy(OutputStream out, long offset, long byteCount) throws IOException {
+  public Buffer copyTo(OutputStream out, long offset, long byteCount) throws IOException {
     checkOffsetAndCount(size, offset, byteCount);
     if (byteCount == 0) return this;
 
@@ -141,6 +146,62 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     }
 
     return this;
+  }
+
+  /** Write the contents of this to {@code out}. */
+  public Buffer writeTo(OutputStream out) throws IOException {
+    return writeTo(out, size);
+  }
+
+  /** Write {@code byteCount} bytes from this to {@code out}. */
+  public Buffer writeTo(OutputStream out, long byteCount) throws IOException {
+    checkOffsetAndCount(size, 0, byteCount);
+
+    Segment s = head;
+    while (byteCount > 0) {
+      int toCopy = (int) Math.min(byteCount, s.limit - s.pos);
+      out.write(s.data, s.pos, toCopy);
+
+      s.pos += toCopy;
+      size -= toCopy;
+      byteCount -= toCopy;
+
+      if (s.pos == s.limit) {
+        Segment toRecycle = s;
+        head = s = toRecycle.pop();
+        SegmentPool.INSTANCE.recycle(toRecycle);
+      }
+    }
+
+    return this;
+  }
+
+  /** Read and exhaust bytes from {@code in} to this. */
+  public Buffer readFrom(InputStream in) throws IOException {
+    readFrom(in, Long.MAX_VALUE, true);
+    return this;
+  }
+
+  /** Read {@code byteCount} bytes from {@code in} to this. */
+  public Buffer readFrom(InputStream in, long byteCount) throws IOException {
+    if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
+    readFrom(in, byteCount, false);
+    return this;
+  }
+
+  private void readFrom(InputStream in, long byteCount, boolean forever) throws IOException {
+    while (byteCount > 0 || forever) {
+      Segment tail = writableSegment(1);
+      int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
+      int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
+      if (bytesRead == -1) {
+        if (forever) return;
+        throw new EOFException();
+      }
+      tail.limit += bytesRead;
+      size += bytesRead;
+      byteCount -= bytesRead;
+    }
   }
 
   /**
