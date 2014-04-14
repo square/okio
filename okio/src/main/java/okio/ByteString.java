@@ -56,6 +56,16 @@ public final class ByteString {
     return new ByteString(data.clone());
   }
 
+  /**
+   * Returns a new byte string containing a copy of {@code byteCount} bytes of {@code data} starting
+   * at {@code offset}.
+   */
+  public static ByteString of(byte[] data, int offset, int byteCount) {
+    byte[] copy = new byte[byteCount];
+    System.arraycopy(data, offset, copy, 0, byteCount);
+    return new ByteString(copy);
+  }
+
   /** Returns a new byte string containing the {@code UTF-8} bytes of {@code s}. */
   public static ByteString encodeUtf8(String s) {
     ByteString byteString = new ByteString(s.getBytes(Util.UTF_8));

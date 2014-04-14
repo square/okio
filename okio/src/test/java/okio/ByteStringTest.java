@@ -29,6 +29,14 @@ import static org.junit.Assert.fail;
 
 public class ByteStringTest {
 
+  @Test public void ofCopyRange() {
+    byte[] bytes = "Hello, World!".getBytes(Util.UTF_8);
+    ByteString byteString = ByteString.of(bytes, 2, 9);
+    // Verify that the bytes were copied out.
+    bytes[4] = (byte) 'a';
+    assertEquals("llo, Worl", byteString.utf8());
+  }
+
   @Test public void getByte() throws Exception {
     ByteString byteString = ByteString.decodeHex("ab12");
     assertEquals(-85, byteString.getByte(0));
