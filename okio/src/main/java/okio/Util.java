@@ -24,9 +24,10 @@ final class Util {
   private Util() {
   }
 
-  public static void checkOffsetAndCount(long arrayLength, long offset, long count) {
-    if ((offset | count) < 0 || offset > arrayLength || arrayLength - offset < count) {
-      throw new ArrayIndexOutOfBoundsException();
+  public static void checkOffsetAndCount(long size, long offset, long byteCount) {
+    if ((offset | byteCount) < 0 || offset > size || size - offset < byteCount) {
+      throw new ArrayIndexOutOfBoundsException(
+          String.format("size=%s offset=%s byteCount=%s", size, offset, byteCount));
     }
   }
 
