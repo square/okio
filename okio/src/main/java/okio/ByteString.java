@@ -18,7 +18,11 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -34,7 +38,7 @@ import java.util.Arrays;
  * and other environments that run both trusted and untrusted code in the same
  * process.
  */
-public final class ByteString {
+public final class ByteString implements Serializable {
   private static final char[] HEX_DIGITS =
       { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
@@ -242,5 +246,47 @@ public final class ByteString {
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError();
     }
+  }
+
+  // Java serialization using the Serialization Proxy pattern.
+  // See "Effective Java 2nd. Ed", Item 78
+
+  private static class SerializationProxy implements Serializable {
+    static final long serialVersionUID = 1L;
+    private ByteString wrapped;
+
+    private void readObject(ObjectInputStream in) throws IOException {
+      int dataLength = in.readInt();
+      byte[] data = new byte[dataLength];
+      in.read(data);
+      wrapped = new ByteString(data);
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+      out.writeInt(wrapped.size());
+      out.write(wrapped.data);
+    }
+
+    Object readResolve() {
+      return wrapped;
+    }
+  }
+
+  /**
+   * Create and return a serialization proxy for this instance.
+   *
+   * @serialData The java serialization for a {@code ByteString} is very
+   * straightforward: the length of the data it contains (as an {@code int}),
+   * followed by the raw data as that many bytes.
+   */
+  Object writeReplace() {
+    SerializationProxy ser = new SerializationProxy();
+    ser.wrapped = this;
+    return ser;
+  }
+
+  private void readObject(ObjectInputStream stream)
+      throws InvalidObjectException {
+    throw new InvalidObjectException("Proxy required");
   }
 }

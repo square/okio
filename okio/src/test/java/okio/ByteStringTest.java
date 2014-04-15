@@ -18,11 +18,14 @@ package okio;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import org.junit.Test;
 
 import static okio.TestUtil.assertByteArraysEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -193,5 +196,43 @@ public class ByteStringTest {
   @Test public void toStringOnLargeByteStringIncludesMd5() {
     assertEquals("ByteString[size=17 md5=2c9728a2138b2f25e9f89f99bdccf8db]",
         ByteString.encodeUtf8("12345678901234567").toString());
+  }
+
+  @Test public void javaSerializationTestNonEmpty() throws Exception {
+    ByteString original = ByteString.encodeUtf8(bronzeHorseman);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    ObjectOutputStream out = new ObjectOutputStream(bytes);
+    out.writeObject("before");
+    out.writeObject(original);
+    out.writeObject("after");
+    ObjectInputStream in = new ObjectInputStream(
+        new ByteArrayInputStream(bytes.toByteArray()));
+    assertEquals("before", in.readObject());
+    Object roundTrippedObject = in.readObject();
+    assertNotNull(roundTrippedObject);
+    assertTrue("Round tripped object wasn't a ByteString but a " +
+        roundTrippedObject.getClass(), roundTrippedObject instanceof ByteString);
+    assertEquals(original, roundTrippedObject);
+    assertEquals("hashCodes", original.hashCode(), roundTrippedObject.hashCode());
+    assertEquals("after", in.readObject());
+  }
+
+  @Test public void javaSerializationTestEmpty() throws Exception {
+    ByteString original = ByteString.of();
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    ObjectOutputStream out = new ObjectOutputStream(bytes);
+    out.writeObject("before");
+    out.writeObject(original);
+    out.writeObject("after");
+    ObjectInputStream in = new ObjectInputStream(
+        new ByteArrayInputStream(bytes.toByteArray()));
+    assertEquals("before", in.readObject());
+    Object roundTrippedObject = in.readObject();
+    assertNotNull(roundTrippedObject);
+    assertTrue("Round tripped object wasn't a ByteString but a " +
+        roundTrippedObject.getClass(), roundTrippedObject instanceof ByteString);
+    assertEquals(original, roundTrippedObject);
+    assertEquals("hashCodes", original.hashCode(), roundTrippedObject.hashCode());
+    assertEquals("after", in.readObject());
   }
 }
