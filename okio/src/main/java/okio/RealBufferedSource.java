@@ -102,9 +102,21 @@ final class RealBufferedSource implements BufferedSource {
     return totalBytesWritten;
   }
 
+  @Override public String readUtf8() throws IOException {
+    //noinspection StatementWithEmptyBody
+    while (source.read(buffer, Segment.SIZE) != -1);
+    return buffer.readUtf8();
+  }
+
   @Override public String readUtf8(long byteCount) throws IOException {
     require(byteCount);
     return buffer.readUtf8(byteCount);
+  }
+
+  @Override public String readString(Charset charset) throws IOException {
+    //noinspection StatementWithEmptyBody
+    while (source.read(buffer, Segment.SIZE) != -1);
+    return buffer.readString(charset);
   }
 
   @Override public String readString(long byteCount, Charset charset) throws IOException {

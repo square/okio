@@ -375,8 +375,16 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return totalBytesWritten;
   }
 
+  @Override public String readUtf8() throws IOException {
+    return readString(size, Util.UTF_8);
+  }
+
   @Override public String readUtf8(long byteCount) {
     return readString(byteCount, Util.UTF_8);
+  }
+
+  @Override public String readString(Charset charset) throws IOException {
+    return readString(size, charset);
   }
 
   @Override public String readString(long byteCount, Charset charset) {

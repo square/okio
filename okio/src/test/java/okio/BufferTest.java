@@ -51,11 +51,18 @@ public final class BufferTest {
     }
   }
 
+  @Test public void readSpecificCharsetPartial() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.write(ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
+        + "000002cc000000720000006100000070000000740000025900000072"));
+    assertEquals("vəˈläsə", buffer.readString(7 * 4, Charset.forName("utf-32")));
+  }
+
   @Test public void readSpecificCharset() throws Exception {
     Buffer buffer = new Buffer();
     buffer.write(ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
         + "000002cc000000720000006100000070000000740000025900000072"));
-    assertEquals("vəˈläsəˌraptər", buffer.readString(buffer.size(), Charset.forName("utf-32")));
+    assertEquals("vəˈläsəˌraptər", buffer.readString(Charset.forName("utf-32")));
   }
 
   @Test public void writeSpecificCharset() throws Exception {
@@ -89,10 +96,22 @@ public final class BufferTest {
     assertEquals("aa", buffer.readUtf8(2));
   }
 
-  @Test public void readUtf8EntireBuffer() throws Exception {
+  @Test public void readUtf8Segment() throws Exception {
     Buffer buffer = new Buffer();
     buffer.writeUtf8(repeat('a', Segment.SIZE));
     assertEquals(repeat('a', Segment.SIZE), buffer.readUtf8(Segment.SIZE));
+  }
+
+  @Test public void readUtf8PartialBuffer() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.writeUtf8(repeat('a', Segment.SIZE + 20));
+    assertEquals(repeat('a', Segment.SIZE + 10), buffer.readUtf8(Segment.SIZE + 10));
+  }
+
+  @Test public void readUtf8EntireBuffer() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.writeUtf8(repeat('a', Segment.SIZE * 2));
+    assertEquals(repeat('a', Segment.SIZE * 2), buffer.readUtf8());
   }
 
   @Test public void toStringOnEmptyBuffer() throws Exception {

@@ -89,8 +89,11 @@ public interface BufferedSource extends Source {
    */
   long readAll(Sink sink) throws IOException;
 
+  /** Removes all bytes from this, decodes them as UTF-8, and returns the string. */
+  String readUtf8() throws IOException;
+
   /**
-   * Removes {@code byteCount} bytes from this, decodes them as UTF-8 and
+   * Removes {@code byteCount} bytes from this, decodes them as UTF-8, and
    * returns the string.
    */
   String readUtf8(long byteCount) throws IOException;
@@ -119,6 +122,12 @@ public interface BufferedSource extends Source {
    * machine-generated data where a missing line break implies truncated input.
    */
   String readUtf8LineStrict() throws IOException;
+
+  /**
+   * Removes all bytes from this, decodes them as {@code charset}, and returns
+   * the string.
+   */
+  String readString(Charset charset) throws IOException;
 
   /**
    * Removes {@code byteCount} bytes from this, decodes them as {@code charset},
