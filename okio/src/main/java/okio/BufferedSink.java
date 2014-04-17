@@ -41,6 +41,12 @@ public interface BufferedSink extends Sink {
    */
   BufferedSink write(byte[] source, int offset, int byteCount) throws IOException;
 
+  /**
+   * Removes all bytes from {@code source} and appends them to this. Returns the
+   * number of bytes read which will be 0 if {@code source} is exhausted.
+   */
+  long writeAll(Source source) throws IOException;
+
   /** Encodes {@code string} in UTF-8 and writes it to this sink. */
   BufferedSink writeUtf8(String string) throws IOException;
 

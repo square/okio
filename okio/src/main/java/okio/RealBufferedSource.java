@@ -81,6 +81,22 @@ final class RealBufferedSource implements BufferedSource {
     buffer.readFully(sink, byteCount);
   }
 
+  @Override public long readAll(Sink sink) throws IOException {
+    long totalBytesWritten = 0;
+    while (source.read(buffer, Segment.SIZE) != -1) {
+      long emitByteCount = buffer.completeSegmentByteCount();
+      if (emitByteCount > 0) {
+        totalBytesWritten += emitByteCount;
+        sink.write(buffer, emitByteCount);
+      }
+    }
+    if (buffer.size() > 0) {
+      totalBytesWritten += buffer.size();
+      sink.write(buffer, buffer.size());
+    }
+    return totalBytesWritten;
+  }
+
   @Override public String readUtf8(long byteCount) throws IOException {
     require(byteCount);
     return buffer.readUtf8(byteCount);

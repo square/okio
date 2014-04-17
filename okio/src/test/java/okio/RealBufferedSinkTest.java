@@ -206,4 +206,45 @@ public final class RealBufferedSinkTest {
     // Permitted
     os.flush();
   }
+
+  @Test public void writeAll() throws IOException {
+    MockSink mockSink = new MockSink();
+    BufferedSink bufferedSink = Okio.buffer(mockSink);
+
+    bufferedSink.buffer().writeUtf8("abc");
+    assertEquals(3, bufferedSink.writeAll(new Buffer().writeUtf8("def")));
+
+    assertEquals(6, bufferedSink.buffer().size());
+    assertEquals("abcdef", bufferedSink.buffer().readUtf8(6));
+    mockSink.assertLog(); // No writes.
+ }
+
+  @Test public void writeAllExhausted() throws IOException {
+    MockSink mockSink = new MockSink();
+    BufferedSink bufferedSink = Okio.buffer(mockSink);
+
+    assertEquals(0, bufferedSink.writeAll(new Buffer()));
+    assertEquals(0, bufferedSink.buffer().size());
+    mockSink.assertLog(); // No writes.
+ }
+
+  @Test public void writeAllWritesOneSegmentAtATime() throws IOException {
+    Buffer write1 = new Buffer().writeUtf8(TestUtil.repeat('a', Segment.SIZE));
+    Buffer write2 = new Buffer().writeUtf8(TestUtil.repeat('b', Segment.SIZE));
+    Buffer write3 = new Buffer().writeUtf8(TestUtil.repeat('c', Segment.SIZE));
+
+    Buffer source = new Buffer().writeUtf8(""
+        + TestUtil.repeat('a', Segment.SIZE)
+        + TestUtil.repeat('b', Segment.SIZE)
+        + TestUtil.repeat('c', Segment.SIZE));
+
+    MockSink mockSink = new MockSink();
+    BufferedSink bufferedSink = Okio.buffer(mockSink);
+    assertEquals(Segment.SIZE * 3, bufferedSink.writeAll(source));
+
+    mockSink.assertLog(
+        "write(" + write1 + ", " + write1.size() + ")",
+        "write(" + write2 + ", " + write2.size() + ")",
+        "write(" + write3 + ", " + write3.size() + ")");
+ }
 }

@@ -80,6 +80,13 @@ public interface BufferedSource extends Source {
   void readFully(Buffer sink, long byteCount) throws IOException;
 
   /**
+   * Removes all bytes from this and appends them to {@code sink}. Returns the
+   * total number of bytes written to {@code sink} which will be 0 if this is
+   * exhausted.
+   */
+  long readAll(Sink sink) throws IOException;
+
+  /**
    * Removes {@code byteCount} bytes from this, decodes them as UTF-8 and
    * returns the string.
    */

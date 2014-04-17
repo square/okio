@@ -369,6 +369,12 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     sink.write(this, byteCount);
   }
 
+  @Override public long readAll(Sink sink) throws IOException {
+    long totalBytesWritten = size();
+    sink.write(this, totalBytesWritten);
+    return totalBytesWritten;
+  }
+
   @Override public String readUtf8(long byteCount) {
     return readString(byteCount, Util.UTF_8);
   }
@@ -532,6 +538,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     this.size += byteCount;
     return this;
+  }
+
+  @Override public long writeAll(Source source) throws IOException {
+    long totalBytesRead = 0;
+    for (long readCount; (readCount = source.read(this, Segment.SIZE)) != -1; ) {
+      totalBytesRead += readCount;
+    }
+    return totalBytesRead;
   }
 
   @Override public Buffer writeByte(int b) {
