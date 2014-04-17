@@ -97,7 +97,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   @Override public InputStream inputStream() {
     return new InputStream() {
       @Override public int read() {
-        return readByte() & 0xff;
+        if (size > 0) return readByte() & 0xff;
+        return -1;
       }
 
       @Override public int read(byte[] sink, int offset, int byteCount) {
