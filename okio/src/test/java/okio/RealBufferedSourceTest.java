@@ -23,6 +23,7 @@ import org.junit.Test;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class RealBufferedSourceTest {
@@ -198,5 +199,52 @@ public final class RealBufferedSourceTest {
       fail();
     } catch (IOException expected) {
     }
+  }
+
+  @Test public void readAll() throws IOException {
+    Buffer source = new Buffer();
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
+    bufferedSource.buffer().writeUtf8("abc");
+    source.writeUtf8("def");
+
+    Buffer sink = new Buffer();
+    assertEquals(6, bufferedSource.readAll(sink));
+    assertEquals("abcdef", sink.readUtf8(6));
+    assertTrue(source.exhausted());
+    assertTrue(bufferedSource.exhausted());
+  }
+
+  @Test public void readAllExhausted() throws IOException {
+    Buffer source = new Buffer();
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
+
+    MockSink mockSink = new MockSink();
+    assertEquals(0, bufferedSource.readAll(mockSink));
+    assertTrue(source.exhausted());
+    assertTrue(bufferedSource.exhausted());
+    mockSink.assertLog();
+  }
+
+  /**
+   * We don't want readAll to buffer an unbounded amount of data. Instead it
+   * should buffer a segment, write it, and repeat.
+   */
+  @Test public void readAllReadsOneSegmentAtATime() throws IOException {
+    Buffer write1 = new Buffer().writeUtf8(TestUtil.repeat('a', Segment.SIZE));
+    Buffer write2 = new Buffer().writeUtf8(TestUtil.repeat('b', Segment.SIZE));
+    Buffer write3 = new Buffer().writeUtf8(TestUtil.repeat('c', Segment.SIZE));
+
+    Buffer source = new Buffer().writeUtf8(""
+        + TestUtil.repeat('a', Segment.SIZE)
+        + TestUtil.repeat('b', Segment.SIZE)
+        + TestUtil.repeat('c', Segment.SIZE));
+
+    MockSink mockSink = new MockSink();
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
+    assertEquals(Segment.SIZE * 3, bufferedSource.readAll(mockSink));
+    mockSink.assertLog(
+        "write(" + write1 + ", " + write1.size() + ")",
+        "write(" + write2 + ", " + write2.size() + ")",
+        "write(" + write3 + ", " + write3.size() + ")");
   }
 }

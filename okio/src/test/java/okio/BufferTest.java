@@ -776,6 +776,69 @@ public final class BufferTest {
     assertEquals("[-7, -7, -7, -7]", Arrays.toString(byteArray));
   }
 
+  @Test public void readAll() throws Exception {
+    Buffer source = new Buffer().writeUtf8("abcdef");
+    Buffer sink = new Buffer();
+
+    assertEquals(6, source.readAll(sink));
+    assertEquals(0, source.size());
+    assertEquals("abcdef", sink.readUtf8(6));
+  }
+
+  @Test public void readAllExhausted() throws Exception {
+    Buffer source = new Buffer();
+    Buffer sink = new Buffer();
+    assertEquals(0, source.readAll(sink));
+    assertEquals(0, source.size());
+  }
+
+  /**
+   * When writing data that's already buffered, there's no reason to page the
+   * data by segment.
+   */
+  @Test public void readAllWritesAllSegmentsAtOnce() throws Exception {
+    Buffer write1 = new Buffer().writeUtf8(""
+        + TestUtil.repeat('a', Segment.SIZE)
+        + TestUtil.repeat('b', Segment.SIZE)
+        + TestUtil.repeat('c', Segment.SIZE));
+
+    Buffer source = new Buffer().writeUtf8(""
+        + TestUtil.repeat('a', Segment.SIZE)
+        + TestUtil.repeat('b', Segment.SIZE)
+        + TestUtil.repeat('c', Segment.SIZE));
+
+    MockSink mockSink = new MockSink();
+
+    assertEquals(Segment.SIZE * 3, source.readAll(mockSink));
+    assertEquals(0, source.size());
+    mockSink.assertLog("write(" + write1 + ", " + write1.size() + ")");
+  }
+
+  @Test public void writeAll() throws Exception {
+    Buffer source = new Buffer().writeUtf8("abcdef");
+    Buffer sink = new Buffer();
+
+    assertEquals(6, sink.writeAll(source));
+    assertEquals(0, source.size());
+    assertEquals("abcdef", sink.readUtf8(6));
+  }
+
+  @Test public void writeAllExhausted() throws Exception {
+    Buffer source = new Buffer();
+    Buffer sink = new Buffer();
+    assertEquals(0, sink.writeAll(source));
+    assertEquals(0, source.size());
+  }
+
+  @Test public void writeAllMultipleSegments() throws Exception {
+    Buffer source = new Buffer().writeUtf8(TestUtil.repeat('a', Segment.SIZE * 3));
+    Buffer sink = new Buffer();
+
+    assertEquals(Segment.SIZE * 3, sink.writeAll(source));
+    assertEquals(0, source.size());
+    assertEquals(TestUtil.repeat('a', Segment.SIZE * 3), sink.readUtf8(sink.size()));
+  }
+
   /**
    * Returns a new buffer containing the data in {@code data}, and a segment
    * layout determined by {@code dice}.
