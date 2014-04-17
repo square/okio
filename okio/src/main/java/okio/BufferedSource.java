@@ -72,6 +72,9 @@ public interface BufferedSource extends Source {
   /** Removes {@code byteCount} bytes from this and returns them as a byte string. */
   ByteString readByteString(long byteCount) throws IOException;
 
+  /** Removes {@code byteCount} bytes from this and returns them as a byte array. */
+  byte[] readByteArray(long byteCount) throws IOException;
+
   /**
    * Removes exactly {@code byteCount} bytes from this and appends them to
    * {@code sink}. Throws an {@link java.io.EOFException} if the requested

@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import org.junit.Test;
 
 import static okio.TestUtil.repeat;
@@ -246,5 +247,11 @@ public final class RealBufferedSourceTest {
         "write(" + write1 + ", " + write1.size() + ")",
         "write(" + write2 + ", " + write2.size() + ")",
         "write(" + write3 + ", " + write3.size() + ")");
+  }
+
+  @Test public void readByteArray() throws IOException {
+    BufferedSource source = Okio.buffer((Source) new Buffer().writeUtf8("abcd"));
+    assertEquals("[97, 98, 99]", Arrays.toString(source.readByteArray(3)));
+    assertEquals("d", source.readUtf8(1));
   }
 }

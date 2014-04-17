@@ -362,7 +362,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public ByteString readByteString(long byteCount) {
-    return new ByteString(readBytes(byteCount));
+    return new ByteString(readByteArray(byteCount));
   }
 
   @Override public void readFully(Buffer sink, long byteCount) throws IOException {
@@ -389,7 +389,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     Segment head = this.head;
     if (head.pos + byteCount > head.limit) {
       // If the string spans multiple segments, delegate to readBytes().
-      return new String(readBytes(byteCount), charset);
+      return new String(readByteArray(byteCount), charset);
     }
 
     String result = new String(head.data, head.pos, (int) byteCount, charset);
@@ -435,7 +435,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     }
   }
 
-  private byte[] readBytes(long byteCount) {
+  @Override public byte[] readByteArray(long byteCount) {
     checkOffsetAndCount(this.size, 0, byteCount);
     if (byteCount > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("byteCount > Integer.MAX_VALUE: " + byteCount);
