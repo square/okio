@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import org.junit.Test;
@@ -744,6 +745,35 @@ public final class BufferTest {
     source.readFully(sink, 9999);
     assertEquals(repeat('a', 9999), sink.readUtf8(sink.size()));
     assertEquals("a", source.readUtf8(source.size()));
+  }
+
+  @Test public void bufferInputStreamByteByByte() throws Exception {
+    Buffer source = new Buffer();
+    source.writeUtf8("abc");
+
+    InputStream in = source.inputStream();
+    assertEquals(3, in.available());
+    assertEquals('a', in.read());
+    assertEquals('b', in.read());
+    assertEquals('c', in.read());
+    assertEquals(-1, in.read());
+    assertEquals(0, in.available());
+  }
+
+  @Test public void bufferInputStreamBulkReads() throws Exception {
+    Buffer source = new Buffer();
+    source.writeUtf8("abc");
+
+    byte[] byteArray = new byte[4];
+
+    Arrays.fill(byteArray, (byte) -5);
+    InputStream in = source.inputStream();
+    assertEquals(3, in.read(byteArray));
+    assertEquals("[97, 98, 99, -5]", Arrays.toString(byteArray));
+
+    Arrays.fill(byteArray, (byte) -7);
+    assertEquals(-1, in.read(byteArray));
+    assertEquals("[-7, -7, -7, -7]", Arrays.toString(byteArray));
   }
 
   /**
