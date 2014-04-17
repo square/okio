@@ -17,6 +17,7 @@ package okio;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -837,6 +838,12 @@ public final class BufferTest {
     assertEquals(Segment.SIZE * 3, sink.writeAll(source));
     assertEquals(0, source.size());
     assertEquals(TestUtil.repeat('a', Segment.SIZE * 3), sink.readUtf8(sink.size()));
+  }
+
+  @Test public void readByteArray() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd");
+    assertEquals("[97, 98, 99]", Arrays.toString(buffer.readByteArray(3)));
+    assertEquals("d", buffer.readUtf8(1));
   }
 
   /**
