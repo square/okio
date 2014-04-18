@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 0.6.1
+
+_2014-04-17_
+
+ * Methods to read a buffered source fully in UTF-8 or supplied charset.
+ * API to read a byte[] directly.
+ * New methods to move all data from a source to a sink.
+ * Fix a bug on input stream exhaustion.
+
 ## Version 0.6.0
 
 _2014-04-15_
