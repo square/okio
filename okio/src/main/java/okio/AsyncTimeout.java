@@ -57,8 +57,8 @@ class AsyncTimeout extends Timeout {
 
   public final void enter() {
     if (inQueue) throw new IllegalStateException("Unbalanced enter/exit");
-    long timeoutNanos = getTimeoutNanos();
-    long deadlineDurationNanos = getDeadlineDurationNanos();
+    long timeoutNanos = timeoutNanos();
+    long deadlineDurationNanos = deadlineDurationNanos();
     if (timeoutNanos == -1 && deadlineDurationNanos == -1) {
       return; // No timeout? Don't bother with the queue.
     }
@@ -79,7 +79,7 @@ class AsyncTimeout extends Timeout {
         ? now + timeoutNanos
         : Long.MAX_VALUE;
     long timeoutAtForDeadline = deadlineDurationNanos != -1
-        ? node.getDeadlineStart() + deadlineDurationNanos
+        ? node.deadlineStart() + deadlineDurationNanos
         : Long.MAX_VALUE;
     node.timeoutAt = Math.min(timeoutAtForTimeout, timeoutAtForDeadline);
 
