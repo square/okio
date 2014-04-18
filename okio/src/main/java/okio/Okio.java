@@ -15,12 +15,20 @@
  */
 package okio;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import static okio.Util.checkOffsetAndCount;
 
@@ -176,6 +184,28 @@ public final class Okio {
         return "source(" + in + ")";
       }
     };
+  }
+
+  /** Returns a source that reads from {@code file}. */
+  public static Source source(File file) throws FileNotFoundException {
+    return source(new FileInputStream(file));
+  }
+
+  /** Returns a source that reads from {@code path}. */
+  @IgnoreJRERequirement // Should only be invoked on Java 7+.
+  public static Source source(Path path, OpenOption... options) throws IOException {
+    return source(Files.newInputStream(path, options));
+  }
+
+  /** Returns a sink that writes to {@code file}. */
+  public static Sink sink(File file) throws FileNotFoundException {
+    return sink(new FileOutputStream(file));
+  }
+
+  /** Returns a sink that writes to {@code path}. */
+  @IgnoreJRERequirement // Should only be invoked on Java 7+.
+  public static Sink sink(Path path, OpenOption... options) throws IOException {
+    return sink(Files.newOutputStream(path, options));
   }
 
   /**
