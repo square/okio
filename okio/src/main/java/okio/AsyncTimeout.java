@@ -58,12 +58,16 @@ class AsyncTimeout extends Timeout {
   public final void enter() {
     if (inQueue) throw new IllegalStateException("Unbalanced enter/exit");
     long timeoutNanos = getTimeoutNanos();
-    if (timeoutNanos == -1) return; // No timeout? Don't bother with the queue.
+    long deadlineDurationNanos = getDeadlineDurationNanos();
+    if (timeoutNanos == -1 && deadlineDurationNanos == -1) {
+      return; // No timeout? Don't bother with the queue.
+    }
     inQueue = true;
-    scheduleTimeout(this, timeoutNanos);
+    scheduleTimeout(this, timeoutNanos, deadlineDurationNanos);
   }
 
-  private static synchronized void scheduleTimeout(AsyncTimeout node, long timeoutNanos) {
+  private static synchronized void scheduleTimeout(
+      AsyncTimeout node, long timeoutNanos, long deadlineDurationNanos) {
     // Start the watchdog thread and create the head node when the first timeout is scheduled.
     if (head == null) {
       head = new AsyncTimeout();
@@ -71,7 +75,13 @@ class AsyncTimeout extends Timeout {
     }
 
     long now = System.nanoTime();
-    node.timeoutAt = now + timeoutNanos;
+    long timeoutAtForTimeout = timeoutNanos != -1
+        ? now + timeoutNanos
+        : Long.MAX_VALUE;
+    long timeoutAtForDeadline = deadlineDurationNanos != -1
+        ? node.getDeadlineStart() + deadlineDurationNanos
+        : Long.MAX_VALUE;
+    node.timeoutAt = Math.min(timeoutAtForTimeout, timeoutAtForDeadline);
 
     // Insert the node in sorted order.
     long remainingNanos = node.remainingNanos(now);

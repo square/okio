@@ -120,6 +120,35 @@ public class AsyncTimeoutTest {
     }
   }
 
+  @Test public void deadlineOnly() throws Exception {
+    RecordingAsyncTimeout timeout = new RecordingAsyncTimeout();
+    timeout.deadline(250, TimeUnit.MILLISECONDS);
+    timeout.enter();
+    Thread.sleep(500);
+    assertTrue(timeout.exit());
+    assertTimedOut(timeout);
+  }
+
+  @Test public void deadlineBeforeTimeout() throws Exception {
+    RecordingAsyncTimeout timeout = new RecordingAsyncTimeout();
+    timeout.deadline(250, TimeUnit.MILLISECONDS);
+    timeout.timeout(750, TimeUnit.MILLISECONDS);
+    timeout.enter();
+    Thread.sleep(500);
+    assertTrue(timeout.exit());
+    assertTimedOut(timeout);
+  }
+
+  @Test public void deadlineAfterTimeout() throws Exception {
+    RecordingAsyncTimeout timeout = new RecordingAsyncTimeout();
+    timeout.timeout(250, TimeUnit.MILLISECONDS);
+    timeout.deadline(750, TimeUnit.MILLISECONDS);
+    timeout.enter();
+    Thread.sleep(500);
+    assertTrue(timeout.exit());
+    assertTimedOut(timeout);
+  }
+
   /** Asserts which timeouts fired, and in which order. */
   private void assertTimedOut(Timeout... expected) {
     assertEquals(Arrays.asList(expected), timedOut);
