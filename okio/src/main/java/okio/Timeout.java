@@ -76,9 +76,19 @@ public class Timeout {
     return this;
   }
 
-  /** Returns the timeout in nanoseconds, or {@code -1} if for no timeout. */
+  /** Returns the timeout in nanoseconds, or {@code -1} for no timeout. */
   public long getTimeoutNanos() {
     return timeoutNanos;
+  }
+
+  /** Returns the time that the deadline was most recently started. */
+  public long getDeadlineStart() {
+    return deadlineStart;
+  }
+
+  /** Returns the deadline duration in nanoseconds, or {@code -1} for no deadline. */
+  public long getDeadlineDurationNanos() {
+    return deadlineDurationNanos;
   }
 
   /**

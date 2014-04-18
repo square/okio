@@ -103,8 +103,7 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public String readUtf8() throws IOException {
-    //noinspection StatementWithEmptyBody
-    while (source.read(buffer, Segment.SIZE) != -1);
+    buffer.writeAll(source);
     return buffer.readUtf8();
   }
 
@@ -114,8 +113,7 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public String readString(Charset charset) throws IOException {
-    //noinspection StatementWithEmptyBody
-    while (source.read(buffer, Segment.SIZE) != -1);
+    buffer.writeAll(source);
     return buffer.readString(charset);
   }
 
