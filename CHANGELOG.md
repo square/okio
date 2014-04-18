@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 0.7.0
+
+_2014-04-18_
+
+ * Don't use getters in timeout.
+ * Use the watchdog to interrupt sockets that have reached deadlines.
+ * Add java.io and java.nio file source/sink helpers.
+
 ## Version 0.6.1
 
 _2014-04-17_
