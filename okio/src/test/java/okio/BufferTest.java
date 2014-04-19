@@ -26,6 +26,7 @@ import java.util.Random;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
+import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -860,9 +861,30 @@ public final class BufferTest {
   }
 
   @Test public void readByteArray() throws IOException {
+    String string = "abcd" + repeat('e', Segment.SIZE);
+    Buffer buffer = new Buffer().writeUtf8(string);
+    assertByteArraysEquals(string.getBytes(UTF_8), buffer.readByteArray());
+    assertEquals(0, buffer.size());
+  }
+
+  @Test public void readByteArrayPartial() throws IOException {
     Buffer buffer = new Buffer().writeUtf8("abcd");
     assertEquals("[97, 98, 99]", Arrays.toString(buffer.readByteArray(3)));
     assertEquals("d", buffer.readUtf8(1));
+    assertEquals(0, buffer.size());
+  }
+
+  @Test public void readByteString() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
+    assertEquals("abcd" + repeat('e', Segment.SIZE), buffer.readByteString().utf8());
+    assertEquals(0, buffer.size());
+  }
+
+  @Test public void readByteStringPartial() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
+    assertEquals("abc", buffer.readByteString(3).utf8());
+    assertEquals("d", buffer.readUtf8(1));
+    assertEquals(Segment.SIZE, buffer.size());
   }
 
   /**

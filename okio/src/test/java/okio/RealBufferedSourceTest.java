@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import org.junit.Test;
 
+import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -250,8 +251,29 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void readByteArray() throws IOException {
-    BufferedSource source = Okio.buffer((Source) new Buffer().writeUtf8("abcd"));
+    String string = "abcd" + repeat('e', Segment.SIZE);
+    Buffer buffer = new Buffer().writeUtf8(string);
+    BufferedSource source = Okio.buffer((Source) buffer);
+    assertByteArraysEquals(string.getBytes(UTF_8), source.readByteArray());
+  }
+
+  @Test public void readByteArrayPartial() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd");
+    BufferedSource source = Okio.buffer((Source) buffer);
     assertEquals("[97, 98, 99]", Arrays.toString(source.readByteArray(3)));
+    assertEquals("d", source.readUtf8(1));
+  }
+
+  @Test public void readByteString() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
+    BufferedSource source = Okio.buffer((Source) buffer);
+    assertEquals("abcd" + repeat('e', Segment.SIZE), source.readByteString().utf8());
+  }
+
+  @Test public void readByteStringPartial() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
+    BufferedSource source = Okio.buffer((Source) buffer);
+    assertEquals("abc", source.readByteString(3).utf8());
     assertEquals("d", source.readUtf8(1));
   }
 }

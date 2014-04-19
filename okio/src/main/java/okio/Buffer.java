@@ -361,6 +361,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return Util.reverseBytesLong(readLong());
   }
 
+  @Override public ByteString readByteString() throws IOException {
+    return new ByteString(readByteArray());
+  }
+
   @Override public ByteString readByteString(long byteCount) {
     return new ByteString(readByteArray(byteCount));
   }
@@ -441,6 +445,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       skip(1);
       return result;
     }
+  }
+
+  @Override public byte[] readByteArray() throws IOException {
+    return readByteArray(size);
   }
 
   @Override public byte[] readByteArray(long byteCount) {
