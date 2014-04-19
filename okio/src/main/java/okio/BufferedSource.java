@@ -69,8 +69,14 @@ public interface BufferedSource extends Source {
    */
   void skip(long byteCount) throws IOException;
 
+  /** Removes all bytes bytes from this and returns them as a byte string. */
+  ByteString readByteString() throws IOException;
+
   /** Removes {@code byteCount} bytes from this and returns them as a byte string. */
   ByteString readByteString(long byteCount) throws IOException;
+
+  /** Removes all bytes from this and returns them as a byte array. */
+  byte[] readByteArray() throws IOException;
 
   /** Removes {@code byteCount} bytes from this and returns them as a byte array. */
   byte[] readByteArray(long byteCount) throws IOException;
