@@ -202,6 +202,11 @@ public final class Okio {
     return sink(new FileOutputStream(file));
   }
 
+  /** Returns a sink that appends to {@code file}. */
+  public static Sink appendingSink(File file) throws FileNotFoundException {
+    return sink(new FileOutputStream(file, true));
+  }
+
   /** Returns a sink that writes to {@code path}. */
   @IgnoreJRERequirement // Should only be invoked on Java 7+.
   public static Sink sink(Path path, OpenOption... options) throws IOException {

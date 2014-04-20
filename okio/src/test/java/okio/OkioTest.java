@@ -48,6 +48,25 @@ public final class OkioTest {
     source.close();
   }
 
+  @Test public void appendFile() throws Exception {
+    File file = temporaryFolder.newFile();
+
+    BufferedSink sink = Okio.buffer(Okio.appendingSink(file));
+    sink.writeUtf8("Hello, ");
+    sink.close();
+    assertTrue(file.exists());
+    assertEquals(7, file.length());
+
+    sink = Okio.buffer(Okio.appendingSink(file));
+    sink.writeUtf8("java.io file!");
+    sink.close();
+    assertEquals(20, file.length());
+
+    BufferedSource source = Okio.buffer(Okio.source(file));
+    assertEquals("Hello, java.io file!", source.readUtf8());
+    source.close();
+  }
+
   @Test public void readWritePath() throws Exception {
     Path path = temporaryFolder.newFile().toPath();
 
