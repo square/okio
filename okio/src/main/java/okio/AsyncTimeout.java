@@ -58,16 +58,16 @@ class AsyncTimeout extends Timeout {
   public final void enter() {
     if (inQueue) throw new IllegalStateException("Unbalanced enter/exit");
     long timeoutNanos = timeoutNanos();
-    long deadlineDurationNanos = deadlineDurationNanos();
-    if (timeoutNanos == -1 && deadlineDurationNanos == -1) {
-      return; // No timeout? Don't bother with the queue.
+    boolean hasDeadline = hasDeadline();
+    if (timeoutNanos == -1 && !hasDeadline) {
+      return; // No timeout and no deadline? Don't bother with the queue.
     }
     inQueue = true;
-    scheduleTimeout(this, timeoutNanos, deadlineDurationNanos);
+    scheduleTimeout(this, timeoutNanos, hasDeadline);
   }
 
   private static synchronized void scheduleTimeout(
-      AsyncTimeout node, long timeoutNanos, long deadlineDurationNanos) {
+      AsyncTimeout node, long timeoutNanos, boolean hasDeadline) {
     // Start the watchdog thread and create the head node when the first timeout is scheduled.
     if (head == null) {
       head = new AsyncTimeout();
@@ -75,13 +75,17 @@ class AsyncTimeout extends Timeout {
     }
 
     long now = System.nanoTime();
-    long timeoutAtForTimeout = timeoutNanos != -1
-        ? now + timeoutNanos
-        : Long.MAX_VALUE;
-    long timeoutAtForDeadline = deadlineDurationNanos != -1
-        ? node.deadlineStart() + deadlineDurationNanos
-        : Long.MAX_VALUE;
-    node.timeoutAt = Math.min(timeoutAtForTimeout, timeoutAtForDeadline);
+    if (timeoutNanos != -1 && hasDeadline) {
+      // Compute the earliest event; either timeout or deadline. Because nanoTime can wrap around,
+      // Math.min() is undefined for absolute values, but meaningful for relative ones.
+      node.timeoutAt = now + Math.min(timeoutNanos, node.deadlineNanoTime() - now);
+    } else if (timeoutNanos != -1) {
+      node.timeoutAt = now + timeoutNanos;
+    } else if (hasDeadline) {
+      node.timeoutAt = node.deadlineNanoTime();
+    } else {
+      throw new AssertionError();
+    }
 
     // Insert the node in sorted order.
     long remainingNanos = node.remainingNanos(now);
