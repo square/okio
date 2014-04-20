@@ -159,6 +159,15 @@ public class AsyncTimeoutTest {
     assertTimedOut(timeout);
   }
 
+  @Test public void deadlineInThePast() throws Exception {
+    RecordingAsyncTimeout timeout = new RecordingAsyncTimeout();
+    timeout.deadlineNanoTime(System.nanoTime() - 1);
+    timeout.enter();
+    Thread.sleep(250);
+    assertTrue(timeout.exit());
+    assertTimedOut(timeout);
+  }
+
   /** Asserts which timeouts fired, and in which order. */
   private void assertTimedOut(Timeout... expected) {
     assertEquals(Arrays.asList(expected), timedOut);
