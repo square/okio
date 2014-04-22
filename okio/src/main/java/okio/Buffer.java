@@ -792,6 +792,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public boolean equals(Object o) {
+    if (this == o) return true;
     if (!(o instanceof Buffer)) return false;
     Buffer that = (Buffer) o;
     if (size != that.size) return false;
