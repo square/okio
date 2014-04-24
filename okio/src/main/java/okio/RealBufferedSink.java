@@ -76,6 +76,7 @@ final class RealBufferedSink implements BufferedSink {
   }
 
   @Override public long writeAll(Source source) throws IOException {
+    if (source == null) throw new IllegalArgumentException("source == null");
     long totalBytesRead = 0;
     for (long readCount; (readCount = source.read(buffer, Segment.SIZE)) != -1; ) {
       totalBytesRead += readCount;

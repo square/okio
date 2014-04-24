@@ -76,6 +76,7 @@ public class Timeout {
    */
   public Timeout timeout(long timeout, TimeUnit unit) {
     if (timeout <= 0) throw new IllegalArgumentException("timeout <= 0: " + timeout);
+    if (unit == null) throw new IllegalArgumentException("unit == null");
     this.timeoutNanos = unit.toNanos(timeout);
     return this;
   }
@@ -97,7 +98,7 @@ public class Timeout {
    * @throws IllegalStateException if no deadline is set.
    */
   public long deadlineNanoTime() {
-    if (!hasDeadline) throw new IllegalStateException();
+    if (!hasDeadline) throw new IllegalStateException("No deadline");
     return deadlineNanoTime;
   }
 
@@ -115,6 +116,7 @@ public class Timeout {
   /** Set a deadline of now plus {@code duration} time. */
   public final Timeout deadline(long duration, TimeUnit unit) {
     if (duration <= 0) throw new IllegalArgumentException("duration <= 0: " + duration);
+    if (unit == null) throw new IllegalArgumentException("unit == null");
     return deadlineNanoTime(System.nanoTime() + unit.toNanos(duration));
   }
 

@@ -22,6 +22,7 @@ public abstract class ForwardingSource implements Source {
   private final Source delegate;
 
   public ForwardingSource(Source delegate) {
+    if (delegate == null) throw new IllegalArgumentException("delegate == null");
     this.delegate = delegate;
   }
 

@@ -128,6 +128,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
    * {@code out}.
    */
   public Buffer copyTo(OutputStream out, long offset, long byteCount) throws IOException {
+    if (out == null) throw new IllegalArgumentException("out == null");
     checkOffsetAndCount(size, offset, byteCount);
     if (byteCount == 0) return this;
 
@@ -156,6 +157,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   /** Write {@code byteCount} bytes from this to {@code out}. */
   public Buffer writeTo(OutputStream out, long byteCount) throws IOException {
+    if (out == null) throw new IllegalArgumentException("out == null");
     checkOffsetAndCount(size, 0, byteCount);
 
     Segment s = head;
@@ -191,6 +193,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   private void readFrom(InputStream in, long byteCount, boolean forever) throws IOException {
+    if (in == null) throw new IllegalArgumentException("in == null");
     while (byteCount > 0 || forever) {
       Segment tail = writableSegment(1);
       int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
@@ -392,7 +395,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public String readString(long byteCount, Charset charset) {
-    checkOffsetAndCount(this.size, 0, byteCount);
+    checkOffsetAndCount(size, 0, byteCount);
+    if (charset == null) throw new IllegalArgumentException("charset == null");
     if (byteCount > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("byteCount > Integer.MAX_VALUE: " + byteCount);
     }
@@ -406,7 +410,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     String result = new String(head.data, head.pos, (int) byteCount, charset);
     head.pos += byteCount;
-    this.size -= byteCount;
+    size -= byteCount;
 
     if (head.pos == head.limit) {
       this.head = head.pop();
@@ -523,24 +527,32 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public Buffer write(ByteString byteString) {
+    if (byteString == null) throw new IllegalArgumentException("byteString == null");
     return write(byteString.data, 0, byteString.data.length);
   }
 
   @Override public Buffer writeUtf8(String string) {
+    if (string == null) throw new IllegalArgumentException("string == null");
     // TODO: inline UTF-8 encoding to save allocating a byte[]?
     return writeString(string, Util.UTF_8);
   }
 
   @Override public Buffer writeString(String string, Charset charset) {
+    if (string == null) throw new IllegalArgumentException("string == null");
+    if (charset == null) throw new IllegalArgumentException("charset == null");
     byte[] data = string.getBytes(charset);
     return write(data, 0, data.length);
   }
 
   @Override public Buffer write(byte[] source) {
+    if (source == null) throw new IllegalArgumentException("source == null");
     return write(source, 0, source.length);
   }
 
   @Override public Buffer write(byte[] source, int offset, int byteCount) {
+    if (source == null) throw new IllegalArgumentException("source == null");
+    checkOffsetAndCount(source.length, offset, byteCount);
+
     int limit = offset + byteCount;
     while (offset < limit) {
       Segment tail = writableSegment(1);
@@ -557,6 +569,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public long writeAll(Source source) throws IOException {
+    if (source == null) throw new IllegalArgumentException("source == null");
     long totalBytesRead = 0;
     for (long readCount; (readCount = source.read(this, Segment.SIZE)) != -1; ) {
       totalBytesRead += readCount;
@@ -694,9 +707,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     // an equivalent buffer [30%, 62%, 82%] and then move the head segment,
     // yielding sink [51%, 91%, 30%] and source [62%, 82%].
 
-    if (source == this) {
-      throw new IllegalArgumentException("source == this");
-    }
+    if (source == null) throw new IllegalArgumentException("source == null");
+    if (source == this) throw new IllegalArgumentException("source == this");
     checkOffsetAndCount(source.size, 0, byteCount);
 
     while (byteCount > 0) {
@@ -735,6 +747,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public long read(Buffer sink, long byteCount) {
+    if (sink == null) throw new IllegalArgumentException("sink == null");
+    if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     if (this.size == 0) return -1L;
     if (byteCount > this.size) byteCount = this.size;
     sink.write(this, byteCount);
@@ -750,6 +764,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
    * -1 if this buffer does not contain {@code b} in that range.
    */
   public long indexOf(byte b, long fromIndex) {
+    if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
+
     Segment s = head;
     if (s == null) return -1L;
     long offset = 0L;

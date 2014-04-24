@@ -45,6 +45,7 @@ public final class Okio {
    * you read a source to get an ergonomic and efficient access to data.
    */
   public static BufferedSource buffer(Source source) {
+    if (source == null) throw new IllegalArgumentException("source == null");
     return new RealBufferedSource(source);
   }
 
@@ -54,6 +55,7 @@ public final class Okio {
    * get an ergonomic and efficient access to data.
    */
   public static BufferedSink buffer(Sink sink) {
+    if (sink == null) throw new IllegalArgumentException("sink == null");
     return new RealBufferedSink(sink);
   }
 
@@ -63,6 +65,9 @@ public final class Okio {
   }
 
   private static Sink sink(final OutputStream out, final Timeout timeout) {
+    if (out == null) throw new IllegalArgumentException("out == null");
+    if (timeout == null) throw new IllegalArgumentException("timeout == null");
+
     return new Sink() {
       @Override public void write(Buffer source, long byteCount) throws IOException {
         checkOffsetAndCount(source.size, 0, byteCount);
@@ -107,6 +112,8 @@ public final class Okio {
    * write times out, the socket is asynchronously closed by a watchdog thread.
    */
   public static Sink sink(final Socket socket) throws IOException {
+    if (socket == null) throw new IllegalArgumentException("socket == null");
+
     final AsyncTimeout timeout = timeout(socket);
     final Sink sink = sink(socket.getOutputStream(), timeout);
     return new Sink() {
@@ -159,6 +166,9 @@ public final class Okio {
   }
 
   private static Source source(final InputStream in, final Timeout timeout) {
+    if (in == null) throw new IllegalArgumentException("in == null");
+    if (timeout == null) throw new IllegalArgumentException("timeout == null");
+
     return new Source() {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
@@ -188,28 +198,33 @@ public final class Okio {
 
   /** Returns a source that reads from {@code file}. */
   public static Source source(File file) throws FileNotFoundException {
+    if (file == null) throw new IllegalArgumentException("file == null");
     return source(new FileInputStream(file));
   }
 
   /** Returns a source that reads from {@code path}. */
   @IgnoreJRERequirement // Should only be invoked on Java 7+.
   public static Source source(Path path, OpenOption... options) throws IOException {
+    if (path == null) throw new IllegalArgumentException("path == null");
     return source(Files.newInputStream(path, options));
   }
 
   /** Returns a sink that writes to {@code file}. */
   public static Sink sink(File file) throws FileNotFoundException {
+    if (file == null) throw new IllegalArgumentException("file == null");
     return sink(new FileOutputStream(file));
   }
 
   /** Returns a sink that appends to {@code file}. */
   public static Sink appendingSink(File file) throws FileNotFoundException {
+    if (file == null) throw new IllegalArgumentException("file == null");
     return sink(new FileOutputStream(file, true));
   }
 
   /** Returns a sink that writes to {@code path}. */
   @IgnoreJRERequirement // Should only be invoked on Java 7+.
   public static Sink sink(Path path, OpenOption... options) throws IOException {
+    if (path == null) throw new IllegalArgumentException("path == null");
     return sink(Files.newOutputStream(path, options));
   }
 
@@ -219,6 +234,8 @@ public final class Okio {
    * read times out, the socket is asynchronously closed by a watchdog thread.
    */
   public static Source source(final Socket socket) throws IOException {
+    if (socket == null) throw new IllegalArgumentException("socket == null");
+
     final AsyncTimeout timeout = timeout(socket);
     final Source source = source(socket.getInputStream(), timeout);
     return new Source() {

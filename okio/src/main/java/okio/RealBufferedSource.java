@@ -42,6 +42,7 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public long read(Buffer sink, long byteCount) throws IOException {
+    if (sink == null) throw new IllegalArgumentException("sink == null");
     if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     if (closed) throw new IllegalStateException("closed");
 
@@ -60,6 +61,7 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public void require(long byteCount) throws IOException {
+    if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     if (closed) throw new IllegalStateException("closed");
     while (buffer.size < byteCount) {
       if (source.read(buffer, Segment.SIZE) == -1) throw new EOFException();
@@ -97,6 +99,8 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public long readAll(Sink sink) throws IOException {
+    if (sink == null) throw new IllegalArgumentException("sink == null");
+
     long totalBytesWritten = 0;
     while (source.read(buffer, Segment.SIZE) != -1) {
       long emitByteCount = buffer.completeSegmentByteCount();
@@ -123,12 +127,15 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public String readString(Charset charset) throws IOException {
+    if (charset == null) throw new IllegalArgumentException("charset == null");
+
     buffer.writeAll(source);
     return buffer.readString(charset);
   }
 
   @Override public String readString(long byteCount, Charset charset) throws IOException {
     require(byteCount);
+    if (charset == null) throw new IllegalArgumentException("charset == null");
     return buffer.readString(byteCount, charset);
   }
 
