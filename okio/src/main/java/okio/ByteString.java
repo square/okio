@@ -27,6 +27,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import static okio.Util.checkOffsetAndCount;
+
 /**
  * An immutable sequence of bytes.
  *
@@ -58,6 +60,7 @@ public final class ByteString implements Serializable {
    * Returns a new byte string containing a clone of the bytes of {@code data}.
    */
   public static ByteString of(byte... data) {
+    if (data == null) throw new IllegalArgumentException("data == null");
     return new ByteString(data.clone());
   }
 
@@ -66,6 +69,9 @@ public final class ByteString implements Serializable {
    * at {@code offset}.
    */
   public static ByteString of(byte[] data, int offset, int byteCount) {
+    if (data == null) throw new IllegalArgumentException("data == null");
+    checkOffsetAndCount(data.length, offset, byteCount);
+
     byte[] copy = new byte[byteCount];
     System.arraycopy(data, offset, copy, 0, byteCount);
     return new ByteString(copy);
@@ -73,6 +79,7 @@ public final class ByteString implements Serializable {
 
   /** Returns a new byte string containing the {@code UTF-8} bytes of {@code s}. */
   public static ByteString encodeUtf8(String s) {
+    if (s == null) throw new IllegalArgumentException("s == null");
     ByteString byteString = new ByteString(s.getBytes(Util.UTF_8));
     byteString.utf8 = s;
     return byteString;
@@ -99,6 +106,7 @@ public final class ByteString implements Serializable {
    * Returns null if {@code base64} is not a Base64-encoded sequence of bytes.
    */
   public static ByteString decodeBase64(String base64) {
+    if (base64 == null) throw new IllegalArgumentException("base64 == null");
     byte[] decoded = Base64.decode(base64);
     return decoded != null ? new ByteString(decoded) : null;
   }
@@ -116,6 +124,7 @@ public final class ByteString implements Serializable {
 
   /** Decodes the hex-encoded bytes and returns their value a byte string. */
   public static ByteString decodeHex(String hex) {
+    if (hex == null) throw new IllegalArgumentException("hex == null");
     if (hex.length() % 2 != 0) throw new IllegalArgumentException("Unexpected hex string: " + hex);
 
     byte[] result = new byte[hex.length() / 2];
@@ -141,6 +150,9 @@ public final class ByteString implements Serializable {
    *     bytes to read.
    */
   public static ByteString read(InputStream in, int byteCount) throws IOException {
+    if (in == null) throw new IllegalArgumentException("in == null");
+    if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
+
     byte[] result = new byte[byteCount];
     for (int offset = 0, read; offset < byteCount; offset += read) {
       read = in.read(result, offset, byteCount - offset);
@@ -220,6 +232,7 @@ public final class ByteString implements Serializable {
 
   /** Writes the contents of this byte string to {@code out}. */
   public void write(OutputStream out) throws IOException {
+    if (out == null) throw new IllegalArgumentException("out == null");
     out.write(data);
   }
 

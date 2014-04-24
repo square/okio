@@ -22,6 +22,7 @@ public abstract class ForwardingSink implements Sink {
   private final Sink delegate;
 
   public ForwardingSink(Sink delegate) {
+    if (delegate == null) throw new IllegalArgumentException("delegate == null");
     this.delegate = delegate;
   }
 
