@@ -451,7 +451,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     }
   }
 
-  @Override public byte[] readByteArray() throws IOException {
+  @Override public byte[] readByteArray() {
     return readByteArray(size);
   }
 
