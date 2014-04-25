@@ -3,6 +3,15 @@ Change Log
 
 ## Version 0.7.0
 
+_2014-04-24_
+
+ * Eagerly verify preconditions on public APIs.
+ * Quick return on Buffer instance equivalence.
+ * Add delegate types for Sink and Source.
+ * Small changes to the way deadlines are managed.
+ * Add append variant of Okio.sink for File.
+ * Methods to exhaust BufferedSource to byte[] and ByteString.
+
 _2014-04-18_
 
  * Don't use getters in timeout.
