@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-## Version 0.7.0
+## Version 0.8.0
 
 _2014-04-24_
 
@@ -11,6 +11,8 @@ _2014-04-24_
  * Small changes to the way deadlines are managed.
  * Add append variant of Okio.sink for File.
  * Methods to exhaust BufferedSource to byte[] and ByteString.
+
+## Version 0.7.0
 
 _2014-04-18_
 
