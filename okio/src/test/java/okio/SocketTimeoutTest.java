@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -45,7 +46,7 @@ public class SocketTimeoutTest {
     try {
       source.require(ONE_MB);
       fail();
-    } catch (IOException expected) {
+    } catch (InterruptedIOException expected) {
     }
     socket.close();
   }
@@ -70,7 +71,7 @@ public class SocketTimeoutTest {
       sink.write(new Buffer().write(data), data.length);
       sink.flush();
       fail();
-    } catch (IOException expected) {
+    } catch (InterruptedIOException expected) {
     }
     long elapsed = System.nanoTime() - start;
     socket.close();

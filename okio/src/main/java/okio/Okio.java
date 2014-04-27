@@ -113,51 +113,9 @@ public final class Okio {
    */
   public static Sink sink(final Socket socket) throws IOException {
     if (socket == null) throw new IllegalArgumentException("socket == null");
-
-    final AsyncTimeout timeout = timeout(socket);
-    final Sink sink = sink(socket.getOutputStream(), timeout);
-    return new Sink() {
-      @Override public void write(Buffer source, long byteCount) throws IOException {
-        boolean throwOnTimeout = false;
-        timeout.enter();
-        try {
-          sink.write(source, byteCount);
-          throwOnTimeout = true;
-        } finally {
-          timeout.exit(throwOnTimeout);
-        }
-      }
-
-      @Override public void flush() throws IOException {
-        boolean throwOnTimeout = false;
-        timeout.enter();
-        try {
-          sink.flush();
-          throwOnTimeout = true;
-        } finally {
-          timeout.exit(throwOnTimeout);
-        }
-      }
-
-      @Override public void close() throws IOException {
-        boolean throwOnTimeout = false;
-        timeout.enter();
-        try {
-          sink.close();
-          throwOnTimeout = true;
-        } finally {
-          timeout.exit(throwOnTimeout);
-        }
-      }
-
-      @Override public Timeout timeout() {
-        return timeout;
-      }
-
-      @Override public String toString() {
-        return "sink(" + socket + ")";
-      }
-    };
+    AsyncTimeout timeout = timeout(socket);
+    Sink sink = sink(socket.getOutputStream(), timeout);
+    return timeout.sink(sink);
   }
 
   /** Returns a source that reads from {@code in}. */
@@ -235,40 +193,9 @@ public final class Okio {
    */
   public static Source source(final Socket socket) throws IOException {
     if (socket == null) throw new IllegalArgumentException("socket == null");
-
-    final AsyncTimeout timeout = timeout(socket);
-    final Source source = source(socket.getInputStream(), timeout);
-    return new Source() {
-      @Override public long read(Buffer sink, long byteCount) throws IOException {
-        boolean throwOnTimeout = false;
-        timeout.enter();
-        try {
-          long result = source.read(sink, byteCount);
-          throwOnTimeout = true;
-          return result;
-        } finally {
-          timeout.exit(throwOnTimeout);
-        }
-      }
-
-      @Override public void close() throws IOException {
-        boolean throwOnTimeout = false;
-        try {
-          source.close();
-          throwOnTimeout = true;
-        } finally {
-          timeout.exit(throwOnTimeout);
-        }
-      }
-
-      @Override public Timeout timeout() {
-        return timeout;
-      }
-
-      @Override public String toString() {
-        return "source(" + socket + ")";
-      }
-    };
+    AsyncTimeout timeout = timeout(socket);
+    Source source = source(socket.getInputStream(), timeout);
+    return timeout.source(source);
   }
 
   private static AsyncTimeout timeout(final Socket socket) {
