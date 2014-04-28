@@ -47,6 +47,15 @@ public class AsyncTimeoutTest {
     d.timeout(1000, TimeUnit.MILLISECONDS);
   }
 
+  @Test public void zeroTimeoutIsNoTimeout() throws Exception {
+    AsyncTimeout timeout = new RecordingAsyncTimeout();
+    timeout.timeout(0, TimeUnit.MILLISECONDS);
+    timeout.enter();
+    Thread.sleep(250);
+    assertFalse(timeout.exit());
+    assertTimedOut();
+  }
+
   @Test public void singleInstanceTimedOut() throws Exception {
     a.enter();
     Thread.sleep(500);

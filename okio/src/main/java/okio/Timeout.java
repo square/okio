@@ -60,11 +60,11 @@ public class Timeout {
 
   /**
    * True if {@code deadlineNanoTime} is defined. There is no equivalent to null
-   * or -1 for {@link System#nanoTime}.
+   * or 0 for {@link System#nanoTime}.
    */
   private boolean hasDeadline;
   private long deadlineNanoTime;
-  private long timeoutNanos = -1;
+  private long timeoutNanos;
 
   public Timeout() {
   }
@@ -73,15 +73,18 @@ public class Timeout {
    * Wait at most {@code timeout} time before aborting an operation. Using a
    * per-operation timeout means that as long as forward progress is being made,
    * no sequence of operations will fail.
+   *
+   * <p>If {@code timeout == 0}, operations will run indefinitely. (Operating
+   * system timeouts may still apply.)
    */
   public Timeout timeout(long timeout, TimeUnit unit) {
-    if (timeout <= 0) throw new IllegalArgumentException("timeout <= 0: " + timeout);
+    if (timeout < 0) throw new IllegalArgumentException("timeout < 0: " + timeout);
     if (unit == null) throw new IllegalArgumentException("unit == null");
     this.timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
-  /** Returns the timeout in nanoseconds, or {@code -1} for no timeout. */
+  /** Returns the timeout in nanoseconds, or {@code 0} for no timeout. */
   public long timeoutNanos() {
     return timeoutNanos;
   }
@@ -122,7 +125,7 @@ public class Timeout {
 
   /** Clears the timeout. Operating system timeouts may still apply. */
   public Timeout clearTimeout() {
-    this.timeoutNanos = -1;
+    this.timeoutNanos = 0;
     return this;
   }
 

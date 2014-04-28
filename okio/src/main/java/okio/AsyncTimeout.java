@@ -62,7 +62,7 @@ public class AsyncTimeout extends Timeout {
     if (inQueue) throw new IllegalStateException("Unbalanced enter/exit");
     long timeoutNanos = timeoutNanos();
     boolean hasDeadline = hasDeadline();
-    if (timeoutNanos == -1 && !hasDeadline) {
+    if (timeoutNanos == 0 && !hasDeadline) {
       return; // No timeout and no deadline? Don't bother with the queue.
     }
     inQueue = true;
@@ -78,11 +78,11 @@ public class AsyncTimeout extends Timeout {
     }
 
     long now = System.nanoTime();
-    if (timeoutNanos != -1 && hasDeadline) {
+    if (timeoutNanos != 0 && hasDeadline) {
       // Compute the earliest event; either timeout or deadline. Because nanoTime can wrap around,
       // Math.min() is undefined for absolute values, but meaningful for relative ones.
       node.timeoutAt = now + Math.min(timeoutNanos, node.deadlineNanoTime() - now);
-    } else if (timeoutNanos != -1) {
+    } else if (timeoutNanos != 0) {
       node.timeoutAt = now + timeoutNanos;
     } else if (hasDeadline) {
       node.timeoutAt = node.deadlineNanoTime();
