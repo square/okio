@@ -35,7 +35,7 @@ import static java.util.zip.Deflater.DEFAULT_COMPRESSION;
  * This class does not offer any partial flush mechanism. For best performance,
  * only call {@link #flush} when application behavior requires it.
  */
-public final class GzipSink implements Sink {
+final class GzipSink implements Sink {
   /** Sink into which the GZIP format is written. */
   private final BufferedSink sink;
 
@@ -53,7 +53,7 @@ public final class GzipSink implements Sink {
   /** Checksum calculated for the compressed body. */
   private final CRC32 crc = new CRC32();
 
-  public GzipSink(Sink sink) {
+  GzipSink(Sink sink) {
     if (sink == null) throw new IllegalArgumentException("sink == null");
     this.deflater = new Deflater(DEFAULT_COMPRESSION, true /* No wrap */);
     this.sink = Okio.buffer(sink);
