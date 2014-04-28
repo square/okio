@@ -35,7 +35,7 @@ import java.io.IOException;
  * This interface is functionally equivalent to {@link java.io.InputStream}.
  *
  * <p>{@code InputStream} requires multiple layers when consumed data is
- * heterogeneous: a {@code DataOutputStream} for primitive values, a {@code
+ * heterogeneous: a {@code DataInputStream} for primitive values, a {@code
  * BufferedInputStream} for buffering, and {@code InputStreamReader} for
  * strings. This class uses {@code BufferedSource} for all of the above.
  *
