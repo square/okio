@@ -207,7 +207,7 @@ public class GzipSourceTest {
     return result;
   }
 
-  /** This source keeps track of whether its read have returned -1. */
+  /** This source keeps track of whether its read has returned -1. */
   static class ExhaustableSource implements Source {
     private final Source source;
     private boolean exhausted;
