@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 0.9.0
+
+_2014-05-03_
+
+ * Use 0 as a sentinel for no timeout.
+ * Make AsyncTimeout public.
+ * Remove checked exception from Buffer.readByteArray.
+
 ## Version 0.8.0
 
 _2014-04-24_
