@@ -28,6 +28,9 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
+
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import static okio.Util.checkOffsetAndCount;
@@ -208,5 +211,58 @@ public final class Okio {
         }
       }
     };
+  }
+
+  /**
+   * Returns a source that uses <a href="http://tools.ietf.org/html/rfc1951">DEFLATE</a>
+   * to decompress data read from the given {@code source}.
+   */
+  public static Source inflate(Source source, Inflater inflater) {
+    return new InflaterSource(source, inflater);
+  }
+
+  /**
+   * Returns a sink that uses <a href="http://tools.ietf.org/html/rfc1951">DEFLATE</a>
+   * to compress written data to the given {@code sink}.
+   *
+   * <h3>Sync flush</h3>
+   * Aggressive flushing of the returned sink may result in reduced compression.
+   * Each call to {@link Sink#flush flush} immediately compresses all
+   * currently-buffered data; this early compression may be less effective than
+   * compression performed without flushing.
+   *
+   * <p>This is equivalent to using {@link Deflater} with the sync flush option.
+   * The returned sink does not offer any partial flush mechanism. For best
+   * performance, only call {@link Sink#flush flush} when application behavior
+   * requires it.
+   */
+  public static Sink deflate(Sink sink, Deflater deflater) {
+    return new DeflaterSink(sink, deflater);
+  }
+
+  /**
+   * Returns a source that uses <a href="http://www.ietf.org/rfc/rfc1952.txt">GZIP</a>
+   * to decompress data read from the given {@code source}.
+   */
+  public static Source gzip(Source source) {
+    return new GzipSource(source);
+  }
+
+  /**
+   * Returns a sink that uses <a href="http://www.ietf.org/rfc/rfc1952.txt">GZIP</a>
+   * to compress written data to the given {@code sink}.
+   *
+   * <h3>Sync flush</h3>
+   * Aggressive flushing of this stream may result in reduced compression. Each
+   * call to {@link Sink#flush flush} immediately compresses all currently-buffered
+   * data; this early compression may be less effective than compression performed
+   * without flushing.
+   *
+   * <p>This is equivalent to using {@link Deflater} with the sync flush option.
+   * This class does not offer any partial flush mechanism. For best performance,
+   * only call {@link Sink#flush flush} when application behavior requires it.
+   */
+  public static Sink gzip(Sink sink) {
+    return new GzipSink(sink);
   }
 }

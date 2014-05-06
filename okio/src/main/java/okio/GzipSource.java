@@ -24,7 +24,7 @@ import java.util.zip.Inflater;
  * A source that uses <a href="http://www.ietf.org/rfc/rfc1952.txt">GZIP</a> to
  * decompress data read from another source.
  */
-public final class GzipSource implements Source {
+final class GzipSource implements Source {
   private static final byte FHCRC = 1;
   private static final byte FEXTRA = 2;
   private static final byte FNAME = 3;
@@ -57,7 +57,7 @@ public final class GzipSource implements Source {
   /** Checksum used to check both the GZIP header and decompressed body. */
   private final CRC32 crc = new CRC32();
 
-  public GzipSource(Source source) {
+  GzipSource(Source source) {
     if (source == null) throw new IllegalArgumentException("source == null");
     this.inflater = new Inflater(true);
     this.source = Okio.buffer(source);

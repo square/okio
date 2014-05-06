@@ -35,12 +35,12 @@ import static okio.Util.checkOffsetAndCount;
  * This class does not offer any partial flush mechanism. For best performance,
  * only call {@link #flush} when application behavior requires it.
  */
-public final class DeflaterSink implements Sink {
+final class DeflaterSink implements Sink {
   private final BufferedSink sink;
   private final Deflater deflater;
   private boolean closed;
 
-  public DeflaterSink(Sink sink, Deflater deflater) {
+  DeflaterSink(Sink sink, Deflater deflater) {
     this(Okio.buffer(sink), deflater);
   }
 
