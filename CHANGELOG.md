@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## Version 1.0.0
+
+_2014-05-23_
+
+ * Bumped release version. No other changes!
+
 ## Version 0.9.0
 
 _2014-05-03_
