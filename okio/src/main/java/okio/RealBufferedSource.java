@@ -97,10 +97,6 @@ final class RealBufferedSource implements BufferedSource {
     return read(sink, 0, sink.length);
   }
 
-  @Override public int read(byte[] sink, long byteCount) throws IOException {
-    return read(sink, 0, byteCount);
-  }
-
   @Override public int read(byte[] sink, int offset, long byteCount) throws IOException {
     checkOffsetAndCount(sink.length, offset, byteCount);
 

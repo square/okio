@@ -299,17 +299,6 @@ public final class RealBufferedSourceTest {
     assertByteArraysEquals(expected, sink);
   }
 
-  @Test public void readIntoByteArrayCount() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("abcd");
-    BufferedSource source = Okio.buffer((Source) buffer);
-
-    byte[] sink = new byte[5];
-    int read = source.read(sink, 3);
-    assertEquals(3, read);
-    byte[] expected = { 'a', 'b', 'c', 0, 0 };
-    assertByteArraysEquals(expected, sink);
-  }
-
   @Test public void readIntoByteArrayOffsetAndCount() throws IOException {
     Buffer buffer = new Buffer().writeUtf8("abcd");
     BufferedSource source = Okio.buffer((Source) buffer);
