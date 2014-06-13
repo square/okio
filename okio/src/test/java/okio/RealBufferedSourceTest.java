@@ -276,4 +276,48 @@ public final class RealBufferedSourceTest {
     assertEquals("abc", source.readByteString(3).utf8());
     assertEquals("d", source.readUtf8(1));
   }
+
+  @Test public void readIntoByteArray() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd");
+    BufferedSource source = Okio.buffer((Source) buffer);
+
+    byte[] sink = new byte[3];
+    int read = source.read(sink);
+    assertEquals(3, read);
+    byte[] expected = { 'a', 'b', 'c' };
+    assertByteArraysEquals(expected, sink);
+  }
+
+  @Test public void readIntoByteArrayNotEnough() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd");
+    BufferedSource source = Okio.buffer((Source) buffer);
+
+    byte[] sink = new byte[5];
+    int read = source.read(sink);
+    assertEquals(4, read);
+    byte[] expected = { 'a', 'b', 'c', 'd', 0 };
+    assertByteArraysEquals(expected, sink);
+  }
+
+  @Test public void readIntoByteArrayCount() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd");
+    BufferedSource source = Okio.buffer((Source) buffer);
+
+    byte[] sink = new byte[5];
+    int read = source.read(sink, 3);
+    assertEquals(3, read);
+    byte[] expected = { 'a', 'b', 'c', 0, 0 };
+    assertByteArraysEquals(expected, sink);
+  }
+
+  @Test public void readIntoByteArrayOffsetAndCount() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("abcd");
+    BufferedSource source = Okio.buffer((Source) buffer);
+
+    byte[] sink = new byte[7];
+    int read = source.read(sink, 2, 3);
+    assertEquals(3, read);
+    byte[] expected = { 0, 0, 'a', 'b', 'c', 0, 0 };
+    assertByteArraysEquals(expected, sink);
+  }
 }

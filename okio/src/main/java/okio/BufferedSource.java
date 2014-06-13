@@ -82,6 +82,24 @@ public interface BufferedSource extends Source {
   byte[] readByteArray(long byteCount) throws IOException;
 
   /**
+   * Removes up to {@code sink.length} bytes from this and copies them into {@code sink}.
+   * Returns the number of bytes read, or -1 if this source is exhausted.
+   */
+  int read(byte[] sink) throws IOException;
+
+  /**
+   * Removes up to {@code byteCount} bytes from this and copies them into {@code sink}.
+   * Returns the number of bytes read, or -1 if this source is exhausted.
+   */
+  int read(byte[] sink, long byteCount) throws IOException;
+
+  /**
+   * Removes up to {@code byteCount} bytes from this and copies them into {@code sink} at
+   * {@code offset}. Returns the number of bytes read, or -1 if this source is exhausted.
+   */
+  int read(byte[] sink, int offset, long byteCount) throws IOException;
+
+  /**
    * Removes exactly {@code byteCount} bytes from this and appends them to
    * {@code sink}. Throws an {@link java.io.EOFException} if the requested
    * number of bytes cannot be read.

@@ -482,11 +482,20 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return result;
   }
 
-  /** Like {@link InputStream#read}. */
-  int read(byte[] sink, int offset, int byteCount) {
+  @Override public int read(byte[] sink) {
+    return read(sink, 0, sink.length);
+  }
+
+  @Override public int read(byte[] sink, long byteCount) {
+    return read(sink, 0, byteCount);
+  }
+
+  @Override public int read(byte[] sink, int offset, long byteCount) {
+    checkOffsetAndCount(sink.length, offset, byteCount);
+
     Segment s = this.head;
     if (s == null) return -1;
-    int toCopy = Math.min(byteCount, s.limit - s.pos);
+    int toCopy = Math.min((int) byteCount, s.limit - s.pos);
     System.arraycopy(s.data, s.pos, sink, offset, toCopy);
 
     s.pos += toCopy;

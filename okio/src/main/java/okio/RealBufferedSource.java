@@ -93,6 +93,26 @@ final class RealBufferedSource implements BufferedSource {
     return buffer.readByteArray(byteCount);
   }
 
+  @Override public int read(byte[] sink) throws IOException {
+    return read(sink, 0, sink.length);
+  }
+
+  @Override public int read(byte[] sink, long byteCount) throws IOException {
+    return read(sink, 0, byteCount);
+  }
+
+  @Override public int read(byte[] sink, int offset, long byteCount) throws IOException {
+    checkOffsetAndCount(sink.length, offset, byteCount);
+
+    if (buffer.size == 0) {
+      long read = source.read(buffer, Segment.SIZE);
+      if (read == -1) return -1;
+    }
+
+    long toRead = Math.min(byteCount, buffer.size);
+    return buffer.read(sink, offset, toRead);
+  }
+
   @Override public void readFully(Buffer sink, long byteCount) throws IOException {
     require(byteCount);
     buffer.readFully(sink, byteCount);
