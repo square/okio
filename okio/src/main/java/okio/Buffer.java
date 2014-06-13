@@ -486,10 +486,6 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return read(sink, 0, sink.length);
   }
 
-  @Override public int read(byte[] sink, long byteCount) {
-    return read(sink, 0, byteCount);
-  }
-
   @Override public int read(byte[] sink, int offset, long byteCount) {
     checkOffsetAndCount(sink.length, offset, byteCount);
 
