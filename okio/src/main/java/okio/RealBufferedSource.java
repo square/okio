@@ -97,7 +97,7 @@ final class RealBufferedSource implements BufferedSource {
     return read(sink, 0, sink.length);
   }
 
-  @Override public int read(byte[] sink, int offset, long byteCount) throws IOException {
+  @Override public int read(byte[] sink, int offset, int byteCount) throws IOException {
     checkOffsetAndCount(sink.length, offset, byteCount);
 
     if (buffer.size == 0) {
@@ -105,7 +105,7 @@ final class RealBufferedSource implements BufferedSource {
       if (read == -1) return -1;
     }
 
-    long toRead = Math.min(byteCount, buffer.size);
+    int toRead = (int) Math.min(byteCount, buffer.size);
     return buffer.read(sink, offset, toRead);
   }
 
