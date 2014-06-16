@@ -486,7 +486,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return read(sink, 0, sink.length);
   }
 
-  @Override public int read(byte[] sink, int offset, long byteCount) {
+  @Override public int read(byte[] sink, int offset, int byteCount) {
     checkOffsetAndCount(sink.length, offset, byteCount);
 
     Segment s = this.head;
