@@ -373,6 +373,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public void readFully(Buffer sink, long byteCount) throws IOException {
+    if (size() < byteCount) {
+      sink.write(this, size());
+      throw new EOFException();
+    }
     sink.write(this, byteCount);
   }
 
