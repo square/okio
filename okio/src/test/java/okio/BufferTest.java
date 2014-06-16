@@ -17,6 +17,7 @@ package okio;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -885,6 +886,17 @@ public final class BufferTest {
     assertEquals("abc", buffer.readByteString(3).utf8());
     assertEquals("d", buffer.readUtf8(1));
     assertEquals(Segment.SIZE, buffer.size());
+  }
+
+  @Test public void readFullyTooShortThrows() throws IOException {
+    Buffer source = new Buffer().writeUtf8("Hi");
+    Buffer sink = new Buffer();
+    try {
+      source.readFully(sink, 5);
+      fail();
+    } catch (EOFException ignored) {
+    }
+    assertEquals("Hi", sink.readUtf8());
   }
 
   /**
