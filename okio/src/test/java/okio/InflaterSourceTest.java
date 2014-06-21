@@ -78,7 +78,7 @@ public final class InflaterSourceTest {
     return new Buffer().write(ByteString.decodeBase64(s));
   }
 
-  private String readUtf8(Buffer buffer) {
+  private String readUtf8(Buffer buffer) throws IOException {
     return buffer.readUtf8(buffer.size());
   }
 

@@ -368,7 +368,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return new ByteString(readByteArray());
   }
 
-  @Override public ByteString readByteString(long byteCount) {
+  @Override public ByteString readByteString(long byteCount) throws IOException {
     return new ByteString(readByteArray(byteCount));
   }
 
@@ -390,7 +390,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return readString(size, Util.UTF_8);
   }
 
-  @Override public String readUtf8(long byteCount) {
+  @Override public String readUtf8(long byteCount) throws IOException {
     return readString(byteCount, Util.UTF_8);
   }
 
@@ -398,7 +398,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return readString(size, charset);
   }
 
-  @Override public String readString(long byteCount, Charset charset) {
+  @Override public String readString(long byteCount, Charset charset) throws IOException {
     checkOffsetAndCount(size, 0, byteCount);
     if (charset == null) throw new IllegalArgumentException("charset == null");
     if (byteCount > Integer.MAX_VALUE) {
@@ -440,7 +440,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return readUtf8Line(newline);
   }
 
-  String readUtf8Line(long newline) {
+  String readUtf8Line(long newline) throws IOException {
     if (newline > 0 && getByte(newline - 1) == '\r') {
       // Read everything until '\r\n', then skip the '\r\n'.
       String result = readUtf8((newline - 1));
@@ -455,34 +455,18 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     }
   }
 
-  @Override public byte[] readByteArray() {
+  @Override public byte[] readByteArray() throws IOException {
     return readByteArray(size);
   }
 
-  @Override public byte[] readByteArray(long byteCount) {
+  @Override public byte[] readByteArray(long byteCount) throws IOException {
     checkOffsetAndCount(this.size, 0, byteCount);
     if (byteCount > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("byteCount > Integer.MAX_VALUE: " + byteCount);
     }
 
-    int offset = 0;
     byte[] result = new byte[(int) byteCount];
-
-    while (offset < byteCount) {
-      int toCopy = (int) Math.min(byteCount - offset, head.limit - head.pos);
-      System.arraycopy(head.data, head.pos, result, offset, toCopy);
-
-      offset += toCopy;
-      head.pos += toCopy;
-
-      if (head.pos == head.limit) {
-        Segment toRecycle = head;
-        head = toRecycle.pop();
-        SegmentPool.INSTANCE.recycle(toRecycle);
-      }
-    }
-
-    this.size -= byteCount;
+    readFully(result);
     return result;
   }
 
@@ -490,12 +474,21 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return read(sink, 0, sink.length);
   }
 
+  @Override public void readFully(byte[] sink) throws IOException {
+    int offset = 0;
+    while (offset < sink.length) {
+      int read = read(sink, offset, sink.length - offset);
+      if (read == -1) throw new EOFException();
+      offset += read;
+    }
+  }
+
   @Override public int read(byte[] sink, int offset, int byteCount) {
     checkOffsetAndCount(sink.length, offset, byteCount);
 
     Segment s = this.head;
     if (s == null) return -1;
-    int toCopy = Math.min((int) byteCount, s.limit - s.pos);
+    int toCopy = Math.min(byteCount, s.limit - s.pos);
     System.arraycopy(s.data, s.pos, sink, offset, toCopy);
 
     s.pos += toCopy;
@@ -808,7 +801,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   /** For testing. This returns the sizes of the segments in this buffer. */
   List<Integer> segmentSizes() {
     if (head == null) return Collections.emptyList();
-    List<Integer> result = new ArrayList<Integer>();
+    List<Integer> result = new ArrayList<>();
     result.add(head.limit - head.pos);
     for (Segment s = head.next; s != head; s = s.next) {
       result.add(s.limit - s.pos);
@@ -868,8 +861,12 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     }
 
     if (size <= 16) {
-      ByteString data = clone().readByteString(size);
-      return String.format("Buffer[size=%s data=%s]", size, data.hex());
+      try {
+        ByteString data = clone().readByteString(size);
+        return String.format("Buffer[size=%s data=%s]", size, data.hex());
+      } catch (IOException e) {
+        throw new AssertionError(e);
+      }
     }
 
     try {

@@ -201,7 +201,7 @@ public final class BufferTest {
         Segment.SIZE, Segment.SIZE, Segment.SIZE, 1), segmentSizes);
   }
 
-  private List<Integer> moveBytesBetweenBuffers(String... contents) {
+  private List<Integer> moveBytesBetweenBuffers(String... contents) throws IOException {
     StringBuilder expected = new StringBuilder();
     Buffer buffer = new Buffer();
     for (String s : contents) {
@@ -674,7 +674,7 @@ public final class BufferTest {
     assertEquals(0, buffer.size());
   }
 
-  @Test public void testWritePrefixToEmptyBuffer() {
+  @Test public void testWritePrefixToEmptyBuffer() throws IOException {
     Buffer sink = new Buffer();
     Buffer source = new Buffer();
     source.writeUtf8("abcd");
@@ -897,6 +897,24 @@ public final class BufferTest {
     } catch (EOFException ignored) {
     }
     assertEquals("Hi", sink.readUtf8());
+  }
+
+  @Test public void readFullyByteArray() throws IOException {
+    Buffer source = new Buffer().writeUtf8("Hello").writeUtf8(repeat('e', Segment.SIZE));
+    byte[] expected = source.clone().readByteArray();
+    byte[] sink = new byte[Segment.SIZE + 5];
+    source.readFully(sink);
+    assertByteArraysEquals(expected, sink);
+  }
+
+  @Test public void readFullyByteArrayTooShortThrows() throws IOException {
+    Buffer source = new Buffer().writeUtf8("Hello");
+    byte[] sink = new byte[6];
+    try {
+      source.readFully(sink);
+      fail();
+    } catch (EOFException ignored) {
+    }
   }
 
   /**
