@@ -88,6 +88,12 @@ public interface BufferedSource extends Source {
   int read(byte[] sink) throws IOException;
 
   /**
+   * Removes exactly {@code sink.length} bytes from this and copies them into {@code sink}.
+   * Throws an {@link java.io.EOFException} if the requested number of bytes cannot be read.
+   */
+  void readFully(byte[] sink) throws IOException;
+
+  /**
    * Removes up to {@code byteCount} bytes from this and copies them into {@code sink} at
    * {@code offset}. Returns the number of bytes read, or -1 if this source is exhausted.
    */

@@ -309,4 +309,24 @@ public final class RealBufferedSourceTest {
     byte[] expected = { 0, 0, 'a', 'b', 'c', 0, 0 };
     assertByteArraysEquals(expected, sink);
   }
+
+  @Test public void readFullyByteArray() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("Hello").writeUtf8(repeat('e', Segment.SIZE));
+    BufferedSource source = Okio.buffer((Source) buffer);
+    byte[] expected = buffer.clone().readByteArray();
+    byte[] sink = new byte[Segment.SIZE + 5];
+    source.readFully(sink);
+    assertByteArraysEquals(expected, sink);
+  }
+
+  @Test public void readFullyByteArrayTooShortThrows() throws IOException {
+    Buffer buffer = new Buffer().writeUtf8("Hello");
+    BufferedSource source = Okio.buffer((Source) buffer);
+    byte[] sink = new byte[6];
+    try {
+      source.readFully(sink);
+      fail();
+    } catch (EOFException ignored) {
+    }
+  }
 }
