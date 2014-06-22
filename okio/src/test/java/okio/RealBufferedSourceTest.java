@@ -18,14 +18,11 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import org.junit.Test;
 
-import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class RealBufferedSourceTest {
@@ -124,18 +121,6 @@ public final class RealBufferedSourceTest {
     assertEquals(Segment.SIZE, bufferedSource.buffer().size());
   }
 
-  @Test public void skipInsufficientData() throws Exception {
-    Buffer source = new Buffer();
-    source.writeUtf8("a");
-
-    BufferedSource bufferedSource = new RealBufferedSource(source);
-    try {
-      bufferedSource.skip(2);
-      fail();
-    } catch (EOFException expected) {
-    }
-  }
-
   @Test public void skipReadsOneSegmentAtATime() throws Exception {
     Buffer source = new Buffer();
     source.writeUtf8(repeat('a', Segment.SIZE));
@@ -203,30 +188,6 @@ public final class RealBufferedSourceTest {
     }
   }
 
-  @Test public void readAll() throws IOException {
-    Buffer source = new Buffer();
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.buffer().writeUtf8("abc");
-    source.writeUtf8("def");
-
-    Buffer sink = new Buffer();
-    assertEquals(6, bufferedSource.readAll(sink));
-    assertEquals("abcdef", sink.readUtf8(6));
-    assertTrue(source.exhausted());
-    assertTrue(bufferedSource.exhausted());
-  }
-
-  @Test public void readAllExhausted() throws IOException {
-    Buffer source = new Buffer();
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-
-    MockSink mockSink = new MockSink();
-    assertEquals(0, bufferedSource.readAll(mockSink));
-    assertTrue(source.exhausted());
-    assertTrue(bufferedSource.exhausted());
-    mockSink.assertLog();
-  }
-
   /**
    * We don't want readAll to buffer an unbounded amount of data. Instead it
    * should buffer a segment, write it, and repeat.
@@ -248,85 +209,5 @@ public final class RealBufferedSourceTest {
         "write(" + write1 + ", " + write1.size() + ")",
         "write(" + write2 + ", " + write2.size() + ")",
         "write(" + write3 + ", " + write3.size() + ")");
-  }
-
-  @Test public void readByteArray() throws IOException {
-    String string = "abcd" + repeat('e', Segment.SIZE);
-    Buffer buffer = new Buffer().writeUtf8(string);
-    BufferedSource source = Okio.buffer((Source) buffer);
-    assertByteArraysEquals(string.getBytes(UTF_8), source.readByteArray());
-  }
-
-  @Test public void readByteArrayPartial() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("abcd");
-    BufferedSource source = Okio.buffer((Source) buffer);
-    assertEquals("[97, 98, 99]", Arrays.toString(source.readByteArray(3)));
-    assertEquals("d", source.readUtf8(1));
-  }
-
-  @Test public void readByteString() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
-    BufferedSource source = Okio.buffer((Source) buffer);
-    assertEquals("abcd" + repeat('e', Segment.SIZE), source.readByteString().utf8());
-  }
-
-  @Test public void readByteStringPartial() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
-    BufferedSource source = Okio.buffer((Source) buffer);
-    assertEquals("abc", source.readByteString(3).utf8());
-    assertEquals("d", source.readUtf8(1));
-  }
-
-  @Test public void readIntoByteArray() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("abcd");
-    BufferedSource source = Okio.buffer((Source) buffer);
-
-    byte[] sink = new byte[3];
-    int read = source.read(sink);
-    assertEquals(3, read);
-    byte[] expected = { 'a', 'b', 'c' };
-    assertByteArraysEquals(expected, sink);
-  }
-
-  @Test public void readIntoByteArrayNotEnough() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("abcd");
-    BufferedSource source = Okio.buffer((Source) buffer);
-
-    byte[] sink = new byte[5];
-    int read = source.read(sink);
-    assertEquals(4, read);
-    byte[] expected = { 'a', 'b', 'c', 'd', 0 };
-    assertByteArraysEquals(expected, sink);
-  }
-
-  @Test public void readIntoByteArrayOffsetAndCount() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("abcd");
-    BufferedSource source = Okio.buffer((Source) buffer);
-
-    byte[] sink = new byte[7];
-    int read = source.read(sink, 2, 3);
-    assertEquals(3, read);
-    byte[] expected = { 0, 0, 'a', 'b', 'c', 0, 0 };
-    assertByteArraysEquals(expected, sink);
-  }
-
-  @Test public void readFullyByteArray() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("Hello").writeUtf8(repeat('e', Segment.SIZE));
-    BufferedSource source = Okio.buffer((Source) buffer);
-    byte[] expected = buffer.clone().readByteArray();
-    byte[] sink = new byte[Segment.SIZE + 5];
-    source.readFully(sink);
-    assertByteArraysEquals(expected, sink);
-  }
-
-  @Test public void readFullyByteArrayTooShortThrows() throws IOException {
-    Buffer buffer = new Buffer().writeUtf8("Hello");
-    BufferedSource source = Okio.buffer((Source) buffer);
-    byte[] sink = new byte[6];
-    try {
-      source.readFully(sink);
-      fail();
-    } catch (EOFException ignored) {
-    }
   }
 }

@@ -98,7 +98,18 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public void readFully(byte[] sink) throws IOException {
-    require(sink.length);
+    try {
+      require(sink.length);
+    } catch (EOFException e) {
+      // The underlying source is exhausted. Copy the bytes we got before rethrowing.
+      int offset = 0;
+      while (buffer.size > 0) {
+        int read = buffer.read(sink, offset, (int) buffer.size - offset);
+        if (read == -1) throw new AssertionError();
+        offset += read;
+      }
+      throw e;
+    }
     buffer.readFully(sink);
   }
 
@@ -115,7 +126,13 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public void readFully(Buffer sink, long byteCount) throws IOException {
-    require(byteCount);
+    try {
+      require(byteCount);
+    } catch (EOFException e) {
+      // The underlying source is exhausted. Copy the bytes we got before rethrowing.
+      sink.writeAll(buffer);
+      throw e;
+    }
     buffer.readFully(sink, byteCount);
   }
 

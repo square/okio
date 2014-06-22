@@ -55,13 +55,6 @@ public final class RealBufferedSinkTest {
     assertEquals(0, bufferedSink.buffer().size());
   }
 
-  @Test public void bufferedSinkEmitZero() throws IOException {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = new RealBufferedSink(sink);
-    bufferedSink.writeUtf8("");
-    assertEquals(0, sink.size());
-  }
-
   @Test public void bufferedSinkEmitMultipleSegments() throws IOException {
     Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
@@ -107,14 +100,6 @@ public final class RealBufferedSinkTest {
     BufferedSink bufferedSink = new RealBufferedSink(sink);
     bufferedSink.writeUtf8(repeat('a', Segment.SIZE * 3 - 1));
     assertEquals(Segment.SIZE * 2, sink.size());
-  }
-
-  @Test public void closeEmitsBufferedBytes() throws IOException {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = new RealBufferedSink(sink);
-    bufferedSink.writeByte('a');
-    bufferedSink.close();
-    assertEquals('a', sink.readByte());
   }
 
   @Test public void closeWithExceptionWhenWriting() throws IOException {
