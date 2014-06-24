@@ -158,7 +158,7 @@ public final class BufferTest {
     for (String s : contents) {
       Buffer source = new Buffer();
       source.writeUtf8(s);
-      buffer.write(source, source.size());
+      buffer.writeAll(source);
       expected.append(s);
     }
     List<Integer> segmentSizes = buffer.segmentSizes();
@@ -245,7 +245,7 @@ public final class BufferTest {
     buffer.copyTo(out);
     String outString = new String(out.toByteArray(), UTF_8);
     assertEquals("hello, world!", outString);
-    assertEquals("hello, world!", buffer.readUtf8(buffer.size()));
+    assertEquals("hello, world!", buffer.readUtf8());
   }
 
   @Test public void writeToSpanningSegments() throws Exception {
@@ -275,7 +275,7 @@ public final class BufferTest {
     InputStream in = new ByteArrayInputStream("hello, world!".getBytes(UTF_8));
     Buffer buffer = new Buffer();
     buffer.readFrom(in);
-    String out = buffer.readUtf8(buffer.size());
+    String out = buffer.readUtf8();
     assertEquals("hello, world!", out);
   }
 
@@ -283,7 +283,7 @@ public final class BufferTest {
     InputStream in = new ByteArrayInputStream("hello, world!".getBytes(UTF_8));
     Buffer buffer = new Buffer().writeUtf8(repeat('a', Segment.SIZE - 10));
     buffer.readFrom(in);
-    String out = buffer.readUtf8(buffer.size());
+    String out = buffer.readUtf8();
     assertEquals(repeat('a', Segment.SIZE - 10) + "hello, world!", out);
   }
 
@@ -291,7 +291,7 @@ public final class BufferTest {
     InputStream in = new ByteArrayInputStream("hello, world!".getBytes(UTF_8));
     Buffer buffer = new Buffer();
     buffer.readFrom(in, 10);
-    String out = buffer.readUtf8(buffer.size());
+    String out = buffer.readUtf8();
     assertEquals("hello, wor", out);
   }
 
@@ -450,8 +450,8 @@ public final class BufferTest {
     Buffer source = new Buffer().writeUtf8(repeat('a', 10000));
     Buffer sink = new Buffer();
     source.readFully(sink, 9999);
-    assertEquals(repeat('a', 9999), sink.readUtf8(sink.size()));
-    assertEquals("a", source.readUtf8(source.size()));
+    assertEquals(repeat('a', 9999), sink.readUtf8());
+    assertEquals("a", source.readUtf8());
   }
 
   @Test public void bufferInputStreamByteByByte() throws Exception {
@@ -511,7 +511,7 @@ public final class BufferTest {
 
     assertEquals(Segment.SIZE * 3, sink.writeAll(source));
     assertEquals(0, source.size());
-    assertEquals(TestUtil.repeat('a', Segment.SIZE * 3), sink.readUtf8(sink.size()));
+    assertEquals(TestUtil.repeat('a', Segment.SIZE * 3), sink.readUtf8());
   }
 
   /**

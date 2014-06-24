@@ -31,7 +31,7 @@ public final class InflaterSourceTest {
     Buffer deflated = decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tK"
         + "tYDAF6CD5s=");
     Buffer inflated = inflate(deflated);
-    assertEquals("God help us, we're in the hands of engineers.", readUtf8(inflated));
+    assertEquals("God help us, we're in the hands of engineers.", inflated.readUtf8());
   }
 
   @Test public void inflateTruncated() throws Exception {
@@ -64,22 +64,18 @@ public final class InflaterSourceTest {
         + "tFeWvE=\n");
     String original = repeat('a', 1024 * 1024);
     Buffer inflated = inflate(deflated);
-    assertEquals(original, readUtf8(inflated));
+    assertEquals(original, inflated.readUtf8());
   }
 
   @Test public void inflatePoorlyCompressed() throws Exception {
     ByteString original = randomBytes(1024 * 1024);
     Buffer deflated = deflate(original);
     Buffer inflated = inflate(deflated);
-    assertEquals(original, inflated.readByteString(inflated.size()));
+    assertEquals(original, inflated.readByteString());
   }
 
   private Buffer decodeBase64(String s) {
     return new Buffer().write(ByteString.decodeBase64(s));
-  }
-
-  private String readUtf8(Buffer buffer) throws IOException {
-    return buffer.readUtf8(buffer.size());
   }
 
   /** Use DeflaterOutputStream to deflate source. */

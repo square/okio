@@ -37,7 +37,7 @@ public final class DeflaterSinkTest {
     deflaterSink.write(data, data.size());
     deflaterSink.close();
     Buffer inflated = inflate(sink);
-    assertEquals(original, inflated.readUtf8(inflated.size()));
+    assertEquals(original, inflated.readUtf8());
   }
 
   @Test public void deflateWithSyncFlush() throws Exception {
@@ -49,7 +49,7 @@ public final class DeflaterSinkTest {
     deflaterSink.write(data, data.size());
     deflaterSink.flush();
     Buffer inflated = inflate(sink);
-    assertEquals(original, inflated.readUtf8(inflated.size()));
+    assertEquals(original, inflated.readUtf8());
   }
 
   @Test public void deflateWellCompressed() throws IOException {
@@ -61,7 +61,7 @@ public final class DeflaterSinkTest {
     deflaterSink.write(data, data.size());
     deflaterSink.close();
     Buffer inflated = inflate(sink);
-    assertEquals(original, inflated.readUtf8(inflated.size()));
+    assertEquals(original, inflated.readUtf8());
   }
 
   @Test public void deflatePoorlyCompressed() throws IOException {
@@ -73,7 +73,7 @@ public final class DeflaterSinkTest {
     deflaterSink.write(data, data.size());
     deflaterSink.close();
     Buffer inflated = inflate(sink);
-    assertEquals(original, inflated.readByteString(inflated.size()));
+    assertEquals(original, inflated.readByteString());
   }
 
   @Test public void multipleSegmentsWithoutCompression() throws IOException {

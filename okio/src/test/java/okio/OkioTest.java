@@ -109,11 +109,11 @@ public final class OkioTest {
 
     // Source: b...bc. Sink: b...b.
     assertEquals(Segment.SIZE, source.read(sink, 20000));
-    assertEquals(repeat('b', Segment.SIZE), sink.readUtf8(sink.size()));
+    assertEquals(repeat('b', Segment.SIZE), sink.readUtf8());
 
     // Source: b...bc. Sink: b...bc.
     assertEquals(Segment.SIZE - 1, source.read(sink, 20000));
-    assertEquals(repeat('b', Segment.SIZE - 2) + "c", sink.readUtf8(sink.size()));
+    assertEquals(repeat('b', Segment.SIZE - 2) + "c", sink.readUtf8());
 
     // Source and sink are empty.
     assertEquals(-1, source.read(sink, 1));
