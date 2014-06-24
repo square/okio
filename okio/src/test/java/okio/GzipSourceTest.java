@@ -98,7 +98,7 @@ public class GzipSourceTest {
 
   private void assertGzipped(Buffer gzipped) throws IOException {
     Buffer gunzipped = gunzip(gzipped);
-    assertEquals("It's a UNIX system! I know this!", gunzipped.readUtf8(gunzipped.size()));
+    assertEquals("It's a UNIX system! I know this!", gunzipped.readUtf8());
   }
 
   /**

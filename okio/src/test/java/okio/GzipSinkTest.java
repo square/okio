@@ -17,7 +17,7 @@ public class GzipSinkTest {
     gzipSink.write(data, data.size());
     gzipSink.close();
     Buffer inflated = gunzip(sink);
-    assertEquals(original, inflated.readUtf8(inflated.size()));
+    assertEquals(original, inflated.readUtf8());
   }
 
   @Test public void closeWithExceptionWhenWritingAndClosing() throws IOException {
