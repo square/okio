@@ -116,13 +116,16 @@ Download
 --------
 
 Download [the latest JAR][2] or grab via Maven:
-
 ```xml
 <dependency>
     <groupId>com.squareup.okio</groupId>
     <artifactId>okio</artifactId>
-    <version>(insert latest version)</version>
+    <version>1.0.1</version>
 </dependency>
+```
+or Gradle:
+```groovy
+compile 'com.squareup.okio:okio:1.0.1'
 ```
 
 

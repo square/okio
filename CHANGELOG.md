@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 1.0.1
+
+_2014-08-08_
+
+ * Added `read(byte[])`, `read(byte[], offset, byteCount)`,  and
+   `void readFully(byte[])` to `BufferedSource`.
+ * Refined declared checked exceptions on `Buffer` methods.
+
+
 ## Version 1.0.0
 
 _2014-05-23_
