@@ -61,11 +61,16 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public void require(long byteCount) throws IOException {
+    if (!request(byteCount)) throw new EOFException();
+  }
+
+  @Override public boolean request(long byteCount) throws IOException {
     if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     if (closed) throw new IllegalStateException("closed");
     while (buffer.size < byteCount) {
-      if (source.read(buffer, Segment.SIZE) == -1) throw new EOFException();
+      if (source.read(buffer, Segment.SIZE) == -1) return false;
     }
+    return true;
   }
 
   @Override public byte readByte() throws IOException {
@@ -236,11 +241,34 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public long indexOf(byte b) throws IOException {
+    return indexOf(b, 0);
+  }
+
+  @Override public long indexOf(byte b, long fromIndex) throws IOException {
     if (closed) throw new IllegalStateException("closed");
-    long start = 0;
+    while (fromIndex >= buffer.size) {
+      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
+    }
     long index;
-    while ((index = buffer.indexOf(b, start)) == -1) {
-      start = buffer.size;
+    while ((index = buffer.indexOf(b, fromIndex)) == -1) {
+      fromIndex = buffer.size;
+      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
+    }
+    return index;
+  }
+
+  @Override public long indexOfElement(ByteString targetBytes) throws IOException {
+    return indexOfElement(targetBytes, 0);
+  }
+
+  @Override public long indexOfElement(ByteString targetBytes, long fromIndex) throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    while (fromIndex >= buffer.size) {
+      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
+    }
+    long index;
+    while ((index = buffer.indexOfElement(targetBytes, fromIndex)) == -1) {
+      fromIndex = buffer.size;
       if (source.read(buffer, Segment.SIZE) == -1) return -1L;
     }
     return index;

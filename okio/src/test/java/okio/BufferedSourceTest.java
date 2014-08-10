@@ -14,6 +14,7 @@ import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -133,7 +134,7 @@ public class BufferedSourceTest {
   }
 
   @Test public void readLongLe() throws Exception {
-    data.write(new byte[] {
+    data.write(new byte[]{
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21, (byte) 0x36, (byte) 0x47, (byte) 0x58, (byte) 0x69, (byte) 0x12, (byte) 0x23,
         (byte) 0x34, (byte) 0x45
@@ -145,7 +146,7 @@ public class BufferedSourceTest {
 
   @Test public void readLongSplitAcrossMultipleSegments() throws Exception {
     data.writeUtf8(repeat('a', Segment.SIZE - 7));
-    data.write(new byte[] {
+    data.write(new byte[]{
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21,
     });
@@ -225,7 +226,7 @@ public class BufferedSourceTest {
     }
 
     // Verify we read all that we could from the source.
-    assertByteArraysEquals(new byte[] { 'H', 'e', 'l', 'l', 'o', 0 }, sink);
+    assertByteArraysEquals(new byte[]{'H', 'e', 'l', 'l', 'o', 0}, sink);
   }
 
   @Test public void readIntoByteArray() throws IOException {
@@ -373,5 +374,43 @@ public class BufferedSourceTest {
     data.writeUtf8("d"); // b...bcd, d is in the 2nd segment.
     assertEquals(Segment.SIZE - 4, source.indexOf((byte) 'd'));
     assertEquals(-1, source.indexOf((byte) 'e'));
+  }
+
+  @Test public void indexOfWithOffset() throws IOException {
+    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    assertEquals(-1, source.indexOf((byte) 'a', 1));
+    assertEquals(15, source.indexOf((byte) 'b', 15));
+  }
+
+  @Test public void indexOfElement() throws IOException {
+    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    assertEquals(0, source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK")));
+    assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb")));
+    assertEquals(Segment.SIZE + 1, source.indexOfElement(ByteString.encodeUtf8("cDEFGHIJK")));
+    assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("DEFbGHIc")));
+    assertEquals(-1L, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJK")));
+    assertEquals(-1L, source.indexOfElement(ByteString.encodeUtf8("")));
+  }
+
+  @Test public void indexOfElementWithOffset() throws IOException {
+    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    assertEquals(-1, source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK"), 1));
+    assertEquals(15, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb"), 15));
+  }
+
+  @Test public void request() throws IOException {
+    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    assertTrue(source.request(Segment.SIZE + 2));
+    assertFalse(source.request(Segment.SIZE + 3));
+  }
+
+  @Test public void require() throws IOException {
+    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    source.require(Segment.SIZE + 2);
+    try {
+      source.require(Segment.SIZE + 3);
+      fail();
+    } catch (EOFException expected) {
+    }
   }
 }

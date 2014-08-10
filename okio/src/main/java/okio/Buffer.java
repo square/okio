@@ -94,6 +94,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     if (this.size < byteCount) throw new EOFException();
   }
 
+  @Override public boolean request(long byteCount) throws IOException {
+    return size >= byteCount;
+  }
+
   @Override public InputStream inputStream() {
     return new InputStream() {
       @Override public int read() {
@@ -783,7 +787,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
    * Returns the index of {@code b} in this at or beyond {@code fromIndex}, or
    * -1 if this buffer does not contain {@code b} in that range.
    */
-  public long indexOf(byte b, long fromIndex) {
+  @Override public long indexOf(byte b, long fromIndex) {
     if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
 
     Segment s = head;
@@ -797,6 +801,37 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
         byte[] data = s.data;
         for (long pos = s.pos + fromIndex, limit = s.limit; pos < limit; pos++) {
           if (data[(int) pos] == b) return offset + pos - s.pos;
+        }
+        fromIndex = 0;
+      }
+      offset += segmentByteCount;
+      s = s.next;
+    } while (s != head);
+    return -1L;
+  }
+
+  @Override public long indexOfElement(ByteString targetBytes) {
+    return indexOfElement(targetBytes, 0);
+  }
+
+  @Override public long indexOfElement(ByteString targetBytes, long fromIndex) {
+    if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
+
+    Segment s = head;
+    if (s == null) return -1L;
+    long offset = 0L;
+    byte[] toFind = targetBytes.data;
+    do {
+      int segmentByteCount = s.limit - s.pos;
+      if (fromIndex >= segmentByteCount) {
+        fromIndex -= segmentByteCount;
+      } else {
+        byte[] data = s.data;
+        for (long pos = s.pos + fromIndex, limit = s.limit; pos < limit; pos++) {
+          byte b = data[(int) pos];
+          for (byte targetByte : toFind) {
+            if (b == targetByte) return offset + pos - s.pos;
+          }
         }
         fromIndex = 0;
       }
