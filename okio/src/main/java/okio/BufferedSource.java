@@ -41,6 +41,13 @@ public interface BufferedSource extends Source {
    */
   void require(long byteCount) throws IOException;
 
+  /**
+   * Returns true when the buffer contains at least {@code byteCount} bytes,
+   * expanding it as necessary. Returns false if the source is exhausted before
+   * the requested bytes can be read.
+   */
+  boolean request(long byteCount) throws IOException;
+
   /** Removes a byte from this source and returns it. */
   byte readByte() throws IOException;
 
@@ -160,11 +167,37 @@ public interface BufferedSource extends Source {
   String readString(long byteCount, Charset charset) throws IOException;
 
   /**
-   * Returns the index of {@code b} in the buffer, refilling it if necessary
-   * until it is found. This reads an unbounded number of bytes into the buffer.
-   * Returns -1 if the stream is exhausted before the requested byte is found.
+   * Returns the index of the first {@code b} in the buffer. This expands the
+   * buffer as necessary until {@code b} is found. This reads an unbounded
+   * number of bytes into the buffer. Returns -1 if the stream is exhausted
+   * before the requested byte is found.
    */
   long indexOf(byte b) throws IOException;
+
+  /**
+   * Returns the index of the first {@code b} in the buffer at or after {@code
+   * fromIndex}. This expands the buffer as necessary until {@code b} is found.
+   * This reads an unbounded number of bytes into the buffer. Returns -1 if the
+   * stream is exhausted before the requested byte is found.
+   */
+  long indexOf(byte b, long fromIndex) throws IOException;
+
+  /**
+   * Returns the index of the first byte in {@code targetBytes} in the buffer.
+   * This expands the buffer as necessary until a target byte is found. This
+   * reads an unbounded number of bytes into the buffer. Returns -1 if the
+   * stream is exhausted before the requested byte is found.
+   */
+  long indexOfElement(ByteString targetBytes) throws IOException;
+
+  /**
+   * Returns the index of the first byte in {@code targetBytes} in the buffer
+   * at or after {@code fromIndex}. This expands the buffer as necessary until
+   * a target byte is found. This reads an unbounded number of bytes into the
+   * buffer. Returns -1 if the stream is exhausted before the requested byte is
+   * found.
+   */
+  long indexOfElement(ByteString targetBytes, long fromIndex) throws IOException;
 
   /** Returns an input stream that reads from this source. */
   InputStream inputStream();
