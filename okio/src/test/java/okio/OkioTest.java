@@ -28,11 +28,24 @@ import org.junit.rules.TemporaryFolder;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class OkioTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Test public void doNotBufferBufferedSource() {
+    Source in = new Buffer();
+    BufferedSource out = Okio.buffer(in);
+    assertSame(in, out);
+  }
+
+  @Test public void doNotBufferBufferedSink() {
+    Sink in = new Buffer();
+    BufferedSink out = Okio.buffer(in);
+    assertSame(in, out);
+  }
 
   @Test public void readWriteFile() throws Exception {
     File file = temporaryFolder.newFile();
