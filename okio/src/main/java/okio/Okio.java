@@ -43,20 +43,28 @@ public final class Okio {
    * Returns a new source that buffers reads from {@code source}. The returned
    * source will perform bulk reads into its in-memory buffer. Use this wherever
    * you read a source to get an ergonomic and efficient access to data.
+   * <p>
+   * Note: This method will not re-buffer a {@link BufferedSource} instance.
    */
   public static BufferedSource buffer(Source source) {
     if (source == null) throw new IllegalArgumentException("source == null");
-    return new RealBufferedSource(source);
+    return source instanceof BufferedSource
+        ? (BufferedSource) source
+        : new RealBufferedSource(source);
   }
 
   /**
    * Returns a new sink that buffers writes to {@code sink}. The returned sink
    * will batch writes to {@code sink}. Use this wherever you write to a sink to
    * get an ergonomic and efficient access to data.
+   * <p>
+   * Note: This method will not re-buffer a {@link BufferedSink} instance.
    */
   public static BufferedSink buffer(Sink sink) {
     if (sink == null) throw new IllegalArgumentException("sink == null");
-    return new RealBufferedSink(sink);
+    return sink instanceof BufferedSink
+        ? (BufferedSink) sink
+        : new RealBufferedSink(sink);
   }
 
   /** Returns a sink that writes to {@code out}. */
