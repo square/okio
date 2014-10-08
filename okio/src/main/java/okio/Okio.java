@@ -69,10 +69,11 @@ public final class Okio {
 
   /** Returns a sink that writes to {@code out}. */
   public static Sink sink(final OutputStream out) {
-    return sink(out, new Timeout());
+    return sink(out, Timeout.NONE);
   }
 
-  private static Sink sink(final OutputStream out, final Timeout timeout) {
+  /** Returns a sink that writes to {@code out} with the given {@code timeout}. */
+  public static Sink sink(final OutputStream out, final Timeout timeout) {
     if (out == null) throw new IllegalArgumentException("out == null");
     if (timeout == null) throw new IllegalArgumentException("timeout == null");
 
@@ -128,10 +129,11 @@ public final class Okio {
 
   /** Returns a source that reads from {@code in}. */
   public static Source source(final InputStream in) {
-    return source(in, new Timeout());
+    return source(in, Timeout.NONE);
   }
 
-  private static Source source(final InputStream in, final Timeout timeout) {
+  /** Returns a source that reads from {@code in} with the given {@code timeout}. */
+  public static Source source(final InputStream in, final Timeout timeout) {
     if (in == null) throw new IllegalArgumentException("in == null");
     if (timeout == null) throw new IllegalArgumentException("timeout == null");
 
