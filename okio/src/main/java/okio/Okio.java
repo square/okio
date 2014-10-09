@@ -32,7 +32,13 @@ import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import static okio.Util.checkOffsetAndCount;
 
-/** Essential APIs for working with Okio. */
+/**
+ * Essential APIs for working with Okio.
+ * <p>
+ * Note: {@code InterruptedIOException} may be thrown during writes to sinks
+ * and reads from sources created with these methods, if the calling thread is
+ * interrupted before the operation completes.
+ **/
 public final class Okio {
   private static final Logger logger = Logger.getLogger(Okio.class.getName());
 
@@ -67,12 +73,7 @@ public final class Okio {
         : new RealBufferedSink(sink);
   }
 
-  /**
-   * Returns a sink that writes to {@code out}.
-   * <p>
-   * InterruptedIOException may be thrown during writes to the sink if the
-   * current thread is interrupted before the write completes.
-   */
+  /** Returns a sink that writes to {@code out}. */
   public static Sink sink(final OutputStream out) {
     return sink(out, new Timeout());
   }
@@ -131,12 +132,7 @@ public final class Okio {
     return timeout.sink(sink);
   }
 
-  /**
-   * Returns a source that reads from {@code in}.
-   * <p>
-   * InterruptedIOException may be thrown during reads from the source if the
-   * current thread is interrupted before the read completes.
-   */
+  /** Returns a source that reads from {@code in}. */
   public static Source source(final InputStream in) {
     return source(in, new Timeout());
   }
@@ -172,57 +168,32 @@ public final class Okio {
     };
   }
 
-  /**
-   * Returns a source that reads from {@code file}.
-   * <p>
-   * InterruptedIOException may be thrown during reads from the source if the
-   * current thread is interrupted before the read completes.
-   */
+  /** Returns a source that reads from {@code file}. */
   public static Source source(File file) throws FileNotFoundException {
     if (file == null) throw new IllegalArgumentException("file == null");
     return source(new FileInputStream(file));
   }
 
-  /**
-   * Returns a source that reads from {@code path}.
-   * <p>
-   * InterruptedIOException may be thrown during reads from the source if the
-   * current thread is interrupted before the read completes.
-   */
+  /** Returns a source that reads from {@code path}. */
   @IgnoreJRERequirement // Should only be invoked on Java 7+.
   public static Source source(Path path, OpenOption... options) throws IOException {
     if (path == null) throw new IllegalArgumentException("path == null");
     return source(Files.newInputStream(path, options));
   }
 
- /**
-  * Returns a sink that writes to {@code file}.
-  * <p>
-  * InterruptedIOException may be thrown during writes to the sink if the
-  * current thread is interrupted before the write completes.
-  */
+  /** Returns a sink that writes to {@code file}. */
   public static Sink sink(File file) throws FileNotFoundException {
     if (file == null) throw new IllegalArgumentException("file == null");
     return sink(new FileOutputStream(file));
   }
 
-  /**
-   * Returns a sink that appends to {@code file}.
-   * <p>
-   * InterruptedIOException may be thrown during writes to the sink if the
-   * current thread is interrupted before the write completes.
-   */
+  /** Returns a sink that appends to {@code file}. */
   public static Sink appendingSink(File file) throws FileNotFoundException {
     if (file == null) throw new IllegalArgumentException("file == null");
     return sink(new FileOutputStream(file, true));
   }
 
-  /**
-   * Returns a sink that writes to {@code path}.
-   * <p>
-   * InterruptedIOException may be thrown during writes to the sink if the
-   * current thread is interrupted before the write completes.
-   */
+  /** Returns a sink that writes to {@code path}. */
   @IgnoreJRERequirement // Should only be invoked on Java 7+.
   public static Sink sink(Path path, OpenOption... options) throws IOException {
     if (path == null) throw new IllegalArgumentException("path == null");
