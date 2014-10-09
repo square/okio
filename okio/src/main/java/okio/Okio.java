@@ -68,9 +68,10 @@ public final class Okio {
   }
 
   /**
-   * Returns a sink that writes to {@code out}. InterruptedIOException may be
-   * thrown during writes to the sink if the current thread is interrupted
-   * before the write completes.
+   * Returns a sink that writes to {@code out}.
+   * <p>
+   * InterruptedIOException may be thrown during writes to the sink if the
+   * current thread is interrupted before the write completes.
    */
   public static Sink sink(final OutputStream out) {
     return sink(out, new Timeout());
@@ -131,9 +132,10 @@ public final class Okio {
   }
 
   /**
-   * Returns a source that reads from {@code in}. InterruptedIOException may be
-   * thrown during reads from the source if the current thread is interrupted
-   * before the read completes.
+   * Returns a source that reads from {@code in}.
+   * <p>
+   * InterruptedIOException may be thrown during reads from the source if the
+   * current thread is interrupted before the read completes.
    */
   public static Source source(final InputStream in) {
     return source(in, new Timeout());
@@ -171,9 +173,10 @@ public final class Okio {
   }
 
   /**
-   * Returns a source that reads from {@code file}. InterruptedIOException may
-   * be thrown during reads from the source if the current thread is
-   * interrupted before the read completes.
+   * Returns a source that reads from {@code file}.
+   * <p>
+   * InterruptedIOException may be thrown during reads from the source if the
+   * current thread is interrupted before the read completes.
    */
   public static Source source(File file) throws FileNotFoundException {
     if (file == null) throw new IllegalArgumentException("file == null");
@@ -181,9 +184,10 @@ public final class Okio {
   }
 
   /**
-   * Returns a source that reads from {@code path}. InterruptedIOException may
-   * be thrown during reads from the source if the current thread is
-   * interrupted before the read completes.
+   * Returns a source that reads from {@code path}.
+   * <p>
+   * InterruptedIOException may be thrown during reads from the source if the
+   * current thread is interrupted before the read completes.
    */
   @IgnoreJRERequirement // Should only be invoked on Java 7+.
   public static Source source(Path path, OpenOption... options) throws IOException {
@@ -192,9 +196,10 @@ public final class Okio {
   }
 
  /**
-  * Returns a sink that writes to {@code file}. InterruptedIOException may be
-  * thrown during writes to the sink if the current thread is interrupted
-  * before the write completes.
+  * Returns a sink that writes to {@code file}.
+  * <p>
+  * InterruptedIOException may be thrown during writes to the sink if the
+  * current thread is interrupted before the write completes.
   */
   public static Sink sink(File file) throws FileNotFoundException {
     if (file == null) throw new IllegalArgumentException("file == null");
@@ -202,9 +207,10 @@ public final class Okio {
   }
 
   /**
-   * Returns a sink that appends to {@code file}. InterruptedIOException may be
-   * thrown during writes to the sink if the current thread is interrupted
-   * before the write completes.
+   * Returns a sink that appends to {@code file}.
+   * <p>
+   * InterruptedIOException may be thrown during writes to the sink if the
+   * current thread is interrupted before the write completes.
    */
   public static Sink appendingSink(File file) throws FileNotFoundException {
     if (file == null) throw new IllegalArgumentException("file == null");
@@ -212,9 +218,10 @@ public final class Okio {
   }
 
   /**
-   * Returns a sink that writes to {@code path}. InterruptedIOException may be
-   * thrown during writes to the sink if the current thread is interrupted
-   * before the write completes.
+   * Returns a sink that writes to {@code path}.
+   * <p>
+   * InterruptedIOException may be thrown during writes to the sink if the
+   * current thread is interrupted before the write completes.
    */
   @IgnoreJRERequirement // Should only be invoked on Java 7+.
   public static Sink sink(Path path, OpenOption... options) throws IOException {
