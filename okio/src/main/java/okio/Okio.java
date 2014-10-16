@@ -67,11 +67,24 @@ public final class Okio {
   }
 
   private static Sink sink(final OutputStream out, final Timeout timeout) {
+      return sink(out, timeout, null);
+  }
+  private static Sink sink(final OutputStream out, final Timeout timeout, final IOExceptionObserver exceptionObserver) {
     if (out == null) throw new IllegalArgumentException("out == null");
     if (timeout == null) throw new IllegalArgumentException("timeout == null");
 
     return new Sink() {
       @Override public void write(Buffer source, long byteCount) throws IOException {
+          try {
+              doWrite(source, byteCount);
+          } catch (IOException e) {
+              if (exceptionObserver != null) {
+                  exceptionObserver.onIOException(e);
+              }
+              throw e;
+          }
+      }
+      private void doWrite(Buffer source, long byteCount) throws IOException {
         checkOffsetAndCount(source.size, 0, byteCount);
         while (byteCount > 0) {
           timeout.throwIfReached();
@@ -114,9 +127,12 @@ public final class Okio {
    * write times out, the socket is asynchronously closed by a watchdog thread.
    */
   public static Sink sink(final Socket socket) throws IOException {
+      return sink(socket, null);
+  }
+  public static Sink sink(final Socket socket, final IOExceptionObserver exceptionObserver) throws IOException {
     if (socket == null) throw new IllegalArgumentException("socket == null");
     AsyncTimeout timeout = timeout(socket);
-    Sink sink = sink(socket.getOutputStream(), timeout);
+    Sink sink = sink(socket.getOutputStream(), timeout, exceptionObserver);
     return timeout.sink(sink);
   }
 
@@ -126,11 +142,24 @@ public final class Okio {
   }
 
   private static Source source(final InputStream in, final Timeout timeout) {
+      return source(in, timeout, null);
+  }
+  private static Source source(final InputStream in, final Timeout timeout, final IOExceptionObserver exceptionObserver) {
     if (in == null) throw new IllegalArgumentException("in == null");
     if (timeout == null) throw new IllegalArgumentException("timeout == null");
 
     return new Source() {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
+          try {
+              return doRead(sink, byteCount);
+          } catch (IOException e) {
+              if (exceptionObserver != null) {
+                  exceptionObserver.onIOException(e);
+              }
+              throw e;
+          }
+      }
+      private long doRead(Buffer sink, long byteCount) throws IOException {
         if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
         if (byteCount == 0) return 0;
         timeout.throwIfReached();
@@ -195,9 +224,12 @@ public final class Okio {
    * read times out, the socket is asynchronously closed by a watchdog thread.
    */
   public static Source source(final Socket socket) throws IOException {
+    return source(socket, null);
+  }
+  public static Source source(final Socket socket, final IOExceptionObserver exceptionObserver) throws IOException {
     if (socket == null) throw new IllegalArgumentException("socket == null");
     AsyncTimeout timeout = timeout(socket);
-    Source source = source(socket.getInputStream(), timeout);
+    Source source = source(socket.getInputStream(), timeout, exceptionObserver);
     return timeout.source(source);
   }
 
