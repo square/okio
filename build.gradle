@@ -14,4 +14,5 @@ project.ext {
     repo = "maven-private"
 }
 
+apply from: project.file("version.gradle")
 

@@ -42,7 +42,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = 'com.squareup.okio'
             artifactId = 'okio'
-            version = '0.9.0-LAYER'
+            version = rootProject.version
             from components.java
 
             artifact sourceJar {
