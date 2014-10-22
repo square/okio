@@ -1,0 +1,17 @@
+buildscript {
+    repositories {
+        maven { url "https://github.com/layerhq/releases-gradle/raw/master/releases" }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'com.layer', name: 'git-repo-plugin', version: '1.0.0'
+    }
+}
+
+project.ext {
+    gitRepoHome = "${System.env.HOME}/.gitRepos"
+    org = "layerhq"
+    repo = "maven-private"
+}
+
+
