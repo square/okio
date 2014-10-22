@@ -1,0 +1,4 @@
+rootProject.name = 'okio-parent'
+include ':okio'
+
+project(':okio').projectDir = "$rootDir/okio" as File
