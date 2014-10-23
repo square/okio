@@ -37,6 +37,10 @@ task testSourceJar(type: Jar) {
     from sourceSets.test.allJava
 }
 
+public String getLocalGit() {
+    return "$rootProject.ext.gitRepoHome/$rootProject.ext.org/$rootProject.ext.repo"
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -60,8 +64,14 @@ publishing {
     }
     repositories {
         maven {
-            url "file://${rootProject.hasProperty("gitRepoHome") ? property("gitRepoHome") : "${System.env.HOME}/.gitRepos"}/${rootProject.hasProperty("org") ? property("org") : ""}/${rootProject.hasProperty("repo") ? property("repo") : ""}/releases"
+            url "file://${getLocalGit()}/releases"
         }
     }
 }
 
+task cleanLocalGit(type: Delete) {
+    doFirst {
+        println "Deleting local git repo `${getLocalGit()}`..."
+        delete "${getLocalGit()}"
+    }
+}
