@@ -130,7 +130,7 @@ compile 'com.squareup.okio:okio:1.0.1'
 
 
  [1]: https://github.com/square/okhttp
- [2]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.squareup.okio&a=okio&v=LATEST
+ [2]: https://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=LATEST
  [3]: http://square.github.io/okio/okio/ByteString.html
  [4]: http://square.github.io/okio/okio/Buffer.html
  [5]: http://square.github.io/okio/okio/Source.html
