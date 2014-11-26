@@ -141,7 +141,7 @@ public class BufferedSinkTest {
   }
 
   @Test public void writeSpecificCharset() throws Exception {
-    sink.writeString("təˈranəˌsôr", Charset.forName("utf-32"));
+    sink.writeString("təˈranəˌsôr", Charset.forName("utf-32be"));
     sink.flush();
     assertEquals(ByteString.decodeHex("0000007400000259000002c800000072000000610000006e00000259"
         + "000002cc00000073000000f400000072"), data.readByteString());
