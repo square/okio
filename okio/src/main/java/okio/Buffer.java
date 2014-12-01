@@ -557,13 +557,76 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   @Override public Buffer writeUtf8(String string) {
     if (string == null) throw new IllegalArgumentException("string == null");
-    // TODO: inline UTF-8 encoding to save allocating a byte[]?
-    return writeString(string, Util.UTF_8);
+
+    // Transcode a UTF-16 Java String to UTF-8 bytes.
+    for (int i = 0, length = string.length(); i < length;) {
+      int c = string.charAt(i);
+
+      if (c < 0x80) {
+        Segment tail = writableSegment(1);
+        byte[] data = tail.data;
+        int segmentOffset = tail.limit - i;
+        int runLimit = Math.min(length, Segment.SIZE - segmentOffset);
+
+        // Emit a 7-bit character with 1 byte.
+        data[segmentOffset + i++] = (byte) c; // 0xxxxxxx
+
+        // Fast-path contiguous runs of ASCII characters. This is ugly, but yields a ~4x performance
+        // improvement over independent calls to writeByte().
+        while (i < runLimit) {
+          c = string.charAt(i);
+          if (c >= 0x80) break;
+          data[segmentOffset + i++] = (byte) c; // 0xxxxxxx
+        }
+
+        int runSize = i + segmentOffset - tail.limit; // Equivalent to i - (previous i).
+        tail.limit += runSize;
+        size += runSize;
+
+      } else if (c < 0x800) {
+        // Emit a 11-bit character with 2 bytes.
+        writeByte(c >>  6        | 0xc0); // 110xxxxx
+        writeByte(c       & 0x3f | 0x80); // 10xxxxxx
+        i++;
+
+      } else if (c < 0xd800 || c > 0xdfff) {
+        // Emit a 16-bit character with 3 bytes.
+        writeByte(c >> 12        | 0xe0); // 1110xxxx
+        writeByte(c >>  6 & 0x3f | 0x80); // 10xxxxxx
+        writeByte(c       & 0x3f | 0x80); // 10xxxxxx
+        i++;
+
+      } else {
+        // c is a surrogate. Make sure it is a high surrogate & that its successor is a low
+        // surrogate. If not, the UTF-16 is invalid, in which case we emit a replacement character.
+        int low = i + 1 < length ? string.charAt(i + 1) : 0;
+        if (c > 0xdbff || low < 0xdc00 || low > 0xdfff) {
+          writeByte('?');
+          i++;
+          continue;
+        }
+
+        // UTF-16 high surrogate: 110110xxxxxxxxxx (10 bits)
+        // UTF-16 low surrogate:  110111yyyyyyyyyy (10 bits)
+        // Unicode code point:    00010000000000000000 + xxxxxxxxxxyyyyyyyyyy (21 bits)
+        int codePoint = 0x010000 + ((c & ~0xd800) << 10 | low & ~0xdc00);
+
+        // Emit a 21-bit character with 4 bytes.
+        writeByte(codePoint >> 18        | 0xf0); // 11110xxx
+        writeByte(codePoint >> 12 & 0x3f | 0x80); // 10xxxxxx
+        writeByte(codePoint >>  6 & 0x3f | 0x80); // 10xxyyyy
+        writeByte(codePoint       & 0x3f | 0x80); // 10yyyyyy
+        i += 2;
+      }
+    }
+
+    return this;
   }
 
   @Override public Buffer writeString(String string, Charset charset) {
     if (string == null) throw new IllegalArgumentException("string == null");
     if (charset == null) throw new IllegalArgumentException("charset == null");
+    if (charset.equals(Util.UTF_8)) return writeUtf8(string);
     byte[] data = string.getBytes(charset);
     return write(data, 0, data.length);
   }
