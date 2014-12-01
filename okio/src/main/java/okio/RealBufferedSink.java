@@ -85,6 +85,11 @@ final class RealBufferedSink implements BufferedSink {
     return totalBytesRead;
   }
 
+  @Override public BufferedSink write(Source source, long byteCount) throws IOException {
+    source.read(buffer, byteCount);
+    return this;
+  }
+
   @Override public BufferedSink writeByte(int b) throws IOException {
     if (closed) throw new IllegalStateException("closed");
     buffer.writeByte(b);

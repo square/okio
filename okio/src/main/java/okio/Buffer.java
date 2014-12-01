@@ -601,6 +601,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return totalBytesRead;
   }
 
+  @Override public BufferedSink write(Source source, long byteCount) throws IOException {
+    source.read(this, byteCount);
+    return this;
+  }
+
   @Override public Buffer writeByte(int b) {
     Segment tail = writableSegment(1);
     tail.data[tail.limit++] = (byte) b;
