@@ -156,6 +156,16 @@ public class BufferedSinkTest {
     assertEquals("abcdef", data.readUtf8());
   }
 
+  @Test public void writeSource() throws Exception {
+    Buffer source = new Buffer().writeUtf8("abcdef");
+
+    // Force resolution of the Source method overload.
+    sink.write((Source) source, 4);
+    sink.flush();
+    assertEquals("abcd", data.readUtf8());
+    assertEquals("ef", source.readUtf8());
+  }
+
   @Test public void writeAllExhausted() throws Exception {
     Buffer source = new Buffer();
     assertEquals(0, sink.writeAll(source));
