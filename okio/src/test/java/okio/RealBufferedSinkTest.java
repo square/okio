@@ -88,6 +88,14 @@ public final class RealBufferedSinkTest {
     assertEquals(0, sink.size());
   }
 
+  @Test public void bytesEmittedToSinkWithEmit() throws Exception {
+    Buffer sink = new Buffer();
+    BufferedSink bufferedSink = new RealBufferedSink(sink);
+    bufferedSink.writeUtf8("abc");
+    bufferedSink.emit();
+    assertEquals(3, sink.size());
+  }
+
   @Test public void completeSegmentsEmitted() throws Exception {
     Buffer sink = new Buffer();
     BufferedSink bufferedSink = new RealBufferedSink(sink);
@@ -164,6 +172,12 @@ public final class RealBufferedSinkTest {
 
     try {
       bufferedSink.emitCompleteSegments();
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+
+    try {
+      bufferedSink.emit();
       fail();
     } catch (IllegalStateException expected) {
     }
