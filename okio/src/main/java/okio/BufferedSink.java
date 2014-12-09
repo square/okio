@@ -77,8 +77,18 @@ public interface BufferedSink extends Sink {
   /** Writes a little-endian long to this sink using eight bytes. */
   BufferedSink writeLongLe(long v) throws IOException;
 
-  /** Writes complete segments to this sink. Like {@link #flush}, but weaker. */
+  /**
+   * Writes complete segments to the underlying sink, if one exists. Like {@link #flush}, but
+   * weaker. Use this to limit the memory held in the buffer to a single segment.
+   */
   BufferedSink emitCompleteSegments() throws IOException;
+
+  /**
+   * Writes all buffered data to the underlying sink, if one exists. Like {@link #flush}, but
+   * weaker. Call this before this buffered sink goes out of scope so that its data can reach its
+   * destination.
+   */
+  BufferedSink emit() throws IOException;
 
   /** Returns an output stream that writes to this sink. */
   OutputStream outputStream();

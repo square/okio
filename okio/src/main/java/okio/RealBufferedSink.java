@@ -139,6 +139,13 @@ final class RealBufferedSink implements BufferedSink {
     return this;
   }
 
+  @Override public BufferedSink emit() throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    long byteCount = buffer.size();
+    if (byteCount > 0) sink.write(buffer, byteCount);
+    return this;
+  }
+
   @Override public OutputStream outputStream() {
     return new OutputStream() {
       @Override public void write(int b) throws IOException {

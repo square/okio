@@ -86,6 +86,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return this; // Nowhere to emit to!
   }
 
+  @Override public BufferedSink emit() throws IOException {
+    return this; // Nowhere to emit to!
+  }
+
   @Override public boolean exhausted() {
     return size == 0;
   }
