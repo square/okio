@@ -149,10 +149,45 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     // Copy from one segment at a time.
     for (; byteCount > 0; s = s.next) {
       int pos = (int) (s.pos + offset);
-      int toWrite = (int) Math.min(s.limit - pos, byteCount);
-      out.write(s.data, pos, toWrite);
-      byteCount -= toWrite;
+      int toCopy = (int) Math.min(s.limit - pos, byteCount);
+      out.write(s.data, pos, toCopy);
+      byteCount -= toCopy;
       offset = 0;
+    }
+
+    return this;
+  }
+
+  /** Copy {@code byteCount} bytes from this, starting at {@code offset}, to {@code out}. */
+  public Buffer copyTo(Buffer out, long offset, long byteCount) {
+    if (out == null) throw new IllegalArgumentException("out == null");
+    checkOffsetAndCount(size, offset, byteCount);
+    if (byteCount == 0) return this;
+
+    Segment source = head;
+    Segment target = out.writableSegment(1);
+    out.size += byteCount;
+
+    while (byteCount > 0) {
+      // If necessary, advance to a readable source segment. This won't repeat after the first copy.
+      while (offset >= source.limit - source.pos) {
+        offset -= (source.limit - source.pos);
+        source = source.next;
+      }
+
+      // If necessary, append another target segment.
+      if (target.limit == Segment.SIZE) {
+        target = target.push(SegmentPool.INSTANCE.take());
+      }
+
+      // Copy bytes from the source segment to the target segment.
+      long sourceReadable = Math.min(source.limit - (source.pos + offset), byteCount);
+      long targetWritable = Segment.SIZE - target.limit;
+      int toCopy = (int) Math.min(sourceReadable, targetWritable);
+      System.arraycopy(source.data, source.pos + (int) offset, target.data, target.limit, toCopy);
+      offset += toCopy;
+      target.limit += toCopy;
+      byteCount -= toCopy;
     }
 
     return this;

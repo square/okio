@@ -514,6 +514,65 @@ public final class BufferTest {
     assertEquals(TestUtil.repeat('a', Segment.SIZE * 3), sink.readUtf8());
   }
 
+  @Test public void copyTo() throws Exception {
+    Buffer source = new Buffer();
+    source.writeUtf8("party");
+
+    Buffer target = new Buffer();
+    source.copyTo(target, 1, 3);
+
+    assertEquals("art", target.readUtf8());
+    assertEquals("party", source.readUtf8());
+  }
+
+  @Test public void copyToOnSegmentBoundary() throws Exception {
+    String as = repeat('a', Segment.SIZE);
+    String bs = repeat('b', Segment.SIZE);
+    String cs = repeat('c', Segment.SIZE);
+    String ds = repeat('d', Segment.SIZE);
+
+    Buffer source = new Buffer();
+    source.writeUtf8(as);
+    source.writeUtf8(bs);
+    source.writeUtf8(cs);
+
+    Buffer target = new Buffer();
+    target.writeUtf8(ds);
+
+    source.copyTo(target, as.length(), bs.length() + cs.length());
+    assertEquals(ds + bs + cs, target.readUtf8());
+  }
+
+  @Test public void copyToOffSegmentBoundary() throws Exception {
+    String as = repeat('a', Segment.SIZE - 1);
+    String bs = repeat('b', Segment.SIZE + 2);
+    String cs = repeat('c', Segment.SIZE - 4);
+    String ds = repeat('d', Segment.SIZE + 8);
+
+    Buffer source = new Buffer();
+    source.writeUtf8(as);
+    source.writeUtf8(bs);
+    source.writeUtf8(cs);
+
+    Buffer target = new Buffer();
+    target.writeUtf8(ds);
+
+    source.copyTo(target, as.length(), bs.length() + cs.length());
+    assertEquals(ds + bs + cs, target.readUtf8());
+  }
+
+  @Test public void copyToSourceAndTargetCanBeTheSame() throws Exception {
+    String as = repeat('a', Segment.SIZE);
+    String bs = repeat('b', Segment.SIZE);
+
+    Buffer source = new Buffer();
+    source.writeUtf8(as);
+    source.writeUtf8(bs);
+
+    source.copyTo(source, 0, source.size());
+    assertEquals(as + bs + as + bs, source.readUtf8());
+  }
+
   /**
    * Returns a new buffer containing the data in {@code data}, and a segment
    * layout determined by {@code dice}.
