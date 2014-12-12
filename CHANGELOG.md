@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## Version 1.1.0
+
+_2014-12-11_
+ * Do UTF-8 encoding natively for a performance increase, particularly on Android.
+ * New APIs: `BufferedSink.emit()`, `BufferedSource.request()` and `BufferedSink.indexOfElement()`.
+ * Fixed a performance bug in `Buffer.indexOf()`
+
 ## Version 1.0.1
 
 _2014-08-08_
