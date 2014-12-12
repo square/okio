@@ -120,7 +120,7 @@ Download [the latest JAR][2] or grab via Maven:
 <dependency>
     <groupId>com.squareup.okio</groupId>
     <artifactId>okio</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 or Gradle:
