@@ -125,7 +125,7 @@ Download [the latest JAR][2] or grab via Maven:
 ```
 or Gradle:
 ```groovy
-compile 'com.squareup.okio:okio:1.0.1'
+compile 'com.squareup.okio:okio:1.1.0'
 ```
 
 
