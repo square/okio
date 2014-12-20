@@ -128,6 +128,8 @@ or Gradle:
 compile 'com.squareup.okio:okio:1.1.0'
 ```
 
+Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+
 
  [1]: https://github.com/square/okhttp
  [2]: https://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=LATEST
@@ -137,3 +139,4 @@ compile 'com.squareup.okio:okio:1.1.0'
  [6]: http://square.github.io/okio/okio/Sink.html
  [7]: http://square.github.io/okio/okio/BufferedSource.html
  [8]: http://square.github.io/okio/okio/BufferedSink.html
+ [snap]: https://oss.sonatype.org/content/repositories/snapshots/
