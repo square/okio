@@ -197,14 +197,13 @@ public final class RealBufferedSourceTest {
     Buffer write2 = new Buffer().writeUtf8(TestUtil.repeat('b', Segment.SIZE));
     Buffer write3 = new Buffer().writeUtf8(TestUtil.repeat('c', Segment.SIZE));
 
-    Buffer sourceBuffer = new Buffer().writeUtf8(""
+    Buffer source = new Buffer().writeUtf8(""
         + TestUtil.repeat('a', Segment.SIZE)
         + TestUtil.repeat('b', Segment.SIZE)
         + TestUtil.repeat('c', Segment.SIZE));
-    Source source = new ForwardingSource(sourceBuffer) {};
-    BufferedSource bufferedSource = Okio.buffer(source);
 
     MockSink mockSink = new MockSink();
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
     assertEquals(Segment.SIZE * 3, bufferedSource.readAll(mockSink));
     mockSink.assertLog(
         "write(" + write1 + ", " + write1.size() + ")",
