@@ -2,6 +2,7 @@ package okio;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -210,5 +211,42 @@ public class BufferedSinkTest {
       fail();
     } catch (ArrayIndexOutOfBoundsException expected) {
     }
+  }
+
+  @Test public void longDecimalString() throws IOException {
+    assertLongDecimalString(0);
+    assertLongDecimalString(Long.MIN_VALUE);
+    assertLongDecimalString(Long.MAX_VALUE);
+
+    for (int i = 1; i < 20; i++) {
+      long value = BigInteger.valueOf(10L).pow(i).longValue();
+      assertLongDecimalString(value - 1);
+      assertLongDecimalString(value);
+    }
+  }
+
+  private void assertLongDecimalString(long value) throws IOException {
+    sink.writeDecimalLong(value).writeUtf8("zzz").flush();
+    String expected = Long.toString(value) + "zzz";
+    String actual = data.readUtf8();
+    assertEquals(value + " expected " + expected + " but was " + actual, actual, expected);
+  }
+
+  @Test public void longHexString() throws IOException {
+    assertLongHexString(0);
+    assertLongHexString(Long.MIN_VALUE);
+    assertLongHexString(Long.MAX_VALUE);
+
+    for (int i = 0; i < 16; i++) {
+      assertLongHexString((1 << i) - 1);
+      assertLongHexString(1 << i);
+    }
+  }
+
+  private void assertLongHexString(long value) throws IOException {
+    sink.writeHexadecimalUnsignedLong(value).writeUtf8("zzz").flush();
+    String expected = String.format("%x", value) + "zzz";
+    String actual = data.readUtf8();
+    assertEquals(value + " expected " + expected + " but was " + actual, actual, expected);
   }
 }

@@ -77,6 +77,12 @@ public interface BufferedSink extends Sink {
   /** Writes a little-endian long to this sink using eight bytes. */
   BufferedSink writeLongLe(long v) throws IOException;
 
+  /** Writes a long to this sink in signed decimal form (i.e., as a string in base 10). */
+  BufferedSink writeDecimalLong(long v) throws IOException;
+
+  /** Writes a long to this sink in hexadecimal form (i.e., as a string in base 16). */
+  BufferedSink writeHexadecimalUnsignedLong(long v) throws IOException;
+
   /**
    * Writes complete segments to the underlying sink, if one exists. Like {@link #flush}, but
    * weaker. Use this to limit the memory held in the buffer to a single segment.
