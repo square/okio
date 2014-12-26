@@ -166,6 +166,19 @@ public class BufferedSinkTest {
     assertEquals("ef", source.readUtf8());
   }
 
+  @Test public void writeSourceWithZeroIsNoOp() throws IOException {
+    // This test ensures that a zero byte count never calls through to read the source. It may be
+    // tied to something like a socket which will potentially block trying to read a segment when
+    // ultimately we don't want any data.
+    Source source = new ForwardingSource(new Buffer()) {
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
+        throw new AssertionError();
+      }
+    };
+    sink.write(source, 0);
+    assertEquals(0, data.size());
+  }
+
   @Test public void writeAllExhausted() throws Exception {
     Buffer source = new Buffer();
     assertEquals(0, sink.writeAll(source));

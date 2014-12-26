@@ -86,7 +86,9 @@ final class RealBufferedSink implements BufferedSink {
   }
 
   @Override public BufferedSink write(Source source, long byteCount) throws IOException {
-    source.read(buffer, byteCount);
+    if (byteCount > 0) {
+      source.read(buffer, byteCount);
+    }
     return this;
   }
 
