@@ -669,7 +669,9 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public BufferedSink write(Source source, long byteCount) throws IOException {
-    source.read(this, byteCount);
+    if (byteCount > 0) {
+      source.read(this, byteCount);
+    }
     return this;
   }
 
