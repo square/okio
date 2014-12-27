@@ -2,6 +2,7 @@ package okio;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static okio.TestUtil.assertByteArrayEquals;
 import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
@@ -146,7 +148,7 @@ public class BufferedSourceTest {
 
   @Test public void readLongSplitAcrossMultipleSegments() throws Exception {
     data.writeUtf8(repeat('a', Segment.SIZE - 7));
-    data.write(new byte[]{
+    data.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21,
     });
@@ -191,6 +193,14 @@ public class BufferedSourceTest {
     assertEquals(-1, source.read(sink, 0));
     assertEquals(10, sink.size());
     assertEquals(0, data.size());
+  }
+
+  @Test public void readFully() throws Exception {
+    data.writeUtf8(repeat('a', 10000));
+    Buffer sink = new Buffer();
+    source.readFully(sink, 9999);
+    assertEquals(repeat('a', 9999), sink.readUtf8());
+    assertEquals("a", source.readUtf8());
   }
 
   @Test public void readFullyTooShortThrows() throws IOException {
@@ -411,6 +421,51 @@ public class BufferedSourceTest {
       source.require(Segment.SIZE + 3);
       fail();
     } catch (EOFException expected) {
+    }
+  }
+
+  @Test public void inputStream() throws Exception {
+    data.writeUtf8("abc");
+    InputStream in = source.inputStream();
+    byte[] bytes = new byte[3];
+    int read = in.read(bytes);
+    assertEquals(3, read);
+    assertByteArrayEquals("abc", bytes);
+    assertEquals(-1, in.read());
+  }
+
+  @Test public void inputStreamOffsetCount() throws Exception {
+    data.writeUtf8("abcde");
+    InputStream in = source.inputStream();
+    byte[] bytes = { 'z', 'z', 'z', 'z', 'z' };
+    int read = in.read(bytes, 1, 3);
+    assertEquals(3, read);
+    assertByteArrayEquals("zabcz", bytes);
+  }
+
+  @Test public void inputStreamSkip() throws Exception {
+    data.writeUtf8("abcde");
+    InputStream in = source.inputStream();
+    assertEquals(4, in.skip(4));
+    assertEquals('e', in.read());
+  }
+
+  @Test public void inputStreamCharByChar() throws Exception {
+    data.writeUtf8("abc");
+    InputStream in = source.inputStream();
+    assertEquals('a', in.read());
+    assertEquals('b', in.read());
+    assertEquals('c', in.read());
+    assertEquals(-1, in.read());
+  }
+
+  @Test public void inputStreamBounds() throws IOException {
+    data.writeUtf8(repeat('a', 100));
+    InputStream in = source.inputStream();
+    try {
+      in.read(new byte[100], 50, 51);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
     }
   }
 }

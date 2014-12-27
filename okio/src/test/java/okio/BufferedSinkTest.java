@@ -1,6 +1,7 @@
 package okio;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +12,9 @@ import org.junit.runners.Parameterized;
 
 import static java.util.Arrays.asList;
 import static okio.TestUtil.repeat;
+import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class BufferedSinkTest {
@@ -189,5 +192,23 @@ public class BufferedSinkTest {
     sink.writeByte('a');
     sink.close();
     assertEquals('a', data.readByte());
+  }
+
+  @Test public void outputStream() throws Exception {
+    OutputStream out = sink.outputStream();
+    out.write('a');
+    out.write(repeat('b', 9998).getBytes(UTF_8));
+    out.write('c');
+    out.flush();
+    assertEquals("a" + repeat('b', 9998) + "c", data.readUtf8());
+  }
+
+  @Test public void outputStreamBounds() throws Exception {
+    OutputStream out = sink.outputStream();
+    try {
+      out.write(new byte[100], 50, 51);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
   }
 }

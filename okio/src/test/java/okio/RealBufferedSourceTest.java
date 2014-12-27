@@ -25,8 +25,12 @@ import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+/**
+ * Tests solely for the behavior of RealBufferedSource's implementation. For generic
+ * BufferedSource behavior use BufferedSourceTest.
+ */
 public final class RealBufferedSourceTest {
-  @Test public void inputStreamFromSource() throws Exception {
+  @Test public void inputStreamTracksSegments() throws Exception {
     Buffer source = new Buffer();
     source.writeUtf8("a");
     source.writeUtf8(repeat('b', Segment.SIZE));
@@ -62,14 +66,15 @@ public final class RealBufferedSourceTest {
     assertEquals(0, source.size());
   }
 
-  @Test public void inputStreamFromSourceBounds() throws IOException {
-    Buffer source = new Buffer();
-    source.writeUtf8(repeat('a', 100));
-    InputStream in = new RealBufferedSource(source).inputStream();
+  @Test public void inputStreamCloses() throws Exception {
+    RealBufferedSource source = new RealBufferedSource(new Buffer());
+    InputStream in = source.inputStream();
+    in.close();
     try {
-      in.read(new byte[100], 50, 51);
+      source.require(1);
       fail();
-    } catch (ArrayIndexOutOfBoundsException expected) {
+    } catch (IllegalStateException e) {
+      assertEquals("closed", e.getMessage());
     }
   }
 

@@ -28,6 +28,10 @@ final class TestUtil {
     assertEquals(Arrays.toString(a), Arrays.toString(b));
   }
 
+  static void assertByteArrayEquals(String expectedUtf8, byte[] b) {
+    assertEquals(expectedUtf8, new String(b, Util.UTF_8));
+  }
+
   static ByteString randomBytes(int length) {
     Random random = new Random(0);
     byte[] randomBytes = new byte[length];
