@@ -17,17 +17,73 @@ package okio;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public abstract class ReadUtf8LineTest {
-  protected abstract BufferedSource newSource(String s);
+@RunWith(Parameterized.class)
+public final class ReadUtf8LineTest {
+  private interface Factory {
+    BufferedSource create(Buffer data);
+  }
+
+  @Parameterized.Parameters(name = "{0}")
+  public static List<Object[]> parameters() {
+    return Arrays.asList(
+        new Object[] { new Factory() {
+          @Override public BufferedSource create(Buffer data) {
+            return data;
+          }
+
+          @Override public String toString() {
+            return "Buffer";
+          }
+        }},
+        new Object[] { new Factory() {
+          @Override public BufferedSource create(Buffer data) {
+            return new RealBufferedSource(data);
+          }
+
+          @Override public String toString() {
+            return "RealBufferedSource";
+          }
+        }},
+        new Object[] { new Factory() {
+          @Override public BufferedSource create(Buffer data) {
+            return new RealBufferedSource(new ForwardingSource(data) {
+              @Override public long read(Buffer sink, long byteCount) throws IOException {
+                return super.read(sink, Math.min(1, byteCount));
+              }
+            });
+          }
+
+          @Override public String toString() {
+            return "Slow RealBufferedSource";
+          }
+        }}
+    );
+  }
+
+  @Parameterized.Parameter
+  public Factory factory;
+
+  private Buffer data;
+  private BufferedSource source;
+
+  @Before public void setUp() {
+    data = new Buffer();
+    source = factory.create(data);
+  }
 
   @Test public void readLines() throws IOException {
-    BufferedSource source = newSource("abc\ndef\n");
+    data.writeUtf8("abc\ndef\n");
     assertEquals("abc", source.readUtf8LineStrict());
     assertEquals("def", source.readUtf8LineStrict());
     try {
@@ -38,7 +94,7 @@ public abstract class ReadUtf8LineTest {
   }
 
   @Test public void emptyLines() throws IOException {
-    BufferedSource source = newSource("\n\n\n");
+    data.writeUtf8("\n\n\n");
     assertEquals("", source.readUtf8LineStrict());
     assertEquals("", source.readUtf8LineStrict());
     assertEquals("", source.readUtf8LineStrict());
@@ -46,21 +102,21 @@ public abstract class ReadUtf8LineTest {
   }
 
   @Test public void crDroppedPrecedingLf() throws IOException {
-    BufferedSource source = newSource("abc\r\ndef\r\nghi\rjkl\r\n");
+    data.writeUtf8("abc\r\ndef\r\nghi\rjkl\r\n");
     assertEquals("abc", source.readUtf8LineStrict());
     assertEquals("def", source.readUtf8LineStrict());
     assertEquals("ghi\rjkl", source.readUtf8LineStrict());
   }
 
   @Test public void bufferedReaderCompatible() throws IOException {
-    BufferedSource source = newSource("abc\ndef");
+    data.writeUtf8("abc\ndef");
     assertEquals("abc", source.readUtf8Line());
     assertEquals("def", source.readUtf8Line());
     assertEquals(null, source.readUtf8Line());
   }
 
   @Test public void bufferedReaderCompatibleWithTrailingNewline() throws IOException {
-    BufferedSource source = newSource("abc\ndef\n");
+    data.writeUtf8("abc\ndef\n");
     assertEquals("abc", source.readUtf8Line());
     assertEquals("def", source.readUtf8Line());
     assertEquals(null, source.readUtf8Line());
