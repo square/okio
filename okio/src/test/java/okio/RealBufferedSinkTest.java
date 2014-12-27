@@ -20,28 +20,23 @@ import java.io.OutputStream;
 import org.junit.Test;
 
 import static okio.TestUtil.repeat;
-import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+/**
+ * Tests solely for the behavior of RealBufferedSink's implementation. For generic
+ * BufferedSink behavior use BufferedSinkTest.
+ */
 public final class RealBufferedSinkTest {
-  @Test public void outputStreamFromSink() throws Exception {
-    Buffer sink = new Buffer();
-    OutputStream out = new RealBufferedSink(sink).outputStream();
-    out.write('a');
-    out.write(repeat('b', 9998).getBytes(UTF_8));
-    out.write('c');
-    out.flush();
-    assertEquals("a" + repeat('b', 9998) + "c", sink.readUtf8(10000));
-  }
-
-  @Test public void outputStreamFromSinkBounds() throws Exception {
-    Buffer sink = new Buffer();
-    OutputStream out = new RealBufferedSink(sink).outputStream();
+  @Test public void inputStreamCloses() throws Exception {
+    RealBufferedSink sink = new RealBufferedSink(new Buffer());
+    OutputStream out = sink.outputStream();
+    out.close();
     try {
-      out.write(new byte[100], 50, 51);
+      sink.writeUtf8("Hi!");
       fail();
-    } catch (ArrayIndexOutOfBoundsException expected) {
+    } catch (IllegalStateException e) {
+      assertEquals("closed", e.getMessage());
     }
   }
 

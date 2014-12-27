@@ -32,6 +32,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+/**
+ * Tests solely for the behavior of Buffer's implementation. For generic BufferedSink or
+ * BufferedSource behavior use BufferedSinkTest or BufferedSourceTest, respectively.
+ */
 public final class BufferTest {
   @Test public void readAndWriteUtf8() throws Exception {
     Buffer buffer = new Buffer();
@@ -359,7 +363,7 @@ public final class BufferTest {
     }
   }
 
-  @Test public void testWritePrefixToEmptyBuffer() throws IOException {
+  @Test public void writePrefixToEmptyBuffer() throws IOException {
     Buffer sink = new Buffer();
     Buffer source = new Buffer();
     source.writeUtf8("abcd");
@@ -412,14 +416,14 @@ public final class BufferTest {
         clone.readUtf8(Segment.SIZE * 6));
   }
 
-  @Test public void testEqualsAndHashCodeEmpty() throws Exception {
+  @Test public void equalsAndHashCodeEmpty() throws Exception {
     Buffer a = new Buffer();
     Buffer b = new Buffer();
     assertTrue(a.equals(b));
     assertTrue(a.hashCode() == b.hashCode());
   }
 
-  @Test public void testEqualsAndHashCode() throws Exception {
+  @Test public void equalsAndHashCode() throws Exception {
     Buffer a = new Buffer().writeUtf8("dog");
     Buffer b = new Buffer().writeUtf8("hotdog");
     assertFalse(a.equals(b));
@@ -430,7 +434,7 @@ public final class BufferTest {
     assertTrue(a.hashCode() == b.hashCode());
   }
 
-  @Test public void testEqualsAndHashCodeSpanningSegments() throws Exception {
+  @Test public void equalsAndHashCodeSpanningSegments() throws Exception {
     byte[] data = new byte[1024 * 1024];
     Random dice = new Random(0);
     dice.nextBytes(data);
@@ -444,14 +448,6 @@ public final class BufferTest {
     Buffer c = bufferWithRandomSegmentLayout(dice, data);
     assertFalse(a.equals(c));
     assertFalse(a.hashCode() == c.hashCode());
-  }
-
-  @Test public void readFully() throws Exception {
-    Buffer source = new Buffer().writeUtf8(repeat('a', 10000));
-    Buffer sink = new Buffer();
-    source.readFully(sink, 9999);
-    assertEquals(repeat('a', 9999), sink.readUtf8());
-    assertEquals("a", source.readUtf8());
   }
 
   @Test public void bufferInputStreamByteByByte() throws Exception {
