@@ -11,7 +11,7 @@
 
   <groupId>com.squareup.okio</groupId>
   <artifactId>okio-parent</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Okio (Parent)</name>
   <description>A modern I/O API for Java</description>
