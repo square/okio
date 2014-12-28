@@ -90,6 +90,18 @@ public final class ReadUtf8LineTest {
       source.readUtf8LineStrict();
       fail();
     } catch (EOFException expected) {
+      assertEquals("\\n not found: size=0 content=...", expected.getMessage());
+    }
+  }
+
+  @Test public void eofExceptionProvidesLimitedContent() throws IOException {
+    data.writeUtf8("aaaaaaaabbbbbbbbccccccccdddddddde");
+    try {
+      source.readUtf8LineStrict();
+      fail();
+    } catch (EOFException expected) {
+      assertEquals("\\n not found: size=33 content=616161616161616162626262626262626363636363636363"
+          + "6464646464646464...", expected.getMessage());
     }
   }
 

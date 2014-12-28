@@ -489,7 +489,12 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   @Override public String readUtf8LineStrict() throws EOFException {
     long newline = indexOf((byte) '\n');
-    if (newline == -1) throw new EOFException();
+    if (newline == -1) {
+      Buffer data = new Buffer();
+      copyTo(data, 0, Math.min(32, size));
+      throw new EOFException("\\n not found: size=" + size()
+          + " content=" + data.readByteString().hex() + "...");
+    }
     return readUtf8Line(newline);
   }
 

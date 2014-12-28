@@ -194,7 +194,12 @@ final class RealBufferedSource implements BufferedSource {
 
   @Override public String readUtf8LineStrict() throws IOException {
     long newline = indexOf((byte) '\n');
-    if (newline == -1L) throw new EOFException();
+    if (newline == -1L) {
+      Buffer data = new Buffer();
+      buffer.copyTo(data, 0, Math.min(32, buffer.size()));
+      throw new EOFException("\\n not found: size=" + buffer.size()
+          + " content=" + data.readByteString().hex() + "...");
+    }
     return buffer.readUtf8Line(newline);
   }
 
