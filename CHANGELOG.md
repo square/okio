@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 1.2.0
+
+_2014-12-30_
+
+ * Fix: `Okio.buffer()` _always_ buffers for better predictability.
+ * Fix: Provide context when `readUtf8LineStrict()` throws.
+ * Fix: Buffers do not call through the `Source` on zero-byte writes.
+
 ## Version 1.1.0
 
 _2014-12-11_
