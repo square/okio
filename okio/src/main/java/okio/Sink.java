@@ -16,6 +16,7 @@
 package okio;
 
 import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
 
 /**
@@ -47,12 +48,12 @@ import java.io.IOException;
  * Use {@link Okio#sink} to adapt an {@code OutputStream} to a sink. Use {@link
  * BufferedSink#outputStream} to adapt a sink to an {@code OutputStream}.
  */
-public interface Sink extends Closeable {
+public interface Sink extends Closeable, Flushable {
   /** Removes {@code byteCount} bytes from {@code source} and appends them to this. */
   void write(Buffer source, long byteCount) throws IOException;
 
   /** Pushes all buffered bytes to their final destination. */
-  void flush() throws IOException;
+  @Override void flush() throws IOException;
 
   /** Returns the timeout for this sink. */
   Timeout timeout();
