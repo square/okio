@@ -117,6 +117,37 @@ public class ByteStringTest {
   @Test public void toAsciiStartsUppercaseEndsLowercase() throws Exception {
     assertEquals(ByteString.encodeUtf8("ABCD"), ByteString.encodeUtf8("ABcd").toAsciiUppercase());
   }
+  
+  @Test public void substring() throws Exception {
+    ByteString byteString = ByteString.encodeUtf8("Hello, World!");
+    
+    assertEquals(byteString.substring(0), byteString);
+    assertEquals(byteString.substring(0, 5), ByteString.encodeUtf8("Hello"));
+    assertEquals(byteString.substring(7), ByteString.encodeUtf8("World!"));
+    assertEquals(byteString.substring(6, 6), ByteString.encodeUtf8(""));
+  }
+  
+  @Test public void substringWithInvalidBounds() throws Exception {
+    ByteString byteString = ByteString.encodeUtf8("Hello, World!");
+
+    try {
+      byteString.substring(-1);
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+
+    try {
+      byteString.substring(0, 14);
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+
+    try {
+      byteString.substring(8, 7);
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+  }
 
   @Test public void write() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
