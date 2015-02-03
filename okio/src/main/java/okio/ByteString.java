@@ -211,6 +211,37 @@ public final class ByteString implements Serializable {
     return this;
   }
 
+  /**
+   * Returns a byte string that is a substring of this byte string, beginning at the specified 
+   * index until the end of this string. Returns this byte string if {@code beginIndex} is 0.
+   */
+  public ByteString substring(int beginIndex) {
+    return substring(beginIndex, data.length);
+  }
+
+  /**
+   * Returns a byte string that is a substring of this byte string, beginning at the specified 
+   * {@code beginIndex} and ends at the specified {@code endIndex}. Returns this byte string if 
+   * {@code beginIndex} is 0 and {@code endIndex} is the length of this byte string.
+   */
+  public ByteString substring(int beginIndex, int endIndex) {
+    if (beginIndex < 0) throw new IllegalArgumentException("beginIndex < 0");
+    if (endIndex > data.length) {
+      throw new IllegalArgumentException("endIndex > length(" + data.length + ")");
+    }
+    
+    int subLen = endIndex - beginIndex;
+    if (subLen < 0) throw new IllegalArgumentException("endIndex < beginIndex");
+    
+    if ((beginIndex == 0) && (endIndex == data.length)) {
+      return this;
+    }
+
+    byte[] copy = new byte[subLen];
+    System.arraycopy(data, beginIndex, copy, 0, subLen);
+    return new ByteString(copy);
+  }
+
   /** Returns the byte at {@code pos}. */
   public byte getByte(int pos) {
     return data[pos];
