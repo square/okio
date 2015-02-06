@@ -284,7 +284,6 @@ public class AsyncTimeout extends Timeout {
           // Close the timed out node.
           timedOut.timedOut();
         } catch (InterruptedException ignored) {
-            //Thread.interrupted();
         }
       }
       releaseHead();
@@ -330,6 +329,7 @@ public class AsyncTimeout extends Timeout {
       long waitMillis = waitNanos / 1000000L;
       waitNanos -= (waitMillis * 1000000L);
       AsyncTimeout.class.wait(waitMillis, (int) waitNanos);
+      // Re-enter until this node times out or the queue changes.
       return awaitTimeout(watchDog);
     }
 
@@ -353,7 +353,9 @@ public class AsyncTimeout extends Timeout {
   }
 
   private static synchronized void releaseHead() {
+    // release the reference from the class.
     head = null;
+    // wake up the wait on close()
     AsyncTimeout.class.notifyAll();
   }
 
