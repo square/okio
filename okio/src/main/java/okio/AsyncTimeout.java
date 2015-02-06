@@ -291,7 +291,7 @@ public class AsyncTimeout extends Timeout {
     }
 
     /**
-     * Stop the main cycle and interrupt the thread if it was waiting.
+     * Stop the main cycle.
      */
     public void shutdown() {
       running = false;
