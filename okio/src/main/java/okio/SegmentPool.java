@@ -20,23 +20,21 @@ package okio;
  * This pool is a thread-safe static singleton.
  */
 final class SegmentPool {
-  static final SegmentPool INSTANCE = new SegmentPool();
-
   /** The maximum number of bytes to pool. */
   // TODO: Is 64 KiB a good maximum size? Do we ever have that many idle segments?
   static final long MAX_SIZE = 64 * 1024; // 64 KiB.
 
   /** Singly-linked list of segments. */
-  private Segment next;
+  static Segment next;
 
   /** Total bytes in this pool. */
-  long byteCount;
+  static long byteCount;
 
   private SegmentPool() {
   }
 
-  Segment take() {
-    synchronized (this) {
+  static Segment take() {
+    synchronized (SegmentPool.class) {
       if (next != null) {
         Segment result = next;
         next = result.next;
@@ -48,9 +46,10 @@ final class SegmentPool {
     return new Segment(); // Pool is empty. Don't zero-fill while holding a lock.
   }
 
-  void recycle(Segment segment) {
+  static void recycle(Segment segment) {
     if (segment.next != null || segment.prev != null) throw new IllegalArgumentException();
-    synchronized (this) {
+    if (segment.shared) return; // This segment cannot be recycled.
+    synchronized (SegmentPool.class) {
       if (byteCount + Segment.SIZE > MAX_SIZE) return; // Pool is full.
       byteCount += Segment.SIZE;
       segment.next = next;

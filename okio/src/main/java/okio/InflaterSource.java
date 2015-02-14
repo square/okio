@@ -70,6 +70,7 @@ public final class InflaterSource implements Source {
           sink.size += bytesInflated;
           return bytesInflated;
         }
+        // TODO(jwilson): do we have an empty tail?
         if (inflater.finished() || inflater.needsDictionary()) {
           releaseInflatedBytes();
           return -1;

@@ -27,6 +27,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import static okio.Util.arrayRangeEquals;
 import static okio.Util.checkOffsetAndCount;
 
 /**
@@ -40,8 +41,8 @@ import static okio.Util.checkOffsetAndCount;
  * and other environments that run both trusted and untrusted code in the same
  * process.
  */
-public final class ByteString implements Serializable {
-  private static final char[] HEX_DIGITS =
+public class ByteString implements Serializable {
+  static final char[] HEX_DIGITS =
       { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
   private static final long serialVersionUID = 1L;
 
@@ -49,8 +50,8 @@ public final class ByteString implements Serializable {
   public static final ByteString EMPTY = ByteString.of();
 
   final byte[] data;
-  private transient int hashCode; // Lazily computed; 0 if unknown.
-  private transient String utf8; // Lazily computed.
+  transient int hashCode; // Lazily computed; 0 if unknown.
+  transient String utf8; // Lazily computed.
 
   ByteString(byte[] data) {
     this.data = data; // Trusted internal constructor doesn't clone data.
@@ -267,8 +268,36 @@ public final class ByteString implements Serializable {
     out.write(data);
   }
 
+  /** Writes the contents of this byte string to {@code buffer}. */
+  void write(Buffer buffer) {
+    buffer.write(data, 0, data.length);
+  }
+
+  /**
+   * Returns true if the bytes of this in {@code [offset..offset+byteCount)} equal the bytes of
+   * {@code other} in {@code [otherOffset..otherOffset+byteCount)}. Returns false if either range is
+   * out of bounds.
+   */
+  public boolean rangeEquals(int offset, ByteString other, int otherOffset, int byteCount) {
+    return other.rangeEquals(otherOffset, this.data, offset, byteCount);
+  }
+
+  /**
+   * Returns true if the bytes of this in {@code [offset..offset+byteCount)} equal the bytes of
+   * {@code other} in {@code [otherOffset..otherOffset+byteCount)}. Returns false if either range is
+   * out of bounds.
+   */
+  public boolean rangeEquals(int offset, byte[] other, int otherOffset, int byteCount) {
+    return offset <= data.length - byteCount
+        && otherOffset <= other.length - byteCount
+        && arrayRangeEquals(data, offset, other, otherOffset, byteCount);
+  }
+
   @Override public boolean equals(Object o) {
-    return o == this || o instanceof ByteString && Arrays.equals(((ByteString) o).data, data);
+    if (o == this) return true;
+    return o instanceof ByteString
+        && ((ByteString) o).size() == data.length
+        && ((ByteString) o).rangeEquals(0, data, 0, data.length);
   }
 
   @Override public int hashCode() {

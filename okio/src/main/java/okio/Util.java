@@ -69,4 +69,12 @@ final class Util {
   private static <T extends Throwable> void sneakyThrow2(Throwable t) throws T {
     throw (T) t;
   }
+
+  public static boolean arrayRangeEquals(
+      byte[] a, int aOffset, byte[] b, int bOffset, int byteCount) {
+    for (int i = 0; i < byteCount; i++) {
+      if (a[i + aOffset] != b[i + bOffset]) return false;
+    }
+    return true;
+  }
 }

@@ -83,7 +83,7 @@ public final class Okio {
 
           if (head.pos == head.limit) {
             source.head = head.pop();
-            SegmentPool.INSTANCE.recycle(head);
+            SegmentPool.recycle(head);
           }
         }
       }

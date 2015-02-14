@@ -83,8 +83,8 @@ public final class GzipSink implements Sink {
 
     // This method delegates to the DeflaterSink for finishing the deflate process
     // but keeps responsibility for releasing the deflater's resources. This is
-    // necessary because writeFooter needs to query the proccessed byte count which
-    // only works when the defalter is still open.
+    // necessary because writeFooter needs to query the processed byte count which
+    // only works when the deflater is still open.
 
     Throwable thrown = null;
     try {
