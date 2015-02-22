@@ -482,7 +482,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       int pos = segment.pos;
       int limit = segment.limit;
 
-      for (; pos < limit; pos++) {
+      for (; pos < limit; pos++, seen++) {
         int digit;
 
         byte b = data[pos];
@@ -502,7 +502,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
           break;
         }
 
-        if (++seen > 16) {
+        // Detect when the shift will overflow.
+        if ((value & 0xf000000000000000L) != 0) {
           Buffer buffer = new Buffer().writeHexadecimalUnsignedLong(value).writeByte(b);
           throw new NumberFormatException("Number too large: " + buffer.readUtf8());
         }

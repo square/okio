@@ -243,9 +243,7 @@ final class RealBufferedSource implements BufferedSource {
       if ((b < '0' || b > '9') && (pos != 0 || b != '-')) {
         break; // Non-digit, or non-leading negative sign.
       }
-      if (++pos > 20) {
-        break; // Exceeded valid digit count.
-      }
+      pos++;
     }
     if (pos == 0) {
       throw new NumberFormatException("Expected leading [0-9] or '-' character but was 0x"
@@ -266,9 +264,6 @@ final class RealBufferedSource implements BufferedSource {
         break; // Non-digit, or non-leading negative sign.
       }
       pos += 1;
-      if (pos > 16) {
-        throw new NumberFormatException("Number too large: " + buffer.readUtf8());
-      }
     }
     if (pos == 0) {
       throw new NumberFormatException("Expected leading [0-9a-fA-F] character but was 0x"
