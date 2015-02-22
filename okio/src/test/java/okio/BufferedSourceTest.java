@@ -236,7 +236,7 @@ public class BufferedSourceTest {
     }
 
     // Verify we read all that we could from the source.
-    assertByteArraysEquals(new byte[]{'H', 'e', 'l', 'l', 'o', 0}, sink);
+    assertByteArraysEquals(new byte[] { 'H', 'e', 'l', 'l', 'o', 0 }, sink);
   }
 
   @Test public void readIntoByteArray() throws IOException {
@@ -466,6 +466,115 @@ public class BufferedSourceTest {
       in.read(new byte[100], 50, 51);
       fail();
     } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+  }
+
+  @Test public void longHexString() throws IOException {
+    assertLongHexString("8000000000000000", 0x8000000000000000L);
+    assertLongHexString("fffffffffffffffe", 0xFFFFFFFFFFFFFFFEL);
+    assertLongHexString("FFFFFFFFFFFFFFFe", 0xFFFFFFFFFFFFFFFEL);
+    assertLongHexString("ffffffffffffffff", 0xffffffffffffffffL);
+    assertLongHexString("FFFFFFFFFFFFFFFF", 0xFFFFFFFFFFFFFFFFL);
+    assertLongHexString("0000000000000000", 0x0);
+    assertLongHexString("0000000000000001", 0x1);
+    assertLongHexString("7999999999999999", 0x7999999999999999L);
+
+    assertLongHexString("FF", 0xFF);
+    assertLongHexString("0000000000000001", 0x1);
+  }
+
+  private void assertLongHexString(String s, long expected) throws IOException {
+    data.writeUtf8(s);
+    long actual = source.readHexadecimalUnsignedLong();
+    assertEquals(s + " --> " + expected, expected, actual);
+  }
+
+  @Test public void longHexStringAcrossSegment() throws IOException {
+    data.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("FFFFFFFFFFFFFFFF");
+    source.skip(Segment.SIZE - 8);
+    assertEquals(-1, source.readHexadecimalUnsignedLong());
+  }
+
+  @Test public void longHexStringTooLongThrows() throws IOException {
+    try {
+      data.writeUtf8("fffffffffffffffff");
+      source.readHexadecimalUnsignedLong();
+      fail();
+    } catch (NumberFormatException e) {
+      assertEquals("Number too large: fffffffffffffffff", e.getMessage());
+    }
+  }
+
+  @Test public void longHexStringTooShortThrows() throws IOException {
+    try {
+      data.writeUtf8(" ");
+      source.readHexadecimalUnsignedLong();
+      fail();
+    } catch (NumberFormatException e) {
+      assertEquals("Expected leading [0-9a-fA-F] character but was 0x20", e.getMessage());
+    }
+  }
+
+  @Test public void longDecimalString() throws IOException {
+    assertLongDecimalString("-9223372036854775808", -9223372036854775808L);
+    assertLongDecimalString("-1", -1L);
+    assertLongDecimalString("0", 0L);
+    assertLongDecimalString("1", 1L);
+    assertLongDecimalString("9223372036854775807", 9223372036854775807L);
+
+    assertLongDecimalString("00000001", 1L);
+    assertLongDecimalString("-000001", -1L);
+  }
+
+  private void assertLongDecimalString(String s, long expected) throws IOException {
+    data.writeUtf8(s);
+    long actual = source.readDecimalLong();
+    assertEquals(s + " --> " + expected, expected, actual);
+  }
+
+  @Test public void longDecimalStringAcrossSegment() throws IOException {
+    data.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("1234567890123456");
+    source.skip(Segment.SIZE - 8);
+    assertEquals(1234567890123456L, source.readDecimalLong());
+  }
+
+  @Test public void longDecimalStringTooLongThrows() throws IOException {
+    try {
+      data.writeUtf8("12345678901234567890"); // Too many digits.
+      source.readDecimalLong();
+      fail();
+    } catch (NumberFormatException e) {
+      assertEquals("Number too large: 12345678901234567890", e.getMessage());
+    }
+  }
+
+  @Test public void longDecimalStringTooHighThrows() throws IOException {
+    try {
+      data.writeUtf8("9223372036854775808"); // Right size but cannot fit.
+      source.readDecimalLong();
+      fail();
+    } catch (NumberFormatException e) {
+      assertEquals("Number too large: 9223372036854775808", e.getMessage());
+    }
+  }
+
+  @Test public void longDecimalStringTooLowThrows() throws IOException {
+    try {
+      data.writeUtf8("-9223372036854775809"); // Right size but cannot fit.
+      source.readDecimalLong();
+      fail();
+    } catch (NumberFormatException e) {
+      assertEquals("Number too large: -9223372036854775809", e.getMessage());
+    }
+  }
+
+  @Test public void longDecimalStringTooShortThrows() throws IOException {
+    try {
+      data.writeUtf8(" ");
+      source.readDecimalLong();
+      fail();
+    } catch (NumberFormatException e) {
+      assertEquals("Expected leading [0-9] or '-' character but was 0x20", e.getMessage());
     }
   }
 }
