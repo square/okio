@@ -483,6 +483,13 @@ public class BufferedSourceTest {
     assertLongHexString("0000000000000001", 0x1);
   }
 
+  @Test public void hexStringWithManyLeadingZeros() throws IOException {
+    assertLongHexString("00000000000000001", 0x1);
+    assertLongHexString("0000000000000000ffffffffffffffff", 0xffffffffffffffffL);
+    assertLongHexString("00000000000000007fffffffffffffff", 0x7fffffffffffffffL);
+    assertLongHexString(TestUtil.repeat('0', Segment.SIZE + 1) + "1", 0x1);
+  }
+
   private void assertLongHexString(String s, long expected) throws IOException {
     data.writeUtf8(s);
     long actual = source.readHexadecimalUnsignedLong();
@@ -528,14 +535,18 @@ public class BufferedSourceTest {
 
   private void assertLongDecimalString(String s, long expected) throws IOException {
     data.writeUtf8(s);
+    data.writeUtf8("zzz");
     long actual = source.readDecimalLong();
     assertEquals(s + " --> " + expected, expected, actual);
+    assertEquals("zzz", source.readUtf8());
   }
 
   @Test public void longDecimalStringAcrossSegment() throws IOException {
     data.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("1234567890123456");
+    data.writeUtf8("zzz");
     source.skip(Segment.SIZE - 8);
     assertEquals(1234567890123456L, source.readDecimalLong());
+    assertEquals("zzz", source.readUtf8());
   }
 
   @Test public void longDecimalStringTooLongThrows() throws IOException {
@@ -576,5 +587,12 @@ public class BufferedSourceTest {
     } catch (NumberFormatException e) {
       assertEquals("Expected leading [0-9] or '-' character but was 0x20", e.getMessage());
     }
+  }
+
+  @Test public void decimalStringWithManyLeadingZeros() throws IOException {
+    assertLongDecimalString("00000000000000001", 1);
+    assertLongDecimalString("00000000000000009223372036854775807", 9223372036854775807L);
+    assertLongDecimalString("-00000000000000009223372036854775808", -9223372036854775808L);
+    assertLongDecimalString(TestUtil.repeat('0', Segment.SIZE + 1) + "1", 1);
   }
 }
