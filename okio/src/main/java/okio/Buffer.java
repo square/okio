@@ -826,8 +826,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public BufferedSink write(Source source, long byteCount) throws IOException {
-    if (byteCount > 0) {
-      source.read(this, byteCount);
+    while (byteCount > 0) {
+      long read = source.read(this, byteCount);
+      if (read == -1) throw new EOFException();
+      byteCount -= read;
     }
     return this;
   }
