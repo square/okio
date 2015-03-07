@@ -102,6 +102,14 @@ public final class ByteString implements Serializable {
   }
 
   /**
+   * Returns this byte string encoded as <a href="http://www.ietf.org/rfc/rfc4648.txt">URL-safe
+   * Base64</a>.
+   */
+  public String base64Url() {
+    return Base64.encodeUrl(data);
+  }
+
+  /**
    * Decodes the Base64-encoded bytes and returns their value as a byte string.
    * Returns null if {@code base64} is not a Base64-encoded sequence of bytes.
    */
