@@ -102,18 +102,18 @@ public final class ByteString implements Serializable {
   }
 
   /** Returns the MD5 hash of this byte string. */
-  public String md5() {
+  public ByteString md5() {
     return digest("MD5");
   }
 
   /** Returns the SHA-256 hash of this byte string. */
-  public String sha256() {
+  public ByteString sha256() {
     return digest("SHA-256");
   }
 
-  private String digest(String digest) {
+  private ByteString digest(String digest) {
     try {
-      return ByteString.of(MessageDigest.getInstance(digest).digest(data)).hex();
+      return ByteString.of(MessageDigest.getInstance(digest).digest(data));
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError(e);
     }
@@ -311,7 +311,7 @@ public final class ByteString implements Serializable {
       return String.format("ByteString[size=%s data=%s]", data.length, hex());
     }
 
-    return String.format("ByteString[size=%s md5=%s]", data.length, md5());
+    return String.format("ByteString[size=%s md5=%s]", data.length, md5().hex());
   }
 
   private void readObject(ObjectInputStream in) throws IOException {
