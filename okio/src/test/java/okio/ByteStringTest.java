@@ -160,8 +160,17 @@ public class ByteStringTest {
     assertEquals("AA==", ByteString.encodeUtf8("\u0000").base64());
     assertEquals("AAA=", ByteString.encodeUtf8("\u0000\u0000").base64());
     assertEquals("AAAA", ByteString.encodeUtf8("\u0000\u0000\u0000").base64());
-    assertEquals("V2UncmUgZ29ubmEgbWFrZSBhIGZvcnR1bmUgd2l0aCB0aGlzIHBsYWNlLg==",
-        ByteString.encodeUtf8("We're gonna make a fortune with this place.").base64());
+    assertEquals("SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU/ICdib3V0IDIgbWlsbGlvbi4=",
+        ByteString.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64());
+  }
+
+  @Test public void encodeBase64Url() {
+    assertEquals("", ByteString.encodeUtf8("").base64Url());
+    assertEquals("AA==", ByteString.encodeUtf8("\u0000").base64Url());
+    assertEquals("AAA=", ByteString.encodeUtf8("\u0000\u0000").base64Url());
+    assertEquals("AAAA", ByteString.encodeUtf8("\u0000\u0000\u0000").base64Url());
+    assertEquals("SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU_ICdib3V0IDIgbWlsbGlvbi4=",
+        ByteString.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url());
   }
 
   @Test public void ignoreUnnecessaryPadding() {
@@ -173,12 +182,18 @@ public class ByteStringTest {
     assertEquals("", ByteString.decodeBase64("").utf8());
     assertEquals(null, ByteString.decodeBase64("/===")); // Can't do anything with 6 bits!
     assertEquals(ByteString.decodeHex("ff"), ByteString.decodeBase64("//=="));
+    assertEquals(ByteString.decodeHex("ff"), ByteString.decodeBase64("__=="));
     assertEquals(ByteString.decodeHex("ffff"), ByteString.decodeBase64("///="));
+    assertEquals(ByteString.decodeHex("ffff"), ByteString.decodeBase64("___="));
     assertEquals(ByteString.decodeHex("ffffff"), ByteString.decodeBase64("////"));
+    assertEquals(ByteString.decodeHex("ffffff"), ByteString.decodeBase64("____"));
     assertEquals(ByteString.decodeHex("ffffffffffff"), ByteString.decodeBase64("////////"));
+    assertEquals(ByteString.decodeHex("ffffffffffff"), ByteString.decodeBase64("________"));
     assertEquals("What's to be scared about? It's just a little hiccup in the power...",
         ByteString.decodeBase64("V2hhdCdzIHRvIGJlIHNjYXJlZCBhYm91dD8gSXQncyBqdXN0IGEgbGl0dGxlIGhpY2"
             + "N1cCBpbiB0aGUgcG93ZXIuLi4=").utf8());
+    // Uses two encoding styles. Malformed, but supported as a side-effect.
+    assertEquals(ByteString.decodeHex("ffffff"), ByteString.decodeBase64("__//"));
   }
 
   @Test public void decodeBase64WithWhitespace() {
