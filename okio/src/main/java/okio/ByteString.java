@@ -101,6 +101,24 @@ public final class ByteString implements Serializable {
     return Base64.encode(data);
   }
 
+  /** Returns the MD5 hash of this byte string. */
+  public String md5() {
+    return digest("MD5");
+  }
+
+  /** Returns the SHA-256 hash of this byte string. */
+  public String sha256() {
+    return digest("SHA-256");
+  }
+
+  private String digest(String digest) {
+    try {
+      return ByteString.of(MessageDigest.getInstance(digest).digest(data)).hex();
+    } catch (NoSuchAlgorithmException e) {
+      throw new AssertionError(e);
+    }
+  }
+
   /**
    * Decodes the Base64-encoded bytes and returns their value as a byte string.
    * Returns null if {@code base64} is not a Base64-encoded sequence of bytes.
@@ -212,7 +230,7 @@ public final class ByteString implements Serializable {
   }
 
   /**
-   * Returns a byte string that is a substring of this byte string, beginning at the specified 
+   * Returns a byte string that is a substring of this byte string, beginning at the specified
    * index until the end of this string. Returns this byte string if {@code beginIndex} is 0.
    */
   public ByteString substring(int beginIndex) {
@@ -220,8 +238,8 @@ public final class ByteString implements Serializable {
   }
 
   /**
-   * Returns a byte string that is a substring of this byte string, beginning at the specified 
-   * {@code beginIndex} and ends at the specified {@code endIndex}. Returns this byte string if 
+   * Returns a byte string that is a substring of this byte string, beginning at the specified
+   * {@code beginIndex} and ends at the specified {@code endIndex}. Returns this byte string if
    * {@code beginIndex} is 0 and {@code endIndex} is the length of this byte string.
    */
   public ByteString substring(int beginIndex, int endIndex) {
@@ -229,10 +247,10 @@ public final class ByteString implements Serializable {
     if (endIndex > data.length) {
       throw new IllegalArgumentException("endIndex > length(" + data.length + ")");
     }
-    
+
     int subLen = endIndex - beginIndex;
     if (subLen < 0) throw new IllegalArgumentException("endIndex < beginIndex");
-    
+
     if ((beginIndex == 0) && (endIndex == data.length)) {
       return this;
     }
@@ -285,12 +303,7 @@ public final class ByteString implements Serializable {
       return String.format("ByteString[size=%s data=%s]", data.length, hex());
     }
 
-    try {
-      return String.format("ByteString[size=%s md5=%s]", data.length,
-          ByteString.of(MessageDigest.getInstance("MD5").digest(data)).hex());
-    } catch (NoSuchAlgorithmException e) {
-      throw new AssertionError();
-    }
+    return String.format("ByteString[size=%s md5=%s]", data.length, md5());
   }
 
   private void readObject(ObjectInputStream in) throws IOException {
