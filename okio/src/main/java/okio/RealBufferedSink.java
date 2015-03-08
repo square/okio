@@ -15,6 +15,7 @@
  */
 package okio;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -86,8 +87,11 @@ final class RealBufferedSink implements BufferedSink {
   }
 
   @Override public BufferedSink write(Source source, long byteCount) throws IOException {
-    if (byteCount > 0) {
-      source.read(buffer, byteCount);
+    while (byteCount > 0) {
+      long read = source.read(buffer, byteCount);
+      if (read == -1) throw new EOFException();
+      byteCount -= read;
+      emitCompleteSegments();
     }
     return this;
   }

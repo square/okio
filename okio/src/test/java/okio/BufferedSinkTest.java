@@ -1,5 +1,6 @@
 package okio;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -168,6 +169,33 @@ public class BufferedSinkTest {
     sink.flush();
     assertEquals("abcd", data.readUtf8());
     assertEquals("ef", source.readUtf8());
+  }
+
+  @Test public void writeSourceReadsFully() throws Exception {
+    Source source = new ForwardingSource(new Buffer()) {
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
+        sink.writeUtf8("abcd");
+        return 4;
+      }
+    };
+
+    sink.write(source, 8);
+    sink.flush();
+    assertEquals("abcdabcd", data.readUtf8());
+  }
+
+  @Test public void writeSourcePropagatesEof() throws IOException {
+    Source source = new Buffer().writeUtf8("abcd");
+
+    try {
+      sink.write(source, 8);
+      fail();
+    } catch (EOFException expected) {
+    }
+
+    // Ensure that whatever was available was correctly written.
+    sink.flush();
+    assertEquals("abcd", data.readUtf8());
   }
 
   @Test public void writeSourceWithZeroIsNoOp() throws IOException {
