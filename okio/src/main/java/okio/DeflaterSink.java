@@ -73,7 +73,7 @@ public final class DeflaterSink implements Sink {
       head.pos += toDeflate;
       if (head.pos == head.limit) {
         source.head = head.pop();
-        SegmentPool.INSTANCE.recycle(head);
+        SegmentPool.recycle(head);
       }
 
       byteCount -= toDeflate;
@@ -99,7 +99,7 @@ public final class DeflaterSink implements Sink {
         buffer.size += deflated;
         sink.emitCompleteSegments();
       } else if (deflater.needsInput()) {
-        return;
+        return; // TODO(jwilson): do we have a dangling empty tail segment here?
       }
     }
   }

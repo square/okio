@@ -118,23 +118,23 @@ public final class BufferTest {
     // Take 2 * MAX_SIZE segments. This will drain the pool, even if other tests filled it.
     buffer.write(new byte[(int) SegmentPool.MAX_SIZE]);
     buffer.write(new byte[(int) SegmentPool.MAX_SIZE]);
-    assertEquals(0, SegmentPool.INSTANCE.byteCount);
+    assertEquals(0, SegmentPool.byteCount);
 
     // Recycle MAX_SIZE segments. They're all in the pool.
     buffer.readByteString(SegmentPool.MAX_SIZE);
-    assertEquals(SegmentPool.MAX_SIZE, SegmentPool.INSTANCE.byteCount);
+    assertEquals(SegmentPool.MAX_SIZE, SegmentPool.byteCount);
 
     // Recycle MAX_SIZE more segments. The pool is full so they get garbage collected.
     buffer.readByteString(SegmentPool.MAX_SIZE);
-    assertEquals(SegmentPool.MAX_SIZE, SegmentPool.INSTANCE.byteCount);
+    assertEquals(SegmentPool.MAX_SIZE, SegmentPool.byteCount);
 
     // Take MAX_SIZE segments to drain the pool.
     buffer.write(new byte[(int) SegmentPool.MAX_SIZE]);
-    assertEquals(0, SegmentPool.INSTANCE.byteCount);
+    assertEquals(0, SegmentPool.byteCount);
 
     // Take MAX_SIZE more segments. The pool is drained so these will need to be allocated.
     buffer.write(new byte[(int) SegmentPool.MAX_SIZE]);
-    assertEquals(0, SegmentPool.INSTANCE.byteCount);
+    assertEquals(0, SegmentPool.byteCount);
   }
 
   @Test public void moveBytesBetweenBuffersShareSegment() throws Exception {
@@ -567,6 +567,22 @@ public final class BufferTest {
 
     source.copyTo(source, 0, source.size());
     assertEquals(as + bs + as + bs, source.readUtf8());
+  }
+
+  @Test public void copyToEmptySource() throws Exception {
+    Buffer source = new Buffer();
+    Buffer target = new Buffer().writeUtf8("aaa");
+    source.copyTo(target, 0L, 0L);
+    assertEquals("", source.readUtf8());
+    assertEquals("aaa", target.readUtf8());
+  }
+
+  @Test public void copyToEmptyTarget() throws Exception {
+    Buffer source = new Buffer().writeUtf8("aaa");
+    Buffer target = new Buffer();
+    source.copyTo(target, 0L, 3L);
+    assertEquals("aaa", source.readUtf8());
+    assertEquals("aaa", target.readUtf8());
   }
 
   /**

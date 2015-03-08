@@ -89,7 +89,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return this; // Nowhere to emit to!
   }
 
-  @Override public BufferedSink emit() throws IOException {
+  @Override public BufferedSink emit() {
     return this; // Nowhere to emit to!
   }
 
@@ -101,7 +101,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     if (size < byteCount) throw new EOFException();
   }
 
-  @Override public boolean request(long byteCount) throws IOException {
+  @Override public boolean request(long byteCount) {
     return size >= byteCount;
   }
 
@@ -167,30 +167,26 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     checkOffsetAndCount(size, offset, byteCount);
     if (byteCount == 0) return this;
 
-    Segment source = head;
-    Segment target = out.writableSegment(1);
     out.size += byteCount;
 
-    while (byteCount > 0) {
-      // If necessary, advance to a readable source segment. This won't repeat after the first copy.
-      while (offset >= source.limit - source.pos) {
-        offset -= (source.limit - source.pos);
-        source = source.next;
-      }
+    // Skip segments that we aren't copying from.
+    Segment s = head;
+    for (; offset >= (s.limit - s.pos); s = s.next) {
+      offset -= (s.limit - s.pos);
+    }
 
-      // If necessary, append another target segment.
-      if (target.limit == Segment.SIZE) {
-        target = target.push(SegmentPool.INSTANCE.take());
+    // Copy one segment at a time.
+    for (; byteCount > 0; s = s.next) {
+      Segment copy = new Segment(s);
+      copy.pos += offset;
+      copy.limit = Math.min(copy.pos + (int) byteCount, copy.limit);
+      if (out.head == null) {
+        out.head = copy.next = copy.prev = copy;
+      } else {
+        out.head.prev.push(copy);
       }
-
-      // Copy bytes from the source segment to the target segment.
-      long sourceReadable = Math.min(source.limit - (source.pos + offset), byteCount);
-      long targetWritable = Segment.SIZE - target.limit;
-      int toCopy = (int) Math.min(sourceReadable, targetWritable);
-      System.arraycopy(source.data, source.pos + (int) offset, target.data, target.limit, toCopy);
-      offset += toCopy;
-      target.limit += toCopy;
-      byteCount -= toCopy;
+      byteCount -= copy.limit - copy.pos;
+      offset = 0;
     }
 
     return this;
@@ -218,7 +214,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       if (s.pos == s.limit) {
         Segment toRecycle = s;
         head = s = toRecycle.pop();
-        SegmentPool.INSTANCE.recycle(toRecycle);
+        SegmentPool.recycle(toRecycle);
       }
     }
 
@@ -265,7 +261,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     // Omit the tail if it's still writable.
     Segment tail = head.prev;
-    if (tail.limit < Segment.SIZE) {
+    if (tail.limit < Segment.SIZE && tail.owner) {
       result -= tail.limit - tail.pos;
     }
 
@@ -285,7 +281,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     if (pos == limit) {
       head = segment.pop();
-      SegmentPool.INSTANCE.recycle(segment);
+      SegmentPool.recycle(segment);
     } else {
       segment.pos = pos;
     }
@@ -324,7 +320,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     if (pos == limit) {
       head = segment.pop();
-      SegmentPool.INSTANCE.recycle(segment);
+      SegmentPool.recycle(segment);
     } else {
       segment.pos = pos;
     }
@@ -356,7 +352,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     if (pos == limit) {
       head = segment.pop();
-      SegmentPool.INSTANCE.recycle(segment);
+      SegmentPool.recycle(segment);
     } else {
       segment.pos = pos;
     }
@@ -390,7 +386,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     if (pos == limit) {
       head = segment.pop();
-      SegmentPool.INSTANCE.recycle(segment);
+      SegmentPool.recycle(segment);
     } else {
       segment.pos = pos;
     }
@@ -588,7 +584,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     if (s.pos == s.limit) {
       head = s.pop();
-      SegmentPool.INSTANCE.recycle(s);
+      SegmentPool.recycle(s);
     }
 
     return result;
@@ -675,7 +671,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     if (s.pos == s.limit) {
       head = s.pop();
-      SegmentPool.INSTANCE.recycle(s);
+      SegmentPool.recycle(s);
     }
 
     return toCopy;
@@ -706,14 +702,15 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       if (head.pos == head.limit) {
         Segment toRecycle = head;
         head = toRecycle.pop();
-        SegmentPool.INSTANCE.recycle(toRecycle);
+        SegmentPool.recycle(toRecycle);
       }
     }
   }
 
   @Override public Buffer write(ByteString byteString) {
     if (byteString == null) throw new IllegalArgumentException("byteString == null");
-    return write(byteString.data, 0, byteString.data.length);
+    byteString.write(this);
+    return this;
   }
 
   @Override public Buffer writeUtf8(String string) {
@@ -977,13 +974,13 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     if (minimumCapacity < 1 || minimumCapacity > Segment.SIZE) throw new IllegalArgumentException();
 
     if (head == null) {
-      head = SegmentPool.INSTANCE.take(); // Acquire a first segment.
+      head = SegmentPool.take(); // Acquire a first segment.
       return head.next = head.prev = head;
     }
 
     Segment tail = head.prev;
-    if (tail.limit + minimumCapacity > Segment.SIZE) {
-      tail = tail.push(SegmentPool.INSTANCE.take()); // Append a new empty segment to fill up.
+    if (tail.limit + minimumCapacity > Segment.SIZE || !tail.owner) {
+      tail = tail.push(SegmentPool.take()); // Append a new empty segment to fill up.
     }
     return tail;
   }
@@ -1047,16 +1044,17 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       // Is a prefix of the source's head segment all that we need to move?
       if (byteCount < (source.head.limit - source.head.pos)) {
         Segment tail = head != null ? head.prev : null;
-        if (tail == null || byteCount + (tail.limit - tail.pos) > Segment.SIZE) {
-          // We're going to need another segment. Split the source's head
-          // segment in two, then move the first of those two to this buffer.
-          source.head = source.head.split((int) byteCount);
-        } else {
+        if (tail != null && tail.owner
+            && (byteCount + tail.limit - (tail.shared ? 0 : tail.pos) <= Segment.SIZE)) {
           // Our existing segments are sufficient. Move bytes from source's head to our tail.
           source.head.writeTo(tail, (int) byteCount);
           source.size -= byteCount;
           size += byteCount;
           return;
+        } else {
+          // We're going to need another segment. Split the source's head
+          // segment in two, then move the first of those two to this buffer.
+          source.head = source.head.split((int) byteCount);
         }
       }
 
@@ -1128,7 +1126,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     Segment s = head;
     if (s == null) return -1L;
     long offset = 0L;
-    byte[] toFind = targetBytes.data;
+    byte[] toFind = targetBytes.toByteArray();
     do {
       int segmentByteCount = s.limit - s.pos;
       if (fromIndex >= segmentByteCount) {
@@ -1244,11 +1242,28 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     Buffer result = new Buffer();
     if (size == 0) return result;
 
-    result.write(head.data, head.pos, head.limit - head.pos);
+    result.head = new Segment(head);
+    result.head.next = result.head.prev = result.head;
     for (Segment s = head.next; s != head; s = s.next) {
-      result.write(s.data, s.pos, s.limit - s.pos);
+      result.head.prev.push(new Segment(s));
     }
-
+    result.size = size;
     return result;
+  }
+
+  /** Returns an immutable copy of this buffer as a byte string. */
+  public ByteString snapshot() {
+    if (size > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("size > Integer.MAX_VALUE: " + size);
+    }
+    return snapshot((int) size);
+  }
+
+  /**
+   * Returns an immutable copy of the first {@code byteCount} bytes of this buffer as a byte string.
+   */
+  public ByteString snapshot(int byteCount) {
+    if (byteCount == 0) return ByteString.EMPTY;
+    return new SegmentedByteString(this, byteCount);
   }
 }
