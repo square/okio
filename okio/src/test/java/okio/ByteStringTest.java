@@ -117,16 +117,16 @@ public class ByteStringTest {
   @Test public void toAsciiStartsUppercaseEndsLowercase() throws Exception {
     assertEquals(ByteString.encodeUtf8("ABCD"), ByteString.encodeUtf8("ABcd").toAsciiUppercase());
   }
-  
+
   @Test public void substring() throws Exception {
     ByteString byteString = ByteString.encodeUtf8("Hello, World!");
-    
+
     assertEquals(byteString.substring(0), byteString);
     assertEquals(byteString.substring(0, 5), ByteString.encodeUtf8("Hello"));
     assertEquals(byteString.substring(7), ByteString.encodeUtf8("World!"));
     assertEquals(byteString.substring(6, 6), ByteString.encodeUtf8(""));
   }
-  
+
   @Test public void substringWithInvalidBounds() throws Exception {
     ByteString byteString = ByteString.encodeUtf8("Hello, World!");
 
@@ -179,6 +179,11 @@ public class ByteStringTest {
     assertEquals("What's to be scared about? It's just a little hiccup in the power...",
         ByteString.decodeBase64("V2hhdCdzIHRvIGJlIHNjYXJlZCBhYm91dD8gSXQncyBqdXN0IGEgbGl0dGxlIGhpY2"
             + "N1cCBpbiB0aGUgcG93ZXIuLi4=").utf8());
+  }
+
+  @Test public void decodeBase64FromBytes() {
+    assertEquals(ByteString.of(), ByteString.decodeBase64("".getBytes()));
+    assertEquals("chic", ByteString.decodeBase64("Y2hpYw==".getBytes()).utf8());
   }
 
   @Test public void decodeBase64WithWhitespace() {
