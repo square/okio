@@ -454,7 +454,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
       if (pos == limit) {
         head = segment.pop();
-        SegmentPool.INSTANCE.recycle(segment);
+        SegmentPool.recycle(segment);
       } else {
         segment.pos = pos;
       }
@@ -510,7 +510,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
       if (pos == limit) {
         head = segment.pop();
-        SegmentPool.INSTANCE.recycle(segment);
+        SegmentPool.recycle(segment);
       } else {
         segment.pos = pos;
       }
