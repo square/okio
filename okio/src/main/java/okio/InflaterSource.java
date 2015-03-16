@@ -70,9 +70,13 @@ public final class InflaterSource implements Source {
           sink.size += bytesInflated;
           return bytesInflated;
         }
-        // TODO(jwilson): do we have an empty tail?
         if (inflater.finished() || inflater.needsDictionary()) {
           releaseInflatedBytes();
+          if (tail.pos == tail.limit) {
+            // We allocated a tail segment, but didn't end up needing it. Recycle!
+            sink.head = tail.pop();
+            SegmentPool.recycle(tail);
+          }
           return -1;
         }
         if (sourceExhausted) throw new EOFException("source exhausted prematurely");

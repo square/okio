@@ -17,6 +17,7 @@ package okio;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import org.junit.Test;
@@ -72,6 +73,19 @@ public final class InflaterSourceTest {
     Buffer deflated = deflate(original);
     Buffer inflated = inflate(deflated);
     assertEquals(original, inflated.readByteString());
+  }
+
+  @Test public void inflateIntoNonemptySink() throws Exception {
+    for (int i = 0; i < Segment.SIZE; i++) {
+      Buffer inflated = new Buffer().writeUtf8(repeat('a', i));
+      Buffer deflated = decodeBase64(
+          "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=");
+      InflaterSource source = new InflaterSource(deflated, new Inflater());
+      while (source.read(inflated, Integer.MAX_VALUE) != -1) {
+      }
+      inflated.skip(i);
+      assertEquals("God help us, we're in the hands of engineers.", inflated.readUtf8());
+    }
   }
 
   private Buffer decodeBase64(String s) {
