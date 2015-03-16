@@ -101,6 +101,26 @@ final class SegmentedByteString extends ByteString {
     return toByteString().toAsciiUppercase();
   }
 
+  @Override public ByteString md5() {
+    return toByteString().md5();
+  }
+
+  @Override public ByteString sha256() {
+    return toByteString().sha256();
+  }
+
+  @Override public String base64Url() {
+    return toByteString().base64Url();
+  }
+
+  @Override public ByteString substring(int beginIndex) {
+    return toByteString().substring(beginIndex);
+  }
+
+  @Override public ByteString substring(int beginIndex, int endIndex) {
+    return toByteString().substring(beginIndex, endIndex);
+  }
+
   @Override public byte getByte(int pos) {
     checkOffsetAndCount(directory[segments.length - 1], pos, 1);
     int segment = segment(pos);
