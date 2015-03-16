@@ -1,6 +1,31 @@
 Change Log
 ==========
 
+## Version 1.3.0
+
+_2015-03-16_
+
+ * New: Read and write signed decimal and unsigned hexadecimal values in
+   `BufferedSource` and `BufferedSink`. Unlike the alternatives, these methods
+   don’t do any memory allocations!
+ * New: Segment sharing. This improves the runtime of operations like
+   `Buffer.clone()` and `Buffer.copyTo()` by sharing underlying segments between
+   buffers.
+ * New: `Buffer.snapshot()` returns an immutable snapshot of a buffer as a
+   `ByteString`. This builds on segment sharing so that snapshots are shallow,
+   immutable copies.
+ * New: `ByteString.rangeEquals()`.
+ * New: `ByteString.md5()` and `ByteString.sha256()`.
+ * New: `ByteString.base64Url()` returns URL-safe Base64. The existing
+   decoding method has been extended to support URL-safe Base64 input.
+ * New: `ByteString.substring()` returns a prefix, infix, or suffix.
+ * New: `Sink` now implements `java.io.Flushable`.
+ * Fix: `Buffer.write(Source, long)` now always writes fully. The previous
+   behavior would return as soon as any data had been written; this was
+   inconsistent with all other _write()_ methods in the API.
+ * Fix: don't leak empty segments in DeflaterSink and InflaterSource. (This was
+   unlikely to cause problems in practice.)
+
 ## Version 1.2.0
 
 _2014-12-30_
