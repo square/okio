@@ -22,15 +22,24 @@ package okio;
 
 import java.io.UnsupportedEncodingException;
 
+import java.nio.charset.Charset;
+
+
 final class Base64 {
+  static private Charset utf8 = Charset.forName("utf8");
+
   private Base64() {
   }
 
-  public static byte[] decode(String in) {
+  public static byte[] decode(final String in) {
+      return decode(in.getBytes(utf8));
+  }
+
+  public static byte[] decode(final byte[] in) {
     // Ignore trailing '=' padding and whitespace from the input.
-    int limit = in.length();
+    int limit = in.length;
     for (; limit > 0; limit--) {
-      char c = in.charAt(limit - 1);
+      byte c = in[limit - 1];
       if (c != '=' && c != '\n' && c != '\r' && c != ' ' && c != '\t') {
         break;
       }
@@ -43,7 +52,7 @@ final class Base64 {
 
     int word = 0;
     for (int pos = 0; pos < limit; pos++) {
-      char c = in.charAt(pos);
+      byte c = in[pos];
 
       int bits;
       if (c >= 'A' && c <= 'Z') {

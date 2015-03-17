@@ -212,6 +212,11 @@ public class ByteStringTest {
     assertEquals(ByteString.decodeHex("ffffff"), ByteString.decodeBase64("__//"));
   }
 
+  @Test public void decodeBase64FromBytes() {
+    assertEquals(ByteString.of(), ByteString.decodeBase64("".getBytes()));
+    assertEquals("chic", ByteString.decodeBase64("Y2hpYw==".getBytes()).utf8());
+  }
+
   @Test public void decodeBase64WithWhitespace() {
     assertEquals("\u0000\u0000\u0000", ByteString.decodeBase64(" AA AA ").utf8());
     assertEquals("\u0000\u0000\u0000", ByteString.decodeBase64(" AA A\r\nA ").utf8());
