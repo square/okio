@@ -58,9 +58,23 @@ final class RealBufferedSink implements BufferedSink {
     return emitCompleteSegments();
   }
 
+  @Override public BufferedSink writeUtf8(String string, int beginIndex, int endIndex)
+      throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    buffer.writeUtf8(string, beginIndex, endIndex);
+    return emitCompleteSegments();
+  }
+
   @Override public BufferedSink writeString(String string, Charset charset) throws IOException {
     if (closed) throw new IllegalStateException("closed");
     buffer.writeString(string, charset);
+    return emitCompleteSegments();
+  }
+
+  @Override public BufferedSink writeString(String string, int beginIndex, int endIndex,
+      Charset charset) throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    buffer.writeString(string, beginIndex, endIndex, charset);
     return emitCompleteSegments();
   }
 

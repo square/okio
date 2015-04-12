@@ -160,11 +160,29 @@ public class BufferedSinkTest {
     assertEquals("Buffer[size=16 data=2143658701efcdab005cb1b0bebafeca]", data.toString());
   }
 
-  @Test public void writeSpecificCharset() throws Exception {
+  @Test public void writeStringUtf8() throws IOException {
+    sink.writeUtf8("təˈranəˌsôr");
+    sink.flush();
+    assertEquals(ByteString.decodeHex("74c999cb8872616ec999cb8c73c3b472"), data.readByteString());
+  }
+
+  @Test public void writeSubstringUtf8() throws IOException {
+    sink.writeUtf8("təˈranəˌsôr", 3, 7);
+    sink.flush();
+    assertEquals(ByteString.decodeHex("72616ec999"), data.readByteString());
+  }
+
+  @Test public void writeStringWithCharset() throws IOException {
     sink.writeString("təˈranəˌsôr", Charset.forName("utf-32be"));
     sink.flush();
     assertEquals(ByteString.decodeHex("0000007400000259000002c800000072000000610000006e00000259"
         + "000002cc00000073000000f400000072"), data.readByteString());
+  }
+
+  @Test public void writeSubstringWithCharset() throws IOException {
+    sink.writeString("təˈranəˌsôr", 3, 7, Charset.forName("utf-32be"));
+    sink.flush();
+    assertEquals(ByteString.decodeHex("00000072000000610000006e00000259"), data.readByteString());
   }
 
   @Test public void writeAll() throws Exception {

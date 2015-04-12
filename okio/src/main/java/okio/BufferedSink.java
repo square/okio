@@ -53,8 +53,21 @@ public interface BufferedSink extends Sink {
   /** Encodes {@code string} in UTF-8 and writes it to this sink. */
   BufferedSink writeUtf8(String string) throws IOException;
 
+  /**
+   * Encodes the characters at {@code beginIndex} up to {@code endIndex} from {@code string} in
+   * UTF-8 and writes it to this sink.
+   */
+  BufferedSink writeUtf8(String string, int beginIndex, int endIndex) throws IOException;
+
   /** Encodes {@code string} in {@code charset} and writes it to this sink. */
   BufferedSink writeString(String string, Charset charset) throws IOException;
+
+  /**
+   * Encodes the characters at {@code beginIndex} up to {@code endIndex} from {@code string} in
+   * {@code charset} and writes it to this sink.
+   */
+  BufferedSink writeString(String string, int beginIndex, int endIndex, Charset charset)
+      throws IOException;
 
   /** Writes a byte to this sink. */
   BufferedSink writeByte(int b) throws IOException;
