@@ -714,17 +714,29 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public Buffer writeUtf8(String string) {
+    return writeUtf8(string, 0, string.length());
+  }
+
+  @Override public Buffer writeUtf8(String string, int beginIndex, int endIndex) {
     if (string == null) throw new IllegalArgumentException("string == null");
+    if (beginIndex < 0) throw new IllegalAccessError("beginIndex < 0: " + beginIndex);
+    if (endIndex < beginIndex) {
+      throw new IllegalArgumentException("endIndex < beginIndex: " + endIndex + " < " + beginIndex);
+    }
+    if (endIndex > string.length()) {
+      throw new IllegalArgumentException(
+          "endIndex > string.length: " + endIndex + " > " + string.length());
+    }
 
     // Transcode a UTF-16 Java String to UTF-8 bytes.
-    for (int i = 0, length = string.length(); i < length;) {
+    for (int i = beginIndex; i < endIndex;) {
       int c = string.charAt(i);
 
       if (c < 0x80) {
         Segment tail = writableSegment(1);
         byte[] data = tail.data;
         int segmentOffset = tail.limit - i;
-        int runLimit = Math.min(length, Segment.SIZE - segmentOffset);
+        int runLimit = Math.min(endIndex, Segment.SIZE - segmentOffset);
 
         // Emit a 7-bit character with 1 byte.
         data[segmentOffset + i++] = (byte) c; // 0xxxxxxx
@@ -757,7 +769,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       } else {
         // c is a surrogate. Make sure it is a high surrogate & that its successor is a low
         // surrogate. If not, the UTF-16 is invalid, in which case we emit a replacement character.
-        int low = i + 1 < length ? string.charAt(i + 1) : 0;
+        int low = i + 1 < endIndex ? string.charAt(i + 1) : 0;
         if (c > 0xdbff || low < 0xdc00 || low > 0xdfff) {
           writeByte('?');
           i++;
@@ -782,10 +794,23 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public Buffer writeString(String string, Charset charset) {
+    return writeString(string, 0, string.length(), charset);
+  }
+
+  @Override
+  public Buffer writeString(String string, int beginIndex, int endIndex, Charset charset) {
     if (string == null) throw new IllegalArgumentException("string == null");
+    if (beginIndex < 0) throw new IllegalAccessError("beginIndex < 0: " + beginIndex);
+    if (endIndex < beginIndex) {
+      throw new IllegalArgumentException("endIndex < beginIndex: " + endIndex + " < " + beginIndex);
+    }
+    if (endIndex > string.length()) {
+      throw new IllegalArgumentException(
+          "endIndex > string.length: " + endIndex + " > " + string.length());
+    }
     if (charset == null) throw new IllegalArgumentException("charset == null");
     if (charset.equals(Util.UTF_8)) return writeUtf8(string);
-    byte[] data = string.getBytes(charset);
+    byte[] data = string.substring(beginIndex, endIndex).getBytes(charset);
     return write(data, 0, data.length);
   }
 
