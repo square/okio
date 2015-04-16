@@ -37,6 +37,15 @@ import static org.junit.Assert.fail;
  * BufferedSource behavior use BufferedSinkTest or BufferedSourceTest, respectively.
  */
 public final class BufferTest {
+  @Test public void isEmpty() {
+    Buffer buffer = new Buffer();
+    assertTrue(buffer.isEmpty());
+    buffer.writeByte('a');
+    assertFalse(buffer.isEmpty());
+    buffer.readByte();
+    assertTrue(buffer.isEmpty());
+  }
+
   @Test public void readAndWriteUtf8() throws Exception {
     Buffer buffer = new Buffer();
     buffer.writeUtf8("ab");
