@@ -234,40 +234,36 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public long readDecimalLong() throws IOException {
-    int pos = 0;
-    while (true) {
-      if (!request(pos + 1)) {
-        break; // No more data.
-      }
+    require(1);
+
+    for (int pos = 0; request(pos + 1); pos++) {
       byte b = buffer.getByte(pos);
       if ((b < '0' || b > '9') && (pos != 0 || b != '-')) {
-        break; // Non-digit, or non-leading negative sign.
+        // Non-digit, or non-leading negative sign.
+        if (pos == 0) {
+          throw new NumberFormatException(String.format(
+              "Expected leading [0-9] or '-' character but was %#x", b));
+        }
+        break;
       }
-      pos++;
-    }
-    if (pos == 0) {
-      throw new NumberFormatException("Expected leading [0-9] or '-' character but was 0x"
-          + Integer.toHexString(buffer.getByte(0)));
     }
 
     return buffer.readDecimalLong();
   }
 
   @Override public long readHexadecimalUnsignedLong() throws IOException {
-    int pos = 0;
-    while (true) {
-      if (!request(pos + 1)) {
-        break; // No more data.
-      }
+    require(1);
+
+    for (int pos = 0; request(pos + 1); pos++) {
       byte b = buffer.getByte(pos);
       if ((b < '0' || b > '9') && (b < 'a' || b > 'f') && (b < 'A' || b > 'F')) {
-        break; // Non-digit, or non-leading negative sign.
+        // Non-digit, or non-leading negative sign.
+        if (pos == 0) {
+          throw new NumberFormatException(String.format(
+              "Expected leading [0-9a-fA-F] character but was %#x", b));
+        }
+        break;
       }
-      pos += 1;
-    }
-    if (pos == 0) {
-      throw new NumberFormatException("Expected leading [0-9a-fA-F] character but was 0x"
-          + Integer.toHexString(buffer.getByte(0)));
     }
 
     return buffer.readHexadecimalUnsignedLong();
