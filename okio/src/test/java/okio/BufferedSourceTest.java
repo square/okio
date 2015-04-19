@@ -537,6 +537,15 @@ public class BufferedSourceTest {
     }
   }
 
+  @Test public void longHexEmptySourceThrows() throws IOException {
+    try {
+      data.writeUtf8("");
+      source.readHexadecimalUnsignedLong();
+      fail();
+    } catch (IllegalStateException | EOFException expected) {
+    }
+  }
+
   @Test public void longDecimalString() throws IOException {
     assertLongDecimalString("-9223372036854775808", -9223372036854775808L);
     assertLongDecimalString("-1", -1L);
@@ -601,6 +610,15 @@ public class BufferedSourceTest {
       fail();
     } catch (NumberFormatException e) {
       assertEquals("Expected leading [0-9] or '-' character but was 0x20", e.getMessage());
+    }
+  }
+
+  @Test public void longDecimalEmptyThrows() throws IOException {
+    try {
+      data.writeUtf8("");
+      source.readDecimalLong();
+      fail();
+    } catch (IllegalStateException | EOFException expected) {
     }
   }
 
