@@ -35,6 +35,11 @@ public class GzipSourceTest {
     assertGzipped(gzipped);
   }
 
+  @Test public void gunzipEmpty() throws IOException {
+    Source gzip = new GzipSource(new Buffer());
+    assertEquals(-1, gzip.read(new Buffer(), 1));
+  }
+
   @Test public void gunzip_withHCRC() throws Exception {
     CRC32 hcrc = new CRC32();
     ByteString gzipHeader = gzipHeaderWithFlags((byte) 0x02);
