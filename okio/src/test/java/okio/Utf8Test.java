@@ -15,9 +15,13 @@
  */
 package okio;
 
+import java.io.EOFException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public final class Utf8Test {
   @Test public void oneByteCharacters() throws Exception {
@@ -53,16 +57,16 @@ public final class Utf8Test {
   }
 
   @Test public void danglingHighSurrogate() throws Exception {
-    assertEncoded("3f", "\ud800"); // "?"
+    assertStringEncoded("3f", "\ud800"); // "?"
   }
 
   @Test public void lowSurrogateWithoutHighSurrogate() throws Exception {
-    assertEncoded("3f", "\udc00"); // "?"
+    assertStringEncoded("3f", "\udc00"); // "?"
   }
 
   @Test public void highSurrogateFollowedByNonSurrogate() throws Exception {
-    assertEncoded("3f61", "\ud800\u0061"); // "?a": Following character is too low.
-    assertEncoded("3fee8080", "\ud800\ue000"); // "?\ue000": Following character is too high.
+    assertStringEncoded("3f61", "\ud800\u0061"); // "?a": Following character is too low.
+    assertStringEncoded("3fee8080", "\ud800\ue000"); // "?\ue000": Following character is too high.
   }
 
   @Test public void multipleSegmentString() throws Exception {
@@ -83,11 +87,128 @@ public final class Utf8Test {
     assertEquals(a + b + c, buffer.readUtf8());
   }
 
-  private void assertEncoded(String hex, int... codePoints) throws Exception {
-    assertEncoded(hex, new String(codePoints, 0, codePoints.length));
+  @Test public void readEmptyBufferThrowsEofException() throws Exception {
+    Buffer buffer = new Buffer();
+    try {
+      buffer.readUtf8CodePoint();
+      fail();
+    } catch (EOFException expected) {
+    }
   }
 
-  private void assertEncoded(String hex, String string) throws Exception {
+  @Test public void readLeadingContinuationByteReturnsReplacementCharacter() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.writeByte(0xbf);
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertTrue(buffer.exhausted());
+  }
+
+  @Test public void readMissingContinuationBytesThrowsEofException() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.writeByte(0xdf);
+    try {
+      buffer.readUtf8CodePoint();
+      fail();
+    } catch (EOFException expected) {
+    }
+    assertFalse(buffer.exhausted()); // Prefix byte wasn't consumed.
+  }
+
+  @Test public void readTooLargeCodepointReturnsReplacementCharacter() throws Exception {
+    // 5-byte and 6-byte code points are not supported.
+    Buffer buffer = new Buffer();
+    buffer.write(ByteString.decodeHex("f888808080"));
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertTrue(buffer.exhausted());
+  }
+
+  @Test public void readNonContinuationBytesReturnsReplacementCharacter() throws Exception {
+    // Use a non-continuation byte where a continuation byte is expected.
+    Buffer buffer = new Buffer();
+    buffer.write(ByteString.decodeHex("df20"));
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(0x20, buffer.readUtf8CodePoint()); // Non-continuation character not consumed.
+    assertTrue(buffer.exhausted());
+  }
+
+  @Test public void readCodePointBeyondUnicodeMaximum() throws Exception {
+    // A 4-byte encoding with data above the U+10ffff Unicode maximum.
+    Buffer buffer = new Buffer();
+    buffer.write(ByteString.decodeHex("f4908080"));
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertTrue(buffer.exhausted());
+  }
+
+  @Test public void readSurrogateCodePoint() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.write(ByteString.decodeHex("eda080"));
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertTrue(buffer.exhausted());
+    buffer.write(ByteString.decodeHex("edbfbf"));
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertTrue(buffer.exhausted());
+  }
+
+  @Test public void readOverlongCodePoint() throws Exception {
+    // Use 2 bytes to encode data that only needs 1 byte.
+    Buffer buffer = new Buffer();
+    buffer.write(ByteString.decodeHex("c080"));
+    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertTrue(buffer.exhausted());
+  }
+
+  @Test public void writeSurrogateCodePoint() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.writeUtf8CodePoint(0xd7ff); // Below lowest surrogate is okay.
+    try {
+      buffer.writeUtf8CodePoint(0xd800); // Lowest surrogate throws.
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      buffer.writeUtf8CodePoint(0xdfff); // Highest surrogate throws.
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+    buffer.writeUtf8CodePoint(0xe000); // Above highest surrogate is okay.
+  }
+
+  @Test public void writeCodePointBeyondUnicodeMaximum() throws Exception {
+    Buffer buffer = new Buffer();
+    try {
+      buffer.writeUtf8CodePoint(0x110000);
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  private void assertEncoded(String hex, int... codePoints) throws Exception {
+    assertCodePointEncoded(hex, codePoints);
+    assertCodePointDecoded(hex, codePoints);
+    assertStringEncoded(hex, new String(codePoints, 0, codePoints.length));
+  }
+
+  private void assertCodePointEncoded(String hex, int... codePoints) throws Exception {
+    Buffer buffer = new Buffer();
+    for (int codePoint : codePoints) {
+      buffer.writeUtf8CodePoint(codePoint);
+    }
+    assertEquals(buffer.readByteString(), ByteString.decodeHex(hex));
+  }
+
+  private void assertCodePointDecoded(String hex, int... codePoints) throws Exception {
+    Buffer buffer = new Buffer().write(ByteString.decodeHex(hex));
+    for (int codePoint : codePoints) {
+      assertEquals(codePoint, buffer.readUtf8CodePoint());
+    }
+    assertTrue(buffer.exhausted());
+  }
+
+  private void assertStringEncoded(String hex, String string) throws Exception {
     ByteString expectedUtf8 = ByteString.decodeHex(hex);
 
     // Confirm our expectations are consistent with the platform.
