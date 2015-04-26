@@ -109,7 +109,7 @@ final class RealBufferedSource implements BufferedSource {
       // The underlying source is exhausted. Copy the bytes we got before rethrowing.
       int offset = 0;
       while (buffer.size > 0) {
-        int read = buffer.read(sink, offset, (int) buffer.size - offset);
+        int read = buffer.read(sink, offset, (int) buffer.size);
         if (read == -1) throw new AssertionError();
         offset += read;
       }
@@ -201,6 +201,21 @@ final class RealBufferedSource implements BufferedSource {
           + " content=" + data.readByteString().hex() + "...");
     }
     return buffer.readUtf8Line(newline);
+  }
+
+  @Override public int readUtf8CodePoint() throws IOException {
+    require(1);
+
+    byte b0 = buffer.getByte(0);
+    if ((b0 & 0xe0) == 0xc0) {
+      require(2);
+    } else if ((b0 & 0xf0) == 0xe0) {
+      require(3);
+    } else if ((b0 & 0xf8) == 0xf0) {
+      require(4);
+    }
+
+    return buffer.readUtf8CodePoint();
   }
 
   @Override public short readShort() throws IOException {

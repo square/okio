@@ -173,6 +173,20 @@ public interface BufferedSource extends Source {
   String readUtf8LineStrict() throws IOException;
 
   /**
+   * Removes and returns a single UTF-8 code point, reading between 1 and 4 bytes as necessary.
+   *
+   * <p>If this source is exhausted before a complete code point can be read, this throws an {@link
+   * java.io.EOFException} and consumes no input.
+   *
+   * <p>If this source doesn't start with a properly-encoded UTF-8 code point, this method will
+   * remove 1 or more non-UTF-8 bytes and return the replacement character ({@code U+FFFD}). This
+   * covers encoding problems (the input is not properly-encoded UTF-8), characters out of range
+   * (beyond the 0x10ffff limit of Unicode), code points for UTF-16 surrogates (U+d800..U+dfff) and
+   * overlong encodings (such as {@code 0xc080} for the NUL character in modified UTF-8).
+   */
+  int readUtf8CodePoint() throws IOException;
+
+  /**
    * Removes all bytes from this, decodes them as {@code charset}, and returns
    * the string.
    */

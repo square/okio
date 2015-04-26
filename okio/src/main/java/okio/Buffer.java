@@ -47,6 +47,7 @@ import static okio.Util.reverseBytesLong;
 public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   private static final byte[] DIGITS =
       { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+  static final int REPLACEMENT_CHARACTER = '\ufffd';
 
   Segment head;
   long size;
@@ -626,6 +627,81 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     }
   }
 
+  @Override public int readUtf8CodePoint() throws EOFException {
+    if (size == 0) throw new EOFException();
+
+    byte b0 = getByte(0);
+    int codePoint;
+    int byteCount;
+    int min;
+
+    if ((b0 & 0x80) == 0) {
+      // 0xxxxxxx.
+      codePoint = b0 & 0x7f;
+      byteCount = 1; // 7 bits (ASCII).
+      min = 0x0;
+
+    } else if ((b0 & 0xe0) == 0xc0) {
+      // 0x110xxxxx
+      codePoint = b0 & 0x1f;
+      byteCount = 2; // 11 bits (5 + 6).
+      min = 0x80;
+
+    } else if ((b0 & 0xf0) == 0xe0) {
+      // 0x1110xxxx
+      codePoint = b0 & 0x0f;
+      byteCount = 3; // 16 bits (4 + 6 + 6).
+      min = 0x800;
+
+    } else if ((b0 & 0xf8) == 0xf0) {
+      // 0x11110xxx
+      codePoint = b0 & 0x07;
+      byteCount = 4; // 21 bits (3 + 6 + 6 + 6).
+      min = 0x10000;
+
+    } else {
+      // We expected the first byte of a code point but got something else.
+      skip(1);
+      return REPLACEMENT_CHARACTER;
+    }
+
+    if (size < byteCount) {
+      throw new EOFException("size < " + byteCount + ": " + size
+          + " (to read code point prefixed 0x" + Integer.toHexString(b0) + ")");
+    }
+
+    // Read the continuation bytes. If we encounter a non-continuation byte, the sequence consumed
+    // thus far is truncated and is decoded as the replacement character. That non-continuation byte
+    // is left in the stream for processing by the next call to readUtf8CodePoint().
+    for (int i = 1; i < byteCount; i++) {
+      byte b = getByte(i);
+      if ((b & 0xc0) == 0x80) {
+        // 0x10xxxxxx
+        codePoint <<= 6;
+        codePoint |= b & 0x3f;
+      } else {
+        skip(i);
+        return REPLACEMENT_CHARACTER;
+      }
+    }
+
+    skip(byteCount);
+
+    if (codePoint > 0x10ffff) {
+      return REPLACEMENT_CHARACTER; // Reject code points larger than the Unicode maximum.
+    }
+
+    if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
+      return REPLACEMENT_CHARACTER; // Reject partial surrogates.
+    }
+
+    if (codePoint < min) {
+      return REPLACEMENT_CHARACTER; // Reject overlong code points.
+    }
+
+    return codePoint;
+  }
+
   @Override public byte[] readByteArray() {
     try {
       return readByteArray(size);
@@ -788,6 +864,42 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
         writeByte(codePoint       & 0x3f | 0x80); // 10yyyyyy
         i += 2;
       }
+    }
+
+    return this;
+  }
+
+  @Override public Buffer writeUtf8CodePoint(int codePoint) {
+    if (codePoint < 0x80) {
+      // Emit a 7-bit code point with 1 byte.
+      writeByte(codePoint);
+
+    } else if (codePoint < 0x800) {
+      // Emit a 11-bit code point with 2 bytes.
+      writeByte(codePoint >>  6        | 0xc0); // 110xxxxx
+      writeByte(codePoint       & 0x3f | 0x80); // 10xxxxxx
+
+    } else if (codePoint < 0x10000) {
+      if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
+        throw new IllegalArgumentException(
+            "Unexpected code point: " + Integer.toHexString(codePoint));
+      }
+
+      // Emit a 16-bit code point with 3 bytes.
+      writeByte(codePoint >> 12        | 0xe0); // 1110xxxx
+      writeByte(codePoint >>  6 & 0x3f | 0x80); // 10xxxxxx
+      writeByte(codePoint       & 0x3f | 0x80); // 10xxxxxx
+
+    } else if (codePoint <= 0x10ffff) {
+      // Emit a 21-bit code point with 4 bytes.
+      writeByte(codePoint >> 18        | 0xf0); // 11110xxx
+      writeByte(codePoint >> 12 & 0x3f | 0x80); // 10xxxxxx
+      writeByte(codePoint >>  6 & 0x3f | 0x80); // 10xxxxxx
+      writeByte(codePoint       & 0x3f | 0x80); // 10xxxxxx
+
+    } else {
+      throw new IllegalArgumentException(
+          "Unexpected code point: " + Integer.toHexString(codePoint));
     }
 
     return this;

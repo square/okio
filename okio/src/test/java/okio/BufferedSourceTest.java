@@ -37,156 +37,189 @@ import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class BufferedSourceTest {
+  private static final Factory BUFFER_FACTORY = new Factory() {
+    @Override public Pipe pipe() {
+      Buffer buffer = new Buffer();
+      Pipe result = new Pipe();
+      result.sink = buffer;
+      result.source = buffer;
+      return result;
+    }
+
+    @Override public String toString() {
+      return "Buffer";
+    }
+  };
+
+  private static final Factory REAL_BUFFERED_SOURCE_FACTORY = new Factory() {
+    @Override public Pipe pipe() {
+      Buffer buffer = new Buffer();
+      Pipe result = new Pipe();
+      result.sink = buffer;
+      result.source = new RealBufferedSource(buffer);
+      return result;
+    }
+
+    @Override public String toString() {
+      return "RealBufferedSource";
+    }
+  };
+
+  private static final Factory ONE_BYTE_AT_A_TIME_FACTORY = new Factory() {
+    @Override public Pipe pipe() {
+      Buffer buffer = new Buffer();
+      Pipe result = new Pipe();
+      result.sink = buffer;
+      result.source = new RealBufferedSource(new ForwardingSource(buffer) {
+        @Override public long read(Buffer sink, long byteCount) throws IOException {
+          return super.read(sink, Math.min(byteCount, 1L));
+        }
+      });
+      return result;
+    }
+
+    @Override public String toString() {
+      return "OneByteAtATime";
+    }
+  };
+
   private interface Factory {
-    BufferedSource create(Buffer data);
+    Pipe pipe();
+  }
+
+  private static class Pipe {
+    BufferedSink sink;
+    BufferedSource source;
   }
 
   @Parameterized.Parameters(name = "{0}")
   public static List<Object[]> parameters() {
     return Arrays.asList(
-        new Object[] { new Factory() {
-          @Override public BufferedSource create(Buffer data) {
-            return data;
-          }
-
-          @Override public String toString() {
-            return "Buffer";
-          }
-        }},
-        new Object[] { new Factory() {
-          @Override public BufferedSource create(Buffer data) {
-            return new RealBufferedSource(data);
-          }
-
-          @Override public String toString() {
-            return "RealBufferedSource";
-          }
-        }}
-    );
+        new Object[] { BUFFER_FACTORY },
+        new Object[] { REAL_BUFFERED_SOURCE_FACTORY },
+        new Object[] { ONE_BYTE_AT_A_TIME_FACTORY });
   }
 
   @Parameterized.Parameter
   public Factory factory;
-
-  private Buffer data;
+  private BufferedSink sink;
   private BufferedSource source;
 
   @Before public void setUp() {
-    data = new Buffer();
-    source = factory.create(data);
+    Pipe pipe = factory.pipe();
+    sink = pipe.sink;
+    source = pipe.source;
   }
 
   @Test public void readBytes() throws Exception {
-    data.write(new byte[] { (byte) 0xab, (byte) 0xcd });
+    sink.write(new byte[] { (byte) 0xab, (byte) 0xcd });
     assertEquals(0xab, source.readByte() & 0xff);
     assertEquals(0xcd, source.readByte() & 0xff);
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readShort() throws Exception {
-    data.write(new byte[] {
+    sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01
     });
     assertEquals((short) 0xabcd, source.readShort());
     assertEquals((short) 0xef01, source.readShort());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readShortLe() throws Exception {
-    data.write(new byte[] {
+    sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10
     });
     assertEquals((short) 0xcdab, source.readShortLe());
     assertEquals((short) 0x10ef, source.readShortLe());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readShortSplitAcrossMultipleSegments() throws Exception {
-    data.writeUtf8(repeat('a', Segment.SIZE - 1));
-    data.write(new byte[] { (byte) 0xab, (byte) 0xcd });
+    sink.writeUtf8(repeat('a', Segment.SIZE - 1));
+    sink.write(new byte[] { (byte) 0xab, (byte) 0xcd });
     source.skip(Segment.SIZE - 1);
     assertEquals((short) 0xabcd, source.readShort());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readInt() throws Exception {
-    data.write(new byte[] {
+    sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21
     });
     assertEquals(0xabcdef01, source.readInt());
     assertEquals(0x87654321, source.readInt());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readIntLe() throws Exception {
-    data.write(new byte[] {
+    sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21
     });
     assertEquals(0x10efcdab, source.readIntLe());
     assertEquals(0x21436587, source.readIntLe());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readIntSplitAcrossMultipleSegments() throws Exception {
-    data.writeUtf8(repeat('a', Segment.SIZE - 3));
-    data.write(new byte[] {
+    sink.writeUtf8(repeat('a', Segment.SIZE - 3));
+    sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01
     });
     source.skip(Segment.SIZE - 3);
     assertEquals(0xabcdef01, source.readInt());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readLong() throws Exception {
-    data.write(new byte[] {
+    sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21, (byte) 0x36, (byte) 0x47, (byte) 0x58, (byte) 0x69, (byte) 0x12, (byte) 0x23,
         (byte) 0x34, (byte) 0x45
     });
     assertEquals(0xabcdef1087654321L, source.readLong());
     assertEquals(0x3647586912233445L, source.readLong());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readLongLe() throws Exception {
-    data.write(new byte[]{
+    sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21, (byte) 0x36, (byte) 0x47, (byte) 0x58, (byte) 0x69, (byte) 0x12, (byte) 0x23,
         (byte) 0x34, (byte) 0x45
     });
     assertEquals(0x2143658710efcdabL, source.readLongLe());
     assertEquals(0x4534231269584736L, source.readLongLe());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readLongSplitAcrossMultipleSegments() throws Exception {
-    data.writeUtf8(repeat('a', Segment.SIZE - 7));
-    data.write(new byte[] {
+    sink.writeUtf8(repeat('a', Segment.SIZE - 7));
+    sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21,
     });
     source.skip(Segment.SIZE - 7);
     assertEquals(0xabcdef0187654321L, source.readLong());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readAll() throws IOException {
     source.buffer().writeUtf8("abc");
-    data.writeUtf8("def");
+    sink.writeUtf8("def");
 
     Buffer sink = new Buffer();
     assertEquals(6, source.readAll(sink));
     assertEquals("abcdef", sink.readUtf8());
-    assertTrue(data.exhausted());
     assertTrue(source.exhausted());
   }
 
   @Test public void readAllExhausted() throws IOException {
     MockSink mockSink = new MockSink();
     assertEquals(0, source.readAll(mockSink));
-    assertTrue(data.exhausted());
     assertTrue(source.exhausted());
     mockSink.assertLog();
   }
@@ -196,7 +229,7 @@ public class BufferedSourceTest {
     sink.writeUtf8(repeat('a', 10));
     assertEquals(-1, source.read(sink, 10));
     assertEquals(10, sink.size());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readZeroBytesFromSource() throws Exception {
@@ -207,11 +240,11 @@ public class BufferedSourceTest {
     // ByteArrayInputStream we return 0.
     assertEquals(-1, source.read(sink, 0));
     assertEquals(10, sink.size());
-    assertEquals(0, data.size());
+    assertTrue(source.exhausted());
   }
 
   @Test public void readFully() throws Exception {
-    data.writeUtf8(repeat('a', 10000));
+    sink.writeUtf8(repeat('a', 10000));
     Buffer sink = new Buffer();
     source.readFully(sink, 9999);
     assertEquals(repeat('a', 9999), sink.readUtf8());
@@ -219,7 +252,7 @@ public class BufferedSourceTest {
   }
 
   @Test public void readFullyTooShortThrows() throws IOException {
-    data.writeUtf8("Hi");
+    sink.writeUtf8("Hi");
     Buffer sink = new Buffer();
     try {
       source.readFully(sink, 5);
@@ -232,8 +265,11 @@ public class BufferedSourceTest {
   }
 
   @Test public void readFullyByteArray() throws IOException {
+    Buffer data = new Buffer();
     data.writeUtf8("Hello").writeUtf8(repeat('e', Segment.SIZE));
+
     byte[] expected = data.clone().readByteArray();
+    sink.write(data, data.size());
 
     byte[] sink = new byte[Segment.SIZE + 5];
     source.readFully(sink);
@@ -241,7 +277,7 @@ public class BufferedSourceTest {
   }
 
   @Test public void readFullyByteArrayTooShortThrows() throws IOException {
-    data.writeUtf8("Hello");
+    sink.writeUtf8("Hello");
 
     byte[] sink = new byte[6];
     try {
@@ -255,95 +291,115 @@ public class BufferedSourceTest {
   }
 
   @Test public void readIntoByteArray() throws IOException {
-    data.writeUtf8("abcd");
+    sink.writeUtf8("abcd");
 
     byte[] sink = new byte[3];
     int read = source.read(sink);
-    assertEquals(3, read);
-    byte[] expected = { 'a', 'b', 'c' };
-    assertByteArraysEquals(expected, sink);
+    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+      assertEquals(1, read);
+      byte[] expected = { 'a', 0, 0 };
+      assertByteArraysEquals(expected, sink);
+    } else {
+      assertEquals(3, read);
+      byte[] expected = { 'a', 'b', 'c' };
+      assertByteArraysEquals(expected, sink);
+    }
   }
 
   @Test public void readIntoByteArrayNotEnough() throws IOException {
-    data.writeUtf8("abcd");
+    sink.writeUtf8("abcd");
 
     byte[] sink = new byte[5];
     int read = source.read(sink);
-    assertEquals(4, read);
-    byte[] expected = { 'a', 'b', 'c', 'd', 0 };
-    assertByteArraysEquals(expected, sink);
+    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+      assertEquals(1, read);
+      byte[] expected = { 'a', 0, 0, 0, 0 };
+      assertByteArraysEquals(expected, sink);
+    } else {
+      assertEquals(4, read);
+      byte[] expected = { 'a', 'b', 'c', 'd', 0 };
+      assertByteArraysEquals(expected, sink);
+    }
   }
 
   @Test public void readIntoByteArrayOffsetAndCount() throws IOException {
-    data.writeUtf8("abcd");
+    sink.writeUtf8("abcd");
 
     byte[] sink = new byte[7];
     int read = source.read(sink, 2, 3);
-    assertEquals(3, read);
-    byte[] expected = { 0, 0, 'a', 'b', 'c', 0, 0 };
-    assertByteArraysEquals(expected, sink);
+    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+      assertEquals(1, read);
+      byte[] expected = { 0, 0, 'a', 0, 0, 0, 0 };
+      assertByteArraysEquals(expected, sink);
+    } else {
+      assertEquals(3, read);
+      byte[] expected = { 0, 0, 'a', 'b', 'c', 0, 0 };
+      assertByteArraysEquals(expected, sink);
+    }
   }
 
   @Test public void readByteArray() throws IOException {
     String string = "abcd" + repeat('e', Segment.SIZE);
-    data.writeUtf8(string);
+    sink.writeUtf8(string);
     assertByteArraysEquals(string.getBytes(UTF_8), source.readByteArray());
   }
 
   @Test public void readByteArrayPartial() throws IOException {
-    data.writeUtf8("abcd");
+    sink.writeUtf8("abcd");
     assertEquals("[97, 98, 99]", Arrays.toString(source.readByteArray(3)));
     assertEquals("d", source.readUtf8(1));
   }
 
   @Test public void readByteString() throws IOException {
-    data.writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
+    sink.writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
     assertEquals("abcd" + repeat('e', Segment.SIZE), source.readByteString().utf8());
   }
 
   @Test public void readByteStringPartial() throws IOException {
-    data.writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
+    sink.writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
     assertEquals("abc", source.readByteString(3).utf8());
     assertEquals("d", source.readUtf8(1));
   }
 
   @Test public void readSpecificCharsetPartial() throws Exception {
-    data.write(ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
-        + "000002cc000000720000006100000070000000740000025900000072"));
+    sink.write(
+        ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
+            + "000002cc000000720000006100000070000000740000025900000072"));
     assertEquals("vəˈläsə", source.readString(7 * 4, Charset.forName("utf-32")));
   }
 
   @Test public void readSpecificCharset() throws Exception {
-    data.write(ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
-        + "000002cc000000720000006100000070000000740000025900000072"));
+    sink.write(
+        ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
+            + "000002cc000000720000006100000070000000740000025900000072"));
     assertEquals("vəˈläsəˌraptər", source.readString(Charset.forName("utf-32")));
   }
 
   @Test public void readUtf8SpansSegments() throws Exception {
-    data.writeUtf8(repeat('a', Segment.SIZE * 2));
+    sink.writeUtf8(repeat('a', Segment.SIZE * 2));
     source.skip(Segment.SIZE - 1);
     assertEquals("aa", source.readUtf8(2));
   }
 
   @Test public void readUtf8Segment() throws Exception {
-    data.writeUtf8(repeat('a', Segment.SIZE));
+    sink.writeUtf8(repeat('a', Segment.SIZE));
     assertEquals(repeat('a', Segment.SIZE), source.readUtf8(Segment.SIZE));
   }
 
   @Test public void readUtf8PartialBuffer() throws Exception {
-    data.writeUtf8(repeat('a', Segment.SIZE + 20));
+    sink.writeUtf8(repeat('a', Segment.SIZE + 20));
     assertEquals(repeat('a', Segment.SIZE + 10), source.readUtf8(Segment.SIZE + 10));
   }
 
   @Test public void readUtf8EntireBuffer() throws Exception {
-    data.writeUtf8(repeat('a', Segment.SIZE * 2));
+    sink.writeUtf8(repeat('a', Segment.SIZE * 2));
     assertEquals(repeat('a', Segment.SIZE * 2), source.readUtf8());
   }
 
   @Test public void skip() throws Exception {
-    data.writeUtf8("a");
-    data.writeUtf8(repeat('b', Segment.SIZE));
-    data.writeUtf8("c");
+    sink.writeUtf8("a");
+    sink.writeUtf8(repeat('b', Segment.SIZE));
+    sink.writeUtf8("c");
     source.skip(1);
     assertEquals('b', source.readByte() & 0xff);
     source.skip(Segment.SIZE - 2);
@@ -353,7 +409,7 @@ public class BufferedSourceTest {
   }
 
   @Test public void skipInsufficientData() throws Exception {
-    data.writeUtf8("a");
+    sink.writeUtf8("a");
 
     try {
       source.skip(2);
@@ -367,12 +423,12 @@ public class BufferedSourceTest {
     assertEquals(-1, source.indexOf((byte) 'a'));
 
     // The segment has one value.
-    data.writeUtf8("a"); // a
+    sink.writeUtf8("a"); // a
     assertEquals(0, source.indexOf((byte) 'a'));
     assertEquals(-1, source.indexOf((byte) 'b'));
 
     // The segment has lots of data.
-    data.writeUtf8(repeat('b', Segment.SIZE - 2)); // ab...b
+    sink.writeUtf8(repeat('b', Segment.SIZE - 2)); // ab...b
     assertEquals(0, source.indexOf((byte) 'a'));
     assertEquals(1, source.indexOf((byte) 'b'));
     assertEquals(-1, source.indexOf((byte) 'c'));
@@ -384,7 +440,7 @@ public class BufferedSourceTest {
     assertEquals(-1, source.indexOf((byte) 'c'));
 
     // The segment is full.
-    data.writeUtf8("c"); // b...bc
+    sink.writeUtf8("c"); // b...bc
     assertEquals(-1, source.indexOf((byte) 'a'));
     assertEquals(0, source.indexOf((byte) 'b'));
     assertEquals(Segment.SIZE - 3, source.indexOf((byte) 'c'));
@@ -396,19 +452,19 @@ public class BufferedSourceTest {
     assertEquals(Segment.SIZE - 5, source.indexOf((byte) 'c'));
 
     // Two segments.
-    data.writeUtf8("d"); // b...bcd, d is in the 2nd segment.
+    sink.writeUtf8("d"); // b...bcd, d is in the 2nd segment.
     assertEquals(Segment.SIZE - 4, source.indexOf((byte) 'd'));
     assertEquals(-1, source.indexOf((byte) 'e'));
   }
 
   @Test public void indexOfWithOffset() throws IOException {
-    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
     assertEquals(-1, source.indexOf((byte) 'a', 1));
     assertEquals(15, source.indexOf((byte) 'b', 15));
   }
 
   @Test public void indexOfElement() throws IOException {
-    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
     assertEquals(0, source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK")));
     assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb")));
     assertEquals(Segment.SIZE + 1, source.indexOfElement(ByteString.encodeUtf8("cDEFGHIJK")));
@@ -418,19 +474,19 @@ public class BufferedSourceTest {
   }
 
   @Test public void indexOfElementWithOffset() throws IOException {
-    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
     assertEquals(-1, source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK"), 1));
     assertEquals(15, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb"), 15));
   }
 
   @Test public void request() throws IOException {
-    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
     assertTrue(source.request(Segment.SIZE + 2));
     assertFalse(source.request(Segment.SIZE + 3));
   }
 
   @Test public void require() throws IOException {
-    data.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
     source.require(Segment.SIZE + 2);
     try {
       source.require(Segment.SIZE + 3);
@@ -440,33 +496,52 @@ public class BufferedSourceTest {
   }
 
   @Test public void inputStream() throws Exception {
-    data.writeUtf8("abc");
+    sink.writeUtf8("abc");
     InputStream in = source.inputStream();
-    byte[] bytes = new byte[3];
+    byte[] bytes = { 'z', 'z', 'z' };
     int read = in.read(bytes);
-    assertEquals(3, read);
-    assertByteArrayEquals("abc", bytes);
+    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+      assertEquals(1, read);
+      assertByteArrayEquals("azz", bytes);
+
+      read = in.read(bytes);
+      assertEquals(1, read);
+      assertByteArrayEquals("bzz", bytes);
+
+      read = in.read(bytes);
+      assertEquals(1, read);
+      assertByteArrayEquals("czz", bytes);
+    } else {
+      assertEquals(3, read);
+      assertByteArrayEquals("abc", bytes);
+    }
+
     assertEquals(-1, in.read());
   }
 
   @Test public void inputStreamOffsetCount() throws Exception {
-    data.writeUtf8("abcde");
+    sink.writeUtf8("abcde");
     InputStream in = source.inputStream();
     byte[] bytes = { 'z', 'z', 'z', 'z', 'z' };
     int read = in.read(bytes, 1, 3);
-    assertEquals(3, read);
-    assertByteArrayEquals("zabcz", bytes);
+    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+      assertEquals(1, read);
+      assertByteArrayEquals("zazzz", bytes);
+    } else {
+      assertEquals(3, read);
+      assertByteArrayEquals("zabcz", bytes);
+    }
   }
 
   @Test public void inputStreamSkip() throws Exception {
-    data.writeUtf8("abcde");
+    sink.writeUtf8("abcde");
     InputStream in = source.inputStream();
     assertEquals(4, in.skip(4));
     assertEquals('e', in.read());
   }
 
   @Test public void inputStreamCharByChar() throws Exception {
-    data.writeUtf8("abc");
+    sink.writeUtf8("abc");
     InputStream in = source.inputStream();
     assertEquals('a', in.read());
     assertEquals('b', in.read());
@@ -475,7 +550,7 @@ public class BufferedSourceTest {
   }
 
   @Test public void inputStreamBounds() throws IOException {
-    data.writeUtf8(repeat('a', 100));
+    sink.writeUtf8(repeat('a', 100));
     InputStream in = source.inputStream();
     try {
       in.read(new byte[100], 50, 51);
@@ -506,20 +581,20 @@ public class BufferedSourceTest {
   }
 
   private void assertLongHexString(String s, long expected) throws IOException {
-    data.writeUtf8(s);
+    sink.writeUtf8(s);
     long actual = source.readHexadecimalUnsignedLong();
     assertEquals(s + " --> " + expected, expected, actual);
   }
 
   @Test public void longHexStringAcrossSegment() throws IOException {
-    data.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("FFFFFFFFFFFFFFFF");
+    sink.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("FFFFFFFFFFFFFFFF");
     source.skip(Segment.SIZE - 8);
     assertEquals(-1, source.readHexadecimalUnsignedLong());
   }
 
   @Test public void longHexStringTooLongThrows() throws IOException {
     try {
-      data.writeUtf8("fffffffffffffffff");
+      sink.writeUtf8("fffffffffffffffff");
       source.readHexadecimalUnsignedLong();
       fail();
     } catch (NumberFormatException e) {
@@ -529,7 +604,7 @@ public class BufferedSourceTest {
 
   @Test public void longHexStringTooShortThrows() throws IOException {
     try {
-      data.writeUtf8(" ");
+      sink.writeUtf8(" ");
       source.readHexadecimalUnsignedLong();
       fail();
     } catch (NumberFormatException e) {
@@ -539,7 +614,7 @@ public class BufferedSourceTest {
 
   @Test public void longHexEmptySourceThrows() throws IOException {
     try {
-      data.writeUtf8("");
+      sink.writeUtf8("");
       source.readHexadecimalUnsignedLong();
       fail();
     } catch (IllegalStateException | EOFException expected) {
@@ -558,16 +633,16 @@ public class BufferedSourceTest {
   }
 
   private void assertLongDecimalString(String s, long expected) throws IOException {
-    data.writeUtf8(s);
-    data.writeUtf8("zzz");
+    sink.writeUtf8(s);
+    sink.writeUtf8("zzz");
     long actual = source.readDecimalLong();
     assertEquals(s + " --> " + expected, expected, actual);
     assertEquals("zzz", source.readUtf8());
   }
 
   @Test public void longDecimalStringAcrossSegment() throws IOException {
-    data.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("1234567890123456");
-    data.writeUtf8("zzz");
+    sink.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("1234567890123456");
+    sink.writeUtf8("zzz");
     source.skip(Segment.SIZE - 8);
     assertEquals(1234567890123456L, source.readDecimalLong());
     assertEquals("zzz", source.readUtf8());
@@ -575,7 +650,7 @@ public class BufferedSourceTest {
 
   @Test public void longDecimalStringTooLongThrows() throws IOException {
     try {
-      data.writeUtf8("12345678901234567890"); // Too many digits.
+      sink.writeUtf8("12345678901234567890"); // Too many digits.
       source.readDecimalLong();
       fail();
     } catch (NumberFormatException e) {
@@ -585,7 +660,7 @@ public class BufferedSourceTest {
 
   @Test public void longDecimalStringTooHighThrows() throws IOException {
     try {
-      data.writeUtf8("9223372036854775808"); // Right size but cannot fit.
+      sink.writeUtf8("9223372036854775808"); // Right size but cannot fit.
       source.readDecimalLong();
       fail();
     } catch (NumberFormatException e) {
@@ -595,7 +670,7 @@ public class BufferedSourceTest {
 
   @Test public void longDecimalStringTooLowThrows() throws IOException {
     try {
-      data.writeUtf8("-9223372036854775809"); // Right size but cannot fit.
+      sink.writeUtf8("-9223372036854775809"); // Right size but cannot fit.
       source.readDecimalLong();
       fail();
     } catch (NumberFormatException e) {
@@ -605,7 +680,7 @@ public class BufferedSourceTest {
 
   @Test public void longDecimalStringTooShortThrows() throws IOException {
     try {
-      data.writeUtf8(" ");
+      sink.writeUtf8(" ");
       source.readDecimalLong();
       fail();
     } catch (NumberFormatException e) {
@@ -615,11 +690,25 @@ public class BufferedSourceTest {
 
   @Test public void longDecimalEmptyThrows() throws IOException {
     try {
-      data.writeUtf8("");
+      sink.writeUtf8("");
       source.readDecimalLong();
       fail();
     } catch (IllegalStateException | EOFException expected) {
     }
+  }
+
+  @Test public void codePoints() throws IOException {
+    sink.write(ByteString.decodeHex("7f"));
+    assertEquals(0x7f, source.readUtf8CodePoint());
+
+    sink.write(ByteString.decodeHex("dfbf"));
+    assertEquals(0x07ff, source.readUtf8CodePoint());
+
+    sink.write(ByteString.decodeHex("efbfbf"));
+    assertEquals(0xffff, source.readUtf8CodePoint());
+
+    sink.write(ByteString.decodeHex("f48fbfbf"));
+    assertEquals(0x10ffff, source.readUtf8CodePoint());
   }
 
   @Test public void decimalStringWithManyLeadingZeros() throws IOException {
