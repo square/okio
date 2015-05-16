@@ -136,18 +136,17 @@ public class Timeout {
   }
 
   /**
-   * Throws an {@link IOException} if the deadline has been reached or if the
-   * current thread has been interrupted. This method doesn't detect timeouts;
-   * that should be implemented to asynchronously abort an in-progress
-   * operation.
+   * Throws an {@link InterruptedIOException} if the deadline has been reached or if the current
+   * thread has been interrupted. This method doesn't detect timeouts; that should be implemented to
+   * asynchronously abort an in-progress operation.
    */
   public void throwIfReached() throws IOException {
     if (Thread.interrupted()) {
-      throw new InterruptedIOException();
+      throw new InterruptedIOException("thread interrupted");
     }
 
-    if (hasDeadline && System.nanoTime() > deadlineNanoTime) {
-      throw new IOException("deadline reached");
+    if (hasDeadline && deadlineNanoTime - System.nanoTime() <= 0) {
+      throw new InterruptedIOException("deadline reached");
     }
   }
 }
