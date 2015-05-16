@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+## Version 1.4.0
+
+_2015-05-16_
+
+ * **Timeout exception changed.** Previously `Timeout.throwIfReached()` would
+   throw `InterruptedIOException` on thread interruption, and `IOException` if
+   the deadline was reached. Now it throws `InterruptedIOException` in both
+   cases.
+ * Fix: throw `EOFException` when attempting to read digits from an empty
+   source. Previously this would would crash with an unchecked exception.
+ * New: APIs to read and write UTF-8 code points without allocating strings.
+ * New: `BufferedSink` can now write substrings directly, potentially saving an
+   allocation for some callers.
+ * New: `ForwardingTimeout` class.
+
 ## Version 1.3.0
 
 _2015-03-16_
@@ -37,6 +52,7 @@ _2014-12-30_
 ## Version 1.1.0
 
 _2014-12-11_
+
  * Do UTF-8 encoding natively for a performance increase, particularly on Android.
  * New APIs: `BufferedSink.emit()`, `BufferedSource.request()` and `BufferedSink.indexOfElement()`.
  * Fixed a performance bug in `Buffer.indexOf()`
