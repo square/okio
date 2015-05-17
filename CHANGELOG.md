@@ -10,7 +10,7 @@ _2015-05-16_
    the deadline was reached. Now it throws `InterruptedIOException` in both
    cases.
  * Fix: throw `EOFException` when attempting to read digits from an empty
-   source. Previously this would would crash with an unchecked exception.
+   source. Previously this would crash with an unchecked exception.
  * New: APIs to read and write UTF-8 code points without allocating strings.
  * New: `BufferedSink` can now write substrings directly, potentially saving an
    allocation for some callers.
