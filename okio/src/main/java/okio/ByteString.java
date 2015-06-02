@@ -33,15 +33,17 @@ import static okio.Util.checkOffsetAndCount;
 /**
  * An immutable sequence of bytes.
  *
- * <p><strong>Full disclosure:</strong> this class provides untrusted input and
- * output streams with raw access to the underlying byte array. A hostile
- * stream implementation could keep a reference to the mutable byte string,
- * violating the immutable guarantee of this class. For this reason a byte
- * string's immutability guarantee cannot be relied upon for security in applets
- * and other environments that run both trusted and untrusted code in the same
- * process.
+ * <p>Byte strings compare lexicographically as a sequence of <strong>unsigned</strong> bytes. That
+ * is, the byte string {@code ff} sorts after {@code 00}. This is counter to the sort order of the
+ * corresponding bytes, where {@code -1} sorts before {@code 0}.
+ *
+ * <p><strong>Full disclosure:</strong> this class provides untrusted input and output streams with
+ * raw access to the underlying byte array. A hostile stream implementation could keep a reference
+ * to the mutable byte string, violating the immutable guarantee of this class. For this reason a
+ * byte string's immutability guarantee cannot be relied upon for security in applets and other
+ * environments that run both trusted and untrusted code in the same process.
  */
-public class ByteString implements Serializable {
+public class ByteString implements Serializable, Comparable<ByteString> {
   static final char[] HEX_DIGITS =
       { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
   private static final long serialVersionUID = 1L;
@@ -329,6 +331,19 @@ public class ByteString implements Serializable {
   @Override public int hashCode() {
     int result = hashCode;
     return result != 0 ? result : (hashCode = Arrays.hashCode(data));
+  }
+
+  @Override public int compareTo(ByteString byteString) {
+    int sizeA = size();
+    int sizeB = byteString.size();
+    for (int i = 0, size = Math.min(sizeA, sizeB); i < size; i++) {
+      int byteA = getByte(i) & 0xff;
+      int byteB = byteString.getByte(i) & 0xff;
+      if (byteA == byteB) continue;
+      return byteA < byteB ? -1 : 1;
+    }
+    if (sizeA == sizeB) return 0;
+    return sizeA < sizeB ? -1 : 1;
   }
 
   @Override public String toString() {

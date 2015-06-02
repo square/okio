@@ -18,6 +18,11 @@ package okio;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 import org.junit.Test;
 
 import static okio.TestUtil.assertByteArraysEquals;
@@ -29,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ByteStringTest {
-
   @Test public void ofCopyRange() {
     byte[] bytes = "Hello, World!".getBytes(Util.UTF_8);
     ByteString byteString = ByteString.of(bytes, 2, 9);
@@ -268,5 +272,59 @@ public class ByteStringTest {
   @Test public void javaSerializationTestEmpty() throws Exception {
     ByteString byteString = ByteString.of();
     assertEquivalent(byteString, TestUtil.reserialize(byteString));
+  }
+
+  @Test public void compareToSingleBytes() throws Exception {
+    List<ByteString> originalByteStrings = Arrays.asList(
+        ByteString.decodeHex("00"),
+        ByteString.decodeHex("01"),
+        ByteString.decodeHex("7e"),
+        ByteString.decodeHex("7f"),
+        ByteString.decodeHex("80"),
+        ByteString.decodeHex("81"),
+        ByteString.decodeHex("fe"),
+        ByteString.decodeHex("ff"));
+
+    List<ByteString> sortedByteStrings = new ArrayList<>(originalByteStrings);
+    Collections.shuffle(sortedByteStrings, new Random(0));
+    Collections.sort(sortedByteStrings);
+
+    assertEquals(originalByteStrings, sortedByteStrings);
+  }
+
+  @Test public void compareToMultipleBytes() throws Exception {
+    List<ByteString> originalByteStrings = Arrays.asList(
+        ByteString.decodeHex(""),
+        ByteString.decodeHex("00"),
+        ByteString.decodeHex("0000"),
+        ByteString.decodeHex("000000"),
+        ByteString.decodeHex("00000000"),
+        ByteString.decodeHex("0000000000"),
+        ByteString.decodeHex("0000000001"),
+        ByteString.decodeHex("000001"),
+        ByteString.decodeHex("00007f"),
+        ByteString.decodeHex("0000ff"),
+        ByteString.decodeHex("000100"),
+        ByteString.decodeHex("000101"),
+        ByteString.decodeHex("007f00"),
+        ByteString.decodeHex("00ff00"),
+        ByteString.decodeHex("010000"),
+        ByteString.decodeHex("010001"),
+        ByteString.decodeHex("01007f"),
+        ByteString.decodeHex("0100ff"),
+        ByteString.decodeHex("010100"),
+        ByteString.decodeHex("01010000"),
+        ByteString.decodeHex("0101000000"),
+        ByteString.decodeHex("0101000001"),
+        ByteString.decodeHex("010101"),
+        ByteString.decodeHex("7f0000"),
+        ByteString.decodeHex("7f0000ffff"),
+        ByteString.decodeHex("ffffff"));
+
+    List<ByteString> sortedByteStrings = new ArrayList<>(originalByteStrings);
+    Collections.shuffle(sortedByteStrings, new Random(0));
+    Collections.sort(sortedByteStrings);
+
+    assertEquals(originalByteStrings, sortedByteStrings);
   }
 }
