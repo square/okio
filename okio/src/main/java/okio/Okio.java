@@ -21,8 +21,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -201,6 +203,14 @@ public final class Okio {
 
   private static AsyncTimeout timeout(final Socket socket) {
     return new AsyncTimeout() {
+      @Override protected IOException newTimeoutException(IOException cause) {
+        InterruptedIOException ioe = new SocketTimeoutException("timeout");
+        if (cause != null) {
+          ioe.initCause(cause);
+        }
+        return ioe;
+      }
+
       @Override protected void timedOut() {
         try {
           socket.close();

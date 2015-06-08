@@ -241,22 +241,36 @@ public class AsyncTimeout extends Timeout {
   }
 
   /**
-   * Throws an InterruptedIOException if {@code throwOnTimeout} is true and a
-   * timeout occurred.
+   * Throws an IOException if {@code throwOnTimeout} is {@code true} and a
+   * timeout occurred. See {@link #newTimeoutException(java.io.IOException)}
+   * for the type of exception thrown.
    */
   final void exit(boolean throwOnTimeout) throws IOException {
     boolean timedOut = exit();
-    if (timedOut && throwOnTimeout) throw new InterruptedIOException("timeout");
+    if (timedOut && throwOnTimeout) throw newTimeoutException(null);
   }
 
   /**
-   * Returns either {@code cause} or an InterruptedIOException that's caused by
-   * {@code cause} if a timeout occurred.
+   * Returns either {@code cause} or an IOException that's caused by
+   * {@code cause} if a timeout occurred. See
+   * {@link #newTimeoutException(java.io.IOException)} for the type of
+   * exception returned.
    */
   final IOException exit(IOException cause) throws IOException {
     if (!exit()) return cause;
+    return newTimeoutException(cause);
+  }
+
+  /**
+   * Returns an {@link IOException} to represent a timeout. By default this method returns
+   * {@link java.io.InterruptedIOException}. If {@code cause} is non-null it is set as the cause of
+   * the returned exception.
+   */
+  protected IOException newTimeoutException(IOException cause) {
     InterruptedIOException e = new InterruptedIOException("timeout");
-    e.initCause(cause);
+    if (cause != null) {
+      e.initCause(cause);
+    }
     return e;
   }
 
