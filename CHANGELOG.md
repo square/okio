@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+## Version 1.5.0
+
+_2015-06-19_
+
+ * Sockets streams now throw `SocketTimeoutException`. This builds on new
+   extension point in `AsyncTimeout` to customize the exception when a timeout
+   occurs.
+ * New: `ByteString` now implements `Comparable`. The comparison sorts bytes as
+   unsigned: {@code ff} sorts after {@code 00}.
+
 ## Version 1.4.0
 
 _2015-05-16_
