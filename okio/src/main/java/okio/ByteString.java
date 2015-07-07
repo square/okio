@@ -297,6 +297,24 @@ public class ByteString implements Serializable, Comparable<ByteString> {
   }
 
   /** Writes the contents of this byte string to {@code buffer}. */
+  public void write(byte[] buffer) {
+    if (data.length > buffer.length) {
+      throw new IllegalArgumentException(
+          "Buffer too small: " + data.length + " > " + buffer.length);
+    }
+    System.arraycopy(data, 0, buffer, 0, data.length);
+  }
+
+  /** Writes the contents of this byte string to {@code buffer} starting at {@code pos}. */
+  public void write(byte[] buffer, int pos) {
+    if (data.length > buffer.length - pos) {
+      throw new IllegalArgumentException(
+          "Buffer too small: " + data.length + " > " + buffer.length + " - " + pos);
+    }
+    System.arraycopy(data, 0, buffer, pos, data.length);
+  }
+
+  /** Writes the contents of this byte string to {@code buffer}. */
   void write(Buffer buffer) {
     buffer.write(data, 0, data.length);
   }

@@ -175,6 +175,36 @@ public class ByteStringTest {
     assertByteArraysEquals(new byte[] { 0x61, 0x62, 0x63 }, out.toByteArray());
   }
 
+  @Test public void writeBytes() {
+    byte[] bytes = new byte[4];
+    ByteString.decodeHex("616263").write(bytes);
+    assertByteArraysEquals(new byte[] { 0x61, 0x62, 0x63, 0x00 }, bytes);
+  }
+
+  @Test public void writeBytesTooSmallThrows() {
+    ByteString byteString = ByteString.decodeHex("616263");
+    try {
+      byteString.write(new byte[2]);
+    } catch (IllegalArgumentException e) {
+      assertEquals("Buffer too small: 3 > 2", e.getMessage());
+    }
+  }
+
+  @Test public void writeBytesAtPos() {
+    byte[] bytes = new byte[5];
+    ByteString.decodeHex("616263").write(bytes, 1);
+    assertByteArraysEquals(new byte[] { 0x00, 0x61, 0x62, 0x63, 0x00 }, bytes);
+  }
+
+  @Test public void writeBytesAtPosTooSmallThrows() {
+    ByteString byteString = ByteString.decodeHex("616263");
+    try {
+      byteString.write(new byte[4], 2);
+    } catch (IllegalArgumentException e) {
+      assertEquals("Buffer too small: 3 > 4 - 2", e.getMessage());
+    }
+  }
+
   @Test public void encodeBase64() {
     assertEquals("", ByteString.encodeUtf8("").base64());
     assertEquals("AA==", ByteString.encodeUtf8("\u0000").base64());
