@@ -5,8 +5,8 @@ apply plugin: 'git-repo'
 
 description = 'Okio'
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 repositories {
     maven { url "${System.env.HOME}/.m2/repository" }

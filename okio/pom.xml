@@ -11,7 +11,7 @@
 
   <artifactId>okio</artifactId>
   <name>Okio</name>
-  <version>0.9.0-LAYER</version>
+  <version>1.5.0-LAYER</version>
 
   <dependencies>
     <dependency>
