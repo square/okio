@@ -1,0 +1,77 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'git-repo'
+
+description = 'Okio'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    maven { url "${System.env.HOME}/.m2/repository" }
+    github("layerhq", "maven-private", "master", "releases")
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.codehaus.mojo', name: 'animal-sniffer-annotations', version: '1.10'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+/*************************************************
+ * Uploading
+ * e.g. > gradle clean build publish
+ ************************************************/
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+task testJar(type: Jar) {
+    from sourceSets.test.output
+    exclude "**/*Test*"
+}
+
+task testSourceJar(type: Jar) {
+    from sourceSets.test.allJava
+}
+
+public String getLocalGit() {
+    return "$rootProject.ext.gitRepoHome/$rootProject.ext.org/$rootProject.ext.repo"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'com.squareup.okio'
+            artifactId = 'okio'
+            version = rootProject.version
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+
+            artifact testJar {
+                classifier "test"
+            }
+
+            artifact testSourceJar {
+                classifier "testsources"
+            }
+        }
+    }
+    repositories {
+        maven {
+            url "file://${getLocalGit()}/releases"
+        }
+    }
+}
+
+task cleanLocalGit(type: Delete) {
+    doFirst {
+        println "Deleting local git repo `${getLocalGit()}`..."
+        delete "${getLocalGit()}"
+    }
+}
