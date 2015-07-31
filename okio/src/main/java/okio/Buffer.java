@@ -1242,8 +1242,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
         fromIndex -= segmentByteCount;
       } else {
         byte[] data = s.data;
-        for (long pos = s.pos + fromIndex, limit = s.limit; pos < limit; pos++) {
-          if (data[(int) pos] == b) return offset + pos - s.pos;
+        for (int pos = (int) (s.pos + fromIndex), limit = s.limit; pos < limit; pos++) {
+          if (data[pos] == b) return offset + pos - s.pos;
         }
         fromIndex = 0;
       }
