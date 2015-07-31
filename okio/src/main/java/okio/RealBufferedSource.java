@@ -313,6 +313,24 @@ final class RealBufferedSource implements BufferedSource {
     return index;
   }
 
+  @Override public long indexOf(ByteString bytes) throws IOException {
+    return indexOf(bytes, 0);
+  }
+
+  @Override public long indexOf(ByteString bytes, long fromIndex) throws IOException {
+    if (bytes.size() == 0) throw new IllegalArgumentException("bytes is empty");
+    while (true) {
+      fromIndex = indexOf(bytes.getByte(0), fromIndex);
+      if (fromIndex == -1) {
+        return -1;
+      }
+      if (rangeEquals(fromIndex, bytes)) {
+        return fromIndex;
+      }
+      fromIndex++;
+    }
+  }
+
   @Override public long indexOfElement(ByteString targetBytes) throws IOException {
     return indexOfElement(targetBytes, 0);
   }
@@ -328,6 +346,10 @@ final class RealBufferedSource implements BufferedSource {
       if (source.read(buffer, Segment.SIZE) == -1) return -1L;
     }
     return index;
+  }
+
+  private boolean rangeEquals(long offset, ByteString bytes) throws IOException {
+    return request(offset + bytes.size()) && buffer.rangeEquals(offset, bytes);
   }
 
   @Override public InputStream inputStream() {

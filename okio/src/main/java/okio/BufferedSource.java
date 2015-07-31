@@ -215,6 +215,21 @@ public interface BufferedSource extends Source {
   long indexOf(byte b, long fromIndex) throws IOException;
 
   /**
+   * Returns the index of the first match for {@code bytes} in the buffer. This expands the buffer
+   * as necessary until {@code bytes} is found. This reads an unbounded number of bytes into the
+   * buffer. Returns -1 if the stream is exhausted before the requested bytes are found.
+   */
+  long indexOf(ByteString bytes) throws IOException;
+
+  /**
+   * Returns the index of the first match for {@code bytes} in the buffer at or after {@code
+   * fromIndex}. This expands the buffer as necessary until {@code bytes} is found. This reads an
+   * unbounded number of bytes into the buffer. Returns -1 if the stream is exhausted before the
+   * requested bytes are found.
+   */
+  long indexOf(ByteString bytes, long fromIndex) throws IOException;
+
+  /**
    * Returns the index of the first byte in {@code targetBytes} in the buffer.
    * This expands the buffer as necessary until a target byte is found. This
    * reads an unbounded number of bytes into the buffer. Returns -1 if the
