@@ -216,6 +216,9 @@ public final class Okio {
           socket.close();
         } catch (Exception e) {
           logger.log(Level.WARNING, "Failed to close timed out socket " + socket, e);
+        } catch (AssertionError are) {
+          //Catch this exception due to a Firmware issue up to android 4.2.2
+          logger.log(Level.WARNING, "Failed to close timed out socket " + socket, are);
         }
       }
     };
