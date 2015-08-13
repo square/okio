@@ -23,6 +23,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -34,6 +37,10 @@ public class SocketTimeoutTest {
   // ensure send and receive buffers are flooded and any necessary blocking behavior takes place.
   private static final int SOCKET_BUFFER_SIZE = 256 * 1024;
   private static final int ONE_MB = 1024 * 1024;
+
+  @BeforeClass public static void init() {
+    AsyncTimeout.open();
+  }
 
   @Test public void readWithoutTimeout() throws Exception {
     Socket socket = socket(ONE_MB, 0);
@@ -134,5 +141,9 @@ public class SocketTimeoutTest {
       count += read;
     }
     return result;
+  }
+
+  @AfterClass public static void destroy() throws Exception {
+    AsyncTimeout.close();
   }
 }

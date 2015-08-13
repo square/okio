@@ -49,6 +49,12 @@ public class AsyncTimeout extends Timeout {
    */
   private static AsyncTimeout head;
 
+  /** Save the WatchDog thread to dispose it when closing. */
+  private static Watchdog watchDog;
+
+  /** Do not accept petitions if closed. */
+  private static boolean closed = false;
+
   /** True if this node is currently in the queue. */
   private boolean inQueue;
 
@@ -58,7 +64,7 @@ public class AsyncTimeout extends Timeout {
   /** If scheduled, this is the time that the watchdog should time this out. */
   private long timeoutAt;
 
-  public final void enter() {
+  public final void enter() throws IOException {
     if (inQueue) throw new IllegalStateException("Unbalanced enter/exit");
     long timeoutNanos = timeoutNanos();
     boolean hasDeadline = hasDeadline();
@@ -70,13 +76,11 @@ public class AsyncTimeout extends Timeout {
   }
 
   private static synchronized void scheduleTimeout(
-      AsyncTimeout node, long timeoutNanos, boolean hasDeadline) {
-    // Start the watchdog thread and create the head node when the first timeout is scheduled.
-    if (head == null) {
-      head = new AsyncTimeout();
-      new Watchdog().start();
+    AsyncTimeout node, long timeoutNanos, boolean hasDeadline) throws IOException {
+    if (closed) {
+      throw new IOException("AsyncTimeout is closed.");
     }
-
+    start();
     long now = System.nanoTime();
     if (timeoutNanos != 0 && hasDeadline) {
       // Compute the earliest event; either timeout or deadline. Because nanoTime can wrap around,
@@ -275,6 +279,9 @@ public class AsyncTimeout extends Timeout {
   }
 
   private static final class Watchdog extends Thread {
+
+    private volatile boolean running = true;
+
     public Watchdog() {
       super("Okio Watchdog");
       setDaemon(true);
@@ -283,16 +290,28 @@ public class AsyncTimeout extends Timeout {
     public void run() {
       while (true) {
         try {
-          AsyncTimeout timedOut = awaitTimeout();
-
+          AsyncTimeout timedOut = awaitTimeout(this);
           // Didn't find a node to interrupt. Try again.
-          if (timedOut == null) continue;
-
+          if (timedOut == null) {
+            if (isRunning()) continue; else break;
+          }
           // Close the timed out node.
           timedOut.timedOut();
         } catch (InterruptedException ignored) {
         }
       }
+      releaseHead();
+    }
+
+    /**
+     * Stop the main cycle.
+     */
+    public void shutdown() {
+      running = false;
+    }
+
+    public boolean isRunning() {
+      return running;
     }
   }
 
@@ -302,14 +321,17 @@ public class AsyncTimeout extends Timeout {
    * either a newer node is inserted at the head, or the node being waited on
    * has been removed.
    */
-  private static synchronized AsyncTimeout awaitTimeout() throws InterruptedException {
+  private static synchronized AsyncTimeout awaitTimeout(Watchdog watchDog) throws InterruptedException {
     // Get the next eligible node.
     AsyncTimeout node = head.next;
 
     // The queue is empty. Wait for something to be enqueued.
     if (node == null) {
-      AsyncTimeout.class.wait();
-      return null;
+      if (watchDog.isRunning()) AsyncTimeout.class.wait();
+      node = head.next;
+      if (node == null) {
+          return null;
+      }
     }
 
     long waitNanos = node.remainingNanos(System.nanoTime());
@@ -321,12 +343,53 @@ public class AsyncTimeout extends Timeout {
       long waitMillis = waitNanos / 1000000L;
       waitNanos -= (waitMillis * 1000000L);
       AsyncTimeout.class.wait(waitMillis, (int) waitNanos);
-      return null;
+      // Re-enter until this node times out or the queue changes.
+      return awaitTimeout(watchDog);
     }
 
     // The head of the queue has timed out. Remove it.
     head.next = node.next;
     node.next = null;
     return node;
+  }
+
+  /**
+   * Shut down the WatchDog thread if there is any.
+   */
+  public static synchronized void close() throws InterruptedException {
+    closed = true;
+    if (watchDog != null) {
+      watchDog.shutdown();
+      watchDog.interrupt();
+      AsyncTimeout.class.wait();
+      watchDog = null;
+    }
+  }
+
+  private static synchronized void releaseHead() {
+    // release the reference from the class.
+    head = null;
+    // wake up the wait on close()
+    AsyncTimeout.class.notifyAll();
+  }
+
+  /**
+   * Start the WatchDog thread.
+   */
+  private static synchronized void start() {
+    // Start the watchdog thread and create the head node.
+    if (head == null) {
+      head = new AsyncTimeout();
+      watchDog = new Watchdog();
+      watchDog.start();
+    }
+  }
+
+  /**
+   * Used in testing to restart the WatchDog thread.
+   */
+  static synchronized void open() {
+      closed = false;
+      start();
   }
 }
