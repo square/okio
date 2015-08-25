@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 1.6.0
+
+_2015-08-25_
+
+ * New: `BufferedSource.indexOf(ByteString)` searches a source for the next
+   occurrence of a byte string.
+ * Fix: Recover from unexpected `AssertionError` thrown on Android 4.2.2 and
+   earlier when asynchronously closing a socket.
+
 ## Version 1.5.0
 
 _2015-06-19_
