@@ -62,7 +62,7 @@ public final class Okio {
   }
 
   /** Returns a sink that writes to {@code out}. */
-  public static Sink sink(final OutputStream out) {
+  public static Sink sink(OutputStream out) {
     return sink(out, new Timeout());
   }
 
@@ -113,7 +113,7 @@ public final class Okio {
    * #sink(OutputStream)} because this method honors timeouts. When the socket
    * write times out, the socket is asynchronously closed by a watchdog thread.
    */
-  public static Sink sink(final Socket socket) throws IOException {
+  public static Sink sink(Socket socket) throws IOException {
     if (socket == null) throw new IllegalArgumentException("socket == null");
     AsyncTimeout timeout = timeout(socket);
     Sink sink = sink(socket.getOutputStream(), timeout);
@@ -121,7 +121,7 @@ public final class Okio {
   }
 
   /** Returns a source that reads from {@code in}. */
-  public static Source source(final InputStream in) {
+  public static Source source(InputStream in) {
     return source(in, new Timeout());
   }
 
@@ -133,14 +133,19 @@ public final class Okio {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
         if (byteCount == 0) return 0;
-        timeout.throwIfReached();
-        Segment tail = sink.writableSegment(1);
-        int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
-        int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
-        if (bytesRead == -1) return -1;
-        tail.limit += bytesRead;
-        sink.size += bytesRead;
-        return bytesRead;
+        try {
+          timeout.throwIfReached();
+          Segment tail = sink.writableSegment(1);
+          int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
+          int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
+          if (bytesRead == -1) return -1;
+          tail.limit += bytesRead;
+          sink.size += bytesRead;
+          return bytesRead;
+        } catch (AssertionError e) {
+          if (isAndroidGetsocknameError(e)) throw new IOException(e);
+          throw e;
+        }
       }
 
       @Override public void close() throws IOException {
@@ -194,7 +199,7 @@ public final class Okio {
    * #source(InputStream)} because this method honors timeouts. When the socket
    * read times out, the socket is asynchronously closed by a watchdog thread.
    */
-  public static Source source(final Socket socket) throws IOException {
+  public static Source source(Socket socket) throws IOException {
     if (socket == null) throw new IllegalArgumentException("socket == null");
     AsyncTimeout timeout = timeout(socket);
     Source source = source(socket.getInputStream(), timeout);
@@ -217,8 +222,7 @@ public final class Okio {
         } catch (Exception e) {
           logger.log(Level.WARNING, "Failed to close timed out socket " + socket, e);
         } catch (AssertionError e) {
-          if (e.getCause() != null && e.getMessage() != null
-              && e.getMessage().contains("getsockname failed")) {
+          if (isAndroidGetsocknameError(e)) {
             // Catch this exception due to a Firmware issue up to android 4.2.2
             // https://code.google.com/p/android/issues/detail?id=54072
             logger.log(Level.WARNING, "Failed to close timed out socket " + socket, e);
@@ -228,5 +232,14 @@ public final class Okio {
         }
       }
     };
+  }
+
+  /**
+   * Returns true if {@code e} is due to a firmware bug fixed after Android 4.2.2.
+   * https://code.google.com/p/android/issues/detail?id=54072
+   */
+  private static boolean isAndroidGetsocknameError(AssertionError e) {
+    return e.getCause() != null && e.getMessage() != null
+        && e.getMessage().contains("getsockname failed");
   }
 }
