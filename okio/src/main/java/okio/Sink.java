@@ -25,11 +25,11 @@ import java.io.IOException;
  * to transform received data, such as to compress, encrypt, throttle, or add
  * protocol framing.
  *
- * <p>Most application code shouldn't operate on a sink directly, but rather
+ * <p>Most application code shouldn't operate on a sink directly, but rather on a
  * {@link BufferedSink} which is both more efficient and more convenient. Use
  * {@link Okio#buffer(Sink)} to wrap any sink with a buffer.
  *
- * <p>Sinks are easy to test: just use an {@link Buffer} in your tests, and
+ * <p>Sinks are easy to test: just use a {@link Buffer} in your tests, and
  * read from it to confirm it received the data that was expected.
  *
  * <h3>Comparison with OutputStream</h3>
