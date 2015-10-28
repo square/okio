@@ -24,11 +24,11 @@ import java.io.IOException;
  * be layered to transform supplied data, such as to decompress, decrypt, or
  * remove protocol framing.
  *
- * <p>Most applications shouldn't operate on a source directly, but rather
+ * <p>Most applications shouldn't operate on a source directly, but rather on a
  * {@link BufferedSource} which is both more efficient and more convenient. Use
  * {@link Okio#buffer(Source)} to wrap any source with a buffer.
  *
- * <p>Sources are easy to test: just use an {@link Buffer} in your tests, and
+ * <p>Sources are easy to test: just use a {@link Buffer} in your tests, and
  * fill it with the data your application is to read.
  *
  * <h3>Comparison with InputStream</h3>
@@ -44,12 +44,12 @@ import java.io.IOException;
  * how many bytes they {@link BufferedSource#require require}.
  *
  * <p>Source omits the unsafe-to-compose {@linkplain java.io.InputStream#mark
- * mark and reset} state that's tracked by {@code InputStream}; callers instead
+ * mark and reset} state that's tracked by {@code InputStream}; instead, callers
  * just buffer what they need.
  *
- * <p>When implementing a source, you need not worry about the {@linkplain
- * java.io.InputStream#read single-byte read} method that is awkward to
- * implement efficiently and that returns one of 257 possible values.
+ * <p>When implementing a source, you don't need to worry about the {@linkplain
+ * java.io.InputStream#read single-byte read} method that is awkward to implement efficiently
+ * and returns one of 257 possible values.
  *
  * <p>And source has a stronger {@code skip} method: {@link BufferedSource#skip}
  * won't return prematurely.
