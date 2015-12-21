@@ -21,18 +21,13 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 final class RealBufferedSink implements BufferedSink {
-  public final Buffer buffer;
+  public final Buffer buffer = new Buffer();
   public final Sink sink;
   private boolean closed;
 
-  public RealBufferedSink(Sink sink, Buffer buffer) {
+  RealBufferedSink(Sink sink) {
     if (sink == null) throw new IllegalArgumentException("sink == null");
-    this.buffer = buffer;
     this.sink = sink;
-  }
-
-  public RealBufferedSink(Sink sink) {
-    this(sink, new Buffer());
   }
 
   @Override public Buffer buffer() {

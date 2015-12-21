@@ -23,18 +23,13 @@ import java.nio.charset.Charset;
 import static okio.Util.checkOffsetAndCount;
 
 final class RealBufferedSource implements BufferedSource {
-  public final Buffer buffer;
+  public final Buffer buffer = new Buffer();
   public final Source source;
   private boolean closed;
 
-  public RealBufferedSource(Source source, Buffer buffer) {
+  RealBufferedSource(Source source) {
     if (source == null) throw new IllegalArgumentException("source == null");
-    this.buffer = buffer;
     this.source = source;
-  }
-
-  public RealBufferedSource(Source source) {
-    this(source, new Buffer());
   }
 
   @Override public Buffer buffer() {
