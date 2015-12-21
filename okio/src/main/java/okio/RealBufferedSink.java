@@ -23,7 +23,7 @@ import java.nio.charset.Charset;
 final class RealBufferedSink implements BufferedSink {
   public final Buffer buffer = new Buffer();
   public final Sink sink;
-  private boolean closed;
+  boolean closed;
 
   RealBufferedSink(Sink sink) {
     if (sink == null) throw new IllegalArgumentException("sink == null");
