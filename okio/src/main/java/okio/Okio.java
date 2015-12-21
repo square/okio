@@ -36,7 +36,7 @@ import static okio.Util.checkOffsetAndCount;
 
 /** Essential APIs for working with Okio. */
 public final class Okio {
-  private static final Logger logger = Logger.getLogger(Okio.class.getName());
+  static final Logger logger = Logger.getLogger(Okio.class.getName());
 
   private Okio() {
   }
@@ -238,7 +238,7 @@ public final class Okio {
    * Returns true if {@code e} is due to a firmware bug fixed after Android 4.2.2.
    * https://code.google.com/p/android/issues/detail?id=54072
    */
-  private static boolean isAndroidGetsocknameError(AssertionError e) {
+  static boolean isAndroidGetsocknameError(AssertionError e) {
     return e.getCause() != null && e.getMessage() != null
         && e.getMessage().contains("getsockname failed");
   }

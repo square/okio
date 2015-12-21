@@ -302,7 +302,7 @@ public class AsyncTimeout extends Timeout {
    * either a newer node is inserted at the head, or the node being waited on
    * has been removed.
    */
-  private static synchronized AsyncTimeout awaitTimeout() throws InterruptedException {
+  static synchronized AsyncTimeout awaitTimeout() throws InterruptedException {
     // Get the next eligible node.
     AsyncTimeout node = head.next;
 

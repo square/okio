@@ -25,7 +25,7 @@ import static okio.Util.checkOffsetAndCount;
 final class RealBufferedSource implements BufferedSource {
   public final Buffer buffer;
   public final Source source;
-  private boolean closed;
+  boolean closed;
 
   public RealBufferedSource(Source source, Buffer buffer) {
     if (source == null) throw new IllegalArgumentException("source == null");
