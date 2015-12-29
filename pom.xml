@@ -32,6 +32,12 @@
 
     <!-- Test Dependencies -->
     <junit.version>4.11</junit.version>
+
+
+    <!-- Plugin Dependencies -->
+    <maven.bundle.plugin.version>3.0.1</maven.bundle.plugin.version>
+    <depends.maven.plugin.version>1.3.1</depends.maven.plugin.version>
+    <maven.surefire.plugin.version>2.19</maven.surefire.plugin.version>
   </properties>
 
   <scm>
@@ -91,6 +97,52 @@
             <target>${java.version}</target>
           </configuration>
         </plugin>
+
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>${maven.bundle.plugin.version}</version>
+          <extensions>true</extensions>
+          <executions>
+            <!--
+              This execution makes sure that the manifest is available
+              when the tests are executed
+            -->
+            <execution>
+              <goals>
+                <goal>manifest</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!--
+            generate maven dependencies versions file that can be used later
+            to install the right bundle in test phase.
+            The file is:
+                target/classes/META-INF/maven/dependencies.properties
+        -->
+        <plugin>
+          <groupId>org.apache.servicemix.tooling</groupId>
+          <artifactId>depends-maven-plugin</artifactId>
+          <version>${depends.maven.plugin.version}</version>
+          <executions>
+            <execution>
+              <id>generate-depends-file</id>
+              <goals>
+                <goal>generate-depends-file</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+
       </plugins>
     </pluginManagement>
 
