@@ -32,11 +32,6 @@
 
     <!-- Test Dependencies -->
     <junit.version>4.11</junit.version>
-
-    <!-- Plugin Dependencies -->
-    <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
-    <maven.release.plugin.version>2.5</maven.release.plugin.version>
-    <maven.bundle.plugin.version>3.0.1</maven.bundle.plugin.version>
   </properties>
 
   <scm>
@@ -90,24 +85,11 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>${maven.compiler.plugin.version}</version>
+          <version>3.0</version>
           <configuration>
             <source>${java.version}</source>
             <target>${java.version}</target>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.felix</groupId>
-          <artifactId>maven-bundle-plugin</artifactId>
-          <version>${maven.bundle.plugin.version}</version>
-          <extensions>true</extensions>
-          <executions>
-            <execution>
-              <goals>
-                <goal>manifest</goal>
-              </goals>
-            </execution>
-          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -116,7 +98,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>${maven.release.plugin.version}</version>
+        <version>2.5</version>
         <configuration>
           <autoVersionSubmodules>true</autoVersionSubmodules>
         </configuration>
