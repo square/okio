@@ -17,6 +17,7 @@ package okio;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static okio.Util.arrayRangeEquals;
@@ -151,6 +152,10 @@ final class SegmentedByteString extends ByteString {
       segmentOffset = nextSegmentOffset;
     }
     return result;
+  }
+
+  @Override public ByteBuffer asByteBuffer() {
+    return ByteBuffer.wrap(toByteArray()).asReadOnlyBuffer();
   }
 
   @Override public void write(OutputStream out) throws IOException {

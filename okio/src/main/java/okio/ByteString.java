@@ -295,7 +295,7 @@ public class ByteString implements Serializable, Comparable<ByteString> {
    * Returns a {@code ByteBuffer} view of the bytes in this {@code ByteString}.
    */
   public ByteBuffer asByteBuffer() {
-    return ByteBuffer.wrap(data);
+    return ByteBuffer.wrap(data).asReadOnlyBuffer();
   }
 
   /** Writes the contents of this byte string to {@code out}. */
