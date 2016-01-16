@@ -23,6 +23,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -288,6 +289,13 @@ public class ByteString implements Serializable, Comparable<ByteString> {
    */
   public byte[] toByteArray() {
     return data.clone();
+  }
+
+  /**
+   * Returns a {@code ByteBuffer} view of the bytes in this {@code ByteString}.
+   */
+  public ByteBuffer asByteBuffer() {
+    return ByteBuffer.wrap(data).asReadOnlyBuffer();
   }
 
   /** Writes the contents of this byte string to {@code out}. */
