@@ -327,4 +327,8 @@ public class ByteStringTest {
 
     assertEquals(originalByteStrings, sortedByteStrings);
   }
+
+  @Test public void asByteBuffer() {
+    assertEquals(0x42, ByteString.of((byte) 0x41, (byte) 0x42, (byte) 0x43).asByteBuffer().get(1));
+  }
 }
