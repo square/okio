@@ -243,9 +243,7 @@ public final class Okio {
         && e.getMessage().contains("getsockname failed");
   }
 
-  public static Source tee(final Source source, final BufferedSink cacheBody)
-  {
+  public static Source tee(final Source source, final BufferedSink cacheBody) {
     return new TeeSource(source, cacheBody);
   }
-
 }
