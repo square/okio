@@ -6,11 +6,11 @@ import java.io.IOException;
 class TeeSource implements Source {
 
   private final Source source;
-  private final BufferedSink cacheBody;
+  private final BufferedSink sink;
 
-  public TeeSource(Source source, BufferedSink cacheBody) {
+  public TeeSource(Source source, BufferedSink copySink) {
     this.source = source;
-    this.cacheBody = cacheBody;
+    this.sink = copySink;
   }
 
   @Override
@@ -19,12 +19,12 @@ class TeeSource implements Source {
     bytesRead = source.read(sink, byteCount);
 
     if (bytesRead == -1) {
-      cacheBody.close(); // The cache response is complete!
+      this.sink.close(); // The cache response is complete!
       return -1;
     }
 
-    sink.copyTo(cacheBody.buffer(), sink.size() - bytesRead, bytesRead);
-    cacheBody.emitCompleteSegments();
+    sink.copyTo(this.sink.buffer(), sink.size() - bytesRead, bytesRead);
+    this.sink.emitCompleteSegments();
     return bytesRead;
   }
 
@@ -35,7 +35,7 @@ class TeeSource implements Source {
 
   @Override
   public void close() throws IOException {
-    cacheBody.close();
+    sink.close();
     source.close();
   }
 }
