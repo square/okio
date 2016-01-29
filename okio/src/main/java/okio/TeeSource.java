@@ -6,25 +6,18 @@ import java.io.IOException;
 class TeeSource implements Source {
 
   private final Source source;
-  private final BufferedSink sink;
+  private final BufferedSink copySink;
 
-  public TeeSource(Source source, BufferedSink copySink) {
+  public TeeSource(Source source, Sink copySink) {
     this.source = source;
-    this.sink = copySink;
+    this.copySink = Okio.buffer(copySink);
   }
 
   @Override
   public long read(Buffer sink, long byteCount) throws IOException {
-    long bytesRead;
-    bytesRead = source.read(sink, byteCount);
-
-    if (bytesRead == -1) {
-      this.sink.close(); // The cache response is complete!
-      return -1;
-    }
-
-    sink.copyTo(this.sink.buffer(), sink.size() - bytesRead, bytesRead);
-    this.sink.emitCompleteSegments();
+    long bytesRead = source.read(sink, byteCount);
+    sink.copyTo(copySink.buffer(), sink.size() - bytesRead, bytesRead);
+    copySink.emitCompleteSegments();
     return bytesRead;
   }
 
@@ -35,7 +28,7 @@ class TeeSource implements Source {
 
   @Override
   public void close() throws IOException {
-    sink.close();
+    copySink.close();
     source.close();
   }
 }
