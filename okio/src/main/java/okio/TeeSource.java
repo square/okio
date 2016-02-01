@@ -16,8 +16,12 @@ class TeeSource implements Source {
   @Override
   public long read(Buffer sink, long byteCount) throws IOException {
     long bytesRead = source.read(sink, byteCount);
-    sink.copyTo(copySink.buffer(), sink.size() - bytesRead, bytesRead);
-    copySink.emitCompleteSegments();
+
+    if (bytesRead > 0) {
+      sink.copyTo(copySink.buffer(), sink.size() - bytesRead, bytesRead);
+      copySink.emitCompleteSegments();
+    }
+
     return bytesRead;
   }
 
