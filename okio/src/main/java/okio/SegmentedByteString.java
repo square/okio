@@ -75,6 +75,9 @@ final class SegmentedByteString extends ByteString {
     for (Segment s = buffer.head; offset < byteCount; s = s.next) {
       segments[segmentCount] = s.data;
       offset += s.limit - s.pos;
+      if (offset > byteCount) {
+        offset = byteCount; // Despite sharing more bytes, only report having up to byteCount.
+      }
       directory[segmentCount] = offset;
       directory[segmentCount + segments.length] = s.pos;
       s.shared = true;

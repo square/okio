@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
@@ -586,7 +585,6 @@ public final class BufferTest {
     assertEquals("aaa", target.readUtf8());
   }
 
-  @Ignore
   @Test public void snapshotReportsAccurateSize() throws Exception {
     Buffer buf = new Buffer().write(new byte[] { 0, 1, 2, 3 });
     assertEquals(1, buf.snapshot(1).size());
