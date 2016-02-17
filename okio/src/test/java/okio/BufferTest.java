@@ -585,6 +585,11 @@ public final class BufferTest {
     assertEquals("aaa", target.readUtf8());
   }
 
+  @Test public void snapshot() throws Exception {
+    Buffer buf = new Buffer().write(new byte[] { 0, 1, 2, 3 });
+    assertEquals(1, buf.snapshot(1).size());
+  }
+
   /**
    * Returns a new buffer containing the data in {@code data}, and a segment
    * layout determined by {@code dice}.
