@@ -18,6 +18,8 @@ package okio;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 
+import static okio.Util.checkOffsetAndCount;
+
 /**
  * This timeout uses a background thread to take action exactly when the timeout
  * occurs. Use this to implement timeouts where they aren't supported natively,
@@ -38,6 +40,14 @@ import java.io.InterruptedIOException;
  * #timedOut} is asynchronous, and may be called after {@link #exit}.
  */
 public class AsyncTimeout extends Timeout {
+  /**
+   * Don't write more than 64 KiB of data at a time, give or take a segment.
+   * Otherwise slow connections may suffer timeouts even when they're making
+   * (slow) progress. Without this, writing a single 1 MiB buffer may never
+   * succeed on a sufficiently slow connection.
+   */
+  private static final int TIMEOUT_WRITE_SIZE = 64 * 1024;
+
   /**
    * The watchdog thread processes a linked list of pending timeouts, sorted in
    * the order to be triggered. This class synchronizes on AsyncTimeout.class.
@@ -149,15 +159,32 @@ public class AsyncTimeout extends Timeout {
   public final Sink sink(final Sink sink) {
     return new Sink() {
       @Override public void write(Buffer source, long byteCount) throws IOException {
-        boolean throwOnTimeout = false;
-        enter();
-        try {
-          sink.write(source, byteCount);
-          throwOnTimeout = true;
-        } catch (IOException e) {
-          throw exit(e);
-        } finally {
-          exit(throwOnTimeout);
+        checkOffsetAndCount(source.size, 0, byteCount);
+
+        while (byteCount > 0L) {
+          // Count how many bytes to write. This loop guarantees we split on a segment boundary.
+          long toWrite = 0L;
+          for (Segment s = source.head; toWrite < TIMEOUT_WRITE_SIZE; s = s.next) {
+            int segmentSize = source.head.limit - source.head.pos;
+            toWrite += segmentSize;
+            if (toWrite >= byteCount) {
+              toWrite = byteCount;
+              break;
+            }
+          }
+
+          // Emit one write. Only this section is subject to the timeout.
+          boolean throwOnTimeout = false;
+          enter();
+          try {
+            sink.write(source, toWrite);
+            byteCount -= toWrite;
+            throwOnTimeout = true;
+          } catch (IOException e) {
+            throw exit(e);
+          } finally {
+            exit(throwOnTimeout);
+          }
         }
       }
 
