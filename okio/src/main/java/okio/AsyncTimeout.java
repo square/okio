@@ -54,12 +54,8 @@ public class AsyncTimeout extends Timeout implements Delayed {
   /**
    * The watchdog thread processes a queue of pending timeouts, sorted in the order to be triggered.
    */
-  private static class QueueHolder {
-    private static final DelayQueue<AsyncTimeout> INSTANCE = new DelayQueue<AsyncTimeout>();
-  }
-
   private static final Object watchdogLock = new Object();
-  private static volatile Watchdog watchdog;
+  private static volatile DelayQueue<AsyncTimeout> queue;
 
   /** True if this node is currently in the queue. */
   private boolean inQueue;
@@ -85,10 +81,11 @@ public class AsyncTimeout extends Timeout implements Delayed {
       AsyncTimeout node, long timeoutNanos, boolean hasDeadline) {
     // Start the watchdog thread and create the head node when the first timeout is scheduled.
     // Double-check lock to initialize the watchdog thread.
-    if (watchdog == null) {
+    if (queue == null) {
       synchronized (watchdogLock) {
-        if (watchdog == null) {
-          watchdog = new Watchdog();
+        if (queue == null) {
+          queue = new DelayQueue<AsyncTimeout>();
+          final Watchdog watchdog = new Watchdog();
           watchdog.setPriority(Thread.MIN_PRIORITY);
           watchdog.start();
         }
@@ -109,7 +106,7 @@ public class AsyncTimeout extends Timeout implements Delayed {
     }
 
     // Insert the node in timeout order.
-    QueueHolder.INSTANCE.offer(node);
+    queue.offer(node);
   }
 
   /** Returns true if the timeout occurred. */
@@ -123,7 +120,7 @@ public class AsyncTimeout extends Timeout implements Delayed {
   private boolean cancelScheduledTimeout(AsyncTimeout node) {
     // Remove the node from the linked list.  If the node wasn't found in the queue, it must have
     // timed out!
-    return !QueueHolder.INSTANCE.remove(node);
+    return !queue.remove(node);
   }
 
   /**
@@ -310,7 +307,7 @@ public class AsyncTimeout extends Timeout implements Delayed {
     public void run() {
       while (true) {
         try {
-          final AsyncTimeout timedOut = QueueHolder.INSTANCE.take();
+          final AsyncTimeout timedOut = queue.take();
           // Close the timed out node.
           timedOut.timedOut();
         } catch (InterruptedException ignored) {
