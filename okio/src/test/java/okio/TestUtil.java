@@ -15,6 +15,7 @@
  */
 package okio;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -131,5 +132,30 @@ final class TestUtil {
     out.writeObject(original);
     ObjectInputStream in = new ObjectInputStream(buffer.inputStream());
     return (T) in.readObject();
+  }
+
+  /**
+   * Returns a new buffer containing the data in {@code data} and a segment
+   * layout determined by {@code dice}.
+   */
+  public static Buffer bufferWithRandomSegmentLayout(Random dice, byte[] data) throws IOException {
+    Buffer result = new Buffer();
+
+    // Writing to result directly will yield packed segments. Instead, write to
+    // other buffers, then write those buffers to result.
+    for (int pos = 0, byteCount; pos < data.length; pos += byteCount) {
+      byteCount = (Segment.SIZE / 2) + dice.nextInt(Segment.SIZE / 2);
+      if (byteCount > data.length - pos) byteCount = data.length - pos;
+      int offset = dice.nextInt(Segment.SIZE - byteCount);
+
+      Buffer segment = new Buffer();
+      segment.write(new byte[offset]);
+      segment.write(data, pos, byteCount);
+      segment.skip(offset);
+
+      result.write(segment, byteCount);
+    }
+
+    return result;
   }
 }
