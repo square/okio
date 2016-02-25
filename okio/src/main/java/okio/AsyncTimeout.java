@@ -137,15 +137,10 @@ public class AsyncTimeout extends Timeout implements Delayed {
 
   @Override
   public final int compareTo(Delayed that) {
-    long thisDelay = getDelay(TimeUnit.NANOSECONDS);
-    long thatDelay = that.getDelay(TimeUnit.NANOSECONDS);
-    if (thisDelay == thatDelay) {
-      return 0;
-    } else if (thisDelay < thatDelay) {
-      return -1;
-    } else {
-      return 1;
+    if (that instanceof AsyncTimeout) {
+      return (int) (timeoutAt - ((AsyncTimeout) that).timeoutAt);
     }
+    return (int) (getDelay(TimeUnit.NANOSECONDS) - that.getDelay(TimeUnit.NANOSECONDS));
   }
 
   /**
