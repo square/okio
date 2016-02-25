@@ -17,6 +17,9 @@ package okio;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
 
 import static okio.Util.checkOffsetAndCount;
 
@@ -39,7 +42,7 @@ import static okio.Util.checkOffsetAndCount;
  * indicates whether a timeout was triggered. Note that the call to {@link
  * #timedOut} is asynchronous, and may be called after {@link #exit}.
  */
-public class AsyncTimeout extends Timeout {
+public class AsyncTimeout extends Timeout implements Delayed {
   /**
    * Don't write more than 64 KiB of data at a time, give or take a segment.
    * Otherwise slow connections may suffer timeouts even when they're making
@@ -49,15 +52,10 @@ public class AsyncTimeout extends Timeout {
   private static final int TIMEOUT_WRITE_SIZE = 64 * 1024;
 
   /**
-   * The watchdog thread processes a linked list of pending timeouts, sorted in
-   * the order to be triggered. This class synchronizes on AsyncTimeout.class.
-   * This lock guards the queue.
-   *
-   * <p>Head's 'next' points to the first element of the linked list. The first
-   * element is the next node to time out, or null if the queue is empty. The
-   * head is null until the watchdog thread is started.
+   * The watchdog thread processes a queue of pending timeouts, sorted in the order to be triggered.
    */
-  private static AsyncTimeout head;
+  private static final Object watchdogLock = new Object();
+  private static volatile DelayQueue<AsyncTimeout> queue;
 
   /** True if this node is currently in the queue. */
   private boolean inQueue;
@@ -76,72 +74,52 @@ public class AsyncTimeout extends Timeout {
       return; // No timeout and no deadline? Don't bother with the queue.
     }
     inQueue = true;
-    scheduleTimeout(this, timeoutNanos, hasDeadline);
+    scheduleTimeout(timeoutNanos, hasDeadline);
   }
 
-  private static synchronized void scheduleTimeout(
-      AsyncTimeout node, long timeoutNanos, boolean hasDeadline) {
+  private void scheduleTimeout(long timeoutNanos, boolean hasDeadline) {
     // Start the watchdog thread and create the head node when the first timeout is scheduled.
-    if (head == null) {
-      head = new AsyncTimeout();
-      new Watchdog().start();
+    // Double-check lock to initialize the watchdog thread.
+    if (queue == null) {
+      synchronized (watchdogLock) {
+        if (queue == null) {
+          queue = new DelayQueue<AsyncTimeout>();
+          Watchdog watchdog = new Watchdog();
+          watchdog.setPriority(Thread.MIN_PRIORITY);
+          watchdog.start();
+        }
+      }
     }
 
     long now = System.nanoTime();
     if (timeoutNanos != 0 && hasDeadline) {
       // Compute the earliest event; either timeout or deadline. Because nanoTime can wrap around,
       // Math.min() is undefined for absolute values, but meaningful for relative ones.
-      node.timeoutAt = now + Math.min(timeoutNanos, node.deadlineNanoTime() - now);
+      timeoutAt = now + Math.min(timeoutNanos, deadlineNanoTime() - now);
     } else if (timeoutNanos != 0) {
-      node.timeoutAt = now + timeoutNanos;
+      timeoutAt = now + timeoutNanos;
     } else if (hasDeadline) {
-      node.timeoutAt = node.deadlineNanoTime();
+      timeoutAt = deadlineNanoTime();
     } else {
       throw new AssertionError();
     }
 
-    // Insert the node in sorted order.
-    long remainingNanos = node.remainingNanos(now);
-    for (AsyncTimeout prev = head; true; prev = prev.next) {
-      if (prev.next == null || remainingNanos < prev.next.remainingNanos(now)) {
-        node.next = prev.next;
-        prev.next = node;
-        if (prev == head) {
-          AsyncTimeout.class.notify(); // Wake up the watchdog when inserting at the front.
-        }
-        break;
-      }
-    }
+    // Insert the node in timeout order.
+    queue.offer(this);
   }
 
   /** Returns true if the timeout occurred. */
   public final boolean exit() {
     if (!inQueue) return false;
     inQueue = false;
-    return cancelScheduledTimeout(this);
+    return cancelScheduledTimeout();
   }
 
   /** Returns true if the timeout occurred. */
-  private static synchronized boolean cancelScheduledTimeout(AsyncTimeout node) {
-    // Remove the node from the linked list.
-    for (AsyncTimeout prev = head; prev != null; prev = prev.next) {
-      if (prev.next == node) {
-        prev.next = node.next;
-        node.next = null;
-        return false;
-      }
-    }
-
-    // The node wasn't found in the linked list: it must have timed out!
-    return true;
-  }
-
-  /**
-   * Returns the amount of time left until the time out. This will be negative
-   * if the timeout has elapsed and the timeout should occur immediately.
-   */
-  private long remainingNanos(long now) {
-    return timeoutAt - now;
+  private boolean cancelScheduledTimeout() {
+    // Remove the node from the queue.  If the node wasn't found in the queue, it must have
+    // timed out!
+    return !queue.remove(this);
   }
 
   /**
@@ -149,6 +127,16 @@ public class AsyncTimeout extends Timeout {
    * #enter()} and {@link #exit()} has exceeded the timeout.
    */
   protected void timedOut() {
+  }
+
+  @Override
+  public final long getDelay(TimeUnit unit) {
+    return unit.convert(timeoutAt - System.nanoTime(), TimeUnit.NANOSECONDS);
+  }
+
+  @Override
+  public final int compareTo(Delayed that) {
+    return (int) (timeoutAt - ((AsyncTimeout) that).timeoutAt);
   }
 
   /**
@@ -310,50 +298,13 @@ public class AsyncTimeout extends Timeout {
     public void run() {
       while (true) {
         try {
-          AsyncTimeout timedOut = awaitTimeout();
-
-          // Didn't find a node to interrupt. Try again.
-          if (timedOut == null) continue;
-
+          final AsyncTimeout timedOut = queue.take();
           // Close the timed out node.
           timedOut.timedOut();
         } catch (InterruptedException ignored) {
         }
+        Thread.yield();
       }
     }
-  }
-
-  /**
-   * Removes and returns the node at the head of the list, waiting for it to
-   * time out if necessary. Returns null if the situation changes while waiting:
-   * either a newer node is inserted at the head, or the node being waited on
-   * has been removed.
-   */
-  static synchronized AsyncTimeout awaitTimeout() throws InterruptedException {
-    // Get the next eligible node.
-    AsyncTimeout node = head.next;
-
-    // The queue is empty. Wait for something to be enqueued.
-    if (node == null) {
-      AsyncTimeout.class.wait();
-      return null;
-    }
-
-    long waitNanos = node.remainingNanos(System.nanoTime());
-
-    // The head of the queue hasn't timed out yet. Await that.
-    if (waitNanos > 0) {
-      // Waiting is made complicated by the fact that we work in nanoseconds,
-      // but the API wants (millis, nanos) in two arguments.
-      long waitMillis = waitNanos / 1000000L;
-      waitNanos -= (waitMillis * 1000000L);
-      AsyncTimeout.class.wait(waitMillis, (int) waitNanos);
-      return null;
-    }
-
-    // The head of the queue has timed out. Remove it.
-    head.next = node.next;
-    node.next = null;
-    return node;
   }
 }
