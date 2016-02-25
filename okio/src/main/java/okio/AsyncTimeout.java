@@ -74,18 +74,17 @@ public class AsyncTimeout extends Timeout implements Delayed {
       return; // No timeout and no deadline? Don't bother with the queue.
     }
     inQueue = true;
-    scheduleTimeout(this, timeoutNanos, hasDeadline);
+    scheduleTimeout(timeoutNanos, hasDeadline);
   }
 
-  private void scheduleTimeout(
-      AsyncTimeout node, long timeoutNanos, boolean hasDeadline) {
+  private void scheduleTimeout(long timeoutNanos, boolean hasDeadline) {
     // Start the watchdog thread and create the head node when the first timeout is scheduled.
     // Double-check lock to initialize the watchdog thread.
     if (queue == null) {
       synchronized (watchdogLock) {
         if (queue == null) {
           queue = new DelayQueue<AsyncTimeout>();
-          final Watchdog watchdog = new Watchdog();
+          Watchdog watchdog = new Watchdog();
           watchdog.setPriority(Thread.MIN_PRIORITY);
           watchdog.start();
         }
@@ -96,31 +95,31 @@ public class AsyncTimeout extends Timeout implements Delayed {
     if (timeoutNanos != 0 && hasDeadline) {
       // Compute the earliest event; either timeout or deadline. Because nanoTime can wrap around,
       // Math.min() is undefined for absolute values, but meaningful for relative ones.
-      node.timeoutAt = now + Math.min(timeoutNanos, node.deadlineNanoTime() - now);
+      timeoutAt = now + Math.min(timeoutNanos, deadlineNanoTime() - now);
     } else if (timeoutNanos != 0) {
-      node.timeoutAt = now + timeoutNanos;
+      timeoutAt = now + timeoutNanos;
     } else if (hasDeadline) {
-      node.timeoutAt = node.deadlineNanoTime();
+      timeoutAt = deadlineNanoTime();
     } else {
       throw new AssertionError();
     }
 
     // Insert the node in timeout order.
-    queue.offer(node);
+    queue.offer(this);
   }
 
   /** Returns true if the timeout occurred. */
   public final boolean exit() {
     if (!inQueue) return false;
     inQueue = false;
-    return cancelScheduledTimeout(this);
+    return cancelScheduledTimeout();
   }
 
   /** Returns true if the timeout occurred. */
-  private boolean cancelScheduledTimeout(AsyncTimeout node) {
-    // Remove the node from the linked list.  If the node wasn't found in the queue, it must have
+  private boolean cancelScheduledTimeout() {
+    // Remove the node from the queue.  If the node wasn't found in the queue, it must have
     // timed out!
-    return !queue.remove(node);
+    return !queue.remove(this);
   }
 
   /**
@@ -137,10 +136,7 @@ public class AsyncTimeout extends Timeout implements Delayed {
 
   @Override
   public final int compareTo(Delayed that) {
-    if (that instanceof AsyncTimeout) {
-      return (int) (timeoutAt - ((AsyncTimeout) that).timeoutAt);
-    }
-    return (int) (getDelay(TimeUnit.NANOSECONDS) - that.getDelay(TimeUnit.NANOSECONDS));
+    return (int) (timeoutAt - ((AsyncTimeout) that).timeoutAt);
   }
 
   /**
