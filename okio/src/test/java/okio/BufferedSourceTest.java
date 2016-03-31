@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -65,6 +66,10 @@ public class BufferedSourceTest {
     }
   };
 
+  /**
+   * A factory deliberately written to create buffers whose internal segments are always 1 byte
+   * long. We like testing with these segments because are likely to trigger bugs!
+   */
   private static final Factory ONE_BYTE_AT_A_TIME_FACTORY = new Factory() {
     @Override public Pipe pipe() {
       Buffer buffer = new Buffer();
@@ -72,7 +77,12 @@ public class BufferedSourceTest {
       result.sink = buffer;
       result.source = new RealBufferedSource(new ForwardingSource(buffer) {
         @Override public long read(Buffer sink, long byteCount) throws IOException {
-          return super.read(sink, Math.min(byteCount, 1L));
+          // This reads a byte into a new buffer, then clones it so that the segments are shared.
+          // Shared segments cannot be compacted so we'll get a long chain of short segments.
+          Buffer box = new Buffer();
+          long result = super.read(box, Math.min(byteCount, 1L));
+          if (result > 0L) sink.write(box.clone(), result);
+          return result;
         }
       });
       return result;
@@ -500,6 +510,28 @@ public class BufferedSourceTest {
     } catch (IllegalArgumentException e) {
       assertEquals("fromIndex < 0", e.getMessage());
     }
+  }
+
+  /**
+   * With {@link #ONE_BYTE_AT_A_TIME_FACTORY}, this code is extremely slow. This is a known bug
+   * that needs to be fixed! https://github.com/square/okio/issues/171
+   */
+  @Ignore
+  @Test public void indexOfByteStringAcrossSegmentBoundaries() throws IOException {
+    sink.writeUtf8(repeat('a', Segment.SIZE * 2 - 3));
+    sink.writeUtf8("bcdefg");
+    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("ab")));
+    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abc")));
+    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcd")));
+    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcde")));
+    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcdef")));
+    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcdefg")));
+    assertEquals(Segment.SIZE * 2 - 3, source.indexOf(ByteString.encodeUtf8("bcdefg")));
+    assertEquals(Segment.SIZE * 2 - 2, source.indexOf(ByteString.encodeUtf8("cdefg")));
+    assertEquals(Segment.SIZE * 2 - 1, source.indexOf(ByteString.encodeUtf8("defg")));
+    assertEquals(Segment.SIZE * 2,     source.indexOf(ByteString.encodeUtf8("efg")));
+    assertEquals(Segment.SIZE * 2 + 1, source.indexOf(ByteString.encodeUtf8("fg")));
+    assertEquals(Segment.SIZE * 2 + 2, source.indexOf(ByteString.encodeUtf8("g")));
   }
 
   @Test public void indexOfElement() throws IOException {

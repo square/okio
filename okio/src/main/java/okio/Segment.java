@@ -34,6 +34,9 @@ final class Segment {
   /** The size of all segments in bytes. */
   static final int SIZE = 8192;
 
+  /** Segments will be shared when doing so avoids {@code arraycopy()} of this many bytes. */
+  static final int SHARE_MINIMUM = 1024;
+
   final byte[] data;
 
   /** The next byte of application data byte to read in this segment. */
@@ -108,7 +111,20 @@ final class Segment {
    */
   public Segment split(int byteCount) {
     if (byteCount <= 0 || byteCount > limit - pos) throw new IllegalArgumentException();
-    Segment prefix = new Segment(this);
+    Segment prefix;
+
+    // We have two competing performance goals:
+    //  - Avoid copying data. We accomplish this by sharing segments.
+    //  - Avoid short shared segments. These are bad for performance because they are readonly and
+    //    may lead to long chains of short segments.
+    // To balance these goals we only share segments when the copy will be large.
+    if (byteCount >= SHARE_MINIMUM) {
+      prefix = new Segment(this);
+    } else {
+      prefix = SegmentPool.take();
+      System.arraycopy(data, pos, prefix.data, 0, byteCount);
+    }
+
     prefix.limit = prefix.pos + byteCount;
     pos += byteCount;
     prev.push(prefix);
