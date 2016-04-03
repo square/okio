@@ -1259,16 +1259,52 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   @Override public long indexOf(ByteString bytes, long fromIndex) throws IOException {
     if (bytes.size() == 0) throw new IllegalArgumentException("bytes is empty");
-    while (true) {
-      fromIndex = indexOf(bytes.getByte(0), fromIndex);
-      if (fromIndex == -1) {
-        return -1;
+    if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
+
+    // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
+    Segment s = head;
+    long offset;
+    if (s == null) {
+      // No segments to scan!
+      return -1L;
+    } else if (size - fromIndex < fromIndex) {
+      // We're scanning in the back half of this buffer. Find the segment starting at the back.
+      offset = size;
+      while (offset > fromIndex) {
+        s = s.prev;
+        offset -= (s.limit - s.pos);
       }
-      if (rangeEquals(fromIndex, bytes)) {
-        return fromIndex;
+    } else {
+      // We're scanning in the front half of this buffer. Find the segment starting at the front.
+      offset = 0L;
+      for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
+        s = s.next;
+        offset = nextOffset;
       }
-      fromIndex++;
     }
+
+    // Scan through the segments, searching for the lead byte. Each time that is found, delegate to
+    // rangeEquals() to check for a complete match.
+    byte b0 = bytes.getByte(0);
+    int bytesSize = bytes.size();
+    long resultLimit = size - bytesSize + 1;
+    while (offset < resultLimit) {
+      // Scan through the current segment.
+      byte[] data = s.data;
+      int segmentLimit = (int) Math.min(s.limit, s.pos + resultLimit - offset);
+      for (int pos = (int) (s.pos + fromIndex - offset); pos < segmentLimit; pos++) {
+        if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes, 1, bytesSize)) {
+          return pos - s.pos + offset;
+        }
+      }
+
+      // Not in this segment. Try the next one.
+      offset += (s.limit - s.pos);
+      fromIndex = offset;
+      s = s.next;
+    }
+
+    return -1L;
   }
 
   @Override public long indexOfElement(ByteString targetBytes) {
@@ -1312,6 +1348,34 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
         return false;
       }
     }
+    return true;
+  }
+
+  /**
+   * Returns true if the range within this buffer starting at {@code segmentPos} in {@code segment}
+   * is equal to {@code bytes[bytesOffset..bytesLimit)}.
+   */
+  private boolean rangeEquals(
+      Segment segment, int segmentPos, ByteString bytes, int bytesOffset, int bytesLimit) {
+    int segmentLimit = segment.limit;
+    byte[] data = segment.data;
+
+    for (int i = bytesOffset; i < bytesLimit; ) {
+      if (segmentPos == segmentLimit) {
+        segment = segment.next;
+        data = segment.data;
+        segmentPos = segment.pos;
+        segmentLimit = segment.limit;
+      }
+
+      if (data[segmentPos] != bytes.getByte(i)) {
+        return false;
+      }
+
+      segmentPos++;
+      i++;
+    }
+
     return true;
   }
 

@@ -297,15 +297,17 @@ final class RealBufferedSource implements BufferedSource {
 
   @Override public long indexOf(byte b, long fromIndex) throws IOException {
     if (closed) throw new IllegalStateException("closed");
-    while (fromIndex >= buffer.size) {
+
+    while (true) {
+      long result = buffer.indexOf(b, fromIndex);
+      if (result != -1) return result;
+
+      long lastBufferSize = buffer.size;
       if (source.read(buffer, Segment.SIZE) == -1) return -1L;
+
+      // Keep searching, picking up from where we left off.
+      fromIndex = Math.max(fromIndex, lastBufferSize);
     }
-    long index;
-    while ((index = buffer.indexOf(b, fromIndex)) == -1) {
-      fromIndex = buffer.size;
-      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
-    }
-    return index;
   }
 
   @Override public long indexOf(ByteString bytes) throws IOException {
@@ -313,16 +315,17 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public long indexOf(ByteString bytes, long fromIndex) throws IOException {
-    if (bytes.size() == 0) throw new IllegalArgumentException("bytes is empty");
+    if (closed) throw new IllegalStateException("closed");
+
     while (true) {
-      fromIndex = indexOf(bytes.getByte(0), fromIndex);
-      if (fromIndex == -1) {
-        return -1;
-      }
-      if (rangeEquals(fromIndex, bytes)) {
-        return fromIndex;
-      }
-      fromIndex++;
+      long result = buffer.indexOf(bytes, fromIndex);
+      if (result != -1) return result;
+
+      long lastBufferSize = buffer.size;
+      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
+
+      // Keep searching, picking up from where we left off.
+      fromIndex = Math.max(fromIndex, lastBufferSize - bytes.size() + 1);
     }
   }
 
