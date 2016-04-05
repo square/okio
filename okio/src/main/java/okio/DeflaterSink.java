@@ -56,8 +56,7 @@ public final class DeflaterSink implements Sink {
     this.deflater = deflater;
   }
 
-  @Override public void write(Buffer source, long byteCount)
-      throws IOException {
+  @Override public void write(Buffer source, long byteCount) throws IOException {
     checkOffsetAndCount(source.size, 0, byteCount);
     while (byteCount > 0) {
       // Share bytes from the head segment of 'source' with the deflater.
