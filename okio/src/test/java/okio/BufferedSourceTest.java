@@ -22,7 +22,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -467,7 +466,7 @@ public class BufferedSourceTest {
     assertEquals(-1, source.indexOf((byte) 'e'));
   }
 
-  @Test public void indexOfWithOffset() throws IOException {
+  @Test public void indexOfByteWithOffset() throws IOException {
     sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
     assertEquals(-1, source.indexOf((byte) 'a', 1));
     assertEquals(15, source.indexOf((byte) 'b', 15));
@@ -483,6 +482,30 @@ public class BufferedSourceTest {
     // Make sure we backtrack and resume searching after partial match.
     sink.writeUtf8("hi hi hi hey");
     assertEquals(3, source.indexOf(ByteString.encodeUtf8("hi hi hey")));
+  }
+
+  @Test public void indexOfByteStringAtSegmentBoundary() throws IOException {
+    sink.writeUtf8(repeat('a', Segment.SIZE - 1));
+    sink.writeUtf8("bcd");
+    assertEquals(Segment.SIZE - 3, source.indexOf(ByteString.encodeUtf8("aabc"), Segment.SIZE - 4));
+    assertEquals(Segment.SIZE - 3, source.indexOf(ByteString.encodeUtf8("aabc"), Segment.SIZE - 3));
+    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("abcd"), Segment.SIZE - 2));
+    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("abc"),  Segment.SIZE - 2));
+    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("abc"),  Segment.SIZE - 2));
+    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("ab"),   Segment.SIZE - 2));
+    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("a"),    Segment.SIZE - 2));
+    assertEquals(Segment.SIZE - 1, source.indexOf(ByteString.encodeUtf8("bc"),   Segment.SIZE - 2));
+    assertEquals(Segment.SIZE - 1, source.indexOf(ByteString.encodeUtf8("b"),    Segment.SIZE - 2));
+    assertEquals(Segment.SIZE,     source.indexOf(ByteString.encodeUtf8("c"),    Segment.SIZE - 2));
+    assertEquals(Segment.SIZE,     source.indexOf(ByteString.encodeUtf8("c"),    Segment.SIZE    ));
+    assertEquals(Segment.SIZE + 1, source.indexOf(ByteString.encodeUtf8("d"),    Segment.SIZE - 2));
+    assertEquals(Segment.SIZE + 1, source.indexOf(ByteString.encodeUtf8("d"),    Segment.SIZE + 1));
+  }
+
+  @Test public void indexOfDoesNotWrapAround() throws IOException {
+    sink.writeUtf8(repeat('a', Segment.SIZE - 1));
+    sink.writeUtf8("bcd");
+    assertEquals(-1, source.indexOf(ByteString.encodeUtf8("abcda"), Segment.SIZE - 3));
   }
 
   @Test public void indexOfByteStringWithOffset() throws IOException {
@@ -513,10 +536,9 @@ public class BufferedSourceTest {
   }
 
   /**
-   * With {@link #ONE_BYTE_AT_A_TIME_FACTORY}, this code is extremely slow. This is a known bug
-   * that needs to be fixed! https://github.com/square/okio/issues/171
+   * With {@link #ONE_BYTE_AT_A_TIME_FACTORY}, this code was extremely slow.
+   * https://github.com/square/okio/issues/171
    */
-  @Ignore
   @Test public void indexOfByteStringAcrossSegmentBoundaries() throws IOException {
     sink.writeUtf8(repeat('a', Segment.SIZE * 2 - 3));
     sink.writeUtf8("bcdefg");
