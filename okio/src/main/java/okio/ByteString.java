@@ -291,6 +291,11 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return data.clone();
   }
 
+  /** Returns the bytes of this string without a defensive copy. Do not mutate! */
+  byte[] internalArray() {
+    return data;
+  }
+
   /**
    * Returns a {@code ByteBuffer} view of the bytes in this {@code ByteString}.
    */

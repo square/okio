@@ -335,19 +335,17 @@ final class RealBufferedSource implements BufferedSource {
 
   @Override public long indexOfElement(ByteString targetBytes, long fromIndex) throws IOException {
     if (closed) throw new IllegalStateException("closed");
-    while (fromIndex >= buffer.size) {
-      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
-    }
-    long index;
-    while ((index = buffer.indexOfElement(targetBytes, fromIndex)) == -1) {
-      fromIndex = buffer.size;
-      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
-    }
-    return index;
-  }
 
-  private boolean rangeEquals(long offset, ByteString bytes) throws IOException {
-    return request(offset + bytes.size()) && buffer.rangeEquals(offset, bytes);
+    while (true) {
+      long result = buffer.indexOfElement(targetBytes, fromIndex);
+      if (result != -1) return result;
+
+      long lastBufferSize = buffer.size;
+      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
+
+      // Keep searching, picking up from where we left off.
+      fromIndex = Math.max(fromIndex, lastBufferSize);
+    }
   }
 
   @Override public InputStream inputStream() {

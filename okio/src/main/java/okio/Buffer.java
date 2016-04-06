@@ -1233,23 +1233,48 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   @Override public long indexOf(byte b, long fromIndex) {
     if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
 
-    Segment s = head;
-    if (s == null) return -1L;
-    long offset = 0L;
-    do {
-      int segmentByteCount = s.limit - s.pos;
-      if (fromIndex >= segmentByteCount) {
-        fromIndex -= segmentByteCount;
-      } else {
-        byte[] data = s.data;
-        for (int pos = (int) (s.pos + fromIndex), limit = s.limit; pos < limit; pos++) {
-          if (data[pos] == b) return offset + pos - s.pos;
+    Segment s;
+    long offset;
+
+    // TODO(jwilson): extract this to a shared helper method when can do so without allocating.
+    findSegmentAndOffset: {
+      // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
+      s = head;
+      if (s == null) {
+        // No segments to scan!
+        return -1L;
+      } else if (size - fromIndex < fromIndex) {
+        // We're scanning in the back half of this buffer. Find the segment starting at the back.
+        offset = size;
+        while (offset > fromIndex) {
+          s = s.prev;
+          offset -= (s.limit - s.pos);
         }
-        fromIndex = 0;
+      } else {
+        // We're scanning in the front half of this buffer. Find the segment starting at the front.
+        offset = 0L;
+        for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
+          s = s.next;
+          offset = nextOffset;
+        }
       }
-      offset += segmentByteCount;
+    }
+
+    // Scan through the segments, searching for b.
+    while (offset < size) {
+      byte[] data = s.data;
+      for (int pos = (int) (s.pos + fromIndex - offset), limit = s.limit; pos < limit; pos++) {
+        if (data[pos] == b) {
+          return pos - s.pos + offset;
+        }
+      }
+
+      // Not in this segment. Try the next one.
+      offset += (s.limit - s.pos);
+      fromIndex = offset;
       s = s.next;
-    } while (s != head);
+    }
+
     return -1L;
   }
 
@@ -1261,25 +1286,30 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     if (bytes.size() == 0) throw new IllegalArgumentException("bytes is empty");
     if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
 
-    // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
-    Segment s = head;
+    Segment s;
     long offset;
-    if (s == null) {
-      // No segments to scan!
-      return -1L;
-    } else if (size - fromIndex < fromIndex) {
-      // We're scanning in the back half of this buffer. Find the segment starting at the back.
-      offset = size;
-      while (offset > fromIndex) {
-        s = s.prev;
-        offset -= (s.limit - s.pos);
-      }
-    } else {
-      // We're scanning in the front half of this buffer. Find the segment starting at the front.
-      offset = 0L;
-      for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
-        s = s.next;
-        offset = nextOffset;
+
+    // TODO(jwilson): extract this to a shared helper method when can do so without allocating.
+    findSegmentAndOffset: {
+      // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
+      s = head;
+      if (s == null) {
+        // No segments to scan!
+        return -1L;
+      } else if (size - fromIndex < fromIndex) {
+        // We're scanning in the back half of this buffer. Find the segment starting at the back.
+        offset = size;
+        while (offset > fromIndex) {
+          s = s.prev;
+          offset -= (s.limit - s.pos);
+        }
+      } else {
+        // We're scanning in the front half of this buffer. Find the segment starting at the front.
+        offset = 0L;
+        for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
+          s = s.next;
+          offset = nextOffset;
+        }
       }
     }
 
@@ -1314,27 +1344,73 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   @Override public long indexOfElement(ByteString targetBytes, long fromIndex) {
     if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
 
-    Segment s = head;
-    if (s == null) return -1L;
-    long offset = 0L;
-    byte[] toFind = targetBytes.toByteArray();
-    do {
-      int segmentByteCount = s.limit - s.pos;
-      if (fromIndex >= segmentByteCount) {
-        fromIndex -= segmentByteCount;
+    Segment s;
+    long offset;
+
+    // TODO(jwilson): extract this to a shared helper method when can do so without allocating.
+    findSegmentAndOffset: {
+      // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
+      s = head;
+      if (s == null) {
+        // No segments to scan!
+        return -1L;
+      } else if (size - fromIndex < fromIndex) {
+        // We're scanning in the back half of this buffer. Find the segment starting at the back.
+        offset = size;
+        while (offset > fromIndex) {
+          s = s.prev;
+          offset -= (s.limit - s.pos);
+        }
       } else {
+        // We're scanning in the front half of this buffer. Find the segment starting at the front.
+        offset = 0L;
+        for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
+          s = s.next;
+          offset = nextOffset;
+        }
+      }
+    }
+
+    // Special case searching for one of two bytes. This is a common case for tools like Moshi,
+    // which search for pairs of chars like `\r` and `\n` or {@code `"` and `\`. The impact of this
+    // optimization is a ~5x speedup for this case without a substantial cost to other cases.
+    if (targetBytes.size() == 2) {
+      // Scan through the segments, searching for either of the two bytes.
+      byte b0 = targetBytes.getByte(0);
+      byte b1 = targetBytes.getByte(1);
+      while (offset < size) {
         byte[] data = s.data;
-        for (long pos = s.pos + fromIndex, limit = s.limit; pos < limit; pos++) {
-          byte b = data[(int) pos];
-          for (byte targetByte : toFind) {
-            if (b == targetByte) return offset + pos - s.pos;
+        for (int pos = (int) (s.pos + fromIndex - offset), limit = s.limit; pos < limit; pos++) {
+          int b = data[pos];
+          if (b == b0 || b == b1) {
+            return pos - s.pos + offset;
           }
         }
-        fromIndex = 0;
+
+        // Not in this segment. Try the next one.
+        offset += (s.limit - s.pos);
+        fromIndex = offset;
+        s = s.next;
       }
-      offset += segmentByteCount;
-      s = s.next;
-    } while (s != head);
+    } else {
+      // Scan through the segments, searching for a byte that's also in the array.
+      byte[] targetByteArray = targetBytes.internalArray();
+      while (offset < size) {
+        byte[] data = s.data;
+        for (int pos = (int) (s.pos + fromIndex - offset), limit = s.limit; pos < limit; pos++) {
+          int b = data[pos];
+          for (byte t : targetByteArray) {
+            if (b == t) return pos - s.pos + offset;
+          }
+        }
+
+        // Not in this segment. Try the next one.
+        offset += (s.limit - s.pos);
+        fromIndex = offset;
+        s = s.next;
+      }
+    }
+
     return -1L;
   }
 
