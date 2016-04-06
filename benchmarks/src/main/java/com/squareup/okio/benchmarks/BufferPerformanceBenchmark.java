@@ -54,7 +54,7 @@ import static java.util.Objects.requireNonNull;
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class BufferPerformanceBench {
+public class BufferPerformanceBenchmark {
 
   public static final File OriginPath =
       new File(System.getProperty("okio.bench.origin.path", "/dev/urandom"));
@@ -214,7 +214,7 @@ public class BufferPerformanceBench {
   public static class ColdBuffers extends BufferSetup {
 
     @Setup(Level.Trial)
-    public void setupBench(BufferPerformanceBench bench) {
+    public void setupBench(BufferPerformanceBenchmark bench) {
       super.bench = bench;
     }
 
@@ -229,7 +229,7 @@ public class BufferPerformanceBench {
   public static class HotBuffers extends BufferSetup {
 
     @Setup(Level.Trial)
-    public void setupBench(BufferPerformanceBench bench) {
+    public void setupBench(BufferPerformanceBenchmark bench) {
       super.bench = bench;
     }
 
@@ -237,7 +237,7 @@ public class BufferPerformanceBench {
 
   @State(Scope.Thread)
   public static abstract class BufferSetup extends BufferState {
-    BufferPerformanceBench bench;
+    BufferPerformanceBenchmark bench;
 
     public BufferedSource receive(byte[] bytes) throws IOException {
       return super.receive(bytes, bench.maxReadBytes);

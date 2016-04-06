@@ -229,6 +229,10 @@ final class SegmentedByteString extends ByteString {
     return new ByteString(toByteArray());
   }
 
+  @Override byte[] internalArray() {
+    return toByteArray();
+  }
+
   @Override public boolean equals(Object o) {
     if (o == this) return true;
     return o instanceof ByteString
