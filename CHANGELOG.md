@@ -1,6 +1,31 @@
 Change Log
 ==========
 
+## Version 1.7.0
+
+_2015-04-10_
+
+ * New: Change the segment size to 8 KiB. This has been reported to dramatically
+   improver performance in some applications.
+ * New: `md5()`, `sha1()`, and `sha256()` methods on `Buffer`. Also add a
+   `sha1()` method on `ByteString` for symmetry.
+ * New: `HashingSource` and `HashingSink`. These classes are Okio’s equivalent
+   to the JDK’s `DigestInputStream` and `DigestOutputStream`. They offer
+   convenient `md5()`, `sha1()`, and `sha256()` factory methods to avoid an
+   impossible `NoSuchAlgorithmException`.
+ * New: `ByteString.asByteBuffer()`.
+ * Fix: Limit snapshot byte strings to requested size.
+ * Fix: Change write timeouts to have a maximum write size. Previously large
+   writes could easly suffer timeouts because the entire write was subject to a
+   single timeout.
+ * Fix: Recover from EBADF failures, which could be triggered by asynchronously
+   closing a stream on older versions of Android.
+ * Fix: Don't share segments if doing so only saves a small copy. This should
+   improve performance for all applications.
+ * Fix: Optimize `BufferedSource.indexOfElement()` and `indexOf(ByteString)`.
+   Previously this method had a bug that caused it to be very slow on large
+   buffers.
+
 ## Version 1.6.0
 
 _2015-08-25_
