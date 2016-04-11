@@ -6,7 +6,7 @@ Change Log
 _2016-04-10_
 
  * New: Change the segment size to 8 KiB. This has been reported to dramatically
-   improver performance in some applications.
+   improve performance in some applications.
  * New: `md5()`, `sha1()`, and `sha256()` methods on `Buffer`. Also add a
    `sha1()` method on `ByteString` for symmetry.
  * New: `HashingSource` and `HashingSink`. These classes are Okio’s equivalent
