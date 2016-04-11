@@ -3,7 +3,7 @@ Change Log
 
 ## Version 1.7.0
 
-_2015-04-10_
+_2016-04-10_
 
  * New: Change the segment size to 8 KiB. This has been reported to dramatically
    improver performance in some applications.
