@@ -110,14 +110,19 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return digest("MD5");
   }
 
+  /** Returns the SHA-1 hash of this byte string. */
+  public ByteString sha1() {
+    return digest("SHA-1");
+  }
+
   /** Returns the SHA-256 hash of this byte string. */
   public ByteString sha256() {
     return digest("SHA-256");
   }
 
-  private ByteString digest(String digest) {
+  private ByteString digest(String algorithm) {
     try {
-      return ByteString.of(MessageDigest.getInstance(digest).digest(data));
+      return ByteString.of(MessageDigest.getInstance(algorithm).digest(data));
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError(e);
     }

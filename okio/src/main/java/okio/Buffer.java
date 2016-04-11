@@ -1476,6 +1476,34 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return result;
   }
 
+  /** Returns the MD5 hash of this buffer. */
+  public ByteString md5() {
+    return digest("MD5");
+  }
+
+  /** Returns the SHA-1 hash of this buffer. */
+  public ByteString sha1() {
+    return digest("SHA-1");
+  }
+
+  /** Returns the SHA-256 hash of this buffer. */
+  public ByteString sha256() {
+    return digest("SHA-256");
+  }
+
+  private ByteString digest(String algorithm) {
+    try {
+      MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+      messageDigest.update(head.data, head.pos, head.limit - head.pos);
+      for (Segment s = head.next; s != head; s = s.next) {
+        messageDigest.update(s.data, s.pos, s.limit - s.pos);
+      }
+      return ByteString.of(messageDigest.digest());
+    } catch (NoSuchAlgorithmException e) {
+      throw new AssertionError();
+    }
+  }
+
   @Override public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof Buffer)) return false;
@@ -1532,17 +1560,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       return String.format("Buffer[size=%s data=%s]", size, data.hex());
     }
 
-    try {
-      MessageDigest md5 = MessageDigest.getInstance("MD5");
-      md5.update(head.data, head.pos, head.limit - head.pos);
-      for (Segment s = head.next; s != head; s = s.next) {
-        md5.update(s.data, s.pos, s.limit - s.pos);
-      }
-      return String.format("Buffer[size=%s md5=%s]",
-          size, ByteString.of(md5.digest()).hex());
-    } catch (NoSuchAlgorithmException e) {
-      throw new AssertionError();
-    }
+    return String.format("Buffer[size=%s md5=%s]", size, md5().hex());
   }
 
   /** Returns a deep copy of this buffer. */

@@ -42,34 +42,26 @@ public final class HashingSink extends ForwardingSink {
 
   /** Returns a sink that uses the obsolete MD5 hash algorithm. */
   public static HashingSink md5(Sink sink) {
-    try {
-      return new HashingSink(sink, MessageDigest.getInstance("MD5"));
-    } catch (NoSuchAlgorithmException e) {
-      throw new AssertionError();
-    }
+    return new HashingSink(sink, "MD5");
   }
 
   /** Returns a sink that uses the obsolete SHA-1 hash algorithm. */
   public static HashingSink sha1(Sink sink) {
-    try {
-      return new HashingSink(sink, MessageDigest.getInstance("SHA-1"));
-    } catch (NoSuchAlgorithmException e) {
-      throw new AssertionError();
-    }
+    return new HashingSink(sink, "SHA-1");
   }
 
   /** Returns a sink that uses the SHA-256 hash algorithm. */
   public static HashingSink sha256(Sink sink) {
+    return new HashingSink(sink, "SHA-256");
+  }
+
+  private HashingSink(Sink sink, String algorithm) {
+    super(sink);
     try {
-      return new HashingSink(sink, MessageDigest.getInstance("SHA-256"));
+      this.messageDigest = MessageDigest.getInstance(algorithm);
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError();
     }
-  }
-
-  private HashingSink(Sink sink, MessageDigest messageDigest) {
-    super(sink);
-    this.messageDigest = messageDigest;
   }
 
   @Override public void write(Buffer source, long byteCount) throws IOException {
