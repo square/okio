@@ -33,7 +33,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class ByteStringTest {
+public final class ByteStringTest {
   @Test public void ofCopyRange() {
     byte[] bytes = "Hello, World!".getBytes(Util.UTF_8);
     ByteString byteString = ByteString.of(bytes, 2, 9);
@@ -74,24 +74,6 @@ public class ByteStringTest {
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(Util.UTF_8));
     assertTrue(byteString.equals(ByteString.of(bronzeHorseman.getBytes(Util.UTF_8))));
     assertEquals(byteString.utf8(), bronzeHorseman);
-  }
-
-  @Test public void md5() {
-    assertEquals("6cd3556deb0da54bca060b4c39479839",
-        ByteString.encodeUtf8("Hello, world!").md5().hex());
-    assertEquals("c71dc6df4b2e434b8c74fd6dd6ca3f85",
-        ByteString.encodeUtf8("One Two Three").md5().hex());
-    assertEquals("37b69fb926e239e049d7e43987974b99",
-        ByteString.encodeUtf8(bronzeHorseman).md5().hex());
-  }
-
-  @Test public void sha256() {
-    assertEquals("315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3",
-        ByteString.encodeUtf8("Hello, world!").sha256().hex());
-    assertEquals("641e54ba5e49e169408148a25bef8ca8fa4f8aab222fe8ce4b3535a570ddd68e",
-        ByteString.encodeUtf8("One Two Three").sha256().hex());
-    assertEquals("4d869e1c3d94568a5344235d9e4f187b8d5d78d06c5c622854c669f2f582d33e",
-        ByteString.encodeUtf8(bronzeHorseman).sha256().hex());
   }
 
   @Test public void testHashCode() throws Exception {

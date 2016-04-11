@@ -40,34 +40,26 @@ public final class HashingSource extends ForwardingSource {
 
   /** Returns a sink that uses the obsolete MD5 hash algorithm. */
   public static HashingSource md5(Source source) {
-    try {
-      return new HashingSource(source, MessageDigest.getInstance("MD5"));
-    } catch (NoSuchAlgorithmException e) {
-      throw new AssertionError();
-    }
+    return new HashingSource(source, "MD5");
   }
 
   /** Returns a sink that uses the obsolete SHA-1 hash algorithm. */
   public static HashingSource sha1(Source source) {
-    try {
-      return new HashingSource(source, MessageDigest.getInstance("SHA-1"));
-    } catch (NoSuchAlgorithmException e) {
-      throw new AssertionError();
-    }
+    return new HashingSource(source, "SHA-1");
   }
 
   /** Returns a sink that uses the SHA-256 hash algorithm. */
   public static HashingSource sha256(Source source) {
+    return new HashingSource(source, "SHA-256");
+  }
+
+  private HashingSource(Source source, String algorithm) {
+    super(source);
     try {
-      return new HashingSource(source, MessageDigest.getInstance("SHA-256"));
+      this.messageDigest = MessageDigest.getInstance(algorithm);
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError();
     }
-  }
-
-  private HashingSource(Source source, MessageDigest messageDigest) {
-    super(source);
-    this.messageDigest = messageDigest;
   }
 
   @Override public long read(Buffer sink, long byteCount) throws IOException {
