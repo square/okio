@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.List;
 
 /**
  * A source that keeps a buffer internally so that callers can do small reads without a performance
@@ -245,6 +246,33 @@ public interface BufferedSource extends Source {
 
   /** Removes {@code byteCount} bytes from this and returns them as a byte string. */
   ByteString readByteString(long byteCount) throws IOException;
+
+  /**
+   * Finds the first string in {@code byteStrings} that is a prefix of this buffer, consumes it from
+   * this buffer, and returns its index. If no byte string in {@code byteStrings} is a prefix of
+   * this buffer this returns -1 and no bytes are consumed.
+   *
+   * <p>This can be used as an alternative to {@link #readByteString} or even {@link #readUtf8} if
+   * the set of expected values is known in advance. <pre>{@code
+   *
+   *   List<ByteString> FIELDS = Arrays.asList(
+   *       ByteString.encodeUtf8("depth="),
+   *       ByteString.encodeUtf8("height="),
+   *       ByteString.encodeUtf8("width="));
+   *
+   *   Buffer buffer = new Buffer()
+   *       .writeUtf8("width=640\n")
+   *       .writeUtf8("height=480\n");
+   *
+   *   assertEquals(2, buffer.select(FIELDS));
+   *   assertEquals(640, buffer.readDecimalLong());
+   *   assertEquals('\n', buffer.readByte());
+   *   assertEquals(1, buffer.select(FIELDS));
+   *   assertEquals(480, buffer.readDecimalLong());
+   *   assertEquals('\n', buffer.readByte());
+   * }</pre>
+   */
+  int select(List<ByteString> byteStrings) throws IOException;
 
   /** Removes all bytes from this and returns them as a byte array. */
   byte[] readByteArray() throws IOException;

@@ -529,6 +529,41 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return new ByteString(readByteArray(byteCount));
   }
 
+  @Override public int select(List<ByteString> byteStrings) {
+    Segment s = head;
+    if (s == null) return byteStrings.indexOf(ByteString.EMPTY);
+
+    for (int i = 0, listSize = byteStrings.size(); i < listSize; i++) {
+      ByteString b = byteStrings.get(i);
+      if (size >= b.size() && rangeEquals(s, s.pos, b, 0, b.size())) {
+        try {
+          skip(b.size());
+          return i;
+        } catch (EOFException e) {
+          throw new AssertionError(e);
+        }
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Returns the index of a value in {@code byteStrings} that is either the prefix of this buffer,
+   * or that this buffer is a prefix of. Unlike {@link #select} this never consumes the value, even
+   * if it is found in full.
+   */
+  int selectPrefix(List<ByteString> byteStrings) {
+    Segment s = head;
+    for (int i = 0, listSize = byteStrings.size(); i < listSize; i++) {
+      ByteString b = byteStrings.get(i);
+      int bytesLimit = (int) Math.min(size, b.size());
+      if (bytesLimit == 0 || rangeEquals(s, s.pos, b, 0, bytesLimit)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   @Override public void readFully(Buffer sink, long byteCount) throws EOFException {
     if (size < byteCount) {
       sink.write(this, size); // Exhaust ourselves.
