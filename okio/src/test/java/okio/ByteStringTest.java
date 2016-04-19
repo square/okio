@@ -57,6 +57,132 @@ public final class ByteStringTest {
     }
   }
 
+  @Test public void startsWithByteString() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233");
+    assertTrue(byteString.startsWith(ByteString.decodeHex("")));
+    assertTrue(byteString.startsWith(ByteString.decodeHex("11")));
+    assertTrue(byteString.startsWith(ByteString.decodeHex("1122")));
+    assertTrue(byteString.startsWith(ByteString.decodeHex("112233")));
+    assertFalse(byteString.startsWith(ByteString.decodeHex("2233")));
+    assertFalse(byteString.startsWith(ByteString.decodeHex("11223344")));
+    assertFalse(byteString.startsWith(ByteString.decodeHex("112244")));
+  }
+
+  @Test public void endsWithByteString() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233");
+    assertTrue(byteString.endsWith(ByteString.decodeHex("")));
+    assertTrue(byteString.endsWith(ByteString.decodeHex("33")));
+    assertTrue(byteString.endsWith(ByteString.decodeHex("2233")));
+    assertTrue(byteString.endsWith(ByteString.decodeHex("112233")));
+    assertFalse(byteString.endsWith(ByteString.decodeHex("1122")));
+    assertFalse(byteString.endsWith(ByteString.decodeHex("00112233")));
+    assertFalse(byteString.endsWith(ByteString.decodeHex("002233")));
+  }
+
+  @Test public void startsWithByteArray() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233");
+    assertTrue(byteString.startsWith(ByteString.decodeHex("").toByteArray()));
+    assertTrue(byteString.startsWith(ByteString.decodeHex("11").toByteArray()));
+    assertTrue(byteString.startsWith(ByteString.decodeHex("1122").toByteArray()));
+    assertTrue(byteString.startsWith(ByteString.decodeHex("112233").toByteArray()));
+    assertFalse(byteString.startsWith(ByteString.decodeHex("2233").toByteArray()));
+    assertFalse(byteString.startsWith(ByteString.decodeHex("11223344").toByteArray()));
+    assertFalse(byteString.startsWith(ByteString.decodeHex("112244").toByteArray()));
+  }
+
+  @Test public void endsWithByteArray() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233");
+    assertTrue(byteString.endsWith(ByteString.decodeHex("").toByteArray()));
+    assertTrue(byteString.endsWith(ByteString.decodeHex("33").toByteArray()));
+    assertTrue(byteString.endsWith(ByteString.decodeHex("2233").toByteArray()));
+    assertTrue(byteString.endsWith(ByteString.decodeHex("112233").toByteArray()));
+    assertFalse(byteString.endsWith(ByteString.decodeHex("1122").toByteArray()));
+    assertFalse(byteString.endsWith(ByteString.decodeHex("00112233").toByteArray()));
+    assertFalse(byteString.endsWith(ByteString.decodeHex("002233").toByteArray()));
+  }
+
+  @Test public void indexOfByteString() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233");
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233")));
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("1122")));
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("11")));
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("11"), 0));
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("")));
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex(""), 0));
+    assertEquals(1, byteString.indexOf(ByteString.decodeHex("2233")));
+    assertEquals(1, byteString.indexOf(ByteString.decodeHex("22")));
+    assertEquals(1, byteString.indexOf(ByteString.decodeHex("22"), 1));
+    assertEquals(1, byteString.indexOf(ByteString.decodeHex(""), 1));
+    assertEquals(2, byteString.indexOf(ByteString.decodeHex("33")));
+    assertEquals(2, byteString.indexOf(ByteString.decodeHex("33"), 2));
+    assertEquals(2, byteString.indexOf(ByteString.decodeHex(""), 2));
+    assertEquals(3, byteString.indexOf(ByteString.decodeHex(""), 3));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("112233"), 1));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("44")));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("11223344")));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("112244")));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("112233"), 1));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("2233"), 2));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("33"), 3));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex(""), 4));
+  }
+
+  @Test public void indexOfWithOffset() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233112233");
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233"), -1));
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233"), 0));
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233")));
+    assertEquals(3, byteString.indexOf(ByteString.decodeHex("112233"), 1));
+    assertEquals(3, byteString.indexOf(ByteString.decodeHex("112233"), 2));
+    assertEquals(3, byteString.indexOf(ByteString.decodeHex("112233"), 3));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("112233"), 4));
+  }
+
+  @Test public void indexOfByteArray() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233");
+    assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233").toByteArray()));
+    assertEquals(1, byteString.indexOf(ByteString.decodeHex("2233").toByteArray()));
+    assertEquals(2, byteString.indexOf(ByteString.decodeHex("33").toByteArray()));
+    assertEquals(-1, byteString.indexOf(ByteString.decodeHex("112244").toByteArray()));
+  }
+
+  @Test public void lastIndexOfByteString() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233");
+    assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("112233")));
+    assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("1122")));
+    assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("11")));
+    assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("11"), 3));
+    assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("11"), 0));
+    assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex(""), 0));
+    assertEquals(1, byteString.lastIndexOf(ByteString.decodeHex("2233")));
+    assertEquals(1, byteString.lastIndexOf(ByteString.decodeHex("22")));
+    assertEquals(1, byteString.lastIndexOf(ByteString.decodeHex("22"), 3));
+    assertEquals(1, byteString.lastIndexOf(ByteString.decodeHex("22"), 1));
+    assertEquals(1, byteString.lastIndexOf(ByteString.decodeHex(""), 1));
+    assertEquals(2, byteString.lastIndexOf(ByteString.decodeHex("33")));
+    assertEquals(2, byteString.lastIndexOf(ByteString.decodeHex("33"), 3));
+    assertEquals(2, byteString.lastIndexOf(ByteString.decodeHex("33"), 2));
+    assertEquals(2, byteString.lastIndexOf(ByteString.decodeHex(""), 2));
+    assertEquals(3, byteString.lastIndexOf(ByteString.decodeHex(""), 3));
+    assertEquals(3, byteString.lastIndexOf(ByteString.decodeHex("")));
+    assertEquals(-1, byteString.lastIndexOf(ByteString.decodeHex("112233"), -1));
+    assertEquals(-1, byteString.lastIndexOf(ByteString.decodeHex("112233"), -2));
+    assertEquals(-1, byteString.lastIndexOf(ByteString.decodeHex("44")));
+    assertEquals(-1, byteString.lastIndexOf(ByteString.decodeHex("11223344")));
+    assertEquals(-1, byteString.lastIndexOf(ByteString.decodeHex("112244")));
+    assertEquals(-1, byteString.lastIndexOf(ByteString.decodeHex("2233"), 0));
+    assertEquals(-1, byteString.lastIndexOf(ByteString.decodeHex("33"), 1));
+    assertEquals(-1, byteString.lastIndexOf(ByteString.decodeHex(""), -1));
+  }
+
+  @Test public void lastIndexOfByteArray() throws Exception {
+    ByteString byteString = ByteString.decodeHex("112233");
+    assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("112233").toByteArray()));
+    assertEquals(1, byteString.lastIndexOf(ByteString.decodeHex("2233").toByteArray()));
+    assertEquals(2, byteString.lastIndexOf(ByteString.decodeHex("33").toByteArray()));
+    assertEquals(3, byteString.lastIndexOf(ByteString.decodeHex("").toByteArray()));
+  }
+
   @Test public void equals() throws Exception {
     ByteString byteString = ByteString.decodeHex("000102");
     assertTrue(byteString.equals(byteString));

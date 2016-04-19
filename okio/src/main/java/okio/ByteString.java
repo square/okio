@@ -334,9 +334,69 @@ public class ByteString implements Serializable, Comparable<ByteString> {
    * out of bounds.
    */
   public boolean rangeEquals(int offset, byte[] other, int otherOffset, int byteCount) {
-    return offset <= data.length - byteCount
-        && otherOffset <= other.length - byteCount
+    return offset >= 0 && offset <= data.length - byteCount
+        && otherOffset >= 0 && otherOffset <= other.length - byteCount
         && arrayRangeEquals(data, offset, other, otherOffset, byteCount);
+  }
+
+  public final boolean startsWith(ByteString prefix) {
+    return rangeEquals(0, prefix, 0, prefix.size());
+  }
+
+  public final boolean startsWith(byte[] prefix) {
+    return rangeEquals(0, prefix, 0, prefix.length);
+  }
+
+  public final boolean endsWith(ByteString prefix) {
+    return rangeEquals(size() - prefix.size(), prefix, 0, prefix.size());
+  }
+
+  public final boolean endsWith(byte[] prefix) {
+    return rangeEquals(size() - prefix.length, prefix, 0, prefix.length);
+  }
+
+  public final int indexOf(ByteString other) {
+    return indexOf(other.internalArray(), 0);
+  }
+
+  public final int indexOf(ByteString other, int start) {
+    return indexOf(other.internalArray(), start);
+  }
+
+  public final int indexOf(byte[] other) {
+    return indexOf(other, 0);
+  }
+
+  public int indexOf(byte[] other, int start) {
+    start = Math.max(start, 0);
+    for (int i = start, limit = data.length - other.length; i <= limit; i++) {
+      if (arrayRangeEquals(data, i, other, 0, other.length)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  public final int lastIndexOf(ByteString other) {
+    return lastIndexOf(other.internalArray(), size());
+  }
+
+  public final int lastIndexOf(ByteString other, int start) {
+    return lastIndexOf(other.internalArray(), start);
+  }
+
+  public final int lastIndexOf(byte[] other) {
+    return lastIndexOf(other, size());
+  }
+
+  public int lastIndexOf(byte[] other, int start) {
+    start = Math.min(start, data.length - other.length);
+    for (int i = start; i >= 0; i--) {
+      if (arrayRangeEquals(data, i, other, 0, other.length)) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   @Override public boolean equals(Object o) {
