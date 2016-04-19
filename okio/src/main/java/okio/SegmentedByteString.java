@@ -191,7 +191,7 @@ final class SegmentedByteString extends ByteString {
 
   @Override public boolean rangeEquals(
       int offset, ByteString other, int otherOffset, int byteCount) {
-    if (offset > size() - byteCount) return false;
+    if (offset < 0 || offset > size() - byteCount) return false;
     // Go segment-by-segment through this, passing arrays to other's rangeEquals().
     for (int s = segment(offset); byteCount > 0; s++) {
       int segmentOffset = s == 0 ? 0 : directory[s - 1];
@@ -208,7 +208,10 @@ final class SegmentedByteString extends ByteString {
   }
 
   @Override public boolean rangeEquals(int offset, byte[] other, int otherOffset, int byteCount) {
-    if (offset > size() - byteCount || otherOffset > other.length - byteCount) return false;
+    if (offset < 0 || offset > size() - byteCount
+        || otherOffset < 0 || otherOffset > other.length - byteCount) {
+      return false;
+    }
     // Go segment-by-segment through this, comparing ranges of arrays.
     for (int s = segment(offset); byteCount > 0; s++) {
       int segmentOffset = s == 0 ? 0 : directory[s - 1];
@@ -222,6 +225,14 @@ final class SegmentedByteString extends ByteString {
       byteCount -= stepSize;
     }
     return true;
+  }
+
+  @Override public int indexOf(byte[] other, int start) {
+    return toByteString().indexOf(other, start);
+  }
+
+  @Override public int lastIndexOf(byte[] other, int start) {
+    return toByteString().lastIndexOf(other, start);
   }
 
   /** Returns a copy as a non-segmented byte string. */
