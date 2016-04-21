@@ -529,12 +529,13 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return new ByteString(readByteArray(byteCount));
   }
 
-  @Override public int select(List<ByteString> byteStrings) {
+  @Override public int select(Options options) {
     Segment s = head;
-    if (s == null) return byteStrings.indexOf(ByteString.EMPTY);
+    if (s == null) return options.indexOf(ByteString.EMPTY);
 
-    for (int i = 0, listSize = byteStrings.size(); i < listSize; i++) {
-      ByteString b = byteStrings.get(i);
+    ByteString[] byteStrings = options.byteStrings;
+    for (int i = 0, listSize = byteStrings.length; i < listSize; i++) {
+      ByteString b = byteStrings[i];
       if (size >= b.size() && rangeEquals(s, s.pos, b, 0, b.size())) {
         try {
           skip(b.size());
@@ -548,14 +549,15 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /**
-   * Returns the index of a value in {@code byteStrings} that is either the prefix of this buffer,
-   * or that this buffer is a prefix of. Unlike {@link #select} this never consumes the value, even
+   * Returns the index of a value in {@code options} that is either the prefix of this buffer, or
+   * that this buffer is a prefix of. Unlike {@link #select} this never consumes the value, even
    * if it is found in full.
    */
-  int selectPrefix(List<ByteString> byteStrings) {
+  int selectPrefix(Options options) {
     Segment s = head;
-    for (int i = 0, listSize = byteStrings.size(); i < listSize; i++) {
-      ByteString b = byteStrings.get(i);
+    ByteString[] byteStrings = options.byteStrings;
+    for (int i = 0, listSize = byteStrings.length; i < listSize; i++) {
+      ByteString b = byteStrings[i];
       int bytesLimit = (int) Math.min(size, b.size());
       if (bytesLimit == 0 || rangeEquals(s, s.pos, b, 0, bytesLimit)) {
         return i;

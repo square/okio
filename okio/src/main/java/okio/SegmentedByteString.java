@@ -227,12 +227,12 @@ final class SegmentedByteString extends ByteString {
     return true;
   }
 
-  @Override public int indexOf(byte[] other, int start) {
-    return toByteString().indexOf(other, start);
+  @Override public int indexOf(byte[] other, int fromIndex) {
+    return toByteString().indexOf(other, fromIndex);
   }
 
-  @Override public int lastIndexOf(byte[] other, int start) {
-    return toByteString().lastIndexOf(other, start);
+  @Override public int lastIndexOf(byte[] other, int fromIndex) {
+    return toByteString().lastIndexOf(other, fromIndex);
   }
 
   /** Returns a copy as a non-segmented byte string. */

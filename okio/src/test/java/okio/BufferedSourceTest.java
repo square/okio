@@ -812,17 +812,17 @@ public class BufferedSourceTest {
   }
 
   @Test public void select() throws IOException {
-    List<ByteString> selection = Arrays.asList(
+    Options options = Options.of(
         ByteString.encodeUtf8("ROCK"),
         ByteString.encodeUtf8("SCISSORS"),
         ByteString.encodeUtf8("PAPER"));
 
     sink.writeUtf8("PAPER,SCISSORS,ROCK");
-    assertEquals(2, source.select(selection));
+    assertEquals(2, source.select(options));
     assertEquals(',', source.readByte());
-    assertEquals(1, source.select(selection));
+    assertEquals(1, source.select(options));
     assertEquals(',', source.readByte());
-    assertEquals(0, source.select(selection));
+    assertEquals(0, source.select(options));
     assertTrue(source.exhausted());
   }
 
@@ -831,88 +831,88 @@ public class BufferedSourceTest {
     ByteString a = new Buffer().write(commonPrefix).writeUtf8("a").readByteString();
     ByteString bc = new Buffer().write(commonPrefix).writeUtf8("bc").readByteString();
     ByteString bd = new Buffer().write(commonPrefix).writeUtf8("bd").readByteString();
-    List<ByteString> selection = Arrays.asList(a, bc, bd);
+    Options options = Options.of(a, bc, bd);
 
     sink.write(bd);
     sink.write(a);
     sink.write(bc);
 
-    assertEquals(2, source.select(selection));
-    assertEquals(0, source.select(selection));
-    assertEquals(1, source.select(selection));
+    assertEquals(2, source.select(options));
+    assertEquals(0, source.select(options));
+    assertEquals(1, source.select(options));
     assertTrue(source.exhausted());
   }
 
   @Test public void selectNotFound() throws IOException {
-    List<ByteString> selection = Arrays.asList(
+    Options options = Options.of(
         ByteString.encodeUtf8("ROCK"),
         ByteString.encodeUtf8("SCISSORS"),
         ByteString.encodeUtf8("PAPER"));
 
     sink.writeUtf8("SPOCK");
-    assertEquals(-1, source.select(selection));
+    assertEquals(-1, source.select(options));
     assertEquals("SPOCK", source.readUtf8());
   }
 
   @Test public void selectValuesHaveCommonPrefix() throws IOException {
-    List<ByteString> selection = Arrays.asList(
+    Options options = Options.of(
         ByteString.encodeUtf8("abcd"),
         ByteString.encodeUtf8("abce"),
         ByteString.encodeUtf8("abcc"));
 
     sink.writeUtf8("abcc").writeUtf8("abcd").writeUtf8("abce");
-    assertEquals(2, source.select(selection));
-    assertEquals(0, source.select(selection));
-    assertEquals(1, source.select(selection));
+    assertEquals(2, source.select(options));
+    assertEquals(0, source.select(options));
+    assertEquals(1, source.select(options));
   }
 
   @Test public void selectLongerThanSource() throws IOException {
-    List<ByteString> selection = Arrays.asList(
+    Options options = Options.of(
         ByteString.encodeUtf8("abcd"),
         ByteString.encodeUtf8("abce"),
         ByteString.encodeUtf8("abcc"));
     sink.writeUtf8("abc");
-    assertEquals(-1, source.select(selection));
+    assertEquals(-1, source.select(options));
     assertEquals("abc", source.readUtf8());
   }
 
   @Test public void selectReturnsFirstByteStringThatMatches() throws IOException {
-    List<ByteString> selection = Arrays.asList(
+    Options options = Options.of(
         ByteString.encodeUtf8("abcd"),
         ByteString.encodeUtf8("abc"),
         ByteString.encodeUtf8("abcde"));
     sink.writeUtf8("abcdef");
-    assertEquals(0, source.select(selection));
+    assertEquals(0, source.select(options));
     assertEquals("ef", source.readUtf8());
   }
 
   @Test public void selectNoByteStrings() throws IOException {
-    List<ByteString> selection = Arrays.asList();
+    Options options = Options.of();
     sink.writeUtf8("abc");
-    assertEquals(-1, source.select(selection));
+    assertEquals(-1, source.select(options));
   }
 
   @Test public void selectFromEmptySource() throws IOException {
-    List<ByteString> selection = Arrays.asList(
+    Options options = Options.of(
         ByteString.encodeUtf8("abc"),
         ByteString.encodeUtf8("def"));
-    assertEquals(-1, source.select(selection));
+    assertEquals(-1, source.select(options));
   }
 
   @Test public void selectNoByteStringsFromEmptySource() throws IOException {
-    List<ByteString> selection = Arrays.asList();
-    assertEquals(-1, source.select(selection));
+    Options options = Options.of();
+    assertEquals(-1, source.select(options));
   }
 
   @Test public void selectEmptyByteString() throws IOException {
-    List<ByteString> selection = Arrays.asList(ByteString.of());
+    Options options = Options.of(ByteString.of());
     sink.writeUtf8("abc");
-    assertEquals(0, source.select(selection));
+    assertEquals(0, source.select(options));
     assertEquals("abc", source.readUtf8());
   }
 
   @Test public void selectEmptyByteStringFromEmptySource() throws IOException {
-    List<ByteString> selection = Arrays.asList(ByteString.of());
-    assertEquals(0, source.select(selection));
+    Options options = Options.of(ByteString.of());
+    assertEquals(0, source.select(options));
   }
 }
