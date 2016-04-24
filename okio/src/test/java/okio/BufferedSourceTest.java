@@ -25,6 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import static okio.TestUtil.assertByteArrayEquals;
 import static okio.TestUtil.assertByteArraysEquals;
@@ -36,63 +38,63 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
-public class BufferedSourceTest {
-  private static final Factory BUFFER_FACTORY = new Factory() {
-    @Override public Pipe pipe() {
-      Buffer buffer = new Buffer();
-      Pipe result = new Pipe();
-      result.sink = buffer;
-      result.source = buffer;
-      return result;
-    }
+public final class BufferedSourceTest {
+  interface Factory {
+    Factory BUFFER = new Factory() {
+      @Override public Pipe pipe() {
+        Buffer buffer = new Buffer();
+        Pipe result = new Pipe();
+        result.sink = buffer;
+        result.source = buffer;
+        return result;
+      }
 
-    @Override public String toString() {
-      return "Buffer";
-    }
-  };
+      @Override public String toString() {
+        return "Buffer";
+      }
+    };
 
-  private static final Factory REAL_BUFFERED_SOURCE_FACTORY = new Factory() {
-    @Override public Pipe pipe() {
-      Buffer buffer = new Buffer();
-      Pipe result = new Pipe();
-      result.sink = buffer;
-      result.source = new RealBufferedSource(buffer);
-      return result;
-    }
+    Factory REAL_BUFFERED_SOURCE = new Factory() {
+      @Override public Pipe pipe() {
+        Buffer buffer = new Buffer();
+        Pipe result = new Pipe();
+        result.sink = buffer;
+        result.source = new RealBufferedSource(buffer);
+        return result;
+      }
 
-    @Override public String toString() {
-      return "RealBufferedSource";
-    }
-  };
+      @Override public String toString() {
+        return "RealBufferedSource";
+      }
+    };
 
-  /**
-   * A factory deliberately written to create buffers whose internal segments are always 1 byte
-   * long. We like testing with these segments because are likely to trigger bugs!
-   */
-  private static final Factory ONE_BYTE_AT_A_TIME_FACTORY = new Factory() {
-    @Override public Pipe pipe() {
-      Buffer buffer = new Buffer();
-      Pipe result = new Pipe();
-      result.sink = buffer;
-      result.source = new RealBufferedSource(new ForwardingSource(buffer) {
-        @Override public long read(Buffer sink, long byteCount) throws IOException {
-          // This reads a byte into a new buffer, then clones it so that the segments are shared.
-          // Shared segments cannot be compacted so we'll get a long chain of short segments.
-          Buffer box = new Buffer();
-          long result = super.read(box, Math.min(byteCount, 1L));
-          if (result > 0L) sink.write(box.clone(), result);
-          return result;
-        }
-      });
-      return result;
-    }
+    /**
+     * A factory deliberately written to create buffers whose internal segments are always 1 byte
+     * long. We like testing with these segments because are likely to trigger bugs!
+     */
+    Factory ONE_BYTE_AT_A_TIME = new Factory() {
+      @Override public Pipe pipe() {
+        Buffer buffer = new Buffer();
+        Pipe result = new Pipe();
+        result.sink = buffer;
+        result.source = new RealBufferedSource(new ForwardingSource(buffer) {
+          @Override public long read(Buffer sink, long byteCount) throws IOException {
+            // This reads a byte into a new buffer, then clones it so that the segments are shared.
+            // Shared segments cannot be compacted so we'll get a long chain of short segments.
+            Buffer box = new Buffer();
+            long result = super.read(box, Math.min(byteCount, 1L));
+            if (result > 0L) sink.write(box.clone(), result);
+            return result;
+          }
+        });
+        return result;
+      }
 
-    @Override public String toString() {
-      return "OneByteAtATime";
-    }
-  };
+      @Override public String toString() {
+        return "OneByteAtATime";
+      }
+    };
 
-  private interface Factory {
     Pipe pipe();
   }
 
@@ -101,16 +103,15 @@ public class BufferedSourceTest {
     BufferedSource source;
   }
 
-  @Parameterized.Parameters(name = "{0}")
+  @Parameters(name = "{0}")
   public static List<Object[]> parameters() {
     return Arrays.asList(
-        new Object[] { BUFFER_FACTORY },
-        new Object[] { REAL_BUFFERED_SOURCE_FACTORY },
-        new Object[] { ONE_BYTE_AT_A_TIME_FACTORY });
+        new Object[] { Factory.BUFFER},
+        new Object[] { Factory.REAL_BUFFERED_SOURCE},
+        new Object[] { Factory.ONE_BYTE_AT_A_TIME});
   }
 
-  @Parameterized.Parameter
-  public Factory factory;
+  @Parameter public Factory factory;
   private BufferedSink sink;
   private BufferedSource source;
 
@@ -304,7 +305,7 @@ public class BufferedSourceTest {
 
     byte[] sink = new byte[3];
     int read = source.read(sink);
-    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
       assertEquals(1, read);
       byte[] expected = { 'a', 0, 0 };
       assertByteArraysEquals(expected, sink);
@@ -320,7 +321,7 @@ public class BufferedSourceTest {
 
     byte[] sink = new byte[5];
     int read = source.read(sink);
-    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
       assertEquals(1, read);
       byte[] expected = { 'a', 0, 0, 0, 0 };
       assertByteArraysEquals(expected, sink);
@@ -336,7 +337,7 @@ public class BufferedSourceTest {
 
     byte[] sink = new byte[7];
     int read = source.read(sink, 2, 3);
-    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
       assertEquals(1, read);
       byte[] expected = { 0, 0, 'a', 0, 0, 0, 0 };
       assertByteArraysEquals(expected, sink);
@@ -536,7 +537,7 @@ public class BufferedSourceTest {
   }
 
   /**
-   * With {@link #ONE_BYTE_AT_A_TIME_FACTORY}, this code was extremely slow.
+   * With {@link Factory#ONE_BYTE_AT_A_TIME}, this code was extremely slow.
    * https://github.com/square/okio/issues/171
    */
   @Test public void indexOfByteStringAcrossSegmentBoundaries() throws IOException {
@@ -593,7 +594,7 @@ public class BufferedSourceTest {
     InputStream in = source.inputStream();
     byte[] bytes = { 'z', 'z', 'z' };
     int read = in.read(bytes);
-    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
       assertEquals(1, read);
       assertByteArrayEquals("azz", bytes);
 
@@ -617,7 +618,7 @@ public class BufferedSourceTest {
     InputStream in = source.inputStream();
     byte[] bytes = { 'z', 'z', 'z', 'z', 'z' };
     int read = in.read(bytes, 1, 3);
-    if (factory == ONE_BYTE_AT_A_TIME_FACTORY) {
+    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
       assertEquals(1, read);
       assertByteArrayEquals("zazzz", bytes);
     } else {
