@@ -24,6 +24,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.assertEquivalent;
@@ -33,7 +37,46 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@RunWith(Parameterized.class)
 public final class ByteStringTest {
+  interface Factory {
+    Factory BYTE_STRING = new Factory() {
+      @Override public ByteString decodeHex(String hex) {
+        return ByteString.decodeHex(hex);
+      }
+
+      @Override public ByteString encodeUtf8(String s) {
+        return ByteString.encodeUtf8(s);
+      }
+    };
+
+    Factory SEGMENTED_BYTE_STRING = new Factory() {
+      @Override public ByteString decodeHex(String hex) {
+        Buffer buffer = new Buffer();
+        buffer.write(ByteString.decodeHex(hex));
+        return buffer.snapshot();
+      }
+
+      @Override public ByteString encodeUtf8(String s) {
+        Buffer buffer = new Buffer();
+        buffer.writeUtf8(s);
+        return buffer.snapshot();
+      }
+    };
+
+    ByteString decodeHex(String hex);
+    ByteString encodeUtf8(String s);
+  }
+
+  @Parameters(name = "{0}")
+  public static List<Object[]> parameters() {
+    return Arrays.asList(
+        new Object[] { Factory.BYTE_STRING },
+        new Object[] { Factory.SEGMENTED_BYTE_STRING });
+  }
+
+  @Parameter public Factory factory;
+
   @Test public void ofCopyRange() {
     byte[] bytes = "Hello, World!".getBytes(Util.UTF_8);
     ByteString byteString = ByteString.of(bytes, 2, 9);
@@ -43,7 +86,7 @@ public final class ByteStringTest {
   }
 
   @Test public void getByte() throws Exception {
-    ByteString byteString = ByteString.decodeHex("ab12");
+    ByteString byteString = factory.decodeHex("ab12");
     assertEquals(-85, byteString.getByte(0));
     assertEquals(18, byteString.getByte(1));
   }
@@ -58,7 +101,7 @@ public final class ByteStringTest {
   }
 
   @Test public void startsWithByteString() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233");
+    ByteString byteString = factory.decodeHex("112233");
     assertTrue(byteString.startsWith(ByteString.decodeHex("")));
     assertTrue(byteString.startsWith(ByteString.decodeHex("11")));
     assertTrue(byteString.startsWith(ByteString.decodeHex("1122")));
@@ -69,7 +112,7 @@ public final class ByteStringTest {
   }
 
   @Test public void endsWithByteString() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233");
+    ByteString byteString = factory.decodeHex("112233");
     assertTrue(byteString.endsWith(ByteString.decodeHex("")));
     assertTrue(byteString.endsWith(ByteString.decodeHex("33")));
     assertTrue(byteString.endsWith(ByteString.decodeHex("2233")));
@@ -80,7 +123,7 @@ public final class ByteStringTest {
   }
 
   @Test public void startsWithByteArray() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233");
+    ByteString byteString = factory.decodeHex("112233");
     assertTrue(byteString.startsWith(ByteString.decodeHex("").toByteArray()));
     assertTrue(byteString.startsWith(ByteString.decodeHex("11").toByteArray()));
     assertTrue(byteString.startsWith(ByteString.decodeHex("1122").toByteArray()));
@@ -91,7 +134,7 @@ public final class ByteStringTest {
   }
 
   @Test public void endsWithByteArray() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233");
+    ByteString byteString = factory.decodeHex("112233");
     assertTrue(byteString.endsWith(ByteString.decodeHex("").toByteArray()));
     assertTrue(byteString.endsWith(ByteString.decodeHex("33").toByteArray()));
     assertTrue(byteString.endsWith(ByteString.decodeHex("2233").toByteArray()));
@@ -102,7 +145,7 @@ public final class ByteStringTest {
   }
 
   @Test public void indexOfByteString() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233");
+    ByteString byteString = factory.decodeHex("112233");
     assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233")));
     assertEquals(0, byteString.indexOf(ByteString.decodeHex("1122")));
     assertEquals(0, byteString.indexOf(ByteString.decodeHex("11")));
@@ -128,7 +171,7 @@ public final class ByteStringTest {
   }
 
   @Test public void indexOfWithOffset() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233112233");
+    ByteString byteString = factory.decodeHex("112233112233");
     assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233"), -1));
     assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233"), 0));
     assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233")));
@@ -139,7 +182,7 @@ public final class ByteStringTest {
   }
 
   @Test public void indexOfByteArray() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233");
+    ByteString byteString = factory.decodeHex("112233");
     assertEquals(0, byteString.indexOf(ByteString.decodeHex("112233").toByteArray()));
     assertEquals(1, byteString.indexOf(ByteString.decodeHex("2233").toByteArray()));
     assertEquals(2, byteString.indexOf(ByteString.decodeHex("33").toByteArray()));
@@ -147,7 +190,7 @@ public final class ByteStringTest {
   }
 
   @Test public void lastIndexOfByteString() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233");
+    ByteString byteString = factory.decodeHex("112233");
     assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("112233")));
     assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("1122")));
     assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("11")));
@@ -176,7 +219,7 @@ public final class ByteStringTest {
   }
 
   @Test public void lastIndexOfByteArray() throws Exception {
-    ByteString byteString = ByteString.decodeHex("112233");
+    ByteString byteString = factory.decodeHex("112233");
     assertEquals(0, byteString.lastIndexOf(ByteString.decodeHex("112233").toByteArray()));
     assertEquals(1, byteString.lastIndexOf(ByteString.decodeHex("2233").toByteArray()));
     assertEquals(2, byteString.lastIndexOf(ByteString.decodeHex("33").toByteArray()));
@@ -184,11 +227,13 @@ public final class ByteStringTest {
   }
 
   @Test public void equals() throws Exception {
-    ByteString byteString = ByteString.decodeHex("000102");
+    ByteString byteString = factory.decodeHex("000102");
     assertTrue(byteString.equals(byteString));
     assertTrue(byteString.equals(ByteString.decodeHex("000102")));
-    assertTrue(ByteString.of().equals(ByteString.EMPTY));
-    assertTrue(ByteString.EMPTY.equals(ByteString.of()));
+    assertTrue(factory.decodeHex("").equals(ByteString.EMPTY));
+    assertTrue(factory.decodeHex("").equals(ByteString.of()));
+    assertTrue(ByteString.EMPTY.equals(factory.decodeHex("")));
+    assertTrue(ByteString.of().equals(factory.decodeHex("")));
     assertFalse(byteString.equals(new Object()));
     assertFalse(byteString.equals(ByteString.decodeHex("000201")));
   }
@@ -196,14 +241,14 @@ public final class ByteStringTest {
   private final String bronzeHorseman = "На берегу пустынных волн";
 
   @Test public void utf8() throws Exception {
-    ByteString byteString = ByteString.encodeUtf8(bronzeHorseman);
+    ByteString byteString = factory.encodeUtf8(bronzeHorseman);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(Util.UTF_8));
     assertTrue(byteString.equals(ByteString.of(bronzeHorseman.getBytes(Util.UTF_8))));
     assertEquals(byteString.utf8(), bronzeHorseman);
   }
 
   @Test public void testHashCode() throws Exception {
-    ByteString byteString = ByteString.decodeHex("0102");
+    ByteString byteString = factory.decodeHex("0102");
     assertEquals(byteString.hashCode(), byteString.hashCode());
     assertEquals(byteString.hashCode(), ByteString.decodeHex("0102").hashCode());
   }
@@ -223,16 +268,19 @@ public final class ByteStringTest {
   }
 
   @Test public void toAsciiLowerCaseNoUppercase() throws Exception {
-    ByteString s = ByteString.encodeUtf8("a1_+");
-    assertSame(s, s.toAsciiLowercase());
+    ByteString s = factory.encodeUtf8("a1_+");
+    assertEquals(s, s.toAsciiLowercase());
+    if (factory == Factory.BYTE_STRING) {
+      assertSame(s, s.toAsciiLowercase());
+    }
   }
 
   @Test public void toAsciiAllUppercase() throws Exception {
-    assertEquals(ByteString.encodeUtf8("ab"), ByteString.encodeUtf8("AB").toAsciiLowercase());
+    assertEquals(ByteString.encodeUtf8("ab"), factory.encodeUtf8("AB").toAsciiLowercase());
   }
 
   @Test public void toAsciiStartsLowercaseEndsUppercase() throws Exception {
-    assertEquals(ByteString.encodeUtf8("abcd"), ByteString.encodeUtf8("abCD").toAsciiLowercase());
+    assertEquals(ByteString.encodeUtf8("abcd"), factory.encodeUtf8("abCD").toAsciiLowercase());
   }
 
   @Test public void readAndToUppercase() throws Exception {
@@ -243,11 +291,11 @@ public final class ByteStringTest {
   }
 
   @Test public void toAsciiStartsUppercaseEndsLowercase() throws Exception {
-    assertEquals(ByteString.encodeUtf8("ABCD"), ByteString.encodeUtf8("ABcd").toAsciiUppercase());
+    assertEquals(ByteString.encodeUtf8("ABCD"), factory.encodeUtf8("ABcd").toAsciiUppercase());
   }
 
   @Test public void substring() throws Exception {
-    ByteString byteString = ByteString.encodeUtf8("Hello, World!");
+    ByteString byteString = factory.encodeUtf8("Hello, World!");
 
     assertEquals(byteString.substring(0), byteString);
     assertEquals(byteString.substring(0, 5), ByteString.encodeUtf8("Hello"));
@@ -256,7 +304,7 @@ public final class ByteStringTest {
   }
 
   @Test public void substringWithInvalidBounds() throws Exception {
-    ByteString byteString = ByteString.encodeUtf8("Hello, World!");
+    ByteString byteString = factory.encodeUtf8("Hello, World!");
 
     try {
       byteString.substring(-1);
@@ -284,21 +332,21 @@ public final class ByteStringTest {
   }
 
   @Test public void encodeBase64() {
-    assertEquals("", ByteString.encodeUtf8("").base64());
-    assertEquals("AA==", ByteString.encodeUtf8("\u0000").base64());
-    assertEquals("AAA=", ByteString.encodeUtf8("\u0000\u0000").base64());
-    assertEquals("AAAA", ByteString.encodeUtf8("\u0000\u0000\u0000").base64());
+    assertEquals("", factory.encodeUtf8("").base64());
+    assertEquals("AA==", factory.encodeUtf8("\u0000").base64());
+    assertEquals("AAA=", factory.encodeUtf8("\u0000\u0000").base64());
+    assertEquals("AAAA", factory.encodeUtf8("\u0000\u0000\u0000").base64());
     assertEquals("SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU/ICdib3V0IDIgbWlsbGlvbi4=",
-        ByteString.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64());
+        factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64());
   }
 
   @Test public void encodeBase64Url() {
-    assertEquals("", ByteString.encodeUtf8("").base64Url());
-    assertEquals("AA==", ByteString.encodeUtf8("\u0000").base64Url());
-    assertEquals("AAA=", ByteString.encodeUtf8("\u0000\u0000").base64Url());
-    assertEquals("AAAA", ByteString.encodeUtf8("\u0000\u0000\u0000").base64Url());
+    assertEquals("", factory.encodeUtf8("").base64Url());
+    assertEquals("AA==", factory.encodeUtf8("\u0000").base64Url());
+    assertEquals("AAA=", factory.encodeUtf8("\u0000\u0000").base64Url());
+    assertEquals("AAAA", factory.encodeUtf8("\u0000\u0000\u0000").base64Url());
     assertEquals("SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU_ICdib3V0IDIgbWlsbGlvbi4=",
-        ByteString.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url());
+        factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url());
   }
 
   @Test public void ignoreUnnecessaryPadding() {
@@ -364,34 +412,34 @@ public final class ByteStringTest {
 
   @Test public void toStringOnSmallByteStringIncludesContents() {
     assertEquals("ByteString[size=16 data=a1b2c3d4e5f61a2b3c4d5e6f10203040]",
-        ByteString.decodeHex("a1b2c3d4e5f61a2b3c4d5e6f10203040").toString());
+        factory.decodeHex("a1b2c3d4e5f61a2b3c4d5e6f10203040").toString());
   }
 
   @Test public void toStringOnLargeByteStringIncludesMd5() {
     assertEquals("ByteString[size=17 md5=2c9728a2138b2f25e9f89f99bdccf8db]",
-        ByteString.encodeUtf8("12345678901234567").toString());
+        factory.encodeUtf8("12345678901234567").toString());
   }
 
   @Test public void javaSerializationTestNonEmpty() throws Exception {
-    ByteString byteString = ByteString.encodeUtf8(bronzeHorseman);
+    ByteString byteString = factory.encodeUtf8(bronzeHorseman);
     assertEquivalent(byteString, TestUtil.reserialize(byteString));
   }
 
   @Test public void javaSerializationTestEmpty() throws Exception {
-    ByteString byteString = ByteString.of();
+    ByteString byteString = factory.decodeHex("");
     assertEquivalent(byteString, TestUtil.reserialize(byteString));
   }
 
   @Test public void compareToSingleBytes() throws Exception {
     List<ByteString> originalByteStrings = Arrays.asList(
-        ByteString.decodeHex("00"),
-        ByteString.decodeHex("01"),
-        ByteString.decodeHex("7e"),
-        ByteString.decodeHex("7f"),
-        ByteString.decodeHex("80"),
-        ByteString.decodeHex("81"),
-        ByteString.decodeHex("fe"),
-        ByteString.decodeHex("ff"));
+        factory.decodeHex("00"),
+        factory.decodeHex("01"),
+        factory.decodeHex("7e"),
+        factory.decodeHex("7f"),
+        factory.decodeHex("80"),
+        factory.decodeHex("81"),
+        factory.decodeHex("fe"),
+        factory.decodeHex("ff"));
 
     List<ByteString> sortedByteStrings = new ArrayList<>(originalByteStrings);
     Collections.shuffle(sortedByteStrings, new Random(0));
@@ -402,32 +450,32 @@ public final class ByteStringTest {
 
   @Test public void compareToMultipleBytes() throws Exception {
     List<ByteString> originalByteStrings = Arrays.asList(
-        ByteString.decodeHex(""),
-        ByteString.decodeHex("00"),
-        ByteString.decodeHex("0000"),
-        ByteString.decodeHex("000000"),
-        ByteString.decodeHex("00000000"),
-        ByteString.decodeHex("0000000000"),
-        ByteString.decodeHex("0000000001"),
-        ByteString.decodeHex("000001"),
-        ByteString.decodeHex("00007f"),
-        ByteString.decodeHex("0000ff"),
-        ByteString.decodeHex("000100"),
-        ByteString.decodeHex("000101"),
-        ByteString.decodeHex("007f00"),
-        ByteString.decodeHex("00ff00"),
-        ByteString.decodeHex("010000"),
-        ByteString.decodeHex("010001"),
-        ByteString.decodeHex("01007f"),
-        ByteString.decodeHex("0100ff"),
-        ByteString.decodeHex("010100"),
-        ByteString.decodeHex("01010000"),
-        ByteString.decodeHex("0101000000"),
-        ByteString.decodeHex("0101000001"),
-        ByteString.decodeHex("010101"),
-        ByteString.decodeHex("7f0000"),
-        ByteString.decodeHex("7f0000ffff"),
-        ByteString.decodeHex("ffffff"));
+        factory.decodeHex(""),
+        factory.decodeHex("00"),
+        factory.decodeHex("0000"),
+        factory.decodeHex("000000"),
+        factory.decodeHex("00000000"),
+        factory.decodeHex("0000000000"),
+        factory.decodeHex("0000000001"),
+        factory.decodeHex("000001"),
+        factory.decodeHex("00007f"),
+        factory.decodeHex("0000ff"),
+        factory.decodeHex("000100"),
+        factory.decodeHex("000101"),
+        factory.decodeHex("007f00"),
+        factory.decodeHex("00ff00"),
+        factory.decodeHex("010000"),
+        factory.decodeHex("010001"),
+        factory.decodeHex("01007f"),
+        factory.decodeHex("0100ff"),
+        factory.decodeHex("010100"),
+        factory.decodeHex("01010000"),
+        factory.decodeHex("0101000000"),
+        factory.decodeHex("0101000001"),
+        factory.decodeHex("010101"),
+        factory.decodeHex("7f0000"),
+        factory.decodeHex("7f0000ffff"),
+        factory.decodeHex("ffffff"));
 
     List<ByteString> sortedByteStrings = new ArrayList<>(originalByteStrings);
     Collections.shuffle(sortedByteStrings, new Random(0));
