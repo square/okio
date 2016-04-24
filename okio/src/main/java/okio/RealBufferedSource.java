@@ -19,7 +19,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.List;
 
 import static okio.Util.checkOffsetAndCount;
 
@@ -84,15 +83,15 @@ final class RealBufferedSource implements BufferedSource {
     return buffer.readByteString(byteCount);
   }
 
-  @Override public int select(List<ByteString> byteStrings) throws IOException {
+  @Override public int select(Options options) throws IOException {
     if (closed) throw new IllegalStateException("closed");
 
     while (true) {
-      int index = buffer.selectPrefix(byteStrings);
+      int index = buffer.selectPrefix(options);
       if (index == -1) return -1;
 
       // If the prefix match actually matched a full byte string, consume it and return it.
-      int selectedSize = byteStrings.get(index).size();
+      int selectedSize = options.byteStrings[index].size();
       if (selectedSize <= buffer.size) {
         buffer.skip(selectedSize);
         return index;

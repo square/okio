@@ -359,17 +359,17 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return indexOf(other.internalArray(), 0);
   }
 
-  public final int indexOf(ByteString other, int start) {
-    return indexOf(other.internalArray(), start);
+  public final int indexOf(ByteString other, int fromIndex) {
+    return indexOf(other.internalArray(), fromIndex);
   }
 
   public final int indexOf(byte[] other) {
     return indexOf(other, 0);
   }
 
-  public int indexOf(byte[] other, int start) {
-    start = Math.max(start, 0);
-    for (int i = start, limit = data.length - other.length; i <= limit; i++) {
+  public int indexOf(byte[] other, int fromIndex) {
+    fromIndex = Math.max(fromIndex, 0);
+    for (int i = fromIndex, limit = data.length - other.length; i <= limit; i++) {
       if (arrayRangeEquals(data, i, other, 0, other.length)) {
         return i;
       }
@@ -381,17 +381,17 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return lastIndexOf(other.internalArray(), size());
   }
 
-  public final int lastIndexOf(ByteString other, int start) {
-    return lastIndexOf(other.internalArray(), start);
+  public final int lastIndexOf(ByteString other, int fromIndex) {
+    return lastIndexOf(other.internalArray(), fromIndex);
   }
 
   public final int lastIndexOf(byte[] other) {
     return lastIndexOf(other, size());
   }
 
-  public int lastIndexOf(byte[] other, int start) {
-    start = Math.min(start, data.length - other.length);
-    for (int i = start; i >= 0; i--) {
+  public int lastIndexOf(byte[] other, int fromIndex) {
+    fromIndex = Math.min(fromIndex, data.length - other.length);
+    for (int i = fromIndex; i >= 0; i--) {
       if (arrayRangeEquals(data, i, other, 0, other.length)) {
         return i;
       }
