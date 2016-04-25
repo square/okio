@@ -18,9 +18,12 @@ package okio;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -28,6 +31,7 @@ import org.junit.rules.TemporaryFolder;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -126,5 +130,114 @@ public final class OkioTest {
       fail();
     } catch (IllegalArgumentException expected) {
     }
+  }
+
+  @Test
+  public void tee() throws IOException {
+    File sourceFile = temporaryFolder.newFile();
+
+    BufferedSink sourceFileSink = Okio.buffer(Okio.sink(sourceFile));
+    sourceFileSink.writeUtf8("Test");
+    sourceFileSink.close();
+
+    File copyFile = temporaryFolder.newFile();
+    Sink copySink = Okio.sink(copyFile);
+
+    Source teeSource = Okio.tee(Okio.source(sourceFile), copySink);
+
+    BufferedSource teeBufferedSource = Okio.buffer(teeSource);
+    assertEquals("Test", teeBufferedSource.readUtf8());
+    teeBufferedSource.close();
+
+    // Assert that "tee" wrote a copy to target file.
+    BufferedSource copySource = Okio.buffer(Okio.source(copyFile));
+    assertEquals("Test", copySource.readUtf8());
+
+    teeSource.close();
+  }
+
+  @Test
+  public void teeShouldCloseBothSourceAndCopySink() throws IOException {
+    final AtomicBoolean sourceClosed = new AtomicBoolean();
+
+    Source source = new Source() {
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public Timeout timeout() {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public void close() throws IOException {
+        sourceClosed.set(true);
+      }
+    };
+
+    final AtomicBoolean copySinkClosed = new AtomicBoolean();
+
+    Sink copySink = new Sink() {
+      @Override public void write(Buffer source, long byteCount) throws IOException {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public void flush() throws IOException {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public Timeout timeout() {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public void close() throws IOException {
+        copySinkClosed.set(true);
+      }
+    };
+
+    Source teeSource = Okio.tee(source, copySink);
+
+    teeSource.close();
+    assertTrue(sourceClosed.get());
+    assertTrue(copySinkClosed.get());
+  }
+
+  @Test
+  public void teeShouldReturnSourceTimeoutAsOwn() {
+    final Timeout sourceTimeout = new Timeout();
+
+    Source source = new Source() {
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public Timeout timeout() {
+        return sourceTimeout;
+      }
+
+      @Override public void close() throws IOException {
+        throw new RuntimeException("not needed in this test");
+      }
+    };
+
+    Sink copySink = new Sink() {
+      @Override public void write(Buffer source, long byteCount) throws IOException {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public void flush() throws IOException {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public Timeout timeout() {
+        throw new RuntimeException("not needed in this test");
+      }
+
+      @Override public void close() throws IOException {
+        throw new RuntimeException("not needed in this test");
+      }
+    };
+
+    Source teeSource = Okio.tee(source, copySink);
+    assertSame(sourceTimeout, teeSource.timeout());
   }
 }
