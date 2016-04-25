@@ -26,6 +26,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import static java.util.Arrays.asList;
 import static okio.TestUtil.repeat;
@@ -34,39 +36,39 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
-public class BufferedSinkTest {
+public final class BufferedSinkTest {
   private interface Factory {
+    Factory BUFFER = new Factory() {
+      @Override public BufferedSink create(Buffer data) {
+        return data;
+      }
+
+      @Override public String toString() {
+        return "Buffer";
+      }
+    };
+
+    Factory REAL_BUFFERED_SINK = new Factory() {
+      @Override public BufferedSink create(Buffer data) {
+        return new RealBufferedSink(data);
+      }
+
+      @Override public String toString() {
+        return "RealBufferedSink";
+      }
+    };
+
     BufferedSink create(Buffer data);
   }
 
-  @Parameterized.Parameters(name = "{0}")
+  @Parameters(name = "{0}")
   public static List<Object[]> parameters() {
-    return Arrays.asList(new Object[] {
-        new Factory() {
-          @Override public BufferedSink create(Buffer data) {
-            return data;
-          }
-
-          @Override public String toString() {
-            return "Buffer";
-          }
-        }
-    }, new Object[] {
-        new Factory() {
-          @Override public BufferedSink create(Buffer data) {
-            return new RealBufferedSink(data);
-          }
-
-          @Override public String toString() {
-            return "RealBufferedSink";
-          }
-        }
-    });
+    return Arrays.asList(
+        new Object[] {Factory.BUFFER},
+        new Object[] {Factory.REAL_BUFFERED_SINK});
   }
 
-  @Parameterized.Parameter
-  public Factory factory;
-
+  @Parameter public Factory factory;
   private Buffer data;
   private BufferedSink sink;
 

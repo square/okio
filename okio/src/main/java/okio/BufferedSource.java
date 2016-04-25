@@ -206,7 +206,7 @@ public interface BufferedSource extends Source {
    *   assertEquals(' ', buffer.readByte());
    *   assertEquals(-123L, buffer.readDecimalLong());
    *   assertEquals(' ', buffer.readByte());
-   *   assertEquals(1, buffer.readDecimalLong());
+   *   assertEquals(1L, buffer.readDecimalLong());
    * }</pre>
    *
    * @throws NumberFormatException if the found digits do not fit into a {@code long} or a decimal
