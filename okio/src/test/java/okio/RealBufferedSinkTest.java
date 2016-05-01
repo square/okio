@@ -115,7 +115,7 @@ public final class RealBufferedSinkTest {
       fail();
     } catch (IOException expected) {
     }
-    mockSink.assertLog("write(Buffer[size=1 data=61], 1)", "close()");
+    mockSink.assertLog("write([text=a], 1)", "close()");
   }
 
   @Test public void closeWithExceptionWhenClosing() throws IOException {
@@ -128,7 +128,7 @@ public final class RealBufferedSinkTest {
       fail();
     } catch (IOException expected) {
     }
-    mockSink.assertLog("write(Buffer[size=1 data=61], 1)", "close()");
+    mockSink.assertLog("write([text=a], 1)", "close()");
   }
 
   @Test public void closeWithExceptionWhenWritingAndClosing() throws IOException {
@@ -143,7 +143,7 @@ public final class RealBufferedSinkTest {
     } catch (IOException expected) {
       assertEquals("first", expected.getMessage());
     }
-    mockSink.assertLog("write(Buffer[size=1 data=61], 1)", "close()");
+    mockSink.assertLog("write([text=a], 1)", "close()");
   }
 
   @Test public void operationsAfterClose() throws IOException {

@@ -72,27 +72,19 @@ public final class BufferTest {
     assertEquals(Segment.SIZE * 3, buffer.completeSegmentByteCount());
   }
 
-  @Test public void toStringOnEmptyBuffer() throws Exception {
-    Buffer buffer = new Buffer();
-    assertEquals("Buffer[size=0]", buffer.toString());
-  }
-
-  @Test public void toStringOnSmallBufferIncludesContents() throws Exception {
-    Buffer buffer = new Buffer();
-    buffer.write(ByteString.decodeHex("a1b2c3d4e5f61a2b3c4d5e6f10203040"));
-    assertEquals("Buffer[size=16 data=a1b2c3d4e5f61a2b3c4d5e6f10203040]", buffer.toString());
-  }
-
-  @Test public void toStringOnLargeBufferIncludesMd5() throws Exception {
-    Buffer buffer = new Buffer();
-    buffer.write(ByteString.encodeUtf8("12345678901234567"));
-    assertEquals("Buffer[size=17 md5=2c9728a2138b2f25e9f89f99bdccf8db]", buffer.toString());
-  }
-
-  @Test public void toStringOnMultipleSegmentBuffer() throws Exception {
-    Buffer buffer = new Buffer();
-    buffer.writeUtf8(repeat('a', 6144));
-    assertEquals("Buffer[size=6144 md5=d890021f28522533c1cc1b9b1f83ce73]", buffer.toString());
+  /** Buffer's toString is the same as ByteString's. */
+  @Test public void bufferToString() throws Exception {
+    assertEquals("[size=0]", new Buffer().toString());
+    assertEquals("[text=a\\r\\nb\\nc\\rd\\\\e]",
+        new Buffer().writeUtf8("a\r\nb\nc\rd\\e").toString());
+    assertEquals("[text=Tyrannosaur]",
+        new Buffer().writeUtf8("Tyrannosaur").toString());
+    assertEquals("[text=təˈranəˌsôr]", new Buffer()
+        .write(ByteString.decodeHex("74c999cb8872616ec999cb8c73c3b472"))
+        .toString());
+    assertEquals("[hex=0000000000000000000000000000000000000000000000000000000000000000000000000000"
+        + "0000000000000000000000000000000000000000000000000000]",
+        new Buffer().write(new byte[64]).toString());
   }
 
   @Test public void multipleSegmentBuffers() throws Exception {

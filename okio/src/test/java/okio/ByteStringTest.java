@@ -406,18 +406,51 @@ public final class ByteStringTest {
     }
   }
 
-  @Test public void toStringOnEmptyByteString() {
-    assertEquals("ByteString[size=0]", ByteString.of().toString());
+  @Test public void toStringOnEmpty() {
+    assertEquals("[size=0]", factory.decodeHex("").toString());
   }
 
-  @Test public void toStringOnSmallByteStringIncludesContents() {
-    assertEquals("ByteString[size=16 data=a1b2c3d4e5f61a2b3c4d5e6f10203040]",
-        factory.decodeHex("a1b2c3d4e5f61a2b3c4d5e6f10203040").toString());
+  @Test public void toStringOnShortText() {
+    assertEquals("[text=Tyrannosaur]",
+        factory.encodeUtf8("Tyrannosaur").toString());
+    assertEquals("[text=təˈranəˌsôr]",
+        factory.decodeHex("74c999cb8872616ec999cb8c73c3b472").toString());
   }
 
-  @Test public void toStringOnLargeByteStringIncludesMd5() {
-    assertEquals("ByteString[size=17 md5=2c9728a2138b2f25e9f89f99bdccf8db]",
-        factory.encodeUtf8("12345678901234567").toString());
+  @Test public void toStringOnLongTextIsTruncated() {
+    String raw = "Um, I'll tell you the problem with the scientific power that you're using here, "
+        + "it didn't require any discipline to attain it. You read what others had done and you "
+        + "took the next step. You didn't earn the knowledge for yourselves, so you don't take any "
+        + "responsibility for it. You stood on the shoulders of geniuses to accomplish something "
+        + "as fast as you could, and before you even knew what you had, you patented it, and "
+        + "packaged it, and slapped it on a plastic lunchbox, and now you're selling it, you wanna "
+        + "sell it.";
+    assertEquals("[size=517 text=Um, I'll tell you the problem with the scientific power that "
+        + "you…]", factory.encodeUtf8(raw).toString());
+  }
+
+  @Test public void toStringOnTextWithNewlines() {
+    // Instead of emitting a literal newline in the toString(), these are escaped as "\n".
+    assertEquals("[text=a\\r\\nb\\nc\\rd\\\\e]",
+        factory.encodeUtf8("a\r\nb\nc\rd\\e").toString());
+  }
+
+  @Test public void toStringOnData() {
+    ByteString byteString = factory.decodeHex(""
+        + "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55"
+        + "4bf0b54023c29b624de9ef9c2f931efc580f9afb");
+    assertEquals("[hex="
+        + "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55"
+        + "4bf0b54023c29b624de9ef9c2f931efc580f9afb]", byteString.toString());
+  }
+
+  @Test public void toStringOnLongDataIsTruncated() {
+    ByteString byteString = factory.decodeHex(""
+        + "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55"
+        + "4bf0b54023c29b624de9ef9c2f931efc580f9afba1");
+    assertEquals("[size=65 hex="
+        + "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55"
+        + "4bf0b54023c29b624de9ef9c2f931efc580f9afb…]", byteString.toString());
   }
 
   @Test public void javaSerializationTestNonEmpty() throws Exception {

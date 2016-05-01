@@ -424,16 +424,46 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return sizeA < sizeB ? -1 : 1;
   }
 
+  /**
+   * Returns a human-readable string that describes the contents of this byte string. Typically this
+   * is a string like {@code [text=Hello]} or {@code [hex=0000ffff]}.
+   */
   @Override public String toString() {
     if (data.length == 0) {
-      return "ByteString[size=0]";
+      return "[size=0]";
     }
 
-    if (data.length <= 16) {
-      return String.format("ByteString[size=%s data=%s]", data.length, hex());
+    String text = utf8();
+    int i = codePointIndexToCharIndex(text, 64);
+
+    if (i == -1) {
+      return data.length <= 64
+          ? "[hex=" + hex() + "]"
+          : "[size=" + data.length + " hex=" + substring(0, 64).hex() + "…]";
     }
 
-    return String.format("ByteString[size=%s md5=%s]", data.length, md5().hex());
+    String safeText = text.substring(0, i)
+        .replace("\\", "\\\\")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r");
+    return i < text.length()
+        ? "[size=" + data.length + " text=" + safeText + "…]"
+        : "[text=" + safeText + "]";
+  }
+
+  static int codePointIndexToCharIndex(String s, int codePointCount) {
+    for (int i = 0, j = 0, length = s.length(), c; i < length; i += Character.charCount(c)) {
+      if (j == codePointCount) {
+        return i;
+      }
+      c = s.codePointAt(i);
+      if ((Character.isISOControl(c) && c != '\n' && c != '\r')
+          || c == Buffer.REPLACEMENT_CHARACTER) {
+        return -1;
+      }
+      j++;
+    }
+    return s.length();
   }
 
   private void readObject(ObjectInputStream in) throws IOException {
