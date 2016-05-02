@@ -644,7 +644,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       Buffer data = new Buffer();
       copyTo(data, 0, Math.min(32, size));
       throw new EOFException("\\n not found: size=" + size()
-          + " content=" + data.readByteString().hex() + "...");
+          + " content=" + data.readByteString().hex() + "…");
     }
     return readUtf8Line(newline);
   }
@@ -1587,17 +1587,12 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return result;
   }
 
+  /**
+   * Returns a human-readable string that describes the contents of this buffer. Typically this
+   * is a string like {@code [text=Hello]} or {@code [hex=0000ffff]}.
+   */
   @Override public String toString() {
-    if (size == 0) {
-      return "Buffer[size=0]";
-    }
-
-    if (size <= 16) {
-      ByteString data = clone().readByteString();
-      return String.format("Buffer[size=%s data=%s]", size, data.hex());
-    }
-
-    return String.format("Buffer[size=%s md5=%s]", size, md5().hex());
+    return snapshot().toString();
   }
 
   /** Returns a deep copy of this buffer. */

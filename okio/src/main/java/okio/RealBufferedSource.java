@@ -212,7 +212,7 @@ final class RealBufferedSource implements BufferedSource {
       Buffer data = new Buffer();
       buffer.copyTo(data, 0, Math.min(32, buffer.size()));
       throw new EOFException("\\n not found: size=" + buffer.size()
-          + " content=" + data.readByteString().hex() + "...");
+          + " content=" + data.readByteString().hex() + "…");
     }
     return buffer.readUtf8Line(newline);
   }
