@@ -7,7 +7,7 @@ _2016-05-02_
 
  * New: `BufferedSource.select(Options)` API for reading one of a set of
    expected values.
- * New: Make `ByteString.toString()` and `Buffer.toString()` are friendlier.
+ * New: Make `ByteString.toString()` and `Buffer.toString()` friendlier.
    These methods return text if the byte string is valid UTF-8.
  * New: APIs to match byte strings: `indexOf()`, `startsWith()`, and
    `endsWith()`.
