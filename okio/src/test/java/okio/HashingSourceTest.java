@@ -21,8 +21,8 @@ import static okio.HashingTest.MD5_abc;
 import static okio.HashingTest.SHA1_abc;
 import static okio.HashingTest.SHA256_abc;
 import static okio.HashingTest.SHA256_def;
-import static okio.HashingTest.SHA256_x32k;
-import static okio.HashingTest.x32k;
+import static okio.HashingTest.SHA256_r32k;
+import static okio.HashingTest.r32k;
 import static org.junit.Assert.assertEquals;
 
 public final class HashingSourceTest {
@@ -75,16 +75,16 @@ public final class HashingSourceTest {
   @Test public void multipleSegments() throws Exception {
     HashingSource hashingSource = HashingSource.sha256(source);
     BufferedSource bufferedSource = Okio.buffer(hashingSource);
-    source.writeUtf8(x32k);
-    assertEquals(x32k, bufferedSource.readUtf8());
-    assertEquals(SHA256_x32k, hashingSource.hash());
+    source.write(r32k);
+    assertEquals(r32k, bufferedSource.readByteString());
+    assertEquals(SHA256_r32k, hashingSource.hash());
   }
 
   @Test public void readIntoSuffixOfBuffer() throws Exception {
     HashingSource hashingSource = HashingSource.sha256(source);
-    source.writeUtf8(x32k);
+    source.write(r32k);
     sink.writeUtf8(TestUtil.repeat('z', Segment.SIZE * 2 - 1));
-    assertEquals(x32k.length(), hashingSource.read(sink, Long.MAX_VALUE));
-    assertEquals(SHA256_x32k, hashingSource.hash());
+    assertEquals(r32k.size(), hashingSource.read(sink, Long.MAX_VALUE));
+    assertEquals(SHA256_r32k, hashingSource.hash());
   }
 }

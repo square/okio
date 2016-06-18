@@ -21,8 +21,8 @@ import static okio.HashingTest.MD5_abc;
 import static okio.HashingTest.SHA1_abc;
 import static okio.HashingTest.SHA256_abc;
 import static okio.HashingTest.SHA256_def;
-import static okio.HashingTest.SHA256_x32k;
-import static okio.HashingTest.x32k;
+import static okio.HashingTest.SHA256_r32k;
+import static okio.HashingTest.r32k;
 import static org.junit.Assert.assertEquals;
 
 public final class HashingSinkTest {
@@ -73,18 +73,18 @@ public final class HashingSinkTest {
 
   @Test public void multipleSegments() throws Exception {
     HashingSink hashingSink = HashingSink.sha256(sink);
-    source.writeUtf8(x32k);
-    hashingSink.write(source, x32k.length());
-    assertEquals(SHA256_x32k, hashingSink.hash());
+    source.write(r32k);
+    hashingSink.write(source, r32k.size());
+    assertEquals(SHA256_r32k, hashingSink.hash());
   }
 
   @Test public void readFromPrefixOfBuffer() throws Exception {
     source.writeUtf8("z");
-    source.writeUtf8(x32k);
+    source.write(r32k);
     source.skip(1);
     source.writeUtf8(TestUtil.repeat('z', Segment.SIZE * 2 - 1));
     HashingSink hashingSink = HashingSink.sha256(sink);
-    hashingSink.write(source, x32k.length());
-    assertEquals(SHA256_x32k, hashingSink.hash());
+    hashingSink.write(source, r32k.size());
+    assertEquals(SHA256_r32k, hashingSink.hash());
   }
 }
