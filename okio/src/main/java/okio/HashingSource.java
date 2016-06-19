@@ -71,7 +71,7 @@ public final class HashingSource extends ForwardingSource {
       // Find the first segment that has new bytes.
       long offset = sink.size;
       Segment s = sink.head;
-      while (offset > sink.size - result) {
+      while (offset > start) {
         s = s.prev;
         offset -= (s.limit - s.pos);
       }
@@ -82,6 +82,7 @@ public final class HashingSource extends ForwardingSource {
         messageDigest.update(s.data, pos, s.limit - pos);
         offset += (s.limit - s.pos);
         start = offset;
+        s = s.next;
       }
     }
 

@@ -28,9 +28,9 @@ public final class HashingTest {
       "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
   public static final ByteString SHA256_def = ByteString.decodeHex(
       "cb8379ac2098aa165029e3938a51da0bcecfc008fd6795f401178647f96c5b34");
-  public static final ByteString SHA256_x32k = ByteString.decodeHex(
-      "427965f49a857174e308658227325dbd23ff4eccbe399d5ad4817dda3ec79f87");
-  public static final String x32k = TestUtil.repeat('x', 32768);
+  public static final ByteString SHA256_r32k = ByteString.decodeHex(
+      "3a640aa4d129671cb36a4bfbed652d732bce6b7ea83ccdd080c485b8c9ef479d");
+  public static final ByteString r32k = TestUtil.randomBytes(32768);
 
   @Test public void byteStringMd5() {
     assertEquals(MD5_abc, ByteString.encodeUtf8("abc").md5());
@@ -67,8 +67,8 @@ public final class HashingTest {
     assertEquals(SHA256_def, buffer.sha256());
     assertEquals("def", buffer.readUtf8());
 
-    buffer.writeUtf8(x32k);
-    assertEquals(SHA256_x32k, buffer.sha256());
-    assertEquals(x32k, buffer.readUtf8());
+    buffer.write(r32k);
+    assertEquals(SHA256_r32k, buffer.sha256());
+    assertEquals(r32k, buffer.readByteString());
   }
 }
