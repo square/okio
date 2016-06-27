@@ -47,7 +47,6 @@ public final class Okio {
    * you read a source to get an ergonomic and efficient access to data.
    */
   public static BufferedSource buffer(Source source) {
-    if (source == null) throw new IllegalArgumentException("source == null");
     return new RealBufferedSource(source);
   }
 
@@ -57,7 +56,6 @@ public final class Okio {
    * get an ergonomic and efficient access to data.
    */
   public static BufferedSink buffer(Sink sink) {
-    if (sink == null) throw new IllegalArgumentException("sink == null");
     return new RealBufferedSink(sink);
   }
 
