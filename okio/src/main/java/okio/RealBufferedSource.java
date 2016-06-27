@@ -376,16 +376,12 @@ final class RealBufferedSource implements BufferedSource {
       throws IOException {
     if (closed) throw new IllegalStateException("closed");
 
-    if (offset < 0) throw new ArrayIndexOutOfBoundsException("offset=" + offset);
-    int bytesSize = bytes.size();
-    if ((bytesOffset | byteCount) < 0
-        || bytesOffset > bytesSize
-        || bytesSize - bytesOffset < byteCount) {
-      throw new ArrayIndexOutOfBoundsException(
-          String.format("bytes.size()=%s bytesOffset=%s byteCount=%s", bytesSize, bytesOffset,
-              byteCount));
+    if (offset < 0
+        || bytesOffset < 0
+        || byteCount < 0
+        || bytes.size() - bytesOffset < byteCount) {
+      return false;
     }
-
     for (int i = 0; i < byteCount; i++) {
       long bufferOffset = offset + i;
       if (!request(bufferOffset + 1)) return false;
