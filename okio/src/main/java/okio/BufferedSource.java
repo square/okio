@@ -490,11 +490,12 @@ public interface BufferedSource extends Source {
   boolean rangeEquals(long offset, ByteString bytes) throws IOException;
 
   /**
-   * Returns true if {@code count} bytes at {@code offset} in this source equal the {@code bytes}
+   * Returns true if {@code byteCount} bytes at {@code offset} in this source equal {@code bytes}
    * at {@code bytesOffset}. This expands the buffer as necessary until a byte does not match, all
    * bytes are matched, or if the stream is exhausted before enough bytes could determine a match.
    */
-  boolean rangeEquals(long offset, ByteString bytes, int bytesOffset, int count) throws IOException;
+  boolean rangeEquals(long offset, ByteString bytes, int bytesOffset, int byteCount)
+      throws IOException;
 
   /** Returns an input stream that reads from this source. */
   InputStream inputStream();

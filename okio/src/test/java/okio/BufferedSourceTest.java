@@ -940,4 +940,43 @@ public final class BufferedSourceTest {
     assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A man.")));
     assertEquals("A man,", source.buffer().readUtf8());
   }
+
+  @Test public void rangeEqualsArgumentValidation() throws IOException {
+    try {
+      source.rangeEquals(-1, ByteString.encodeUtf8("A"));
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+      assertEquals("offset=-1", expected.getMessage());
+    }
+    try {
+      source.rangeEquals(0, ByteString.encodeUtf8("A"), -1, 1);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+      assertEquals("bytes.size()=1 bytesOffset=-1 byteCount=1", expected.getMessage());
+    }
+    try {
+      source.rangeEquals(0, ByteString.encodeUtf8("A"), 2, 1);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+      assertEquals("bytes.size()=1 bytesOffset=2 byteCount=1", expected.getMessage());
+    }
+    try {
+      source.rangeEquals(0, ByteString.encodeUtf8("A"), 0, -1);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+      assertEquals("bytes.size()=1 bytesOffset=0 byteCount=-1", expected.getMessage());
+    }
+    try {
+      source.rangeEquals(0, ByteString.encodeUtf8("A"), 0, 2);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+      assertEquals("bytes.size()=1 bytesOffset=0 byteCount=2", expected.getMessage());
+    }
+    try {
+      source.rangeEquals(0, ByteString.encodeUtf8("A"), 1, 1);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+      assertEquals("bytes.size()=1 bytesOffset=1 byteCount=1", expected.getMessage());
+    }
+  }
 }

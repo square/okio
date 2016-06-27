@@ -1455,11 +1455,21 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return rangeEquals(offset, bytes, 0, bytes.size());
   }
 
-  @Override public boolean rangeEquals(long offset, ByteString bytes, int bytesOffset, int count) {
-    if (size - offset < count) {
+  @Override public boolean rangeEquals(long offset, ByteString bytes, int bytesOffset, int byteCount) {
+    if (offset < 0) throw new ArrayIndexOutOfBoundsException("offset=" + offset);
+    int bytesSize = bytes.size();
+    if ((bytesOffset | byteCount) < 0
+        || bytesOffset > bytesSize
+        || bytesSize - bytesOffset < byteCount) {
+      throw new ArrayIndexOutOfBoundsException(
+          String.format("bytes.size()=%s bytesOffset=%s byteCount=%s", bytesSize, bytesOffset,
+              byteCount));
+    }
+
+    if (this.size - offset < byteCount) {
       return false;
     }
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < byteCount; i++) {
       if (getByte(offset + i) != bytes.getByte(bytesOffset + i)) {
         return false;
       }
