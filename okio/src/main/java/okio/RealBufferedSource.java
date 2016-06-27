@@ -367,6 +367,22 @@ final class RealBufferedSource implements BufferedSource {
     }
   }
 
+  @Override public boolean rangeEquals(long offset, ByteString bytes) throws IOException {
+    return rangeEquals(offset, bytes, 0, bytes.size());
+  }
+
+  @Override public boolean rangeEquals(long offset, ByteString bytes, int bytesOffset, int count)
+      throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+
+    for (int i = 0; i < count; i++) {
+      long bufferOffset = offset + i;
+      if (!request(bufferOffset + 1)) return false;
+      if (buffer.getByte(bufferOffset) != bytes.getByte(bytesOffset + i)) return false;
+    }
+    return true;
+  }
+
   @Override public InputStream inputStream() {
     return new InputStream() {
       @Override public int read() throws IOException {
