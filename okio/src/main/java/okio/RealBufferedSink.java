@@ -26,7 +26,7 @@ final class RealBufferedSink implements BufferedSink {
   boolean closed;
 
   RealBufferedSink(Sink sink) {
-    if (sink == null) throw new IllegalArgumentException("sink == null");
+    if (sink == null) throw new NullPointerException("sink == null");
     this.sink = sink;
   }
 
