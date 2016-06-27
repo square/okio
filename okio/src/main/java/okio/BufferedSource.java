@@ -473,6 +473,29 @@ public interface BufferedSource extends Source {
    */
   long indexOfElement(ByteString targetBytes, long fromIndex) throws IOException;
 
+  /**
+   * Returns true if the bytes at {@code offset} in this source equal {@code bytes}. This expands
+   * the buffer as necessary until a byte does not match, all bytes are matched, or if the stream
+   * is exhausted before enough bytes could determine a match.  <pre>{@code
+   *
+   *   ByteString simonSays = ByteString.encodeUtf8("Simon says:");
+   *
+   *   Buffer standOnOneLeg = new Buffer().writeUtf8("Simon says: Stand on one leg.");
+   *   assertTrue(standOnOneLeg.rangeEquals(0, simonSays));
+   *
+   *   Buffer payMeMoney = new Buffer().writeUtf8("Pay me $1,000,000.");
+   *   assertFalse(payMeMoney.rangeEquals(0, simonSays));
+   * }</pre>
+   */
+  boolean rangeEquals(long offset, ByteString bytes) throws IOException;
+
+  /**
+   * Returns true if {@code count} bytes at {@code offset} in this source equal the {@code bytes}
+   * at {@code bytesOffset}. This expands the buffer as necessary until a byte does not match, all
+   * bytes are matched, or if the stream is exhausted before enough bytes could determine a match.
+   */
+  boolean rangeEquals(long offset, ByteString bytes, int bytesOffset, int count) throws IOException;
+
   /** Returns an input stream that reads from this source. */
   InputStream inputStream();
 }

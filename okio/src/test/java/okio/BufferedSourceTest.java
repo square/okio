@@ -36,6 +36,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public final class BufferedSourceTest {
@@ -915,5 +916,28 @@ public final class BufferedSourceTest {
   @Test public void selectEmptyByteStringFromEmptySource() throws IOException {
     Options options = Options.of(ByteString.of());
     assertEquals(0, source.select(options));
+  }
+
+  @Test public void rangeEquals() throws IOException {
+    sink.writeUtf8("A man, a plan, a canal. Panama.");
+    assertTrue(source.rangeEquals(7 , ByteString.encodeUtf8("a plan")));
+    assertTrue(source.rangeEquals(0 , ByteString.encodeUtf8("A man")));
+    assertTrue(source.rangeEquals(24, ByteString.encodeUtf8("Panama")));
+    assertFalse(source.rangeEquals(24, ByteString.encodeUtf8("Panama. Panama. Panama.")));
+  }
+
+  @Test public void rangeEqualsWithOffsetAndCount() throws IOException {
+    sink.writeUtf8("A man, a plan, a canal. Panama.");
+    assertTrue(source.rangeEquals(7 , ByteString.encodeUtf8("aaa plannn"), 2, 6));
+    assertTrue(source.rangeEquals(0 , ByteString.encodeUtf8("AAA mannn"), 2, 5));
+    assertTrue(source.rangeEquals(24, ByteString.encodeUtf8("PPPanamaaa"), 2, 6));
+  }
+
+  @Test public void rangeEqualsOnlyReadsUntilMismatch() throws IOException {
+    assumeTrue(factory == Factory.ONE_BYTE_AT_A_TIME); // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.");
+    assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A man.")));
+    assertEquals("A man,", source.buffer().readUtf8());
   }
 }
