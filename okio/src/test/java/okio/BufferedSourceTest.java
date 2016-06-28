@@ -633,6 +633,10 @@ public final class BufferedSourceTest {
     InputStream in = source.inputStream();
     assertEquals(4, in.skip(4));
     assertEquals('e', in.read());
+
+    sink.writeUtf8("abcde");
+    assertEquals(5, in.skip(10)); // Try to skip too much.
+    assertEquals(0, in.skip(1)); // Try to skip when exhausted.
   }
 
   @Test public void inputStreamCharByChar() throws Exception {
