@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.charset.Charset;
 
 import static okio.Util.checkOffsetAndCount;
@@ -424,6 +425,36 @@ final class RealBufferedSource implements BufferedSource {
 
       @Override public String toString() {
         return RealBufferedSource.this + ".inputStream()";
+      }
+    };
+  }
+
+  @Override public Reader reader() {
+    return reader(Util.UTF_8);
+  }
+
+  @Override public Reader reader(final Charset charset) {
+    if (charset == null) throw new NullPointerException("charset == null");
+    return new Reader() {
+      @Override public int read(char[] cbuf, int off, int len) throws IOException {
+        if (buffer.size == 0) {
+          long read = source.read(buffer, Segment.SIZE);
+          if (read == -1) return -1;
+        }
+        return buffer.readChars(charset, cbuf, off, len);
+      }
+
+      @Override public long skip(long n) throws IOException {
+        RealBufferedSource.this.skip(n);
+        return n;
+      }
+
+      @Override public void close() throws IOException {
+        RealBufferedSource.this.close();
+      }
+
+      @Override public String toString() {
+        return RealBufferedSource.this + ".writer(" + charset.name() + ")";
       }
     };
   }

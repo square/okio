@@ -17,6 +17,7 @@ package okio;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.charset.Charset;
 
 /**
@@ -333,4 +334,10 @@ public interface BufferedSink extends Sink {
 
   /** Returns an output stream that writes to this sink. */
   OutputStream outputStream();
+
+  /** Returns a writer that writes to this sink. */
+  Writer writer();
+
+  /** Returns a writer that writes to this sink using {@code charset}. */
+  Writer writer(Charset charset);
 }

@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -273,6 +274,32 @@ public final class BufferedSinkTest {
       out.write(new byte[100], 50, 51);
       fail();
     } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+  }
+
+  @Test public void writer() throws IOException {
+    Writer writer = sink.writer();
+    writer.write("Hello".toCharArray(), 1, 3);
+    writer.write(repeat('a', 9997));
+    writer.flush();
+    assertEquals("ell" + repeat('a', 9997), data.readUtf8());
+  }
+
+  @Test public void writerBounds() throws IOException {
+    Writer writer = sink.writer();
+    try {
+      writer.write(new char[100], 50, 51);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+  }
+
+  @Test public void writerNullCharsetThrows() {
+    try {
+      sink.writer(null);
+      fail();
+    } catch (NullPointerException expected) {
+      assertEquals("charset == null", expected.getMessage());
     }
   }
 
