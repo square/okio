@@ -81,7 +81,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       }
 
       @Override public String toString() {
-        return this + ".outputStream()";
+        return Buffer.this + ".outputStream()";
       }
     };
   }
