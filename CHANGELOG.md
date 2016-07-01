@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+## Version 1.9.0
+
+_2016-07-01_
+
+ * New: `Pipe` makes it easy to connect a producer thread to a consumer thread.
+   Reads block until data is available to read. Writes block if the pipe's is
+   full. Both sources and sinks support timeouts.
+ * New: `BufferedSource.rangeEquals()` makes it easy to compare a range in a
+   stream to an expected value. This does the right thing: it blocks to load
+   the data required return a definitive result. But it won't block
+   unnecessarily.
+ * New: `Timeout.waitUntilNotified()` makes it possible to use nice timeout
+   abstractions on Java's built-in wait/notify primitives.
+ * Fix: Don't return incorrect results when HashingSource does large reads.
+   There was a bug where it wasn't traversing through the segments of the buffer
+   being hashed. This means that `HashingSource` was returning incorrect answers
+   for any writes that spanned multiple segment boundaries.
+
 ## Version 1.8.0
 
 _2016-05-02_
