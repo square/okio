@@ -192,6 +192,23 @@ public final class Okio {
     return sink(Files.newOutputStream(path, options));
   }
 
+  /** Returns a sink that writes nowhere. */
+  public static Sink blackhole() {
+    return new Sink() {
+      @Override public void write(Buffer source, long byteCount) throws IOException {
+        source.skip(byteCount);
+      }
+
+      @Override public void flush() throws IOException {}
+
+      @Override public Timeout timeout() {
+        return Timeout.NONE;
+      }
+
+      @Override public void close() throws IOException {}
+    };
+  }
+
   /**
    * Returns a source that reads from {@code socket}. Prefer this over {@link
    * #source(InputStream)} because this method honors timeouts. When the socket
