@@ -145,4 +145,14 @@ public final class OkioTest {
       assertEquals("source == null", expected.getMessage());
     }
   }
+
+  @Test public void blackhole() throws Exception {
+    Buffer data = new Buffer();
+    data.writeUtf8("blackhole");
+
+    Sink blackhole = Okio.blackhole();
+    blackhole.write(data, 5);
+
+    assertEquals("hole", data.readUtf8());
+  }
 }
