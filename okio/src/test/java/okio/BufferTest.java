@@ -19,6 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -26,6 +28,7 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static okio.TestUtil.bufferWithRandomSegmentLayout;
+import static okio.TestUtil.readerToString;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -581,5 +584,143 @@ public final class BufferTest {
   @Test public void snapshotReportsAccurateSize() throws Exception {
     Buffer buf = new Buffer().write(new byte[] { 0, 1, 2, 3 });
     assertEquals(1, buf.snapshot(1).size());
+  }
+
+  @Test public void readerWithoutBom() throws Exception {
+    Buffer source = new Buffer();
+    source.writeUtf8("ab");
+
+    Reader reader = source.reader();
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("ab", stringFromReader);
+  }
+
+  @Test public void readerWithUtf8Bom() throws Exception {
+    Buffer source = new Buffer();
+    source.write(ByteString.decodeHex("efbbbf"));
+    source.writeUtf8("utf8");
+
+    Reader reader = source.reader();
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf8", stringFromReader);
+  }
+
+  @Test public void readerWithUtf16BigEndianBom() throws Exception {
+    Buffer source = new Buffer();
+    source.write(ByteString.decodeHex("feff"));
+    source.writeString("utf16", Charset.forName("UTF-16BE"));
+
+    Reader reader = source.reader();
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf16", stringFromReader);
+  }
+
+  @Test public void readerWithUtf16LittleEndianBom() throws Exception {
+    Buffer source = new Buffer();
+    source.write(ByteString.decodeHex("fffe"));
+    source.writeString("utf16", Charset.forName("UTF-16LE"));
+
+    Reader reader = source.reader();
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf16", stringFromReader);
+  }
+
+  @Test public void readerWithUtf32BigEndianBom() throws Exception {
+    Buffer source = new Buffer();
+    source.write(ByteString.decodeHex("0000feff"));
+    source.writeString("utf32", Charset.forName("UTF-32BE"));
+
+    Reader reader = source.reader();
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf32", stringFromReader);
+  }
+
+  @Test public void readerWithUtf32LittleEndianBom() throws Exception {
+    Buffer source = new Buffer();
+    source.write(ByteString.decodeHex("fffe0000"));
+    source.writeString("utf32", Charset.forName("UTF-32LE"));
+
+    Reader reader = source.reader();
+    String string = readerToString(reader);
+
+    assertEquals("utf32", string);
+  }
+
+  @Test public void readerUtf8() throws Exception {
+    Buffer source = new Buffer();
+    source.writeUtf8("utf8");
+
+    Reader reader = source.reader(UTF_8);
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf8", stringFromReader);
+  }
+
+  @Test public void readerUtf8WithBom() throws Exception {
+    Buffer source = new Buffer();
+    source.write(ByteString.decodeHex("efbbbf"));
+    source.writeUtf8("utf8");
+
+    Reader reader = source.reader(UTF_8);
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf8", stringFromReader);
+  }
+
+  @Test public void readerUtf16() throws Exception {
+    Buffer source = new Buffer();
+    source.writeString("utf16", Charset.forName("UTF-16BE"));
+
+    Reader reader = source.reader(Charset.forName("UTF-16BE"));
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf16", stringFromReader);
+  }
+
+  @Test public void readerUtf16WithBom() throws Exception {
+    Buffer source = new Buffer();
+    source.write(ByteString.decodeHex("feff"));
+    source.writeString("utf16", Charset.forName("UTF-16BE"));
+
+    Reader reader = source.reader(Charset.forName("UTF-16"));
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf16", stringFromReader);
+  }
+
+  @Test public void readerUtf32() throws Exception {
+    Buffer source = new Buffer();
+    source.writeString("utf32", Charset.forName("UTF-32LE"));
+
+    Reader reader = source.reader(Charset.forName("UTF-32LE"));
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf32", stringFromReader);
+  }
+
+  @Test public void readerUtf32WithBom() throws Exception {
+    Buffer source = new Buffer();
+    source.write(ByteString.decodeHex("fffe0000"));
+    source.writeString("utf32", Charset.forName("UTF-32LE"));
+
+    Reader reader = source.reader(Charset.forName("UTF-32"));
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf32", stringFromReader);
+  }
+
+  @Test public void readerLatinOne() throws Exception {
+    Buffer source = new Buffer();
+    source.writeString("Übergrößenträger", Charset.forName("ISO-8859-1"));
+
+    Reader reader = source.reader(Charset.forName("ISO-8859-1"));
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("Übergrößenträger", stringFromReader);
   }
 }
