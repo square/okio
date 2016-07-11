@@ -19,6 +19,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -128,6 +129,15 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
         return Buffer.this + ".inputStream()";
       }
     };
+  }
+
+  @Override public Reader readerUtf8() {
+    return new BomAwareReader(inputStream(), null, this);
+  }
+
+  @Override public Reader reader(Charset charset) {
+    if (charset == null) throw new IllegalArgumentException("charset == null");
+    return new BomAwareReader(inputStream(), charset, this);
   }
 
   /** Copy the contents of this to {@code out}. */
