@@ -140,7 +140,7 @@ public class AsyncTimeout extends Timeout {
     return true;
   }
 
-  public void shutdown() {
+  public static void shutdown() {
       shutdown = true;
       if (watchdog != null) {
         watchdog.interrupt();
