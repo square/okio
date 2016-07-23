@@ -71,7 +71,7 @@ public class AsyncTimeout extends Timeout {
   private static volatile boolean shutdown = false;
   private static Watchdog watchdog;
 
-  public final void enter() {
+  public synchronized final void enter() {
     if (inQueue) throw new IllegalStateException("Unbalanced enter/exit");
     long timeoutNanos = timeoutNanos();
     boolean hasDeadline = hasDeadline();
@@ -85,7 +85,7 @@ public class AsyncTimeout extends Timeout {
   private static synchronized void scheduleTimeout(
       AsyncTimeout node, long timeoutNanos, boolean hasDeadline) {
     // Start the watchdog thread and create the head node when the first timeout is scheduled.
-    if (head == null) {
+    if (watchdog == null) {
       head = new AsyncTimeout();
       watchdog = new Watchdog();
       watchdog.start();
@@ -140,11 +140,13 @@ public class AsyncTimeout extends Timeout {
     return true;
   }
 
-  public static void shutdown() {
-      shutdown = true;
-      if (watchdog != null) {
-        watchdog.interrupt();
-      }
+  protected synchronized static void shutdown() {
+    shutdown = true;
+    if (watchdog != null) {
+      watchdog.interrupt();
+    }
+    watchdog = null;
+
   }
 
   /**
