@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Test;
 
-import static junit.framework.TestCase.fail;
+import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
 public final class PipeTest {
