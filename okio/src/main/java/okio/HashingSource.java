@@ -38,17 +38,17 @@ import java.security.NoSuchAlgorithmException;
 public final class HashingSource extends ForwardingSource {
   private final MessageDigest messageDigest;
 
-  /** Returns a sink that uses the obsolete MD5 hash algorithm. */
+  /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
   public static HashingSource md5(Source source) {
     return new HashingSource(source, "MD5");
   }
 
-  /** Returns a sink that uses the obsolete SHA-1 hash algorithm. */
+  /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
   public static HashingSource sha1(Source source) {
     return new HashingSource(source, "SHA-1");
   }
 
-  /** Returns a sink that uses the SHA-256 hash algorithm. */
+  /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
   public static HashingSource sha256(Source source) {
     return new HashingSource(source, "SHA-256");
   }
