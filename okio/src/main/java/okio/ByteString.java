@@ -105,17 +105,17 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return Base64.encode(data);
   }
 
-  /** Returns the MD5 hash of this byte string. */
+  /** Returns the 128-bit MD5 hash of this byte string. */
   public ByteString md5() {
     return digest("MD5");
   }
 
-  /** Returns the SHA-1 hash of this byte string. */
+  /** Returns the 160-bit SHA-1 hash of this byte string. */
   public ByteString sha1() {
     return digest("SHA-1");
   }
 
-  /** Returns the SHA-256 hash of this byte string. */
+  /** Returns the 256-bit SHA-256 hash of this byte string. */
   public ByteString sha256() {
     return digest("SHA-256");
   }

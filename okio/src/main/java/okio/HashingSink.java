@@ -40,17 +40,17 @@ import static okio.Util.checkOffsetAndCount;
 public final class HashingSink extends ForwardingSink {
   private final MessageDigest messageDigest;
 
-  /** Returns a sink that uses the obsolete MD5 hash algorithm. */
+  /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
   public static HashingSink md5(Sink sink) {
     return new HashingSink(sink, "MD5");
   }
 
-  /** Returns a sink that uses the obsolete SHA-1 hash algorithm. */
+  /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
   public static HashingSink sha1(Sink sink) {
     return new HashingSink(sink, "SHA-1");
   }
 
-  /** Returns a sink that uses the SHA-256 hash algorithm. */
+  /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
   public static HashingSink sha256(Sink sink) {
     return new HashingSink(sink, "SHA-256");
   }
