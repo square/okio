@@ -130,7 +130,7 @@ final class Base64 {
   }
 
   private static String encode(byte[] in, byte[] map) {
-    int length = (in.length + 2) * 4 / 3;
+    int length = (in.length + 2) / 3 * 4;
     byte[] out = new byte[length];
     int index = 0, end = in.length - in.length % 3;
     for (int i = 0; i < end; i += 3) {
@@ -154,7 +154,7 @@ final class Base64 {
         break;
     }
     try {
-      return new String(out, 0, index, "US-ASCII");
+      return new String(out, "US-ASCII");
     } catch (UnsupportedEncodingException e) {
       throw new AssertionError(e);
     }
