@@ -45,6 +45,44 @@ final class TestUtil {
     return ByteString.of(randomBytes);
   }
 
+  static Source randomSource(final long size) {
+    return new Source() {
+      Random random = new Random(0);
+      long bytesLeft = size;
+      boolean closed;
+
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
+        if (closed) throw new IllegalStateException("closed");
+        if (bytesLeft == 0) return -1L;
+        if (byteCount > bytesLeft) byteCount = bytesLeft;
+
+        // If we can read a full segment we can save a copy.
+        if (byteCount >= Segment.SIZE) {
+          Segment segment = sink.writableSegment(Segment.SIZE);
+          random.nextBytes(segment.data);
+          segment.limit += Segment.SIZE;
+          sink.size += Segment.SIZE;
+          bytesLeft -= Segment.SIZE;
+          return Segment.SIZE;
+        } else {
+          byte[] data = new byte[(int) byteCount];
+          random.nextBytes(data);
+          sink.write(data);
+          bytesLeft -= byteCount;
+          return byteCount;
+        }
+      }
+
+      @Override public Timeout timeout() {
+        return Timeout.NONE;
+      }
+
+      @Override public void close() throws IOException {
+        closed = true;
+      }
+    };
+  }
+
   static String repeat(char c, int count) {
     char[] array = new char[count];
     Arrays.fill(array, c);

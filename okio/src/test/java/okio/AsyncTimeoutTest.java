@@ -35,7 +35,7 @@ import static org.junit.Assert.fail;
  * This test uses four timeouts of varying durations: 250ms, 500ms, 750ms and
  * 1000ms, named 'a', 'b', 'c' and 'd'.
  */
-public class AsyncTimeoutTest {
+public final class AsyncTimeoutTest {
   private final List<Timeout> timedOut = new CopyOnWriteArrayList<Timeout>();
   private final AsyncTimeout a = new RecordingAsyncTimeout();
   private final AsyncTimeout b = new RecordingAsyncTimeout();

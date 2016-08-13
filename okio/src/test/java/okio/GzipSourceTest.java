@@ -25,7 +25,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class GzipSourceTest {
+public final class GzipSourceTest {
 
   @Test public void gunzip() throws Exception {
     Buffer gzipped = new Buffer();
