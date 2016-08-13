@@ -28,7 +28,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class SocketTimeoutTest {
+public final class SocketTimeoutTest {
 
   // The size of the socket buffers to use. Less than half the data transferred during tests to
   // ensure send and receive buffers are flooded and any necessary blocking behavior takes place.

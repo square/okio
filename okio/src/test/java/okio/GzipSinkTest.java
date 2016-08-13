@@ -22,7 +22,7 @@ import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class GzipSinkTest {
+public final class GzipSinkTest {
   @Test public void gzipGunzip() throws Exception {
     Buffer data = new Buffer();
     String original = "It's a UNIX system! I know this!";
