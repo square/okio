@@ -171,7 +171,7 @@ public final class GzipSource implements Source {
     // |     CRC32     |     ISIZE     |
     // +---+---+---+---+---+---+---+---+
     checkEqual("CRC", source.readIntLe(), (int) crc.getValue());
-    checkEqual("ISIZE", source.readIntLe(), inflater.getTotalOut());
+    checkEqual("ISIZE", source.readIntLe(), (int) inflater.getBytesWritten());
   }
 
   @Override public Timeout timeout() {
