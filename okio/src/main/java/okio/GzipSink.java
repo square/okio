@@ -131,7 +131,7 @@ public final class GzipSink implements Sink {
 
   private void writeFooter() throws IOException {
     sink.writeIntLe((int) crc.getValue()); // CRC of original data.
-    sink.writeIntLe(deflater.getTotalIn()); // Length of original data.
+    sink.writeIntLe((int) deflater.getBytesRead()); // Length of original data.
   }
 
   /** Updates the CRC with the given bytes. */
