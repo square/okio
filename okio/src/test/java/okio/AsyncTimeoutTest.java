@@ -36,7 +36,7 @@ import static org.junit.Assert.fail;
  * 1000ms, named 'a', 'b', 'c' and 'd'.
  */
 public final class AsyncTimeoutTest {
-  private final List<Timeout> timedOut = new CopyOnWriteArrayList<Timeout>();
+  private final List<Timeout> timedOut = new CopyOnWriteArrayList<>();
   private final AsyncTimeout a = new RecordingAsyncTimeout();
   private final AsyncTimeout b = new RecordingAsyncTimeout();
   private final AsyncTimeout c = new RecordingAsyncTimeout();
