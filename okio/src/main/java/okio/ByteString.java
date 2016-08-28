@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -89,11 +90,24 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return byteString;
   }
 
+  /** Returns a new byte string containing the {@code charset}-encoded bytes of {@code s}. */
+  public static ByteString encodeString(String s, Charset charset) {
+    if (s == null) throw new IllegalArgumentException("s == null");
+    if (charset == null) throw new IllegalArgumentException("charset == null");
+    return new ByteString(s.getBytes(charset));
+  }
+
   /** Constructs a new {@code String} by decoding the bytes as {@code UTF-8}. */
   public String utf8() {
     String result = utf8;
     // We don't care if we double-allocate in racy code.
     return result != null ? result : (utf8 = new String(data, Util.UTF_8));
+  }
+
+  /** Constructs a new {@code String} by decoding the bytes using {@code charset}. */
+  public String string(Charset charset) {
+    if (charset == null) throw new IllegalArgumentException("charset == null");
+    return new String(data, charset);
   }
 
   /**
