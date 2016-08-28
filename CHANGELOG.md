@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+## Version 1.10.0
+
+_2016-08-28_
+
+ * Fix: Support reading files larger than 2 GiB with `GzipSource`. Previously
+   attempting to decompress such files would fail due to an overflow when
+   validating the total length.
+ * Fix: Exit the watchdog thread after being idle for 60 seconds. This should
+   make it possible for class unloaders to fully unload Okio.
+ * New: `Okio.blackhole()` returns a sink where all bytes written are discarded.
+   This is Okio's equivalent of `/dev/null`.
+ * New: Encode a string with any charset using `ByteString.encodeString()` and
+   decode strings in any charset using `ByteString.string()`. Most applications
+   should prefer `ByteString.encodeUtf8()` and `ByteString.utf8()` unless it's
+   necessary to support a legacy charset.
+ * New: `GzipSink.deflater()` makes it possible to configure the compression
+   level.
+
+
 ## Version 1.9.0
 
 _2016-07-01_
