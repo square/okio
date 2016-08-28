@@ -18,6 +18,7 @@ package okio;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -245,6 +246,73 @@ public final class ByteStringTest {
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(Util.UTF_8));
     assertTrue(byteString.equals(ByteString.of(bronzeHorseman.getBytes(Util.UTF_8))));
     assertEquals(byteString.utf8(), bronzeHorseman);
+  }
+
+  @Test public void encodeNullCharset() throws Exception {
+    try {
+      ByteString.encodeString("hello", null);
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void encodeNullString() throws Exception {
+    try {
+      ByteString.encodeString(null, Charset.forName("UTF-8"));
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void decodeNullCharset() throws Exception {
+    try {
+      ByteString.of().string(null);
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void encodeDecodeStringUtf8() throws Exception {
+    Charset utf8 = Charset.forName("UTF-8");
+    ByteString byteString = ByteString.encodeString(bronzeHorseman, utf8);
+    assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(utf8));
+    assertEquals(byteString, ByteString.decodeHex("d09dd0b020d0b1d0b5d180d0b5d0b3d18320d0bfd183d181"
+        + "d182d18bd0bdd0bdd18bd18520d0b2d0bed0bbd0bd"));
+    assertEquals(bronzeHorseman, byteString.string(utf8));
+  }
+
+  @Test public void encodeDecodeStringUtf16be() throws Exception {
+    Charset utf16be = Charset.forName("UTF-16BE");
+    ByteString byteString = ByteString.encodeString(bronzeHorseman, utf16be);
+    assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(utf16be));
+    assertEquals(byteString, ByteString.decodeHex("041d043000200431043504400435043304430020043f0443"
+        + "04410442044b043d043d044b044500200432043e043b043d"));
+    assertEquals(bronzeHorseman, byteString.string(utf16be));
+  }
+
+  @Test public void encodeDecodeStringUtf32be() throws Exception {
+    Charset utf32be = Charset.forName("UTF-32BE");
+    ByteString byteString = ByteString.encodeString(bronzeHorseman, utf32be);
+    assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(utf32be));
+    assertEquals(byteString, ByteString.decodeHex("0000041d0000043000000020000004310000043500000440"
+        + "000004350000043300000443000000200000043f0000044300000441000004420000044b0000043d0000043d"
+        + "0000044b0000044500000020000004320000043e0000043b0000043d"));
+    assertEquals(bronzeHorseman, byteString.string(utf32be));
+  }
+
+  @Test public void encodeDecodeStringAsciiIsLossy() throws Exception {
+    Charset ascii = Charset.forName("US-ASCII");
+    ByteString byteString = ByteString.encodeString(bronzeHorseman, ascii);
+    assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(ascii));
+    assertEquals(byteString,
+        ByteString.decodeHex("3f3f203f3f3f3f3f3f203f3f3f3f3f3f3f3f3f203f3f3f3f"));
+    assertEquals("?? ?????? ????????? ????", byteString.string(ascii));
+  }
+
+  @Test public void decodeMalformedStringReturnsReplacementCharacter() throws Exception {
+    Charset utf16be = Charset.forName("UTF-16BE");
+    String string = ByteString.decodeHex("04").string(utf16be);
+    assertEquals("\ufffd", string);
   }
 
   @Test public void testHashCode() throws Exception {

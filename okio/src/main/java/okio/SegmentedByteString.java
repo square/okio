@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import static okio.Util.arrayRangeEquals;
@@ -89,6 +90,10 @@ final class SegmentedByteString extends ByteString {
     return toByteString().utf8();
   }
 
+  @Override public String string(Charset charset) {
+    return toByteString().string(charset);
+  }
+
   @Override public String base64() {
     return toByteString().base64();
   }
@@ -107,6 +112,10 @@ final class SegmentedByteString extends ByteString {
 
   @Override public ByteString md5() {
     return toByteString().md5();
+  }
+
+  @Override public ByteString sha1() {
+    return toByteString().sha1();
   }
 
   @Override public ByteString sha256() {
