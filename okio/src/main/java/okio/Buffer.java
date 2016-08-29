@@ -958,7 +958,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
           "endIndex > string.length: " + endIndex + " > " + string.length());
     }
     if (charset == null) throw new IllegalArgumentException("charset == null");
-    if (charset.equals(Util.UTF_8)) return writeUtf8(string);
+    if (charset.equals(Util.UTF_8)) return writeUtf8(string, beginIndex, endIndex);
     byte[] data = string.substring(beginIndex, endIndex).getBytes(charset);
     return write(data, 0, data.length);
   }

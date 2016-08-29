@@ -187,6 +187,12 @@ public final class BufferedSinkTest {
     assertEquals(ByteString.decodeHex("00000072000000610000006e00000259"), data.readByteString());
   }
 
+  @Test public void writeUtf8SubstringWithCharset() throws IOException {
+    sink.writeString("təˈranəˌsôr", 3, 7, Charset.forName("utf-8"));
+    sink.flush();
+    assertEquals(ByteString.encodeUtf8("ranə"), data.readByteString());
+  }
+
   @Test public void writeAll() throws Exception {
     Buffer source = new Buffer().writeUtf8("abcdef");
 
