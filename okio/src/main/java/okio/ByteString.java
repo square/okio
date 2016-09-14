@@ -82,6 +82,14 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return new ByteString(copy);
   }
 
+  public static ByteString of(ByteBuffer data) {
+    if (data == null) throw new IllegalArgumentException("data == null");
+
+    byte[] copy = new byte[data.remaining()];
+    data.get(copy);
+    return new ByteString(copy);
+  }
+
   /** Returns a new byte string containing the {@code UTF-8} bytes of {@code s}. */
   public static ByteString encodeUtf8(String s) {
     if (s == null) throw new IllegalArgumentException("s == null");
