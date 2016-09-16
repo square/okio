@@ -65,18 +65,41 @@ public final class ByteStringTest {
       }
     };
 
+    Factory ONE_BYTE_PER_SEGMENT = new Factory() {
+      @Override public ByteString decodeHex(String hex) {
+        return makeSegments(ByteString.decodeHex(hex));
+      }
+
+      @Override public ByteString encodeUtf8(String s) {
+        return makeSegments(ByteString.encodeUtf8(s));
+      }
+
+      private ByteString makeSegments(ByteString source) {
+        Buffer buffer = new Buffer();
+        for (int i = 0; i < source.size(); i++) {
+          Segment segment = buffer.writableSegment(Segment.SIZE);
+          segment.data[segment.pos] = source.getByte(i);
+          segment.limit++;
+          buffer.size++;
+        }
+        return buffer.snapshot();
+      }
+    };
+
     ByteString decodeHex(String hex);
     ByteString encodeUtf8(String s);
   }
 
-  @Parameters(name = "{0}")
+  @Parameters(name = "{1}")
   public static List<Object[]> parameters() {
     return Arrays.asList(
-        new Object[] { Factory.BYTE_STRING },
-        new Object[] { Factory.SEGMENTED_BYTE_STRING });
+        new Object[] { Factory.BYTE_STRING, "ByteString" },
+        new Object[] { Factory.SEGMENTED_BYTE_STRING, "SegmentedByteString" },
+        new Object[] { Factory.ONE_BYTE_PER_SEGMENT, "SegmentedByteString (one-at-a-time)" });
   }
 
-  @Parameter public Factory factory;
+  @Parameter(0) public Factory factory;
+  @Parameter(1) public String name;
 
   @Test public void ofCopyRange() {
     byte[] bytes = "Hello, World!".getBytes(Util.UTF_8);
@@ -93,7 +116,7 @@ public final class ByteStringTest {
   }
 
   @Test public void getByteOutOfBounds() throws Exception {
-    ByteString byteString = ByteString.decodeHex("ab12");
+    ByteString byteString = factory.decodeHex("ab12");
     try {
       byteString.getByte(2);
       fail();
@@ -393,10 +416,46 @@ public final class ByteStringTest {
     }
   }
 
-  @Test public void write() throws Exception {
+  @Test public void writeOutputStream() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    ByteString.decodeHex("616263").write(out);
+    factory.decodeHex("616263").write(out);
     assertByteArraysEquals(new byte[] { 0x61, 0x62, 0x63 }, out.toByteArray());
+  }
+
+  @Test public void writeByteArray() {
+    byte[] b = new byte[3];
+    factory.decodeHex("616263").write(b, 1, 2);
+    assertByteArraysEquals(new byte[] { 0x00, 0x61, 0x62 }, b);
+  }
+
+  @Test public void writeByteArrayBadArguments() {
+    byte[] b = new byte[3];
+    ByteString byteString = factory.decodeHex("616263");
+    try {
+      byteString.write(null, 0, 3);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+    try {
+      byteString.write(b, -1, 3);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+    try {
+      byteString.write(b, 4, 3);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+    try {
+      byteString.write(b, 0, -1);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+    try {
+      byteString.write(b, 0, 4);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
   }
 
   @Test public void encodeBase64() {

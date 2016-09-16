@@ -170,6 +170,20 @@ final class SegmentedByteString extends ByteString {
     return ByteBuffer.wrap(toByteArray()).asReadOnlyBuffer();
   }
 
+  @Override public void write(byte[] b, int offset, int byteCount) {
+    checkOffsetAndCount(size(), offset, byteCount);
+    int segmentOffset = 0;
+    for (int s = 0, segmentCount = segments.length; byteCount > 0; s++) {
+      int segmentPos = directory[segmentCount + s];
+      int nextSegmentOffset = directory[s];
+      int count = Math.min(byteCount, nextSegmentOffset - segmentOffset);
+      System.arraycopy(segments[s], segmentPos, b, offset, count);
+      segmentOffset = nextSegmentOffset;
+      offset += count;
+      byteCount -= count;
+    }
+  }
+
   @Override public void write(OutputStream out) throws IOException {
     if (out == null) throw new IllegalArgumentException("out == null");
     int segmentOffset = 0;

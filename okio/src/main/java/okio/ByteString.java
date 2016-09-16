@@ -322,6 +322,12 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return ByteBuffer.wrap(data).asReadOnlyBuffer();
   }
 
+  /** Writes the contents of this byte string to {@code b}. */
+  public void write(byte[] b, int offset, int byteCount) {
+    checkOffsetAndCount(data.length, offset, byteCount);
+    System.arraycopy(data, 0, b, offset, byteCount);
+  }
+
   /** Writes the contents of this byte string to {@code out}. */
   public void write(OutputStream out) throws IOException {
     if (out == null) throw new IllegalArgumentException("out == null");
