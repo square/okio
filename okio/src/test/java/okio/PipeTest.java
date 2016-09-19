@@ -145,7 +145,7 @@ public final class PipeTest {
    * 2000: writer writes 'ghi', blocks
    * 3000: reader reads 'ghi', sleeps until 4000
    * 3000: writer writes 'jkl', returns
-   * 24000: reader reads 'jkl', returns
+   * 4000: reader reads 'jkl', returns
    *
    * Because the writer is writing to a buffer, it finishes before the reader does.
    */
