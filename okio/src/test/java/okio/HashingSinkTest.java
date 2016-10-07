@@ -17,6 +17,9 @@ package okio;
 
 import org.junit.Test;
 
+import static okio.HashingTest.HMAC_KEY;
+import static okio.HashingTest.HMAC_SHA1_abc;
+import static okio.HashingTest.HMAC_SHA256_abc;
 import static okio.HashingTest.MD5_abc;
 import static okio.HashingTest.SHA1_abc;
 import static okio.HashingTest.SHA256_abc;
@@ -48,6 +51,20 @@ public final class HashingSinkTest {
     source.writeUtf8("abc");
     hashingSink.write(source, 3L);
     assertEquals(SHA256_abc, hashingSink.hash());
+  }
+
+  @Test public void hmacSha1() throws Exception {
+    HashingSink hashingSink = HashingSink.hmacSha1(sink, HMAC_KEY);
+    source.writeUtf8("abc");
+    hashingSink.write(source, 3L);
+    assertEquals(HMAC_SHA1_abc, hashingSink.hash());
+  }
+
+  @Test public void hmacSha256() throws Exception {
+    HashingSink hashingSink = HashingSink.hmacSha256(sink, HMAC_KEY);
+    source.writeUtf8("abc");
+    hashingSink.write(source, 3L);
+    assertEquals(HMAC_SHA256_abc, hashingSink.hash());
   }
 
   @Test public void multipleWrites() throws Exception {

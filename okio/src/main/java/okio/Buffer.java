@@ -20,11 +20,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 import static okio.Util.checkOffsetAndCount;
 import static okio.Util.reverseBytesLong;
@@ -1538,13 +1541,43 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   private ByteString digest(String algorithm) {
     try {
       MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
-      messageDigest.update(head.data, head.pos, head.limit - head.pos);
-      for (Segment s = head.next; s != head; s = s.next) {
-        messageDigest.update(s.data, s.pos, s.limit - s.pos);
+      if (head != null) {
+        messageDigest.update(head.data, head.pos, head.limit - head.pos);
+        for (Segment s = head.next; s != head; s = s.next) {
+          messageDigest.update(s.data, s.pos, s.limit - s.pos);
+        }
       }
       return ByteString.of(messageDigest.digest());
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError();
+    }
+  }
+
+  /** Returns the 160-bit SHA-1 HMAC of this buffer. */
+  public ByteString hmacSha1(ByteString key) {
+    return hmac("HmacSHA1", key);
+  }
+
+  /** Returns the 256-bit SHA-256 HMAC of this buffer. */
+  public ByteString hmacSha256(ByteString key) {
+    return hmac("HmacSHA256", key);
+  }
+
+  private ByteString hmac(String algorithm, ByteString key) {
+    try {
+      Mac mac = Mac.getInstance(algorithm);
+      mac.init(new SecretKeySpec(key.toByteArray(), algorithm));
+      if (head != null) {
+        mac.update(head.data, head.pos, head.limit - head.pos);
+        for (Segment s = head.next; s != head; s = s.next) {
+          mac.update(s.data, s.pos, s.limit - s.pos);
+        }
+      }
+      return ByteString.of(mac.doFinal());
+    } catch (NoSuchAlgorithmException e) {
+      throw new AssertionError();
+    } catch (InvalidKeyException e) {
+      throw new IllegalArgumentException(e);
     }
   }
 
