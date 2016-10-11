@@ -17,6 +17,9 @@ package okio;
 
 import org.junit.Test;
 
+import static okio.HashingTest.HMAC_KEY;
+import static okio.HashingTest.HMAC_SHA1_abc;
+import static okio.HashingTest.HMAC_SHA256_abc;
 import static okio.HashingTest.MD5_abc;
 import static okio.HashingTest.SHA1_abc;
 import static okio.HashingTest.SHA256_abc;
@@ -24,6 +27,7 @@ import static okio.HashingTest.SHA256_def;
 import static okio.HashingTest.SHA256_r32k;
 import static okio.HashingTest.r32k;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public final class HashingSourceTest {
   private final Buffer source = new Buffer();
@@ -48,6 +52,20 @@ public final class HashingSourceTest {
     source.writeUtf8("abc");
     assertEquals(3L, hashingSource.read(sink, Long.MAX_VALUE));
     assertEquals(SHA256_abc, hashingSource.hash());
+  }
+
+  @Test public void hmacSha1() throws Exception {
+    HashingSource hashingSource = HashingSource.hmacSha1(source, HMAC_KEY);
+    source.writeUtf8("abc");
+    assertEquals(3L, hashingSource.read(sink, Long.MAX_VALUE));
+    assertEquals(HMAC_SHA1_abc, hashingSource.hash());
+  }
+
+  @Test public void hmacSha256() throws Exception {
+    HashingSource hashingSource = HashingSource.hmacSha256(source, HMAC_KEY);
+    source.writeUtf8("abc");
+    assertEquals(3L, hashingSource.read(sink, Long.MAX_VALUE));
+    assertEquals(HMAC_SHA256_abc, hashingSource.hash());
   }
 
   @Test public void multipleReads() throws Exception {
@@ -86,5 +104,13 @@ public final class HashingSourceTest {
     sink.writeUtf8(TestUtil.repeat('z', Segment.SIZE * 2 - 1));
     assertEquals(r32k.size(), hashingSource.read(sink, Long.MAX_VALUE));
     assertEquals(SHA256_r32k, hashingSource.hash());
+  }
+
+  @Test public void hmacEmptyKey() throws Exception {
+    try {
+      HashingSource.hmacSha256(source, ByteString.EMPTY);
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
   }
 }

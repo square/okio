@@ -25,9 +25,12 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 import static okio.Util.arrayRangeEquals;
 import static okio.Util.checkOffsetAndCount;
@@ -147,6 +150,28 @@ public class ByteString implements Serializable, Comparable<ByteString> {
       return ByteString.of(MessageDigest.getInstance(algorithm).digest(data));
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError(e);
+    }
+  }
+
+  /** Returns the 160-bit SHA-1 HMAC of this byte string. */
+  public ByteString hmacSha1(ByteString key) {
+    return hmac("HmacSHA1", key);
+  }
+
+  /** Returns the 256-bit SHA-256 HMAC of this byte string. */
+  public ByteString hmacSha256(ByteString key) {
+    return hmac("HmacSHA256", key);
+  }
+
+  private ByteString hmac(String algorithm, ByteString key) {
+    try {
+      Mac mac = Mac.getInstance(algorithm);
+      mac.init(new SecretKeySpec(key.toByteArray(), algorithm));
+      return ByteString.of(mac.doFinal(data));
+    } catch (NoSuchAlgorithmException e) {
+      throw new AssertionError(e);
+    } catch (InvalidKeyException e) {
+      throw new IllegalArgumentException(e);
     }
   }
 

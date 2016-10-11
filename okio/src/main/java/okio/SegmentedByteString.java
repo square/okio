@@ -122,6 +122,14 @@ final class SegmentedByteString extends ByteString {
     return toByteString().sha256();
   }
 
+  @Override public ByteString hmacSha1(ByteString key) {
+    return toByteString().hmacSha1(key);
+  }
+
+  @Override public ByteString hmacSha256(ByteString key) {
+    return toByteString().hmacSha256(key);
+  }
+
   @Override public String base64Url() {
     return toByteString().base64Url();
   }

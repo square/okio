@@ -16,8 +16,11 @@
 package okio;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * A source that computes a hash of the full stream of bytes it has supplied. To use, create an
@@ -37,6 +40,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public final class HashingSource extends ForwardingSource {
   private final MessageDigest messageDigest;
+  private final Mac mac;
 
   /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
   public static HashingSource md5(Source source) {
@@ -53,12 +57,36 @@ public final class HashingSource extends ForwardingSource {
     return new HashingSource(source, "SHA-256");
   }
 
+  /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
+  public static HashingSource hmacSha1(Source source, ByteString key) {
+    return new HashingSource(source, key, "HmacSHA1");
+  }
+
+  /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
+  public static HashingSource hmacSha256(Source source, ByteString key) {
+    return new HashingSource(source, key, "HmacSHA256");
+  }
+
   private HashingSource(Source source, String algorithm) {
     super(source);
     try {
       this.messageDigest = MessageDigest.getInstance(algorithm);
+      this.mac = null;
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError();
+    }
+  }
+
+  private HashingSource(Source source, ByteString key, String algorithm) {
+    super(source);
+    try {
+      this.mac = Mac.getInstance(algorithm);
+      this.mac.init(new SecretKeySpec(key.toByteArray(), algorithm));
+      this.messageDigest = null;
+    } catch (NoSuchAlgorithmException e) {
+      throw new AssertionError();
+    } catch (InvalidKeyException e) {
+      throw new IllegalArgumentException(e);
     }
   }
 
@@ -79,7 +107,11 @@ public final class HashingSource extends ForwardingSource {
       // Hash that segment and all the rest until the end.
       while (offset < sink.size) {
         int pos = (int) (s.pos + start - offset);
-        messageDigest.update(s.data, pos, s.limit - pos);
+        if (messageDigest != null) {
+          messageDigest.update(s.data, pos, s.limit - pos);
+        } else {
+          mac.update(s.data, pos, s.limit - pos);
+        }
         offset += (s.limit - s.pos);
         start = offset;
         s = s.next;
@@ -96,7 +128,7 @@ public final class HashingSource extends ForwardingSource {
    * internal state is cleared. This starts a new hash with zero bytes supplied.
    */
   public ByteString hash() {
-    byte[] result = messageDigest.digest();
+    byte[] result = messageDigest != null ? messageDigest.digest() : mac.doFinal();
     return ByteString.of(result);
   }
 }
