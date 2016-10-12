@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+## Version 1.11.0
+
+_2016-10-11_
+
+ * **Fix: The four-argument overload of `Buffer.writeString()` had a major bug
+   where it didn't respect offsets if the specified charset was UTF-8.** This
+   was because our short-circuit optimization omitted necessary offset
+   parameters.
+ * New: HMAC support in `HashingSource`, `HashingSink`, `ByteString`, and
+   `Buffer`. This makes it easy to create a keyed-hash message authentication
+   code (HMAC) wherever your data is. Unlike the other hashes, HMAC uses a
+   `ByteString` secret key for authentication.
+ * New: `ByteString.of(ByteBuffer)` makes it easier to mix NIO with Okio.
+
+
 ## Version 1.10.0
 
 _2016-08-28_
