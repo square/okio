@@ -57,7 +57,7 @@ public class AsyncTimeout extends Timeout {
    * node to time out, or null if the queue is empty. The head is null until the watchdog thread is
    * started and also after being idle for {@link #IDLE_TIMEOUT_MILLIS}.
    */
-  private static AsyncTimeout head;
+  static AsyncTimeout head;
 
   /** True if this node is currently in the queue. */
   private boolean inQueue;
