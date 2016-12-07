@@ -394,12 +394,12 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return rangeEquals(0, prefix, 0, prefix.length);
   }
 
-  public final boolean endsWith(ByteString prefix) {
-    return rangeEquals(size() - prefix.size(), prefix, 0, prefix.size());
+  public final boolean endsWith(ByteString suffix) {
+    return rangeEquals(size() - suffix.size(), suffix, 0, suffix.size());
   }
 
-  public final boolean endsWith(byte[] prefix) {
-    return rangeEquals(size() - prefix.length, prefix, 0, prefix.length);
+  public final boolean endsWith(byte[] suffix) {
+    return rangeEquals(size() - suffix.length, suffix, 0, suffix.length);
   }
 
   public final int indexOf(ByteString other) {
