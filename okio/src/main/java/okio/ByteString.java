@@ -145,6 +145,11 @@ public class ByteString implements Serializable, Comparable<ByteString> {
     return digest("SHA-256");
   }
 
+  /** Returns the 512-bit SHA-512 hash of this byte string. */
+  public ByteString sha512() {
+    return digest("SHA-512");
+  }
+
   private ByteString digest(String algorithm) {
     try {
       return ByteString.of(MessageDigest.getInstance(algorithm).digest(data));
@@ -161,6 +166,11 @@ public class ByteString implements Serializable, Comparable<ByteString> {
   /** Returns the 256-bit SHA-256 HMAC of this byte string. */
   public ByteString hmacSha256(ByteString key) {
     return hmac("HmacSHA256", key);
+  }
+
+  /** Returns the 512-bit SHA-512 HMAC of this byte string. */
+  public ByteString hmacSha512(ByteString key) {
+    return hmac("HmacSHA512", key);
   }
 
   private ByteString hmac(String algorithm, ByteString key) {

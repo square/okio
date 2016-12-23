@@ -20,12 +20,14 @@ import org.junit.Test;
 import static okio.HashingTest.HMAC_KEY;
 import static okio.HashingTest.HMAC_SHA1_abc;
 import static okio.HashingTest.HMAC_SHA256_abc;
+import static okio.HashingTest.HMAC_SHA512_abc;
 import static okio.HashingTest.MD5_abc;
 import static okio.HashingTest.SHA1_abc;
 import static okio.HashingTest.SHA256_abc;
 import static okio.HashingTest.SHA256_def;
 import static okio.HashingTest.SHA256_r32k;
 import static okio.HashingTest.r32k;
+import static okio.HashingTest.SHA512_abc;
 import static org.junit.Assert.assertEquals;
 
 public final class HashingSinkTest {
@@ -53,6 +55,13 @@ public final class HashingSinkTest {
     assertEquals(SHA256_abc, hashingSink.hash());
   }
 
+  @Test public void sha512() throws Exception {
+    HashingSink hashingSink = HashingSink.sha512(sink);
+    source.writeUtf8("abc");
+    hashingSink.write(source, 3L);
+    assertEquals(SHA512_abc, hashingSink.hash());
+  }
+
   @Test public void hmacSha1() throws Exception {
     HashingSink hashingSink = HashingSink.hmacSha1(sink, HMAC_KEY);
     source.writeUtf8("abc");
@@ -65,6 +74,13 @@ public final class HashingSinkTest {
     source.writeUtf8("abc");
     hashingSink.write(source, 3L);
     assertEquals(HMAC_SHA256_abc, hashingSink.hash());
+  }
+
+  @Test public void hmacSha512() throws Exception {
+    HashingSink hashingSink = HashingSink.hmacSha512(sink, HMAC_KEY);
+    source.writeUtf8("abc");
+    hashingSink.write(source, 3L);
+    assertEquals(HMAC_SHA512_abc, hashingSink.hash());
   }
 
   @Test public void multipleWrites() throws Exception {

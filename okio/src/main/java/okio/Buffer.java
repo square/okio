@@ -1538,6 +1538,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return digest("SHA-256");
   }
 
+  /** Returns the 512-bit SHA-512 hash of this buffer. */
+  public ByteString sha512() {
+      return digest("SHA-512");
+  }
+
   private ByteString digest(String algorithm) {
     try {
       MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
@@ -1561,6 +1566,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   /** Returns the 256-bit SHA-256 HMAC of this buffer. */
   public ByteString hmacSha256(ByteString key) {
     return hmac("HmacSHA256", key);
+  }
+
+  /** Returns the 512-bit SHA-512 HMAC of this buffer. */
+  public ByteString hmacSha512(ByteString key) {
+      return hmac("HmacSHA512", key);
   }
 
   private ByteString hmac(String algorithm, ByteString key) {

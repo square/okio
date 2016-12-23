@@ -59,6 +59,11 @@ public final class HashingSink extends ForwardingSink {
     return new HashingSink(sink, "SHA-256");
   }
 
+  /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
+  public static HashingSink sha512(Sink sink) {
+    return new HashingSink(sink, "SHA-512");
+  }
+
   /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
   public static HashingSink hmacSha1(Sink sink, ByteString key) {
     return new HashingSink(sink, key, "HmacSHA1");
@@ -67,6 +72,11 @@ public final class HashingSink extends ForwardingSink {
   /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
   public static HashingSink hmacSha256(Sink sink, ByteString key) {
     return new HashingSink(sink, key, "HmacSHA256");
+  }
+
+  /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
+  public static HashingSink hmacSha512(Sink sink, ByteString key) {
+    return new HashingSink(sink, key, "HmacSHA512");
   }
 
   private HashingSink(Sink sink, String algorithm) {
