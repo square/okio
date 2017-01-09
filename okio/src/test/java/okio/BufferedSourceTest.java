@@ -468,10 +468,75 @@ public final class BufferedSourceTest {
     assertEquals(-1, source.indexOf((byte) 'e'));
   }
 
-  @Test public void indexOfByteWithOffset() throws IOException {
+  @Test public void indexOfByteWithStartOffset() throws IOException {
     sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
     assertEquals(-1, source.indexOf((byte) 'a', 1));
     assertEquals(15, source.indexOf((byte) 'b', 15));
+  }
+
+  @Test public void indexOfByteWithBothOffsets() throws IOException {
+    byte a = (byte) 'a';
+    byte c = (byte) 'c';
+
+    int size;
+    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
+      // Larger segment sizes for ONE_BYTE_AT_A_TIME
+      // cause Travis to kill the test.
+      size =  Segment.SIZE + 10;
+    } else {
+      size = Segment.SIZE * 5;
+    }
+
+    byte[] bytes = new byte[size];
+    Arrays.fill(bytes, a);
+
+    // These are tricky places where the buffer
+    // starts, ends, or segments come together.
+    int[] points = {
+        0,                       1,                   2,
+        Segment.SIZE - 1,        Segment.SIZE,        Segment.SIZE + 1,
+        size / 2 - 1,            size / 2,            size / 2 + 1,
+        size - Segment.SIZE - 1, size - Segment.SIZE, size - Segment.SIZE + 1,
+        size - 3,                size - 2,            size - 1
+    };
+
+    // In each iteration, we write c to the known point and then search for it using different
+    // windows. Some of the windows don't overlap with c's position, and therefore a match shouldn't
+    // be found.
+    for (int p : points) {
+      bytes[p] = c;
+      sink.write(bytes);
+
+      assertEquals( p, source.indexOf(c, 0,      size     ));
+      assertEquals( p, source.indexOf(c, 0,      p + 1    ));
+      assertEquals( p, source.indexOf(c, p,      size     ));
+      assertEquals( p, source.indexOf(c, p,      p + 1    ));
+      assertEquals( p, source.indexOf(c, p / 2,  p * 2 + 1));
+      assertEquals(-1, source.indexOf(c, 0,      p / 2    ));
+      assertEquals(-1, source.indexOf(c, 0,      p        ));
+      assertEquals(-1, source.indexOf(c, 0,      0        ));
+      assertEquals(-1, source.indexOf(c, p,      p        ));
+
+      // Reset.
+      source.readUtf8();
+      bytes[p] = a;
+    }
+  }
+
+  @Test public void indexOfByteInvalidBoundsThrows() throws IOException {
+    sink.writeUtf8("abc");
+
+    try {
+      source.indexOf((byte) 'a', -1);
+      fail("Expected failure: fromIndex < 0");
+    } catch (IllegalArgumentException expected) {
+    }
+
+    try {
+      source.indexOf((byte) 'a', 10, 0);
+      fail("Expected failure: fromIndex > toIndex");
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
   @Test public void indexOfByteString() throws IOException {
