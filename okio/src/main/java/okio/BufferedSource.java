@@ -392,6 +392,30 @@ public interface BufferedSource extends Source {
   String readUtf8LineStrict() throws IOException;
 
   /**
+   * Like {@link #readUtf8LineStrict()}, but this allows the caller to specify a maximum number of
+   * bytes to scan. If {@code limit} bytes are scanned without finding a line break, then an {@link
+   * java.io.EOFException} is thrown. A common use case is protecting against input that doesn't
+   * include {@code "\n"} or {@code "\r\n"}.
+   *
+   * <p>This method is safe. No bytes are discarded if the match fails, and the caller is free
+   * to try another match: <pre>{@code
+   *
+   *   Buffer buffer = new Buffer();
+   *   buffer.writeUtf8("12345\r\n");
+   *
+   *   // This will throw! A newline character (\n) must be read within the limit.
+   *   buffer.readUtf8LineStrict(5);
+   *
+   *   // No bytes have been consumed so the caller can retry.
+   *   assertEquals("12345", buffer.readUtf8LineStrict(100));
+   * }</pre>
+   *
+   * <p>The returned string be up to {@code limit - 1} UTF-8 bytes. If {@code limit == 0} this will
+   * always throw an {@code EOFException} because no bytes will be scanned.
+   */
+  String readUtf8LineStrict(long limit) throws IOException;
+
+  /**
    * Removes and returns a single UTF-8 code point, reading between 1 and 4 bytes as necessary.
    *
    * <p>If this source is exhausted before a complete code point can be read, this throws an {@link
@@ -432,6 +456,16 @@ public interface BufferedSource extends Source {
    * }</pre>
    */
   long indexOf(byte b, long fromIndex) throws IOException;
+
+  /**
+   * Returns the index of {@code b} if it is found in the range of {@code fromIndex} inclusive
+   * to {@code toIndex} exclusive. If {@code b} isn't found, or if {@code fromIndex == toIndex},
+   * then -1 is returned.
+   *
+   * <p>The scan terminates at either {@code toIndex} or the end of the buffer, whichever comes
+   * first. The maximum number of bytes scanned is {@code toIndex-fromIndex}.
+   */
+  long indexOf(byte b, long fromIndex, long toIndex) throws IOException;
 
   /** Equivalent to {@link #indexOf(ByteString, long) indexOf(bytes, 0)}. */
   long indexOf(ByteString bytes) throws IOException;

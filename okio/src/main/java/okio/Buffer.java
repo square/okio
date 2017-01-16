@@ -642,11 +642,16 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public String readUtf8LineStrict() throws EOFException {
-    long newline = indexOf((byte) '\n');
+    return readUtf8LineStrict(Long.MAX_VALUE);
+  }
+
+  @Override public String readUtf8LineStrict(long limit) throws EOFException {
+    if (limit < 0) throw new IllegalArgumentException("limit < 0: " + limit);
+    long newline = indexOf((byte) '\n', 0, limit);
     if (newline == -1) {
       Buffer data = new Buffer();
       copyTo(data, 0, Math.min(32, size));
-      throw new EOFException("\\n not found: size=" + size()
+      throw new EOFException("\\n not found: scanLength=" + Math.min(size(), limit)
           + " content=" + data.readByteString().hex() + "…");
     }
     return readUtf8Line(newline);
@@ -1263,7 +1268,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public long indexOf(byte b) {
-    return indexOf(b, 0);
+    return indexOf(b, 0, Long.MAX_VALUE);
   }
 
   /**
@@ -1271,7 +1276,17 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
    * -1 if this buffer does not contain {@code b} in that range.
    */
   @Override public long indexOf(byte b, long fromIndex) {
-    if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
+    return indexOf(b, fromIndex, Long.MAX_VALUE);
+  }
+
+  @Override public long indexOf(byte b, long fromIndex, long toIndex) {
+    if (fromIndex < 0 || toIndex < fromIndex) {
+      throw new IllegalArgumentException(
+          String.format("size=%s fromIndex=%s toIndex=%s", size, fromIndex, toIndex));
+    }
+
+    if (toIndex > size) toIndex = size;
+    if (fromIndex == toIndex) return -1L;
 
     Segment s;
     long offset;
@@ -1301,9 +1316,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     }
 
     // Scan through the segments, searching for b.
-    while (offset < size) {
+    while (offset < toIndex) {
       byte[] data = s.data;
-      for (int pos = (int) (s.pos + fromIndex - offset), limit = s.limit; pos < limit; pos++) {
+      int limit = (int) Math.min(s.limit, s.pos + toIndex - offset);
+      int pos = (int) (s.pos + fromIndex - offset);
+      for (; pos < limit; pos++) {
         if (data[pos] == b) {
           return pos - s.pos + offset;
         }

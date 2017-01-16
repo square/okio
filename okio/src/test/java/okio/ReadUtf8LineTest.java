@@ -90,7 +90,35 @@ public final class ReadUtf8LineTest {
       source.readUtf8LineStrict();
       fail();
     } catch (EOFException expected) {
-      assertEquals("\\n not found: size=0 content=…", expected.getMessage());
+      assertEquals("\\n not found: scanLength=0 content=…", expected.getMessage());
+    }
+  }
+
+  @Test public void readUtf8LineStrictWithLimits() throws IOException {
+    data.writeUtf8("abc\ndef\r\nghi\n");
+    assertEquals("abc", source.readUtf8LineStrict(10));
+    assertEquals("def", source.readUtf8LineStrict(10));
+
+    try {
+      source.readUtf8LineStrict(3);
+      fail("Expected failure: maxRead must include \\n");
+    } catch (EOFException expected) {
+      assertEquals("\\n not found: scanLength=3 content=6768690a…", expected.getMessage());
+    }
+
+    // No bytes should be consumed after a failed match.
+    assertEquals("ghi", source.readUtf8LineStrict(10));
+  }
+
+  @Test public void readUtf8LineStrictNonPositive() throws IOException {
+    try {
+      source.readUtf8LineStrict(0);
+    } catch (EOFException expected) {
+    }
+    try {
+      source.readUtf8LineStrict(-1);
+      fail("Expected failure: limit must be positive");
+    } catch (IllegalArgumentException expected) {
     }
   }
 
@@ -100,7 +128,7 @@ public final class ReadUtf8LineTest {
       source.readUtf8LineStrict();
       fail();
     } catch (EOFException expected) {
-      assertEquals("\\n not found: size=33 content=616161616161616162626262626262626363636363636363"
+      assertEquals("\\n not found: scanLength=33 content=616161616161616162626262626262626363636363636363"
           + "6464646464646464…", expected.getMessage());
     }
   }

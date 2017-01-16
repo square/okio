@@ -207,11 +207,16 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public String readUtf8LineStrict() throws IOException {
-    long newline = indexOf((byte) '\n');
+    return readUtf8LineStrict(Long.MAX_VALUE);
+  }
+
+  @Override public String readUtf8LineStrict(long limit) throws IOException {
+    if (limit < 0) throw new IllegalArgumentException("limit < 0: " + limit);
+    long newline = indexOf((byte) '\n', 0, limit);
     if (newline == -1L) {
       Buffer data = new Buffer();
       buffer.copyTo(data, 0, Math.min(32, buffer.size()));
-      throw new EOFException("\\n not found: size=" + buffer.size()
+      throw new EOFException("\\n not found: scanLength=" + Math.min(buffer.size(), limit)
           + " content=" + data.readByteString().hex() + "…");
     }
     return buffer.readUtf8Line(newline);
@@ -311,14 +316,22 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public long indexOf(byte b) throws IOException {
-    return indexOf(b, 0);
+    return indexOf(b, 0, Long.MAX_VALUE);
   }
 
   @Override public long indexOf(byte b, long fromIndex) throws IOException {
-    if (closed) throw new IllegalStateException("closed");
+    return indexOf(b, fromIndex, Long.MAX_VALUE);
+  }
 
-    while (true) {
-      long result = buffer.indexOf(b, fromIndex);
+  @Override public long indexOf(byte b, long fromIndex, long toIndex) throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    if (fromIndex < 0 || toIndex < fromIndex) {
+      throw new IllegalArgumentException(
+          String.format("fromIndex=%s toIndex=%s", fromIndex, toIndex));
+    }
+
+    while (fromIndex < toIndex) {
+      long result = buffer.indexOf(b, fromIndex, toIndex);
       if (result != -1) return result;
 
       long lastBufferSize = buffer.size;
@@ -327,6 +340,7 @@ final class RealBufferedSource implements BufferedSource {
       // Keep searching, picking up from where we left off.
       fromIndex = Math.max(fromIndex, lastBufferSize);
     }
+    return -1L;
   }
 
   @Override public long indexOf(ByteString bytes) throws IOException {
