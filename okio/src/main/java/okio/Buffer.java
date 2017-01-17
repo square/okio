@@ -647,14 +647,17 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   @Override public String readUtf8LineStrict(long limit) throws EOFException {
     if (limit < 0) throw new IllegalArgumentException("limit < 0: " + limit);
-    long newline = indexOf((byte) '\n', 0, limit);
-    if (newline == -1) {
-      Buffer data = new Buffer();
-      copyTo(data, 0, Math.min(32, size));
-      throw new EOFException("\\n not found: scanLength=" + Math.min(size(), limit)
-          + " content=" + data.readByteString().hex() + "…");
+    long scanLength = limit == Long.MAX_VALUE ? Long.MAX_VALUE : limit + 1;
+    long newline = indexOf((byte) '\n', 0, scanLength);
+    if (newline != -1) return readUtf8Line(newline);
+    if (scanLength < size()
+        && getByte(scanLength - 1) == '\r' && getByte(scanLength) == '\n') {
+      return readUtf8Line(scanLength); // The line was 'limit' UTF-8 bytes followed by \r\n.
     }
-    return readUtf8Line(newline);
+    Buffer data = new Buffer();
+    copyTo(data, 0, Math.min(32, size()));
+    throw new EOFException("\\n not found: limit=" + Math.min(size(), limit)
+        + " content=" + data.readByteString().hex() + '…');
   }
 
   String readUtf8Line(long newline) throws EOFException {

@@ -392,10 +392,13 @@ public interface BufferedSource extends Source {
   String readUtf8LineStrict() throws IOException;
 
   /**
-   * Like {@link #readUtf8LineStrict()}, but this allows the caller to specify a maximum number of
-   * bytes to scan. If {@code limit} bytes are scanned without finding a line break, then an {@link
-   * java.io.EOFException} is thrown. A common use case is protecting against input that doesn't
-   * include {@code "\n"} or {@code "\r\n"}.
+   * Like {@link #readUtf8LineStrict()}, except this allows the caller to specify the longest
+   * allowed match. Use this to protect against streams that may not include
+   * {@code "\n"} or {@code "\r\n"}.
+   *
+   * <p>The returned string will have at most {@code limit} UTF-8 bytes, and the maximum number
+   * of bytes scanned is {@code limit + 2}. If {@code limit == 0} this will always throw
+   * an {@code EOFException} because no bytes will be scanned.
    *
    * <p>This method is safe. No bytes are discarded if the match fails, and the caller is free
    * to try another match: <pre>{@code
@@ -403,15 +406,12 @@ public interface BufferedSource extends Source {
    *   Buffer buffer = new Buffer();
    *   buffer.writeUtf8("12345\r\n");
    *
-   *   // This will throw! A newline character (\n) must be read within the limit.
-   *   buffer.readUtf8LineStrict(5);
+   *   // This will throw! There must be \r\n or \n at the limit or before it.
+   *   buffer.readUtf8LineStrict(4);
    *
    *   // No bytes have been consumed so the caller can retry.
-   *   assertEquals("12345", buffer.readUtf8LineStrict(100));
+   *   assertEquals("12345", buffer.readUtf8LineStrict(5));
    * }</pre>
-   *
-   * <p>The returned string be up to {@code limit - 1} UTF-8 bytes. If {@code limit == 0} this will
-   * always throw an {@code EOFException} because no bytes will be scanned.
    */
   String readUtf8LineStrict(long limit) throws IOException;
 
