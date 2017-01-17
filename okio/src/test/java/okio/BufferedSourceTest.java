@@ -475,18 +475,15 @@ public final class BufferedSourceTest {
   }
 
   @Test public void indexOfByteWithBothOffsets() throws IOException {
+    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
+      // When run on Travis, ONE_BYTE_AT_A_TIME
+      // causes out-of-memory errors.
+      return;
+    }
     byte a = (byte) 'a';
     byte c = (byte) 'c';
 
-    int size;
-    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
-      // Larger segment sizes for ONE_BYTE_AT_A_TIME
-      // cause Travis to kill the test.
-      size =  Segment.SIZE + 10;
-    } else {
-      size = Segment.SIZE * 5;
-    }
-
+    int size = Segment.SIZE * 5;
     byte[] bytes = new byte[size];
     Arrays.fill(bytes, a);
 
