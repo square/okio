@@ -78,6 +78,19 @@ public final class RealBufferedSourceTest {
     }
   }
 
+  @Test public void indexOfStopsReadingAtLimit() throws Exception {
+    Buffer buffer = new Buffer().writeUtf8("abcdef");
+    BufferedSource bufferedSource = new RealBufferedSource(new ForwardingSource(buffer) {
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
+        return super.read(sink, Math.min(1, byteCount));
+      }
+    });
+
+    assertEquals(6, buffer.size());
+    assertEquals(-1, bufferedSource.indexOf((byte) 'e', 0, 4));
+    assertEquals(2, buffer.size());
+  }
+
   @Test public void requireTracksBufferFirst() throws Exception {
     Buffer source = new Buffer();
     source.writeUtf8("bb");

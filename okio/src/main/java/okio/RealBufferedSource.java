@@ -212,14 +212,18 @@ final class RealBufferedSource implements BufferedSource {
 
   @Override public String readUtf8LineStrict(long limit) throws IOException {
     if (limit < 0) throw new IllegalArgumentException("limit < 0: " + limit);
-    long newline = indexOf((byte) '\n', 0, limit);
-    if (newline == -1L) {
-      Buffer data = new Buffer();
-      buffer.copyTo(data, 0, Math.min(32, buffer.size()));
-      throw new EOFException("\\n not found: scanLength=" + Math.min(buffer.size(), limit)
-          + " content=" + data.readByteString().hex() + "…");
+    long scanLength = limit == Long.MAX_VALUE ? Long.MAX_VALUE : limit + 1;
+    long newline = indexOf((byte) '\n', 0, scanLength);
+    if (newline != -1) return buffer.readUtf8Line(newline);
+    if (scanLength < Long.MAX_VALUE
+        && request(scanLength) && buffer.getByte(scanLength - 1) == '\r'
+        && request(scanLength + 1) && buffer.getByte(scanLength) == '\n') {
+      return buffer.readUtf8Line(scanLength); // The line was 'limit' UTF-8 bytes followed by \r\n.
     }
-    return buffer.readUtf8Line(newline);
+    Buffer data = new Buffer();
+    buffer.copyTo(data, 0, Math.min(32, buffer.size()));
+    throw new EOFException("\\n not found: limit=" + Math.min(buffer.size(), limit)
+        + " content=" + data.readByteString().hex() + '…');
   }
 
   @Override public int readUtf8CodePoint() throws IOException {
@@ -332,12 +336,14 @@ final class RealBufferedSource implements BufferedSource {
 
     while (fromIndex < toIndex) {
       long result = buffer.indexOf(b, fromIndex, toIndex);
-      if (result != -1) return result;
+      if (result != -1L) return result;
 
+      // The byte wasn't in the buffer. Give up if we've already reached our target size or if the
+      // underlying stream is exhausted.
       long lastBufferSize = buffer.size;
-      if (source.read(buffer, Segment.SIZE) == -1) return -1L;
+      if (lastBufferSize >= toIndex || source.read(buffer, Segment.SIZE) == -1) return -1L;
 
-      // Keep searching, picking up from where we left off.
+      // Continue the search from where we left off.
       fromIndex = Math.max(fromIndex, lastBufferSize);
     }
     return -1L;
