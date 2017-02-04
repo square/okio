@@ -381,6 +381,28 @@ public interface BufferedSource extends Source {
   String readUtf8Line() throws IOException;
 
   /**
+   * Like {@link #readUtf8Line()}, but allows the caller to specify the longest
+   * allowed match.
+   *
+   * <p>The returned string will have at most {@code limit} UTF-8 bytes, and the maximum number
+   * of bytes scanned is {@code limit + 2}. If {@code limit == 0} this will return an empty string.
+   * If the source is exhausted, this returns null.{@code
+   *
+   *   Buffer buffer = new Buffer()
+   *       .writeUtf8("Tell me a seven-digit number\r\n")
+   *       .writeUtf8("8675309");
+   *   assertEquals(37, buffer.size());
+   *
+   *   assertEquals("Tell me a seven-digit number", buffer.readUtf8Line(100));
+   *   assertEquals(7, buffer.size());
+   *
+   *   assertEquals("8675309", buffer.readUtf8Line(7));
+   *   assertEquals(0, buffer.size());
+   * }</pre>
+   */
+  String readUtf8Line(long limit) throws IOException;
+
+  /**
    * Removes and returns characters up to but not including the next line break. A line break is
    * either {@code "\n"} or {@code "\r\n"}; these characters are not included in the result.
    *
@@ -397,8 +419,7 @@ public interface BufferedSource extends Source {
    * {@code "\n"} or {@code "\r\n"}.
    *
    * <p>The returned string will have at most {@code limit} UTF-8 bytes, and the maximum number
-   * of bytes scanned is {@code limit + 2}. If {@code limit == 0} this will always throw
-   * an {@code EOFException} because no bytes will be scanned.
+   * of bytes scanned is {@code limit + 2}.
    *
    * <p>This method is safe. No bytes are discarded if the match fails, and the caller is free
    * to try another match: <pre>{@code

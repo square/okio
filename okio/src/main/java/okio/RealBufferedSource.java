@@ -197,33 +197,42 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public String readUtf8Line() throws IOException {
-    long newline = indexOf((byte) '\n');
-
-    if (newline == -1) {
-      return buffer.size != 0 ? readUtf8(buffer.size) : null;
-    }
-
-    return buffer.readUtf8Line(newline);
+    return readUtf8Line(Long.MAX_VALUE);
   }
 
   @Override public String readUtf8LineStrict() throws IOException {
     return readUtf8LineStrict(Long.MAX_VALUE);
   }
 
-  @Override public String readUtf8LineStrict(long limit) throws IOException {
-    if (limit < 0) throw new IllegalArgumentException("limit < 0: " + limit);
-    long scanLength = limit == Long.MAX_VALUE ? Long.MAX_VALUE : limit + 1;
-    long newline = indexOf((byte) '\n', 0, scanLength);
-    if (newline != -1) return buffer.readUtf8Line(newline);
-    if (scanLength < Long.MAX_VALUE
-        && request(scanLength) && buffer.getByte(scanLength - 1) == '\r'
-        && request(scanLength + 1) && buffer.getByte(scanLength) == '\n') {
-      return buffer.readUtf8Line(scanLength); // The line was 'limit' UTF-8 bytes followed by \r\n.
+  @Override public String readUtf8Line(long limit) throws IOException {
+    long newline = findNewline(limit);
+    if (newline == -1) {
+      return buffer.size != 0 ? readUtf8(Math.min(buffer.size, limit)) : null;
     }
+    return buffer.readUtf8AndTrimNewline(newline);
+  }
+
+  @Override public String readUtf8LineStrict(long limit) throws IOException {
+    long newline = findNewline(limit);
+    if (newline != -1) return buffer.readUtf8AndTrimNewline(newline);
     Buffer data = new Buffer();
     buffer.copyTo(data, 0, Math.min(32, buffer.size()));
     throw new EOFException("\\n not found: limit=" + Math.min(buffer.size(), limit)
         + " content=" + data.readByteString().hex() + '…');
+  }
+
+  /** Returns index of \n if it is within limit + 2 bytes, or -1 */
+  private long findNewline(long limit) throws IOException {
+    if (limit < 0) throw new IllegalArgumentException("limit < 0: " + limit);
+    long scanLength = limit == Long.MAX_VALUE ? Long.MAX_VALUE : limit + 1;
+    long newline = indexOf((byte) '\n', 0, scanLength);
+    if (newline != -1) return newline;
+    if (scanLength < Long.MAX_VALUE
+        && request(scanLength) && buffer.getByte(scanLength - 1) == '\r'
+        && request(scanLength + 1) && buffer.getByte(scanLength) == '\n') {
+      return scanLength; // The line was 'limit' UTF-8 bytes followed by \r\n.
+    }
+    return -1L;
   }
 
   @Override public int readUtf8CodePoint() throws IOException {
