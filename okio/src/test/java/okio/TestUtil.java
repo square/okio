@@ -89,6 +89,7 @@ final class TestUtil {
     return new String(array);
   }
 
+  @SuppressWarnings("SelfEquals")
   public static void assertEquivalent(ByteString b1, ByteString b2) {
     // Equals.
     assertTrue(b1.equals(b2));
@@ -125,6 +126,7 @@ final class TestUtil {
     }
   }
 
+  @SuppressWarnings("SelfEquals")
   public static void assertEquivalent(Buffer b1, Buffer b2) {
     // Equals.
     assertTrue(b1.equals(b2));
