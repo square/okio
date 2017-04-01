@@ -929,14 +929,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     } else if (codePoint < 0x10000) {
       if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
-        throw new IllegalArgumentException(
-            "Unexpected code point: " + Integer.toHexString(codePoint));
+        // Emit a replacement character for a partial surrogate.
+        writeByte('?');
+      } else {
+        // Emit a 16-bit code point with 3 bytes.
+        writeByte(codePoint >> 12        | 0xe0); // 1110xxxx
+        writeByte(codePoint >>  6 & 0x3f | 0x80); // 10xxxxxx
+        writeByte(codePoint       & 0x3f | 0x80); // 10xxxxxx
       }
-
-      // Emit a 16-bit code point with 3 bytes.
-      writeByte(codePoint >> 12        | 0xe0); // 1110xxxx
-      writeByte(codePoint >>  6 & 0x3f | 0x80); // 10xxxxxx
-      writeByte(codePoint       & 0x3f | 0x80); // 10xxxxxx
 
     } else if (codePoint <= 0x10ffff) {
       // Emit a 21-bit code point with 4 bytes.

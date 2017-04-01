@@ -162,19 +162,10 @@ public final class Utf8Test {
   }
 
   @Test public void writeSurrogateCodePoint() throws Exception {
-    Buffer buffer = new Buffer();
-    buffer.writeUtf8CodePoint(0xd7ff); // Below lowest surrogate is okay.
-    try {
-      buffer.writeUtf8CodePoint(0xd800); // Lowest surrogate throws.
-      fail();
-    } catch (IllegalArgumentException expected) {
-    }
-    try {
-      buffer.writeUtf8CodePoint(0xdfff); // Highest surrogate throws.
-      fail();
-    } catch (IllegalArgumentException expected) {
-    }
-    buffer.writeUtf8CodePoint(0xe000); // Above highest surrogate is okay.
+    assertStringEncoded("ed9fbf", "\ud7ff"); // Below lowest surrogate is okay.
+    assertStringEncoded("3f", "\ud800"); // Lowest surrogate gets '?'.
+    assertStringEncoded("3f", "\udfff"); // Highest surrogate gets '?'.
+    assertStringEncoded("ee8080", "\ue000"); // Above highest surrogate is okay.
   }
 
   @Test public void writeCodePointBeyondUnicodeMaximum() throws Exception {
@@ -218,5 +209,14 @@ public final class Utf8Test {
     // Confirm our implementation matches those expectations.
     ByteString actualUtf8 = new Buffer().writeUtf8(string).readByteString();
     assertEquals(expectedUtf8, actualUtf8);
+
+    // Confirm we are consistent when writing one code point at a time.
+    Buffer bufferUtf8 = new Buffer();
+    for (int i = 0; i < string.length(); ) {
+      int c = string.codePointAt(i);
+      bufferUtf8.writeUtf8CodePoint(c);
+      i += Character.charCount(c);
+    }
+    assertEquals(expectedUtf8, bufferUtf8.readByteString());
   }
 }
