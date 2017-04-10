@@ -843,7 +843,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   @Override public Buffer writeUtf8(String string, int beginIndex, int endIndex) {
     if (string == null) throw new IllegalArgumentException("string == null");
-    if (beginIndex < 0) throw new IllegalAccessError("beginIndex < 0: " + beginIndex);
+    if (beginIndex < 0) throw new IllegalArgumentException("beginIndex < 0: " + beginIndex);
     if (endIndex < beginIndex) {
       throw new IllegalArgumentException("endIndex < beginIndex: " + endIndex + " < " + beginIndex);
     }
