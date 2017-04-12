@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+## Version 1.12.0
+
+_2017-04-11_
+
+ * **Fix: Change Pipe's sink.flush() to not block.** Previously closing a pipe's
+   sink would block until the source had been exhausted. In practice this
+   blocked the caller for no benefit.
+ * **Fix: Change `writeUtf8CodePoint()` to emit `?` for partial surrogates.**
+   The previous behavior was inconsistent: given a malformed string with a
+   partial surrogate, `writeUtf8()` emitted `?` but `writeUtf8CodePoint()` threw
+   an `IllegalArgumentException`. Most applications will never encounter partial
+   surrogates, but for those that do this behavior was unexpected.
+ * New: Allow length of `readUtf8LineStrict()` to be limited.
+ * New: `Utf8.size()` method to get the number of bytes required to encode a
+   string as UTF-8. This may be useful for length-prefixed encodings.
+ * New: SHA-512 hash and HMAC APIs.
+
+
 ## Version 1.11.0
 
 _2016-10-11_
