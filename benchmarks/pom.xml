@@ -2,7 +2,7 @@
   <parent>
     <artifactId>okio-parent</artifactId>
     <groupId>com.squareup.okio</groupId>
-    <version>1.12.0</version>
+    <version>1.13.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
