@@ -19,7 +19,7 @@ package okio;
  * Okio assumes most applications use UTF-8 exclusively, and offers optimized implementations of
  * common operations on UTF-8 strings.
  *
- * <p><table border="1" cellspacing="0" cellspacing="3">
+ * <p><table border="1" cellspacing="0" cellpadding="3" summary="">
  * <tr>
  *   <th></th>
  *   <th>{@link ByteString}</th>
