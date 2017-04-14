@@ -632,35 +632,42 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public String readUtf8Line() throws EOFException {
-    long newline = indexOf((byte) '\n');
-
-    if (newline == -1) {
-      return size != 0 ? readUtf8(size) : null;
-    }
-
-    return readUtf8Line(newline);
+    return readUtf8Line(Long.MAX_VALUE);
   }
 
   @Override public String readUtf8LineStrict() throws EOFException {
     return readUtf8LineStrict(Long.MAX_VALUE);
   }
 
+  @Override public String readUtf8Line(long limit) throws EOFException {
+    if (size == 0) return null;
+    long newline = findNewline(limit);
+    return newline != -1 ? readUtf8AndTrimNewline(newline) : readUtf8(Math.min(size, limit));
+  }
+
   @Override public String readUtf8LineStrict(long limit) throws EOFException {
-    if (limit < 0) throw new IllegalArgumentException("limit < 0: " + limit);
-    long scanLength = limit == Long.MAX_VALUE ? Long.MAX_VALUE : limit + 1;
-    long newline = indexOf((byte) '\n', 0, scanLength);
-    if (newline != -1) return readUtf8Line(newline);
-    if (scanLength < size()
-        && getByte(scanLength - 1) == '\r' && getByte(scanLength) == '\n') {
-      return readUtf8Line(scanLength); // The line was 'limit' UTF-8 bytes followed by \r\n.
-    }
+    long newline = findNewline(limit);
+    if (newline != -1) return readUtf8AndTrimNewline(newline);
     Buffer data = new Buffer();
     copyTo(data, 0, Math.min(32, size()));
     throw new EOFException("\\n not found: limit=" + Math.min(size(), limit)
         + " content=" + data.readByteString().hex() + '…');
   }
 
-  String readUtf8Line(long newline) throws EOFException {
+  /** Returns index of \n if it is within limit + 2 bytes, or -1 */
+  private long findNewline(long limit) throws EOFException {
+    if (limit < 0) throw new IllegalArgumentException("limit < 0: " + limit);
+    long scanLength = limit == Long.MAX_VALUE ? Long.MAX_VALUE : limit + 1;
+    long newline = indexOf((byte) '\n', 0, scanLength);
+    if (newline != -1) return newline;
+    if (scanLength < size()
+        && getByte(scanLength - 1) == '\r' && getByte(scanLength) == '\n') {
+      return scanLength; // The line was 'limit' UTF-8 bytes followed by \r\n.
+    }
+    return -1L;
+  }
+
+  String readUtf8AndTrimNewline(long newline) throws EOFException {
     if (newline > 0 && getByte(newline - 1) == '\r') {
       // Read everything until '\r\n', then skip the '\r\n'.
       String result = readUtf8((newline - 1));

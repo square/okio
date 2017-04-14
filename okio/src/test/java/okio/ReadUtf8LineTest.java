@@ -194,6 +194,55 @@ public final class ReadUtf8LineTest {
     assertEquals("ghi\rjkl", source.readUtf8LineStrict());
   }
 
+  @Test public void readUtf8LineWithLimits() throws IOException {
+    for (int limit : new int[] {
+        5, 6, 7, 10000
+    }) {
+      data.writeUtf8("panda\r\n");
+      assertEquals("panda", source.readUtf8Line(limit));
+      assertTrue(data.exhausted());
+    }
+
+    // newline not within limit
+    for (String input : new String[] {
+        "panda", "panda\n", "panda\r\n",
+    }) {
+      data.writeUtf8(input);
+      assertEquals("p", source.readUtf8Line(1));
+      assertEquals("an", source.readUtf8Line(2));
+      assertEquals("da", source.readUtf8Line(2));
+      assertTrue(data.exhausted());
+    }
+
+    // Trim trailing newlines
+    for (String input : new String[] {
+        "panda", "panda\n", "panda\r\n",
+    }) {
+      data.writeUtf8(input);
+      assertEquals("panda", source.readUtf8Line(5));
+      assertTrue(data.exhausted());
+    }
+
+    // Trim preceeding newline when calling with limit = 0
+    for (String input : new String[] {
+        "panda", "\npanda", "\r\npanda",
+    }) {
+      data.writeUtf8(input);
+      assertEquals("", source.readUtf8Line(0));
+      assertEquals("panda", source.readUtf8Line(5));
+      assertTrue(data.exhausted());
+    }
+
+    // Trim preceeding newline when calling with limit = 0
+    for (String input : new String[] {
+        "\n", "\r\n",
+    }) {
+      data.writeUtf8(input);
+      assertEquals("", source.readUtf8Line(0));
+      assertTrue(data.exhausted());
+    }
+  }
+
   @Test public void bufferedReaderCompatible() throws IOException {
     data.writeUtf8("abc\ndef");
     assertEquals("abc", source.readUtf8Line());
