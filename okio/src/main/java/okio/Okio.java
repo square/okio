@@ -34,7 +34,13 @@ import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import static okio.Util.checkOffsetAndCount;
 
-/** Essential APIs for working with Okio. */
+/**
+ * Essential APIs for working with Okio.
+ * <p>
+ * Note: {@code InterruptedIOException} may be thrown during writes to sinks
+ * and reads from sources created with these methods, if the calling thread is
+ * interrupted before the operation completes.
+ **/
 public final class Okio {
   static final Logger logger = Logger.getLogger(Okio.class.getName());
 
