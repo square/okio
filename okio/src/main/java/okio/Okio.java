@@ -30,6 +30,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import static okio.Util.checkOffsetAndCount;
@@ -223,7 +224,7 @@ public final class Okio {
 
   private static AsyncTimeout timeout(final Socket socket) {
     return new AsyncTimeout() {
-      @Override protected IOException newTimeoutException(IOException cause) {
+      @Override protected IOException newTimeoutException(@Nullable IOException cause) {
         InterruptedIOException ioe = new SocketTimeoutException("timeout");
         if (cause != null) {
           ioe.initCause(cause);

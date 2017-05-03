@@ -29,6 +29,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -197,7 +198,7 @@ public class ByteString implements Serializable, Comparable<ByteString> {
    * Decodes the Base64-encoded bytes and returns their value as a byte string.
    * Returns null if {@code base64} is not a Base64-encoded sequence of bytes.
    */
-  public static ByteString decodeBase64(String base64) {
+  public static @Nullable ByteString decodeBase64(String base64) {
     if (base64 == null) throw new IllegalArgumentException("base64 == null");
     byte[] decoded = Base64.decode(base64);
     return decoded != null ? new ByteString(decoded) : null;

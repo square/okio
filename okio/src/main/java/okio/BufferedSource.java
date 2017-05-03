@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import javax.annotation.Nullable;
 
 /**
  * A source that keeps a buffer internally so that callers can do small reads without a performance
@@ -378,7 +379,7 @@ public interface BufferedSource extends Source {
    * break is assumed. Null is returned once the source is exhausted. Use this for human-generated
    * data, where a trailing line break is optional.
    */
-  String readUtf8Line() throws IOException;
+  @Nullable String readUtf8Line() throws IOException;
 
   /**
    * Removes and returns characters up to but not including the next line break. A line break is

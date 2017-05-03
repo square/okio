@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 import static okio.Util.checkOffsetAndCount;
 
@@ -57,13 +58,13 @@ public class AsyncTimeout extends Timeout {
    * node to time out, or null if the queue is empty. The head is null until the watchdog thread is
    * started and also after being idle for {@link #IDLE_TIMEOUT_MILLIS}.
    */
-  static AsyncTimeout head;
+  static @Nullable AsyncTimeout head;
 
   /** True if this node is currently in the queue. */
   private boolean inQueue;
 
   /** The next node in the linked list. */
-  private AsyncTimeout next;
+  private @Nullable AsyncTimeout next;
 
   /** If scheduled, this is the time that the watchdog should time this out. */
   private long timeoutAt;
@@ -289,7 +290,7 @@ public class AsyncTimeout extends Timeout {
    * java.io.InterruptedIOException}. If {@code cause} is non-null it is set as the cause of the
    * returned exception.
    */
-  protected IOException newTimeoutException(IOException cause) {
+  protected IOException newTimeoutException(@Nullable IOException cause) {
     InterruptedIOException e = new InterruptedIOException("timeout");
     if (cause != null) {
       e.initCause(cause);
@@ -336,7 +337,7 @@ public class AsyncTimeout extends Timeout {
    * new node was inserted while waiting. Otherwise this returns the node being waited on that has
    * been removed.
    */
-  static AsyncTimeout awaitTimeout() throws InterruptedException {
+  static @Nullable AsyncTimeout awaitTimeout() throws InterruptedException {
     // Get the next eligible node.
     AsyncTimeout node = head.next;
 

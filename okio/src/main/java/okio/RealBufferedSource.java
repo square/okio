@@ -19,6 +19,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import javax.annotation.Nullable;
 
 import static okio.Util.checkOffsetAndCount;
 
@@ -196,7 +197,7 @@ final class RealBufferedSource implements BufferedSource {
     return buffer.readString(byteCount, charset);
   }
 
-  @Override public String readUtf8Line() throws IOException {
+  @Override public @Nullable String readUtf8Line() throws IOException {
     long newline = indexOf((byte) '\n');
 
     if (newline == -1) {

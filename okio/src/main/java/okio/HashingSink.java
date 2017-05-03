@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -41,8 +42,8 @@ import static okio.Util.checkOffsetAndCount;
  * }</pre>
  */
 public final class HashingSink extends ForwardingSink {
-  private final MessageDigest messageDigest;
-  private final Mac mac;
+  private final @Nullable MessageDigest messageDigest;
+  private final @Nullable Mac mac;
 
   /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
   public static HashingSink md5(Sink sink) {
