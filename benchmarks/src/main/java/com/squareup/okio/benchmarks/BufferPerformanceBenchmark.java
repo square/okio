@@ -236,7 +236,7 @@ public class BufferPerformanceBenchmark {
   }
 
   @State(Scope.Thread)
-  public static abstract class BufferSetup extends BufferState {
+  public abstract static class BufferSetup extends BufferState {
     BufferPerformanceBenchmark bench;
 
     public BufferedSource receive(byte[] bytes) throws IOException {

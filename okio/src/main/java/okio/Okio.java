@@ -200,13 +200,15 @@ public final class Okio {
         source.skip(byteCount);
       }
 
-      @Override public void flush() throws IOException {}
+      @Override public void flush() throws IOException {
+      }
 
       @Override public Timeout timeout() {
         return Timeout.NONE;
       }
 
-      @Override public void close() throws IOException {}
+      @Override public void close() throws IOException {
+      }
     };
   }
 

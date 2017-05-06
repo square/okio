@@ -17,7 +17,6 @@ package okio;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
 
 /**

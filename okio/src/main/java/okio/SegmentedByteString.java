@@ -50,8 +50,8 @@ import static okio.Util.checkOffsetAndCount;
  * binary search. We use one array rather than two for the directory as a micro-optimization.
  */
 final class SegmentedByteString extends ByteString {
-  transient final byte[][] segments;
-  transient final int[] directory;
+  final transient byte[][] segments;
+  final transient int[] directory;
 
   SegmentedByteString(Buffer buffer, int byteCount) {
     super(null);
