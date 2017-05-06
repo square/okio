@@ -1479,7 +1479,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return rangeEquals(offset, bytes, 0, bytes.size());
   }
 
-  @Override public boolean rangeEquals(long offset, ByteString bytes, int bytesOffset, int byteCount) {
+  @Override public boolean rangeEquals(
+      long offset, ByteString bytes, int bytesOffset, int byteCount) {
     if (offset < 0
         || bytesOffset < 0
         || byteCount < 0

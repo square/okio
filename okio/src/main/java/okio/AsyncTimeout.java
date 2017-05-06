@@ -299,7 +299,7 @@ public class AsyncTimeout extends Timeout {
   }
 
   private static final class Watchdog extends Thread {
-    public Watchdog() {
+    Watchdog() {
       super("Okio Watchdog");
       setDaemon(true);
     }
