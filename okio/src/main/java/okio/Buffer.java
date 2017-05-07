@@ -64,6 +64,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return size;
   }
 
+  /** True if there are no bytes currently in this buffer. */
+  public boolean isEmpty() {
+    return size == 0;
+  }
+
   @Override public Buffer buffer() {
     return this;
   }
