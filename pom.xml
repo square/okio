@@ -19,6 +19,7 @@
 
   <modules>
     <module>okio</module>
+    <module>okio-behavior</module>
     <module>benchmarks</module>
   </modules>
 
@@ -31,7 +32,8 @@
     <jmh.version>1.4.1</jmh.version>
 
     <!-- Test Dependencies -->
-    <junit.version>4.11</junit.version>
+    <junit.version>4.12</junit.version>
+    <mockito.version>1.10.8</mockito.version>
   </properties>
 
   <scm>
@@ -65,6 +67,11 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.mojo</groupId>
