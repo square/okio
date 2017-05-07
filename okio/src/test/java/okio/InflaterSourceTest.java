@@ -17,7 +17,6 @@ package okio;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import org.junit.Test;
@@ -33,6 +32,11 @@ public final class InflaterSourceTest {
         + "tYDAF6CD5s=");
     Buffer inflated = inflate(deflated);
     assertEquals("God help us, we're in the hands of engineers.", inflated.readUtf8());
+  }
+
+  @Test public void inflateEmpty() throws IOException {
+    Source source = new InflaterSource(new Buffer(), new Inflater());
+    assertEquals(-1, source.read(new Buffer(), 1));
   }
 
   @Test public void inflateTruncated() throws Exception {

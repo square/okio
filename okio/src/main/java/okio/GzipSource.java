@@ -68,6 +68,10 @@ public final class GzipSource implements Source {
     if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     if (byteCount == 0) return 0;
 
+    if (source.exhausted()) {
+      return -1;
+    }
+
     // If we haven't consumed the header, we must consume it before anything else.
     if (section == SECTION_HEADER) {
       consumeHeader();

@@ -58,6 +58,10 @@ public final class InflaterSource implements Source {
     if (closed) throw new IllegalStateException("closed");
     if (byteCount == 0) return 0;
 
+    if (source.exhausted()) {
+      return -1;
+    }
+
     while (true) {
       boolean sourceExhausted = refill();
 
