@@ -1,7 +1,7 @@
 Okio
 ====
 
-Okio is a new library that complements `java.io` and `java.nio` to make it much
+Okio is a library that complements `java.io` and `java.nio` to make it much
 easier to access, store, and process your data.
 
 ByteStrings and Buffers
