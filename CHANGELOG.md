@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+## Version 1.13.0
+
+_2017-05-12_
+
+ * **Okio now uses `@Nullable` to annotate all possibly-null values.** We've
+   added a compile-time dependency on the JSR 305 annotations. This is a
+   [provided][maven_provided] dependency and does not need to be included in
+   your build configuration, `.jar` file, or `.apk`. We use
+   `@ParametersAreNonnullByDefault` and all parameters and return types are
+   never null unless explicitly annotated `@Nullable`.
+
+ * **Warning: this release is source-incompatible for Kotlin users.**
+   Nullability was previously ambiguous and lenient but now the compiler will
+   enforce strict null checks.
+
+
 ## Version 1.12.0
 
 _2017-04-11_
@@ -247,3 +263,6 @@ _2014-04-08_
 
  * Initial public release.
  * Imported from OkHttp.
+
+
+ [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
