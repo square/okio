@@ -25,6 +25,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -33,9 +36,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.assertEquivalent;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -483,6 +488,30 @@ public final class ByteStringTest {
     assertEquals("\u0000\u0000\u0000", ByteString.decodeBase64(" AA A\r\nA ").utf8());
     assertEquals("\u0000\u0000\u0000", ByteString.decodeBase64("A    AAA").utf8());
     assertEquals("", ByteString.decodeBase64("    ").utf8());
+  }
+
+  @Test
+  public void decodeBase64Github() {
+    assertThat(Base64.decode(
+            "MIIFSzCCBDOgAwIBAgIQDXBCOWMCxia8htXPzVA77zANBgkqhkiG9w0BAQsFADBwMQswCQYDVQQGEwJVUzEVMBMGA1UECh" +
+            "MMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMS8wLQYDVQQDEyZEaWdpQ2VydCBTSEEyIEhpZ2ggQXNzdX" +
+            "JhbmNlIFNlcnZlciBDQTAeFw0xNDA0MDgwMDAwMDBaFw0xNzA0MTIxMjAwMDBaMGgxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYW" +
+            "xpZm9ybmlhMRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMRUwEwYDVQQKEwxHaXRIdWIsIEluYy4xFTATBgNVBAMMDCouZ2l0aHViLm" +
+            "NvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAN7p2kz/Al3iu4vkThCP+Cv5//FkkMMisICBjIu0FctWdnQZ4TG7m6W" +
+            "MLdf/Ty+mLV/hEkV5mwYmI8vc/RZrr5L4sYddmgpXJ/GcFmneMeO7oOpB5FTrmDNwOdYA2vJUi4T4T0k+9a7HCu/2dq5jZDSsfffs" +
+            "1WCbbX2SR2kyafq3WpLiaoDnruMgfg6wg2PMoOXNGa1aASARrD1KjV424cV0frGAwbKCd7EbIKYmM9mdf1bxmUwPlVvS5f3jzmpUU" +
+            "RvVuJWET86R0JLUeQRjiYZ9MY+MEF4w24PzD6H6aJaLaDFOqQ8LCz7U7vffOo/7WgrcBgIrowotvmsEveE8rtkkCAwEAAaOCAecwgg" +
+            "HjMB8GA1UdIwQYMBaAFFFo/5CvAgd1PMzZZWRiohK4WXI7MB0GA1UdDgQWBBQeW60hetRWA5FotQYl9ZfjSXoMKjAjBgNVHREEHDAa" +
+            "ggwqLmdpdGh1Yi5jb22CCmdpdGh1Yi5jb20wDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjB1Bg" +
+            "NVHR8EbjBsMDSgMqAwhi5odHRwOi8vY3JsMy5kaWdpY2VydC5jb20vc2hhMi1oYS1zZXJ2ZXItZzEuY3JsMDSgMqAwhi5odHRwOi8v" +
+            "Y3JsNC5kaWdpY2VydC5jb20vc2hhMi1oYS1zZXJ2ZXItZzEuY3JsMEIGA1UdIAQ7MDkwNwYJYIZIAYb9bAEBMCowKAYIKwYBBQUHAg" +
+            "EWHGh0dHBzOi8vd3d3LmRpZ2ljZXJ0LmNvbS9DUFMwgYMGCCsGAQUFBwEBBHcwdTAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGln" +
+            "aWNlcnQuY29tME0GCCsGAQUFBzAChkFodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNlcnRTSEEySGlnaEFzc3VyYW5jZV" +
+            "NlcnZlckNBLmNydDAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBCwUAA4IBAQAX2PZ9vGZArhpwyg15ZCSCyLc7iqkW/lHj3q3jr+oQ" +
+            "6ZlUu6QL/gUsB5jfXUvUoLukXB/HCCdd41rbM7s+gLWFKaaPpcdL0dZLmcT2R8vjz3VdsDSsIoFce/9Abt1OzjnhoSqulEAyCbQcgy" +
+            "WdjIcbrC7++8xHUTztNEMQVsxL9clgXiZ7HCyhqKHVsrhlWoCXgJQfCqcEPdeq7svwiWXO76V5u52s15vM9ziivHxYEAhB9MWD2vI9" +
+            "ThKxRhiVqHtKA+DZBEFl12A0kKgRc3oCNHf/fwp/ShRoIwvZAmoZ+WYb3xEm3Di81MB4OH2Bh1JCXj4yL0JvP2bD1pGDF/Pk"),
+            not(null));
   }
 
   @Test public void encodeHex() throws Exception {
