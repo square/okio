@@ -18,9 +18,18 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import javax.annotation.Nullable;
 
+import static okio.ByteOrderMark.BOM_UTF_16_BE;
+import static okio.ByteOrderMark.BOM_UTF_16_LE;
+import static okio.ByteOrderMark.BOM_UTF_32_BE;
+import static okio.ByteOrderMark.BOM_UTF_32_LE;
+import static okio.ByteOrderMark.BOM_UTF_8;
+import static okio.ByteOrderMark.getByteOrderMark;
+import static okio.Util.UTF_8;
 import static okio.Util.checkOffsetAndCount;
 
 final class RealBufferedSource implements BufferedSource {
@@ -449,6 +458,26 @@ final class RealBufferedSource implements BufferedSource {
     };
   }
 
+  @Override public Reader reader() {
+    return new BomAwareReader(
+        null, BOM_UTF_8, BOM_UTF_32_LE, BOM_UTF_32_BE, BOM_UTF_16_LE, BOM_UTF_16_BE);
+  }
+
+  @Override public Reader reader(Charset charset) {
+    if (charset == null) throw new IllegalArgumentException("charset == null");
+
+    String charsetName = charset.name();
+    if (charsetName.equals("UTF-8")) {
+      return new BomAwareReader(charset, BOM_UTF_8);
+    } else if (charsetName.startsWith("UTF-16")) {
+      return new BomAwareReader(charset, BOM_UTF_16_BE, BOM_UTF_16_LE);
+    } else if (charsetName.startsWith("UTF-32")) {
+      return new BomAwareReader(charset, BOM_UTF_32_BE, BOM_UTF_32_LE);
+    } else {
+      return new InputStreamReader(inputStream(), charset);
+    }
+  }
+
   @Override public void close() throws IOException {
     if (closed) return;
     closed = true;
@@ -462,5 +491,55 @@ final class RealBufferedSource implements BufferedSource {
 
   @Override public String toString() {
     return "buffer(" + source + ")";
+  }
+
+  final class BomAwareReader extends Reader {
+    final Charset suppliedCharset;
+    final ByteOrderMark[] byteOrderMarks;
+    private Reader delegate;
+
+    BomAwareReader(Charset charset, ByteOrderMark... byteOrderMarks) {
+      this.suppliedCharset = charset;
+      this.byteOrderMarks = byteOrderMarks;
+    }
+
+    @Override public int read(char[] data, int offset, int charCount) throws IOException {
+      if (delegate == null) {
+        if (closed) throw new IOException("closed");
+
+        // Make sure buffer holds all bytes of the BOM.
+        if (buffer.size() < ByteOrderMark.MAX_BOM_LENGTH) {
+          source.read(buffer, Segment.SIZE);
+        }
+
+        ByteOrderMark byteOrderMark = getByteOrderMark(buffer, byteOrderMarks);
+
+        Charset charset;
+        if (byteOrderMark != null) {
+          byteOrderMark.skip(buffer);
+          charset = byteOrderMark.charset;
+        } else {
+          charset = suppliedCharset == null ? UTF_8 : suppliedCharset;
+        }
+
+        delegate = new InputStreamReader(inputStream(), charset);
+      }
+
+      return delegate.read(data, offset, charCount);
+    }
+
+    @Override public void close() throws IOException {
+      if (delegate == null) {
+        RealBufferedSource.this.close();
+      } else {
+        delegate.close();
+      }
+    }
+
+    @Override public String toString() {
+      return suppliedCharset == null
+          ? RealBufferedSource.this + ".reader()"
+          : RealBufferedSource.this + ".reader(" + suppliedCharset + ")";
+    }
   }
 }
