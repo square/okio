@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Random;
@@ -197,5 +198,14 @@ final class TestUtil {
     }
 
     return result;
+  }
+
+  static String readerToString(Reader reader) throws IOException {
+    StringBuilder stringBuilder = new StringBuilder();
+    int read;
+    while ((read = reader.read()) != -1) {
+      stringBuilder.append((char) read);
+    }
+    return stringBuilder.toString();
   }
 }

@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import static okio.TestUtil.assertByteArrayEquals;
 import static okio.TestUtil.assertByteArraysEquals;
+import static okio.TestUtil.readerToString;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -1020,5 +1022,63 @@ public final class BufferedSourceTest {
     assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), 0, 2));
     // Bytes offset plus byte count longer than bytes length.
     assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), 1, 1));
+  }
+
+  @Test public void readerUtf8WithBom() throws Exception {
+    sink.write(ByteString.decodeHex("EFBBBF"));
+    sink.writeUtf8("utf8");
+
+    Reader reader = source.readerUtf8();
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf8", stringFromReader);
+  }
+
+  @Test public void readerUtf8() throws Exception {
+    sink.writeUtf8("no BOM present");
+
+    Reader reader = source.readerUtf8();
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("no BOM present", stringFromReader);
+  }
+
+  @Test public void readerWithUtf8CharsetAndBom() throws Exception {
+    sink.write(ByteString.decodeHex("EFBBBF"));
+    sink.writeUtf8("utf8");
+
+    Reader reader = source.reader(UTF_8);
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("utf8", stringFromReader);
+  }
+
+  @Test public void readerWithUtf8Charset() throws Exception {
+    sink.writeUtf8("no BOM present");
+
+    Reader reader = source.reader(UTF_8);
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("no BOM present", stringFromReader);
+  }
+
+  @Test public void readerUtf16() throws Exception {
+    sink.write(ByteString.decodeHex("FEFF"));
+    sink.writeString("UTF-16 🍩", Charset.forName("UTF-16BE"));
+
+    Reader reader = source.reader(Charset.forName("UTF-16"));
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("UTF-16 \uD83C\uDF69", stringFromReader);
+  }
+
+  @Test public void readerLatin1() throws Exception {
+    Charset latin1Charset = Charset.forName("ISO-8859-1");
+    sink.writeString("Übergrößenträger", latin1Charset);
+
+    Reader reader = source.reader(latin1Charset);
+    String stringFromReader = readerToString(reader);
+
+    assertEquals("Übergrößenträger", stringFromReader);
   }
 }

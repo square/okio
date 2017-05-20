@@ -17,6 +17,7 @@ package okio;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import javax.annotation.Nullable;
 
@@ -534,4 +535,10 @@ public interface BufferedSource extends Source {
 
   /** Returns an input stream that reads from this source. */
   InputStream inputStream();
+
+  /** Returns a Reader that decodes this source using the UTF-8 charset. */
+  Reader readerUtf8();
+
+  /** Returns a Reader that decodes this source using the supplied charset. */
+  Reader reader(Charset charset);
 }
