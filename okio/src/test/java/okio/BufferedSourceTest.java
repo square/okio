@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import static okio.TestUtil.assertByteArrayEquals;
 import static okio.TestUtil.assertByteArraysEquals;
+import static okio.TestUtil.assertCharArrayEquals;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -717,6 +719,57 @@ public final class BufferedSourceTest {
       in.read(new byte[100], 50, 51);
       fail();
     } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+  }
+
+  @Test public void reader() throws IOException {
+    sink.writeUtf8("abc");
+    Reader reader = source.reader();
+
+    char[] chars = { 'z', 'z', 'z' };
+    int read = reader.read(chars);
+    if (factory == Factory.ONE_BYTE_AT_A_TIME) {
+      assertEquals(1, read);
+      assertCharArrayEquals("azz", chars);
+
+      read = reader.read(chars);
+      assertEquals(1, read);
+      assertCharArrayEquals("bzz", chars);
+
+      read = reader.read(chars);
+      assertEquals(1, read);
+      assertCharArrayEquals("czz", chars);
+    } else {
+      assertEquals(3, read);
+      assertCharArrayEquals("abc", chars);
+    }
+
+    assertEquals(-1, reader.read());
+  }
+
+  @Test public void readerSkip() throws IOException {
+    sink.writeUtf8("abcde");
+    Reader reader = source.reader();
+    assertEquals(4, reader.skip(4));
+    assertEquals('e', reader.read());
+  }
+
+  @Test public void writerBounds() throws IOException {
+    sink.writeUtf8(repeat('a', 100));
+    Reader reader = source.reader();
+    try {
+      reader.read(new char[100], 50, 51);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+  }
+
+  @Test public void writerNullCharsetThrows() {
+    try {
+      sink.writer(null);
+      fail();
+    } catch (NullPointerException expected) {
+      assertEquals("charset == null", expected.getMessage());
     }
   }
 

@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.charset.Charset;
 
 final class RealBufferedSink implements BufferedSink {
@@ -206,6 +207,31 @@ final class RealBufferedSink implements BufferedSink {
 
       @Override public String toString() {
         return RealBufferedSink.this + ".outputStream()";
+      }
+    };
+  }
+
+  @Override public Writer writer() {
+    return writer(Util.UTF_8);
+  }
+
+  @Override public Writer writer(final Charset charset) {
+    if (charset == null) throw new NullPointerException("charset == null");
+    return new Writer() {
+      @Override public void write(char[] cbuf, int off, int len) throws IOException {
+        buffer.writeChars(charset, cbuf, off, len);
+      }
+
+      @Override public void flush() throws IOException {
+        RealBufferedSink.this.flush();
+      }
+
+      @Override public void close() throws IOException {
+        RealBufferedSink.this.close();
+      }
+
+      @Override public String toString() {
+        return RealBufferedSink.this + ".writer(" + charset.name() + ")";
       }
     };
   }

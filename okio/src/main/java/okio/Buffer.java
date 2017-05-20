@@ -19,6 +19,10 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -90,6 +94,45 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     };
   }
 
+  @Override public Writer writer() {
+    return writer(Util.UTF_8);
+  }
+
+  @Override public Writer writer(final Charset charset) {
+    if (charset == null) throw new NullPointerException("charset == null");
+    return new Writer() {
+      @Override public void write(char[] cbuf, int off, int len) throws IOException {
+        writeChars(charset, cbuf, off, len);
+      }
+
+      @Override public void flush() throws IOException {
+      }
+
+      @Override public void close() throws IOException {
+      }
+
+      @Override public String toString() {
+        return Buffer.this + ".writer(" + charset.name() + ")";
+      }
+    };
+  }
+
+  void writeChars(Charset charset, char[] cbuf, int off, int len) {
+    Util.checkOffsetAndCount(cbuf.length, off, len);
+
+    CharBuffer in = CharBuffer.wrap(cbuf, off, len);
+    ByteBuffer out = charset.encode(in);
+
+    while (out.remaining() > 0) {
+      Segment tail = writableSegment(1);
+
+      int toCopy = Math.min(out.remaining(), Segment.SIZE - tail.limit);
+      out.get(tail.data, tail.limit, toCopy);
+      tail.limit += toCopy;
+      size += toCopy;
+    }
+  }
+
   @Override public Buffer emitCompleteSegments() {
     return this; // Nowhere to emit to!
   }
@@ -132,6 +175,54 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
         return Buffer.this + ".inputStream()";
       }
     };
+  }
+
+  @Override public Reader reader() {
+    return reader(Util.UTF_8);
+  }
+
+  @Override public Reader reader(final Charset charset) {
+    if (charset == null) throw new NullPointerException("charset == null");
+    return new Reader() {
+      @Override public int read(char[] cbuf, int off, int len) throws IOException {
+        return readChars(charset, cbuf, off, len);
+      }
+
+      @Override public long skip(long n) throws IOException {
+        Buffer.this.skip(n);
+        return n;
+      }
+
+      @Override public void close() throws IOException {
+      }
+
+      @Override public String toString() {
+        return Buffer.this + ".writer(" + charset.name() + ")";
+      }
+    };
+  }
+
+  int readChars(Charset charset, char[] cbuf, int off, int len) {
+    Util.checkOffsetAndCount(cbuf.length, off, len);
+
+    Segment s = head;
+    if (s == null) return -1;
+    int toCopy = Math.min(len, s.limit - s.pos);
+
+    ByteBuffer in = ByteBuffer.wrap(s.data, s.pos, toCopy);
+    CharBuffer out = charset.decode(in);
+    int copiedChars = Math.min(len, out.length());
+    out.get(cbuf, off, copiedChars);
+
+    s.pos += toCopy;
+    size -= toCopy;
+
+    if (s.pos == s.limit) {
+      head = s.pop();
+      SegmentPool.recycle(s);
+    }
+
+    return copiedChars;
   }
 
   /** Copy the contents of this to {@code out}. */
