@@ -260,4 +260,14 @@ public final class Okio {
     return e.getCause() != null && e.getMessage() != null
         && e.getMessage().contains("getsockname failed");
   }
+
+  /**
+   * In order produce synthetic write timeouts we need a background (deamon) thread
+   * When running inside an application server, the lifespan of the JVM is longer than the application.
+   * This method can be used to stop the background thread.
+   */
+  public static void shutdownTimeoutThread() {
+      AsyncTimeout.shutdown();
+  }
+
 }
