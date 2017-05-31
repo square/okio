@@ -428,10 +428,46 @@ public final class ByteStringTest {
     }
   }
 
-  @Test public void write() throws Exception {
+  @Test public void writeOutputStream() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     factory.decodeHex("616263").write(out);
     assertByteArraysEquals(new byte[] { 0x61, 0x62, 0x63 }, out.toByteArray());
+  }
+
+  @Test public void writeByteArray() {
+    byte[] b = new byte[3];
+    factory.decodeHex("616263").write(b, 1, 2);
+    assertByteArraysEquals(new byte[] { 0x00, 0x61, 0x62 }, b);
+  }
+
+  @Test public void writeByteArrayBadArguments() {
+    byte[] b = new byte[3];
+    ByteString byteString = factory.decodeHex("616263");
+    try {
+      byteString.write(null, 0, 3);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+    try {
+      byteString.write(b, -1, 3);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+    try {
+      byteString.write(b, 4, 3);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+    try {
+      byteString.write(b, 0, -1);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
+    try {
+      byteString.write(b, 0, 4);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException expected) {
+    }
   }
 
   @Test public void encodeBase64() {
