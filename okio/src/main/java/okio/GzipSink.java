@@ -54,8 +54,12 @@ public final class GzipSink implements Sink {
   private final CRC32 crc = new CRC32();
 
   public GzipSink(Sink sink) {
+    this(sink, DEFAULT_COMPRESSION);
+  }
+
+  public GzipSink(Sink sink, int level) {
     if (sink == null) throw new IllegalArgumentException("sink == null");
-    this.deflater = new Deflater(DEFAULT_COMPRESSION, true /* No wrap */);
+    this.deflater = new Deflater(level, true /* No wrap */);
     this.sink = Okio.buffer(sink);
     this.deflaterSink = new DeflaterSink(this.sink, deflater);
 

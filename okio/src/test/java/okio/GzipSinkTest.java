@@ -16,6 +16,8 @@
 package okio;
 
 import java.io.IOException;
+import java.util.zip.Deflater;
+
 import org.junit.Test;
 
 import static okio.TestUtil.repeat;
@@ -28,7 +30,7 @@ public final class GzipSinkTest {
     String original = "It's a UNIX system! I know this!";
     data.writeUtf8(original);
     Buffer sink = new Buffer();
-    GzipSink gzipSink = new GzipSink(sink);
+    GzipSink gzipSink = new GzipSink(sink, Deflater.BEST_SPEED);
     gzipSink.write(data, data.size());
     gzipSink.close();
     Buffer inflated = gunzip(sink);
