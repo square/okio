@@ -114,11 +114,11 @@ public final class BufferTest {
     assertEquals(0, SegmentPool.byteCount);
 
     // Recycle MAX_SIZE segments. They're all in the pool.
-    buffer.readByteString(SegmentPool.MAX_SIZE);
+    buffer.skip(SegmentPool.MAX_SIZE);
     assertEquals(SegmentPool.MAX_SIZE, SegmentPool.byteCount);
 
     // Recycle MAX_SIZE more segments. The pool is full so they get garbage collected.
-    buffer.readByteString(SegmentPool.MAX_SIZE);
+    buffer.skip(SegmentPool.MAX_SIZE);
     assertEquals(SegmentPool.MAX_SIZE, SegmentPool.byteCount);
 
     // Take MAX_SIZE segments to drain the pool.
@@ -162,6 +162,24 @@ public final class BufferTest {
     assertEquals(expected.toString(), buffer.readUtf8(expected.length()));
     return segmentSizes;
   }
+
+  @Test public void largeByteStringReadWriteDoesNotCopy() throws Exception {
+    List<Integer> segmentsSizes = asList(Segment.SIZE/2 + 1, Segment.SIZE/2 + 2, Segment.SIZE/2 + 3);
+    ByteString string = makeBufferWithSegments(segmentsSizes).readByteString();
+    assertTrue("ByteString is segmented", string instanceof SegmentedByteString);
+    Buffer dst = new Buffer().write(string);
+    assertEquals(segmentsSizes, dst.segmentSizes());
+    assertTrue("destination Buffer shares segment with ByteString", ((SegmentedByteString) string).segments[0] == dst.head.data);
+  }
+
+  private Buffer makeBufferWithSegments(List<Integer> segmentsSizes) throws IOException {
+    char value = 'a';
+    Buffer buf = new Buffer(), tmp = new Buffer();
+    for (int size : segmentsSizes) buf.writeAll(tmp.writeUtf8(repeat(value++, size)));
+    assertEquals(segmentsSizes, buf.segmentSizes());
+    return buf;
+  }
+
 
   /** The big part of source's first segment is being moved. */
   @Test public void writeSplitSourceBufferLeft() throws Exception {

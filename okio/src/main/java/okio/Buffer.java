@@ -526,11 +526,26 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public ByteString readByteString() {
-    return new ByteString(readByteArray());
+    try {
+      return readByteString(size);
+    } catch (EOFException e) {
+      throw new AssertionError(e);
+    }
   }
 
   @Override public ByteString readByteString(long byteCount) throws EOFException {
-    return new ByteString(readByteArray(byteCount));
+    checkOffsetAndCount(size, 0, byteCount);
+    if (byteCount > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("byteCount > Integer.MAX_VALUE: " + byteCount);
+    }
+
+    if (byteCount < Segment.SHARE_MINIMUM) {
+      return new ByteString(readByteArray(byteCount));
+    } else {
+      ByteString string = snapshot((int) byteCount);
+      skip(byteCount);
+      return string;
+    }
   }
 
   @Override public int select(Options options) {
