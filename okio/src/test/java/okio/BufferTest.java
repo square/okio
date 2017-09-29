@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -164,20 +165,22 @@ public final class BufferTest {
   }
 
   @Test public void largeByteStringReadWriteDoesNotCopy() throws Exception {
-    List<Integer> segmentsSizes = asList(Segment.SIZE/2 + 1, Segment.SIZE/2 + 2, Segment.SIZE/2 + 3);
-    ByteString string = makeBufferWithSegments(segmentsSizes).readByteString();
+    Buffer src = new Buffer();
+    List<Integer> segmentsSizes = new ArrayList<>();
+    for (int i=0, total=0; total <= Buffer.READBYTESTRING_SEGMENT_THRESHOLD; i++) {
+      int size = Segment.SIZE/2 + i;
+      src.writeAll(new Buffer().writeUtf8(repeat((char) ('a' + i), size)));
+      segmentsSizes.add(size);
+      total += size;
+    }
+    assertEquals(segmentsSizes, src.segmentSizes());
+
+    ByteString string = src.readByteString();
     assertTrue("ByteString is segmented", string instanceof SegmentedByteString);
+
     Buffer dst = new Buffer().write(string);
     assertEquals(segmentsSizes, dst.segmentSizes());
     assertTrue("destination Buffer shares segment with ByteString", ((SegmentedByteString) string).segments[0] == dst.head.data);
-  }
-
-  private Buffer makeBufferWithSegments(List<Integer> segmentsSizes) throws IOException {
-    char value = 'a';
-    Buffer buf = new Buffer(), tmp = new Buffer();
-    for (int size : segmentsSizes) buf.writeAll(tmp.writeUtf8(repeat(value++, size)));
-    assertEquals(segmentsSizes, buf.segmentSizes());
-    return buf;
   }
 
 

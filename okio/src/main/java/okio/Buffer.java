@@ -53,6 +53,9 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
   static final int REPLACEMENT_CHARACTER = '\ufffd';
 
+  /** Above this size readByteString() will return a SegmentedByteString instead of copying. */
+  static final int READBYTESTRING_SEGMENT_THRESHOLD = Segment.SIZE * 5;
+
   @Nullable Segment head;
   long size;
 
@@ -539,13 +542,15 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       throw new IllegalArgumentException("byteCount > Integer.MAX_VALUE: " + byteCount);
     }
 
-    if (byteCount < Segment.SHARE_MINIMUM) {
+    // If the ByteString is fairly short, copying is faster
+    if (byteCount < READBYTESTRING_SEGMENT_THRESHOLD) {
       return new ByteString(readByteArray(byteCount));
-    } else {
-      ByteString string = snapshot((int) byteCount);
-      skip(byteCount);
-      return string;
     }
+
+    // Avoid copying For larger ByteStrings
+    ByteString string = snapshot((int) byteCount);
+    skip(byteCount);
+    return string;
   }
 
   @Override public int select(Options options) {
