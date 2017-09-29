@@ -176,11 +176,11 @@ public final class BufferTest {
     assertEquals(segmentsSizes, src.segmentSizes());
 
     ByteString string = src.readByteString();
-    assertTrue("ByteString is segmented", string instanceof SegmentedByteString);
+    assertTrue("ByteString should be segmented", string instanceof SegmentedByteString);
 
     Buffer dst = new Buffer().write(string);
     assertEquals(segmentsSizes, dst.segmentSizes());
-    assertTrue("destination Buffer shares segment with ByteString", ((SegmentedByteString) string).segments[0] == dst.head.data);
+    assertTrue("destination Buffer should share segment with ByteString", ((SegmentedByteString) string).segments[0] == dst.head.data);
   }
 
 
