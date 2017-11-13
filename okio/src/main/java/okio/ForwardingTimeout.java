@@ -17,6 +17,7 @@ package okio;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.CheckReturnValue;
 
 /** A {@link Timeout} which forwards calls to another. Useful for subclassing. */
 public class ForwardingTimeout extends Timeout {
@@ -28,7 +29,7 @@ public class ForwardingTimeout extends Timeout {
   }
 
   /** {@link Timeout} instance to which this instance is currently delegating. */
-  public final Timeout delegate() {
+  @CheckReturnValue public final Timeout delegate() {
     return delegate;
   }
 

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -41,6 +42,7 @@ import static okio.Util.checkOffsetAndCount;
  *   ByteString hash = hashingSink.hash();
  * }</pre>
  */
+@CheckReturnValue
 public final class HashingSink extends ForwardingSink {
   private final @Nullable MessageDigest messageDigest;
   private final @Nullable Mac mac;

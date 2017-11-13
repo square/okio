@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.CheckReturnValue;
 
 /**
  * A policy on how much time to spend on a task before giving up. When a task
@@ -85,12 +86,12 @@ public class Timeout {
   }
 
   /** Returns the timeout in nanoseconds, or {@code 0} for no timeout. */
-  public long timeoutNanos() {
+  @CheckReturnValue public long timeoutNanos() {
     return timeoutNanos;
   }
 
   /** Returns true if a deadline is enabled. */
-  public boolean hasDeadline() {
+  @CheckReturnValue public boolean hasDeadline() {
     return hasDeadline;
   }
 
@@ -100,7 +101,7 @@ public class Timeout {
    *
    * @throws IllegalStateException if no deadline is set.
    */
-  public long deadlineNanoTime() {
+  @CheckReturnValue public long deadlineNanoTime() {
     if (!hasDeadline) throw new IllegalStateException("No deadline");
     return deadlineNanoTime;
   }

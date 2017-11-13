@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
 import static okio.Util.checkOffsetAndCount;
@@ -156,7 +157,7 @@ public class AsyncTimeout extends Timeout {
    * Returns a new sink that delegates to {@code sink}, using this to implement timeouts. This works
    * best if {@link #timedOut} is overridden to interrupt {@code sink}'s current operation.
    */
-  public final Sink sink(final Sink sink) {
+  @CheckReturnValue public final Sink sink(final Sink sink) {
     return new Sink() {
       @Override public void write(Buffer source, long byteCount) throws IOException {
         checkOffsetAndCount(source.size, 0, byteCount);
@@ -228,7 +229,7 @@ public class AsyncTimeout extends Timeout {
    * Returns a new source that delegates to {@code source}, using this to implement timeouts. This
    * works best if {@link #timedOut} is overridden to interrupt {@code sink}'s current operation.
    */
-  public final Source source(final Source source) {
+  @CheckReturnValue public final Source source(final Source source) {
     return new Source() {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         boolean throwOnTimeout = false;

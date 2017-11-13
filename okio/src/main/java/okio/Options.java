@@ -17,8 +17,10 @@ package okio;
 
 import java.util.AbstractList;
 import java.util.RandomAccess;
+import javax.annotation.CheckReturnValue;
 
 /** An indexed set of values that may be read with {@link BufferedSource#select}. */
+@CheckReturnValue
 public final class Options extends AbstractList<ByteString> implements RandomAccess {
   final ByteString[] byteStrings;
 

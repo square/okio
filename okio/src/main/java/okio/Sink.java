@@ -18,6 +18,7 @@ package okio;
 import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
+import javax.annotation.CheckReturnValue;
 
 /**
  * Receives a stream of bytes. Use this interface to write data wherever it's
@@ -56,7 +57,7 @@ public interface Sink extends Closeable, Flushable {
   @Override void flush() throws IOException;
 
   /** Returns the timeout for this sink. */
-  Timeout timeout();
+  @CheckReturnValue Timeout timeout();
 
   /**
    * Pushes all buffered bytes to their final destination and releases the

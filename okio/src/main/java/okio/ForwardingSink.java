@@ -16,6 +16,7 @@
 package okio;
 
 import java.io.IOException;
+import javax.annotation.CheckReturnValue;
 
 /** A {@link Sink} which forwards calls to another. Useful for subclassing. */
 public abstract class ForwardingSink implements Sink {
@@ -27,7 +28,7 @@ public abstract class ForwardingSink implements Sink {
   }
 
   /** {@link Sink} to which this instance is delegating. */
-  public final Sink delegate() {
+  @CheckReturnValue public final Sink delegate() {
     return delegate;
   }
 

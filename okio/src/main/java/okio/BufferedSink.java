@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import javax.annotation.CheckReturnValue;
 
 /**
  * A sink that keeps a buffer internally so that callers can do small writes
@@ -25,7 +26,7 @@ import java.nio.charset.Charset;
  */
 public interface BufferedSink extends Sink {
   /** Returns this sink's internal buffer. */
-  Buffer buffer();
+  @CheckReturnValue Buffer buffer();
 
   BufferedSink write(ByteString byteString) throws IOException;
 
@@ -332,5 +333,5 @@ public interface BufferedSink extends Sink {
   BufferedSink emitCompleteSegments() throws IOException;
 
   /** Returns an output stream that writes to this sink. */
-  OutputStream outputStream();
+  @CheckReturnValue OutputStream outputStream();
 }

@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.util.zip.CRC32;
 import java.util.zip.Deflater;
+import javax.annotation.CheckReturnValue;
 
 import static java.util.zip.Deflater.DEFAULT_COMPRESSION;
 
@@ -35,6 +36,7 @@ import static java.util.zip.Deflater.DEFAULT_COMPRESSION;
  * This class does not offer any partial flush mechanism. For best performance,
  * only call {@link #flush} when application behavior requires it.
  */
+@CheckReturnValue
 public final class GzipSink implements Sink {
   /** Sink into which the GZIP format is written. */
   private final BufferedSink sink;

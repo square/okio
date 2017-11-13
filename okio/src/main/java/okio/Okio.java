@@ -30,12 +30,14 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import static okio.Util.checkOffsetAndCount;
 
 /** Essential APIs for working with Okio. */
+@CheckReturnValue
 public final class Okio {
   static final Logger logger = Logger.getLogger(Okio.class.getName());
 

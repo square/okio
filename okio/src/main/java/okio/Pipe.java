@@ -16,6 +16,7 @@
 package okio;
 
 import java.io.IOException;
+import javax.annotation.CheckReturnValue;
 
 /**
  * A source and a sink that are attached. The sink's output is the source's input. Typically each
@@ -33,6 +34,7 @@ import java.io.IOException;
  * been exhausted. At that point reads will return -1, indicating the end of the stream. But if the
  * source is closed first, writes to the sink will immediately fail with an {@link IOException}.
  */
+@CheckReturnValue
 public final class Pipe {
   final long maxBufferSize;
   final Buffer buffer = new Buffer();
