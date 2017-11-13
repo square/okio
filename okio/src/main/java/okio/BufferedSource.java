@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
 /**
@@ -27,13 +28,13 @@ import javax.annotation.Nullable;
  */
 public interface BufferedSource extends Source {
   /** Returns this source's internal buffer. */
-  Buffer buffer();
+  @CheckReturnValue Buffer buffer();
 
   /**
    * Returns true if there are no more bytes in this source. This will block until there are bytes
    * to read or the source is definitely exhausted.
    */
-  boolean exhausted() throws IOException;
+  @CheckReturnValue boolean exhausted() throws IOException;
 
   /**
    * Returns when the buffer contains at least {@code byteCount} bytes. Throws an
@@ -45,10 +46,10 @@ public interface BufferedSource extends Source {
    * Returns true when the buffer contains at least {@code byteCount} bytes, expanding it as
    * necessary. Returns false if the source is exhausted before the requested bytes can be read.
    */
-  boolean request(long byteCount) throws IOException;
+  @CheckReturnValue boolean request(long byteCount) throws IOException;
 
   /** Removes a byte from this source and returns it. */
-  byte readByte() throws IOException;
+  @CheckReturnValue byte readByte() throws IOException;
 
   /**
    * Removes two bytes from this source and returns a big-endian short. <pre>{@code
@@ -242,10 +243,10 @@ public interface BufferedSource extends Source {
   void skip(long byteCount) throws IOException;
 
   /** Removes all bytes bytes from this and returns them as a byte string. */
-  ByteString readByteString() throws IOException;
+  @CheckReturnValue ByteString readByteString() throws IOException;
 
   /** Removes {@code byteCount} bytes from this and returns them as a byte string. */
-  ByteString readByteString(long byteCount) throws IOException;
+  @CheckReturnValue ByteString readByteString(long byteCount) throws IOException;
 
   /**
    * Finds the first string in {@code options} that is a prefix of this buffer, consumes it from
@@ -272,19 +273,19 @@ public interface BufferedSource extends Source {
    *   assertEquals('\n', buffer.readByte());
    * }</pre>
    */
-  int select(Options options) throws IOException;
+  @CheckReturnValue int select(Options options) throws IOException;
 
   /** Removes all bytes from this and returns them as a byte array. */
-  byte[] readByteArray() throws IOException;
+  @CheckReturnValue byte[] readByteArray() throws IOException;
 
   /** Removes {@code byteCount} bytes from this and returns them as a byte array. */
-  byte[] readByteArray(long byteCount) throws IOException;
+  @CheckReturnValue byte[] readByteArray(long byteCount) throws IOException;
 
   /**
    * Removes up to {@code sink.length} bytes from this and copies them into {@code sink}. Returns
    * the number of bytes read, or -1 if this source is exhausted.
    */
-  int read(byte[] sink) throws IOException;
+  @CheckReturnValue int read(byte[] sink) throws IOException;
 
   /**
    * Removes exactly {@code sink.length} bytes from this and copies them into {@code sink}. Throws
@@ -296,7 +297,7 @@ public interface BufferedSource extends Source {
    * Removes up to {@code byteCount} bytes from this and copies them into {@code sink} at {@code
    * offset}. Returns the number of bytes read, or -1 if this source is exhausted.
    */
-  int read(byte[] sink, int offset, int byteCount) throws IOException;
+  @CheckReturnValue int read(byte[] sink, int offset, int byteCount) throws IOException;
 
   /**
    * Removes exactly {@code byteCount} bytes from this and appends them to {@code sink}. Throws an
@@ -326,7 +327,7 @@ public interface BufferedSource extends Source {
    *   assertEquals(0, buffer.size());
    * }</pre>
    */
-  String readUtf8() throws IOException;
+  @CheckReturnValue String readUtf8() throws IOException;
 
   /**
    * Removes {@code byteCount} bytes from this, decodes them as UTF-8, and returns the string.
@@ -348,7 +349,7 @@ public interface BufferedSource extends Source {
    *   assertEquals(0, buffer.size());
    * }</pre>
    */
-  String readUtf8(long byteCount) throws IOException;
+  @CheckReturnValue String readUtf8(long byteCount) throws IOException;
 
   /**
    * Removes and returns characters up to but not including the next line break. A line break is
@@ -431,16 +432,16 @@ public interface BufferedSource extends Source {
   int readUtf8CodePoint() throws IOException;
 
   /** Removes all bytes from this, decodes them as {@code charset}, and returns the string. */
-  String readString(Charset charset) throws IOException;
+  @CheckReturnValue String readString(Charset charset) throws IOException;
 
   /**
    * Removes {@code byteCount} bytes from this, decodes them as {@code charset}, and returns the
    * string.
    */
-  String readString(long byteCount, Charset charset) throws IOException;
+  @CheckReturnValue String readString(long byteCount, Charset charset) throws IOException;
 
   /** Equivalent to {@link #indexOf(byte, long) indexOf(b, 0)}. */
-  long indexOf(byte b) throws IOException;
+  @CheckReturnValue long indexOf(byte b) throws IOException;
 
   /**
    * Returns the index of the first {@code b} in the buffer at or after {@code fromIndex}. This
@@ -456,7 +457,7 @@ public interface BufferedSource extends Source {
    *   assertEquals(40, buffer.indexOf(m, 12));
    * }</pre>
    */
-  long indexOf(byte b, long fromIndex) throws IOException;
+  @CheckReturnValue long indexOf(byte b, long fromIndex) throws IOException;
 
   /**
    * Returns the index of {@code b} if it is found in the range of {@code fromIndex} inclusive
@@ -466,10 +467,10 @@ public interface BufferedSource extends Source {
    * <p>The scan terminates at either {@code toIndex} or the end of the buffer, whichever comes
    * first. The maximum number of bytes scanned is {@code toIndex-fromIndex}.
    */
-  long indexOf(byte b, long fromIndex, long toIndex) throws IOException;
+  @CheckReturnValue long indexOf(byte b, long fromIndex, long toIndex) throws IOException;
 
   /** Equivalent to {@link #indexOf(ByteString, long) indexOf(bytes, 0)}. */
-  long indexOf(ByteString bytes) throws IOException;
+  @CheckReturnValue long indexOf(ByteString bytes) throws IOException;
 
   /**
    * Returns the index of the first match for {@code bytes} in the buffer at or after {@code
@@ -486,10 +487,10 @@ public interface BufferedSource extends Source {
    *   assertEquals(40, buffer.indexOf(MOVE, 12));
    * }</pre>
    */
-  long indexOf(ByteString bytes, long fromIndex) throws IOException;
+  @CheckReturnValue long indexOf(ByteString bytes, long fromIndex) throws IOException;
 
   /** Equivalent to {@link #indexOfElement(ByteString, long) indexOfElement(targetBytes, 0)}. */
-  long indexOfElement(ByteString targetBytes) throws IOException;
+  @CheckReturnValue long indexOfElement(ByteString targetBytes) throws IOException;
 
   /**
    * Returns the first index in this buffer that is at or after {@code fromIndex} and that contains
@@ -506,7 +507,7 @@ public interface BufferedSource extends Source {
    *   assertEquals(11, buffer.indexOfElement(ANY_VOWEL, 9)); // 'a' in 'Grant'.
    * }</pre>
    */
-  long indexOfElement(ByteString targetBytes, long fromIndex) throws IOException;
+  @CheckReturnValue long indexOfElement(ByteString targetBytes, long fromIndex) throws IOException;
 
   /**
    * Returns true if the bytes at {@code offset} in this source equal {@code bytes}. This expands
@@ -522,16 +523,16 @@ public interface BufferedSource extends Source {
    *   assertFalse(payMeMoney.rangeEquals(0, simonSays));
    * }</pre>
    */
-  boolean rangeEquals(long offset, ByteString bytes) throws IOException;
+  @CheckReturnValue boolean rangeEquals(long offset, ByteString bytes) throws IOException;
 
   /**
    * Returns true if {@code byteCount} bytes at {@code offset} in this source equal {@code bytes}
    * at {@code bytesOffset}. This expands the buffer as necessary until a byte does not match, all
    * bytes are matched, or if the stream is exhausted before enough bytes could determine a match.
    */
-  boolean rangeEquals(long offset, ByteString bytes, int bytesOffset, int byteCount)
-      throws IOException;
+  @CheckReturnValue boolean rangeEquals(long offset, ByteString bytes, int bytesOffset,
+      int byteCount) throws IOException;
 
   /** Returns an input stream that reads from this source. */
-  InputStream inputStream();
+  @CheckReturnValue InputStream inputStream();
 }

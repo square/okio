@@ -16,6 +16,7 @@
 package okio;
 
 import java.io.IOException;
+import javax.annotation.CheckReturnValue;
 
 /** A {@link Source} which forwards calls to another. Useful for subclassing. */
 public abstract class ForwardingSource implements Source {
@@ -27,7 +28,7 @@ public abstract class ForwardingSource implements Source {
   }
 
   /** {@link Source} to which this instance is delegating. */
-  public final Source delegate() {
+  @CheckReturnValue public final Source delegate() {
     return delegate;
   }
 

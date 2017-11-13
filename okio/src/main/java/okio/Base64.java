@@ -21,7 +21,9 @@
 package okio;
 
 import java.io.UnsupportedEncodingException;
+import javax.annotation.CheckReturnValue;
 
+@CheckReturnValue
 final class Base64 {
   private Base64() {
   }

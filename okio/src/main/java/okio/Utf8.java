@@ -15,6 +15,8 @@
  */
 package okio;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Okio assumes most applications use UTF-8 exclusively, and offers optimized implementations of
  * common operations on UTF-8 strings.
@@ -62,6 +64,7 @@ package okio;
  * </tr>
  * </table>
  */
+@CheckReturnValue
 public final class Utf8 {
   private Utf8() {
   }

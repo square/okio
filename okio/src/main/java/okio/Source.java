@@ -17,6 +17,7 @@ package okio;
 
 import java.io.Closeable;
 import java.io.IOException;
+import javax.annotation.CheckReturnValue;
 
 /**
  * Supplies a stream of bytes. Use this interface to read data from wherever
@@ -65,10 +66,10 @@ public interface Source extends Closeable {
    * them to {@code sink}. Returns the number of bytes read, or -1 if this
    * source is exhausted.
    */
-  long read(Buffer sink, long byteCount) throws IOException;
+  @CheckReturnValue long read(Buffer sink, long byteCount) throws IOException;
 
   /** Returns the timeout for this source. */
-  Timeout timeout();
+  @CheckReturnValue Timeout timeout();
 
   /**
    * Closes this source and releases the resources held by this source. It is an

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import javax.annotation.CheckReturnValue;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -38,6 +39,7 @@ import javax.crypto.spec.SecretKeySpec;
  *   ByteString hash = hashingSource.hash();
  * }</pre>
  */
+@CheckReturnValue
 public final class HashingSource extends ForwardingSource {
   private final MessageDigest messageDigest;
   private final Mac mac;

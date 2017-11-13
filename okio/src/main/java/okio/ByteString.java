@@ -29,6 +29,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -49,6 +50,7 @@ import static okio.Util.checkOffsetAndCount;
  * byte string's immutability guarantee cannot be relied upon for security in applets and other
  * environments that run both trusted and untrusted code in the same process.
  */
+@CheckReturnValue
 public class ByteString implements Serializable, Comparable<ByteString> {
   static final char[] HEX_DIGITS =
       { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };

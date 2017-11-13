@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -60,7 +61,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /** Returns the number of bytes currently in this buffer. */
-  public long size() {
+  @CheckReturnValue public long size() {
     return size;
   }
 
@@ -260,7 +261,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
    * number of bytes that can be flushed immediately to an underlying sink
    * without harming throughput.
    */
-  public long completeSegmentByteCount() {
+  @CheckReturnValue public long completeSegmentByteCount() {
     long result = size;
     if (result == 0) return 0;
 
@@ -295,7 +296,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /** Returns the byte at {@code pos}. */
-  public byte getByte(long pos) {
+  @CheckReturnValue public byte getByte(long pos) {
     checkOffsetAndCount(size, pos, 1);
     for (Segment s = head; true; s = s.next) {
       int segmentByteCount = s.limit - s.pos;
@@ -1156,7 +1157,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
    * Returns a tail segment that we can write at least {@code minimumCapacity}
    * bytes to, creating it if necessary.
    */
-  Segment writableSegment(int minimumCapacity) {
+  @CheckReturnValue Segment writableSegment(int minimumCapacity) {
     if (minimumCapacity < 1 || minimumCapacity > Segment.SIZE) throw new IllegalArgumentException();
 
     if (head == null) {
@@ -1546,22 +1547,22 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /** Returns the 128-bit MD5 hash of this buffer. */
-  public ByteString md5() {
+  @CheckReturnValue public ByteString md5() {
     return digest("MD5");
   }
 
   /** Returns the 160-bit SHA-1 hash of this buffer. */
-  public ByteString sha1() {
+  @CheckReturnValue public ByteString sha1() {
     return digest("SHA-1");
   }
 
   /** Returns the 256-bit SHA-256 hash of this buffer. */
-  public ByteString sha256() {
+  @CheckReturnValue public ByteString sha256() {
     return digest("SHA-256");
   }
 
   /** Returns the 512-bit SHA-512 hash of this buffer. */
-  public ByteString sha512() {
+  @CheckReturnValue public ByteString sha512() {
       return digest("SHA-512");
   }
 
@@ -1581,17 +1582,17 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this buffer. */
-  public ByteString hmacSha1(ByteString key) {
+  @CheckReturnValue public ByteString hmacSha1(ByteString key) {
     return hmac("HmacSHA1", key);
   }
 
   /** Returns the 256-bit SHA-256 HMAC of this buffer. */
-  public ByteString hmacSha256(ByteString key) {
+  @CheckReturnValue public ByteString hmacSha256(ByteString key) {
     return hmac("HmacSHA256", key);
   }
 
   /** Returns the 512-bit SHA-512 HMAC of this buffer. */
-  public ByteString hmacSha512(ByteString key) {
+  @CheckReturnValue public ByteString hmacSha512(ByteString key) {
       return hmac("HmacSHA512", key);
   }
 
@@ -1668,7 +1669,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /** Returns a deep copy of this buffer. */
-  @Override public Buffer clone() {
+  @CheckReturnValue @Override public Buffer clone() {
     Buffer result = new Buffer();
     if (size == 0) return result;
 
@@ -1682,7 +1683,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   /** Returns an immutable copy of this buffer as a byte string. */
-  public ByteString snapshot() {
+  @CheckReturnValue public ByteString snapshot() {
     if (size > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("size > Integer.MAX_VALUE: " + size);
     }
@@ -1692,7 +1693,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   /**
    * Returns an immutable copy of the first {@code byteCount} bytes of this buffer as a byte string.
    */
-  public ByteString snapshot(int byteCount) {
+  @CheckReturnValue public ByteString snapshot(int byteCount) {
     if (byteCount == 0) return ByteString.EMPTY;
     return new SegmentedByteString(this, byteCount);
   }
