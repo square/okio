@@ -18,6 +18,7 @@ package okio;
 import org.junit.Test;
 
 import static okio.TestUtil.assertEquivalent;
+import static okio.TestUtil.bufferWithSegments;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -36,14 +37,14 @@ public final class SegmentSharingTest {
   }
 
   @Test public void snapshotsAreEquivalent() throws Exception {
-    ByteString byteString = concatenateBuffers(xs, ys, zs).snapshot();
-    assertEquivalent(byteString, concatenateBuffers(xs, ys + zs).snapshot());
-    assertEquivalent(byteString, concatenateBuffers(xs + ys + zs).snapshot());
+    ByteString byteString = bufferWithSegments(xs, ys, zs).snapshot();
+    assertEquivalent(byteString, bufferWithSegments(xs, ys + zs).snapshot());
+    assertEquivalent(byteString, bufferWithSegments(xs + ys + zs).snapshot());
     assertEquivalent(byteString, ByteString.encodeUtf8(xs + ys + zs));
   }
 
   @Test public void snapshotGetByte() throws Exception {
-    ByteString byteString = concatenateBuffers(xs, ys, zs).snapshot();
+    ByteString byteString = bufferWithSegments(xs, ys, zs).snapshot();
     assertEquals('x', byteString.getByte(0));
     assertEquals('x', byteString.getByte(xs.length() - 1));
     assertEquals('y', byteString.getByte(xs.length()));
@@ -63,7 +64,7 @@ public final class SegmentSharingTest {
   }
 
   @Test public void snapshotWriteToOutputStream() throws Exception {
-    ByteString byteString = concatenateBuffers(xs, ys, zs).snapshot();
+    ByteString byteString = bufferWithSegments(xs, ys, zs).snapshot();
     Buffer out = new Buffer();
     byteString.write(out.outputStream());
     assertEquals(xs + ys + zs, out.readUtf8());
@@ -74,7 +75,7 @@ public final class SegmentSharingTest {
    * be recycled, otherwise the new writer could corrupt the segment.
    */
   @Test public void snapshotSegmentsAreNotRecycled() throws Exception {
-    Buffer buffer = concatenateBuffers(xs, ys, zs);
+    Buffer buffer = bufferWithSegments(xs, ys, zs);
     ByteString snapshot = buffer.snapshot();
     assertEquals(xs + ys + zs, snapshot.utf8());
 
@@ -92,7 +93,7 @@ public final class SegmentSharingTest {
    * be recycled, otherwise the new writer could corrupt the segment.
    */
   @Test public void cloneSegmentsAreNotRecycled() throws Exception {
-    Buffer buffer = concatenateBuffers(xs, ys, zs);
+    Buffer buffer = bufferWithSegments(xs, ys, zs);
     Buffer clone = buffer.clone();
 
     // While locking the pool, confirm that clearing the buffer doesn't release its segments.
@@ -107,15 +108,15 @@ public final class SegmentSharingTest {
   }
 
   @Test public void snapshotJavaSerialization() throws Exception {
-    ByteString byteString = concatenateBuffers(xs, ys, zs).snapshot();
+    ByteString byteString = bufferWithSegments(xs, ys, zs).snapshot();
     assertEquivalent(byteString, TestUtil.reserialize(byteString));
   }
 
   @Test public void clonesAreEquivalent() throws Exception {
-    Buffer bufferA = concatenateBuffers(xs, ys, zs);
+    Buffer bufferA = bufferWithSegments(xs, ys, zs);
     Buffer bufferB = bufferA.clone();
     assertEquivalent(bufferA, bufferB);
-    assertEquivalent(bufferA, concatenateBuffers(xs + ys, zs));
+    assertEquivalent(bufferA, bufferWithSegments(xs + ys, zs));
   }
 
   /** Even though some segments are shared, clones can be mutated independently. */
@@ -152,7 +153,7 @@ public final class SegmentSharingTest {
   }
 
   @Test public void appendSnapshotToEmptyBuffer() throws Exception {
-    Buffer bufferA = concatenateBuffers(xs, ys);
+    Buffer bufferA = bufferWithSegments(xs, ys);
     ByteString snapshot = bufferA.snapshot();
     Buffer bufferB = new Buffer();
     bufferB.write(snapshot);
@@ -160,7 +161,7 @@ public final class SegmentSharingTest {
   }
 
   @Test public void appendSnapshotToNonEmptyBuffer() throws Exception {
-    Buffer bufferA = concatenateBuffers(xs, ys);
+    Buffer bufferA = bufferWithSegments(xs, ys);
     ByteString snapshot = bufferA.snapshot();
     Buffer bufferB = new Buffer().writeUtf8(us);
     bufferB.write(snapshot);
@@ -168,26 +169,9 @@ public final class SegmentSharingTest {
   }
 
   @Test public void copyToSegmentSharing() throws Exception {
-    Buffer bufferA = concatenateBuffers(ws, xs + "aaaa", ys, "bbbb" + zs);
-    Buffer bufferB = concatenateBuffers(us);
+    Buffer bufferA = bufferWithSegments(ws, xs + "aaaa", ys, "bbbb" + zs);
+    Buffer bufferB = bufferWithSegments(us);
     bufferA.copyTo(bufferB, ws.length() + xs.length(), 4 + ys.length() + 4);
     assertEquivalent(bufferB, new Buffer().writeUtf8(us + "aaaa" + ys + "bbbb"));
-  }
-
-  /**
-   * Returns a new buffer containing the contents of {@code segments}, attempting to isolate each
-   * string to its own segment in the returned buffer.
-   */
-  public Buffer concatenateBuffers(String... segments) throws Exception {
-    Buffer result = new Buffer();
-    for (String s : segments) {
-      int offsetInSegment = s.length() < Segment.SIZE ? (Segment.SIZE - s.length()) / 2 : 0;
-      Buffer buffer = new Buffer();
-      buffer.writeUtf8(TestUtil.repeat('_', offsetInSegment));
-      buffer.writeUtf8(s);
-      buffer.skip(offsetInSegment);
-      result.write(buffer, buffer.size);
-    }
-    return result;
   }
 }

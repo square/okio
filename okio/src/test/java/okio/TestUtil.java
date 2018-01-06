@@ -198,4 +198,22 @@ final class TestUtil {
 
     return result;
   }
+
+  /**
+   * Returns a new buffer containing the contents of {@code segments}, attempting to isolate each
+   * string to its own segment in the returned buffer. This clones buffers so that segments are
+   * shared, preventing compaction from occurring.
+   */
+  public static Buffer bufferWithSegments(String... segments) throws Exception {
+    Buffer result = new Buffer();
+    for (String s : segments) {
+      int offsetInSegment = s.length() < Segment.SIZE ? (Segment.SIZE - s.length()) / 2 : 0;
+      Buffer buffer = new Buffer();
+      buffer.writeUtf8(repeat('_', offsetInSegment));
+      buffer.writeUtf8(s);
+      buffer.skip(offsetInSegment);
+      result.write(buffer.clone(), buffer.size);
+    }
+    return result;
+  }
 }
