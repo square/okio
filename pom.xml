@@ -20,6 +20,7 @@
   <modules>
     <module>okio</module>
     <module>benchmarks</module>
+    <module>samples</module>
   </modules>
 
   <properties>
