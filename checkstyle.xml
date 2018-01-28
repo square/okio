@@ -6,7 +6,9 @@
 <module name="Checker">
   <module name="SuppressWarningsFilter"/>
   <module name="NewlineAtEndOfFile"/>
-  <module name="FileLength"/>
+  <module name="FileLength">
+    <property name="max" value="2500"/>
+  </module>
   <module name="FileTabCharacter"/>
 
   <!-- Trailing spaces -->

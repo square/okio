@@ -195,7 +195,7 @@ final class SegmentedByteString extends ByteString {
       int segmentPos = directory[segmentCount + s];
       int nextSegmentOffset = directory[s];
       Segment segment = new Segment(segments[s], segmentPos,
-          segmentPos + nextSegmentOffset - segmentOffset);
+          segmentPos + nextSegmentOffset - segmentOffset, true, false);
       if (buffer.head == null) {
         buffer.head = segment.next = segment.prev = segment;
       } else {
