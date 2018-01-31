@@ -114,6 +114,7 @@ public final class Okio {
    */
   public static Sink sink(Socket socket) throws IOException {
     if (socket == null) throw new IllegalArgumentException("socket == null");
+    if (socket.getOutputStream() == null) throw new IOException("socket's output stream == null");
     AsyncTimeout timeout = timeout(socket);
     Sink sink = sink(socket.getOutputStream(), timeout);
     return timeout.sink(sink);
@@ -219,6 +220,7 @@ public final class Okio {
    */
   public static Source source(Socket socket) throws IOException {
     if (socket == null) throw new IllegalArgumentException("socket == null");
+    if (socket.getInputStream() == null) throw new IOException("socket's input stream == null");
     AsyncTimeout timeout = timeout(socket);
     Source source = source(socket.getInputStream(), timeout);
     return timeout.source(source);
