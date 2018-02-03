@@ -1704,7 +1704,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   public UnsafeCursor readUnsafe(UnsafeCursor unsafeCursor) {
     if (unsafeCursor.buffer != null) {
-      throw new IllegalStateException("already attached to a buffe");
+      throw new IllegalStateException("already attached to a buffer");
     }
 
     unsafeCursor.buffer = this;
@@ -1968,18 +1968,41 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       }
 
       // Navigate to the segment that contains `offset`. Start from our current segment if possible.
+      long min = 0L;
+      long max = buffer.size;
+      Segment head = buffer.head;
+      Segment tail = buffer.head;
+      if (this.segment != null) {
+        long segmentOffset = this.offset - (this.start - this.segment.pos);
+        if (segmentOffset > offset) {
+          // Set the cursor segment to be the 'end'
+          max = segmentOffset;
+          tail = this.segment;
+        } else {
+          // Set the cursor segment to be the 'beginning'
+          min = segmentOffset;
+          head = this.segment;
+        }
+      }
+
       Segment next;
       long nextOffset;
-      if (segment == null || this.offset > offset) {
-        next = buffer.head;
-        nextOffset = 0L;
+      if (max - offset > offset - min) {
+        // Start at the 'beginning' and search forwards
+        next = head;
+        nextOffset = min;
+        while (offset >= nextOffset + (next.limit - next.pos)) {
+          nextOffset += (next.limit - next.pos);
+          next = next.next;
+        }
       } else {
-        next = this.segment;
-        nextOffset = this.offset - (start - next.pos);
-      }
-      while (offset >= nextOffset + next.limit - next.pos) {
-        nextOffset += (next.limit - next.pos);
-        next = next.next;
+        // Start at the 'end' and search backwards
+        next = tail;
+        nextOffset = max;
+        while (nextOffset > offset) {
+          next = next.prev;
+          nextOffset -= (next.limit - next.pos);
+        }
       }
 
       // If we're going to write and our segment is shared, swap it for a read-write one.
@@ -2015,7 +2038,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
      */
     public long resizeBuffer(long newSize) {
       if (buffer == null) {
-        throw new IllegalStateException("not acquired");
+        throw new IllegalStateException("not attached to a buffer");
       }
       if (!readWrite) {
         throw new IllegalStateException("resizeBuffer() only permitted for read/write buffers");
