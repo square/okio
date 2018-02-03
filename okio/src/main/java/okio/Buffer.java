@@ -298,10 +298,18 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   /** Returns the byte at {@code pos}. */
   public byte getByte(long pos) {
     checkOffsetAndCount(size, pos, 1);
-    for (Segment s = head; true; s = s.next) {
-      int segmentByteCount = s.limit - s.pos;
-      if (pos < segmentByteCount) return s.data[s.pos + (int) pos];
-      pos -= segmentByteCount;
+    if (size - pos > pos) {
+      for (Segment s = head; true; s = s.next) {
+        int segmentByteCount = s.limit - s.pos;
+        if (pos < segmentByteCount) return s.data[s.pos + (int) pos];
+        pos -= segmentByteCount;
+      }
+    } else {
+      pos -= size;
+      for (Segment s = head.prev; true; s = s.prev) {
+        pos += s.limit - s.pos;
+        if (pos >= 0) return s.data[s.pos + (int) pos];
+      }
     }
   }
 
