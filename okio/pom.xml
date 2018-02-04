@@ -38,7 +38,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <Automatic-Module-Name>com.squareup.okio</Automatic-Module-Name>
+              <Automatic-Module-Name>okio</Automatic-Module-Name>
             </manifestEntries>
           </archive>
         </configuration>
