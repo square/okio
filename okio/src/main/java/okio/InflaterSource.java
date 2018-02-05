@@ -64,7 +64,8 @@ public final class InflaterSource implements Source {
       // Decompress the inflater's compressed data into the sink.
       try {
         Segment tail = sink.writableSegment(1);
-        int bytesInflated = inflater.inflate(tail.data, tail.limit, Segment.SIZE - tail.limit);
+        int toRead = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
+        int bytesInflated = inflater.inflate(tail.data, tail.limit, toRead);
         if (bytesInflated > 0) {
           tail.limit += bytesInflated;
           sink.size += bytesInflated;
