@@ -308,11 +308,30 @@ public final class BufferCursorTest {
     }
   }
 
-  @Test public void resizeAcquiredReadWrite() throws Exception {
+  @Test public void expandNotAcquired() throws Exception {
+    UnsafeCursor cursor = new UnsafeCursor();
+    try {
+      cursor.expandBuffer(10);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void resizeAcquiredReadOnly() throws Exception {
     Buffer buffer = bufferFactory.newBuffer();
 
     try (UnsafeCursor cursor = buffer.readUnsafe()) {
       cursor.resizeBuffer(10);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void expandAcquiredReadOnly() throws Exception {
+    Buffer buffer = bufferFactory.newBuffer();
+
+    try (UnsafeCursor cursor = buffer.readUnsafe()) {
+      cursor.expandBuffer(10);
       fail();
     } catch (IllegalStateException expected) {
     }
@@ -501,6 +520,77 @@ public final class BufferCursorTest {
     assertTrue(cursor.readWrite);
     cursor.close();
     assertSame(null, cursor.buffer);
+  }
+
+  @Test public void expand() throws Exception {
+    Buffer buffer = bufferFactory.newBuffer();
+    long originalSize = buffer.size();
+
+    Buffer expected = deepCopy(buffer);
+    expected.writeUtf8("abcde");
+
+    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
+      cursor.expandBuffer(5);
+
+      cursor.seek(originalSize);
+      for (int i = 0; i < 5; i++) {
+        cursor.data[cursor.start + i] = (byte) ('a' + i);
+      }
+
+      cursor.resizeBuffer(originalSize + 5);
+    }
+
+    assertEquals(expected, buffer);
+  }
+
+  @Test public void expandSameSegment() throws Exception {
+    Buffer buffer = bufferFactory.newBuffer();
+    long originalSize = buffer.size();
+    assumeTrue(originalSize > 0);
+
+    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
+      cursor.seek(originalSize - 1);
+      int originalStart = cursor.start;
+      int originalEnd = cursor.end;
+      assumeTrue(originalEnd < Segment.SIZE);
+
+      long addedByteCount = cursor.expandBuffer(1);
+      assertEquals(Segment.SIZE - originalEnd, addedByteCount);
+
+      assertEquals(originalSize + addedByteCount, buffer.size());
+      assertEquals(originalSize - 1, cursor.offset);
+      assertEquals(originalStart, cursor.start);
+      assertEquals(Segment.SIZE, cursor.end);
+    }
+  }
+
+  @Test public void expandNewSegment() throws Exception {
+    Buffer buffer = bufferFactory.newBuffer();
+    long originalSize = buffer.size();
+
+    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
+      long addedByteCount = cursor.expandBuffer(Segment.SIZE);
+      assertEquals(Segment.SIZE, addedByteCount);
+
+      cursor.seek(originalSize);
+      assertEquals(originalSize, cursor.offset);
+      assertEquals(0, cursor.start);
+      assertEquals(Segment.SIZE, cursor.end);
+    }
+  }
+
+  @Test public void expandRetainsOffset() throws Exception {
+    Buffer buffer = bufferFactory.newBuffer();
+    long originalSize = buffer.size();
+
+    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
+      cursor.seek(buffer.size() / 2);
+      assertEquals(originalSize, buffer.size());
+      long offsetBefore = cursor.offset;
+      long addedByteCount = cursor.expandBuffer(5);
+      assertEquals(originalSize + addedByteCount, buffer.size());
+      assertEquals(offsetBefore, cursor.offset);
+    }
   }
 
   /** Returns a copy of {@code buffer} with no segments with {@code original}. */

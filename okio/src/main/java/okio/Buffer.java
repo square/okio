@@ -2033,14 +2033,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     }
 
     /**
-     * Change the size of this buffer so that it equals {@code newSize} by either adding new
+     * Change the size of the buffer so that it equals {@code newSize} by either adding new
      * capacity at the end or truncating the buffer at the end. Newly added capacity may span
      * multiple segments.
      *
-     * <p>Warning: it its the caller’s responsibility to write new data to every byte of the
+     * <p>Warning: it is the caller’s responsibility to write new data to every byte of the
      * newly-allocated capacity. Failure to do so may cause serious security problems as the data
-     * in the returned buffers is not zero filled. The buffers may contain dirty pooled segments
-     * that hold very sensitive data from other parts of the current process.
+     * in the returned buffers is not zero filled. Buffers may contain dirty pooled segments that
+     * hold very sensitive data from other parts of the current process.
      *
      * @return the previous size of the buffer.
      */
@@ -2090,6 +2090,51 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       if (offset != -1L) seek(offset);
 
       return oldSize;
+    }
+
+    /**
+     * Grow the buffer by adding a <strong>contiguous range</strong> of capacity in a single
+     * segment. This adds at least {@code minByteCount} bytes but may add up to a full segment of
+     * additional capacity.
+     *
+     * <p>If {@code minByteCount} bytes are available in the buffer's current tail segment that will
+     * be used; otherwise another segment will be allocated and appended. In either case this
+     * returns the number of bytes of capacity added to this buffer.
+     *
+     * <p>Warning: it is the caller’s responsibility to either write new data to every byte of the
+     * newly-allocated capacity, or to {@link #resizeBuffer shrink} the buffer to the data written.
+     * Failure to do so may cause serious security problems as the data in the returned buffers is
+     * not zero filled. Buffers may contain dirty pooled segments that hold very sensitive data from
+     * other parts of the current process.
+     *
+     * @param minByteCount the size of the contiguous capacity. Must be positive and not greater
+     *     than the capacity size of a single segment (8 KiB).
+     * @return the number of bytes expanded by. Not less than {@code minByteCount}.
+     */
+    public long expandBuffer(int minByteCount) {
+      if (minByteCount <= 0) {
+        throw new IllegalArgumentException("minByteCount <= 0: " + minByteCount);
+      }
+      if (minByteCount > Segment.SIZE) {
+        throw new IllegalArgumentException("minByteCount > Segment.SIZE: " + minByteCount);
+      }
+      if (buffer == null) {
+        throw new IllegalStateException("not attached to a buffer");
+      }
+      if (!readWrite) {
+        throw new IllegalStateException("expandBuffer() only permitted for read/write buffers");
+      }
+
+      Segment tail = buffer.writableSegment(minByteCount);
+      long result = Segment.SIZE - tail.limit;
+      tail.limit = Segment.SIZE;
+      buffer.size += result;
+
+      // Buffer.writableSegment() invalidates our local segment state. Recompute it.
+      segment = null;
+      if (offset != -1L) seek(offset);
+
+      return result;
     }
 
     @Override public void close() {
