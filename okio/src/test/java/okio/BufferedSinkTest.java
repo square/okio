@@ -19,6 +19,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -310,6 +311,38 @@ public final class BufferedSinkTest {
       assertLongHexString((1 << i) - 1);
       assertLongHexString(1 << i);
     }
+  }
+
+  @Test public void writeNioBuffer() throws Exception {
+    String expected = "abcdefg";
+
+    ByteBuffer nioByteBuffer = ByteBuffer.allocate(1024);
+    nioByteBuffer.put("abcdefg".getBytes(Util.UTF_8));
+    nioByteBuffer.flip();
+
+    int byteCount = sink.write(nioByteBuffer);
+    assertEquals(expected.length(), byteCount);
+    assertEquals(expected.length(), nioByteBuffer.position());
+    assertEquals(expected.length(), nioByteBuffer.limit());
+
+    sink.flush();
+    assertEquals(expected, data.readUtf8());
+  }
+
+  @Test public void writeLargeNioBufferWritesAllData() throws Exception {
+    String expected = TestUtil.repeat('a', Segment.SIZE * 3);
+
+    ByteBuffer nioByteBuffer = ByteBuffer.allocate(Segment.SIZE * 4);
+    nioByteBuffer.put(TestUtil.repeat('a', Segment.SIZE * 3).getBytes(Util.UTF_8));
+    nioByteBuffer.flip();
+
+    int byteCount = sink.write(nioByteBuffer);
+    assertEquals(expected.length(), byteCount);
+    assertEquals(expected.length(), nioByteBuffer.position());
+    assertEquals(expected.length(), nioByteBuffer.limit());
+
+    sink.flush();
+    assertEquals(expected, data.readUtf8());
   }
 
   private void assertLongHexString(long value) throws IOException {

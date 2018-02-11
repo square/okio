@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 final class RealBufferedSink implements BufferedSink {
@@ -89,6 +90,13 @@ final class RealBufferedSink implements BufferedSink {
     if (closed) throw new IllegalStateException("closed");
     buffer.write(source, offset, byteCount);
     return emitCompleteSegments();
+  }
+
+  @Override public int write(ByteBuffer source) throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    int result = buffer.write(source);
+    emitCompleteSegments();
+    return result;
   }
 
   @Override public long writeAll(Source source) throws IOException {
@@ -216,6 +224,10 @@ final class RealBufferedSink implements BufferedSink {
       sink.write(buffer, buffer.size);
     }
     sink.flush();
+  }
+
+  @Override public boolean isOpen() {
+    return !closed;
   }
 
   @Override public void close() throws IOException {

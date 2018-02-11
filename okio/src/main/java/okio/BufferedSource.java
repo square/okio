@@ -17,6 +17,7 @@ package okio;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import javax.annotation.Nullable;
 
@@ -25,7 +26,7 @@ import javax.annotation.Nullable;
  * penalty. It also allows clients to read ahead, buffering as much as necessary before consuming
  * input.
  */
-public interface BufferedSource extends Source {
+public interface BufferedSource extends Source, ReadableByteChannel {
   /** Returns this source's internal buffer. */
   Buffer buffer();
 
