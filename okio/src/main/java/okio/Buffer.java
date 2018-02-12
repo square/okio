@@ -20,6 +20,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -49,7 +51,7 @@ import static okio.Util.reverseBytesLong;
  * returning it to you. Even if you're going to write over that space anyway.
  * This class avoids zero-fill and GC churn by pooling byte arrays.
  */
-public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
+public final class Buffer implements BufferedSource, BufferedSink, Cloneable, ByteChannel {
   private static final byte[] DIGITS =
       { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
   static final int REPLACEMENT_CHARACTER = '\ufffd';
@@ -811,6 +813,24 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return toCopy;
   }
 
+  @Override public int read(ByteBuffer sink) throws IOException {
+    Segment s = head;
+    if (s == null) return -1;
+
+    int toCopy = Math.min(sink.remaining(), s.limit - s.pos);
+    sink.put(s.data, s.pos, toCopy);
+
+    s.pos += toCopy;
+    size -= toCopy;
+
+    if (s.pos == s.limit) {
+      head = s.pop();
+      SegmentPool.recycle(s);
+    }
+
+    return toCopy;
+  }
+
   /**
    * Discards all bytes in this buffer. Calling this method when you're done
    * with a buffer will return its segments to the pool.
@@ -1006,6 +1026,25 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
     size += byteCount;
     return this;
+  }
+
+  @Override public int write(ByteBuffer source) throws IOException {
+    if (source == null) throw new IllegalArgumentException("source == null");
+
+    int byteCount = source.remaining();
+    int remaining = byteCount;
+    while (remaining > 0) {
+      Segment tail = writableSegment(1);
+
+      int toCopy = Math.min(remaining, Segment.SIZE - tail.limit);
+      source.get(tail.data, tail.limit, toCopy);
+
+      remaining -= toCopy;
+      tail.limit += toCopy;
+    }
+
+    size += byteCount;
+    return byteCount;
   }
 
   @Override public long writeAll(Source source) throws IOException {
@@ -1534,6 +1573,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
   }
 
   @Override public void flush() {
+  }
+
+  @Override public boolean isOpen() {
+    return true;
   }
 
   @Override public void close() {

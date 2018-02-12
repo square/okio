@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -1020,5 +1021,39 @@ public final class BufferedSourceTest {
     assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), 0, 2));
     // Bytes offset plus byte count longer than bytes length.
     assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), 1, 1));
+  }
+
+  @Test public void readNioBuffer() throws Exception {
+    String expected = factory == Factory.ONE_BYTE_AT_A_TIME ? "a" : "abcdefg";
+    sink.writeUtf8("abcdefg");
+
+    ByteBuffer nioByteBuffer = ByteBuffer.allocate(1024);
+    int byteCount = source.read(nioByteBuffer);
+    assertEquals(expected.length(), byteCount);
+    assertEquals(expected.length(), nioByteBuffer.position());
+    assertEquals(nioByteBuffer.capacity(), nioByteBuffer.limit());
+
+    nioByteBuffer.flip();
+    byte[] data = new byte[expected.length()];
+    nioByteBuffer.get(data);
+    assertEquals(expected, new String(data));
+  }
+
+  @Test public void readLargeNioBufferOnlyReadsOneSegment() throws Exception {
+    String expected = factory == Factory.ONE_BYTE_AT_A_TIME
+        ? "a"
+        : TestUtil.repeat('a', Segment.SIZE);
+    sink.writeUtf8(TestUtil.repeat('a', Segment.SIZE * 4));
+
+    ByteBuffer nioByteBuffer = ByteBuffer.allocate(Segment.SIZE * 3);
+    int byteCount = source.read(nioByteBuffer);
+    assertEquals(expected.length(), byteCount);
+    assertEquals(expected.length(), nioByteBuffer.position());
+    assertEquals(nioByteBuffer.capacity(), nioByteBuffer.limit());
+
+    nioByteBuffer.flip();
+    byte[] data = new byte[expected.length()];
+    nioByteBuffer.get(data);
+    assertEquals(expected, new String(data));
   }
 }

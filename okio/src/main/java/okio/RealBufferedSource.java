@@ -18,6 +18,7 @@ package okio;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import javax.annotation.Nullable;
 
@@ -143,6 +144,15 @@ final class RealBufferedSource implements BufferedSource {
 
     int toRead = (int) Math.min(byteCount, buffer.size);
     return buffer.read(sink, offset, toRead);
+  }
+
+  @Override public int read(ByteBuffer sink) throws IOException {
+    if (buffer.size == 0) {
+      long read = source.read(buffer, Segment.SIZE);
+      if (read == -1) return -1;
+    }
+
+    return buffer.read(sink);
   }
 
   @Override public void readFully(Buffer sink, long byteCount) throws IOException {
@@ -447,6 +457,10 @@ final class RealBufferedSource implements BufferedSource {
         return RealBufferedSource.this + ".inputStream()";
       }
     };
+  }
+
+  @Override public boolean isOpen() {
+    return !closed;
   }
 
   @Override public void close() throws IOException {

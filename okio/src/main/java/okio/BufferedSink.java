@@ -17,13 +17,14 @@ package okio;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 
 /**
  * A sink that keeps a buffer internally so that callers can do small writes
  * without a performance penalty.
  */
-public interface BufferedSink extends Sink {
+public interface BufferedSink extends Sink, WritableByteChannel {
   /** Returns this sink's internal buffer. */
   Buffer buffer();
 
