@@ -2037,6 +2037,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
      * capacity at the end or truncating the buffer at the end. Newly added capacity may span
      * multiple segments.
      *
+     * <p>As a side-effect this cursor will {@link #seek seek}. If the buffer is being enlarged it
+     * will move {@link #offset} to the first byte of newly-added capacity. This is the size of the
+     * buffer prior to the {@code resizeBuffer()} call. If the buffer is being shrunk it will move
+     * {@link #offset} to the end of the buffer.
+     *
      * <p>Warning: it is the caller’s responsibility to write new data to every byte of the
      * newly-allocated capacity. Failure to do so may cause serious security problems as the data
      * in the returned buffers is not zero filled. Buffers may contain dirty pooled segments that
@@ -2053,12 +2058,9 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
       }
 
       long oldSize = buffer.size;
-      if (newSize < oldSize) {
+      if (newSize <= oldSize) {
         if (newSize < 0) {
           throw new IllegalArgumentException("newSize < 0: " + newSize);
-        }
-        if (offset > newSize) {
-          offset = newSize;
         }
         // Shrink the buffer by either shrinking segments or removing them.
         for (long bytesToSubtract = oldSize - newSize; bytesToSubtract > 0; ) {
@@ -2073,21 +2075,34 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
             break;
           }
         }
+        // Seek to the end.
+        this.segment = null;
+        this.offset = newSize;
+        this.data = null;
+        this.start = -1;
+        this.end = -1;
       } else if (newSize > oldSize) {
         // Enlarge the buffer by either enlarging segments or adding them.
+        boolean needsToSeek = true;
         for (long bytesToAdd = newSize - oldSize; bytesToAdd > 0; ) {
           Segment tail = buffer.writableSegment(1);
-          long segmentBytesToAdd = Math.min(bytesToAdd, Segment.SIZE - tail.limit);
+          int segmentBytesToAdd = (int) Math.min(bytesToAdd, Segment.SIZE - tail.limit);
           tail.limit += segmentBytesToAdd;
           bytesToAdd -= segmentBytesToAdd;
+
+          // If this is the first segment we're adding, seek to it.
+          if (needsToSeek) {
+            this.segment = tail;
+            this.offset = oldSize;
+            this.data = tail.data;
+            this.start = tail.limit - segmentBytesToAdd;
+            this.end = tail.limit;
+            needsToSeek = false;
+          }
         }
       }
 
       buffer.size = newSize;
-
-      // Buffer.writableSegment() invalidates our local segment state. Recompute it.
-      segment = null;
-      if (offset != -1L) seek(offset);
 
       return oldSize;
     }
@@ -2096,6 +2111,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
      * Grow the buffer by adding a <strong>contiguous range</strong> of capacity in a single
      * segment. This adds at least {@code minByteCount} bytes but may add up to a full segment of
      * additional capacity.
+     *
+     * <p>As a side-effect this cursor will {@link #seek seek}. It will move {@link #offset} to the
+     * first byte of newly-added capacity. This is the size of the buffer prior to the {@code
+     * expandBuffer()} call.
      *
      * <p>If {@code minByteCount} bytes are available in the buffer's current tail segment that will
      * be used; otherwise another segment will be allocated and appended. In either case this
@@ -2125,14 +2144,18 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
         throw new IllegalStateException("expandBuffer() only permitted for read/write buffers");
       }
 
+      long oldSize = buffer.size;
       Segment tail = buffer.writableSegment(minByteCount);
-      long result = Segment.SIZE - tail.limit;
+      int result = Segment.SIZE - tail.limit;
       tail.limit = Segment.SIZE;
-      buffer.size += result;
+      buffer.size = oldSize + result;
 
-      // Buffer.writableSegment() invalidates our local segment state. Recompute it.
-      segment = null;
-      if (offset != -1L) seek(offset);
+      // Seek to the old size.
+      this.segment = tail;
+      this.offset = oldSize;
+      this.data = tail.data;
+      this.start = Segment.SIZE - result;
+      this.end = Segment.SIZE;
 
       return result;
     }

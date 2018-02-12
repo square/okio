@@ -30,6 +30,8 @@ import static okio.TestUtil.bufferWithRandomSegmentLayout;
 import static okio.TestUtil.bufferWithSegments;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -98,9 +100,9 @@ public final class BufferCursorTest {
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
       cursor.resizeBuffer(1000_000);
 
-      while (cursor.next() != -1) {
+      do {
         Arrays.fill(cursor.data, cursor.start, cursor.end, (byte) 'x');
-      }
+      } while (cursor.next() != -1);
 
       cursor.seek(3);
       cursor.data[cursor.start] = 'o';
@@ -388,51 +390,56 @@ public final class BufferCursorTest {
     }
   }
 
-  @Test public void resizeToSameSizeRetainsOffset() throws Exception {
+  @Test public void resizeToSameSizeSeeksToEnd() throws Exception {
     Buffer buffer = bufferFactory.newBuffer();
     long originalSize = buffer.size();
 
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
       cursor.seek(buffer.size() / 2);
       assertEquals(originalSize, buffer.size());
-      long offsetBefore = cursor.offset;
-      byte[] dataBefore = cursor.data;
-      int posBefore = cursor.start;
-      int limitBefore = cursor.end;
       cursor.resizeBuffer(originalSize);
       assertEquals(originalSize, buffer.size());
-      assertEquals(offsetBefore, cursor.offset);
-      assertEquals(dataBefore, cursor.data);
-      assertEquals(posBefore, cursor.start);
-      assertEquals(limitBefore, cursor.end);
+      assertEquals(originalSize, cursor.offset);
+      assertNull(cursor.data);
+      assertEquals(-1, cursor.start);
+      assertEquals(-1, cursor.end);
     }
   }
 
-  @Test public void enlargeRetainsOffset() throws Exception {
+  @Test public void resizeEnlargeMovesCursorToOldSize() throws Exception {
     Buffer buffer = bufferFactory.newBuffer();
+    long originalSize = buffer.size();
+
+    Buffer expected = deepCopy(buffer);
+    expected.writeUtf8("a");
+
+    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
+      cursor.seek(buffer.size() / 2);
+      assertEquals(originalSize, buffer.size());
+      cursor.resizeBuffer(originalSize + 1);
+      assertEquals(originalSize, cursor.offset);
+      assertNotNull(cursor.data);
+      assertNotEquals(-1, cursor.start);
+      assertEquals(cursor.start + 1, cursor.end);
+      cursor.data[cursor.start] = 'a';
+    }
+
+    assertEquals(expected, buffer);
+  }
+
+  @Test public void resizeShrinkMovesCursorToEnd() throws Exception {
+    Buffer buffer = bufferFactory.newBuffer();
+    assumeTrue(buffer.size() > 0);
     long originalSize = buffer.size();
 
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
       cursor.seek(buffer.size() / 2);
       assertEquals(originalSize, buffer.size());
-      long offsetBefore = cursor.offset;
-      cursor.resizeBuffer(originalSize * 2);
-      assertEquals(originalSize * 2, buffer.size());
-      assertEquals(offsetBefore, cursor.offset);
-    }
-  }
-
-  @Test public void shrinkRetainsOffset() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(buffer.size() / 4);
-      assertEquals(originalSize, buffer.size());
-      long offsetBefore = cursor.offset;
-      cursor.resizeBuffer(originalSize / 2);
-      assertEquals(originalSize / 2, buffer.size());
-      assertEquals(offsetBefore, cursor.offset);
+      cursor.resizeBuffer(originalSize - 1);
+      assertEquals(originalSize - 1, cursor.offset);
+      assertNull(cursor.data);
+      assertEquals(-1, cursor.start);
+      assertEquals(-1, cursor.end);
     }
   }
 
@@ -532,7 +539,6 @@ public final class BufferCursorTest {
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
       cursor.expandBuffer(5);
 
-      cursor.seek(originalSize);
       for (int i = 0; i < 5; i++) {
         cursor.data[cursor.start + i] = (byte) ('a' + i);
       }
@@ -550,7 +556,6 @@ public final class BufferCursorTest {
 
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
       cursor.seek(originalSize - 1);
-      int originalStart = cursor.start;
       int originalEnd = cursor.end;
       assumeTrue(originalEnd < Segment.SIZE);
 
@@ -558,8 +563,8 @@ public final class BufferCursorTest {
       assertEquals(Segment.SIZE - originalEnd, addedByteCount);
 
       assertEquals(originalSize + addedByteCount, buffer.size());
-      assertEquals(originalSize - 1, cursor.offset);
-      assertEquals(originalStart, cursor.start);
+      assertEquals(originalSize, cursor.offset);
+      assertEquals(originalEnd, cursor.start);
       assertEquals(Segment.SIZE, cursor.end);
     }
   }
@@ -572,24 +577,22 @@ public final class BufferCursorTest {
       long addedByteCount = cursor.expandBuffer(Segment.SIZE);
       assertEquals(Segment.SIZE, addedByteCount);
 
-      cursor.seek(originalSize);
       assertEquals(originalSize, cursor.offset);
       assertEquals(0, cursor.start);
       assertEquals(Segment.SIZE, cursor.end);
     }
   }
 
-  @Test public void expandRetainsOffset() throws Exception {
+  @Test public void expandMovesOffsetToOldSize() throws Exception {
     Buffer buffer = bufferFactory.newBuffer();
     long originalSize = buffer.size();
 
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
       cursor.seek(buffer.size() / 2);
       assertEquals(originalSize, buffer.size());
-      long offsetBefore = cursor.offset;
       long addedByteCount = cursor.expandBuffer(5);
       assertEquals(originalSize + addedByteCount, buffer.size());
-      assertEquals(offsetBefore, cursor.offset);
+      assertEquals(originalSize, cursor.offset);
     }
   }
 
