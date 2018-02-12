@@ -1,6 +1,26 @@
 Change Log
 ==========
 
+## Version 1.14.0
+
+_2018-02-11_
+
+ * New: `Buffer.UnsafeCursor` provides direct access to Okio internals. This API
+   is like Okio's version of Java reflection: it's a very powerful API that can
+   be used for great things and dangerous things alike. The documentation is
+   extensive and anyone using it should review it carefully before proceeding!
+ * New: Change `BufferedSource` to implement `java.nio.ReadableByteChannel` and
+   `BufferedSink` to implement `java.nio.WritableByteChannel`. Now it's a little
+   easier to interop between Okio and NIO.
+ * New: Automatic module name of `okio` for use with the Java Platform Module
+   System.
+ * New: Optimize `Buffer.getByte()` to search backwards when doing so will be
+   more efficient.
+ * Fix: Honor the requested byte count in `InflaterSource`. Previously this
+   class could return more bytes than requested.
+ * Fix: Improve a performance bug in `AsyncTimeout.sink().write()`.
+
+
 ## Version 1.13.0
 
 _2017-05-12_
