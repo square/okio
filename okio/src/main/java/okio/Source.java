@@ -37,7 +37,7 @@ import java.io.IOException;
  * <p>{@code InputStream} requires multiple layers when consumed data is
  * heterogeneous: a {@code DataInputStream} for primitive values, a {@code
  * BufferedInputStream} for buffering, and {@code InputStreamReader} for
- * strings. This class uses {@code BufferedSource} for all of the above.
+ * strings. This library uses {@code BufferedSource} for all of the above.
  *
  * <p>Source avoids the impossible-to-implement {@linkplain
  * java.io.InputStream#available available()} method. Instead callers specify
