@@ -48,6 +48,6 @@ public abstract class ForwardingSink implements Sink {
   }
 
   @Override public String toString() {
-    return getClass().getSimpleName() + "(" + delegate.toString() + ")";
+    return getClass().getSimpleName() + "(" + delegate + ")";
   }
 }
