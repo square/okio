@@ -53,6 +53,18 @@ public final class BufferTest {
       fail();
     } catch (ArrayIndexOutOfBoundsException expected) {
     }
+    try{
+      buffer.writeUtf8("abc", 3, 2);
+      fail();
+    }catch(IllegalArgumentException e){
+      assertEquals(e.getMessage(), "endIndex < beginIndex: 2 < 3");
+    }
+    try{
+      buffer.writeUtf8("abc", 3, 5);
+      fail();
+    }catch(IllegalArgumentException e){
+      assertEquals(e.getMessage(), "endIndex > string.length: 5 > 3");
+    }
   }
 
   @Test public void completeSegmentByteCountOnEmptyBuffer() throws Exception {
