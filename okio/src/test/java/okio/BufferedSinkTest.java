@@ -17,6 +17,7 @@ package okio;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.NotActiveException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -351,4 +352,21 @@ public final class BufferedSinkTest {
     String actual = data.readUtf8();
     assertEquals(value + " expected " + expected + " but was " + actual, actual, expected);
   }
+  @Test public void writeByteString() throws Exception{
+    RealBufferedSink realBufferedSink = new RealBufferedSink(sink);
+    assertEquals(realBufferedSink.write(ByteString.EMPTY), realBufferedSink);
+  }
+  @Test (expected = IllegalStateException.class)
+  public void writeByteStringClosed() throws Exception{
+    RealBufferedSink realBufferedSink = new RealBufferedSink(sink);
+    realBufferedSink.closed = true;
+    realBufferedSink.write(ByteString.EMPTY);
+  }
+  @Test (expected = IllegalStateException.class)
+  public void writeByteStringClosedSourceBuf() throws Exception{
+      RealBufferedSink realBufferedSink = new RealBufferedSink(sink);
+      realBufferedSink.closed = true;
+      realBufferedSink.write(realBufferedSink.buffer, 2);
+  }
+
 }
