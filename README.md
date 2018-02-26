@@ -155,10 +155,10 @@ License
     
  [1]: https://github.com/square/okhttp
  [2]: https://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=LATEST
- [3]: http://square.github.io/okio/1.x/okio/okio/ByteString.html
- [4]: http://square.github.io/okio/1.x/okio/okio/Buffer.html
- [5]: http://square.github.io/okio/1.x/okio/okio/Source.html
- [6]: http://square.github.io/okio/1.x/okio/okio/Sink.html
- [7]: http://square.github.io/okio/1.x/okio/okio/BufferedSource.html
- [8]: http://square.github.io/okio/1.x/okio/okio/BufferedSink.html
+ [3]: https://square.github.io/okio/1.x/okio/okio/ByteString.html
+ [4]: https://square.github.io/okio/1.x/okio/okio/Buffer.html
+ [5]: https://square.github.io/okio/1.x/okio/okio/Source.html
+ [6]: https://square.github.io/okio/1.x/okio/okio/Sink.html
+ [7]: https://square.github.io/okio/1.x/okio/okio/BufferedSource.html
+ [8]: https://square.github.io/okio/1.x/okio/okio/BufferedSink.html
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
