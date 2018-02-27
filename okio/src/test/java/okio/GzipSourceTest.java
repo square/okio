@@ -78,6 +78,22 @@ public final class GzipSourceTest {
     assertGzipped(gzipped);
   }
 
+  @Test public void gunzip_skipCRCCalculationForIrrelevantSegments() throws Exception {
+    Buffer gzipped = new Buffer();
+    gzipped.write(gzipHeader);
+    gzipped.write(deflated);
+    gzipped.write(gzipTrailer);
+
+    GzipSource source = new GzipSource(gzipped);
+    Buffer result = new Buffer();
+    source.read(result, 30);
+    result.head.pos = result.head.limit;
+    source.read(result, 100);
+    result.head.pos = 0;
+
+    assertEquals("It's a UNIX system! I know this!", result.readUtf8());
+  }
+
   /**
    * For portability, it is a good idea to export the gzipped bytes and try running gzip.  Ex.
    * {@code echo gzipped | base64 --decode | gzip -l -v}
