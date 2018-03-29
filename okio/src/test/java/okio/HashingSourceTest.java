@@ -20,11 +20,13 @@ import org.junit.Test;
 import static okio.HashingTest.HMAC_KEY;
 import static okio.HashingTest.HMAC_SHA1_abc;
 import static okio.HashingTest.HMAC_SHA256_abc;
+import static okio.HashingTest.HMAC_SHA512_abc;
 import static okio.HashingTest.MD5_abc;
 import static okio.HashingTest.SHA1_abc;
 import static okio.HashingTest.SHA256_abc;
 import static okio.HashingTest.SHA256_def;
 import static okio.HashingTest.SHA256_r32k;
+import static okio.HashingTest.SHA512_abc;
 import static okio.HashingTest.r32k;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -54,6 +56,13 @@ public final class HashingSourceTest {
     assertEquals(SHA256_abc, hashingSource.hash());
   }
 
+  @Test public void sha512() throws Exception {
+    HashingSource hashingSource = HashingSource.sha512(source);
+    source.writeUtf8("abc");
+    assertEquals(3L, hashingSource.read(sink, Long.MAX_VALUE));
+    assertEquals(SHA512_abc, hashingSource.hash());
+  }
+
   @Test public void hmacSha1() throws Exception {
     HashingSource hashingSource = HashingSource.hmacSha1(source, HMAC_KEY);
     source.writeUtf8("abc");
@@ -66,6 +75,13 @@ public final class HashingSourceTest {
     source.writeUtf8("abc");
     assertEquals(3L, hashingSource.read(sink, Long.MAX_VALUE));
     assertEquals(HMAC_SHA256_abc, hashingSource.hash());
+  }
+
+  @Test public void hmacSha512() throws Exception {
+    HashingSource hashingSource = HashingSource.hmacSha512(source, HMAC_KEY);
+    source.writeUtf8("abc");
+    assertEquals(3L, hashingSource.read(sink, Long.MAX_VALUE));
+    assertEquals(HMAC_SHA512_abc, hashingSource.hash());
   }
 
   @Test public void multipleReads() throws Exception {
