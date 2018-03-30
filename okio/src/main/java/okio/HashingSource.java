@@ -57,6 +57,11 @@ public final class HashingSource extends ForwardingSource {
     return new HashingSource(source, "SHA-256");
   }
 
+  /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
+  public static HashingSource sha512(Source source) {
+    return new HashingSource(source, "SHA-512");
+  }
+
   /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
   public static HashingSource hmacSha1(Source source, ByteString key) {
     return new HashingSource(source, key, "HmacSHA1");
@@ -65,6 +70,11 @@ public final class HashingSource extends ForwardingSource {
   /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
   public static HashingSource hmacSha256(Source source, ByteString key) {
     return new HashingSource(source, key, "HmacSHA256");
+  }
+
+  /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
+  public static HashingSource hmacSha512(Source source, ByteString key) {
+    return new HashingSource(source, key, "HmacSHA512");
   }
 
   private HashingSource(Source source, String algorithm) {
