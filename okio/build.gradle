@@ -1,0 +1,29 @@
+description = 'Okio'
+
+apply plugin: 'java-library'
+apply plugin: 'osgi'
+apply plugin: 'org.jetbrains.kotlin.platform.jvm'
+apply plugin: 'ru.vyarus.animalsniffer'
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+jar {
+  manifest {
+    instruction 'Automatic-Module-Name', 'okio'
+  }
+}
+
+animalsniffer {
+  sourceSets = [sourceSets.main]
+}
+
+dependencies {
+  signature 'org.codehaus.mojo.signature:java16:1.1@signature'
+
+  implementation deps.kotlin.stdLib.jdk6
+  compileOnly deps.animalSniffer.annotations
+  compileOnly deps.jsr305
+  testImplementation deps.test.junit
+  testImplementation deps.kotlin.test.jdk
+}

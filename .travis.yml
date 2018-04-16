@@ -8,6 +8,9 @@ addons:
     packages:
       - oracle-java8-installer # Updates JDK 8 to the latest available.
 
+script:
+  - ./gradlew clean build
+
 after_success:
   - .buildscript/deploy_snapshot.sh
 
@@ -27,4 +30,7 @@ sudo: false
 
 cache:
   directories:
-    - $HOME/.m2
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.gradle/native/
+    - $HOME/.gradle/daemon/native/
