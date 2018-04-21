@@ -1,5 +1,3 @@
-description = 'A modern I/O API for Java'
-
 buildscript {
   ext.versions = [
       'kotlin': '1.2.40',
