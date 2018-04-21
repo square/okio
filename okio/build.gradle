@@ -2,6 +2,7 @@ apply plugin: 'java-library'
 apply plugin: 'org.jetbrains.kotlin.platform.jvm'
 apply plugin: 'ru.vyarus.animalsniffer'
 apply plugin: 'me.champeau.gradle.japicmp'
+apply plugin: 'me.champeau.gradle.jmh'
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
 
@@ -22,6 +23,10 @@ configurations {
   baseline
 }
 
+jmh {
+  duplicateClassesStrategy = 'warn'
+}
+
 dependencies {
   signature 'org.codehaus.mojo.signature:java16:1.1@signature'
 
@@ -36,6 +41,9 @@ dependencies {
     transitive = false
     force = true
   }
+
+  jmh deps.jmh.core
+  jmh deps.jmh.generator
 }
 
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask, dependsOn: 'jar') {
