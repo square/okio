@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE") // Aliases to public API.
-
 package okio
 
-/**
- * Returns the number of bytes required to encode this [String] from [beginIndex] to [endIndex] as
- * UTF-8.
- *
- * @see Utf8.size
- */
-inline fun String.utf8Size(beginIndex: Int = 0, endIndex: Int = length) =
-    Utf8.size(this, beginIndex, endIndex)
+import org.junit.Test
+import kotlin.test.assertEquals
+
+class Utf8KotlinTest {
+  @Test fun utf8Size() {
+    assertEquals(6, "a\uD83C\uDF69c".utf8Size())
+  }
+
+  @Test fun utf8SizeSubstring() {
+    assertEquals(4, "a\uD83C\uDF69c".utf8Size(1, 3))
+  }
+}
