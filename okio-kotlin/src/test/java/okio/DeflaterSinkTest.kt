@@ -24,14 +24,14 @@ class DeflaterSinkTest {
   @Test fun deflate() {
     val data = Buffer()
     val deflater = (data as Sink).deflate()
-    Okio.buffer(deflater).writeUtf8("Hi!").close()
+    deflater.buffer().writeUtf8("Hi!").close()
     assertThat(data.readByteString().hex()).isEqualTo("789cf3c854040001ce00d3")
   }
 
   @Test fun deflateWithDeflater() {
     val data = Buffer()
     val deflater = (data as Sink).deflate(Deflater(0, true))
-    Okio.buffer(deflater).writeUtf8("Hi!").close()
+    deflater.buffer().writeUtf8("Hi!").close()
     assertThat(data.readByteString().hex()).isEqualTo("010300fcff486921")
   }
 }

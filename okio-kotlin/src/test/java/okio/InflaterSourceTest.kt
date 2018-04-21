@@ -24,12 +24,12 @@ class InflaterSourceTest {
   @Test fun inflate() {
     val buffer = Buffer().write(ByteString.decodeHex("789cf3c854040001ce00d3"))
     val gzip = (buffer as Source).inflate()
-    assertThat(Okio.buffer(gzip).readUtf8()).isEqualTo("Hi!")
+    assertThat(gzip.buffer().readUtf8()).isEqualTo("Hi!")
   }
 
   @Test fun inflateWithInflater() {
     val buffer = Buffer().write(ByteString.decodeHex("010300fcff486921"))
     val gzip = (buffer as Source).inflate(Inflater(true))
-    assertThat(Okio.buffer(gzip).readUtf8()).isEqualTo("Hi!")
+    assertThat(gzip.buffer().readUtf8()).isEqualTo("Hi!")
   }
 }

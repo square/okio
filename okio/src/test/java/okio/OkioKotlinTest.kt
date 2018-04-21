@@ -28,7 +28,7 @@ import java.net.Socket
 import java.nio.file.StandardOpenOption
 import java.nio.file.StandardOpenOption.APPEND
 
-class OkioTest {
+class OkioKotlinTest {
   @get:Rule val temp = TemporaryFolder()
 
   @Test fun sourceBuffer() {

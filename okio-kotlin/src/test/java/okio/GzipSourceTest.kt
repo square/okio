@@ -23,6 +23,6 @@ class GzipSourceTest {
   @Test fun gzip() {
     val buffer = Buffer().write(ByteString.decodeHex("1f8b0800000000000000f3c8540400dac59e7903000000"))
     val gzip = (buffer as Source).gzip()
-    assertThat(Okio.buffer(gzip).readUtf8()).isEqualTo("Hi!")
+    assertThat(gzip.buffer().readUtf8()).isEqualTo("Hi!")
   }
 }
