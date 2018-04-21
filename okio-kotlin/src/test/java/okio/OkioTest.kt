@@ -21,16 +21,12 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import sun.plugin2.os.windows.Windows.CREATE_NEW
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
 import java.net.Socket
 import java.nio.file.StandardOpenOption
 import java.nio.file.StandardOpenOption.APPEND
-import java.nio.file.StandardOpenOption.CREATE
 
 class OkioTest {
   @get:Rule val temp = TemporaryFolder()
