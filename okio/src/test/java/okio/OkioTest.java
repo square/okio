@@ -132,8 +132,10 @@ public final class OkioTest {
     try {
       Okio.buffer((Sink) null);
       fail();
-    } catch (NullPointerException expected) {
-      assertEquals("sink == null", expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          "Parameter specified as non-null is null: method okio.Okio.buffer, parameter $receiver",
+          expected.getMessage());
     }
   }
 
@@ -141,8 +143,10 @@ public final class OkioTest {
     try {
       Okio.buffer((Source) null);
       fail();
-    } catch (NullPointerException expected) {
-      assertEquals("source == null", expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          "Parameter specified as non-null is null: method okio.Okio.buffer, parameter $receiver",
+          expected.getMessage());
     }
   }
 

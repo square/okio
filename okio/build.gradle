@@ -29,6 +29,7 @@ dependencies {
   compileOnly deps.animalSniffer.annotations
   compileOnly deps.jsr305
   testImplementation deps.test.junit
+  testImplementation deps.test.assertj
   testImplementation deps.kotlin.test.jdk
 
   baseline('com.squareup.okio:okio:1.14.0') {

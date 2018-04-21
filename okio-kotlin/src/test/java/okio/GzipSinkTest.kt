@@ -23,7 +23,7 @@ class GzipSinkTest {
   @Test fun gzip() {
     val data = Buffer()
     val gzip = (data as Sink).gzip()
-    Okio.buffer(gzip).writeUtf8("Hi!").close()
+    gzip.buffer().writeUtf8("Hi!").close()
     assertThat(data.readByteString().hex()).isEqualTo(
         "1f8b0800000000000000f3c8540400dac59e7903000000")
   }
