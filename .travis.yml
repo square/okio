@@ -9,7 +9,7 @@ addons:
       - oracle-java8-installer # Updates JDK 8 to the latest available.
 
 script:
-  - ./gradlew clean build
+  - ./gradlew clean build japicmp
 
 after_success:
   - .buildscript/deploy_snapshot.sh
