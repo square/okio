@@ -55,8 +55,8 @@ buildscript {
 }
 
 allprojects {
-  group = 'com.squareup.okio'
-  version = '1.15.0-SNAPSHOT'
+  group = GROUP
+  version = VERSION_NAME
 }
 
 subprojects {
