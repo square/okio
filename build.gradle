@@ -35,6 +35,7 @@ buildscript {
           'gradlePlugin': "ru.vyarus:gradle-animalsniffer-plugin:${versions.animalSnifferPlugin}",
           'annotations': "org.codehaus.mojo:animal-sniffer-annotations:${versions.animalSniffer}",
       ],
+      'japicmp': 'me.champeau.gradle:japicmp-gradle-plugin:0.2.6',
       'jsr305': "com.google.code.findbugs:jsr305:${versions.jsr305}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
@@ -46,6 +47,7 @@ buildscript {
     classpath deps.kotlin.gradlePlugin
     classpath deps.jmh.gradlePlugin
     classpath deps.animalSniffer.gradlePlugin
+    classpath deps.japicmp
   }
 
   repositories {

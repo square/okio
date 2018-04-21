@@ -4,6 +4,7 @@ apply plugin: 'java-library'
 apply plugin: 'osgi'
 apply plugin: 'org.jetbrains.kotlin.platform.jvm'
 apply plugin: 'ru.vyarus.animalsniffer'
+apply plugin: 'me.champeau.gradle.japicmp'
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
 
@@ -20,6 +21,10 @@ animalsniffer {
   sourceSets = [sourceSets.main]
 }
 
+configurations {
+  baseline
+}
+
 dependencies {
   signature 'org.codehaus.mojo.signature:java16:1.1@signature'
 
@@ -28,4 +33,20 @@ dependencies {
   compileOnly deps.jsr305
   testImplementation deps.test.junit
   testImplementation deps.kotlin.test.jdk
+
+  baseline('com.squareup.okio:okio:1.14.0') {
+    transitive = false
+    force = true
+  }
 }
+
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask, dependsOn: 'jar') {
+  oldClasspath = configurations.baseline
+  newClasspath = files(jar.archivePath)
+  onlyBinaryIncompatibleModified = true
+  failOnModification = true
+  txtOutputFile = file("$buildDir/reports/japi.txt")
+  ignoreMissingClasses = true
+  includeSynthetic = true
+}
+check.dependsOn(japicmp)
