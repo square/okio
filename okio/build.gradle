@@ -56,3 +56,5 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask, dependsOn: 'jar') {
   includeSynthetic = true
 }
 check.dependsOn(japicmp)
+
+assemble.dependsOn(tasks['jmhJar'])
