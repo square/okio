@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.junit.Test;
 
+import static kotlin.text.Charsets.UTF_8;
 import static okio.TestUtil.repeat;
-import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

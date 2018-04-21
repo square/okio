@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Random;
+import kotlin.text.Charsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,7 +36,7 @@ final class TestUtil {
   }
 
   static void assertByteArrayEquals(String expectedUtf8, byte[] b) {
-    assertEquals(expectedUtf8, new String(b, Util.UTF_8));
+    assertEquals(expectedUtf8, new String(b, Charsets.UTF_8));
   }
 
   static ByteString randomBytes(int length) {

@@ -31,8 +31,8 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import static java.util.Arrays.asList;
+import static kotlin.text.Charsets.UTF_8;
 import static okio.TestUtil.repeat;
-import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -317,7 +317,7 @@ public final class BufferedSinkTest {
     String expected = "abcdefg";
 
     ByteBuffer nioByteBuffer = ByteBuffer.allocate(1024);
-    nioByteBuffer.put("abcdefg".getBytes(Util.UTF_8));
+    nioByteBuffer.put("abcdefg".getBytes(UTF_8));
     nioByteBuffer.flip();
 
     int byteCount = sink.write(nioByteBuffer);
@@ -333,7 +333,7 @@ public final class BufferedSinkTest {
     String expected = TestUtil.repeat('a', Segment.SIZE * 3);
 
     ByteBuffer nioByteBuffer = ByteBuffer.allocate(Segment.SIZE * 4);
-    nioByteBuffer.put(TestUtil.repeat('a', Segment.SIZE * 3).getBytes(Util.UTF_8));
+    nioByteBuffer.put(TestUtil.repeat('a', Segment.SIZE * 3).getBytes(UTF_8));
     nioByteBuffer.flip();
 
     int byteCount = sink.write(nioByteBuffer);

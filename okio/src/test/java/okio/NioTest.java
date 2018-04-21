@@ -21,6 +21,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.StandardOpenOption;
+import kotlin.text.Charsets;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -104,7 +105,7 @@ public final class NioTest {
     assertTrue(channel.isOpen());
 
     ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-    byteBuffer.put("abcdefghijklmnopqrstuvwxyz".getBytes(Util.UTF_8));
+    byteBuffer.put("abcdefghijklmnopqrstuvwxyz".getBytes(Charsets.UTF_8));
     byteBuffer.flip();
     byteBuffer.position(3);
     byteBuffer.limit(23);
@@ -141,6 +142,6 @@ public final class NioTest {
     byteBuffer.position(3);
     byte[] data = new byte[byteBuffer.remaining()];
     byteBuffer.get(data);
-    assertEquals("abcdefghijklmnopqrst", new String(data, Util.UTF_8));
+    assertEquals("abcdefghijklmnopqrst", new String(data, Charsets.UTF_8));
   }
 }

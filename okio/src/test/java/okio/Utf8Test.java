@@ -16,6 +16,7 @@
 package okio;
 
 import java.io.EOFException;
+import kotlin.text.Charsets;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -84,7 +85,7 @@ public final class Utf8Test {
   @Test public void multipleSegmentString() throws Exception {
     String a = TestUtil.repeat('a', Segment.SIZE + Segment.SIZE + 1);
     Buffer encoded = new Buffer().writeUtf8(a);
-    Buffer expected = new Buffer().write(a.getBytes(Util.UTF_8));
+    Buffer expected = new Buffer().write(a.getBytes(Charsets.UTF_8));
     assertEquals(expected, encoded);
   }
 

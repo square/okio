@@ -32,6 +32,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import kotlin.text.Charsets;
 
 import static okio.Util.checkOffsetAndCount;
 import static okio.Util.reverseBytesLong;
@@ -599,14 +600,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
 
   @Override public String readUtf8() {
     try {
-      return readString(size, Util.UTF_8);
+      return readString(size, Charsets.UTF_8);
     } catch (EOFException e) {
       throw new AssertionError(e);
     }
   }
 
   @Override public String readUtf8(long byteCount) throws EOFException {
-    return readString(byteCount, Util.UTF_8);
+    return readString(byteCount, Charsets.UTF_8);
   }
 
   @Override public String readString(Charset charset) {
@@ -999,7 +1000,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
           "endIndex > string.length: " + endIndex + " > " + string.length());
     }
     if (charset == null) throw new IllegalArgumentException("charset == null");
-    if (charset.equals(Util.UTF_8)) return writeUtf8(string, beginIndex, endIndex);
+    if (charset.equals(Charsets.UTF_8)) return writeUtf8(string, beginIndex, endIndex);
     byte[] data = string.substring(beginIndex, endIndex).getBytes(charset);
     return write(data, 0, data.length);
   }
