@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE") // Aliases to public API.
-
 package okio
 
-/**
- * Returns a [GzipSink] that gzip-compresses to this [Sink] while writing.
- *
- * @see GzipSource
- */
-inline fun Sink.gzip(): GzipSink = GzipSink(this)
+import org.junit.Test
+import kotlin.test.assertEquals
+
+class GzipKotlinTest {
+  @Test fun sink() {
+    val data = Buffer()
+    val gzip = (data as Sink).gzip()
+    gzip.buffer().writeUtf8("Hi!").close()
+    assertEquals("1f8b0800000000000000f3c8540400dac59e7903000000", data.readByteString().hex())
+  }
+
+  @Test fun source() {
+    val buffer = Buffer().write(
+        ByteString.decodeHex("1f8b0800000000000000f3c8540400dac59e7903000000"))
+    val gzip = (buffer as Source).gzip()
+    assertEquals("Hi!", gzip.buffer().readUtf8())
+  }
+}
