@@ -16,22 +16,35 @@
 
 package okio
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.util.zip.Deflater
+import java.util.zip.Inflater
+import kotlin.test.assertEquals
 
-class DeflaterSinkTest {
+class DeflateKotlinTest {
   @Test fun deflate() {
     val data = Buffer()
     val deflater = (data as Sink).deflate()
     deflater.buffer().writeUtf8("Hi!").close()
-    assertThat(data.readByteString().hex()).isEqualTo("789cf3c854040001ce00d3")
+    assertEquals("789cf3c854040001ce00d3", data.readByteString().hex())
   }
 
   @Test fun deflateWithDeflater() {
     val data = Buffer()
     val deflater = (data as Sink).deflate(Deflater(0, true))
     deflater.buffer().writeUtf8("Hi!").close()
-    assertThat(data.readByteString().hex()).isEqualTo("010300fcff486921")
+    assertEquals("010300fcff486921", data.readByteString().hex())
+  }
+
+  @Test fun inflate() {
+    val buffer = Buffer().write(ByteString.decodeHex("789cf3c854040001ce00d3"))
+    val inflated = (buffer as Source).inflate()
+    assertEquals("Hi!", inflated.buffer().readUtf8())
+  }
+
+  @Test fun inflateWithInflater() {
+    val buffer = Buffer().write(ByteString.decodeHex("010300fcff486921"))
+    val inflated = (buffer as Source).inflate(Inflater(true))
+    assertEquals("Hi!", inflated.buffer().readUtf8())
   }
 }
