@@ -5,6 +5,8 @@ apply plugin: 'osgi'
 apply plugin: 'org.jetbrains.kotlin.platform.jvm'
 apply plugin: 'ru.vyarus.animalsniffer'
 
+apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
+
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
 
