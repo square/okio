@@ -1,7 +1,4 @@
-description = 'Okio'
-
 apply plugin: 'java-library'
-apply plugin: 'osgi'
 apply plugin: 'org.jetbrains.kotlin.platform.jvm'
 apply plugin: 'ru.vyarus.animalsniffer'
 apply plugin: 'me.champeau.gradle.japicmp'
@@ -13,7 +10,7 @@ targetCompatibility = JavaVersion.VERSION_1_7
 
 jar {
   manifest {
-    instruction 'Automatic-Module-Name', 'okio'
+    attributes('Automatic-Module-Name': 'okio')
   }
 }
 
