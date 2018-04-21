@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.zip.CRC32;
 import org.junit.Test;
 
-import static okio.Util.UTF_8;
+import static kotlin.text.Charsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

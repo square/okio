@@ -32,6 +32,7 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import kotlin.text.Charsets;
 
 import static okio.Util.arrayRangeEquals;
 import static okio.Util.checkOffsetAndCount;
@@ -97,7 +98,7 @@ public class ByteString implements Serializable, Comparable<ByteString> {
   /** Returns a new byte string containing the {@code UTF-8} bytes of {@code s}. */
   public static ByteString encodeUtf8(String s) {
     if (s == null) throw new IllegalArgumentException("s == null");
-    ByteString byteString = new ByteString(s.getBytes(Util.UTF_8));
+    ByteString byteString = new ByteString(s.getBytes(Charsets.UTF_8));
     byteString.utf8 = s;
     return byteString;
   }
@@ -113,7 +114,7 @@ public class ByteString implements Serializable, Comparable<ByteString> {
   public String utf8() {
     String result = utf8;
     // We don't care if we double-allocate in racy code.
-    return result != null ? result : (utf8 = new String(data, Util.UTF_8));
+    return result != null ? result : (utf8 = new String(data, Charsets.UTF_8));
   }
 
   /** Constructs a new {@code String} by decoding the bytes using {@code charset}. */

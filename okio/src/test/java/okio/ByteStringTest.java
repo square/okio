@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import kotlin.text.Charsets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -103,7 +104,7 @@ public final class ByteStringTest {
   @Parameter(1) public String name;
 
   @Test public void ofCopyRange() {
-    byte[] bytes = "Hello, World!".getBytes(Util.UTF_8);
+    byte[] bytes = "Hello, World!".getBytes(Charsets.UTF_8);
     ByteString byteString = ByteString.of(bytes, 2, 9);
     // Verify that the bytes were copied out.
     bytes[4] = (byte) 'a';
@@ -111,7 +112,7 @@ public final class ByteStringTest {
   }
 
   @Test public void ofByteBuffer() {
-    byte[] bytes = "Hello, World!".getBytes(Util.UTF_8);
+    byte[] bytes = "Hello, World!".getBytes(Charsets.UTF_8);
     ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
     byteBuffer.position(2).limit(11);
     ByteString byteString = ByteString.of(byteBuffer);
@@ -278,8 +279,8 @@ public final class ByteStringTest {
 
   @Test public void utf8() throws Exception {
     ByteString byteString = factory.encodeUtf8(bronzeHorseman);
-    assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(Util.UTF_8));
-    assertTrue(byteString.equals(ByteString.of(bronzeHorseman.getBytes(Util.UTF_8))));
+    assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(Charsets.UTF_8));
+    assertTrue(byteString.equals(ByteString.of(bronzeHorseman.getBytes(Charsets.UTF_8))));
     assertEquals(byteString.utf8(), bronzeHorseman);
   }
 
@@ -357,14 +358,14 @@ public final class ByteStringTest {
   }
 
   @Test public void read() throws Exception {
-    InputStream in = new ByteArrayInputStream("abc".getBytes(Util.UTF_8));
+    InputStream in = new ByteArrayInputStream("abc".getBytes(Charsets.UTF_8));
     assertEquals(ByteString.decodeHex("6162"), ByteString.read(in, 2));
     assertEquals(ByteString.decodeHex("63"), ByteString.read(in, 1));
     assertEquals(ByteString.of(), ByteString.read(in, 0));
   }
 
   @Test public void readAndToLowercase() throws Exception {
-    InputStream in = new ByteArrayInputStream("ABC".getBytes(Util.UTF_8));
+    InputStream in = new ByteArrayInputStream("ABC".getBytes(Charsets.UTF_8));
     assertEquals(ByteString.encodeUtf8("ab"), ByteString.read(in, 2).toAsciiLowercase());
     assertEquals(ByteString.encodeUtf8("c"), ByteString.read(in, 1).toAsciiLowercase());
     assertEquals(ByteString.EMPTY, ByteString.read(in, 0).toAsciiLowercase());
@@ -387,7 +388,7 @@ public final class ByteStringTest {
   }
 
   @Test public void readAndToUppercase() throws Exception {
-    InputStream in = new ByteArrayInputStream("abc".getBytes(Util.UTF_8));
+    InputStream in = new ByteArrayInputStream("abc".getBytes(Charsets.UTF_8));
     assertEquals(ByteString.encodeUtf8("AB"), ByteString.read(in, 2).toAsciiUppercase());
     assertEquals(ByteString.encodeUtf8("C"), ByteString.read(in, 1).toAsciiUppercase());
     assertEquals(ByteString.EMPTY, ByteString.read(in, 0).toAsciiUppercase());
