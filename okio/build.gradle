@@ -1,8 +1,12 @@
+import me.champeau.gradle.japicmp.JapicmpTask
+
 description = 'Okio'
 
+apply plugin: 'de.undercouch.download'
 apply plugin: 'java-library'
-apply plugin: 'osgi'
+apply plugin: 'me.champeau.gradle.japicmp'
 apply plugin: 'org.jetbrains.kotlin.platform.jvm'
+apply plugin: 'osgi'
 apply plugin: 'ru.vyarus.animalsniffer'
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
@@ -28,4 +32,19 @@ dependencies {
   compileOnly deps.jsr305
   testImplementation deps.test.junit
   testImplementation deps.kotlin.test.jdk
+}
+
+task downloadOkio1x(type: Download) {
+  src 'https://search.maven.org/remotecontent?filepath=com/squareup/okio/okio/1.14.0/okio-1.14.0.jar'
+  dest new File(buildDir, 'okio-1.14.0.jar')
+  overwrite false
+  tempAndMove true
+}
+
+task japicmp(type: JapicmpTask, dependsOn: [downloadOkio1x, jar]) {
+  oldClasspath = files(file("$buildDir/okio-1.14.0.jar"))
+  newClasspath = files(jar.archivePath)
+  onlyModified = true
+  failOnModification = true
+  txtOutputFile = file("$buildDir/reports/japi.txt")
 }

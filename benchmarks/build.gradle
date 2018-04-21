@@ -10,3 +10,7 @@ dependencies {
   jmh deps.jmh.core
   jmh deps.jmh.generator
 }
+
+jmh {
+  duplicateClassesStrategy = 'warn'
+}

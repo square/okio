@@ -2,17 +2,35 @@ description = 'A modern I/O API for Java'
 
 buildscript {
   ext.versions = [
-      'kotlin': '1.2.40',
-      'jmhPlugin': '0.4.5',
-      'animalSnifferPlugin': '1.4.3',
-      'jsr305': '3.0.2',
-      'jmh': '1.19',
       'animalSniffer': '1.16',
-      'junit': '4.12',
+      'animalSnifferPlugin': '1.4.3',
       'assertj': '1.7.0',
+      'downloadPlugin': '3.4.2',
+      'japicmpPlugin': '0.2.6',
+      'jmh': '1.19',
+      'jmhPlugin': '0.4.5',
+      'jsr305': '3.0.2',
+      'junit': '4.12',
+      'kotlin': '1.2.40',
   ]
 
   ext.deps = [
+      'animalSniffer': [
+          'gradlePlugin': "ru.vyarus:gradle-animalsniffer-plugin:${versions.animalSnifferPlugin}",
+          'annotations': "org.codehaus.mojo:animal-sniffer-annotations:${versions.animalSniffer}",
+      ],
+      'downloadPlugin': [
+          'gradlePlugin': "de.undercouch:gradle-download-task:${versions.downloadPlugin}",
+      ],
+      'japicmp': [
+          'gradlePlugin': "me.champeau.gradle:japicmp-gradle-plugin:${versions.japicmpPlugin}"
+      ],
+      'jmh': [
+          'gradlePlugin': "me.champeau.gradle:jmh-gradle-plugin:${versions.jmhPlugin}",
+          'core': "org.openjdk.jmh:jmh-core:${versions.jmh}",
+          'generator': "org.openjdk.jmh:jmh-generator-annprocess:${versions.jmh}",
+      ],
+      'jsr305': "com.google.code.findbugs:jsr305:${versions.jsr305}",
       'kotlin': [
           'gradlePlugin': "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
           'stdLib': [
@@ -26,26 +44,18 @@ buildscript {
               'jdk': "org.jetbrains.kotlin:kotlin-test-junit",
           ],
       ],
-      'jmh': [
-          'gradlePlugin': "me.champeau.gradle:jmh-gradle-plugin:${versions.jmhPlugin}",
-          'core': "org.openjdk.jmh:jmh-core:${versions.jmh}",
-          'generator': "org.openjdk.jmh:jmh-generator-annprocess:${versions.jmh}",
-      ],
-      'animalSniffer': [
-          'gradlePlugin': "ru.vyarus:gradle-animalsniffer-plugin:${versions.animalSnifferPlugin}",
-          'annotations': "org.codehaus.mojo:animal-sniffer-annotations:${versions.animalSniffer}",
-      ],
-      'jsr305': "com.google.code.findbugs:jsr305:${versions.jsr305}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
-      ]
+      ],
   ]
 
   dependencies {
-    classpath deps.kotlin.gradlePlugin
-    classpath deps.jmh.gradlePlugin
     classpath deps.animalSniffer.gradlePlugin
+    classpath deps.downloadPlugin.gradlePlugin
+    classpath deps.japicmp.gradlePlugin
+    classpath deps.jmh.gradlePlugin
+    classpath deps.kotlin.gradlePlugin
   }
 
   repositories {
