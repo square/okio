@@ -2,7 +2,9 @@ Okio
 ====
 
 Okio is a library that complements `java.io` and `java.nio` to make it much
-easier to access, store, and process your data.
+easier to access, store, and process your data. It started as a component of
+[OkHttp][1], the capable HTTP client included in Android. It's well-exercised
+and ready to solve new problems.
 
 ByteStrings and Buffers
 -----------------------
@@ -62,17 +64,91 @@ Sources and sinks interoperate with `InputStream` and `OutputStream`. You can
 view any `Source` as an `InputStream`, and you can view any `InputStream` as a
 `Source`. Similarly for `Sink` and `OutputStream`.
 
-Dependable
-----------
+Recipes
+-------
 
-Okio started as a component of [OkHttp][1], the capable HTTP+SPDY client
-included in Android. It's well-exercised and ready to solve new problems.
+We've written some recipes that demonstrate how to solve common problems with
+Okio. Read through them to learn about how everything works together.
+Cut-and-paste these examples freely; that's what they're for.
 
+### [Read a text file line-by-line](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/ReadFileLineByLine.java)
 
-Example: a PNG decoder
-----------------------
+Use `Okio.source(File)` to open a source stream to read a file. The returned
+`Source` interface is very small and has limited uses. Instead we wrap the
+source with a buffer. This has two benefits:
 
-Decoding the chunks of a PNG file demonstrates Okio in practice.
+ * **It makes the API more powerful.** Instead of the basic methods offered by
+   `Source`, `BufferedSource` has dozens of methods to address most common
+   problems concisely.
+
+ * **It makes your program run faster.** Buffering allows Okio to get more done
+   with fewer I/O operations.
+
+Each `Source` that is opened needs to be closed. The code that opens the stream
+is responsible for making sure it is closed. Here we use Java's `try` blocks to
+close our sources automatically.
+
+```java
+public void readLines(File file) throws IOException {
+  try (Source fileSource = Okio.source(file);
+       BufferedSource bufferedSource = Okio.buffer(fileSource)) {
+
+    while (true) {
+      String line = bufferedSource.readUtf8Line();
+      if (line == null) break;
+
+      if (line.contains("square")) {
+        System.out.println(line);
+      }
+    }
+
+  }
+}
+```
+
+The `readUtf8Line()` API reads all of the data until the next line delimiter –
+either `\n`, `\r\n`, or the end of the file. It returns that data as a string,
+omitting the delimiter at the end. When it encounters empty lines the method
+will return an empty string. If there isn’t any more data to read it will
+return null.
+
+The above program can be written more compactly by inlining the `fileSource`
+variable and by using a fancy `for` loop instead of a `while`:
+
+```java
+public void readLines(File file) throws IOException {
+  try (BufferedSource source = Okio.buffer(Okio.source(file))) {
+    for (String line; (line = source.readUtf8Line()) != null; ) {
+      if (line.contains("square")) {
+        System.out.println(line);
+      }
+    }
+  }
+}
+```
+
+The `readUtf8Line()` method is suitable for parsing most files. For certain
+use-cases you may also consider `readUtf8LineStrict()`. It is similar but it
+requires that each line is terminated by `\n` or `\r\n`. If it encounters the
+end of the file before that it will throw an `EOFException`. The strict variant
+also permits a byte limit to defend against malformed input.
+
+```java
+public void readLines(File file) throws IOException {
+  try (BufferedSource source = Okio.buffer(Okio.source(file))) {
+    while (!source.exhausted()) {
+      String line = source.readUtf8LineStrict(1024L);
+      if (line.contains("square")) {
+        System.out.println(line);
+      }
+    }
+  }
+}
+```
+
+### PNG decoder
+
+Here we decode the chunks of a PNG file.
 
 ```java
 private static final ByteString PNG_HEADER = ByteString.decodeHex("89504e470d0a1a0a");
@@ -162,3 +238,4 @@ License
  [7]: https://square.github.io/okio/1.x/okio/okio/BufferedSource.html
  [8]: https://square.github.io/okio/1.x/okio/okio/BufferedSink.html
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
+ [javadoc]: http://square.github.io/okio/1.x/okio
