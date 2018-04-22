@@ -146,6 +146,104 @@ public void readLines(File file) throws IOException {
 }
 ```
 
+### [Write a text file](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/WriteFile.java)
+
+Above we used a `Source` and a `BufferedSource` to read a file. To write, we use
+a `Sink` and a `BufferedSink`. The advantages of buffering are the same: a more
+capable API and better performance.
+
+```java
+public void writeEnv(File file) throws IOException {
+  try (Sink fileSink = Okio.sink(file);
+       BufferedSink bufferedSink = Okio.buffer(fileSink)) {
+
+    for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+      bufferedSink.writeUtf8(entry.getKey());
+      bufferedSink.writeUtf8("=");
+      bufferedSink.writeUtf8(entry.getValue());
+      bufferedSink.writeUtf8("\n");
+    }
+
+  }
+}
+```
+
+There isn’t an API to write a line of input; instead we manually insert our own
+newline character. Most programs should hardcode `"\n"` as the newline
+character. In rare situations you may use `System.lineSeparator()` instead of
+`"\n"`: it returns `"\r\n"` on Windows and `"\n"` everywhere else.
+
+We can write the above program more compactly by inlining the `fileSink`
+variable and by taking advantage of method chaining:
+
+```java
+public void writeEnv(File file) throws IOException {
+  try (BufferedSink sink = Okio.buffer(Okio.sink(file))) {
+    for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+      sink.writeUtf8(entry.getKey())
+          .writeUtf8("=")
+          .writeUtf8(entry.getValue())
+          .writeUtf8("\n");
+    }
+  }
+}
+```
+
+In the above code we make four calls to `writeUtf8()`. Making four calls is
+more efficient than the code below because the VM doesn’t have to create and
+garbage collect a temporary string.
+
+```java
+sink.writeUtf8(entry.getKey() + "=" + entry.getValue() + "\n"); // Slower!
+```
+
+### [UTF-8](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/ExploreCharsets.java)
+
+In the above APIs you can see that Okio really likes UTF-8. Early computer
+systems suffered many incompatible character encodings: ISO-8859-1, ShiftJIS,
+ASCII, EBCDIC, etc. Writing software to support multiple character sets was
+awful and we didn’t even have emoji! Today we're lucky that the world has
+standardized on UTF-8 everywhere, with some rare uses of other charsets in
+legacy systems.
+
+If you need another character set, `readString()` and `writeString()` are there
+for you. These methods require that you specify a character set. Otherwise you
+may accidentally create data that is only readable by the local computer. Most
+programs should use the UTF-8 methods only.
+
+When encoding strings you need to be mindful of the different ways that strings
+are represented and encoded. When a glyph has an accent or another adornment
+it may be represented as a single complex code point (`é`) or as a simple code
+point (`e`) followed by its modifiers (`´`). When the entire glyph is a single
+code point that’s called [NFC][nfc]; when it’s multiple it’s [NFD][nfd].
+
+Though we use UTF-8 whenever we read or write strings in I/O, when they are in
+memory Java Strings use an obsolete character encoding called UTF-16. It is a
+bad encoding because it uses a 16-bit `char` for most characters, but some don’t
+fit. In particular, most emoji use two Java chars. This is problematic because
+`String.length()` returns a surprising result: the number of UTF-16 chars and
+not the natural number of glyphs.
+
+|                String | Café 🍩                     | Café 🍩                        |
+| --------------------: | :---------------------------| :------------------------------|
+|                  Form | [NFC][nfc]                  | [NFD][nfd]                     |
+|           Code Points | `c  a  f  é    ␣   🍩     ` | `c  a  f  e  ´    ␣   🍩     ` |
+|           UTF-8 bytes | `43 61 66 c3a9 20 f09f8da9` | `43 61 66 65 cc81 20 f09f8da9` |
+| String.codePointCount | 6                           | 7                              |
+|         String.length | 7                           | 8                              |
+|             Utf8.size | 10                          | 11                             |
+
+For the most part Okio lets you ignore these problems and focus on your data.
+But when you need them, there are convenient APIs for dealing with low-level
+UTF-8 strings.
+
+Use `Utf8.size()` to count the number of bytes required to encode a string as
+UTF-8 without actually encoding it. This is handy in length-prefixed encodings
+like protocol buffers.
+
+Use `BufferedSource.readUtf8CodePoint()` to read a single variable-length code
+point, and `BufferedSink.writeUtf8CodePoint()` to write one.
+
 ### PNG decoder
 
 Here we decode the chunks of a PNG file.
@@ -239,3 +337,5 @@ License
  [8]: https://square.github.io/okio/1.x/okio/okio/BufferedSink.html
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
  [javadoc]: http://square.github.io/okio/1.x/okio
+ [nfd]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD
+ [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
