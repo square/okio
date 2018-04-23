@@ -244,6 +244,100 @@ like protocol buffers.
 Use `BufferedSource.readUtf8CodePoint()` to read a single variable-length code
 point, and `BufferedSink.writeUtf8CodePoint()` to write one.
 
+### [Golden Values](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/GoldenValue.java)
+
+Okio likes testing. The library itself is heavily tested, and it has features
+that are often helpful when testing application code. One pattern we’ve found to
+be quite useful is “golden value” testing. The goal of such tests is to confirm
+that data encoded with earlier versions of a program can safely be decoded by
+the current program.
+
+We’ll illustrate this by encoding a value using Java Serialization. Though we
+must disclaim that Java Serialization is an awful encoding system and most
+programs should prefer other formats like JSON or protobuf! In any case, here’s
+a method that takes an object, serializes it, and returns the result as a
+`ByteString`:
+
+```java
+private ByteString serialize(Object o) throws IOException {
+  Buffer buffer = new Buffer();
+  try (ObjectOutputStream objectOut = new ObjectOutputStream(buffer.outputStream())) {
+    objectOut.writeObject(o);
+  }
+  return buffer.readByteString();
+}
+```
+
+There’s a lot going on here.
+
+1. We create a buffer as a holding space for our serialized data. It’s a convenient
+   replacement for `ByteArrayOutputStream`.
+
+2. We ask the buffer for its output stream. Writes to a buffer or its output stream
+   always append data to the end of the buffer.
+
+3. We create an `ObjectOutputStream` (the encoding API for Java serialization) and
+   write our object. The try block takes care of closing the stream for us. Note
+   that closing a buffer has no effect.
+
+4. Finally we read a byte string from the buffer. The `readByteString()` method
+   allows us to specify how many bytes to read; here we don’t specify a count in
+   order to read the entire thing. Reads from a buffer always consume data from
+   the front of the buffer.
+
+With our `serialize()` method handy we are ready to compute and print a golden
+value.
+
+```java
+Point point = new Point(8.0, 15.0);
+ByteString pointBytes = serialize(point);
+System.out.println(pointBytes.base64());
+```
+
+We print the `ByteString` as [base64][base64] because it’s a compact format
+that’s suitable for embedding in a test case. The program prints this:
+
+```
+rO0ABXNyAB5va2lvLnNhbXBsZXMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA
+```
+
+That’s our golden value! We can embed it in our test case using base64 again
+to convert it back into a `ByteString`:
+
+```java
+ByteString goldenBytes = ByteString.decodeBase64("rO0ABXNyAB5va2lvLnNhbXBsZ"
+    + "XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA"
+    + "AAAAAAA");
+```
+
+The next step is to deserialize the `ByteString` back into our value class. This
+method reverses the `serialize()` method above: we append a byte string to a
+buffer then consume it using an `ObjectInputStream`:
+
+```java
+private Object deserialize(ByteString byteString) throws IOException, ClassNotFoundException {
+  Buffer buffer = new Buffer();
+  buffer.write(byteString);
+  try (ObjectInputStream objectIn = new ObjectInputStream(buffer.inputStream())) {
+    return objectIn.readObject();
+  }
+}
+```
+
+Now we can test the decoder against the golden value:
+
+```java
+ByteString goldenBytes = ByteString.decodeBase64("rO0ABXNyAB5va2lvLnNhbXBsZ"
+    + "XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA"
+    + "AAAAAAA");
+Point decoded = (Point) deserialize(goldenBytes);
+assertEquals(new Point(8.0, 15.0), decoded);
+```
+
+With this test we can change the serialization of the `Point` class without
+breaking compatibility.
+
+
 ### PNG decoder
 
 Here we decode the chunks of a PNG file.
@@ -376,3 +470,4 @@ License
  [javadoc]: http://square.github.io/okio/1.x/okio
  [nfd]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
+ [base64]: https://tools.ietf.org/html/rfc4648#section-4
