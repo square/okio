@@ -15,6 +15,7 @@
  */
 package okio;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.ReadableByteChannel;
@@ -37,14 +38,26 @@ public interface BufferedSource extends Source, ReadableByteChannel {
   boolean exhausted() throws IOException;
 
   /**
-   * Returns when the buffer contains at least {@code byteCount} bytes. Throws an
-   * {@link java.io.EOFException} if the source is exhausted before the required bytes can be read.
+   * Returns when the buffer contains at least {@code byteCount} bytes.
+   *
+   * <p>If the source is exhausted before the required number of bytes can be made available, any
+   * buffered bytes are discarded and {@link EOFException} is thrown. Discarding the buffer contents
+   * in this scenario is necessary to preserve the general contract that {@link EOFException}
+   * implies that the source is definitely {@link #exhausted()} and that no further bytes can be
+   * read from it.
+   *
+   * @see #request(long)
    */
   void require(long byteCount) throws IOException;
 
   /**
-   * Returns true when the buffer contains at least {@code byteCount} bytes, expanding it as
-   * necessary. Returns false if the source is exhausted before the requested bytes can be read.
+   * Returns <code>true</code> when the buffer contains at least {@code byteCount} bytes, expanding
+   * it as necessary.
+   *
+   * <p>Returns <code>false</code> if the source is exhausted before the requested number of bytes
+   * can be made available. Note that, unlike {@link #require(long)}, this method will leave any
+   * buffered data intact, and {@link #exhausted()} will not return <code>true</code> until those
+   * bytes have been consumed.
    */
   boolean request(long byteCount) throws IOException;
 

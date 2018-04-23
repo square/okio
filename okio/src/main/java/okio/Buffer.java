@@ -107,7 +107,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   @Override public void require(long byteCount) throws EOFException {
-    if (size < byteCount) throw new EOFException();
+    if (size < byteCount) {
+      clear(); // exhaust ourselves
+      throw new EOFException();
+    }
   }
 
   @Override public boolean request(long byteCount) {
@@ -116,7 +119,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
 
   @Override public InputStream inputStream() {
     return new InputStream() {
-      @Override public int read() {
+      @Override public int read() throws IOException {
         if (size > 0) return readByte() & 0xff;
         return -1;
       }
@@ -277,8 +280,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     return result;
   }
 
-  @Override public byte readByte() {
-    if (size == 0) throw new IllegalStateException("size == 0");
+  @Override public byte readByte() throws EOFException {
+    if (size == 0) throw new EOFException();
 
     Segment segment = head;
     int pos = segment.pos;
@@ -316,14 +319,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     }
   }
 
-  @Override public short readShort() {
-    if (size < 2) throw new IllegalStateException("size < 2: " + size);
+  @Override public short readShort() throws EOFException {
+    if (size == 0) throw new EOFException();
 
     Segment segment = head;
     int pos = segment.pos;
     int limit = segment.limit;
 
-    // If the short is split across multiple segments, delegate to readByte().
+    // If the first segment does not have a full short, delegate to readByte().
     if (limit - pos < 2) {
       int s = (readByte() & 0xff) << 8
           |   (readByte() & 0xff);
@@ -345,14 +348,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     return (short) s;
   }
 
-  @Override public int readInt() {
-    if (size < 4) throw new IllegalStateException("size < 4: " + size);
+  @Override public int readInt() throws EOFException {
+    if (size == 0) throw new EOFException();
 
     Segment segment = head;
     int pos = segment.pos;
     int limit = segment.limit;
 
-    // If the int is split across multiple segments, delegate to readByte().
+    // If the first segment does not have a full int, delegate to readByte().
     if (limit - pos < 4) {
       return (readByte() & 0xff) << 24
           |  (readByte() & 0xff) << 16
@@ -377,14 +380,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     return i;
   }
 
-  @Override public long readLong() {
-    if (size < 8) throw new IllegalStateException("size < 8: " + size);
+  @Override public long readLong() throws EOFException {
+    if (size == 0) throw new EOFException();
 
     Segment segment = head;
     int pos = segment.pos;
     int limit = segment.limit;
 
-    // If the long is split across multiple segments, delegate to readInt().
+    // If the first segment does not have a full long, delegate to readInt().
     if (limit - pos < 8) {
       return (readInt() & 0xffffffffL) << 32
           |  (readInt() & 0xffffffffL);
@@ -411,20 +414,20 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     return v;
   }
 
-  @Override public short readShortLe() {
+  @Override public short readShortLe() throws EOFException {
     return Util.reverseBytesShort(readShort());
   }
 
-  @Override public int readIntLe() {
+  @Override public int readIntLe() throws EOFException {
     return Util.reverseBytesInt(readInt());
   }
 
-  @Override public long readLongLe() {
+  @Override public long readLongLe() throws EOFException {
     return Util.reverseBytesLong(readLong());
   }
 
-  @Override public long readDecimalLong() {
-    if (size == 0) throw new IllegalStateException("size == 0");
+  @Override public long readDecimalLong() throws EOFException {
+    if (size == 0) throw new EOFException();
 
     // This value is always built negatively in order to accommodate Long.MIN_VALUE.
     long value = 0;
@@ -481,8 +484,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     return negative ? value : -value;
   }
 
-  @Override public long readHexadecimalUnsignedLong() {
-    if (size == 0) throw new IllegalStateException("size == 0");
+  @Override public long readHexadecimalUnsignedLong() throws EOFException {
+    if (size == 0) throw new EOFException();
 
     long value = 0;
     int seen = 0;
@@ -772,11 +775,12 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   @Override public byte[] readByteArray(long byteCount) throws EOFException {
-    checkOffsetAndCount(size, 0, byteCount);
-    if (byteCount > Integer.MAX_VALUE) {
-      throw new IllegalArgumentException("byteCount > Integer.MAX_VALUE: " + byteCount);
-    }
+    if (byteCount < 0) throw new IllegalArgumentException(
+        "byteCount < 0: " + byteCount);
+    if (byteCount > Integer.MAX_VALUE) throw new IllegalArgumentException(
+        "byteCount > Integer.MAX_VALUE: " + byteCount);
 
+    require(byteCount);
     byte[] result = new byte[(int) byteCount];
     readFully(result);
     return result;

@@ -58,7 +58,10 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public void require(long byteCount) throws IOException {
-    if (!request(byteCount)) throw new EOFException();
+    if (!request(byteCount)) {
+      buffer.clear(); // exhaust ourselves
+      throw new EOFException();
+    }
   }
 
   @Override public boolean request(long byteCount) throws IOException {
@@ -119,18 +122,7 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public void readFully(byte[] sink) throws IOException {
-    try {
-      require(sink.length);
-    } catch (EOFException e) {
-      // The underlying source is exhausted. Copy the bytes we got before rethrowing.
-      int offset = 0;
-      while (buffer.size > 0) {
-        int read = buffer.read(sink, offset, (int) buffer.size);
-        if (read == -1) throw new AssertionError();
-        offset += read;
-      }
-      throw e;
-    }
+    request(sink.length);
     buffer.readFully(sink);
   }
 
@@ -156,13 +148,7 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public void readFully(Buffer sink, long byteCount) throws IOException {
-    try {
-      require(byteCount);
-    } catch (EOFException e) {
-      // The underlying source is exhausted. Copy the bytes we got before rethrowing.
-      sink.writeAll(buffer);
-      throw e;
-    }
+    request(byteCount);
     buffer.readFully(sink, byteCount);
   }
 
@@ -202,8 +188,9 @@ final class RealBufferedSource implements BufferedSource {
   }
 
   @Override public String readString(long byteCount, Charset charset) throws IOException {
-    require(byteCount);
     if (charset == null) throw new IllegalArgumentException("charset == null");
+
+    require(byteCount);
     return buffer.readString(byteCount, charset);
   }
 
