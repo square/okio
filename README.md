@@ -224,7 +224,7 @@ fit. In particular, most emoji use two Java chars. This is problematic because
 `String.length()` returns a surprising result: the number of UTF-16 chars and
 not the natural number of glyphs.
 
-|                String | Café 🍩                     | Café 🍩                        |
+|                       | Café 🍩                     | Café 🍩                        |
 | --------------------: | :---------------------------| :------------------------------|
 |                  Form | [NFC][nfc]                  | [NFD][nfd]                     |
 |           Code Points | `c  a  f  é    ␣   🍩     ` | `c  a  f  e  ´    ␣   🍩     ` |
@@ -338,45 +338,111 @@ With this test we can change the serialization of the `Point` class without
 breaking compatibility.
 
 
-### PNG decoder
+### [Write a binary file](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/BitmapEncoder.java)
 
-Here we decode the chunks of a PNG file.
+Encoding a binary file is not unlike encoding a text file. Okio uses the same
+`BufferedSink` and `BufferedSource` bytes for both. This is handy for binary
+formats that include both byte and character data.
+
+Writing binary data is more hazardous than text because if you make a mistake it
+is often quite difficult to diagnose. Avoid such mistakes by being careful
+around these traps:
+
+ * **The width of each field.** This is the number of bytes used. Okio doesn't
+   include a mechanism to emit partial bytes. If you need that, you’ll need to
+   do your own bit shifting and masking before writing.
+
+ * **The endianness of each field.** All fields that have more than one byte
+   have _endianness_: whether the bytes are ordered most-significant to least
+   (big endian) or least-significant to most (little endian). Okio uses the `Le`
+   suffix for little-endian methods; methods without a suffix are big-endian.
+
+ * **Signed vs. Unsigned.** Java doesn’t have unsigned primitive types (except
+   for `char`!) so coping with this is often something that happens at the
+   application layer. To make this a little easier Okio accepts `int` types for
+   `writeByte()` and `writeShort()`. You can pass an “unsigned” byte like 255
+   and Okio will do the right thing.
+
+|           Value | Method       | Width | Endianness | Encoded Bytes             |
+| --------------: | :----------- | ----: | :--------- | :------------------------ |
+|               3 | writeByte    |     1 |            | `03`                      |
+|               3 | writeShort   |     2 | big        | `00 03`                   |
+|               3 | writeInt     |     4 | big        | `00 00 00 03`             |
+|               3 | writeLong    |     8 | big        | `00 00 00 00 00 00 00 03` |
+|               3 | writeShortLe |     2 | little     | `03 00`                   |
+|               3 | writeIntLe   |     4 | little     | `03 00 00 00`             |
+|               3 | writeLongLe  |     8 | little     | `03 00 00 00 00 00 00 00` |
+|  Byte.MAX_VALUE | writeByte    |     1 |            | `7f`                      |
+| Short.MAX_VALUE | writeShort   |     2 | big        | `7f ff`                   |
+|   Int.MAX_VALUE | writeInt     |     4 | big        | `7f ff ff ff`             |
+|  Long.MAX_VALUE | writeLong    |     8 | big        | `7f ff ff ff ff ff ff ff` |
+| Short.MAX_VALUE | writeShortLe |     2 | little     | `ff 7f`                   |
+|   Int.MAX_VALUE | writeIntLe   |     4 | little     | `ff ff ff 7f`             |
+|  Long.MAX_VALUE | writeLongLe  |     8 | little     | `ff ff ff ff ff ff ff 7f` |
+
+This code encodes a bitmap following the [BMP file format][bmp].
 
 ```java
-private static final ByteString PNG_HEADER = ByteString.decodeHex("89504e470d0a1a0a");
+void encode(Bitmap bitmap, BufferedSink sink) throws IOException {
+  int height = bitmap.height();
+  int width = bitmap.width();
 
-public void decodePng(InputStream in) throws IOException {
-  try (BufferedSource pngSource = Okio.buffer(Okio.source(in))) {
-    ByteString header = pngSource.readByteString(PNG_HEADER.size());
-    if (!header.equals(PNG_HEADER)) {
-      throw new IOException("Not a PNG.");
+  int bytesPerPixel = 3;
+  int rowByteCountWithoutPadding = (bytesPerPixel * width);
+  int rowByteCount = ((rowByteCountWithoutPadding + 3) / 4) * 4;
+  int pixelDataSize = rowByteCount * height;
+  int bmpHeaderSize = 14;
+  int dibHeaderSize = 40;
+
+  // BMP Header
+  sink.writeUtf8("BM"); // ID.
+  sink.writeIntLe(bmpHeaderSize + dibHeaderSize + pixelDataSize); // File size.
+  sink.writeShortLe(0); // Unused.
+  sink.writeShortLe(0); // Unused.
+  sink.writeIntLe(bmpHeaderSize + dibHeaderSize); // Offset of pixel data.
+
+  // DIB Header
+  sink.writeIntLe(dibHeaderSize);
+  sink.writeIntLe(width);
+  sink.writeIntLe(height);
+  sink.writeShortLe(1);  // Color plane count.
+  sink.writeShortLe(bytesPerPixel * Byte.SIZE);
+  sink.writeIntLe(0);    // No compression.
+  sink.writeIntLe(16);   // Size of bitmap data including padding.
+  sink.writeIntLe(2835); // Horizontal print resolution in pixels/meter. (72 dpi).
+  sink.writeIntLe(2835); // Vertical print resolution in pixels/meter. (72 dpi).
+  sink.writeIntLe(0);    // Palette color count.
+  sink.writeIntLe(0);    // 0 important colors.
+
+  // Pixel data.
+  for (int y = height - 1; y >= 0; y--) {
+    for (int x = 0; x < width; x++) {
+      sink.writeByte(bitmap.blue(x, y));
+      sink.writeByte(bitmap.green(x, y));
+      sink.writeByte(bitmap.red(x, y));
     }
 
-    while (true) {
-      Buffer chunk = new Buffer();
-
-      // Each chunk is a length, type, data, and CRC offset.
-      int length = pngSource.readInt();
-      String type = pngSource.readUtf8(4);
-      pngSource.readFully(chunk, length);
-      int crc = pngSource.readInt();
-
-      decodeChunk(type, chunk);
-      if (type.equals("IEND")) break;
+    // Padding for 4-byte alignment.
+    for (int p = rowByteCountWithoutPadding; p < rowByteCount; p++) {
+      sink.writeByte(0);
     }
-  }
-}
-
-private void decodeChunk(String type, Buffer chunk) {
-  if (type.equals("IHDR")) {
-    int width = chunk.readInt();
-    int height = chunk.readInt();
-    System.out.printf("%08x: %s %d x %d%n", chunk.size(), type, width, height);
-  } else {
-    System.out.printf("%08x: %s%n", chunk.size(), type);
   }
 }
 ```
+
+The trickiest part of this program is the format’s required padding. The BMP
+format expects each row to begin on a 4-byte boundary so it is necessary to add
+zeros to maintain the alignment.
+
+Encoding other binary formats is usually quite similar. Some tips:
+
+ * Write tests with golden values! Confirming that your program emits the
+   expected result can make debugging easier.
+ * Use `Utf8.size()` to compute the number of bytes of an encoded string. This
+   is essential for length-prefixed formats.
+ * Use `Float.floatToIntBits()` and `Double.doubleToLongBits()` to encode
+   floating point values.
+
 
 Okio Benchmarks
 ------------
@@ -471,3 +537,4 @@ License
  [nfd]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
  [base64]: https://tools.ietf.org/html/rfc4648#section-4
+ [bmp]: https://en.wikipedia.org/wiki/BMP_file_format
