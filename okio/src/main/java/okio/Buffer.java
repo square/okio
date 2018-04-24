@@ -864,7 +864,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
 
   @Override public Buffer write(ByteString byteString) {
     if (byteString == null) throw new IllegalArgumentException("byteString == null");
-    byteString.write(this);
+    // TODO(jwilson): use ByteString.write(this) once this is Kotlin and internal APIs work.
+    write(byteString.toByteArray());
     return this;
   }
 
@@ -1504,7 +1505,8 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       }
     } else {
       // Scan through the segments, searching for a byte that's also in the array.
-      byte[] targetByteArray = targetBytes.internalArray();
+      // TODO(jwilson): use ByteString.internalArray() once this is Kotlin and internal APIs work.
+      byte[] targetByteArray = targetBytes.toByteArray();
       while (offset < size) {
         byte[] data = s.data;
         for (int pos = (int) (s.pos + fromIndex - offset), limit = s.limit; pos < limit; pos++) {
