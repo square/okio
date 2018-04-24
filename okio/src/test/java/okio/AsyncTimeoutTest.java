@@ -217,7 +217,7 @@ public final class AsyncTimeoutTest {
     timeout.timeout(250, TimeUnit.MILLISECONDS);
     Source timeoutSource = timeout.source(source);
     try {
-      timeoutSource.read(null, 0);
+      timeoutSource.read(new Buffer(), 0);
       fail();
     } catch (InterruptedIOException expected) {
     }
