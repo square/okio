@@ -1,4 +1,3 @@
-include ':benchmarks'
 include ':okio'
 include ':okio-kotlin'
 include ':samples'
