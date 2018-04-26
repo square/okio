@@ -61,7 +61,7 @@ class Pipe(internal val maxBufferSize: Long) {
             continue
           }
 
-          val bytesToWrite = Math.min(bufferSpaceAvailable, byteCount)
+          val bytesToWrite = minOf(bufferSpaceAvailable, byteCount)
           buffer.write(source, bytesToWrite)
           byteCount -= bytesToWrite
           (buffer as Object).notifyAll() // Notify the source that it can resume reading.

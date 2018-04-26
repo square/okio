@@ -549,9 +549,9 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     Segment s = head;
     if (s == null) return options.indexOf(ByteString.EMPTY);
 
-    ByteString[] byteStrings = options.byteStrings;
-    for (int i = 0, listSize = byteStrings.length; i < listSize; i++) {
-      ByteString b = byteStrings[i];
+    // TODO(jwilson): keep a reference to options.byteStrings once Buffer is Kotlin.
+    for (int i = 0, listSize = options.size(); i < listSize; i++) {
+      ByteString b = options.get(i);
       if (size >= b.size() && rangeEquals(s, s.pos, b, 0, b.size())) {
         try {
           skip(b.size());
@@ -571,9 +571,9 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
    */
   int selectPrefix(Options options) {
     Segment s = head;
-    ByteString[] byteStrings = options.byteStrings;
-    for (int i = 0, listSize = byteStrings.length; i < listSize; i++) {
-      ByteString b = byteStrings[i];
+    // TODO(jwilson): keep a reference to options.byteStrings once Buffer is Kotlin.
+    for (int i = 0, listSize = options.size(); i < listSize; i++) {
+      ByteString b = options.get(i);
       int bytesLimit = (int) Math.min(size, b.size());
       if (bytesLimit == 0 || rangeEquals(s, s.pos, b, 0, bytesLimit)) {
         return i;
