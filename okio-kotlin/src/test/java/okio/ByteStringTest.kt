@@ -53,23 +53,6 @@ class ByteStringTest {
     assertThat(actual).isEqualTo(expected)
   }
 
-  @Test fun decodeBase64() {
-    val actual = "YfCfjalj".decodeBase64()
-    val expected = ByteString.decodeBase64("YfCfjalj")
-    assertThat(actual).isEqualTo(expected)
-  }
-
-  @Test fun decodeBase64Invalid() {
-    val actual = ";-)".decodeBase64()
-    assertThat(actual).isNull()
-  }
-
-  @Test fun decodeHex() {
-    val actual = "CAFEBABE".decodeHex()
-    val expected = ByteString.decodeHex("CAFEBABE")
-    assertThat(actual).isEqualTo(expected)
-  }
-
   @Test fun streamReadByteString() {
     val stream = ByteArrayInputStream(byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8))
     val actual = stream.readByteString(4)

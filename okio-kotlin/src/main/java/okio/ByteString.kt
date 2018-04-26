@@ -47,20 +47,6 @@ inline fun String.encodeByteString(charset: Charset = UTF_8): ByteString =
     ByteString.encodeString(this, charset)
 
 /**
- * Returns a [ByteString] decoded from this base64 [String].
- *
- * @see ByteString.decodeBase64
- */
-inline fun String.decodeBase64(): ByteString? = ByteString.decodeBase64(this)
-
-/**
- * Returns a [ByteString] decoded from this hex [String].
- *
- * @see ByteString.decodeHex
- */
-inline fun String.decodeHex(): ByteString = ByteString.decodeHex(this)
-
-/**
  * Returns a [ByteString] contains [byteCount] bytes read from this [InputStream].
  *
  * @see ByteString.read

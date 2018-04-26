@@ -16,6 +16,7 @@
 
 package okio
 
+import okio.ByteString.Companion.decodeHex
 import org.junit.Test
 import java.util.zip.Deflater
 import java.util.zip.Inflater
@@ -37,13 +38,13 @@ class DeflateKotlinTest {
   }
 
   @Test fun inflate() {
-    val buffer = Buffer().write(ByteString.decodeHex("789cf3c854040001ce00d3"))
+    val buffer = Buffer().write("789cf3c854040001ce00d3".decodeHex())
     val inflated = (buffer as Source).inflate()
     assertEquals("Hi!", inflated.buffer().readUtf8())
   }
 
   @Test fun inflateWithInflater() {
-    val buffer = Buffer().write(ByteString.decodeHex("010300fcff486921"))
+    val buffer = Buffer().write("010300fcff486921".decodeHex())
     val inflated = (buffer as Source).inflate(Inflater(true))
     assertEquals("Hi!", inflated.buffer().readUtf8())
   }

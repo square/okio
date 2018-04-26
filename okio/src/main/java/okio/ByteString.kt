@@ -74,7 +74,7 @@ internal constructor(
    * Returns this byte string encoded as [Base64](http://www.ietf.org/rfc/rfc2045.txt). In violation
    * of the RFC, the returned string does not wrap lines at 76 columns.
    */
-  open fun base64() = Base64.encode(data)
+  open fun base64() = data.encodeBase64()
 
   /** Returns the 128-bit MD5 hash of this byte string.  */
   open fun md5() = digest("MD5")
@@ -118,7 +118,7 @@ internal constructor(
   }
 
   /** Returns this byte string encoded as [URL-safe Base64](http://www.ietf.org/rfc/rfc4648.txt). */
-  open fun base64Url() = Base64.encodeUrl(data)
+  open fun base64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
 
   /** Returns this byte string encoded in hexadecimal.  */
   open fun hex(): String {
@@ -443,26 +443,26 @@ internal constructor(
 
     /**
      * Decodes the Base64-encoded bytes and returns their value as a byte string. Returns null if
-     * `base64` is not a Base64-encoded sequence of bytes.
+     * this is not a Base64-encoded sequence of bytes.
      */
     @JvmStatic
-    fun decodeBase64(base64: String): ByteString? {
-      val decoded = Base64.decode(base64)
+    fun String.decodeBase64(): ByteString? {
+      val decoded = decodeBase64ToArray()
       return if (decoded != null) ByteString(decoded) else null
     }
 
     /** Decodes the hex-encoded bytes and returns their value a byte string.  */
     @JvmStatic
-    fun decodeHex(hex: String): ByteString {
-      require(hex.length % 2 == 0) { "Unexpected hex string: $hex" }
+    fun String.decodeHex(): ByteString {
+      require(length % 2 == 0) { "Unexpected hex string: ${this}" }
 
-      val result = ByteArray(hex.length / 2)
+      val result = ByteArray(length / 2)
       for (i in result.indices) {
-        val d1 = decodeHexDigit(hex[i * 2]) shl 4
-        val d2 = decodeHexDigit(hex[i * 2 + 1])
+        val d1 = decodeHexDigit(this[i * 2]) shl 4
+        val d2 = decodeHexDigit(this[i * 2 + 1])
         result[i] = (d1 + d2).toByte()
       }
-      return of(*result)
+      return ByteString(result)
     }
 
     private fun decodeHexDigit(c: Char): Int {
