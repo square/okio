@@ -205,7 +205,7 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     while (byteCount > 0) {
       val segmentOffset = if (s == 0) 0 else directory[s - 1]
       val segmentSize = directory[s] - segmentOffset
-      val stepSize = Math.min(byteCount, segmentOffset + segmentSize - offset)
+      val stepSize = minOf(byteCount, segmentOffset + segmentSize - offset)
       val segmentPos = directory[segments.size + s]
       val arrayOffset = offset - segmentOffset + segmentPos
       if (!other.rangeEquals(otherOffset, segments[s], arrayOffset, stepSize)) return false
@@ -235,7 +235,7 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     while (byteCount > 0) {
       val segmentOffset = if (s == 0) 0 else directory[s - 1]
       val segmentSize = directory[s] - segmentOffset
-      val stepSize = Math.min(byteCount, segmentOffset + segmentSize - offset)
+      val stepSize = minOf(byteCount, segmentOffset + segmentSize - offset)
       val segmentPos = directory[segments.size + s]
       val arrayOffset = offset - segmentOffset + segmentPos
       if (!arrayRangeEquals(segments[s], arrayOffset, other, otherOffset, stepSize)) return false

@@ -51,7 +51,7 @@ public final class BufferedSinkTest {
 
     Factory REAL_BUFFERED_SINK = new Factory() {
       @Override public BufferedSink create(Buffer data) {
-        return new RealBufferedSink(data);
+        return Okio.buffer((Sink) data);
       }
 
       @Override public String toString() {

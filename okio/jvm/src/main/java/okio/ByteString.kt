@@ -32,8 +32,6 @@ import java.security.NoSuchAlgorithmException
 import java.util.Arrays
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * An immutable sequence of bytes.
@@ -285,7 +283,7 @@ internal constructor(
   @JvmOverloads
   open fun indexOf(other: ByteArray, fromIndex: Int = 0): Int {
     var fromIndex = fromIndex
-    fromIndex = max(fromIndex, 0)
+    fromIndex = maxOf(fromIndex, 0)
     var i = fromIndex
     val limit = data.size - other.size
     while (i <= limit) {
@@ -304,7 +302,7 @@ internal constructor(
   @JvmOverloads
   open fun lastIndexOf(other: ByteArray, fromIndex: Int = size()): Int {
     var fromIndex = fromIndex
-    fromIndex = min(fromIndex, data.size - other.size)
+    fromIndex = minOf(fromIndex, data.size - other.size)
     for (i in fromIndex downTo 0) {
       if (arrayRangeEquals(data, i, other, 0, other.size)) {
         return i
@@ -332,7 +330,7 @@ internal constructor(
     val sizeA = size()
     val sizeB = other.size()
     var i = 0
-    val size = min(sizeA, sizeB)
+    val size = minOf(sizeA, sizeB)
     while (i < size) {
       val byteA = getByte(i).toInt() and 0xff
       val byteB = other.getByte(i).toInt() and 0xff

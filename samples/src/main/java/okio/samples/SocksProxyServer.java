@@ -56,7 +56,11 @@ public final class SocksProxyServer {
 
   public void start() throws IOException {
     serverSocket = new ServerSocket(0);
-    executor.execute(this::acceptSockets);
+    executor.execute(new Runnable() {
+      @Override public void run() {
+        acceptSockets();
+      }
+    });
   }
 
   public void shutdown() throws IOException {
@@ -72,9 +76,13 @@ public final class SocksProxyServer {
   private void acceptSockets() {
     try {
       while (true) {
-        Socket from = serverSocket.accept();
+        final Socket from = serverSocket.accept();
         openSockets.add(from);
-        executor.execute(() -> handleSocket(from));
+        executor.execute(new Runnable() {
+          @Override public void run() {
+            handleSocket(from);
+          }
+        });
       }
     } catch (IOException e) {
       System.out.println("shutting down: " + e);
@@ -85,10 +93,10 @@ public final class SocksProxyServer {
     }
   }
 
-  private void handleSocket(Socket fromSocket) {
+  private void handleSocket(final Socket fromSocket) {
     try {
-      BufferedSource fromSource = Okio.buffer(Okio.source(fromSocket));
-      BufferedSink fromSink = Okio.buffer(Okio.sink(fromSocket));
+      final BufferedSource fromSource = Okio.buffer(Okio.source(fromSocket));
+      final BufferedSink fromSink = Okio.buffer(Okio.sink(fromSocket));
 
       // Read the hello.
       int socksVersion = fromSource.readByte() & 0xff;
@@ -128,7 +136,7 @@ public final class SocksProxyServer {
       int port = fromSource.readShort() & 0xffff;
 
       // Connect to the caller's specified host.
-      Socket toSocket = new Socket(inetAddress, port);
+      final Socket toSocket = new Socket(inetAddress, port);
       openSockets.add(toSocket);
       byte[] localAddress = toSocket.getLocalAddress().getAddress();
       if (localAddress.length != 4) throw new ProtocolException();
@@ -143,10 +151,18 @@ public final class SocksProxyServer {
           .emit();
 
       // Connect sources to sinks in both directions.
-      Sink toSink = Okio.sink(toSocket);
-      executor.execute(() -> transfer(fromSocket, fromSource, toSink));
-      Source toSource = Okio.source(toSocket);
-      executor.execute(() -> transfer(toSocket, toSource, fromSink));
+      final Sink toSink = Okio.sink(toSocket);
+      executor.execute(new Runnable() {
+        @Override public void run() {
+          transfer(fromSocket, fromSource, toSink);
+        }
+      });
+      final Source toSource = Okio.source(toSocket);
+      executor.execute(new Runnable() {
+        @Override public void run() {
+          transfer(toSocket, toSource, fromSink);
+        }
+      });
     } catch (IOException e) {
       closeQuietly(fromSocket);
       openSockets.remove(fromSocket);
