@@ -15,6 +15,7 @@ buildscript {
           'gradlePlugin': "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
           'stdLib': [
               'common': "org.jetbrains.kotlin:kotlin-stdlib-common",
+              'jdk8': "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
               'jdk7': "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
               'jdk6': "org.jetbrains.kotlin:kotlin-stdlib",
           ],

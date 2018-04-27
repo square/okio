@@ -52,15 +52,11 @@ public final class SocksProxyServer {
   private final ExecutorService executor = Executors.newCachedThreadPool();
   private ServerSocket serverSocket;
   private final Set<Socket> openSockets =
-      Collections.newSetFromMap(new ConcurrentHashMap<Socket, Boolean>());
+      Collections.newSetFromMap(new ConcurrentHashMap<>());
 
   public void start() throws IOException {
     serverSocket = new ServerSocket(0);
-    executor.execute(new Runnable() {
-      @Override public void run() {
-        acceptSockets();
-      }
-    });
+    executor.execute(this::acceptSockets);
   }
 
   public void shutdown() throws IOException {
@@ -78,11 +74,7 @@ public final class SocksProxyServer {
       while (true) {
         final Socket from = serverSocket.accept();
         openSockets.add(from);
-        executor.execute(new Runnable() {
-          @Override public void run() {
-            handleSocket(from);
-          }
-        });
+        executor.execute(() -> handleSocket(from));
       }
     } catch (IOException e) {
       System.out.println("shutting down: " + e);
@@ -152,17 +144,9 @@ public final class SocksProxyServer {
 
       // Connect sources to sinks in both directions.
       final Sink toSink = Okio.sink(toSocket);
-      executor.execute(new Runnable() {
-        @Override public void run() {
-          transfer(fromSocket, fromSource, toSink);
-        }
-      });
+      executor.execute(() -> transfer(fromSocket, fromSource, toSink));
       final Source toSource = Okio.source(toSocket);
-      executor.execute(new Runnable() {
-        @Override public void run() {
-          transfer(toSocket, toSource, fromSink);
-        }
-      });
+      executor.execute(() -> transfer(toSocket, toSource, fromSink));
     } catch (IOException e) {
       closeQuietly(fromSocket);
       openSockets.remove(fromSocket);
