@@ -1,12 +1,12 @@
 apply plugin: 'java-library'
 apply plugin: 'org.jetbrains.kotlin.jvm'
 
-sourceCompatibility = JavaVersion.VERSION_1_7
-targetCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
   implementation project(':okio:jvm')
-  implementation deps.kotlin.stdLib.jdk7
+  implementation deps.kotlin.stdLib.jdk8
   compileOnly deps.jsr305
   testImplementation deps.test.junit
   testImplementation deps.test.assertj
