@@ -16,12 +16,14 @@
  */
 package okio
 
+import okio.ByteString.Companion.encodeUtf8
+
 /** @author Alexander Y. Kleymenov */
 
 internal val BASE64 =
-    ByteString.encodeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/").data
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".encodeUtf8().data
 internal val BASE64_URL_SAFE =
-    ByteString.encodeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_").data
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".encodeUtf8().data
 
 internal fun String.decodeBase64ToArray(): ByteArray? {
   // Ignore trailing '=' padding and whitespace from the input.

@@ -376,7 +376,7 @@ internal constructor(
   @Throws(IOException::class)
   private fun readObject(`in`: ObjectInputStream) {
     val dataLength = `in`.readInt()
-    val byteString = ByteString.read(`in`, dataLength)
+    val byteString = `in`.readByteString(dataLength)
     try {
       val field = ByteString::class.java.getDeclaredField("data")
       field.isAccessible = true
@@ -408,36 +408,40 @@ internal constructor(
     fun of(vararg data: Byte) = ByteString(data.clone())
 
     /**
-     * Returns a new byte string containing a copy of `byteCount` bytes of `data` starting at
-     * `offset`.
+     * Returns a new [ByteString] containing a copy of `byteCount` bytes of this [ByteArray]
+     * starting at `offset`.
      */
     @JvmStatic
-    fun of(data: ByteArray, offset: Int, byteCount: Int): ByteString {
-      checkOffsetAndCount(data.size.toLong(), offset.toLong(), byteCount.toLong())
+    @JvmName("of")
+    fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString {
+      checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
 
       val copy = ByteArray(byteCount)
-      arraycopy(data, offset, copy, 0, byteCount)
+      arraycopy(this, offset, copy, 0, byteCount)
       return ByteString(copy)
     }
 
+    /** Returns a [ByteString] containing a copy of this [ByteBuffer]. */
     @JvmStatic
-    fun of(data: ByteBuffer): ByteString {
-      val copy = ByteArray(data.remaining())
-      data.get(copy)
+    @JvmName("of")
+    fun ByteBuffer.toByteString(): ByteString {
+      val copy = ByteArray(remaining())
+      get(copy)
       return ByteString(copy)
     }
 
-    /** Returns a new byte string containing the `UTF-8` bytes of `s`.  */
+    /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
     @JvmStatic
-    fun encodeUtf8(s: String): ByteString {
-      val byteString = ByteString(s.toByteArray(Charsets.UTF_8))
-      byteString.utf8 = s
+    fun String.encodeUtf8(): ByteString {
+      val byteString = ByteString(toByteArray(Charsets.UTF_8))
+      byteString.utf8 = this
       return byteString
     }
 
-    /** Returns a new byte string containing the `charset`-encoded bytes of `s`.  */
+    /** Returns a new [ByteString] containing the `charset`-encoded bytes of this [String].  */
     @JvmStatic
-    fun encodeString(s: String, charset: Charset) = ByteString(s.toByteArray(charset))
+    @JvmName("encodeString")
+    fun String.encode(charset: Charset = Charsets.UTF_8) = ByteString(toByteArray(charset))
 
     /**
      * Decodes the Base64-encoded bytes and returns their value as a byte string. Returns null if
@@ -473,20 +477,21 @@ internal constructor(
     }
 
     /**
-     * Reads `count` bytes from `in` and returns the result.
+     * Reads `count` bytes from this [InputStream] and returns the result.
      *
      * @throws java.io.EOFException if `in` has fewer than `count` bytes to read.
      */
     @Throws(IOException::class)
     @JvmStatic
-    fun read(`in`: InputStream, byteCount: Int): ByteString {
+    @JvmName("read")
+    fun InputStream.readByteString(byteCount: Int): ByteString {
       require(byteCount >= 0) { "byteCount < 0: $byteCount" }
 
       val result = ByteArray(byteCount)
       var offset = 0
       var read: Int
       while (offset < byteCount) {
-        read = `in`.read(result, offset, byteCount - offset)
+        read = read(result, offset, byteCount - offset)
         if (read == -1) throw EOFException()
         offset += read
       }
