@@ -76,7 +76,7 @@ class HashingSource : ForwardingSource {
       var offset = sink.size
       var s = sink.head!!
       while (offset > start) {
-        s = s.prev
+        s = s.prev!!
         offset -= (s.limit - s.pos).toLong()
       }
 
@@ -90,7 +90,7 @@ class HashingSource : ForwardingSource {
         }
         offset += s.limit - s.pos
         start = offset
-        s = s.next
+        s = s.next!!
       }
     }
 

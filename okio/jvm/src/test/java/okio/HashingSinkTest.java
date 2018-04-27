@@ -26,8 +26,9 @@ import static okio.HashingTest.SHA1_abc;
 import static okio.HashingTest.SHA256_abc;
 import static okio.HashingTest.SHA256_def;
 import static okio.HashingTest.SHA256_r32k;
-import static okio.HashingTest.r32k;
 import static okio.HashingTest.SHA512_abc;
+import static okio.HashingTest.r32k;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static org.junit.Assert.assertEquals;
 
 public final class HashingSinkTest {
@@ -115,7 +116,7 @@ public final class HashingSinkTest {
     source.writeUtf8("z");
     source.write(r32k);
     source.skip(1);
-    source.writeUtf8(TestUtil.repeat('z', Segment.SIZE * 2 - 1));
+    source.writeUtf8(TestUtil.repeat('z', SEGMENT_SIZE * 2 - 1));
     HashingSink hashingSink = HashingSink.sha256(sink);
     hashingSink.write(source, r32k.size());
     assertEquals(SHA256_r32k, hashingSink.hash());

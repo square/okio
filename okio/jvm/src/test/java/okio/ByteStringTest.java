@@ -34,6 +34,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.assertEquivalent;
+import static okio.TestUtil.makeSegments;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -74,17 +75,6 @@ public final class ByteStringTest {
 
       @Override public ByteString encodeUtf8(String s) {
         return makeSegments(ByteString.encodeUtf8(s));
-      }
-
-      private ByteString makeSegments(ByteString source) {
-        Buffer buffer = new Buffer();
-        for (int i = 0; i < source.size(); i++) {
-          Segment segment = buffer.writableSegment(Segment.SIZE);
-          segment.data[segment.pos] = source.getByte(i);
-          segment.limit++;
-          buffer.size++;
-        }
-        return buffer.snapshot();
       }
     };
 
@@ -559,12 +549,12 @@ public final class ByteStringTest {
 
   @Test public void javaSerializationTestNonEmpty() throws Exception {
     ByteString byteString = factory.encodeUtf8(bronzeHorseman);
-    assertEquivalent(byteString, TestUtil.reserialize(byteString));
+    assertEquivalent(byteString, TestUtil.<ByteString>reserialize(byteString));
   }
 
   @Test public void javaSerializationTestEmpty() throws Exception {
     ByteString byteString = factory.decodeHex("");
-    assertEquivalent(byteString, TestUtil.reserialize(byteString));
+    assertEquivalent(byteString, TestUtil.<ByteString>reserialize(byteString));
   }
 
   @Test public void compareToSingleBytes() throws Exception {

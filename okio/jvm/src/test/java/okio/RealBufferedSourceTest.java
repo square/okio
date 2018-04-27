@@ -21,6 +21,7 @@ import java.io.InputStream;
 import org.junit.Test;
 
 import static kotlin.text.Charsets.UTF_8;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -33,22 +34,22 @@ public final class RealBufferedSourceTest {
   @Test public void inputStreamTracksSegments() throws Exception {
     Buffer source = new Buffer();
     source.writeUtf8("a");
-    source.writeUtf8(repeat('b', Segment.SIZE));
+    source.writeUtf8(repeat('b', SEGMENT_SIZE));
     source.writeUtf8("c");
 
-    InputStream in = new RealBufferedSource(source).inputStream();
+    InputStream in = Okio.buffer((Source) source).inputStream();
     assertEquals(0, in.available());
-    assertEquals(Segment.SIZE + 2, source.size());
+    assertEquals(SEGMENT_SIZE + 2, source.size());
 
     // Reading one byte buffers a full segment.
     assertEquals('a', in.read());
-    assertEquals(Segment.SIZE - 1, in.available());
+    assertEquals(SEGMENT_SIZE - 1, in.available());
     assertEquals(2, source.size());
 
     // Reading as much as possible reads the rest of that buffered segment.
-    byte[] data = new byte[Segment.SIZE * 2];
-    assertEquals(Segment.SIZE - 1, in.read(data, 0, data.length));
-    assertEquals(repeat('b', Segment.SIZE - 1), new String(data, 0, Segment.SIZE - 1, UTF_8));
+    byte[] data = new byte[SEGMENT_SIZE * 2];
+    assertEquals(SEGMENT_SIZE - 1, in.read(data, 0, data.length));
+    assertEquals(repeat('b', SEGMENT_SIZE - 1), new String(data, 0, SEGMENT_SIZE - 1, UTF_8));
     assertEquals(2, source.size());
 
     // Continuing to read buffers the next segment.
@@ -67,7 +68,7 @@ public final class RealBufferedSourceTest {
   }
 
   @Test public void inputStreamCloses() throws Exception {
-    RealBufferedSource source = new RealBufferedSource(new Buffer());
+    BufferedSource source = Okio.buffer((Source) new Buffer());
     InputStream in = source.inputStream();
     in.close();
     try {
@@ -80,7 +81,7 @@ public final class RealBufferedSourceTest {
 
   @Test public void indexOfStopsReadingAtLimit() throws Exception {
     Buffer buffer = new Buffer().writeUtf8("abcdef");
-    BufferedSource bufferedSource = new RealBufferedSource(new ForwardingSource(buffer) {
+    BufferedSource bufferedSource = Okio.buffer(new ForwardingSource(buffer) {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         return super.read(sink, Math.min(1, byteCount));
       }
@@ -95,7 +96,7 @@ public final class RealBufferedSourceTest {
     Buffer source = new Buffer();
     source.writeUtf8("bb");
 
-    BufferedSource bufferedSource = new RealBufferedSource(source);
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
     bufferedSource.buffer().writeUtf8("aa");
 
     bufferedSource.require(2);
@@ -107,7 +108,7 @@ public final class RealBufferedSourceTest {
     Buffer source = new Buffer();
     source.writeUtf8("b");
 
-    BufferedSource bufferedSource = new RealBufferedSource(source);
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
     bufferedSource.buffer().writeUtf8("a");
 
     bufferedSource.require(2);
@@ -118,7 +119,7 @@ public final class RealBufferedSourceTest {
     Buffer source = new Buffer();
     source.writeUtf8("a");
 
-    BufferedSource bufferedSource = new RealBufferedSource(source);
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
 
     try {
       bufferedSource.require(2);
@@ -129,31 +130,31 @@ public final class RealBufferedSourceTest {
 
   @Test public void requireReadsOneSegmentAtATime() throws Exception {
     Buffer source = new Buffer();
-    source.writeUtf8(repeat('a', Segment.SIZE));
-    source.writeUtf8(repeat('b', Segment.SIZE));
+    source.writeUtf8(repeat('a', SEGMENT_SIZE));
+    source.writeUtf8(repeat('b', SEGMENT_SIZE));
 
-    BufferedSource bufferedSource = new RealBufferedSource(source);
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
 
     bufferedSource.require(2);
-    assertEquals(Segment.SIZE, source.size());
-    assertEquals(Segment.SIZE, bufferedSource.buffer().size());
+    assertEquals(SEGMENT_SIZE, source.size());
+    assertEquals(SEGMENT_SIZE, bufferedSource.buffer().size());
   }
 
   @Test public void skipReadsOneSegmentAtATime() throws Exception {
     Buffer source = new Buffer();
-    source.writeUtf8(repeat('a', Segment.SIZE));
-    source.writeUtf8(repeat('b', Segment.SIZE));
-    BufferedSource bufferedSource = new RealBufferedSource(source);
+    source.writeUtf8(repeat('a', SEGMENT_SIZE));
+    source.writeUtf8(repeat('b', SEGMENT_SIZE));
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
     bufferedSource.skip(2);
-    assertEquals(Segment.SIZE, source.size());
-    assertEquals(Segment.SIZE - 2, bufferedSource.buffer().size());
+    assertEquals(SEGMENT_SIZE, source.size());
+    assertEquals(SEGMENT_SIZE - 2, bufferedSource.buffer().size());
   }
 
   @Test public void skipTracksBufferFirst() throws Exception {
     Buffer source = new Buffer();
     source.writeUtf8("bb");
 
-    BufferedSource bufferedSource = new RealBufferedSource(source);
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
     bufferedSource.buffer().writeUtf8("aa");
 
     bufferedSource.skip(2);
@@ -163,7 +164,7 @@ public final class RealBufferedSourceTest {
 
   @Test public void operationsAfterClose() throws IOException {
     Buffer source = new Buffer();
-    BufferedSource bufferedSource = new RealBufferedSource(source);
+    BufferedSource bufferedSource = Okio.buffer((Source) source);
     bufferedSource.close();
 
     // Test a sample set of methods.
@@ -211,18 +212,18 @@ public final class RealBufferedSourceTest {
    * should buffer a segment, write it, and repeat.
    */
   @Test public void readAllReadsOneSegmentAtATime() throws IOException {
-    Buffer write1 = new Buffer().writeUtf8(TestUtil.repeat('a', Segment.SIZE));
-    Buffer write2 = new Buffer().writeUtf8(TestUtil.repeat('b', Segment.SIZE));
-    Buffer write3 = new Buffer().writeUtf8(TestUtil.repeat('c', Segment.SIZE));
+    Buffer write1 = new Buffer().writeUtf8(TestUtil.repeat('a', SEGMENT_SIZE));
+    Buffer write2 = new Buffer().writeUtf8(TestUtil.repeat('b', SEGMENT_SIZE));
+    Buffer write3 = new Buffer().writeUtf8(TestUtil.repeat('c', SEGMENT_SIZE));
 
     Buffer source = new Buffer().writeUtf8(""
-        + TestUtil.repeat('a', Segment.SIZE)
-        + TestUtil.repeat('b', Segment.SIZE)
-        + TestUtil.repeat('c', Segment.SIZE));
+        + TestUtil.repeat('a', SEGMENT_SIZE)
+        + TestUtil.repeat('b', SEGMENT_SIZE)
+        + TestUtil.repeat('c', SEGMENT_SIZE));
 
     MockSink mockSink = new MockSink();
     BufferedSource bufferedSource = Okio.buffer((Source) source);
-    assertEquals(Segment.SIZE * 3, bufferedSource.readAll(mockSink));
+    assertEquals(SEGMENT_SIZE * 3, bufferedSource.readAll(mockSink));
     mockSink.assertLog(
         "write(" + write1 + ", " + write1.size() + ")",
         "write(" + write2 + ", " + write2.size() + ")",

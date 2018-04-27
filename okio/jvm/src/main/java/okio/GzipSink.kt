@@ -133,7 +133,7 @@ class GzipSink(sink: Sink) : Sink {
       val segmentLength = minOf(remaining, (head.limit - head.pos).toLong()).toInt()
       crc.update(head.data, head.pos, segmentLength)
       remaining -= segmentLength
-      head = head.next
+      head = head.next!!
     }
   }
 }

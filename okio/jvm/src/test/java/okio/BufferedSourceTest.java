@@ -30,6 +30,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import static kotlin.text.Charsets.UTF_8;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.assertByteArrayEquals;
 import static okio.TestUtil.assertByteArraysEquals;
 import static okio.TestUtil.repeat;
@@ -61,7 +62,7 @@ public final class BufferedSourceTest {
         Buffer buffer = new Buffer();
         Pipe result = new Pipe();
         result.sink = buffer;
-        result.source = new RealBufferedSource(buffer);
+        result.source = Okio.buffer((Source) buffer);
         return result;
       }
 
@@ -79,7 +80,7 @@ public final class BufferedSourceTest {
         Buffer buffer = new Buffer();
         Pipe result = new Pipe();
         result.sink = buffer;
-        result.source = new RealBufferedSource(new ForwardingSource(buffer) {
+        result.source = Okio.buffer(new ForwardingSource(buffer) {
           @Override public long read(Buffer sink, long byteCount) throws IOException {
             // This reads a byte into a new buffer, then clones it so that the segments are shared.
             // Shared segments cannot be compacted so we'll get a long chain of short segments.
@@ -149,9 +150,9 @@ public final class BufferedSourceTest {
   }
 
   @Test public void readShortSplitAcrossMultipleSegments() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 1));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 1));
     sink.write(new byte[] { (byte) 0xab, (byte) 0xcd });
-    source.skip(Segment.SIZE - 1);
+    source.skip(SEGMENT_SIZE - 1);
     assertEquals((short) 0xabcd, source.readShort());
     assertTrue(source.exhausted());
   }
@@ -177,11 +178,11 @@ public final class BufferedSourceTest {
   }
 
   @Test public void readIntSplitAcrossMultipleSegments() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 3));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 3));
     sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01
     });
-    source.skip(Segment.SIZE - 3);
+    source.skip(SEGMENT_SIZE - 3);
     assertEquals(0xabcdef01, source.readInt());
     assertTrue(source.exhausted());
   }
@@ -209,12 +210,12 @@ public final class BufferedSourceTest {
   }
 
   @Test public void readLongSplitAcrossMultipleSegments() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 7));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 7));
     sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01, (byte) 0x87, (byte) 0x65, (byte) 0x43,
         (byte) 0x21,
     });
-    source.skip(Segment.SIZE - 7);
+    source.skip(SEGMENT_SIZE - 7);
     assertEquals(0xabcdef0187654321L, source.readLong());
     assertTrue(source.exhausted());
   }
@@ -278,12 +279,12 @@ public final class BufferedSourceTest {
 
   @Test public void readFullyByteArray() throws IOException {
     Buffer data = new Buffer();
-    data.writeUtf8("Hello").writeUtf8(repeat('e', Segment.SIZE));
+    data.writeUtf8("Hello").writeUtf8(repeat('e', SEGMENT_SIZE));
 
     byte[] expected = data.clone().readByteArray();
     sink.write(data, data.size());
 
-    byte[] sink = new byte[Segment.SIZE + 5];
+    byte[] sink = new byte[SEGMENT_SIZE + 5];
     source.readFully(sink);
     assertByteArraysEquals(expected, sink);
   }
@@ -351,7 +352,7 @@ public final class BufferedSourceTest {
   }
 
   @Test public void readByteArray() throws IOException {
-    String string = "abcd" + repeat('e', Segment.SIZE);
+    String string = "abcd" + repeat('e', SEGMENT_SIZE);
     sink.writeUtf8(string);
     assertByteArraysEquals(string.getBytes(UTF_8), source.readByteArray());
   }
@@ -363,12 +364,12 @@ public final class BufferedSourceTest {
   }
 
   @Test public void readByteString() throws IOException {
-    sink.writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
-    assertEquals("abcd" + repeat('e', Segment.SIZE), source.readByteString().utf8());
+    sink.writeUtf8("abcd").writeUtf8(repeat('e', SEGMENT_SIZE));
+    assertEquals("abcd" + repeat('e', SEGMENT_SIZE), source.readByteString().utf8());
   }
 
   @Test public void readByteStringPartial() throws IOException {
-    sink.writeUtf8("abcd").writeUtf8(repeat('e', Segment.SIZE));
+    sink.writeUtf8("abcd").writeUtf8(repeat('e', SEGMENT_SIZE));
     assertEquals("abc", source.readByteString(3).utf8());
     assertEquals("d", source.readUtf8(1));
   }
@@ -388,33 +389,33 @@ public final class BufferedSourceTest {
   }
 
   @Test public void readUtf8SpansSegments() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE * 2));
-    source.skip(Segment.SIZE - 1);
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
+    source.skip(SEGMENT_SIZE - 1);
     assertEquals("aa", source.readUtf8(2));
   }
 
   @Test public void readUtf8Segment() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE));
-    assertEquals(repeat('a', Segment.SIZE), source.readUtf8(Segment.SIZE));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE));
+    assertEquals(repeat('a', SEGMENT_SIZE), source.readUtf8(SEGMENT_SIZE));
   }
 
   @Test public void readUtf8PartialBuffer() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE + 20));
-    assertEquals(repeat('a', Segment.SIZE + 10), source.readUtf8(Segment.SIZE + 10));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE + 20));
+    assertEquals(repeat('a', SEGMENT_SIZE + 10), source.readUtf8(SEGMENT_SIZE + 10));
   }
 
   @Test public void readUtf8EntireBuffer() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE * 2));
-    assertEquals(repeat('a', Segment.SIZE * 2), source.readUtf8());
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
+    assertEquals(repeat('a', SEGMENT_SIZE * 2), source.readUtf8());
   }
 
   @Test public void skip() throws Exception {
     sink.writeUtf8("a");
-    sink.writeUtf8(repeat('b', Segment.SIZE));
+    sink.writeUtf8(repeat('b', SEGMENT_SIZE));
     sink.writeUtf8("c");
     source.skip(1);
     assertEquals('b', source.readByte() & 0xff);
-    source.skip(Segment.SIZE - 2);
+    source.skip(SEGMENT_SIZE - 2);
     assertEquals('b', source.readByte() & 0xff);
     source.skip(1);
     assertTrue(source.exhausted());
@@ -440,7 +441,7 @@ public final class BufferedSourceTest {
     assertEquals(-1, source.indexOf((byte) 'b'));
 
     // The segment has lots of data.
-    sink.writeUtf8(repeat('b', Segment.SIZE - 2)); // ab...b
+    sink.writeUtf8(repeat('b', SEGMENT_SIZE - 2)); // ab...b
     assertEquals(0, source.indexOf((byte) 'a'));
     assertEquals(1, source.indexOf((byte) 'b'));
     assertEquals(-1, source.indexOf((byte) 'c'));
@@ -455,22 +456,22 @@ public final class BufferedSourceTest {
     sink.writeUtf8("c"); // b...bc
     assertEquals(-1, source.indexOf((byte) 'a'));
     assertEquals(0, source.indexOf((byte) 'b'));
-    assertEquals(Segment.SIZE - 3, source.indexOf((byte) 'c'));
+    assertEquals(SEGMENT_SIZE - 3, source.indexOf((byte) 'c'));
 
     // The segment doesn't start at 2, it starts at 4.
     source.skip(2); // b...bc
     assertEquals(-1, source.indexOf((byte) 'a'));
     assertEquals(0, source.indexOf((byte) 'b'));
-    assertEquals(Segment.SIZE - 5, source.indexOf((byte) 'c'));
+    assertEquals(SEGMENT_SIZE - 5, source.indexOf((byte) 'c'));
 
     // Two segments.
     sink.writeUtf8("d"); // b...bcd, d is in the 2nd segment.
-    assertEquals(Segment.SIZE - 4, source.indexOf((byte) 'd'));
+    assertEquals(SEGMENT_SIZE - 4, source.indexOf((byte) 'd'));
     assertEquals(-1, source.indexOf((byte) 'e'));
   }
 
   @Test public void indexOfByteWithStartOffset() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    sink.writeUtf8("a").writeUtf8(repeat('b', SEGMENT_SIZE)).writeUtf8("c");
     assertEquals(-1, source.indexOf((byte) 'a', 1));
     assertEquals(15, source.indexOf((byte) 'b', 15));
   }
@@ -484,7 +485,7 @@ public final class BufferedSourceTest {
     byte a = (byte) 'a';
     byte c = (byte) 'c';
 
-    int size = Segment.SIZE * 5;
+    int size = SEGMENT_SIZE * 5;
     byte[] bytes = new byte[size];
     Arrays.fill(bytes, a);
 
@@ -492,9 +493,9 @@ public final class BufferedSourceTest {
     // starts, ends, or segments come together.
     int[] points = {
         0,                       1,                   2,
-        Segment.SIZE - 1,        Segment.SIZE,        Segment.SIZE + 1,
+        SEGMENT_SIZE - 1,        SEGMENT_SIZE,        SEGMENT_SIZE + 1,
         size / 2 - 1,            size / 2,            size / 2 + 1,
-        size - Segment.SIZE - 1, size - Segment.SIZE, size - Segment.SIZE + 1,
+        size - SEGMENT_SIZE - 1, size - SEGMENT_SIZE, size - SEGMENT_SIZE + 1,
         size - 3,                size - 2,            size - 1
     };
 
@@ -550,27 +551,27 @@ public final class BufferedSourceTest {
   }
 
   @Test public void indexOfByteStringAtSegmentBoundary() throws IOException {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 1));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 1));
     sink.writeUtf8("bcd");
-    assertEquals(Segment.SIZE - 3, source.indexOf(ByteString.encodeUtf8("aabc"), Segment.SIZE - 4));
-    assertEquals(Segment.SIZE - 3, source.indexOf(ByteString.encodeUtf8("aabc"), Segment.SIZE - 3));
-    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("abcd"), Segment.SIZE - 2));
-    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("abc"),  Segment.SIZE - 2));
-    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("abc"),  Segment.SIZE - 2));
-    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("ab"),   Segment.SIZE - 2));
-    assertEquals(Segment.SIZE - 2, source.indexOf(ByteString.encodeUtf8("a"),    Segment.SIZE - 2));
-    assertEquals(Segment.SIZE - 1, source.indexOf(ByteString.encodeUtf8("bc"),   Segment.SIZE - 2));
-    assertEquals(Segment.SIZE - 1, source.indexOf(ByteString.encodeUtf8("b"),    Segment.SIZE - 2));
-    assertEquals(Segment.SIZE,     source.indexOf(ByteString.encodeUtf8("c"),    Segment.SIZE - 2));
-    assertEquals(Segment.SIZE,     source.indexOf(ByteString.encodeUtf8("c"),    Segment.SIZE    ));
-    assertEquals(Segment.SIZE + 1, source.indexOf(ByteString.encodeUtf8("d"),    Segment.SIZE - 2));
-    assertEquals(Segment.SIZE + 1, source.indexOf(ByteString.encodeUtf8("d"),    Segment.SIZE + 1));
+    assertEquals(SEGMENT_SIZE - 3, source.indexOf(ByteString.encodeUtf8("aabc"), SEGMENT_SIZE - 4));
+    assertEquals(SEGMENT_SIZE - 3, source.indexOf(ByteString.encodeUtf8("aabc"), SEGMENT_SIZE - 3));
+    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("abcd"), SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("abc"),  SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("abc"),  SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("ab"),   SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("a"),    SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE - 1, source.indexOf(ByteString.encodeUtf8("bc"),   SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE - 1, source.indexOf(ByteString.encodeUtf8("b"),    SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE,     source.indexOf(ByteString.encodeUtf8("c"),    SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE,     source.indexOf(ByteString.encodeUtf8("c"),    SEGMENT_SIZE    ));
+    assertEquals(SEGMENT_SIZE + 1, source.indexOf(ByteString.encodeUtf8("d"),    SEGMENT_SIZE - 2));
+    assertEquals(SEGMENT_SIZE + 1, source.indexOf(ByteString.encodeUtf8("d"),    SEGMENT_SIZE + 1));
   }
 
   @Test public void indexOfDoesNotWrapAround() throws IOException {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 1));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 1));
     sink.writeUtf8("bcd");
-    assertEquals(-1, source.indexOf(ByteString.encodeUtf8("abcda"), Segment.SIZE - 3));
+    assertEquals(-1, source.indexOf(ByteString.encodeUtf8("abcda"), SEGMENT_SIZE - 3));
   }
 
   @Test public void indexOfByteStringWithOffset() throws IOException {
@@ -596,7 +597,7 @@ public final class BufferedSourceTest {
       source.indexOf(ByteString.encodeUtf8("hi"), -1);
       fail();
     } catch (IllegalArgumentException e) {
-      assertEquals("fromIndex < 0", e.getMessage());
+      assertEquals("fromIndex < 0: -1", e.getMessage());
     }
   }
 
@@ -605,49 +606,49 @@ public final class BufferedSourceTest {
    * https://github.com/square/okio/issues/171
    */
   @Test public void indexOfByteStringAcrossSegmentBoundaries() throws IOException {
-    sink.writeUtf8(repeat('a', Segment.SIZE * 2 - 3));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE * 2 - 3));
     sink.writeUtf8("bcdefg");
-    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("ab")));
-    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abc")));
-    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcd")));
-    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcde")));
-    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcdef")));
-    assertEquals(Segment.SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcdefg")));
-    assertEquals(Segment.SIZE * 2 - 3, source.indexOf(ByteString.encodeUtf8("bcdefg")));
-    assertEquals(Segment.SIZE * 2 - 2, source.indexOf(ByteString.encodeUtf8("cdefg")));
-    assertEquals(Segment.SIZE * 2 - 1, source.indexOf(ByteString.encodeUtf8("defg")));
-    assertEquals(Segment.SIZE * 2,     source.indexOf(ByteString.encodeUtf8("efg")));
-    assertEquals(Segment.SIZE * 2 + 1, source.indexOf(ByteString.encodeUtf8("fg")));
-    assertEquals(Segment.SIZE * 2 + 2, source.indexOf(ByteString.encodeUtf8("g")));
+    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("ab")));
+    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abc")));
+    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcd")));
+    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcde")));
+    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcdef")));
+    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcdefg")));
+    assertEquals(SEGMENT_SIZE * 2 - 3, source.indexOf(ByteString.encodeUtf8("bcdefg")));
+    assertEquals(SEGMENT_SIZE * 2 - 2, source.indexOf(ByteString.encodeUtf8("cdefg")));
+    assertEquals(SEGMENT_SIZE * 2 - 1, source.indexOf(ByteString.encodeUtf8("defg")));
+    assertEquals(SEGMENT_SIZE * 2,     source.indexOf(ByteString.encodeUtf8("efg")));
+    assertEquals(SEGMENT_SIZE * 2 + 1, source.indexOf(ByteString.encodeUtf8("fg")));
+    assertEquals(SEGMENT_SIZE * 2 + 2, source.indexOf(ByteString.encodeUtf8("g")));
   }
 
   @Test public void indexOfElement() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    sink.writeUtf8("a").writeUtf8(repeat('b', SEGMENT_SIZE)).writeUtf8("c");
     assertEquals(0, source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK")));
     assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb")));
-    assertEquals(Segment.SIZE + 1, source.indexOfElement(ByteString.encodeUtf8("cDEFGHIJK")));
+    assertEquals(SEGMENT_SIZE + 1, source.indexOfElement(ByteString.encodeUtf8("cDEFGHIJK")));
     assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("DEFbGHIc")));
     assertEquals(-1L, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJK")));
     assertEquals(-1L, source.indexOfElement(ByteString.encodeUtf8("")));
   }
 
   @Test public void indexOfElementWithOffset() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+    sink.writeUtf8("a").writeUtf8(repeat('b', SEGMENT_SIZE)).writeUtf8("c");
     assertEquals(-1, source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK"), 1));
     assertEquals(15, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb"), 15));
   }
 
   @Test public void request() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
-    assertTrue(source.request(Segment.SIZE + 2));
-    assertFalse(source.request(Segment.SIZE + 3));
+    sink.writeUtf8("a").writeUtf8(repeat('b', SEGMENT_SIZE)).writeUtf8("c");
+    assertTrue(source.request(SEGMENT_SIZE + 2));
+    assertFalse(source.request(SEGMENT_SIZE + 3));
   }
 
   @Test public void require() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
-    source.require(Segment.SIZE + 2);
+    sink.writeUtf8("a").writeUtf8(repeat('b', SEGMENT_SIZE)).writeUtf8("c");
+    source.require(SEGMENT_SIZE + 2);
     try {
-      source.require(Segment.SIZE + 3);
+      source.require(SEGMENT_SIZE + 3);
       fail();
     } catch (EOFException expected) {
     }
@@ -739,7 +740,7 @@ public final class BufferedSourceTest {
     assertLongHexString("00000000000000001", 0x1);
     assertLongHexString("0000000000000000ffffffffffffffff", 0xffffffffffffffffL);
     assertLongHexString("00000000000000007fffffffffffffff", 0x7fffffffffffffffL);
-    assertLongHexString(TestUtil.repeat('0', Segment.SIZE + 1) + "1", 0x1);
+    assertLongHexString(TestUtil.repeat('0', SEGMENT_SIZE + 1) + "1", 0x1);
   }
 
   private void assertLongHexString(String s, long expected) throws IOException {
@@ -749,8 +750,8 @@ public final class BufferedSourceTest {
   }
 
   @Test public void longHexStringAcrossSegment() throws IOException {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("FFFFFFFFFFFFFFFF");
-    source.skip(Segment.SIZE - 8);
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 8)).writeUtf8("FFFFFFFFFFFFFFFF");
+    source.skip(SEGMENT_SIZE - 8);
     assertEquals(-1, source.readHexadecimalUnsignedLong());
   }
 
@@ -803,9 +804,9 @@ public final class BufferedSourceTest {
   }
 
   @Test public void longDecimalStringAcrossSegment() throws IOException {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 8)).writeUtf8("1234567890123456");
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 8)).writeUtf8("1234567890123456");
     sink.writeUtf8("zzz");
-    source.skip(Segment.SIZE - 8);
+    source.skip(SEGMENT_SIZE - 8);
     assertEquals(1234567890123456L, source.readDecimalLong());
     assertEquals("zzz", source.readUtf8());
   }
@@ -877,7 +878,7 @@ public final class BufferedSourceTest {
     assertLongDecimalString("00000000000000001", 1);
     assertLongDecimalString("00000000000000009223372036854775807", 9223372036854775807L);
     assertLongDecimalString("-00000000000000009223372036854775808", -9223372036854775808L);
-    assertLongDecimalString(TestUtil.repeat('0', Segment.SIZE + 1) + "1", 1);
+    assertLongDecimalString(TestUtil.repeat('0', SEGMENT_SIZE + 1) + "1", 1);
   }
 
   @Test public void select() throws IOException {
@@ -896,7 +897,7 @@ public final class BufferedSourceTest {
   }
 
   @Test public void selectSpanningMultipleSegments() throws IOException {
-    ByteString commonPrefix = TestUtil.randomBytes(Segment.SIZE + 10);
+    ByteString commonPrefix = TestUtil.randomBytes(SEGMENT_SIZE + 10);
     ByteString a = new Buffer().write(commonPrefix).writeUtf8("a").readByteString();
     ByteString bc = new Buffer().write(commonPrefix).writeUtf8("bc").readByteString();
     ByteString bd = new Buffer().write(commonPrefix).writeUtf8("bd").readByteString();
@@ -1042,10 +1043,10 @@ public final class BufferedSourceTest {
   @Test public void readLargeNioBufferOnlyReadsOneSegment() throws Exception {
     String expected = factory == Factory.ONE_BYTE_AT_A_TIME
         ? "a"
-        : TestUtil.repeat('a', Segment.SIZE);
-    sink.writeUtf8(TestUtil.repeat('a', Segment.SIZE * 4));
+        : TestUtil.repeat('a', SEGMENT_SIZE);
+    sink.writeUtf8(TestUtil.repeat('a', SEGMENT_SIZE * 4));
 
-    ByteBuffer nioByteBuffer = ByteBuffer.allocate(Segment.SIZE * 3);
+    ByteBuffer nioByteBuffer = ByteBuffer.allocate(SEGMENT_SIZE * 3);
     int byteCount = source.read(nioByteBuffer);
     assertEquals(expected.length(), byteCount);
     assertEquals(expected.length(), nioByteBuffer.position());

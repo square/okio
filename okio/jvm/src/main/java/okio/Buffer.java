@@ -1395,7 +1395,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
 
   @Override public long indexOf(ByteString bytes, long fromIndex) throws IOException {
     if (bytes.size() == 0) throw new IllegalArgumentException("bytes is empty");
-    if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
+    if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0: " + fromIndex);
 
     Segment s;
     long offset;

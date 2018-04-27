@@ -26,22 +26,21 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import static okio.Buffer.UnsafeCursor;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.bufferWithRandomSegmentLayout;
 import static okio.TestUtil.bufferWithSegments;
+import static okio.TestUtil.deepCopy;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public final class BufferCursorTest {
-  enum BufferFactory {
+  public enum BufferFactory {
     EMPTY {
       @Override Buffer newBuffer() {
         return new Buffer();
@@ -87,7 +86,7 @@ public final class BufferCursorTest {
   public static List<Object[]> parameters() throws Exception {
     List<Object[]> result = new ArrayList<>();
     for (BufferFactory bufferFactory : BufferFactory.values()) {
-      result.add(new Object[] { bufferFactory });
+      result.add(new Object[] {bufferFactory});
     }
     return result;
   }
@@ -156,7 +155,7 @@ public final class BufferCursorTest {
   @Test public void accessByteByByteReverse() throws Exception {
     Buffer buffer = bufferFactory.newBuffer();
     try (UnsafeCursor cursor = buffer.readUnsafe()) {
-    byte[] actual = new byte[(int) buffer.size()];
+      byte[] actual = new byte[(int) buffer.size()];
       for (int i = (int) (buffer.size() - 1); i >= 0; i--) {
         cursor.seek(i);
         actual[i] = cursor.data[cursor.start];
@@ -443,92 +442,6 @@ public final class BufferCursorTest {
     }
   }
 
-  @Test public void acquireReadOnlyDoesNotCopySharedDataArray() throws Exception {
-    Buffer buffer = deepCopy(bufferFactory.newBuffer());
-    assumeTrue(buffer.size() > 0);
-
-    Buffer shared = buffer.clone();
-    assertTrue(buffer.head.shared);
-
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      cursor.seek(0);
-      assertSame(cursor.data, shared.head.data);
-    }
-  }
-
-  @Test public void acquireReadWriteDoesNotCopyUnsharedDataArray() throws Exception {
-    Buffer buffer = deepCopy(bufferFactory.newBuffer());
-    assumeTrue(buffer.size() > 0);
-    assertFalse(buffer.head.shared);
-
-    byte[] originalData = buffer.head.data;
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(0);
-      assertSame(cursor.data, originalData);
-    }
-  }
-
-  @Test public void acquireReadWriteCopiesSharedDataArray() throws Exception {
-    Buffer buffer = deepCopy(bufferFactory.newBuffer());
-    assumeTrue(buffer.size() > 0);
-
-    Buffer shared = buffer.clone();
-    assertTrue(buffer.head.shared);
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(0);
-      assertNotSame(cursor.data, shared.head.data);
-    }
-  }
-
-  @Test public void writeSharedSegments() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-
-    // Make a deep copy. This buffer's segments are not shared.
-    Buffer deepCopy = deepCopy(buffer);
-    assertTrue(deepCopy.head == null || !deepCopy.head.shared);
-
-    // Make a shallow copy. Both buffers' segments are shared as a side effect.
-    Buffer shallowCopy = buffer.clone();
-    assertTrue(shallowCopy.head == null || shallowCopy.head.shared);
-    assertTrue(buffer.head == null || buffer.head.shared);
-
-    Buffer expected = new Buffer();
-    expected.writeUtf8(TestUtil.repeat('x', (int) buffer.size()));
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      while (cursor.next() != -1) {
-        Arrays.fill(cursor.data, cursor.start, cursor.end, (byte) 'x');
-      }
-    }
-
-    // The buffer was fully changed.
-    assertEquals(expected, buffer);
-
-    // The buffer we're shared with is unchanged.
-    assertEquals(deepCopy, shallowCopy);
-  }
-
-  /** As an optimization it's okay to use the same cursor on multiple buffers. */
-  @Test public void cursorReuse() throws Exception {
-    UnsafeCursor cursor = new UnsafeCursor();
-
-    Buffer buffer1 = bufferFactory.newBuffer();
-    buffer1.readUnsafe(cursor);
-    assertSame(buffer1, cursor.buffer);
-    assertFalse(cursor.readWrite);
-    cursor.close();
-    assertSame(null, cursor.buffer);
-
-    Buffer buffer2 = bufferFactory.newBuffer();
-    buffer2.readAndWriteUnsafe(cursor);
-    assertSame(buffer2, cursor.buffer);
-    assertTrue(cursor.readWrite);
-    cursor.close();
-    assertSame(null, cursor.buffer);
-  }
-
   @Test public void expand() throws Exception {
     Buffer buffer = bufferFactory.newBuffer();
     long originalSize = buffer.size();
@@ -557,15 +470,15 @@ public final class BufferCursorTest {
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
       cursor.seek(originalSize - 1);
       int originalEnd = cursor.end;
-      assumeTrue(originalEnd < Segment.SIZE);
+      assumeTrue(originalEnd < SEGMENT_SIZE);
 
       long addedByteCount = cursor.expandBuffer(1);
-      assertEquals(Segment.SIZE - originalEnd, addedByteCount);
+      assertEquals(SEGMENT_SIZE - originalEnd, addedByteCount);
 
       assertEquals(originalSize + addedByteCount, buffer.size());
       assertEquals(originalSize, cursor.offset);
       assertEquals(originalEnd, cursor.start);
-      assertEquals(Segment.SIZE, cursor.end);
+      assertEquals(SEGMENT_SIZE, cursor.end);
     }
   }
 
@@ -574,12 +487,12 @@ public final class BufferCursorTest {
     long originalSize = buffer.size();
 
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      long addedByteCount = cursor.expandBuffer(Segment.SIZE);
-      assertEquals(Segment.SIZE, addedByteCount);
+      long addedByteCount = cursor.expandBuffer(SEGMENT_SIZE);
+      assertEquals(SEGMENT_SIZE, addedByteCount);
 
       assertEquals(originalSize, cursor.offset);
       assertEquals(0, cursor.start);
-      assertEquals(Segment.SIZE, cursor.end);
+      assertEquals(SEGMENT_SIZE, cursor.end);
     }
   }
 
@@ -594,20 +507,5 @@ public final class BufferCursorTest {
       assertEquals(originalSize + addedByteCount, buffer.size());
       assertEquals(originalSize, cursor.offset);
     }
-  }
-
-  /** Returns a copy of {@code buffer} with no segments with {@code original}. */
-  private Buffer deepCopy(Buffer original) {
-    Buffer result = new Buffer();
-    if (original.size() == 0) return result;
-
-    result.head = original.head.unsharedCopy();
-    result.head.next = result.head.prev = result.head;
-    for (Segment s = original.head.next; s != original.head; s = s.next) {
-      result.head.prev.push(s.unsharedCopy());
-    }
-    result.size = original.size;
-
-    return result;
   }
 }

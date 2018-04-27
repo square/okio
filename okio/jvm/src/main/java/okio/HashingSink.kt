@@ -81,7 +81,7 @@ class HashingSink : ForwardingSink {
         mac!!.update(s.data, s.pos, toHash)
       }
       hashedCount += toHash
-      s = s.next
+      s = s.next!!
     }
 
     // Write those bytes to the sink.

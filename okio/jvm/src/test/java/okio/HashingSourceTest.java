@@ -28,6 +28,7 @@ import static okio.HashingTest.SHA256_def;
 import static okio.HashingTest.SHA256_r32k;
 import static okio.HashingTest.SHA512_abc;
 import static okio.HashingTest.r32k;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -117,7 +118,7 @@ public final class HashingSourceTest {
   @Test public void readIntoSuffixOfBuffer() throws Exception {
     HashingSource hashingSource = HashingSource.sha256(source);
     source.write(r32k);
-    sink.writeUtf8(TestUtil.repeat('z', Segment.SIZE * 2 - 1));
+    sink.writeUtf8(TestUtil.repeat('z', SEGMENT_SIZE * 2 - 1));
     assertEquals(r32k.size(), hashingSource.read(sink, Long.MAX_VALUE));
     assertEquals(SHA256_r32k, hashingSource.hash());
   }

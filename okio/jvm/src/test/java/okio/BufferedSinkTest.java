@@ -32,7 +32,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import static java.util.Arrays.asList;
 import static kotlin.text.Charsets.UTF_8;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.repeat;
+import static okio.TestUtil.segmentSizes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -92,12 +94,12 @@ public final class BufferedSinkTest {
   }
 
   @Test public void writeLastByteInSegment() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 1));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 1));
     sink.writeByte(0x20);
     sink.writeByte(0x21);
     sink.flush();
-    assertEquals(asList(Segment.SIZE, 1), data.segmentSizes());
-    assertEquals(repeat('a', Segment.SIZE - 1), data.readUtf8(Segment.SIZE - 1));
+    assertEquals(asList(SEGMENT_SIZE, 1), segmentSizes(data));
+    assertEquals(repeat('a', SEGMENT_SIZE - 1), data.readUtf8(SEGMENT_SIZE - 1));
     assertEquals("[text= !]", data.toString());
   }
 
@@ -123,22 +125,22 @@ public final class BufferedSinkTest {
   }
 
   @Test public void writeLastIntegerInSegment() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 4));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 4));
     sink.writeInt(0xabcdef01);
     sink.writeInt(0x87654321);
     sink.flush();
-    assertEquals(asList(Segment.SIZE, 4), data.segmentSizes());
-    assertEquals(repeat('a', Segment.SIZE - 4), data.readUtf8(Segment.SIZE - 4));
+    assertEquals(asList(SEGMENT_SIZE, 4), segmentSizes(data));
+    assertEquals(repeat('a', SEGMENT_SIZE - 4), data.readUtf8(SEGMENT_SIZE - 4));
     assertEquals("[hex=abcdef0187654321]", data.toString());
   }
 
   @Test public void writeIntegerDoesNotQuiteFitInSegment() throws Exception {
-    sink.writeUtf8(repeat('a', Segment.SIZE - 3));
+    sink.writeUtf8(repeat('a', SEGMENT_SIZE - 3));
     sink.writeInt(0xabcdef01);
     sink.writeInt(0x87654321);
     sink.flush();
-    assertEquals(asList(Segment.SIZE - 3, 8), data.segmentSizes());
-    assertEquals(repeat('a', Segment.SIZE - 3), data.readUtf8(Segment.SIZE - 3));
+    assertEquals(asList(SEGMENT_SIZE - 3, 8), segmentSizes(data));
+    assertEquals(repeat('a', SEGMENT_SIZE - 3), data.readUtf8(SEGMENT_SIZE - 3));
     assertEquals("[hex=abcdef0187654321]", data.toString());
   }
 
@@ -330,10 +332,10 @@ public final class BufferedSinkTest {
   }
 
   @Test public void writeLargeNioBufferWritesAllData() throws Exception {
-    String expected = TestUtil.repeat('a', Segment.SIZE * 3);
+    String expected = TestUtil.repeat('a', SEGMENT_SIZE * 3);
 
-    ByteBuffer nioByteBuffer = ByteBuffer.allocate(Segment.SIZE * 4);
-    nioByteBuffer.put(TestUtil.repeat('a', Segment.SIZE * 3).getBytes(UTF_8));
+    ByteBuffer nioByteBuffer = ByteBuffer.allocate(SEGMENT_SIZE * 4);
+    nioByteBuffer.put(TestUtil.repeat('a', SEGMENT_SIZE * 3).getBytes(UTF_8));
     nioByteBuffer.flip();
 
     int byteCount = sink.write(nioByteBuffer);

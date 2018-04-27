@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import org.junit.Test;
 
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -40,7 +41,7 @@ public final class GzipSinkTest {
     mockSink.scheduleThrow(0, new IOException("first"));
     mockSink.scheduleThrow(1, new IOException("second"));
     GzipSink gzipSink = new GzipSink(mockSink);
-    gzipSink.write(new Buffer().writeUtf8(repeat('a', Segment.SIZE)), Segment.SIZE);
+    gzipSink.write(new Buffer().writeUtf8(repeat('a', SEGMENT_SIZE)), SEGMENT_SIZE);
     try {
       gzipSink.close();
       fail();
