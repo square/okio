@@ -363,22 +363,22 @@ around these traps:
    `writeByte()` and `writeShort()`. You can pass an “unsigned” byte like 255
    and Okio will do the right thing.
 
-|           Value | Method       | Width | Endianness | Encoded Bytes             |
-| --------------: | :----------- | ----: | :--------- | :------------------------ |
-|               3 | writeByte    |     1 |            | `03`                      |
-|               3 | writeShort   |     2 | big        | `00 03`                   |
-|               3 | writeInt     |     4 | big        | `00 00 00 03`             |
-|               3 | writeLong    |     8 | big        | `00 00 00 00 00 00 00 03` |
-|               3 | writeShortLe |     2 | little     | `03 00`                   |
-|               3 | writeIntLe   |     4 | little     | `03 00 00 00`             |
-|               3 | writeLongLe  |     8 | little     | `03 00 00 00 00 00 00 00` |
-|  Byte.MAX_VALUE | writeByte    |     1 |            | `7f`                      |
-| Short.MAX_VALUE | writeShort   |     2 | big        | `7f ff`                   |
-|   Int.MAX_VALUE | writeInt     |     4 | big        | `7f ff ff ff`             |
-|  Long.MAX_VALUE | writeLong    |     8 | big        | `7f ff ff ff ff ff ff ff` |
-| Short.MAX_VALUE | writeShortLe |     2 | little     | `ff 7f`                   |
-|   Int.MAX_VALUE | writeIntLe   |     4 | little     | `ff ff ff 7f`             |
-|  Long.MAX_VALUE | writeLongLe  |     8 | little     | `ff ff ff ff ff ff ff 7f` |
+| Method       | Width | Endianness |           Value | Encoded Value             |
+| :----------- | ----: | :--------- | --------------: | :------------------------ |
+| writeByte    |     1 |            |               3 | `03`                      |
+| writeShort   |     2 | big        |               3 | `00 03`                   |
+| writeInt     |     4 | big        |               3 | `00 00 00 03`             |
+| writeLong    |     8 | big        |               3 | `00 00 00 00 00 00 00 03` |
+| writeShortLe |     2 | little     |               3 | `03 00`                   |
+| writeIntLe   |     4 | little     |               3 | `03 00 00 00`             |
+| writeLongLe  |     8 | little     |               3 | `03 00 00 00 00 00 00 00` |
+| writeByte    |     1 |            |  Byte.MAX_VALUE | `7f`                      |
+| writeShort   |     2 | big        | Short.MAX_VALUE | `7f ff`                   |
+| writeInt     |     4 | big        |   Int.MAX_VALUE | `7f ff ff ff`             |
+| writeLong    |     8 | big        |  Long.MAX_VALUE | `7f ff ff ff ff ff ff ff` |
+| writeShortLe |     2 | little     | Short.MAX_VALUE | `ff 7f`                   |
+| writeIntLe   |     4 | little     |   Int.MAX_VALUE | `ff ff ff 7f`             |
+| writeLongLe  |     8 | little     |  Long.MAX_VALUE | `ff ff ff ff ff ff ff 7f` |
 
 This code encodes a bitmap following the [BMP file format][bmp].
 
@@ -443,6 +443,87 @@ Encoding other binary formats is usually quite similar. Some tips:
  * Use `Float.floatToIntBits()` and `Double.doubleToLongBits()` to encode
    floating point values.
 
+
+### [Communicate on a Socket](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/SocksProxyServer.java)
+
+Sending and receiving data over the network is a bit like writing and reading
+files. We use `BufferedSink` to encode output and `BufferedSource` to decode
+input. Like files, network protocols can be text, binary, or a mix of both. But
+there are also some substantial differences between the network and the
+filesystem.
+
+With a file you’re either reading or writing but with the network you can do
+both! Some protocols handle this by taking turns: write a request, read a
+response, repeat. You can implement this kind of protocol with a single thread.
+In other protocols you may read and write simultaneously. Typically you’ll want
+one dedicated thread for reading. For writing you can use either a dedicated
+thread or use `synchronized` so that multiple threads can share a sink. Okio’s
+streams are not safe for concurrent use.
+
+Sinks buffer outbound data to minimize I/O operations. This is efficient but it
+means you must manually call `flush()` to transmit data. Typically
+message-oriented protocols flush after each message. Note that Okio will
+automatically flush when the buffered data exceeds some threshold. This is
+intended to save memory and you shouldn’t rely on it for interactive protocols.
+
+Okio builds on `java.io.Socket` for connectivity. Create your socket as a server
+or as a client, then use `Okio.source(Socket)` to read and `Okio.sink(Socket)`
+to write. These APIs also work with `SSLSocket`. You should use SSL unless you
+have a very good reason not to!
+
+Cancel a socket from any thread by calling `Socket.close()`; this will cause its
+sources and sinks to immediately fail with an `IOException`. You can also
+configure timeouts for all socket operations. You don’t need a reference to the
+socket to adjust timeouts: `Source` and `Sink` expose timeouts directly. This
+API works even if the streams are decorated.
+
+As a complete example of networking with Okio we wrote a [basic SOCKS
+proxy][socks] server. Some highlights:
+
+```java
+Socket fromSocket = ...
+BufferedSource fromSource = Okio.buffer(Okio.source(fromSocket));
+BufferedSink fromSink = Okio.buffer(Okio.sink(fromSocket));
+```
+
+Creating sources and sinks for sockets is the same as creating them for files.
+Once you create a `Source` or `Sink` for a socket you must not use its
+`InputStream` or `OutputStream`, respectively.
+
+```java
+Buffer buffer = new Buffer();
+for (long byteCount; (byteCount = source.read(buffer, 8192L)) != -1; ) {
+  sink.write(buffer, byteCount);
+  sink.flush();
+}
+```
+
+The above loop copies data from the source to the sink, flushing after each
+read. If we didn’t need the flushing we could replace this loop with a single
+call to `BufferedSink.writeAll(Source)`.
+
+The `8192` argument to `read()` is the maximum number of bytes to read before
+returning. We could have passed any value here, but we like 8 KiB because that’s
+the largest value Okio can do in a single system call. Most of the time
+application code doesn’t need to deal with such limits!
+
+```java
+int addressType = fromSource.readByte() & 0xff;
+int port = fromSource.readShort() & 0xffff;
+```
+
+Okio uses signed types like `byte` and `short`, but often protocols want
+unsigned values. The bitwise `&` operator is Java’s preferred idiom to convert
+an unsigned value into a signed value. Here’s a cheat sheet for bytes, shorts,
+and ints:
+
+| Type  | Signed Range                  | Unsigned Range   | Signed to Unsigned          |
+| :---- | :---------------------------: | :--------------- | :-------------------------- |
+| byte  | -127..128                     | 0..255           | `int u = s & 0xff;`         |
+| short | -32,768..32,767               | 0..65,535        | `int u = s & 0xffff;`       |
+| int   | -2,147,483,648..2,147,483,647 | 0..4,294,967,295 | `long u = s & 0xffffffffL;` |
+
+Java has no primitive type that can represent unsigned longs.
 
 Okio Benchmarks
 ------------
@@ -538,3 +619,4 @@ License
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
  [base64]: https://tools.ietf.org/html/rfc4648#section-4
  [bmp]: https://en.wikipedia.org/wiki/BMP_file_format
+ [socks]: https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/SocksProxyServer.java
