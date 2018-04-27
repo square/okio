@@ -15,7 +15,7 @@ after_success:
   - .buildscript/deploy_snapshot.sh
 
 after_failure:
-  - cat okio/build/reports/japi.txt
+  - cat okio/jvm/build/reports/japi.txt
 
 env:
   global:

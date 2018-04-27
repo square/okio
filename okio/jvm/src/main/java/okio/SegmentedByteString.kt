@@ -147,7 +147,7 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     while (s < segmentCount) {
       val segmentPos = directory[segmentCount + s]
       val nextSegmentOffset = directory[s]
-      System.arraycopy(segments[s], segmentPos, result, segmentOffset,
+      arraycopy(segments[s], segmentPos, result, segmentOffset,
           nextSegmentOffset - segmentOffset)
       segmentOffset = nextSegmentOffset
       s++

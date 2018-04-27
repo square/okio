@@ -218,7 +218,7 @@ internal constructor(
     }
 
     val copy = ByteArray(subLen)
-    System.arraycopy(data, beginIndex, copy, 0, subLen)
+    arraycopy(data, beginIndex, copy, 0, subLen)
     return ByteString(copy)
   }
 
@@ -418,7 +418,7 @@ internal constructor(
       checkOffsetAndCount(data.size.toLong(), offset.toLong(), byteCount.toLong())
 
       val copy = ByteArray(byteCount)
-      System.arraycopy(data, offset, copy, 0, byteCount)
+      arraycopy(data, offset, copy, 0, byteCount)
       return ByteString(copy)
     }
 

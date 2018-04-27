@@ -1,3 +1,4 @@
 include ':okio'
+include ':okio:jvm'
 include ':okio-kotlin'
 include ':samples'
