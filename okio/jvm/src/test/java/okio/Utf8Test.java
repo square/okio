@@ -19,6 +19,8 @@ import java.io.EOFException;
 import kotlin.text.Charsets;
 import org.junit.Test;
 
+import static okio.TestUtil.REPLACEMENT_CHARACTER;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -83,7 +85,7 @@ public final class Utf8Test {
   }
 
   @Test public void multipleSegmentString() throws Exception {
-    String a = TestUtil.repeat('a', Segment.SIZE + Segment.SIZE + 1);
+    String a = TestUtil.repeat('a', SEGMENT_SIZE + SEGMENT_SIZE + 1);
     Buffer encoded = new Buffer().writeUtf8(a);
     Buffer expected = new Buffer().write(a.getBytes(Charsets.UTF_8));
     assertEquals(expected, encoded);
@@ -91,9 +93,9 @@ public final class Utf8Test {
 
   @Test public void stringSpansSegments() throws Exception {
     Buffer buffer = new Buffer();
-    String a = TestUtil.repeat('a', Segment.SIZE - 1);
+    String a = TestUtil.repeat('a', SEGMENT_SIZE - 1);
     String b = "bb";
-    String c = TestUtil.repeat('c', Segment.SIZE - 1);
+    String c = TestUtil.repeat('c', SEGMENT_SIZE - 1);
     buffer.writeUtf8(a);
     buffer.writeUtf8(b);
     buffer.writeUtf8(c);
@@ -112,7 +114,7 @@ public final class Utf8Test {
   @Test public void readLeadingContinuationByteReturnsReplacementCharacter() throws Exception {
     Buffer buffer = new Buffer();
     buffer.writeByte(0xbf);
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
     assertTrue(buffer.exhausted());
   }
 
@@ -131,11 +133,11 @@ public final class Utf8Test {
     // 5-byte and 6-byte code points are not supported.
     Buffer buffer = new Buffer();
     buffer.write(ByteString.decodeHex("f888808080"));
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
     assertTrue(buffer.exhausted());
   }
 
@@ -143,7 +145,7 @@ public final class Utf8Test {
     // Use a non-continuation byte where a continuation byte is expected.
     Buffer buffer = new Buffer();
     buffer.write(ByteString.decodeHex("df20"));
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
     assertEquals(0x20, buffer.readUtf8CodePoint()); // Non-continuation character not consumed.
     assertTrue(buffer.exhausted());
   }
@@ -152,17 +154,17 @@ public final class Utf8Test {
     // A 4-byte encoding with data above the U+10ffff Unicode maximum.
     Buffer buffer = new Buffer();
     buffer.write(ByteString.decodeHex("f4908080"));
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
     assertTrue(buffer.exhausted());
   }
 
   @Test public void readSurrogateCodePoint() throws Exception {
     Buffer buffer = new Buffer();
     buffer.write(ByteString.decodeHex("eda080"));
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
     assertTrue(buffer.exhausted());
     buffer.write(ByteString.decodeHex("edbfbf"));
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
     assertTrue(buffer.exhausted());
   }
 
@@ -170,7 +172,7 @@ public final class Utf8Test {
     // Use 2 bytes to encode data that only needs 1 byte.
     Buffer buffer = new Buffer();
     buffer.write(ByteString.decodeHex("c080"));
-    assertEquals(Buffer.REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
+    assertEquals(REPLACEMENT_CHARACTER, buffer.readUtf8CodePoint());
     assertTrue(buffer.exhausted());
   }
 

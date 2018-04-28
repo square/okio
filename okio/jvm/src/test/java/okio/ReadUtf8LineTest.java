@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static okio.TestUtil.SEGMENT_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -95,7 +96,7 @@ public final class ReadUtf8LineTest {
   }
 
   @Test public void readUtf8LineStrictWithLimits() throws IOException {
-    int[] lens = {1, Segment.SIZE - 2, Segment.SIZE - 1, Segment.SIZE, Segment.SIZE * 10};
+    int[] lens = {1, SEGMENT_SIZE - 2, SEGMENT_SIZE - 1, SEGMENT_SIZE, SEGMENT_SIZE * 10};
     for (int len : lens) {
       data.writeUtf8(TestUtil.repeat('a', len)).writeUtf8("\n");
       assertEquals(len, source.readUtf8LineStrict(len).length());

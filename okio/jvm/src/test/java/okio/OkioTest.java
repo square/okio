@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static kotlin.text.Charsets.UTF_8;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -97,7 +98,7 @@ public final class OkioTest {
 
   @Test public void sourceFromInputStream() throws Exception {
     InputStream in = new ByteArrayInputStream(
-        ("a" + repeat('b', Segment.SIZE * 2) + "c").getBytes(UTF_8));
+        ("a" + repeat('b', SEGMENT_SIZE * 2) + "c").getBytes(UTF_8));
 
     // Source: ab...bc
     Source source = Okio.source(in);
@@ -108,12 +109,12 @@ public final class OkioTest {
     assertEquals("abb", sink.readUtf8(3));
 
     // Source: b...bc. Sink: b...b.
-    assertEquals(Segment.SIZE, source.read(sink, 20000));
-    assertEquals(repeat('b', Segment.SIZE), sink.readUtf8());
+    assertEquals(SEGMENT_SIZE, source.read(sink, 20000));
+    assertEquals(repeat('b', SEGMENT_SIZE), sink.readUtf8());
 
     // Source: b...bc. Sink: b...bc.
-    assertEquals(Segment.SIZE - 1, source.read(sink, 20000));
-    assertEquals(repeat('b', Segment.SIZE - 2) + "c", sink.readUtf8());
+    assertEquals(SEGMENT_SIZE - 1, source.read(sink, 20000));
+    assertEquals(repeat('b', SEGMENT_SIZE - 2) + "c", sink.readUtf8());
 
     // Source and sink are empty.
     assertEquals(-1, source.read(sink, 1));

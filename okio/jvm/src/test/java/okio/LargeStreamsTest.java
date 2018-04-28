@@ -26,6 +26,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.junit.Test;
 
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.randomSource;
 import static org.junit.Assert.assertEquals;
 
@@ -91,7 +92,7 @@ public final class LargeStreamsTest {
   private Long readAllAndClose(Source source, Sink sink) throws IOException {
     long result = 0L;
     Buffer buffer = new Buffer();
-    for (long count; (count = source.read(buffer, Segment.SIZE)) != -1L; result += count) {
+    for (long count; (count = source.read(buffer, SEGMENT_SIZE)) != -1L; result += count) {
       sink.write(buffer, count);
     }
     source.close();

@@ -185,7 +185,7 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
         segment.next = segment.prev
         buffer.head = segment.next
       } else {
-        buffer.head!!.prev.push(segment)
+        buffer.head!!.prev!!.push(segment)
       }
       segmentOffset = nextSegmentOffset
       s++

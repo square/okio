@@ -21,6 +21,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import org.junit.Test;
 
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.randomBytes;
 import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
@@ -75,7 +76,7 @@ public final class InflaterSourceTest {
   }
 
   @Test public void inflateIntoNonemptySink() throws Exception {
-    for (int i = 0; i < Segment.SIZE; i++) {
+    for (int i = 0; i < SEGMENT_SIZE; i++) {
       Buffer inflated = new Buffer().writeUtf8(repeat('a', i));
       Buffer deflated = decodeBase64(
           "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=");

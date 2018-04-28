@@ -26,8 +26,12 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static kotlin.text.Charsets.UTF_8;
+import static okio.TestUtil.SEGMENT_POOL_MAX_SIZE;
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.bufferWithRandomSegmentLayout;
 import static okio.TestUtil.repeat;
+import static okio.TestUtil.segmentPoolByteCount;
+import static okio.TestUtil.segmentSizes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -62,14 +66,14 @@ public final class BufferTest {
 
   @Test public void completeSegmentByteCountOnBufferWithFullSegments() throws Exception {
     Buffer buffer = new Buffer();
-    buffer.writeUtf8(repeat('a', Segment.SIZE * 4));
-    assertEquals(Segment.SIZE * 4, buffer.completeSegmentByteCount());
+    buffer.writeUtf8(repeat('a', SEGMENT_SIZE * 4));
+    assertEquals(SEGMENT_SIZE * 4, buffer.completeSegmentByteCount());
   }
 
   @Test public void completeSegmentByteCountOnBufferWithIncompleteTailSegment() throws Exception {
     Buffer buffer = new Buffer();
-    buffer.writeUtf8(repeat('a', Segment.SIZE * 4 - 10));
-    assertEquals(Segment.SIZE * 3, buffer.completeSegmentByteCount());
+    buffer.writeUtf8(repeat('a', SEGMENT_SIZE * 4 - 10));
+    assertEquals(SEGMENT_SIZE * 3, buffer.completeSegmentByteCount());
   }
 
   /** Buffer's toString is the same as ByteString's. */
@@ -109,44 +113,44 @@ public final class BufferTest {
     Buffer buffer = new Buffer();
 
     // Take 2 * MAX_SIZE segments. This will drain the pool, even if other tests filled it.
-    buffer.write(new byte[(int) SegmentPool.MAX_SIZE]);
-    buffer.write(new byte[(int) SegmentPool.MAX_SIZE]);
-    assertEquals(0, SegmentPool.byteCount);
+    buffer.write(new byte[(int) SEGMENT_POOL_MAX_SIZE]);
+    buffer.write(new byte[(int) SEGMENT_POOL_MAX_SIZE]);
+    assertEquals(0, segmentPoolByteCount());
 
     // Recycle MAX_SIZE segments. They're all in the pool.
-    buffer.readByteString(SegmentPool.MAX_SIZE);
-    assertEquals(SegmentPool.MAX_SIZE, SegmentPool.byteCount);
+    buffer.readByteString(SEGMENT_POOL_MAX_SIZE);
+    assertEquals(SEGMENT_POOL_MAX_SIZE, segmentPoolByteCount());
 
     // Recycle MAX_SIZE more segments. The pool is full so they get garbage collected.
-    buffer.readByteString(SegmentPool.MAX_SIZE);
-    assertEquals(SegmentPool.MAX_SIZE, SegmentPool.byteCount);
+    buffer.readByteString(SEGMENT_POOL_MAX_SIZE);
+    assertEquals(SEGMENT_POOL_MAX_SIZE, segmentPoolByteCount());
 
     // Take MAX_SIZE segments to drain the pool.
-    buffer.write(new byte[(int) SegmentPool.MAX_SIZE]);
-    assertEquals(0, SegmentPool.byteCount);
+    buffer.write(new byte[(int) SEGMENT_POOL_MAX_SIZE]);
+    assertEquals(0, segmentPoolByteCount());
 
     // Take MAX_SIZE more segments. The pool is drained so these will need to be allocated.
-    buffer.write(new byte[(int) SegmentPool.MAX_SIZE]);
-    assertEquals(0, SegmentPool.byteCount);
+    buffer.write(new byte[(int) SEGMENT_POOL_MAX_SIZE]);
+    assertEquals(0, segmentPoolByteCount());
   }
 
   @Test public void moveBytesBetweenBuffersShareSegment() throws Exception {
-    int size = (Segment.SIZE / 2) - 1;
+    int size = (SEGMENT_SIZE / 2) - 1;
     List<Integer> segmentSizes = moveBytesBetweenBuffers(repeat('a', size), repeat('b', size));
     assertEquals(asList(size * 2), segmentSizes);
   }
 
   @Test public void moveBytesBetweenBuffersReassignSegment() throws Exception {
-    int size = (Segment.SIZE / 2) + 1;
+    int size = (SEGMENT_SIZE / 2) + 1;
     List<Integer> segmentSizes = moveBytesBetweenBuffers(repeat('a', size), repeat('b', size));
     assertEquals(asList(size, size), segmentSizes);
   }
 
   @Test public void moveBytesBetweenBuffersMultipleSegments() throws Exception {
-    int size = 3 * Segment.SIZE + 1;
+    int size = 3 * SEGMENT_SIZE + 1;
     List<Integer> segmentSizes = moveBytesBetweenBuffers(repeat('a', size), repeat('b', size));
-    assertEquals(asList(Segment.SIZE, Segment.SIZE, Segment.SIZE, 1,
-        Segment.SIZE, Segment.SIZE, Segment.SIZE, 1), segmentSizes);
+    assertEquals(asList(SEGMENT_SIZE, SEGMENT_SIZE, SEGMENT_SIZE, 1,
+        SEGMENT_SIZE, SEGMENT_SIZE, SEGMENT_SIZE, 1), segmentSizes);
   }
 
   private List<Integer> moveBytesBetweenBuffers(String... contents) throws IOException {
@@ -158,39 +162,39 @@ public final class BufferTest {
       buffer.writeAll(source);
       expected.append(s);
     }
-    List<Integer> segmentSizes = buffer.segmentSizes();
+    List<Integer> segmentSizes = segmentSizes(buffer);
     assertEquals(expected.toString(), buffer.readUtf8(expected.length()));
     return segmentSizes;
   }
 
   /** The big part of source's first segment is being moved. */
   @Test public void writeSplitSourceBufferLeft() throws Exception {
-    int writeSize = Segment.SIZE / 2 + 1;
+    int writeSize = SEGMENT_SIZE / 2 + 1;
 
     Buffer sink = new Buffer();
-    sink.writeUtf8(repeat('b', Segment.SIZE - 10));
+    sink.writeUtf8(repeat('b', SEGMENT_SIZE - 10));
 
     Buffer source = new Buffer();
-    source.writeUtf8(repeat('a', Segment.SIZE * 2));
+    source.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
     sink.write(source, writeSize);
 
-    assertEquals(asList(Segment.SIZE - 10, writeSize), sink.segmentSizes());
-    assertEquals(asList(Segment.SIZE - writeSize, Segment.SIZE), source.segmentSizes());
+    assertEquals(asList(SEGMENT_SIZE - 10, writeSize), segmentSizes(sink));
+    assertEquals(asList(SEGMENT_SIZE - writeSize, SEGMENT_SIZE), segmentSizes(source));
   }
 
   /** The big part of source's first segment is staying put. */
   @Test public void writeSplitSourceBufferRight() throws Exception {
-    int writeSize = Segment.SIZE / 2 - 1;
+    int writeSize = SEGMENT_SIZE / 2 - 1;
 
     Buffer sink = new Buffer();
-    sink.writeUtf8(repeat('b', Segment.SIZE - 10));
+    sink.writeUtf8(repeat('b', SEGMENT_SIZE - 10));
 
     Buffer source = new Buffer();
-    source.writeUtf8(repeat('a', Segment.SIZE * 2));
+    source.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
     sink.write(source, writeSize);
 
-    assertEquals(asList(Segment.SIZE - 10, writeSize), sink.segmentSizes());
-    assertEquals(asList(Segment.SIZE - writeSize, Segment.SIZE), source.segmentSizes());
+    assertEquals(asList(SEGMENT_SIZE - 10, writeSize), segmentSizes(sink));
+    assertEquals(asList(SEGMENT_SIZE - writeSize, SEGMENT_SIZE), segmentSizes(source));
   }
 
   @Test public void writePrefixDoesntSplit() throws Exception {
@@ -198,42 +202,42 @@ public final class BufferTest {
     sink.writeUtf8(repeat('b', 10));
 
     Buffer source = new Buffer();
-    source.writeUtf8(repeat('a', Segment.SIZE * 2));
+    source.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
     sink.write(source, 20);
 
-    assertEquals(asList(30), sink.segmentSizes());
-    assertEquals(asList(Segment.SIZE - 20, Segment.SIZE), source.segmentSizes());
+    assertEquals(asList(30), segmentSizes(sink));
+    assertEquals(asList(SEGMENT_SIZE - 20, SEGMENT_SIZE), segmentSizes(source));
     assertEquals(30, sink.size());
-    assertEquals(Segment.SIZE * 2 - 20, source.size());
+    assertEquals(SEGMENT_SIZE * 2 - 20, source.size());
   }
 
   @Test public void writePrefixDoesntSplitButRequiresCompact() throws Exception {
     Buffer sink = new Buffer();
-    sink.writeUtf8(repeat('b', Segment.SIZE - 10)); // limit = size - 10
-    sink.readUtf8(Segment.SIZE - 20); // pos = size = 20
+    sink.writeUtf8(repeat('b', SEGMENT_SIZE - 10)); // limit = size - 10
+    sink.readUtf8(SEGMENT_SIZE - 20); // pos = size = 20
 
     Buffer source = new Buffer();
-    source.writeUtf8(repeat('a', Segment.SIZE * 2));
+    source.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
     sink.write(source, 20);
 
-    assertEquals(asList(30), sink.segmentSizes());
-    assertEquals(asList(Segment.SIZE - 20, Segment.SIZE), source.segmentSizes());
+    assertEquals(asList(30), segmentSizes(sink));
+    assertEquals(asList(SEGMENT_SIZE - 20, SEGMENT_SIZE), segmentSizes(source));
     assertEquals(30, sink.size());
-    assertEquals(Segment.SIZE * 2 - 20, source.size());
+    assertEquals(SEGMENT_SIZE * 2 - 20, source.size());
   }
 
   @Test public void copyToSpanningSegments() throws Exception {
     Buffer source = new Buffer();
-    source.writeUtf8(repeat('a', Segment.SIZE * 2));
-    source.writeUtf8(repeat('b', Segment.SIZE * 2));
+    source.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
+    source.writeUtf8(repeat('b', SEGMENT_SIZE * 2));
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    source.copyTo(out, 10, Segment.SIZE * 3);
+    source.copyTo(out, 10, SEGMENT_SIZE * 3);
 
-    assertEquals(repeat('a', Segment.SIZE * 2 - 10) + repeat('b', Segment.SIZE + 10),
+    assertEquals(repeat('a', SEGMENT_SIZE * 2 - 10) + repeat('b', SEGMENT_SIZE + 10),
         out.toString());
-    assertEquals(repeat('a', Segment.SIZE * 2) + repeat('b', Segment.SIZE * 2),
-        source.readUtf8(Segment.SIZE * 4));
+    assertEquals(repeat('a', SEGMENT_SIZE * 2) + repeat('b', SEGMENT_SIZE * 2),
+        source.readUtf8(SEGMENT_SIZE * 4));
   }
 
   @Test public void copyToStream() throws Exception {
@@ -247,16 +251,16 @@ public final class BufferTest {
 
   @Test public void writeToSpanningSegments() throws Exception {
     Buffer buffer = new Buffer();
-    buffer.writeUtf8(repeat('a', Segment.SIZE * 2));
-    buffer.writeUtf8(repeat('b', Segment.SIZE * 2));
+    buffer.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
+    buffer.writeUtf8(repeat('b', SEGMENT_SIZE * 2));
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     buffer.skip(10);
-    buffer.writeTo(out, Segment.SIZE * 3);
+    buffer.writeTo(out, SEGMENT_SIZE * 3);
 
-    assertEquals(repeat('a', Segment.SIZE * 2 - 10) + repeat('b', Segment.SIZE + 10),
+    assertEquals(repeat('a', SEGMENT_SIZE * 2 - 10) + repeat('b', SEGMENT_SIZE + 10),
         out.toString());
-    assertEquals(repeat('b', Segment.SIZE - 10), buffer.readUtf8(buffer.size));
+    assertEquals(repeat('b', SEGMENT_SIZE - 10), buffer.readUtf8(buffer.size()));
   }
 
   @Test public void writeToStream() throws Exception {
@@ -278,10 +282,10 @@ public final class BufferTest {
 
   @Test public void readFromSpanningSegments() throws Exception {
     InputStream in = new ByteArrayInputStream("hello, world!".getBytes(UTF_8));
-    Buffer buffer = new Buffer().writeUtf8(repeat('a', Segment.SIZE - 10));
+    Buffer buffer = new Buffer().writeUtf8(repeat('a', SEGMENT_SIZE - 10));
     buffer.readFrom(in);
     String out = buffer.readUtf8();
-    assertEquals(repeat('a', Segment.SIZE - 10) + "hello, world!", out);
+    assertEquals(repeat('a', SEGMENT_SIZE - 10) + "hello, world!", out);
   }
 
   @Test public void readFromStreamWithCount() throws Exception {
@@ -320,7 +324,7 @@ public final class BufferTest {
 
   @Test public void indexOfWithOffset() throws Exception {
     Buffer buffer = new Buffer();
-    int halfSegment = Segment.SIZE / 2;
+    int halfSegment = SEGMENT_SIZE / 2;
     buffer.writeUtf8(repeat('a', halfSegment));
     buffer.writeUtf8(repeat('b', halfSegment));
     buffer.writeUtf8(repeat('c', halfSegment));
@@ -338,13 +342,13 @@ public final class BufferTest {
   @Test public void byteAt() throws Exception {
     Buffer buffer = new Buffer();
     buffer.writeUtf8("a");
-    buffer.writeUtf8(repeat('b', Segment.SIZE));
+    buffer.writeUtf8(repeat('b', SEGMENT_SIZE));
     buffer.writeUtf8("c");
     assertEquals('a', buffer.getByte(0));
     assertEquals('a', buffer.getByte(0)); // getByte doesn't mutate!
-    assertEquals('c', buffer.getByte(buffer.size - 1));
-    assertEquals('b', buffer.getByte(buffer.size - 2));
-    assertEquals('b', buffer.getByte(buffer.size - 3));
+    assertEquals('c', buffer.getByte(buffer.size() - 1));
+    assertEquals('b', buffer.getByte(buffer.size() - 2));
+    assertEquals('b', buffer.getByte(buffer.size() - 3));
   }
 
   @Test public void getByteOfEmptyBuffer() throws Exception {
@@ -398,15 +402,15 @@ public final class BufferTest {
 
   @Test public void cloneMultipleSegments() throws Exception {
     Buffer original = new Buffer();
-    original.writeUtf8(repeat('a', Segment.SIZE * 3));
+    original.writeUtf8(repeat('a', SEGMENT_SIZE * 3));
     Buffer clone = original.clone();
-    original.writeUtf8(repeat('b', Segment.SIZE * 3));
-    clone.writeUtf8(repeat('c', Segment.SIZE * 3));
+    original.writeUtf8(repeat('b', SEGMENT_SIZE * 3));
+    clone.writeUtf8(repeat('c', SEGMENT_SIZE * 3));
 
-    assertEquals(repeat('a', Segment.SIZE * 3) + repeat('b', Segment.SIZE * 3),
-        original.readUtf8(Segment.SIZE * 6));
-    assertEquals(repeat('a', Segment.SIZE * 3) + repeat('c', Segment.SIZE * 3),
-        clone.readUtf8(Segment.SIZE * 6));
+    assertEquals(repeat('a', SEGMENT_SIZE * 3) + repeat('b', SEGMENT_SIZE * 3),
+        original.readUtf8(SEGMENT_SIZE * 6));
+    assertEquals(repeat('a', SEGMENT_SIZE * 3) + repeat('c', SEGMENT_SIZE * 3),
+        clone.readUtf8(SEGMENT_SIZE * 6));
   }
 
   @Test public void equalsAndHashCodeEmpty() throws Exception {
@@ -478,29 +482,29 @@ public final class BufferTest {
    */
   @Test public void readAllWritesAllSegmentsAtOnce() throws Exception {
     Buffer write1 = new Buffer().writeUtf8(""
-        + TestUtil.repeat('a', Segment.SIZE)
-        + TestUtil.repeat('b', Segment.SIZE)
-        + TestUtil.repeat('c', Segment.SIZE));
+        + TestUtil.repeat('a', SEGMENT_SIZE)
+        + TestUtil.repeat('b', SEGMENT_SIZE)
+        + TestUtil.repeat('c', SEGMENT_SIZE));
 
     Buffer source = new Buffer().writeUtf8(""
-        + TestUtil.repeat('a', Segment.SIZE)
-        + TestUtil.repeat('b', Segment.SIZE)
-        + TestUtil.repeat('c', Segment.SIZE));
+        + TestUtil.repeat('a', SEGMENT_SIZE)
+        + TestUtil.repeat('b', SEGMENT_SIZE)
+        + TestUtil.repeat('c', SEGMENT_SIZE));
 
     MockSink mockSink = new MockSink();
 
-    assertEquals(Segment.SIZE * 3, source.readAll(mockSink));
+    assertEquals(SEGMENT_SIZE * 3, source.readAll(mockSink));
     assertEquals(0, source.size());
     mockSink.assertLog("write(" + write1 + ", " + write1.size() + ")");
   }
 
   @Test public void writeAllMultipleSegments() throws Exception {
-    Buffer source = new Buffer().writeUtf8(TestUtil.repeat('a', Segment.SIZE * 3));
+    Buffer source = new Buffer().writeUtf8(TestUtil.repeat('a', SEGMENT_SIZE * 3));
     Buffer sink = new Buffer();
 
-    assertEquals(Segment.SIZE * 3, sink.writeAll(source));
+    assertEquals(SEGMENT_SIZE * 3, sink.writeAll(source));
     assertEquals(0, source.size());
-    assertEquals(TestUtil.repeat('a', Segment.SIZE * 3), sink.readUtf8());
+    assertEquals(TestUtil.repeat('a', SEGMENT_SIZE * 3), sink.readUtf8());
   }
 
   @Test public void copyTo() throws Exception {
@@ -515,10 +519,10 @@ public final class BufferTest {
   }
 
   @Test public void copyToOnSegmentBoundary() throws Exception {
-    String as = repeat('a', Segment.SIZE);
-    String bs = repeat('b', Segment.SIZE);
-    String cs = repeat('c', Segment.SIZE);
-    String ds = repeat('d', Segment.SIZE);
+    String as = repeat('a', SEGMENT_SIZE);
+    String bs = repeat('b', SEGMENT_SIZE);
+    String cs = repeat('c', SEGMENT_SIZE);
+    String ds = repeat('d', SEGMENT_SIZE);
 
     Buffer source = new Buffer();
     source.writeUtf8(as);
@@ -533,10 +537,10 @@ public final class BufferTest {
   }
 
   @Test public void copyToOffSegmentBoundary() throws Exception {
-    String as = repeat('a', Segment.SIZE - 1);
-    String bs = repeat('b', Segment.SIZE + 2);
-    String cs = repeat('c', Segment.SIZE - 4);
-    String ds = repeat('d', Segment.SIZE + 8);
+    String as = repeat('a', SEGMENT_SIZE - 1);
+    String bs = repeat('b', SEGMENT_SIZE + 2);
+    String cs = repeat('c', SEGMENT_SIZE - 4);
+    String ds = repeat('d', SEGMENT_SIZE + 8);
 
     Buffer source = new Buffer();
     source.writeUtf8(as);
@@ -551,8 +555,8 @@ public final class BufferTest {
   }
 
   @Test public void copyToSourceAndTargetCanBeTheSame() throws Exception {
-    String as = repeat('a', Segment.SIZE);
-    String bs = repeat('b', Segment.SIZE);
+    String as = repeat('a', SEGMENT_SIZE);
+    String bs = repeat('b', SEGMENT_SIZE);
 
     Buffer source = new Buffer();
     source.writeUtf8(as);

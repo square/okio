@@ -98,7 +98,7 @@ open class AsyncTimeout : Timeout() {
               toWrite = remaining
               break
             }
-            s = s.next
+            s = s.next!!
           }
 
           // Emit one write. Only this section is subject to the timeout.

@@ -178,7 +178,7 @@ class GzipSource(source: Source) : Source {
     var s = buffer.head!!
     while (offset >= s.limit - s.pos) {
       offset -= s.limit - s.pos
-      s = s.next
+      s = s.next!!
     }
 
     // Checksum one segment at a time.
@@ -188,7 +188,7 @@ class GzipSource(source: Source) : Source {
       crc.update(s.data, pos, toUpdate)
       byteCount -= toUpdate
       offset = 0
-      s = s.next
+      s = s.next!!
     }
   }
 

@@ -22,6 +22,7 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 import org.junit.Test;
 
+import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.randomBytes;
 import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
@@ -81,7 +82,7 @@ public final class DeflaterSinkTest {
     Deflater deflater = new Deflater();
     deflater.setLevel(Deflater.NO_COMPRESSION);
     DeflaterSink deflaterSink = new DeflaterSink(buffer, deflater);
-    int byteCount = Segment.SIZE * 4;
+    int byteCount = SEGMENT_SIZE * 4;
     deflaterSink.write(new Buffer().writeUtf8(repeat('a', byteCount)), byteCount);
     deflaterSink.close();
     assertEquals(repeat('a', byteCount), inflate(buffer).readUtf8(byteCount));
@@ -91,7 +92,7 @@ public final class DeflaterSinkTest {
     String original = "They're moving in herds. They do move in herds.";
 
     // Exercise all possible offsets for the outgoing segment.
-    for (int i = 0; i < Segment.SIZE; i++) {
+    for (int i = 0; i < SEGMENT_SIZE; i++) {
       Buffer data = new Buffer().writeUtf8(original);
       Buffer sink = new Buffer().writeUtf8(repeat('a', i));
 
@@ -117,7 +118,7 @@ public final class DeflaterSinkTest {
     Deflater deflater = new Deflater();
     deflater.setLevel(Deflater.NO_COMPRESSION);
     DeflaterSink deflaterSink = new DeflaterSink(mockSink, deflater);
-    deflaterSink.write(new Buffer().writeUtf8(repeat('a', Segment.SIZE)), Segment.SIZE);
+    deflaterSink.write(new Buffer().writeUtf8(repeat('a', SEGMENT_SIZE)), SEGMENT_SIZE);
     try {
       deflaterSink.close();
       fail();
