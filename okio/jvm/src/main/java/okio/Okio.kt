@@ -57,7 +57,7 @@ private class OutputStreamSink(
 ) : Sink {
 
   override fun write(source: Buffer, byteCount: Long) {
-    Util.checkOffsetAndCount(source.size, 0, byteCount)
+    checkOffsetAndCount(source.size, 0, byteCount)
     var remaining = byteCount
     while (remaining > 0) {
       timeout.throwIfReached()

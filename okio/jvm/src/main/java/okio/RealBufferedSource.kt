@@ -15,7 +15,6 @@
  */
 package okio
 
-import okio.Util.checkOffsetAndCount
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream

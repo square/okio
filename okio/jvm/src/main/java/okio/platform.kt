@@ -30,3 +30,8 @@ internal actual fun arraycopy(
 ) {
   System.arraycopy(src, srcPos, dest, destPos, length)
 }
+
+// TODO remove if https://youtrack.jetbrains.com/issue/KT-24167 provides a better solution
+actual typealias IndexOutOfBoundsException = java.lang.IndexOutOfBoundsException
+
+actual typealias ArrayIndexOutOfBoundsException = java.lang.ArrayIndexOutOfBoundsException

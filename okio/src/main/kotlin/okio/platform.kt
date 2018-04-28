@@ -47,3 +47,9 @@ internal expect fun arraycopy(
   destPos: Int,
   length: Int
 )
+
+// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
+expect open class IndexOutOfBoundsException(message: String) : RuntimeException
+
+// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
+expect class ArrayIndexOutOfBoundsException(message: String) : IndexOutOfBoundsException

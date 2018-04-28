@@ -56,6 +56,7 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask, dependsOn: 'jar') {
   txtOutputFile = file("$buildDir/reports/japi.txt")
   ignoreMissingClasses = true
   includeSynthetic = true
+  classExcludes = ['okio.Util']
 }
 check.dependsOn(japicmp)
 

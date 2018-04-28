@@ -22,8 +22,6 @@ import java.security.NoSuchAlgorithmException
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-import okio.Util.checkOffsetAndCount
-
 /**
  * A sink that computes a hash of the full stream of bytes it has accepted. To use, create an
  * instance with your preferred hash algorithm. Write all of the data to the sink and then call

@@ -15,8 +15,6 @@
  */
 package okio
 
-import okio.Util.checkOffsetAndCount
-import okio.Util.reverseBytesLong
 import java.io.Closeable
 import java.io.EOFException
 import java.io.IOException
@@ -378,11 +376,11 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return v
   }
 
-  override fun readShortLe() = Util.reverseBytesShort(readShort())
+  override fun readShortLe() = readShort().reverseBytes()
 
-  override fun readIntLe() = Util.reverseBytesInt(readInt())
+  override fun readIntLe() = readInt().reverseBytes()
 
-  override fun readLongLe() = Util.reverseBytesLong(readLong())
+  override fun readLongLe() = readLong().reverseBytes()
 
   override fun readDecimalLong(): Long {
     check(size != 0L) { "size == 0" }
@@ -1011,7 +1009,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return this
   }
 
-  override fun writeShortLe(s: Int) = writeShort(Util.reverseBytesShort(s.toShort()).toInt())
+  override fun writeShortLe(s: Int) = writeShort(s.toShort().reverseBytes().toInt())
 
   override fun writeInt(i: Int): Buffer {
     val tail = writableSegment(4)
@@ -1026,7 +1024,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return this
   }
 
-  override fun writeIntLe(i: Int) = writeInt(Util.reverseBytesInt(i))
+  override fun writeIntLe(i: Int) = writeInt(i.reverseBytes())
 
   override fun writeLong(v: Long): Buffer {
     val tail = writableSegment(8)
@@ -1045,7 +1043,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return this
   }
 
-  override fun writeLongLe(v: Long) = writeLong(reverseBytesLong(v))
+  override fun writeLongLe(v: Long) = writeLong(v.reverseBytes())
 
   override fun writeDecimalLong(v: Long): Buffer {
     var v = v

@@ -42,7 +42,7 @@ public final class GzipSourceTest {
 
     Buffer gzipped = new Buffer();
     gzipped.write(gzipHeader);
-    gzipped.writeShort(Util.reverseBytesShort((short) hcrc.getValue())); // little endian
+    gzipped.writeShort(Util.reverseBytes((short) hcrc.getValue())); // little endian
     gzipped.write(deflated);
     gzipped.write(gzipTrailer);
     assertGzipped(gzipped);
@@ -51,7 +51,7 @@ public final class GzipSourceTest {
   @Test public void gunzip_withExtra() throws Exception {
     Buffer gzipped = new Buffer();
     gzipped.write(gzipHeaderWithFlags((byte) 0x04));
-    gzipped.writeShort(Util.reverseBytesShort((short) 7)); // little endian extra length
+    gzipped.writeShort(Util.reverseBytes((short) 7)); // little endian extra length
     gzipped.write("blubber".getBytes(UTF_8), 0, 7);
     gzipped.write(deflated);
     gzipped.write(gzipTrailer);
@@ -85,7 +85,7 @@ public final class GzipSourceTest {
   @Test public void gunzip_withAll() throws Exception {
     Buffer gzipped = new Buffer();
     gzipped.write(gzipHeaderWithFlags((byte) 0x1c));
-    gzipped.writeShort(Util.reverseBytesShort((short) 7)); // little endian extra length
+    gzipped.writeShort(Util.reverseBytes((short) 7)); // little endian extra length
     gzipped.write("blubber".getBytes(UTF_8), 0, 7);
     gzipped.write("foo.txt".getBytes(UTF_8), 0, 7);
     gzipped.writeByte(0); // zero-terminated
@@ -124,7 +124,7 @@ public final class GzipSourceTest {
     Buffer gzipped = new Buffer();
     gzipped.write(gzipHeader);
     gzipped.write(deflated);
-    gzipped.writeInt(Util.reverseBytesInt(0x1234567)); // wrong CRC
+    gzipped.writeInt(Util.reverseBytes(0x1234567)); // wrong CRC
     gzipped.write(gzipTrailer.toByteArray(), 3, 4);
 
     try {
@@ -140,7 +140,7 @@ public final class GzipSourceTest {
     gzipped.write(gzipHeader);
     gzipped.write(deflated);
     gzipped.write(gzipTrailer.toByteArray(), 0, 4);
-    gzipped.writeInt(Util.reverseBytesInt(0x123456)); // wrong length
+    gzipped.writeInt(Util.reverseBytes(0x123456)); // wrong length
 
     try {
       gunzip(gzipped);

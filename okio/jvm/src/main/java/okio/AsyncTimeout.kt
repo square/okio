@@ -19,8 +19,6 @@ import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 
-import okio.Util.checkOffsetAndCount
-
 /**
  * This timeout uses a background thread to take action exactly when the timeout occurs. Use this to
  * implement timeouts where they aren't supported natively, such as to sockets that are blocked on
