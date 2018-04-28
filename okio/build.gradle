@@ -2,4 +2,6 @@ apply plugin: 'org.jetbrains.kotlin.platform.common'
 
 dependencies {
   implementation deps.kotlin.stdLib.common
+  testImplementation deps.kotlin.test.common
+  testImplementation deps.kotlin.test.annotations
 }

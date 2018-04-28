@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,15 +16,15 @@
 
 package okio
 
-import org.junit.Test
-import kotlin.test.assertEquals
+actual typealias JvmOverloads = kotlin.jvm.JvmOverloads
+actual typealias JvmName = kotlin.jvm.JvmName
 
-class Utf8KotlinTest {
-  @Test fun utf8Size() {
-    assertEquals(6, "a\uD83C\uDF69c".utf8Size())
-  }
-
-  @Test fun utf8SizeSubstring() {
-    assertEquals(4, "a\uD83C\uDF69c".utf8Size(1, 3))
-  }
+internal actual fun arraycopy(
+  src: ByteArray,
+  srcPos: Int,
+  dest: ByteArray,
+  destPos: Int,
+  length: Int
+) {
+  System.arraycopy(src, srcPos, dest, destPos, length)
 }

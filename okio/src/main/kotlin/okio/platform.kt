@@ -16,12 +16,23 @@
 
 package okio
 
-internal actual fun arraycopy(
+import kotlin.annotation.AnnotationTarget.FILE
+import kotlin.annotation.AnnotationTarget.FUNCTION
+
+// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
+// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+@Target(FUNCTION)
+expect annotation class JvmOverloads()
+
+// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
+// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+@Target(FILE, FUNCTION)
+expect annotation class JvmName(val name: String)
+
+internal expect fun arraycopy(
   src: ByteArray,
   srcPos: Int,
   dest: ByteArray,
   destPos: Int,
   length: Int
-) {
-  System.arraycopy(src, srcPos, dest, destPos, length)
-}
+)
