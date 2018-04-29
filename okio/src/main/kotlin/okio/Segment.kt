@@ -78,7 +78,7 @@ internal class Segment {
 
   /** Returns a new segment that its own private copy of the underlying byte array.  */
   @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun unsharedCopy() = Segment(data.clone(), pos, limit, false, true)
+  open fun unsharedCopy() = Segment(data.copyOf(), pos, limit, false, true)
 
   /**
    * Removes this segment of a circularly-linked list and returns its successor.

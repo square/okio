@@ -16,6 +16,7 @@
 
 package okio
 
+import kotlin.annotation.AnnotationTarget.FIELD
 import kotlin.annotation.AnnotationTarget.FILE
 import kotlin.annotation.AnnotationTarget.FUNCTION
 
@@ -23,6 +24,16 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
 // TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
 @Target(FUNCTION)
 expect annotation class JvmOverloads()
+
+// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
+// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+@Target(FIELD)
+expect annotation class JvmField()
+
+// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
+// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+@Target(FUNCTION)
+expect annotation class JvmStatic()
 
 // TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
 // TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
