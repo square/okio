@@ -247,8 +247,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     if (result == 0L) return 0L
 
     // Omit the tail if it's still writable.
-    val tail = head!!.prev
-    if (tail!!.limit < Segment.SIZE && tail.owner) {
+    val tail = head!!.prev!!
+    if (tail.limit < Segment.SIZE && tail.owner) {
       result -= (tail.limit - tail.pos).toLong()
     }
 
@@ -258,8 +258,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun readByte(): Byte {
     check(size != 0L) { "size == 0" }
 
-    val segment = head
-    var pos = segment!!.pos
+    val segment = head!!
+    var pos = segment.pos
     val limit = segment.limit
 
     val data = segment.data
@@ -279,8 +279,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   /** Returns the byte at `pos`.  */
   @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
   open fun getByte(pos: Long): Byte {
-    var pos = pos
     checkOffsetAndCount(size, pos, 1L)
+    var pos = pos
     if (size - pos > pos) {
       var s = head
       while (true) {
@@ -303,8 +303,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun readShort(): Short {
     check(size >= 2L) { "size < 2: $size" }
 
-    val segment = head
-    var pos = segment!!.pos
+    val segment = head!!
+    var pos = segment.pos
     val limit = segment.limit
 
     // If the short is split across multiple segments, delegate to readByte().
@@ -330,8 +330,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun readInt(): Int {
     check(size >= 4L) { "size < 4: $size" }
 
-    val segment = head
-    var pos = segment!!.pos
+    val segment = head!!
+    var pos = segment.pos
     val limit = segment.limit
 
     // If the int is split across multiple segments, delegate to readByte().
@@ -362,8 +362,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun readLong(): Long {
     check(size >= 8L) { "size < 8: $size" }
 
-    val segment = head
-    var pos = segment!!.pos
+    val segment = head!!
+    var pos = segment.pos
     val limit = segment.limit
 
     // If the long is split across multiple segments, delegate to readInt().
@@ -412,9 +412,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     var overflowDigit = Long.MIN_VALUE % 10L + 1
 
     do {
-      val segment = head
+      val segment = head!!
 
-      val data = segment!!.data
+      val data = segment.data
       var pos = segment.pos
       val limit = segment.limit
 
@@ -468,9 +468,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     var done = false
 
     do {
-      val segment = head
+      val segment = head!!
 
-      val data = segment!!.data
+      val data = segment.data
       var pos = segment.pos
       val limit = segment.limit
 
@@ -595,8 +595,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     require(byteCount <= Integer.MAX_VALUE) { "byteCount > Integer.MAX_VALUE: $byteCount" }
     if (byteCount == 0L) return ""
 
-    val s = head
-    if (s!!.pos + byteCount > s.limit) {
+    val s = head!!
+    if (s.pos + byteCount > s.limit) {
       // If the string spans multiple segments, delegate to readBytes().
       return String(readByteArray(byteCount), charset)
     }
@@ -811,17 +811,16 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun skip(byteCount: Long) {
     var byteCount = byteCount
     while (byteCount > 0) {
-      if (head == null) throw EOFException()
+      val head = this.head ?: throw EOFException()
 
-      val toSkip = Math.min(byteCount, (head!!.limit - head!!.pos).toLong()).toInt()
+      val toSkip = Math.min(byteCount, (head.limit - head.pos).toLong()).toInt()
       size -= toSkip.toLong()
       byteCount -= toSkip.toLong()
-      head!!.pos += toSkip
+      head.pos += toSkip
 
-      if (head!!.pos == head!!.limit) {
-        val toRecycle = head
-        head = toRecycle!!.pop()
-        SegmentPool.recycle(toRecycle)
+      if (head.pos == head.limit) {
+        this.head = head.pop()
+        SegmentPool.recycle(head)
       }
     }
   }
@@ -1600,12 +1599,12 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   private fun digest(algorithm: String): ByteString {
     val messageDigest = MessageDigest.getInstance(algorithm)
-    if (head != null) {
-      messageDigest.update(head!!.data, head!!.pos, head!!.limit - head!!.pos)
-      var s = head!!.next
+    head?.let { head ->
+      messageDigest.update(head.data, head.pos, head.limit - head.pos)
+      var s = head.next!!
       while (s != head) {
-        messageDigest.update(s!!.data, s.pos, s.limit - s.pos)
-        s = s.next
+        messageDigest.update(s.data, s.pos, s.limit - s.pos)
+        s = s.next!!
       }
     }
     return ByteString.of(*messageDigest.digest())
@@ -1627,12 +1626,12 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     try {
       val mac = Mac.getInstance(algorithm)
       mac.init(SecretKeySpec(key.toByteArray(), algorithm))
-      if (head != null) {
-        mac.update(head!!.data, head!!.pos, head!!.limit - head!!.pos)
-        var s = head!!.next
+      head?.let { head ->
+        mac.update(head.data, head.pos, head.limit - head.pos)
+        var s = head.next!!
         while (s != head) {
-          mac.update(s!!.data, s.pos, s.limit - s.pos)
-          s = s.next
+          mac.update(s.data, s.pos, s.limit - s.pos)
+          s = s.next!!
         }
       }
       return ByteString.of(*mac.doFinal())
@@ -1647,28 +1646,28 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     if (size != other.size) return false
     if (size == 0L) return true // Both buffers are empty.
 
-    var sa = this.head
-    var sb = other.head
-    var posA = sa!!.pos
-    var posB = sb!!.pos
+    var sa = this.head!!
+    var sb = other.head!!
+    var posA = sa.pos
+    var posB = sb.pos
 
     var pos = 0L
     var count: Long
     while (pos < size) {
-      count = Math.min(sa!!.limit - posA, sb!!.limit - posB).toLong()
+      count = Math.min(sa.limit - posA, sb.limit - posB).toLong()
 
       for (i in 0L until count) {
         if (sa.data[posA++] != sb.data[posB++]) return false
       }
 
       if (posA == sa.limit) {
-        sa = sa.next
-        posA = sa!!.pos
+        sa = sa.next!!
+        posA = sa.pos
       }
 
       if (posB == sb.limit) {
-        sb = sb.next
-        posB = sb!!.pos
+        sb = sb.next!!
+        posB = sb.pos
       }
       pos += count
     }
@@ -1677,16 +1676,16 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   override fun hashCode(): Int {
-    var s: Segment? = head ?: return 0
+    var s = head ?: return 0
     var result = 1
     do {
-      var pos = s!!.pos
+      var pos = s.pos
       val limit = s.limit
       while (pos < limit) {
         result = 31 * result + s.data[pos]
         pos++
       }
-      s = s.next
+      s = s.next!!
     } while (s != head)
     return result
   }
@@ -1968,12 +1967,13 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
      */
     @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
     open fun seek(offset: Long): Int {
-      if (offset < -1 || offset > buffer!!.size) {
+      val buffer = checkNotNull(buffer) { "not attached to a buffer" }
+      if (offset < -1 || offset > buffer.size) {
         throw ArrayIndexOutOfBoundsException(
-            String.format("offset=%s > size=%s", offset, buffer!!.size))
+            String.format("offset=%s > size=%s", offset, buffer.size))
       }
 
-      if (offset == -1L || offset == buffer!!.size) {
+      if (offset == -1L || offset == buffer.size) {
         this.segment = null
         this.offset = offset
         this.data = null
@@ -1984,9 +1984,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
       // Navigate to the segment that contains `offset`. Start from our current segment if possible.
       var min = 0L
-      var max = buffer!!.size
-      var head = buffer!!.head
-      var tail = buffer!!.head
+      var max = buffer.size
+      var head = buffer.head
+      var tail = buffer.head
       if (this.segment != null) {
         val segmentOffset = this.offset - (this.start - this.segment!!.pos)
         if (segmentOffset > offset) {
@@ -2023,8 +2023,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       // If we're going to write and our segment is shared, swap it for a read-write one.
       if (readWrite && next!!.shared) {
         val unsharedNext = next.unsharedCopy()
-        if (buffer!!.head == next) {
-          buffer!!.head = unsharedNext
+        if (buffer.head == next) {
+          buffer.head = unsharedNext
         }
         next = next.push(unsharedNext)
         next.prev!!.pop()
@@ -2058,19 +2058,19 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
      */
     @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
     open fun resizeBuffer(newSize: Long): Long {
-      check(buffer != null) { "not attached to a buffer" }
+      val buffer = checkNotNull(buffer) { "not attached to a buffer" }
       check(readWrite) { "resizeBuffer() only permitted for read/write buffers" }
 
-      val oldSize = buffer!!.size
+      val oldSize = buffer.size
       if (newSize <= oldSize) {
         require(newSize >= 0L) { "newSize < 0: $newSize" }
         // Shrink the buffer by either shrinking segments or removing them.
         var bytesToSubtract = oldSize - newSize
         while (bytesToSubtract > 0L) {
-          val tail = buffer!!.head!!.prev
+          val tail = buffer.head!!.prev
           val tailSize = tail!!.limit - tail.pos
           if (tailSize <= bytesToSubtract) {
-            buffer!!.head = tail.pop()
+            buffer.head = tail.pop()
             SegmentPool.recycle(tail)
             bytesToSubtract -= tailSize.toLong()
           } else {
@@ -2089,7 +2089,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         var needsToSeek = true
         var bytesToAdd = newSize - oldSize
         while (bytesToAdd > 0L) {
-          val tail = buffer!!.writableSegment(1)
+          val tail = buffer.writableSegment(1)
           val segmentBytesToAdd = Math.min(bytesToAdd, (Segment.SIZE - tail.limit).toLong()).toInt()
           tail.limit += segmentBytesToAdd
           bytesToAdd -= segmentBytesToAdd.toLong()
@@ -2106,7 +2106,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         }
       }
 
-      buffer!!.size = newSize
+      buffer.size = newSize
 
       return oldSize
     }
@@ -2137,14 +2137,14 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     open fun expandBuffer(minByteCount: Int): Long {
       require(minByteCount > 0) { "minByteCount <= 0: $minByteCount" }
       require(minByteCount <= Segment.SIZE) { "minByteCount > Segment.SIZE: $minByteCount" }
-      check(buffer != null) { "not attached to a buffer" }
+      val buffer = checkNotNull(buffer) { "not attached to a buffer" }
       check(readWrite) { "expandBuffer() only permitted for read/write buffers" }
 
-      val oldSize = buffer!!.size
-      val tail = buffer!!.writableSegment(minByteCount)
+      val oldSize = buffer.size
+      val tail = buffer.writableSegment(minByteCount)
       val result = Segment.SIZE - tail.limit
       tail.limit = Segment.SIZE
-      buffer!!.size = oldSize + result
+      buffer.size = oldSize + result
 
       // Seek to the old size.
       this.segment = tail
