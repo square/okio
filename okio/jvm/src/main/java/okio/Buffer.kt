@@ -127,7 +127,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     // Copy from one segment at a time.
     while (byteCount > 0L) {
       val pos = (s!!.pos + offset).toInt()
-      val toCopy = Math.min((s.limit - pos).toLong(), byteCount).toInt()
+      val toCopy = minOf((s.limit - pos).toLong(), byteCount).toInt()
       out.write(s.data, pos, toCopy)
       byteCount -= toCopy.toLong()
       offset = 0L
@@ -158,7 +158,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     while (byteCount > 0L) {
       val copy = s!!.sharedCopy()
       copy.pos += offset.toInt()
-      copy.limit = Math.min(copy.pos + byteCount.toInt(), copy.limit)
+      copy.limit = minOf(copy.pos + byteCount.toInt(), copy.limit)
       if (out.head == null) {
         copy.prev = copy
         copy.next = copy.prev
@@ -184,7 +184,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
     var s = head
     while (byteCount > 0L) {
-      val toCopy = Math.min(byteCount, (s!!.limit - s.pos).toLong()).toInt()
+      val toCopy = minOf(byteCount, (s!!.limit - s.pos).toLong()).toInt()
       out.write(s.data, s.pos, toCopy)
 
       s.pos += toCopy
@@ -224,7 +224,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     var byteCount = byteCount
     while (byteCount > 0L || forever) {
       val tail = writableSegment(1)
-      val maxToCopy = Math.min(byteCount, (Segment.SIZE - tail.limit).toLong()).toInt()
+      val maxToCopy = minOf(byteCount, (Segment.SIZE - tail.limit).toLong()).toInt()
       val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
       if (bytesRead == -1) {
         if (forever) return
@@ -553,7 +553,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     val listSize = options.size
     while (i < listSize) {
       val b = options[i]
-      val bytesLimit = Math.min(size, b.size().toLong()).toInt()
+      val bytesLimit = minOf(size, b.size().toLong()).toInt()
       if (bytesLimit == 0 || rangeEquals(s!!, s.pos, b, 0, bytesLimit)) {
         return i
       }
@@ -639,8 +639,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       return readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
     }
     val data = Buffer()
-    copyTo(data, 0, Math.min(32, size()))
-    throw EOFException("\\n not found: limit=${Math.min(size(),
+    copyTo(data, 0, minOf(32, size()))
+    throw EOFException("\\n not found: limit=${minOf(size(),
         limit)} content=${data.readByteString().hex()}${'…'}")
   }
 
@@ -767,7 +767,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     checkOffsetAndCount(sink.size.toLong(), offset.toLong(), byteCount.toLong())
 
     val s = head ?: return -1
-    val toCopy = Math.min(byteCount, s.limit - s.pos)
+    val toCopy = minOf(byteCount, s.limit - s.pos)
     System.arraycopy(s.data, s.pos, sink, offset, toCopy)
 
     s.pos += toCopy
@@ -785,7 +785,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun read(sink: ByteBuffer): Int {
     val s = head ?: return -1
 
-    val toCopy = Math.min(sink.remaining(), s.limit - s.pos)
+    val toCopy = minOf(sink.remaining(), s.limit - s.pos)
     sink.put(s.data, s.pos, toCopy)
 
     s.pos += toCopy
@@ -813,7 +813,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     while (byteCount > 0) {
       val head = this.head ?: throw EOFException()
 
-      val toSkip = Math.min(byteCount, (head.limit - head.pos).toLong()).toInt()
+      val toSkip = minOf(byteCount, (head.limit - head.pos).toLong()).toInt()
       size -= toSkip.toLong()
       byteCount -= toSkip.toLong()
       head.pos += toSkip
@@ -847,7 +847,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
           val tail = writableSegment(1)
           val data = tail.data
           val segmentOffset = tail.limit - i
-          val runLimit = Math.min(endIndex, Segment.SIZE - segmentOffset)
+          val runLimit = minOf(endIndex, Segment.SIZE - segmentOffset)
 
           // Emit a 7-bit character with 1 byte.
           data[segmentOffset + i++] = c.toByte() // 0xxxxxxx
@@ -971,7 +971,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     while (offset < limit) {
       val tail = writableSegment(1)
 
-      val toCopy = Math.min(limit - offset, Segment.SIZE - tail.limit)
+      val toCopy = minOf(limit - offset, Segment.SIZE - tail.limit)
       System.arraycopy(source, offset, tail.data, tail.limit, toCopy)
 
       offset += toCopy
@@ -989,7 +989,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     while (remaining > 0) {
       val tail = writableSegment(1)
 
-      val toCopy = Math.min(remaining, Segment.SIZE - tail.limit)
+      val toCopy = minOf(remaining, Segment.SIZE - tail.limit)
       source.get(tail.data, tail.limit, toCopy)
 
       remaining -= toCopy
@@ -1338,7 +1338,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     // Scan through the segments, searching for b.
     while (offset < toIndex) {
       val data = s!!.data
-      val limit = Math.min(s.limit.toLong(), s.pos + toIndex - offset).toInt()
+      val limit = minOf(s.limit.toLong(), s.pos + toIndex - offset).toInt()
       var pos = (s.pos + fromIndex - offset).toInt()
       while (pos < limit) {
         if (data[pos] == b) {
@@ -1404,7 +1404,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     while (offset < resultLimit) {
       // Scan through the current segment.
       val data = s!!.data
-      val segmentLimit = Math.min(s.limit.toLong(), s.pos + resultLimit - offset).toInt()
+      val segmentLimit = minOf(s.limit.toLong(), s.pos + resultLimit - offset).toInt()
       for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
         if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes, 1, bytesSize)) {
           return pos - s.pos + offset
@@ -1654,7 +1654,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     var pos = 0L
     var count: Long
     while (pos < size) {
-      count = Math.min(sa.limit - posA, sb.limit - posB).toLong()
+      count = minOf(sa.limit - posA, sb.limit - posB).toLong()
 
       for (i in 0L until count) {
         if (sa.data[posA++] != sb.data[posB++]) return false
@@ -2090,7 +2090,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         var bytesToAdd = newSize - oldSize
         while (bytesToAdd > 0L) {
           val tail = buffer.writableSegment(1)
-          val segmentBytesToAdd = Math.min(bytesToAdd, (Segment.SIZE - tail.limit).toLong()).toInt()
+          val segmentBytesToAdd = minOf(bytesToAdd, (Segment.SIZE - tail.limit).toLong()).toInt()
           tail.limit += segmentBytesToAdd
           bytesToAdd -= segmentBytesToAdd.toLong()
 
