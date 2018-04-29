@@ -17,6 +17,8 @@
 package okio
 
 actual typealias JvmOverloads = kotlin.jvm.JvmOverloads
+actual typealias JvmField = kotlin.jvm.JvmField
+actual typealias JvmStatic = kotlin.jvm.JvmStatic
 actual typealias JvmName = kotlin.jvm.JvmName
 
 internal actual fun arraycopy(

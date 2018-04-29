@@ -76,7 +76,7 @@ class SegmentSharingTest {
     assertEquals(xs + ys + zs, snapshot.utf8())
 
     // While locking the pool, confirm that clearing the buffer doesn't release its segments.
-    synchronized(SegmentPool::class.java) {
+    synchronized(SegmentPool) {
       SegmentPool.next = null
       SegmentPool.byteCount = 0L
       buffer.clear()
@@ -93,7 +93,7 @@ class SegmentSharingTest {
     val clone = buffer.clone()
 
     // While locking the pool, confirm that clearing the buffer doesn't release its segments.
-    synchronized(SegmentPool::class.java) {
+    synchronized(SegmentPool) {
       SegmentPool.next = null
       SegmentPool.byteCount = 0L
       buffer.clear()
