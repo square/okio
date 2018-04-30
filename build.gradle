@@ -3,6 +3,7 @@ buildscript {
       'kotlin': '1.2.40',
       'jmhPlugin': '0.4.5',
       'animalSnifferPlugin': '1.4.3',
+      'dokka': '0.9.16',
       'jsr305': '3.0.2',
       'jmh': '1.19',
       'animalSniffer': '1.16',
@@ -35,6 +36,7 @@ buildscript {
           'annotations': "org.codehaus.mojo:animal-sniffer-annotations:${versions.animalSniffer}",
       ],
       'japicmp': 'me.champeau.gradle:japicmp-gradle-plugin:0.2.6',
+      'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'jsr305': "com.google.code.findbugs:jsr305:${versions.jsr305}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
@@ -47,6 +49,7 @@ buildscript {
     classpath deps.jmh.gradlePlugin
     classpath deps.animalSniffer.gradlePlugin
     classpath deps.japicmp
+    classpath deps.dokka
   }
 
   repositories {
