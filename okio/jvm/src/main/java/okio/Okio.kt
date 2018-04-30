@@ -62,7 +62,7 @@ private class OutputStreamSink(
     while (remaining > 0) {
       timeout.throwIfReached()
       val head = source.head!!
-      val toCopy = minOf(remaining, (head.limit - head.pos).toLong()).toInt()
+      val toCopy = minOf(remaining, head.limit - head.pos).toInt()
       out.write(head.data, head.pos, toCopy)
 
       head.pos += toCopy
@@ -99,7 +99,7 @@ private class InputStreamSource(
     try {
       timeout.throwIfReached()
       val tail = sink.writableSegment(1)
-      val maxToCopy = minOf(byteCount, (Segment.SIZE - tail.limit).toLong()).toInt()
+      val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
       val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
       if (bytesRead == -1) return -1
       tail.limit += bytesRead
@@ -213,3 +213,23 @@ fun Path.source(vararg options: OpenOption): Source =
 internal val AssertionError.isAndroidGetsocknameError: Boolean get() {
   return cause != null && message?.contains("getsockname failed") ?: false
 }
+
+// TODO(jwilson): move these to Util.kt once that’s Kotlin?
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Byte.shr(other: Int): Int = toInt() shr other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Byte.and(other: Int): Int = toInt() and other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Byte.and(other: Long): Long = toLong() and other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Int.and(other: Long): Long = toLong() and other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline fun minOf(a: Long, b: Int): Long = minOf(a, b.toLong())
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline fun minOf(a: Int, b: Long): Long = minOf(a.toLong(), b)

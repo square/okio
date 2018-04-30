@@ -145,7 +145,7 @@ internal class RealBufferedSource(
       if (read == -1L) return -1
     }
 
-    val toRead = minOf(byteCount.toLong(), buffer.size).toInt()
+    val toRead = minOf(byteCount, buffer.size).toInt()
     return buffer.read(sink, offset, toRead)
   }
 
@@ -458,7 +458,7 @@ internal class RealBufferedSource(
           val count = source.read(buffer, Segment.SIZE.toLong())
           if (count == -1L) return -1
         }
-        return buffer.readByte().toInt() and 0xff
+        return buffer.readByte() and 0xff
       }
 
       override fun read(data: ByteArray, offset: Int, byteCount: Int): Int {
@@ -475,7 +475,7 @@ internal class RealBufferedSource(
 
       override fun available(): Int {
         if (closed) throw IOException("closed")
-        return minOf(buffer.size, Integer.MAX_VALUE.toLong()).toInt()
+        return minOf(buffer.size, Integer.MAX_VALUE).toInt()
       }
 
       override fun close() = this@RealBufferedSource.close()

@@ -74,7 +74,7 @@ class HashingSink : ForwardingSink {
     var hashedCount = 0L
     var s = source.head!!
     while (hashedCount < byteCount) {
-      val toHash = minOf(byteCount - hashedCount, (s.limit - s.pos).toLong()).toInt()
+      val toHash = minOf(byteCount - hashedCount, s.limit - s.pos).toInt()
       if (messageDigest != null) {
         messageDigest.update(s.data, s.pos, toHash)
       } else {

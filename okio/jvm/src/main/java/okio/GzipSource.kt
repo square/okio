@@ -184,7 +184,7 @@ class GzipSource(source: Source) : Source {
     // Checksum one segment at a time.
     while (byteCount > 0) {
       val pos = (s.pos + offset).toInt()
-      val toUpdate = minOf((s.limit - pos).toLong(), byteCount).toInt()
+      val toUpdate = minOf(s.limit - pos, byteCount).toInt()
       crc.update(s.data, pos, toUpdate)
       byteCount -= toUpdate
       offset = 0

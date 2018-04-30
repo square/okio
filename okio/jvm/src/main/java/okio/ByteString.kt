@@ -123,8 +123,8 @@ internal constructor(
     val result = CharArray(data.size * 2)
     var c = 0
     for (b in data) {
-      result[c++] = HEX_DIGITS[b.toInt() shr 4 and 0xf]
-      result[c++] = HEX_DIGITS[b.toInt() and 0xf]
+      result[c++] = HEX_DIGITS[b shr 4 and 0xf]
+      result[c++] = HEX_DIGITS[b       and 0xf]
     }
     return String(result)
   }
@@ -332,8 +332,8 @@ internal constructor(
     var i = 0
     val size = minOf(sizeA, sizeB)
     while (i < size) {
-      val byteA = getByte(i).toInt() and 0xff
-      val byteB = other.getByte(i).toInt() and 0xff
+      val byteA = getByte(i) and 0xff
+      val byteB = other.getByte(i) and 0xff
       if (byteA == byteB) {
         i++
         continue

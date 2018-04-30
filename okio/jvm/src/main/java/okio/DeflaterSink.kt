@@ -59,7 +59,7 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
     while (remaining > 0) {
       // Share bytes from the head segment of 'source' with the deflater.
       val head = source.head!!
-      val toDeflate = minOf(remaining, (head.limit - head.pos).toLong()).toInt()
+      val toDeflate = minOf(remaining, head.limit - head.pos).toInt()
       deflater.setInput(head.data, head.pos, toDeflate)
 
       // Deflate those bytes into sink.

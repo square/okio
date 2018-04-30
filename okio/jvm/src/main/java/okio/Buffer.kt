@@ -89,7 +89,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return object : InputStream() {
       override fun read(): Int {
         return if (size > 0) {
-          readByte().toInt() and 0xff
+          readByte() and 0xff
         } else {
           -1
         }
@@ -99,7 +99,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         return this@Buffer.read(sink, offset, byteCount)
       }
 
-      override fun available() = minOf(size, Integer.MAX_VALUE.toLong()).toInt()
+      override fun available() = minOf(size, Integer.MAX_VALUE).toInt()
 
       override fun close() {}
 
@@ -127,7 +127,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     // Copy from one segment at a time.
     while (byteCount > 0L) {
       val pos = (s!!.pos + offset).toInt()
-      val toCopy = minOf((s.limit - pos).toLong(), byteCount).toInt()
+      val toCopy = minOf(s.limit - pos, byteCount).toInt()
       out.write(s.data, pos, toCopy)
       byteCount -= toCopy.toLong()
       offset = 0L
@@ -184,7 +184,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
     var s = head
     while (byteCount > 0L) {
-      val toCopy = minOf(byteCount, (s!!.limit - s.pos).toLong()).toInt()
+      val toCopy = minOf(byteCount, s!!.limit - s.pos).toInt()
       out.write(s.data, s.pos, toCopy)
 
       s.pos += toCopy
@@ -224,7 +224,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     var byteCount = byteCount
     while (byteCount > 0L || forever) {
       val tail = writableSegment(1)
-      val maxToCopy = minOf(byteCount, (Segment.SIZE - tail.limit).toLong()).toInt()
+      val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
       val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
       if (bytesRead == -1) {
         if (forever) return
@@ -309,12 +309,12 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
     // If the short is split across multiple segments, delegate to readByte().
     if (limit - pos < 2) {
-      val s = readByte().toInt() and 0xff shl 8 or (readByte().toInt() and 0xff)
+      val s = readByte() and 0xff shl 8 or (readByte() and 0xff)
       return s.toShort()
     }
 
     val data = segment.data
-    val s = data[pos++].toInt() and 0xff shl 8 or (data[pos++].toInt() and 0xff)
+    val s = data[pos++] and 0xff shl 8 or (data[pos++] and 0xff)
     size -= 2L
 
     if (pos == limit) {
@@ -336,17 +336,17 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
     // If the int is split across multiple segments, delegate to readByte().
     if (limit - pos < 4L) {
-      return (readByte().toInt() and 0xff shl 24
-          or (readByte().toInt() and 0xff shl 16)
-          or (readByte().toInt() and 0xff shl  8)
-          or (readByte().toInt() and 0xff))
+      return (readByte() and 0xff shl 24
+          or (readByte() and 0xff shl 16)
+          or (readByte() and 0xff shl  8)
+          or (readByte() and 0xff))
     }
 
     val data = segment.data
-    val i = (data[pos++].toInt() and 0xff shl 24
-        or (data[pos++].toInt() and 0xff shl 16)
-        or (data[pos++].toInt() and 0xff shl 8)
-        or (data[pos++].toInt() and 0xff))
+    val i = (data[pos++] and 0xff shl 24
+        or (data[pos++] and 0xff shl 16)
+        or (data[pos++] and 0xff shl 8)
+        or (data[pos++] and 0xff))
     size -= 4L
 
     if (pos == limit) {
@@ -368,19 +368,19 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
     // If the long is split across multiple segments, delegate to readInt().
     if (limit - pos < 8L) {
-      return (readInt().toLong() and 0xffffffffL shl 32
-          or (readInt().toLong() and 0xffffffffL))
+      return (readInt() and 0xffffffffL shl 32
+          or (readInt() and 0xffffffffL))
     }
 
     val data = segment.data
-    val v = (data[pos++].toLong() and 0xffL shl 56
-        or (data[pos++].toLong() and 0xffL shl 48)
-        or (data[pos++].toLong() and 0xffL shl 40)
-        or (data[pos++].toLong() and 0xffL shl 32)
-        or (data[pos++].toLong() and 0xffL shl 24)
-        or (data[pos++].toLong() and 0xffL shl 16)
-        or (data[pos++].toLong() and 0xffL shl  8)
-        or (data[pos++].toLong() and 0xffL))
+    val v = (data[pos++] and 0xffL shl 56
+        or (data[pos++] and 0xffL shl 48)
+        or (data[pos++] and 0xffL shl 40)
+        or (data[pos++] and 0xffL shl 32)
+        or (data[pos++] and 0xffL shl 24)
+        or (data[pos++] and 0xffL shl 16)
+        or (data[pos++] and 0xffL shl  8)
+        or (data[pos++] and 0xffL))
     size -= 8L
 
     if (pos == limit) {
@@ -553,7 +553,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     val listSize = options.size
     while (i < listSize) {
       val b = options[i]
-      val bytesLimit = minOf(size, b.size().toLong()).toInt()
+      val bytesLimit = minOf(size, b.size()).toInt()
       if (bytesLimit == 0 || rangeEquals(s!!, s.pos, b, 0, bytesLimit)) {
         return i
       }
@@ -672,27 +672,27 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     val min: Int
 
     when {
-      b0.toInt() and 0x80 == 0 -> {
+      b0 and 0x80 == 0 -> {
         // 0xxxxxxx.
-        codePoint = b0.toInt() and 0x7f
+        codePoint = b0 and 0x7f
         byteCount = 1 // 7 bits (ASCII).
         min = 0x0
       }
-      b0.toInt() and 0xe0 == 0xc0 -> {
+      b0 and 0xe0 == 0xc0 -> {
         // 0x110xxxxx
-        codePoint = b0.toInt() and 0x1f
+        codePoint = b0 and 0x1f
         byteCount = 2 // 11 bits (5 + 6).
         min = 0x80
       }
-      b0.toInt() and 0xf0 == 0xe0 -> {
+      b0 and 0xf0 == 0xe0 -> {
         // 0x1110xxxx
-        codePoint = b0.toInt() and 0x0f
+        codePoint = b0 and 0x0f
         byteCount = 3 // 16 bits (4 + 6 + 6).
         min = 0x800
       }
-      b0.toInt() and 0xf8 == 0xf0 -> {
+      b0 and 0xf8 == 0xf0 -> {
         // 0x11110xxx
-        codePoint = b0.toInt() and 0x07
+        codePoint = b0 and 0x07
         byteCount = 4 // 21 bits (3 + 6 + 6 + 6).
         min = 0x10000
       }
@@ -713,10 +713,10 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     // is left in the stream for processing by the next call to readUtf8CodePoint().
     for (i in 1 until byteCount) {
       val b = getByte(i.toLong())
-      if (b.toInt() and 0xc0 == 0x80) {
+      if (b and 0xc0 == 0x80) {
         // 0x10xxxxxx
         codePoint = codePoint shl 6
-        codePoint = codePoint or (b.toInt() and 0x3f)
+        codePoint = codePoint or (b and 0x3f)
       } else {
         skip(i.toLong())
         return REPLACEMENT_CHARACTER
@@ -813,7 +813,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     while (byteCount > 0) {
       val head = this.head ?: throw EOFException()
 
-      val toSkip = minOf(byteCount, (head.limit - head.pos).toLong()).toInt()
+      val toSkip = minOf(byteCount, head.limit - head.pos).toInt()
       size -= toSkip.toLong()
       byteCount -= toSkip.toLong()
       head.pos += toSkip
@@ -1033,8 +1033,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     val tail = writableSegment(2)
     val data = tail.data
     var limit = tail.limit
-    data[limit++] = (s.ushr(8) and 0xff).toByte()
-    data[limit++] = (s and 0xff).toByte()
+    data[limit++] = (s ushr 8 and 0xff).toByte()
+    data[limit++] = (s        and 0xff).toByte()
     tail.limit = limit
     size += 2L
     return this
@@ -1046,10 +1046,10 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     val tail = writableSegment(4)
     val data = tail.data
     var limit = tail.limit
-    data[limit++] = (i.ushr(24) and 0xff).toByte()
-    data[limit++] = (i.ushr(16) and 0xff).toByte()
-    data[limit++] = (i.ushr( 8) and 0xff).toByte()
-    data[limit++] = (i                   and 0xff).toByte()
+    data[limit++] = (i ushr 24 and 0xff).toByte()
+    data[limit++] = (i ushr 16 and 0xff).toByte()
+    data[limit++] = (i ushr  8 and 0xff).toByte()
+    data[limit++] = (i         and 0xff).toByte()
     tail.limit = limit
     size += 4L
     return this
@@ -1061,14 +1061,14 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     val tail = writableSegment(8)
     val data = tail.data
     var limit = tail.limit
-    data[limit++] = (v.ushr(56) and 0xffL).toByte()
-    data[limit++] = (v.ushr(48) and 0xffL).toByte()
-    data[limit++] = (v.ushr(40) and 0xffL).toByte()
-    data[limit++] = (v.ushr(32) and 0xffL).toByte()
-    data[limit++] = (v.ushr(24) and 0xffL).toByte()
-    data[limit++] = (v.ushr(16) and 0xffL).toByte()
-    data[limit++] = (v.ushr( 8) and 0xffL).toByte()
-    data[limit++] = (v                   and 0xffL).toByte()
+    data[limit++] = (v ushr 56 and 0xffL).toByte()
+    data[limit++] = (v ushr 48 and 0xffL).toByte()
+    data[limit++] = (v ushr 40 and 0xffL).toByte()
+    data[limit++] = (v ushr 32 and 0xffL).toByte()
+    data[limit++] = (v ushr 24 and 0xffL).toByte()
+    data[limit++] = (v ushr 16 and 0xffL).toByte()
+    data[limit++] = (v ushr  8 and 0xffL).toByte()
+    data[limit++] = (v         and 0xffL).toByte()
     tail.limit = limit
     size += 8L
     return this
@@ -1404,7 +1404,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     while (offset < resultLimit) {
       // Scan through the current segment.
       val data = s!!.data
-      val segmentLimit = minOf(s.limit.toLong(), s.pos + resultLimit - offset).toInt()
+      val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
       for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
         if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes, 1, bytesSize)) {
           return pos - s.pos + offset
@@ -2090,7 +2090,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         var bytesToAdd = newSize - oldSize
         while (bytesToAdd > 0L) {
           val tail = buffer.writableSegment(1)
-          val segmentBytesToAdd = minOf(bytesToAdd, (Segment.SIZE - tail.limit).toLong()).toInt()
+          val segmentBytesToAdd = minOf(bytesToAdd, Segment.SIZE - tail.limit).toInt()
           tail.limit += segmentBytesToAdd
           bytesToAdd -= segmentBytesToAdd.toLong()
 
