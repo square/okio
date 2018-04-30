@@ -585,9 +585,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @Throws(EOFException::class)
   override fun readUtf8(byteCount: Long) = readString(byteCount, Charsets.UTF_8)
 
-  override fun readString(charset: Charset): String {
-    return readString(size, charset)
-  }
+  override fun readString(charset: Charset) = readString(size, charset)
 
   @Throws(EOFException::class)
   override fun readString(byteCount: Long, charset: Charset): String {
@@ -1291,6 +1289,34 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun indexOf(b: Byte) = indexOf(b, 0, Long.MAX_VALUE)
 
   /**
+   * Invoke `lambda` with the segment and offset at `fromIndex`. Searches from the front or the back
+   * depending on what's closer to `fromIndex`.
+   */
+  private inline fun <T> seek(fromIndex: Long, lambda: (Segment?, Long) -> T): T {
+    var s: Segment = head ?: return lambda(null, -1L)
+
+    if (size - fromIndex < fromIndex) {
+      // We're scanning in the back half of this buffer. Find the segment starting at the back.
+      var offset = size
+      while (offset > fromIndex) {
+        s = s.prev!!
+        offset -= (s.limit - s.pos).toLong()
+      }
+      return lambda(s, offset)
+    } else {
+      // We're scanning in the front half of this buffer. Find the segment starting at the front.
+      var offset = 0L
+      while (true) {
+        val nextOffset = offset + (s.limit - s.pos)
+        if (nextOffset >= fromIndex) break
+        s = s.next!!
+        offset = nextOffset
+      }
+      return lambda(s, offset)
+    }
+  }
+
+  /**
    * Returns the index of `b` in this at or beyond `fromIndex`, or -1 if this buffer does not
    * contain `b` in that range.
    */
@@ -1304,56 +1330,30 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     if (toIndex > size) toIndex = size
     if (fromIndex == toIndex) return -1L
 
-    // TODO(jwilson): extract this to a shared helper method when can do so without allocating.
-    // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
-    var s: Segment?
-    var offset: Long
-    s = head
-    when {
-      s == null -> {
-        // No segments to scan!
-        return -1L
-      }
-      size - fromIndex < fromIndex -> {
-        // We're scanning in the back half of this buffer. Find the segment starting at the back.
-        offset = size
-        while (offset > fromIndex) {
-          s = s!!.prev
-          offset -= (s!!.limit - s.pos).toLong()
+    seek(fromIndex) { s, offset ->
+      var s = s ?: return -1L
+      var offset = offset
+
+      // Scan through the segments, searching for b.
+      while (offset < toIndex) {
+        val data = s.data
+        val limit = minOf(s.limit.toLong(), s.pos + toIndex - offset).toInt()
+        var pos = (s.pos + fromIndex - offset).toInt()
+        while (pos < limit) {
+          if (data[pos] == b) {
+            return pos - s.pos + offset
+          }
+          pos++
         }
+
+        // Not in this segment. Try the next one.
+        offset += (s.limit - s.pos).toLong()
+        fromIndex = offset
+        s = s.next!!
       }
-      else -> {
-        // We're scanning in the front half of this buffer. Find the segment starting at the front.
-        offset = 0L
-        var nextOffset: Long
-        while (true) {
-          nextOffset = offset + (s!!.limit - s.pos)
-          if (nextOffset >= fromIndex) break
-          s = s.next
-          offset = nextOffset
-        }
-      }
+
+      return -1L
     }
-
-    // Scan through the segments, searching for b.
-    while (offset < toIndex) {
-      val data = s!!.data
-      val limit = minOf(s.limit.toLong(), s.pos + toIndex - offset).toInt()
-      var pos = (s.pos + fromIndex - offset).toInt()
-      while (pos < limit) {
-        if (data[pos] == b) {
-          return pos - s.pos + offset
-        }
-        pos++
-      }
-
-      // Not in this segment. Try the next one.
-      offset += (s.limit - s.pos).toLong()
-      fromIndex = offset
-      s = s.next
-    }
-
-    return -1L
   }
 
   @Throws(IOException::class)
@@ -1365,59 +1365,33 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     require(bytes.size() > 0) { "bytes is empty" }
     require(fromIndex >= 0L) { "fromIndex < 0: $fromIndex" }
 
-    // TODO(jwilson): extract this to a shared helper method when can do so without allocating.
-    // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
-    var s: Segment?
-    var offset: Long
-    s = head
-    when {
-      s == null -> {
-        // No segments to scan!
-        return -1L
-      }
-      size - fromIndex < fromIndex -> {
-        // We're scanning in the back half of this buffer. Find the segment starting at the back.
-        offset = size
-        while (offset > fromIndex) {
-          s = s!!.prev
-          offset -= (s!!.limit - s.pos).toLong()
+    seek(fromIndex) { s, offset ->
+      var s = s ?: return -1L
+      var offset = offset
+
+      // Scan through the segments, searching for the lead byte. Each time that is found, delegate
+      // to rangeEquals() to check for a complete match.
+      val b0 = bytes.getByte(0)
+      val bytesSize = bytes.size()
+      val resultLimit = size - bytesSize + 1L
+      while (offset < resultLimit) {
+        // Scan through the current segment.
+        val data = s.data
+        val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
+        for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
+          if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes, 1, bytesSize)) {
+            return pos - s.pos + offset
+          }
         }
+
+        // Not in this segment. Try the next one.
+        offset += (s.limit - s.pos).toLong()
+        fromIndex = offset
+        s = s.next!!
       }
-      else -> {
-        // We're scanning in the front half of this buffer. Find the segment starting at the front.
-        offset = 0L
-        var nextOffset: Long
-        while (true) {
-          nextOffset = offset + (s!!.limit - s.pos)
-          if (nextOffset >= fromIndex) break
-          s = s.next
-          offset = nextOffset
-        }
-      }
+
+      return -1L
     }
-
-    // Scan through the segments, searching for the lead byte. Each time that is found, delegate to
-    // rangeEquals() to check for a complete match.
-    val b0 = bytes.getByte(0)
-    val bytesSize = bytes.size()
-    val resultLimit = size - bytesSize + 1L
-    while (offset < resultLimit) {
-      // Scan through the current segment.
-      val data = s!!.data
-      val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
-      for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
-        if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes, 1, bytesSize)) {
-          return pos - s.pos + offset
-        }
-      }
-
-      // Not in this segment. Try the next one.
-      offset += (s.limit - s.pos).toLong()
-      fromIndex = offset
-      s = s.next
-    }
-
-    return -1L
   }
 
   override fun indexOfElement(targetBytes: ByteString) = indexOfElement(targetBytes, 0L)
@@ -1426,85 +1400,58 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     var fromIndex = fromIndex
     require(fromIndex >= 0L) { "fromIndex < 0: $fromIndex" }
 
-    // TODO(jwilson): extract this to a shared helper method when can do so without allocating.
-    // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
-    var s: Segment?
-    var offset: Long
-    s = head
-    when {
-      s == null -> {
-        // No segments to scan!
-        return -1L
-      }
-      size - fromIndex < fromIndex -> {
-        // We're scanning in the back half of this buffer. Find the segment starting at the back.
-        offset = size
-        while (offset > fromIndex) {
-          s = s!!.prev
-          offset -= (s!!.limit - s.pos).toLong()
-        }
-      }
-      else -> {
-        // We're scanning in the front half of this buffer. Find the segment starting at the front.
-        offset = 0L
-        var nextOffset: Long
-        while (true) {
-          nextOffset = offset + (s!!.limit - s.pos)
-          if (nextOffset >= fromIndex) break
-          s = s.next
-          offset = nextOffset
-        }
-      }
-    }
+    seek(fromIndex) { s, offset ->
+      var s = s ?: return -1L
+      var offset = offset
 
-    // Special case searching for one of two bytes. This is a common case for tools like Moshi,
-    // which search for pairs of chars like `\r` and `\n` or {@code `"` and `\`. The impact of this
-    // optimization is a ~5x speedup for this case without a substantial cost to other cases.
-    if (targetBytes.size() == 2) {
-      // Scan through the segments, searching for either of the two bytes.
-      val b0 = targetBytes.getByte(0)
-      val b1 = targetBytes.getByte(1)
-      while (offset < size) {
-        val data = s!!.data
-        var pos = (s.pos + fromIndex - offset).toInt()
-        val limit = s.limit
-        while (pos < limit) {
-          val b = data[pos].toInt()
-          if (b == b0.toInt() || b == b1.toInt()) {
-            return pos - s.pos + offset
+      // Special case searching for one of two bytes. This is a common case for tools like Moshi,
+      // which search for pairs of chars like `\r` and `\n` or {@code `"` and `\`. The impact of this
+      // optimization is a ~5x speedup for this case without a substantial cost to other cases.
+      if (targetBytes.size() == 2) {
+        // Scan through the segments, searching for either of the two bytes.
+        val b0 = targetBytes.getByte(0)
+        val b1 = targetBytes.getByte(1)
+        while (offset < size) {
+          val data = s.data
+          var pos = (s.pos + fromIndex - offset).toInt()
+          val limit = s.limit
+          while (pos < limit) {
+            val b = data[pos].toInt()
+            if (b == b0.toInt() || b == b1.toInt()) {
+              return pos - s.pos + offset
+            }
+            pos++
           }
-          pos++
-        }
 
-        // Not in this segment. Try the next one.
-        offset += (s.limit - s.pos).toLong()
-        fromIndex = offset
-        s = s.next
-      }
-    } else {
-      // Scan through the segments, searching for a byte that's also in the array.
-      // TODO(jwilson): use ByteString.internalArray() once this is Kotlin and internal APIs work.
-      val targetByteArray = targetBytes.toByteArray()
-      while (offset < size) {
-        val data = s!!.data
-        var pos = (s.pos + fromIndex - offset).toInt()
-        val limit = s.limit
-        while (pos < limit) {
-          val b = data[pos].toInt()
-          for (t in targetByteArray) {
-            if (b == t.toInt()) return pos - s.pos + offset
+          // Not in this segment. Try the next one.
+          offset += (s.limit - s.pos).toLong()
+          fromIndex = offset
+          s = s.next!!
+        }
+      } else {
+        // Scan through the segments, searching for a byte that's also in the array.
+        val targetByteArray = targetBytes.internalArray()
+        while (offset < size) {
+          val data = s.data
+          var pos = (s.pos + fromIndex - offset).toInt()
+          val limit = s.limit
+          while (pos < limit) {
+            val b = data[pos].toInt()
+            for (t in targetByteArray) {
+              if (b == t.toInt()) return pos - s.pos + offset
+            }
+            pos++
           }
-          pos++
+
+          // Not in this segment. Try the next one.
+          offset += (s.limit - s.pos).toLong()
+          fromIndex = offset
+          s = s.next!!
         }
-
-        // Not in this segment. Try the next one.
-        offset += (s.limit - s.pos).toLong()
-        fromIndex = offset
-        s = s.next
       }
-    }
 
-    return -1L
+      return -1L
+    }
   }
 
   override fun rangeEquals(offset: Long, bytes: ByteString) =
@@ -1625,7 +1572,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   private fun hmac(algorithm: String, key: ByteString): ByteString {
     try {
       val mac = Mac.getInstance(algorithm)
-      mac.init(SecretKeySpec(key.toByteArray(), algorithm))
+      mac.init(SecretKeySpec(key.internalArray(), algorithm))
       head?.let { head ->
         mac.update(head.data, head.pos, head.limit - head.pos)
         var s = head.next!!
