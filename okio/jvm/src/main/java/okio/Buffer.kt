@@ -49,8 +49,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @JvmField internal var size: Long = 0L
 
   /** Returns the number of bytes currently in this buffer.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun size() = size
+  fun size() = size
 
   override fun buffer() = this
 
@@ -109,9 +108,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   /** Copy `byteCount` bytes from this, starting at `offset`, to `out`. */
   @Throws(IOException::class)
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
   @JvmOverloads
-  open fun copyTo(out: OutputStream, offset: Long = 0, byteCount: Long = size): Buffer {
+  fun copyTo(out: OutputStream, offset: Long = 0, byteCount: Long = size): Buffer {
     var offset = offset
     var byteCount = byteCount
     checkOffsetAndCount(size, offset, byteCount)
@@ -138,8 +136,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Copy `byteCount` bytes from this, starting at `offset`, to `out`.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun copyTo(out: Buffer, offset: Long, byteCount: Long): Buffer {
+  fun copyTo(out: Buffer, offset: Long, byteCount: Long): Buffer {
     var offset = offset
     var byteCount = byteCount
     checkOffsetAndCount(size, offset, byteCount)
@@ -177,8 +174,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   /** Write `byteCount` bytes from this to `out`.  */
   @Throws(IOException::class)
   @JvmOverloads
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun writeTo(out: OutputStream, byteCount: Long = size): Buffer {
+  fun writeTo(out: OutputStream, byteCount: Long = size): Buffer {
     var byteCount = byteCount
     checkOffsetAndCount(size, 0, byteCount)
 
@@ -204,16 +200,14 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   /** Read and exhaust bytes from `input` into this.  */
   @Throws(IOException::class)
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun readFrom(input: InputStream): Buffer {
+  fun readFrom(input: InputStream): Buffer {
     readFrom(input, Long.MAX_VALUE, true)
     return this
   }
 
   /** Read `byteCount` bytes from `input` into this.  */
   @Throws(IOException::class)
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun readFrom(input: InputStream, byteCount: Long): Buffer {
+  fun readFrom(input: InputStream, byteCount: Long): Buffer {
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }
     readFrom(input, byteCount, false)
     return this
@@ -241,8 +235,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * number of bytes that can be flushed immediately to an underlying sink
    * without harming throughput.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun completeSegmentByteCount(): Long {
+  fun completeSegmentByteCount(): Long {
     var result = size
     if (result == 0L) return 0L
 
@@ -277,8 +270,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Returns the byte at `pos`.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun getByte(pos: Long): Byte {
+  fun getByte(pos: Long): Byte {
     checkOffsetAndCount(size, pos, 1L)
     var pos = pos
     if (size - pos > pos) {
@@ -801,8 +793,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * Discards all bytes in this buffer. Calling this method when you're done with a buffer will
    * return its segments to the pool.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun clear() = skip(size)
+  fun clear() = skip(size)
 
   /** Discards `byteCount` bytes from the head of this buffer.  */
   @Throws(EOFException::class)
@@ -1529,20 +1520,16 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Returns the 128-bit MD5 hash of this buffer.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun md5() = digest("MD5")
+  fun md5() = digest("MD5")
 
   /** Returns the 160-bit SHA-1 hash of this buffer.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun sha1() = digest("SHA-1")
+  fun sha1() = digest("SHA-1")
 
   /** Returns the 256-bit SHA-256 hash of this buffer.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun sha256() = digest("SHA-256")
+  fun sha256() = digest("SHA-256")
 
   /** Returns the 512-bit SHA-512 hash of this buffer.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun sha512() = digest("SHA-512")
+  fun sha512() = digest("SHA-512")
 
   private fun digest(algorithm: String): ByteString {
     val messageDigest = MessageDigest.getInstance(algorithm)
@@ -1558,16 +1545,13 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
+  fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
 
   /** Returns the 256-bit SHA-256 HMAC of this buffer.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
+  fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
 
   /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
+  fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
 
   private fun hmac(algorithm: String, key: ByteString): ByteString {
     try {
@@ -1661,20 +1645,17 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Returns an immutable copy of this buffer as a byte string.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun snapshot(): ByteString {
+  fun snapshot(): ByteString {
     require(size <= Integer.MAX_VALUE) { "size > Integer.MAX_VALUE: $size" }
     return snapshot(size.toInt())
   }
 
   /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun snapshot(byteCount: Int): ByteString {
+  fun snapshot(byteCount: Int): ByteString {
     return if (byteCount == 0) ByteString.EMPTY else SegmentedByteString(this, byteCount)
   }
 
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  @JvmOverloads open fun readUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor {
+  @JvmOverloads fun readUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor {
     check(unsafeCursor.buffer == null) { "already attached to a buffer" }
 
     unsafeCursor.buffer = this
@@ -1683,8 +1664,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   @JvmOverloads
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor {
+  fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor {
     check(unsafeCursor.buffer == null) { "already attached to a buffer" }
 
     unsafeCursor.buffer = this
@@ -1901,8 +1881,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
      * the readable range (at least 1), or -1 if we have reached the end of the buffer and there are
      * no more bytes to read.
      */
-    @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-    open operator fun next(): Int {
+    operator fun next(): Int {
       check(offset != buffer!!.size) { "no more bytes" }
       return if (offset == -1L) seek(0L) else seek(offset + (end - start))
     }
@@ -1912,8 +1891,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
      * Returns the number of bytes readable in `data` (at least 1), or -1 if there are no data
      * to read.
      */
-    @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-    open fun seek(offset: Long): Int {
+    fun seek(offset: Long): Int {
       val buffer = checkNotNull(buffer) { "not attached to a buffer" }
       if (offset < -1 || offset > buffer.size) {
         throw ArrayIndexOutOfBoundsException(
@@ -2003,8 +1981,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
      *
      * @return the previous size of the buffer.
      */
-    @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-    open fun resizeBuffer(newSize: Long): Long {
+    fun resizeBuffer(newSize: Long): Long {
       val buffer = checkNotNull(buffer) { "not attached to a buffer" }
       check(readWrite) { "resizeBuffer() only permitted for read/write buffers" }
 
@@ -2080,8 +2057,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
      * than the capacity size of a single segment (8 KiB).
      * @return the number of bytes expanded by. Not less than `minByteCount`.
      */
-    @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-    open fun expandBuffer(minByteCount: Int): Long {
+    fun expandBuffer(minByteCount: Int): Long {
       require(minByteCount > 0) { "minByteCount <= 0: $minByteCount" }
       require(minByteCount <= Segment.SIZE) { "minByteCount > Segment.SIZE: $minByteCount" }
       val buffer = checkNotNull(buffer) { "not attached to a buffer" }

@@ -882,7 +882,7 @@ public final class BufferedSourceTest {
   }
 
   @Test public void select() throws IOException {
-    Options options = Options.of(
+    Options options = Options.Companion.of(
         ByteString.encodeUtf8("ROCK"),
         ByteString.encodeUtf8("SCISSORS"),
         ByteString.encodeUtf8("PAPER"));
@@ -901,7 +901,7 @@ public final class BufferedSourceTest {
     ByteString a = new Buffer().write(commonPrefix).writeUtf8("a").readByteString();
     ByteString bc = new Buffer().write(commonPrefix).writeUtf8("bc").readByteString();
     ByteString bd = new Buffer().write(commonPrefix).writeUtf8("bd").readByteString();
-    Options options = Options.of(a, bc, bd);
+    Options options = Options.Companion.of(a, bc, bd);
 
     sink.write(bd);
     sink.write(a);
@@ -914,7 +914,7 @@ public final class BufferedSourceTest {
   }
 
   @Test public void selectNotFound() throws IOException {
-    Options options = Options.of(
+    Options options = Options.Companion.of(
         ByteString.encodeUtf8("ROCK"),
         ByteString.encodeUtf8("SCISSORS"),
         ByteString.encodeUtf8("PAPER"));
@@ -925,7 +925,7 @@ public final class BufferedSourceTest {
   }
 
   @Test public void selectValuesHaveCommonPrefix() throws IOException {
-    Options options = Options.of(
+    Options options = Options.Companion.of(
         ByteString.encodeUtf8("abcd"),
         ByteString.encodeUtf8("abce"),
         ByteString.encodeUtf8("abcc"));
@@ -937,7 +937,7 @@ public final class BufferedSourceTest {
   }
 
   @Test public void selectLongerThanSource() throws IOException {
-    Options options = Options.of(
+    Options options = Options.Companion.of(
         ByteString.encodeUtf8("abcd"),
         ByteString.encodeUtf8("abce"),
         ByteString.encodeUtf8("abcc"));
@@ -947,7 +947,7 @@ public final class BufferedSourceTest {
   }
 
   @Test public void selectReturnsFirstByteStringThatMatches() throws IOException {
-    Options options = Options.of(
+    Options options = Options.Companion.of(
         ByteString.encodeUtf8("abcd"),
         ByteString.encodeUtf8("abc"),
         ByteString.encodeUtf8("abcde"));
@@ -957,32 +957,32 @@ public final class BufferedSourceTest {
   }
 
   @Test public void selectNoByteStrings() throws IOException {
-    Options options = Options.of();
+    Options options = Options.Companion.of();
     sink.writeUtf8("abc");
     assertEquals(-1, source.select(options));
   }
 
   @Test public void selectFromEmptySource() throws IOException {
-    Options options = Options.of(
+    Options options = Options.Companion.of(
         ByteString.encodeUtf8("abc"),
         ByteString.encodeUtf8("def"));
     assertEquals(-1, source.select(options));
   }
 
   @Test public void selectNoByteStringsFromEmptySource() throws IOException {
-    Options options = Options.of();
+    Options options = Options.Companion.of();
     assertEquals(-1, source.select(options));
   }
 
   @Test public void selectEmptyByteString() throws IOException {
-    Options options = Options.of(ByteString.of());
+    Options options = Options.Companion.of(ByteString.of());
     sink.writeUtf8("abc");
     assertEquals(0, source.select(options));
     assertEquals("abc", source.readUtf8());
   }
 
   @Test public void selectEmptyByteStringFromEmptySource() throws IOException {
-    Options options = Options.of(ByteString.of());
+    Options options = Options.Companion.of(ByteString.of());
     assertEquals(0, source.select(options));
   }
 

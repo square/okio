@@ -42,9 +42,8 @@ class Pipe(internal val maxBufferSize: Long) {
     require(maxBufferSize >= 1L) { "maxBufferSize < 1: $maxBufferSize" }
   }
 
-  @get:Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
   @get:JvmName("sink")
-  open val sink = object : Sink {
+  val sink = object : Sink {
     private val timeout = Timeout()
 
     override fun write(source: Buffer, byteCount: Long) {
@@ -88,9 +87,8 @@ class Pipe(internal val maxBufferSize: Long) {
     override fun timeout(): Timeout = timeout
   }
 
-  @get:Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
   @get:JvmName("source")
-  open val source = object : Source {
+  val source = object : Source {
     private val timeout = Timeout()
 
     override fun read(sink: Buffer, byteCount: Long): Long {
