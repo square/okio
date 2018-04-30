@@ -16,6 +16,7 @@
 
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'org.jetbrains.dokka'
 
 version = VERSION_NAME
 group = GROUP
@@ -135,9 +136,15 @@ afterEvaluate { project ->
       from sourceSets.main.allSource
     }
 
-    task javadocJar(type: Jar, dependsOn: javadoc) {
+    dokka {
+      outputFormat = 'html'
+      outputDirectory = "$buildDir/docs/kdoc"
+      sourceDirs = sourceSets.main.java.srcDirs
+    }
+
+    task docJar(type: Jar, dependsOn: dokka) {
       classifier = 'javadoc'
-      from javadoc.destinationDir
+      from dokka.outputDirectory
     }
   }
 
@@ -151,6 +158,6 @@ afterEvaluate { project ->
 
   artifacts {
     archives sourcesJar
-    archives javadocJar
+    archives docJar
   }
 }
