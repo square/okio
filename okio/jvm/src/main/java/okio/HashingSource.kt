@@ -103,9 +103,8 @@ class HashingSource : ForwardingSource {
    * **Warning:** This method is not idempotent. Each time this method is called its
    * internal state is cleared. This starts a new hash with zero bytes supplied.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
   @get:JvmName("hash")
-  open val hash: ByteString get() {
+  val hash: ByteString get() {
     val result = if (messageDigest != null) messageDigest.digest() else mac!!.doFinal()
     return ByteString.of(*result)
   }

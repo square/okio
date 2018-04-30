@@ -70,22 +70,19 @@ internal class Segment {
    * are safe but writes are forbidden. This also marks the current segment as shared, which
    * prevents it from being pooled.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun sharedCopy(): Segment {
+  fun sharedCopy(): Segment {
     shared = true
     return Segment(data, pos, limit, true, false)
   }
 
   /** Returns a new segment that its own private copy of the underlying byte array.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun unsharedCopy() = Segment(data.copyOf(), pos, limit, false, true)
+  fun unsharedCopy() = Segment(data.copyOf(), pos, limit, false, true)
 
   /**
    * Removes this segment of a circularly-linked list and returns its successor.
    * Returns null if the list is now empty.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun pop(): Segment? {
+  fun pop(): Segment? {
     val result = if (next != this) next else null
     prev!!.next = next
     next!!.prev = prev
@@ -97,8 +94,7 @@ internal class Segment {
   /**
    * Appends `segment` after this segment in the circularly-linked list. Returns the pushed segment.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun push(segment: Segment): Segment {
+  fun push(segment: Segment): Segment {
     segment.prev = this
     segment.next = next
     next!!.prev = segment
@@ -114,8 +110,7 @@ internal class Segment {
    *
    * Returns the new head of the circularly-linked list.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun split(byteCount: Int): Segment {
+  fun split(byteCount: Int): Segment {
     require(byteCount > 0 && byteCount <= limit - pos) { "byteCount out of range" }
     val prefix: Segment
 
@@ -141,8 +136,7 @@ internal class Segment {
    * Call this when the tail and its predecessor may both be less than half full. This will copy
    * data so that segments can be recycled.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun compact() {
+  fun compact() {
     check(prev != this) { "cannot compact" }
     if (!prev!!.owner) return  // Cannot compact: prev isn't writable.
     val byteCount = limit - pos
@@ -154,8 +148,7 @@ internal class Segment {
   }
 
   /** Moves `byteCount` bytes from this segment to `sink`.  */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
-  open fun writeTo(sink: Segment, byteCount: Int) {
+  fun writeTo(sink: Segment, byteCount: Int) {
     check(sink.owner) { "only owner can write" }
     if (sink.limit + byteCount > SIZE) {
       // We can't fit byteCount bytes at the sink's current position. Shift sink first.

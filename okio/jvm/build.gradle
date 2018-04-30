@@ -39,7 +39,7 @@ dependencies {
   testImplementation deps.test.assertj
   testImplementation deps.kotlin.test.jdk
 
-  baseline('com.squareup.okio:okio:1.14.0') {
+  baseline('com.squareup.okio:okio:1.14.1') {
     transitive = false
     force = true
   }

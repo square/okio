@@ -86,9 +86,8 @@ internal constructor(private val source: BufferedSource, private val inflater: I
    * it needs input). Returns true if the inflater required input but the source
    * was exhausted.
    */
-  @Suppress("NON_FINAL_MEMBER_IN_FINAL_CLASS") // Required to keep JApicmp happy.
   @Throws(IOException::class)
-  open fun refill(): Boolean {
+  fun refill(): Boolean {
     if (!inflater.needsInput()) return false
 
     releaseInflatedBytes()
