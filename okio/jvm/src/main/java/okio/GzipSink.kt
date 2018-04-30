@@ -130,7 +130,7 @@ class GzipSink(sink: Sink) : Sink {
     var head = buffer.head!!
     var remaining = byteCount
     while (remaining > 0) {
-      val segmentLength = minOf(remaining, (head.limit - head.pos).toLong()).toInt()
+      val segmentLength = minOf(remaining, head.limit - head.pos).toInt()
       crc.update(head.data, head.pos, segmentLength)
       remaining -= segmentLength
       head = head.next!!

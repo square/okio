@@ -58,7 +58,7 @@ internal constructor(private val source: BufferedSource, private val inflater: I
       // Decompress the inflater's compressed data into the sink.
       try {
         val tail = sink.writableSegment(1)
-        val toRead = minOf(byteCount, (Segment.SIZE - tail.limit).toLong()).toInt()
+        val toRead = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
         val bytesInflated = inflater.inflate(tail.data, tail.limit, toRead)
         if (bytesInflated > 0) {
           tail.limit += bytesInflated
