@@ -92,7 +92,7 @@ public final class InflaterSource implements Source {
    * it needs input). Returns true if the inflater required input but the source
    * was exhausted.
    */
-  public boolean refill() throws IOException {
+  public final boolean refill() throws IOException {
     if (!inflater.needsInput()) return false;
 
     releaseInflatedBytes();

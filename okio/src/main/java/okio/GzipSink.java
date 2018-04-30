@@ -114,7 +114,7 @@ public final class GzipSink implements Sink {
    * Returns the {@link Deflater}.
    * Use it to access stats, dictionary, compression level, etc.
    */
-  public Deflater deflater() {
+  public final Deflater deflater() {
     return deflater;
   }
 

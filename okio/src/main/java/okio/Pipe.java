@@ -48,11 +48,11 @@ public final class Pipe {
     this.maxBufferSize = maxBufferSize;
   }
 
-  public Source source() {
+  public final Source source() {
     return source;
   }
 
-  public Sink sink() {
+  public final Sink sink() {
     return sink;
   }
 
