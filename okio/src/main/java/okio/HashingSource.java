@@ -127,7 +127,7 @@ public final class HashingSource extends ForwardingSource {
    * <p><strong>Warning:</strong> This method is not idempotent. Each time this method is called its
    * internal state is cleared. This starts a new hash with zero bytes supplied.
    */
-  public ByteString hash() {
+  public final ByteString hash() {
     byte[] result = messageDigest != null ? messageDigest.digest() : mac.doFinal();
     return ByteString.of(result);
   }

@@ -34,7 +34,7 @@ public final class Options extends AbstractList<ByteString> implements RandomAcc
     return byteStrings[i];
   }
 
-  @Override public int size() {
+  @Override public final int size() {
     return byteStrings.length;
   }
 }

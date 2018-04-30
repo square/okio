@@ -63,7 +63,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Returns the number of bytes currently in this buffer. */
-  public long size() {
+  public final long size() {
     return size;
   }
 
@@ -138,7 +138,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Copy the contents of this to {@code out}. */
-  public Buffer copyTo(OutputStream out) throws IOException {
+  public final Buffer copyTo(OutputStream out) throws IOException {
     return copyTo(out, 0, size);
   }
 
@@ -146,7 +146,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
    * Copy {@code byteCount} bytes from this, starting at {@code offset}, to
    * {@code out}.
    */
-  public Buffer copyTo(OutputStream out, long offset, long byteCount) throws IOException {
+  public final Buffer copyTo(OutputStream out, long offset, long byteCount) throws IOException {
     if (out == null) throw new IllegalArgumentException("out == null");
     checkOffsetAndCount(size, offset, byteCount);
     if (byteCount == 0) return this;
@@ -170,7 +170,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Copy {@code byteCount} bytes from this, starting at {@code offset}, to {@code out}. */
-  public Buffer copyTo(Buffer out, long offset, long byteCount) {
+  public final Buffer copyTo(Buffer out, long offset, long byteCount) {
     if (out == null) throw new IllegalArgumentException("out == null");
     checkOffsetAndCount(size, offset, byteCount);
     if (byteCount == 0) return this;
@@ -201,12 +201,12 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Write the contents of this to {@code out}. */
-  public Buffer writeTo(OutputStream out) throws IOException {
+  public final Buffer writeTo(OutputStream out) throws IOException {
     return writeTo(out, size);
   }
 
   /** Write {@code byteCount} bytes from this to {@code out}. */
-  public Buffer writeTo(OutputStream out, long byteCount) throws IOException {
+  public final Buffer writeTo(OutputStream out, long byteCount) throws IOException {
     if (out == null) throw new IllegalArgumentException("out == null");
     checkOffsetAndCount(size, 0, byteCount);
 
@@ -230,13 +230,13 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Read and exhaust bytes from {@code in} to this. */
-  public Buffer readFrom(InputStream in) throws IOException {
+  public final Buffer readFrom(InputStream in) throws IOException {
     readFrom(in, Long.MAX_VALUE, true);
     return this;
   }
 
   /** Read {@code byteCount} bytes from {@code in} to this. */
-  public Buffer readFrom(InputStream in, long byteCount) throws IOException {
+  public final Buffer readFrom(InputStream in, long byteCount) throws IOException {
     if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
     readFrom(in, byteCount, false);
     return this;
@@ -263,7 +263,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
    * number of bytes that can be flushed immediately to an underlying sink
    * without harming throughput.
    */
-  public long completeSegmentByteCount() {
+  public final long completeSegmentByteCount() {
     long result = size;
     if (result == 0) return 0;
 
@@ -298,7 +298,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Returns the byte at {@code pos}. */
-  public byte getByte(long pos) {
+  public final byte getByte(long pos) {
     checkOffsetAndCount(size, pos, 1);
     if (size - pos > pos) {
       for (Segment s = head; true; s = s.next) {
@@ -835,7 +835,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
    * Discards all bytes in this buffer. Calling this method when you're done
    * with a buffer will return its segments to the pool.
    */
-  public void clear() {
+  public final void clear() {
     try {
       skip(size);
     } catch (EOFException e) {
@@ -1598,22 +1598,22 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Returns the 128-bit MD5 hash of this buffer. */
-  public ByteString md5() {
+  public final ByteString md5() {
     return digest("MD5");
   }
 
   /** Returns the 160-bit SHA-1 hash of this buffer. */
-  public ByteString sha1() {
+  public final ByteString sha1() {
     return digest("SHA-1");
   }
 
   /** Returns the 256-bit SHA-256 hash of this buffer. */
-  public ByteString sha256() {
+  public final ByteString sha256() {
     return digest("SHA-256");
   }
 
   /** Returns the 512-bit SHA-512 hash of this buffer. */
-  public ByteString sha512() {
+  public final ByteString sha512() {
       return digest("SHA-512");
   }
 
@@ -1633,17 +1633,17 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this buffer. */
-  public ByteString hmacSha1(ByteString key) {
+  public final ByteString hmacSha1(ByteString key) {
     return hmac("HmacSHA1", key);
   }
 
   /** Returns the 256-bit SHA-256 HMAC of this buffer. */
-  public ByteString hmacSha256(ByteString key) {
+  public final ByteString hmacSha256(ByteString key) {
     return hmac("HmacSHA256", key);
   }
 
   /** Returns the 512-bit SHA-512 HMAC of this buffer. */
-  public ByteString hmacSha512(ByteString key) {
+  public final ByteString hmacSha512(ByteString key) {
       return hmac("HmacSHA512", key);
   }
 
@@ -1734,7 +1734,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Returns an immutable copy of this buffer as a byte string. */
-  public ByteString snapshot() {
+  public final ByteString snapshot() {
     if (size > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("size > Integer.MAX_VALUE: " + size);
     }
@@ -1744,16 +1744,16 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   /**
    * Returns an immutable copy of the first {@code byteCount} bytes of this buffer as a byte string.
    */
-  public ByteString snapshot(int byteCount) {
+  public final ByteString snapshot(int byteCount) {
     if (byteCount == 0) return ByteString.EMPTY;
     return new SegmentedByteString(this, byteCount);
   }
 
-  public UnsafeCursor readUnsafe() {
+  public final UnsafeCursor readUnsafe() {
     return readUnsafe(new UnsafeCursor());
   }
 
-  public UnsafeCursor readUnsafe(UnsafeCursor unsafeCursor) {
+  public final UnsafeCursor readUnsafe(UnsafeCursor unsafeCursor) {
     if (unsafeCursor.buffer != null) {
       throw new IllegalStateException("already attached to a buffer");
     }
@@ -1763,11 +1763,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     return unsafeCursor;
   }
 
-  public UnsafeCursor readAndWriteUnsafe() {
+  public final UnsafeCursor readAndWriteUnsafe() {
     return readAndWriteUnsafe(new UnsafeCursor());
   }
 
-  public UnsafeCursor readAndWriteUnsafe(UnsafeCursor unsafeCursor) {
+  public final UnsafeCursor readAndWriteUnsafe(UnsafeCursor unsafeCursor) {
     if (unsafeCursor.buffer != null) {
       throw new IllegalStateException("already attached to a buffer");
     }
@@ -1992,7 +1992,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
      * size of the readable range (at least 1), or -1 if we have reached the end of the buffer and
      * there are no more bytes to read.
      */
-    public int next() {
+    public final int next() {
       if (offset == buffer.size) throw new IllegalStateException();
       if (offset == -1L) return seek(0L);
       return seek(offset + (end - start));
@@ -2003,7 +2003,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
      * Returns the number of bytes readable in {@code data} (at least 1), or -1 if there are no data
      * to read.
      */
-    public int seek(long offset) {
+    public final int seek(long offset) {
       if (offset < -1 || offset > buffer.size) {
         throw new ArrayIndexOutOfBoundsException(
             String.format("offset=%s > size=%s", offset, buffer.size));
@@ -2092,7 +2092,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
      *
      * @return the previous size of the buffer.
      */
-    public long resizeBuffer(long newSize) {
+    public final long resizeBuffer(long newSize) {
       if (buffer == null) {
         throw new IllegalStateException("not attached to a buffer");
       }
@@ -2173,7 +2173,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
      *     than the capacity size of a single segment (8 KiB).
      * @return the number of bytes expanded by. Not less than {@code minByteCount}.
      */
-    public long expandBuffer(int minByteCount) {
+    public final long expandBuffer(int minByteCount) {
       if (minByteCount <= 0) {
         throw new IllegalArgumentException("minByteCount <= 0: " + minByteCount);
       }
