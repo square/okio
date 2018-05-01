@@ -15,14 +15,13 @@
  */
 package okio
 
-import org.junit.Test
-
 import okio.ByteString.Companion.encodeUtf8
 import okio.TestUtil.assertEquivalent
 import okio.TestUtil.bufferWithSegments
-import org.junit.Assert.assertEquals
-import org.junit.Assert.fail
+import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.fail
 
 /** Tests behavior optimized by sharing segments between buffers and byte strings.  */
 class SegmentSharingTest {
@@ -40,20 +39,20 @@ class SegmentSharingTest {
 
   @Test fun snapshotGetByte() {
     val byteString = bufferWithSegments(xs, ys, zs).snapshot()
-    assertEquals('x', byteString.getByte(0).toChar())
-    assertEquals('x', byteString.getByte(xs.length - 1).toChar())
-    assertEquals('y', byteString.getByte(xs.length).toChar())
-    assertEquals('y', byteString.getByte(xs.length + ys.length - 1).toChar())
-    assertEquals('z', byteString.getByte(xs.length + ys.length).toChar())
-    assertEquals('z', byteString.getByte(xs.length + ys.length + zs.length - 1).toChar())
+    assertEquals('x', byteString[0].toChar())
+    assertEquals('x', byteString[xs.length - 1].toChar())
+    assertEquals('y', byteString[xs.length].toChar())
+    assertEquals('y', byteString[xs.length + ys.length - 1].toChar())
+    assertEquals('z', byteString[xs.length + ys.length].toChar())
+    assertEquals('z', byteString[xs.length + ys.length + zs.length - 1].toChar())
     try {
-      byteString.getByte(-1)
+      byteString[-1]
       fail()
     } catch (expected: IndexOutOfBoundsException) {
     }
 
     try {
-      byteString.getByte(xs.length + ys.length + zs.length)
+      byteString[xs.length + ys.length + zs.length]
       fail()
     } catch (expected: IndexOutOfBoundsException) {
     }

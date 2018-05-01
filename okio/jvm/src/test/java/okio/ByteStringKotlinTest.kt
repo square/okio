@@ -25,8 +25,26 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
+import kotlin.test.fail
 
 class ByteStringKotlinTest {
+  @Test fun get() {
+    val actual = "abc".encodeUtf8()
+    assertThat(actual[0]).isEqualTo('a'.toByte())
+    assertThat(actual[1]).isEqualTo('b'.toByte())
+    assertThat(actual[2]).isEqualTo('c'.toByte())
+    try {
+      actual[-1]
+      fail()
+    } catch (expected: IndexOutOfBoundsException) {
+    }
+    try {
+      actual[3]
+      fail()
+    } catch (expected: IndexOutOfBoundsException) {
+    }
+  }
+
   @Test fun decodeBase64() {
     val actual = "YfCfjalj".decodeBase64()
     val expected = "a\uD83C\uDF69c".encodeUtf8()

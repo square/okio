@@ -102,7 +102,7 @@ class GzipSource(source: Source) : Source {
     // |ID1|ID2|CM |FLG|     MTIME     |XFL|OS | (more-->)
     // +---+---+---+---+---+---+---+---+---+---+
     source.require(10)
-    val flags = source.buffer().getByte(3).toInt()
+    val flags = source.buffer()[3].toInt()
     val fhcrc = flags.getBit(FHCRC)
     if (fhcrc) updateCrc(source.buffer(), 0, 10)
 

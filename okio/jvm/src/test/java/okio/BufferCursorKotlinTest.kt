@@ -17,11 +17,6 @@ package okio
 
 import okio.Buffer.UnsafeCursor
 import okio.TestUtil.deepCopy
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotSame
-import org.junit.Assert.assertSame
-import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,6 +24,11 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameter
 import org.junit.runners.Parameterized.Parameters
 import java.util.Arrays
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 @RunWith(Parameterized::class)
 class BufferCursorKotlinTest {
@@ -42,7 +42,7 @@ class BufferCursorKotlinTest {
 
   @Test fun acquireReadOnlyDoesNotCopySharedDataArray() {
     val buffer = deepCopy(bufferFactory.newBuffer())
-    assumeTrue(buffer.size() > 0)
+    assumeTrue(buffer.size > 0L)
 
     val shared = buffer.clone()
     assertTrue(buffer.head!!.shared)
@@ -55,7 +55,7 @@ class BufferCursorKotlinTest {
 
   @Test fun acquireReadWriteDoesNotCopyUnsharedDataArray() {
     val buffer = deepCopy(bufferFactory.newBuffer())
-    assumeTrue(buffer.size() > 0)
+    assumeTrue(buffer.size > 0L)
     assertFalse(buffer.head!!.shared)
 
     val originalData = buffer.head!!.data
@@ -68,7 +68,7 @@ class BufferCursorKotlinTest {
 
   @Test fun acquireReadWriteCopiesSharedDataArray() {
     val buffer = deepCopy(bufferFactory.newBuffer())
-    assumeTrue(buffer.size() > 0)
+    assumeTrue(buffer.size > 0L)
 
     val shared = buffer.clone()
     assertTrue(buffer.head!!.shared)
@@ -92,7 +92,7 @@ class BufferCursorKotlinTest {
     assertTrue(buffer.head == null || buffer.head!!.shared)
 
     val expected = Buffer()
-    expected.writeUtf8(TestUtil.repeat('x', buffer.size().toInt()))
+    expected.writeUtf8(TestUtil.repeat('x', buffer.size.toInt()))
 
     buffer.readAndWriteUnsafe().use { cursor ->
       while (cursor.next() != -1) {

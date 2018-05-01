@@ -182,9 +182,9 @@ internal class RealBufferedSource(
         sink.write(buffer, emitByteCount)
       }
     }
-    if (buffer.size() > 0L) {
-      totalBytesWritten += buffer.size()
-      sink.write(buffer, buffer.size())
+    if (buffer.size > 0L) {
+      totalBytesWritten += buffer.size
+      sink.write(buffer, buffer.size)
     }
     return totalBytesWritten
   }
@@ -238,13 +238,13 @@ internal class RealBufferedSource(
     val newline = indexOf('\n'.toByte(), 0, scanLength)
     if (newline != -1L) return buffer.readUtf8Line(newline)
     if (scanLength < Long.MAX_VALUE
-        && request(scanLength) && buffer.getByte(scanLength - 1) == '\r'.toByte()
-        && request(scanLength + 1) && buffer.getByte(scanLength) == '\n'.toByte()) {
+        && request(scanLength) && buffer[scanLength - 1] == '\r'.toByte()
+        && request(scanLength + 1) && buffer[scanLength] == '\n'.toByte()) {
       return buffer.readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
     }
     val data = Buffer()
-    buffer.copyTo(data, 0, minOf(32, buffer.size()))
-    throw EOFException("\\n not found: limit=" + minOf(buffer.size(), limit)
+    buffer.copyTo(data, 0, minOf(32, buffer.size))
+    throw EOFException("\\n not found: limit=" + minOf(buffer.size, limit)
         + " content=" + data.readByteString().hex() + '…'.toString())
   }
 
@@ -252,7 +252,7 @@ internal class RealBufferedSource(
   override fun readUtf8CodePoint(): Int {
     require(1)
 
-    val b0 = buffer.getByte(0).toInt()
+    val b0 = buffer[0].toInt()
     when {
       b0 and 0xe0 == 0xc0 -> require(2)
       b0 and 0xf0 == 0xe0 -> require(3)
@@ -302,12 +302,12 @@ internal class RealBufferedSource(
   override fun readDecimalLong(): Long {
     require(1)
 
-    var pos = 0
-    while (request((pos + 1).toLong())) {
-      val b = buffer.getByte(pos.toLong())
-      if ((b < '0'.toByte() || b > '9'.toByte()) && (pos != 0 || b != '-'.toByte())) {
+    var pos = 0L
+    while (request(pos + 1)) {
+      val b = buffer[pos]
+      if ((b < '0'.toByte() || b > '9'.toByte()) && (pos != 0L || b != '-'.toByte())) {
         // Non-digit, or non-leading negative sign.
-        if (pos == 0) {
+        if (pos == 0L) {
           throw NumberFormatException(String.format(
               "Expected leading [0-9] or '-' character but was %#x", b))
         }
@@ -325,7 +325,7 @@ internal class RealBufferedSource(
 
     var pos = 0
     while (request((pos + 1).toLong())) {
-      val b = buffer.getByte(pos.toLong())
+      val b = buffer[pos.toLong()]
       if ((b < '0'.toByte() || b > '9'.toByte())
           && (b < 'a'.toByte() || b > 'f'.toByte())
           && (b < 'A'.toByte() || b > 'F'.toByte())) {
@@ -350,7 +350,7 @@ internal class RealBufferedSource(
       if (buffer.size == 0L && source.read(buffer, Segment.SIZE.toLong()) == -1L) {
         throw EOFException()
       }
-      val toSkip = minOf(byteCount, buffer.size())
+      val toSkip = minOf(byteCount, buffer.size)
       buffer.skip(toSkip)
       byteCount -= toSkip
     }
@@ -445,7 +445,7 @@ internal class RealBufferedSource(
     for (i in 0 until byteCount) {
       val bufferOffset = offset + i
       if (!request(bufferOffset + 1)) return false
-      if (buffer.getByte(bufferOffset) != bytes.getByte(bytesOffset + i)) return false
+      if (buffer[bufferOffset] != bytes[bytesOffset + i]) return false
     }
     return true
   }

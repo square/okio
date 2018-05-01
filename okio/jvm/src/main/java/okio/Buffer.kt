@@ -46,10 +46,10 @@ import javax.crypto.spec.SecretKeySpec
  */
 class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @JvmField internal var head: Segment? = null
-  @JvmField internal var size: Long = 0L
 
-  /** Returns the number of bytes currently in this buffer.  */
-  fun size() = size
+  @get:JvmName("size")
+  var size: Long = 0L
+    internal set
 
   override fun buffer() = this
 
@@ -87,7 +87,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun inputStream(): InputStream {
     return object : InputStream() {
       override fun read(): Int {
-        return if (size > 0) {
+        return if (size > 0L) {
           readByte() and 0xff
         } else {
           -1
@@ -109,7 +109,11 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   /** Copy `byteCount` bytes from this, starting at `offset`, to `out`. */
   @Throws(IOException::class)
   @JvmOverloads
-  fun copyTo(out: OutputStream, offset: Long = 0, byteCount: Long = size): Buffer {
+  fun copyTo(
+    out: OutputStream,
+    offset: Long = 0L,
+    byteCount: Long = size - offset
+  ): Buffer {
     var offset = offset
     var byteCount = byteCount
     checkOffsetAndCount(size, offset, byteCount)
@@ -136,7 +140,11 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Copy `byteCount` bytes from this, starting at `offset`, to `out`.  */
-  fun copyTo(out: Buffer, offset: Long, byteCount: Long): Buffer {
+  fun copyTo(
+    out: Buffer,
+    offset: Long = 0L,
+    byteCount: Long = size - offset
+  ): Buffer {
     var offset = offset
     var byteCount = byteCount
     checkOffsetAndCount(size, offset, byteCount)
@@ -231,9 +239,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /**
-   * Returns the number of bytes in segments that are not writable. This is the
-   * number of bytes that can be flushed immediately to an underlying sink
-   * without harming throughput.
+   * Returns the number of bytes in segments that are not writable. This is the number of bytes that
+   * can be flushed immediately to an underlying sink without harming throughput.
    */
   fun completeSegmentByteCount(): Long {
     var result = size
@@ -270,25 +277,11 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Returns the byte at `pos`.  */
-  fun getByte(pos: Long): Byte {
+  @JvmName("getByte")
+  operator fun get(pos: Long): Byte {
     checkOffsetAndCount(size, pos, 1L)
-    var pos = pos
-    if (size - pos > pos) {
-      var s = head
-      while (true) {
-        val segmentByteCount = s!!.limit - s.pos
-        if (pos < segmentByteCount) return s.data[s.pos + pos.toInt()]
-        pos -= segmentByteCount.toLong()
-        s = s.next
-      }
-    } else {
-      pos -= size
-      var s = head!!.prev
-      while (true) {
-        pos += (s!!.limit - s.pos).toLong()
-        if (pos >= 0L) return s.data[s.pos + pos.toInt()]
-        s = s.prev
-      }
+    seek(pos) { s, offset ->
+      return s!!.data[(s.pos + pos - offset).toInt()]
     }
   }
 
@@ -518,17 +511,11 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun select(options: Options): Int {
     val s = head ?: return options.indexOf(ByteString.EMPTY)
-
-    // TODO(jwilson): keep a reference to options.byteStrings once Buffer is Kotlin.
-    var i = 0
-    val listSize = options.size
-    while (i < listSize) {
-      val b = options[i]
-      if (size >= b.size() && rangeEquals(s, s.pos, b, 0, b.size())) {
+    options.byteStrings.forEachIndexed { i, b ->
+      if (size >= b.size() && rangeEquals(s, s.pos, b.internalArray(), 0, b.size())) {
         skip(b.size().toLong())
         return i
       }
-      i++
     }
     return -1
   }
@@ -540,16 +527,11 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    */
   internal fun selectPrefix(options: Options): Int {
     val s = head
-    // TODO(jwilson): keep a reference to options.byteStrings once Buffer is Kotlin.
-    var i = 0
-    val listSize = options.size
-    while (i < listSize) {
-      val b = options[i]
+    options.byteStrings.forEachIndexed { i, b ->
       val bytesLimit = minOf(size, b.size()).toInt()
-      if (bytesLimit == 0 || rangeEquals(s!!, s.pos, b, 0, bytesLimit)) {
+      if (bytesLimit == 0 || rangeEquals(s!!, s.pos, b.internalArray(), 0, bytesLimit)) {
         return i
       }
-      i++
     }
     return -1
   }
@@ -623,21 +605,21 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     val scanLength = if (limit == Long.MAX_VALUE) Long.MAX_VALUE else limit + 1L
     val newline = indexOf('\n'.toByte(), 0L, scanLength)
     if (newline != -1L) return readUtf8Line(newline)
-    if (scanLength < size()
-        && getByte(scanLength - 1) == '\r'.toByte()
-        && getByte(scanLength) == '\n'.toByte()) {
+    if (scanLength < size
+        && this[scanLength - 1] == '\r'.toByte()
+        && this[scanLength] == '\n'.toByte()) {
       return readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
     }
     val data = Buffer()
-    copyTo(data, 0, minOf(32, size()))
-    throw EOFException("\\n not found: limit=${minOf(size(),
+    copyTo(data, 0, minOf(32, size))
+    throw EOFException("\\n not found: limit=${minOf(size,
         limit)} content=${data.readByteString().hex()}${'…'}")
   }
 
   @Throws(EOFException::class)
   internal fun readUtf8Line(newline: Long): String {
     return when {
-      newline > 0 && getByte(newline - 1) == '\r'.toByte() -> {
+      newline > 0 && this[newline - 1] == '\r'.toByte() -> {
         // Read everything until '\r\n', then skip the '\r\n'.
         val result = readUtf8(newline - 1L)
         skip(2L)
@@ -656,7 +638,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun readUtf8CodePoint(): Int {
     if (size == 0L) throw EOFException()
 
-    val b0 = getByte(0)
+    val b0 = this[0]
     var codePoint: Int
     val byteCount: Int
     val min: Int
@@ -702,7 +684,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     // thus far is truncated and is decoded as the replacement character. That non-continuation byte
     // is left in the stream for processing by the next call to readUtf8CodePoint().
     for (i in 1 until byteCount) {
-      val b = getByte(i.toLong())
+      val b = this[i.toLong()]
       if (b and 0xc0 == 0x80) {
         // 0x10xxxxxx
         codePoint = codePoint shl 6
@@ -1299,7 +1281,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       var offset = 0L
       while (true) {
         val nextOffset = offset + (s.limit - s.pos)
-        if (nextOffset >= fromIndex) break
+        if (nextOffset > fromIndex) break
         s = s.next!!
         offset = nextOffset
       }
@@ -1362,7 +1344,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
       // Scan through the segments, searching for the lead byte. Each time that is found, delegate
       // to rangeEquals() to check for a complete match.
-      val b0 = bytes.getByte(0)
+      val b0 = bytes[0]
       val bytesSize = bytes.size()
       val resultLimit = size - bytesSize + 1L
       while (offset < resultLimit) {
@@ -1370,7 +1352,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         val data = s.data
         val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
         for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
-          if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes, 1, bytesSize)) {
+          if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes.internalArray(), 1, bytesSize)) {
             return pos - s.pos + offset
           }
         }
@@ -1400,8 +1382,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       // optimization is a ~5x speedup for this case without a substantial cost to other cases.
       if (targetBytes.size() == 2) {
         // Scan through the segments, searching for either of the two bytes.
-        val b0 = targetBytes.getByte(0)
-        val b1 = targetBytes.getByte(1)
+        val b0 = targetBytes[0]
+        val b1 = targetBytes[1]
         while (offset < size) {
           val data = s.data
           var pos = (s.pos + fromIndex - offset).toInt()
@@ -1459,7 +1441,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       return false
     }
     for (i in 0 until byteCount) {
-      if (getByte(offset + i) != bytes.getByte(bytesOffset + i)) {
+      if (this[offset + i] != bytes[bytesOffset + i]) {
         return false
       }
     }
@@ -1471,7 +1453,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * `bytes[bytesOffset..bytesLimit)`.
    */
   private fun rangeEquals(
-    segment: Segment, segmentPos: Int, bytes: ByteString, bytesOffset: Int, bytesLimit: Int
+    segment: Segment, segmentPos: Int, bytes: ByteArray, bytesOffset: Int, bytesLimit: Int
   ): Boolean {
     var segment = segment
     var segmentPos = segmentPos
@@ -1487,7 +1469,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         segmentLimit = segment.limit
       }
 
-      if (data[segmentPos] != bytes.getByte(i)) {
+      if (data[segmentPos] != bytes[i]) {
         return false
       }
 
