@@ -638,6 +638,30 @@ public final class BufferedSourceTest {
     assertEquals(15, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb"), 15));
   }
 
+  @Test public void indexOfByteWithFromIndex() throws Exception {
+    sink.writeUtf8("aaa");
+    assertEquals(0, source.indexOf((byte) 'a'));
+    assertEquals(0, source.indexOf((byte) 'a', 0));
+    assertEquals(1, source.indexOf((byte) 'a', 1));
+    assertEquals(2, source.indexOf((byte) 'a', 2));
+  }
+
+  @Test public void indexOfByteStringWithFromIndex() throws Exception {
+    sink.writeUtf8("aaa");
+    assertEquals(0, source.indexOf(ByteString.encodeUtf8("a")));
+    assertEquals(0, source.indexOf(ByteString.encodeUtf8("a"), 0));
+    assertEquals(1, source.indexOf(ByteString.encodeUtf8("a"), 1));
+    assertEquals(2, source.indexOf(ByteString.encodeUtf8("a"), 2));
+  }
+
+  @Test public void indexOfElementWithFromIndex() throws Exception {
+    sink.writeUtf8("aaa");
+    assertEquals(0, source.indexOfElement(ByteString.encodeUtf8("a")));
+    assertEquals(0, source.indexOfElement(ByteString.encodeUtf8("a"), 0));
+    assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("a"), 1));
+    assertEquals(2, source.indexOfElement(ByteString.encodeUtf8("a"), 2));
+  }
+
   @Test public void request() throws IOException {
     sink.writeUtf8("a").writeUtf8(repeat('b', SEGMENT_SIZE)).writeUtf8("c");
     assertTrue(source.request(SEGMENT_SIZE + 2));
