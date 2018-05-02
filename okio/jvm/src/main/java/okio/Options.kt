@@ -20,7 +20,7 @@ import java.util.RandomAccess
 
 /** An indexed set of values that may be read with [BufferedSource.select].  */
 class Options private constructor(
-  private val byteStrings: Array<out ByteString>
+  internal val byteStrings: Array<out ByteString>
 ) : AbstractList<ByteString>(), RandomAccess {
 
   override val size: Int

@@ -203,7 +203,7 @@ internal class RealBufferedSink(
   @Throws(IOException::class)
   override fun emit(): BufferedSink {
     check(!closed) { "closed" }
-    val byteCount = buffer.size()
+    val byteCount = buffer.size
     if (byteCount > 0L) sink.write(buffer, byteCount)
     return this
   }

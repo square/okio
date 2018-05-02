@@ -54,7 +54,7 @@ class Pipe(internal val maxBufferSize: Long) {
         while (byteCount > 0) {
           if (sourceClosed) throw IOException("source is closed")
 
-          val bufferSpaceAvailable = maxBufferSize - buffer.size()
+          val bufferSpaceAvailable = maxBufferSize - buffer.size
           if (bufferSpaceAvailable == 0L) {
             timeout.waitUntilNotified(buffer) // Wait until the source drains the buffer.
             continue
@@ -71,14 +71,14 @@ class Pipe(internal val maxBufferSize: Long) {
     override fun flush() {
       synchronized(buffer) {
         check(!sinkClosed) { "closed" }
-        if (sourceClosed && buffer.size() > 0) throw IOException("source is closed")
+        if (sourceClosed && buffer.size > 0L) throw IOException("source is closed")
       }
     }
 
     override fun close() {
       synchronized(buffer) {
         if (sinkClosed) return
-        if (sourceClosed && buffer.size() > 0) throw IOException("source is closed")
+        if (sourceClosed && buffer.size > 0L) throw IOException("source is closed")
         sinkClosed = true
         (buffer as Object).notifyAll() // Notify the source that no more bytes are coming.
       }
@@ -95,7 +95,7 @@ class Pipe(internal val maxBufferSize: Long) {
       synchronized(buffer) {
         check(!sourceClosed) { "closed" }
 
-        while (buffer.size() == 0L) {
+        while (buffer.size == 0L) {
           if (sinkClosed) return -1L
           timeout.waitUntilNotified(buffer) // Wait until the sink fills the buffer.
         }

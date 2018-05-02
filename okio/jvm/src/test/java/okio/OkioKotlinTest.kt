@@ -35,22 +35,22 @@ class OkioKotlinTest {
     val source = Buffer().writeUtf8("a")
     val buffered = (source as Source).buffer()
     assertThat(buffered.readUtf8()).isEqualTo("a")
-    assertThat(source.size()).isEqualTo(0)
+    assertThat(source.size).isEqualTo(0L)
   }
 
   @Test fun sinkBuffer() {
     val sink = Buffer()
     val buffered = (sink as Sink).buffer()
     buffered.writeUtf8("a")
-    assertThat(sink.size()).isEqualTo(0)
+    assertThat(sink.size).isEqualTo(0L)
     buffered.flush()
-    assertThat(sink.size()).isEqualTo(1)
+    assertThat(sink.size).isEqualTo(1L)
   }
 
   @Test fun outputStreamSink() {
     val baos = ByteArrayOutputStream()
     val sink = baos.sink()
-    sink.write(Buffer().writeUtf8("a"), 1)
+    sink.write(Buffer().writeUtf8("a"), 1L)
     assertThat(baos.toByteArray()).isEqualTo(byteArrayOf(0x61))
   }
 
@@ -65,7 +65,7 @@ class OkioKotlinTest {
   @Test fun fileSink() {
     val file = temp.newFile()
     val sink = file.sink()
-    sink.write(Buffer().writeUtf8("a"), 1)
+    sink.write(Buffer().writeUtf8("a"), 1L)
     assertThat(file.readText()).isEqualTo("a")
   }
 
@@ -73,7 +73,7 @@ class OkioKotlinTest {
     val file = temp.newFile()
     file.writeText("a")
     val sink = file.sink(append = true)
-    sink.write(Buffer().writeUtf8("b"), 1)
+    sink.write(Buffer().writeUtf8("b"), 1L)
     sink.close()
     assertThat(file.readText()).isEqualTo("ab")
   }
@@ -83,14 +83,14 @@ class OkioKotlinTest {
     file.writeText("a")
     val source = file.source()
     val buffer = Buffer()
-    source.read(buffer, 1)
+    source.read(buffer, 1L)
     assertThat(buffer.readUtf8()).isEqualTo("a")
   }
 
   @Test fun pathSink() {
     val file = temp.newFile()
     val sink = file.toPath().sink()
-    sink.write(Buffer().writeUtf8("a"), 1)
+    sink.write(Buffer().writeUtf8("a"), 1L)
     assertThat(file.readText()).isEqualTo("a")
   }
 
@@ -98,7 +98,7 @@ class OkioKotlinTest {
     val file = temp.newFile()
     file.writeText("a")
     val sink = file.toPath().sink(APPEND)
-    sink.write(Buffer().writeUtf8("b"), 1)
+    sink.write(Buffer().writeUtf8("b"), 1L)
     assertThat(file.readText()).isEqualTo("ab")
   }
 
@@ -107,7 +107,7 @@ class OkioKotlinTest {
     file.writeText("a")
     val source = file.toPath().source()
     val buffer = Buffer()
-    source.read(buffer, 1)
+    source.read(buffer, 1L)
     assertThat(buffer.readUtf8()).isEqualTo("a")
   }
 
@@ -120,7 +120,7 @@ class OkioKotlinTest {
   }
 
   @Test fun blackhole() {
-    blackholeSink().write(Buffer().writeUtf8("a"), 1)
+    blackholeSink().write(Buffer().writeUtf8("a"), 1L)
   }
 
   @Test fun socketSink() {
@@ -129,7 +129,7 @@ class OkioKotlinTest {
       override fun getOutputStream() = baos
     }
     val sink = socket.sink()
-    sink.write(Buffer().writeUtf8("a"), 1)
+    sink.write(Buffer().writeUtf8("a"), 1L)
     assertThat(baos.toByteArray()).isEqualTo(byteArrayOf(0x61))
   }
 
@@ -140,7 +140,7 @@ class OkioKotlinTest {
     }
     val source = socket.source()
     val buffer = Buffer()
-    source.read(buffer, 1)
+    source.read(buffer, 1L)
     assertThat(buffer.readUtf8()).isEqualTo("a")
   }
 }

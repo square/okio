@@ -16,15 +16,15 @@
 package okio
 
 import okio.ByteString.Companion.encodeUtf8
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
 import java.util.Arrays
 import java.util.Random
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 object TestUtil {
   // Necessary to make an internal member visible to Java.
@@ -116,7 +116,7 @@ object TestUtil {
     val b2Bytes = b2.toByteArray()
     for (i in b2Bytes.indices) {
       val b = b2Bytes[i]
-      assertEquals(b.toLong(), b1.getByte(i).toLong())
+      assertEquals(b.toLong(), b1[i].toLong())
     }
     assertByteArraysEquals(b1.toByteArray(), b2Bytes)
 
@@ -149,13 +149,13 @@ object TestUtil {
     assertEquals(b1.toString(), b2.toString())
 
     // Content.
-    assertEquals(b1.size(), b2.size())
+    assertEquals(b1.size, b2.size)
     val buffer = Buffer()
     b2.copyTo(buffer, 0, b2.size)
     val b2Bytes = b2.readByteArray()
     for (i in b2Bytes.indices) {
       val b = b2Bytes[i]
-      assertEquals(b.toLong(), b1.getByte(i.toLong()).toLong())
+      assertEquals(b.toLong(), b1[i.toLong()].toLong())
     }
 
     // Doesn't equal a different buffer.
@@ -241,7 +241,7 @@ object TestUtil {
     val buffer = Buffer()
     for (i in 0 until source.size()) {
       val segment = buffer.writableSegment(SEGMENT_SIZE)
-      segment.data[segment.pos] = source.getByte(i)
+      segment.data[segment.pos] = source[i]
       segment.limit++
       buffer.size++
     }
@@ -252,7 +252,7 @@ object TestUtil {
   @JvmStatic
   fun deepCopy(original: Buffer): Buffer {
     val result = Buffer()
-    if (original.size() == 0L) return result
+    if (original.size == 0L) return result
 
     result.head = original.head!!.unsharedCopy()
     result.head!!.prev = result.head
