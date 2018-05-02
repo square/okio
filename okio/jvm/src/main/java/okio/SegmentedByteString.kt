@@ -15,8 +15,6 @@
  */
 package okio
 
-import okio.Util.arrayRangeEquals
-import okio.Util.checkOffsetAndCount
 import java.io.IOException
 import java.io.OutputStream
 import java.nio.ByteBuffer

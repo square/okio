@@ -23,8 +23,6 @@ import java.io.IOException
 import java.util.zip.Deflater
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
-import okio.Util.checkOffsetAndCount
-
 /**
  * A sink that uses [DEFLATE](http://tools.ietf.org/html/rfc1951) to
  * compress data written to another source.
