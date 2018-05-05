@@ -49,6 +49,24 @@ internal fun Long.reverseBytes(): Long {
          (this and 0x00000000000000ffL  shl 56)
 }
 
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Byte.shr(other: Int): Int = toInt() shr other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Byte.and(other: Int): Int = toInt() and other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Byte.and(other: Long): Long = toLong() and other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Int.and(other: Long): Long = toLong() and other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline fun minOf(a: Long, b: Int): Long = minOf(a, b.toLong())
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline fun minOf(a: Int, b: Long): Long = minOf(a.toLong(), b)
+
 internal fun arrayRangeEquals(
   a: ByteArray,
   aOffset: Int,
