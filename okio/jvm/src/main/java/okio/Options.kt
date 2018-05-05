@@ -15,9 +15,6 @@
  */
 package okio
 
-import java.util.AbstractList
-import java.util.RandomAccess
-
 /** An indexed set of values that may be read with [BufferedSource.select].  */
 class Options private constructor(
   internal val byteStrings: Array<out ByteString>
