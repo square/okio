@@ -980,34 +980,11 @@ public final class BufferedSourceTest {
     assertEquals("ef", source.readUtf8());
   }
 
-  @Test public void selectNoByteStrings() throws IOException {
-    Options options = Options.Companion.of();
-    sink.writeUtf8("abc");
-    assertEquals(-1, source.select(options));
-  }
-
   @Test public void selectFromEmptySource() throws IOException {
     Options options = Options.Companion.of(
         ByteString.encodeUtf8("abc"),
         ByteString.encodeUtf8("def"));
     assertEquals(-1, source.select(options));
-  }
-
-  @Test public void selectNoByteStringsFromEmptySource() throws IOException {
-    Options options = Options.Companion.of();
-    assertEquals(-1, source.select(options));
-  }
-
-  @Test public void selectEmptyByteString() throws IOException {
-    Options options = Options.Companion.of(ByteString.of());
-    sink.writeUtf8("abc");
-    assertEquals(0, source.select(options));
-    assertEquals("abc", source.readUtf8());
-  }
-
-  @Test public void selectEmptyByteStringFromEmptySource() throws IOException {
-    Options options = Options.Companion.of(ByteString.of());
-    assertEquals(0, source.select(options));
   }
 
   @Test public void rangeEquals() throws IOException {
