@@ -1,7 +1,11 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.DontIncludeResourceTransformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.IncludeResourceTransformer
+
 apply plugin: 'java-library'
 apply plugin: 'org.jetbrains.kotlin.platform.jvm'
 apply plugin: 'ru.vyarus.animalsniffer'
 apply plugin: 'me.champeau.gradle.japicmp'
+apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: 'me.champeau.gradle.jmh'
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
@@ -23,7 +27,21 @@ configurations {
   baseline
 }
 
+jmhJar {
+  def excludeAllBenchmarkLists = new DontIncludeResourceTransformer()
+  excludeAllBenchmarkLists.resource = "META-INF/BenchmarkList"
+  transform(excludeAllBenchmarkLists)
+
+  def includeCorrectBenchmarkList = new IncludeResourceTransformer()
+  includeCorrectBenchmarkList.resource = "META-INF/BenchmarkList"
+  includeCorrectBenchmarkList.file = new File("$rootDir/okio/jvm/build/classes/java/jmh/META-INF/BenchmarkList")
+  transform(includeCorrectBenchmarkList)
+}
+
 jmh {
+  // The JMH plugin currently requires the Shadow plugin also be installed.
+  // See: https://github.com/melix/jmh-gradle-plugin/issues/97#issuecomment-374866151
+  include = ['com\\.squareup\\.okio\\.benchmarks\\.SelectBenchmark.*']
   duplicateClassesStrategy = 'warn'
 }
 

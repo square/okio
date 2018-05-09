@@ -1,14 +1,15 @@
 buildscript {
   ext.versions = [
-      'kotlin': '1.2.40',
+      'kotlin': '1.2.41',
       'jmhPlugin': '0.4.5',
       'animalSnifferPlugin': '1.4.3',
       'dokka': '0.9.16',
       'jsr305': '3.0.2',
-      'jmh': '1.19',
+      'jmh': '1.20',
       'animalSniffer': '1.16',
       'junit': '4.12',
       'assertj': '1.7.0',
+      'shadowPlugin': '2.0.2',
   ]
 
   ext.deps = [
@@ -38,6 +39,7 @@ buildscript {
       'japicmp': 'me.champeau.gradle:japicmp-gradle-plugin:0.2.6',
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'jsr305': "com.google.code.findbugs:jsr305:${versions.jsr305}",
+      'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
@@ -46,10 +48,11 @@ buildscript {
 
   dependencies {
     classpath deps.kotlin.gradlePlugin
-    classpath deps.jmh.gradlePlugin
     classpath deps.animalSniffer.gradlePlugin
     classpath deps.japicmp
     classpath deps.dokka
+    classpath deps.shadow
+    classpath deps.jmh.gradlePlugin
   }
 
   repositories {
