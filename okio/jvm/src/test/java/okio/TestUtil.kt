@@ -32,7 +32,17 @@ object TestUtil {
   const val SEGMENT_SIZE = Segment.SIZE
   const val REPLACEMENT_CHARACTER: Int = Buffer.REPLACEMENT_CHARACTER
   @JvmStatic fun segmentPoolByteCount() = SegmentPool.byteCount
-  @JvmStatic fun segmentSizes(buffer: Buffer) = buffer.segmentSizes()
+
+  @JvmStatic
+  fun segmentSizes(buffer: Buffer): List<Int> {
+    val result = mutableListOf<Int>()
+    buffer.readUnsafe().use { cursor ->
+      while (cursor.next() > 0) {
+        result.add(cursor.end - cursor.start)
+      }
+    }
+    return result
+  }
 
   @JvmStatic
   fun assertByteArraysEquals(a: ByteArray, b: ByteArray) {

@@ -25,7 +25,6 @@ import java.nio.channels.ByteChannel
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import java.security.MessageDigest
-import java.util.ArrayList
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -1485,19 +1484,6 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun close() {}
 
   override fun timeout() = Timeout.NONE
-
-  /** For testing. This returns the sizes of the segments in this buffer.  */
-  internal fun segmentSizes(): List<Int> {
-    if (head == null) return emptyList()
-    val result = ArrayList<Int>()
-    result.add(head!!.limit - head!!.pos)
-    var s = head!!.next
-    while (s != head) {
-      result.add(s!!.limit - s.pos)
-      s = s.next
-    }
-    return result
-  }
 
   /** Returns the 128-bit MD5 hash of this buffer.  */
   fun md5() = digest("MD5")
