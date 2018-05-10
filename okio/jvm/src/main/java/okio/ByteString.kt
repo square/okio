@@ -219,11 +219,10 @@ internal constructor(
   }
 
   /** Returns the byte at `pos`.  */
-  open fun getByte(pos: Int) = data[pos]
+  internal open fun getByte(pos: Int) = data[pos]
 
   /** Returns the byte at `index`.  */
-  // TODO(jwilson): I’d prefer to combine this with the method above, but @JvmName("getByte")
-  // doesn't seem to work because it's an open function? (It’s overridden by SegmentedByteString.)
+  @JvmName("getByte")
   operator fun get(index: Int): Byte = getByte(index)
 
   /** Returns the number of bytes in this ByteString. */
