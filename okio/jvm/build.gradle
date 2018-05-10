@@ -75,6 +75,7 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask, dependsOn: 'jar') {
   ignoreMissingClasses = true
   includeSynthetic = true
   classExcludes = ['okio.Util']
+  methodExcludes = ['okio.ByteString#size()', 'okio.SegmentedByteString#size()']
 }
 check.dependsOn(japicmp)
 
