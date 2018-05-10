@@ -122,7 +122,7 @@ object TestUtil {
     assertEquals(b1.toString(), b2.toString())
 
     // Content.
-    assertEquals(b1.size().toLong(), b2.size().toLong())
+    assertEquals(b1.size.toLong(), b2.size.toLong())
     val b2Bytes = b2.toByteArray()
     for (i in b2Bytes.indices) {
       val b = b2Bytes[i]
@@ -249,7 +249,7 @@ object TestUtil {
   @JvmStatic
   fun makeSegments(source: ByteString): ByteString {
     val buffer = Buffer()
-    for (i in 0 until source.size()) {
+    for (i in 0 until source.size) {
       val segment = buffer.writableSegment(SEGMENT_SIZE)
       segment.data[segment.pos] = source[i]
       segment.limit++

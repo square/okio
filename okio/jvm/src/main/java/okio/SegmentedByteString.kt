@@ -135,7 +135,7 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     return if (i >= 0) i else i.inv() // If i is negative, bitflip to get the insert position.
   }
 
-  override fun size() = directory[segments.size - 1]
+  override fun getSize() = directory[segments.size - 1]
 
   override fun toByteArray(): ByteArray {
     val result = ByteArray(directory[segments.size - 1])
@@ -197,7 +197,7 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     var offset = offset
     var otherOffset = otherOffset
     var byteCount = byteCount
-    if (offset < 0 || offset > size() - byteCount) return false
+    if (offset < 0 || offset > size - byteCount) return false
     // Go segment-by-segment through this, passing arrays to other's rangeEquals().
     var s = segment(offset)
     while (byteCount > 0) {
@@ -224,7 +224,7 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     var offset = offset
     var otherOffset = otherOffset
     var byteCount = byteCount
-    if (offset < 0 || offset > size() - byteCount
+    if (offset < 0 || offset > size - byteCount
         || otherOffset < 0 || otherOffset > other.size - byteCount) {
       return false
     }
@@ -258,7 +258,7 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
   override fun equals(other: Any?): Boolean {
     return when {
       other === this -> true
-      other is ByteString -> other.size() == size() && rangeEquals(0, other, 0, size())
+      other is ByteString -> other.size == size && rangeEquals(0, other, 0, size)
       else -> false
     }
   }

@@ -98,7 +98,7 @@ internal class RealBufferedSource(
         }
         else -> {
           // We matched a full byte string: consume it and return it.
-          val selectedSize = options.byteStrings[index].size()
+          val selectedSize = options.byteStrings[index].size
           buffer.skip(selectedSize.toLong())
           return index
         }
@@ -402,7 +402,7 @@ internal class RealBufferedSource(
       if (source.read(buffer, Segment.SIZE.toLong()) == -1L) return -1L
 
       // Keep searching, picking up from where we left off.
-      fromIndex = maxOf(fromIndex, lastBufferSize - bytes.size() + 1)
+      fromIndex = maxOf(fromIndex, lastBufferSize - bytes.size + 1)
     }
   }
 
@@ -428,7 +428,7 @@ internal class RealBufferedSource(
 
   @Throws(IOException::class)
   override fun rangeEquals(offset: Long, bytes: ByteString) = rangeEquals(offset, bytes, 0,
-      bytes.size())
+      bytes.size)
 
   @Throws(IOException::class)
   override fun rangeEquals(
@@ -442,7 +442,7 @@ internal class RealBufferedSource(
     if (offset < 0L
         || bytesOffset < 0
         || byteCount < 0
-        || bytes.size() - bytesOffset < byteCount) {
+        || bytes.size - bytesOffset < byteCount) {
       return false
     }
     for (i in 0 until byteCount) {

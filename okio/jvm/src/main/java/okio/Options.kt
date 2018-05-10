@@ -41,7 +41,7 @@ class Options private constructor(
       val sortedIndexes = IntArray(sortedByteStrings.size) {
         byteStrings.indexOf(sortedByteStrings[it])
       }
-      require(sortedByteStrings[0].size() > 0) { "the empty byte string is not a supported option" }
+      require(sortedByteStrings[0].size > 0) { "the empty byte string is not a supported option" }
 
       // Strip elements that will never be returned because they follow their own prefixes. For
       // example, if the caller provides ["abc", "abcde"] we will never return "abcde" because we
@@ -111,13 +111,13 @@ class Options private constructor(
     ) {
       require(fromIndex < toIndex)
       for (i in fromIndex until toIndex) {
-        require(byteStrings[i].size() >= byteStringOffset)
+        require(byteStrings[i].size >= byteStringOffset)
       }
 
       // If there's only a single value to select from, and there are no further characters to
       // scan, special case it as an empty SCAN. This should only happen when the only input to the
       // entire Options is a single empty string.
-      if (fromIndex + 1 == toIndex && byteStrings[fromIndex].size() == byteStringOffset) {
+      if (fromIndex + 1 == toIndex && byteStrings[fromIndex].size == byteStringOffset) {
         check(byteStringOffset == 0)
         node.writeInt(0)
         node.writeInt(-1)
@@ -131,7 +131,7 @@ class Options private constructor(
       var prefixIndex = -1
 
       // If the first element is already matched, that's our prefix.
-      if (byteStringOffset == from.size()) {
+      if (byteStringOffset == from.size) {
         prefixIndex = indexes[fromIndex]
         fromIndex++
         from = byteStrings[fromIndex]
@@ -172,7 +172,7 @@ class Options private constructor(
           }
 
           if (rangeStart + 1 == rangeEnd
-              && byteStringOffset + 1 == byteStrings[rangeStart].size()) {
+              && byteStringOffset + 1 == byteStrings[rangeStart].size) {
             // The result is a single index.
             node.writeInt(indexes[rangeStart])
           } else {
@@ -196,7 +196,7 @@ class Options private constructor(
       } else {
         // If all of the bytes are the same, encode a SCAN node.
         var scanByteCount = 0
-        for (i in byteStringOffset until minOf(from.size(), to.size())) {
+        for (i in byteStringOffset until minOf(from.size, to.size)) {
           if (from[i] == to[i]) {
             scanByteCount++
           } else {
@@ -216,7 +216,7 @@ class Options private constructor(
 
         if (fromIndex + 1 == toIndex) {
           // The result is a single index.
-          check(byteStringOffset + scanByteCount == byteStrings[fromIndex].size())
+          check(byteStringOffset + scanByteCount == byteStrings[fromIndex].size)
           node.writeInt(indexes[fromIndex])
         } else {
           // The result is another node.

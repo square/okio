@@ -511,7 +511,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     if (index == -1) return -1
 
     // If the prefix match actually matched a full byte string, consume it and return it.
-    val selectedSize = options.byteStrings[index].size()
+    val selectedSize = options.byteStrings[index].size
     skip(selectedSize.toLong())
     return index
   }
@@ -1420,7 +1420,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @Throws(IOException::class)
   override fun indexOf(bytes: ByteString, fromIndex: Long): Long {
     var fromIndex = fromIndex
-    require(bytes.size() > 0) { "bytes is empty" }
+    require(bytes.size > 0) { "bytes is empty" }
     require(fromIndex >= 0L) { "fromIndex < 0: $fromIndex" }
 
     seek(fromIndex) { s, offset ->
@@ -1430,7 +1430,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       // Scan through the segments, searching for the lead byte. Each time that is found, delegate
       // to rangeEquals() to check for a complete match.
       val b0 = bytes[0]
-      val bytesSize = bytes.size()
+      val bytesSize = bytes.size
       val resultLimit = size - bytesSize + 1L
       while (offset < resultLimit) {
         // Scan through the current segment.
@@ -1465,7 +1465,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       // Special case searching for one of two bytes. This is a common case for tools like Moshi,
       // which search for pairs of chars like `\r` and `\n` or {@code `"` and `\`. The impact of this
       // optimization is a ~5x speedup for this case without a substantial cost to other cases.
-      if (targetBytes.size() == 2) {
+      if (targetBytes.size == 2) {
         // Scan through the segments, searching for either of the two bytes.
         val b0 = targetBytes[0]
         val b1 = targetBytes[1]
@@ -1513,7 +1513,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   override fun rangeEquals(offset: Long, bytes: ByteString) =
-      rangeEquals(offset, bytes, 0, bytes.size())
+      rangeEquals(offset, bytes, 0, bytes.size)
 
   override fun rangeEquals(
     offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int
@@ -1522,7 +1522,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         || bytesOffset < 0
         || byteCount < 0
         || size - offset < byteCount
-        || bytes.size() - bytesOffset < byteCount) {
+        || bytes.size - bytesOffset < byteCount) {
       return false
     }
     for (i in 0 until byteCount) {
