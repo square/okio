@@ -87,18 +87,22 @@ internal class RealBufferedSource(
     check(!closed) { "closed" }
 
     while (true) {
-      val index = buffer.selectPrefix(options)
-      if (index == -1) return -1
-
-      // If the prefix match actually matched a full byte string, consume it and return it.
-      val selectedSize = options[index].size()
-      if (selectedSize <= buffer.size) {
-        buffer.skip(selectedSize.toLong())
-        return index
+      val index = buffer.selectPrefix(options, selectTruncated = true)
+      when (index) {
+        -1 -> {
+          return -1
+        }
+        -2 -> {
+          // We need to grow the buffer. Do that, then try it all again.
+          if (source.read(buffer, Segment.SIZE.toLong()) == -1L) return -1
+        }
+        else -> {
+          // We matched a full byte string: consume it and return it.
+          val selectedSize = options.byteStrings[index].size()
+          buffer.skip(selectedSize.toLong())
+          return index
+        }
       }
-
-      // We need to grow the buffer. Do that, then try it all again.
-      if (source.read(buffer, Segment.SIZE.toLong()) == -1L) return -1
     }
   }
 

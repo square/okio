@@ -20,7 +20,8 @@ import java.util.RandomAccess
 
 /** An indexed set of values that may be read with [BufferedSource.select].  */
 class Options private constructor(
-  internal val byteStrings: Array<out ByteString>
+  internal val byteStrings: Array<out ByteString>,
+  internal val trie: IntArray
 ) : AbstractList<ByteString>(), RandomAccess {
 
   override val size: Int
@@ -31,7 +32,209 @@ class Options private constructor(
   companion object {
     @JvmStatic
     fun of(vararg byteStrings: ByteString): Options {
-      return Options(byteStrings.clone()) // Defensive copy.
+      require(byteStrings.isNotEmpty()) { "no options provided" }
+
+      // Sort the byte strings which is required when recursively building the trie. Map the sorted
+      // indexes to the caller's indexes.
+      val sortedByteStrings = byteStrings.sortedArray()
+      // TODO(jwilson): this is a O(N*N) loop to recover the original indexes. Ick.
+      val sortedIndexes = IntArray(sortedByteStrings.size) {
+        byteStrings.indexOf(sortedByteStrings[it])
+      }
+      require(sortedByteStrings[0].size() > 0) { "the empty byte string is not a supported option" }
+
+      // Strip elements that will never be returned because they follow their own prefixes. For
+      // example, if the caller provides ["abc", "abcde"] we will never return "abcde" because we
+      // return as soon as we encounter "abc".
+      val trieByteStrings = mutableListOf<ByteString>()
+      val trieIndexes = mutableListOf<Int>()
+      collectEligible@
+      for (i in 0 until sortedByteStrings.size) {
+        val byteString = sortedByteStrings[i]
+        val index = sortedIndexes[i]
+        for (j in trieIndexes.size - 1 downTo 0) {
+          if (byteString.startsWith(trieByteStrings[j]) && index >= trieIndexes[j]) {
+            continue@collectEligible // This value can never be returned.
+          }
+        }
+        trieByteStrings += byteString
+        trieIndexes += index
+      }
+
+      val trieBytes = Buffer()
+      buildTrieRecursive(
+          node = trieBytes,
+          byteStrings = trieByteStrings,
+          indexes = trieIndexes)
+
+      val trie = IntArray(trieBytes.intCount.toInt())
+      var i = 0
+      while (!trieBytes.exhausted()) {
+        trie[i++] = trieBytes.readInt()
+      }
+
+      return Options(byteStrings.clone() /* Defensive copy. */, trie)
     }
+
+    /**
+     * Builds a trie encoded as an int array. Nodes in the trie are of two types: SELECT and SCAN.
+     *
+     * SELECT nodes are encoded as:
+     *  - selectChoiceCount: the number of bytes to choose between (a positive int)
+     *  - prefixIndex: the result index at the current position or -1 if the current position is not
+     *    a result on its own
+     *  - a sorted list of selectChoiceCount bytes to match against the input string
+     *  - a heterogeneous list of selectChoiceCount result indexes (>= 0) or offsets (< 0) of the
+     *    next node to follow. Elements in this list correspond to elements in the preceding list.
+     *    Offsets are negative and must be multiplied by -1 before being used.
+     *
+     * SCAN nodes are encoded as:
+     *  - scanByteCount: the number of bytes to match in sequence. This count is negative and must
+     *    be multiplied by -1 before being used.
+     *  - prefixIndex: the result index at the current position or -1 if the current position is not
+     *    a result on its own
+     *  - a list of scanByteCount bytes to match
+     *  - nextStep: the result index (>= 0) or offset (< 0) of the next node to follow. Offsets are
+     *    negative and must be multiplied by -1 before being used.
+     *
+     * This structure is used to improve locality and performance when selecting from a list of
+     * options.
+     */
+    private fun buildTrieRecursive(
+      nodeOffset: Long = 0L,
+      node: Buffer,
+      byteStringOffset: Int = 0,
+      byteStrings: List<ByteString>,
+      fromIndex: Int = 0,
+      toIndex: Int = byteStrings.size,
+      indexes: List<Int>
+    ) {
+      require(fromIndex < toIndex)
+      for (i in fromIndex until toIndex) {
+        require(byteStrings[i].size() >= byteStringOffset)
+      }
+
+      // If there's only a single value to select from, and there are no further characters to
+      // scan, special case it as an empty SCAN. This should only happen when the only input to the
+      // entire Options is a single empty string.
+      if (fromIndex + 1 == toIndex && byteStrings[fromIndex].size() == byteStringOffset) {
+        check(byteStringOffset == 0)
+        node.writeInt(0)
+        node.writeInt(-1)
+        node.writeInt(indexes[fromIndex])
+        return
+      }
+
+      var fromIndex = fromIndex
+      var from = byteStrings[fromIndex]
+      val to = byteStrings[toIndex - 1]
+      var prefixIndex = -1
+
+      // If the first element is already matched, that's our prefix.
+      if (byteStringOffset == from.size()) {
+        prefixIndex = indexes[fromIndex]
+        fromIndex++
+        from = byteStrings[fromIndex]
+      }
+
+      if (from[byteStringOffset] != to[byteStringOffset]) {
+        // If we have multiple bytes to choose from, encode a SELECT node.
+        var selectChoiceCount = 1
+        for (i in fromIndex + 1 until toIndex) {
+          if (byteStrings[i - 1][byteStringOffset] != byteStrings[i][byteStringOffset]) {
+            selectChoiceCount++
+          }
+        }
+
+        // Compute the offset that childNodes will get when we append it to node.
+        val childNodesOffset = nodeOffset + node.intCount + 2 + (selectChoiceCount * 2)
+
+        node.writeInt(selectChoiceCount)
+        node.writeInt(prefixIndex)
+
+        for (i in fromIndex until toIndex) {
+          val rangeByte = byteStrings[i][byteStringOffset]
+          if (i == fromIndex || rangeByte != byteStrings[i - 1][byteStringOffset]) {
+            node.writeInt(rangeByte and 0xff)
+          }
+        }
+
+        val childNodes = Buffer()
+        var rangeStart = fromIndex
+        while (rangeStart < toIndex) {
+          val rangeByte = byteStrings[rangeStart][byteStringOffset]
+          var rangeEnd = toIndex
+          for (i in rangeStart + 1 until toIndex) {
+            if (rangeByte != byteStrings[i][byteStringOffset]) {
+              rangeEnd = i
+              break
+            }
+          }
+
+          if (rangeStart + 1 == rangeEnd
+              && byteStringOffset + 1 == byteStrings[rangeStart].size()) {
+            // The result is a single index.
+            node.writeInt(indexes[rangeStart])
+          } else {
+            // The result is another node.
+            node.writeInt(-1 * (childNodesOffset + childNodes.intCount).toInt())
+            buildTrieRecursive(
+                nodeOffset = childNodesOffset,
+                node = childNodes,
+                byteStringOffset = byteStringOffset + 1,
+                byteStrings = byteStrings,
+                fromIndex = rangeStart,
+                toIndex = rangeEnd,
+                indexes = indexes)
+          }
+
+          rangeStart = rangeEnd
+        }
+
+        node.writeAll(childNodes)
+
+      } else {
+        // If all of the bytes are the same, encode a SCAN node.
+        var scanByteCount = 0
+        for (i in byteStringOffset until minOf(from.size(), to.size())) {
+          if (from[i] == to[i]) {
+            scanByteCount++
+          } else {
+            break
+          }
+        }
+
+        // Compute the offset that childNodes will get when we append it to node.
+        val childNodesOffset = nodeOffset + node.intCount + 2 + scanByteCount + 1
+
+        node.writeInt(-scanByteCount)
+        node.writeInt(prefixIndex)
+
+        for (i in byteStringOffset until byteStringOffset + scanByteCount) {
+          node.writeInt(from[i] and 0xff)
+        }
+
+        if (fromIndex + 1 == toIndex) {
+          // The result is a single index.
+          check(byteStringOffset + scanByteCount == byteStrings[fromIndex].size())
+          node.writeInt(indexes[fromIndex])
+        } else {
+          // The result is another node.
+          val childNodes = Buffer()
+          node.writeInt(-1 * (childNodesOffset + childNodes.intCount).toInt())
+          buildTrieRecursive(
+              nodeOffset = childNodesOffset,
+              node = childNodes,
+              byteStringOffset = byteStringOffset + scanByteCount,
+              byteStrings = byteStrings,
+              fromIndex = fromIndex,
+              toIndex = toIndex,
+              indexes = indexes)
+          node.writeAll(childNodes)
+        }
+      }
+    }
+
+    private val Buffer.intCount get() = size / 4
   }
 }
