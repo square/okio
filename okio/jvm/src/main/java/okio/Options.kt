@@ -36,36 +36,38 @@ class Options private constructor(
 
       // Sort the byte strings which is required when recursively building the trie. Map the sorted
       // indexes to the caller's indexes.
-      val sortedByteStrings = byteStrings.sortedArray()
-      // TODO(jwilson): this is a O(N*N) loop to recover the original indexes. Ick.
-      val sortedIndexes = IntArray(sortedByteStrings.size) {
-        byteStrings.indexOf(sortedByteStrings[it])
+      val list = byteStrings.toMutableList()
+      list.sort()
+      val indexes = mutableListOf(*byteStrings.map { -1 }.toTypedArray())
+      byteStrings.forEachIndexed { callerIndex, byteString ->
+        val sortedIndex = list.binarySearch(byteString)
+        indexes[sortedIndex] = callerIndex
       }
-      require(sortedByteStrings[0].size > 0) { "the empty byte string is not a supported option" }
+      require(list[0].size > 0) { "the empty byte string is not a supported option" }
 
       // Strip elements that will never be returned because they follow their own prefixes. For
       // example, if the caller provides ["abc", "abcde"] we will never return "abcde" because we
       // return as soon as we encounter "abc".
-      val trieByteStrings = mutableListOf<ByteString>()
-      val trieIndexes = mutableListOf<Int>()
-      collectEligible@
-      for (i in 0 until sortedByteStrings.size) {
-        val byteString = sortedByteStrings[i]
-        val index = sortedIndexes[i]
-        for (j in trieIndexes.size - 1 downTo 0) {
-          if (byteString.startsWith(trieByteStrings[j]) && index >= trieIndexes[j]) {
-            continue@collectEligible // This value can never be returned.
+      var a = 0
+      while (a < list.size) {
+        val prefix = list[a]
+        var b = a + 1
+        while (b < list.size) {
+          val byteString = list[b]
+          if (!byteString.startsWith(prefix)) break
+          require (byteString.size != prefix.size) { "duplicate option: $byteString" }
+          if (indexes[b] > indexes[a]) {
+            list.removeAt(b)
+            indexes.removeAt(b)
+          } else {
+            b++
           }
         }
-        trieByteStrings += byteString
-        trieIndexes += index
+        a++
       }
 
       val trieBytes = Buffer()
-      buildTrieRecursive(
-          node = trieBytes,
-          byteStrings = trieByteStrings,
-          indexes = trieIndexes)
+      buildTrieRecursive(node = trieBytes, byteStrings = list, indexes = indexes)
 
       val trie = IntArray(trieBytes.intCount.toInt())
       var i = 0
