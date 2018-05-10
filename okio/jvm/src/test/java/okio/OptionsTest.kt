@@ -196,9 +196,12 @@ class OptionsTest {
   }
 
   @Test fun multipleIdenticalValues() {
-    assertThat(utf8Options("abc", "abc").trieString()).isEqualTo("""
-        |abc -> 0
-        |""".trimMargin())
+    try {
+      utf8Options("abc", "abc")
+      fail()
+    } catch (expected: IllegalArgumentException) {
+      assertThat(expected).hasMessage("duplicate option: [text=abc]")
+    }
   }
 
   @Test fun prefixesAreStripped() {
@@ -213,6 +216,30 @@ class OptionsTest {
     assertSelect("abcB", 1, options)
     assertSelect("abcC", 1, options)
     assertSelect("ab", -1, options)
+  }
+
+  @Test fun multiplePrefixesAreStripped() {
+    assertThat(utf8Options("a", "ab", "abc", "abcd", "abcde").trieString()).isEqualTo("""
+        |a -> 0
+        |""".trimMargin())
+    assertThat(utf8Options("abc", "a", "ab", "abe", "abcd", "abcf").trieString()).isEqualTo("""
+        |a
+        | -> 1
+        | bc -> 0
+        |""".trimMargin())
+    assertThat(utf8Options("abc", "ab", "a").trieString()).isEqualTo("""
+        |a
+        | -> 2
+        | b
+        |  -> 1
+        |  c -> 0
+        |""".trimMargin())
+    assertThat(utf8Options("abcd", "abce", "abc", "abcf", "abcg").trieString()).isEqualTo("""
+        |abc
+        |   -> 2
+        |   d -> 0
+        |   e -> 1
+        |""".trimMargin())
   }
 
   private fun utf8Options(vararg options: String): Options {
