@@ -227,7 +227,11 @@ internal constructor(
   operator fun get(index: Int): Byte = getByte(index)
 
   /** Returns the number of bytes in this ByteString. */
-  open fun size() = data.size
+  val size
+    @JvmName("size") get() = getSize()
+
+  // Hack to work around Kotlin's limitation for using JvmName on open/override vals/funs
+  internal open fun getSize() = data.size
 
   /** Returns a byte array containing a copy of the bytes in this `ByteString`. */
   open fun toByteArray() = data.clone()
@@ -270,14 +274,14 @@ internal constructor(
         && arrayRangeEquals(data, offset, other, otherOffset, byteCount))
   }
 
-  fun startsWith(prefix: ByteString) = rangeEquals(0, prefix, 0, prefix.size())
+  fun startsWith(prefix: ByteString) = rangeEquals(0, prefix, 0, prefix.size)
 
   fun startsWith(prefix: ByteArray) = rangeEquals(0, prefix, 0, prefix.size)
 
-  fun endsWith(suffix: ByteString) = rangeEquals(size() - suffix.size(), suffix, 0,
-      suffix.size())
+  fun endsWith(suffix: ByteString) = rangeEquals(size - suffix.size, suffix, 0,
+      suffix.size)
 
-  fun endsWith(suffix: ByteArray) = rangeEquals(size() - suffix.size, suffix, 0,
+  fun endsWith(suffix: ByteArray) = rangeEquals(size - suffix.size, suffix, 0,
       suffix.size)
 
   @JvmOverloads
@@ -299,11 +303,11 @@ internal constructor(
   }
 
   @JvmOverloads
-  fun lastIndexOf(other: ByteString, fromIndex: Int = size()) = lastIndexOf(other.internalArray(),
+  fun lastIndexOf(other: ByteString, fromIndex: Int = size) = lastIndexOf(other.internalArray(),
       fromIndex)
 
   @JvmOverloads
-  open fun lastIndexOf(other: ByteArray, fromIndex: Int = size()): Int {
+  open fun lastIndexOf(other: ByteArray, fromIndex: Int = size): Int {
     var fromIndex = fromIndex
     fromIndex = minOf(fromIndex, data.size - other.size)
     for (i in fromIndex downTo 0) {
@@ -317,7 +321,7 @@ internal constructor(
   override fun equals(other: Any?): Boolean {
     return when {
       other === this -> true
-      other is ByteString -> other.size() == data.size && other.rangeEquals(0, data, 0, data.size)
+      other is ByteString -> other.size == data.size && other.rangeEquals(0, data, 0, data.size)
       else -> false
     }
   }
@@ -330,8 +334,8 @@ internal constructor(
   }
 
   override fun compareTo(other: ByteString): Int {
-    val sizeA = size()
-    val sizeB = other.size()
+    val sizeA = size
+    val sizeB = other.size
     var i = 0
     val size = minOf(sizeA, sizeB)
     while (i < size) {

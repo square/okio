@@ -228,7 +228,7 @@ class OptionsTest {
     if (expected == -1) {
       assertThat(buffer.size).isEqualTo(dataSize)
     } else {
-      assertThat(buffer.size + options[expected].size()).isEqualTo(dataSize)
+      assertThat(buffer.size + options[expected].size).isEqualTo(dataSize)
     }
   }
 
