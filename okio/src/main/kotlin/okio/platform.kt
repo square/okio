@@ -19,6 +19,8 @@ package okio
 import kotlin.annotation.AnnotationTarget.FIELD
 import kotlin.annotation.AnnotationTarget.FILE
 import kotlin.annotation.AnnotationTarget.FUNCTION
+import kotlin.annotation.AnnotationTarget.PROPERTY_GETTER
+import kotlin.annotation.AnnotationTarget.PROPERTY_SETTER
 
 // TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
 // TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
@@ -37,8 +39,13 @@ expect annotation class JvmStatic()
 
 // TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
 // TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
-@Target(FILE, FUNCTION)
+@Target(FILE, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER)
 expect annotation class JvmName(val name: String)
+
+// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
+// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+@Target(FIELD)
+expect annotation class Transient()
 
 internal expect fun arraycopy(
   src: ByteArray,
@@ -47,6 +54,8 @@ internal expect fun arraycopy(
   destPos: Int,
   length: Int
 )
+
+internal expect fun hashCode(a: ByteArray): Int
 
 // TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
 expect open class IndexOutOfBoundsException(message: String) : RuntimeException
