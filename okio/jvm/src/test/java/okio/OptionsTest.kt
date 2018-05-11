@@ -16,6 +16,7 @@
 package okio
 
 import okio.ByteString.Companion.encodeUtf8
+import okio.TestUtil.bufferWithSegments
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import kotlin.test.fail
@@ -242,25 +243,143 @@ class OptionsTest {
         |""".trimMargin())
   }
 
+  @Test fun scan() {
+    val options = utf8Options("abc")
+    assertSelect("abcde", 0, options)
+  }
+
+  @Test fun scanReturnsPrefix() {
+    val options = utf8Options("abcdefg", "ab")
+    assertSelect("ab", 1, options)
+    assertSelect("abcd", 1, options)
+    assertSelect("abcdefg", 0, options)
+    assertSelect("abcdefghi", 0, options)
+    assertSelect("abcdhi", 1, options)
+  }
+
+  @Test fun select() {
+    val options = utf8Options("a", "b", "c")
+    assertSelect("a", 0, options)
+    assertSelect("b", 1, options)
+    assertSelect("c", 2, options)
+    assertSelect("d", -1, options)
+    assertSelect("aa", 0, options)
+    assertSelect("bb", 1, options)
+    assertSelect("cc", 2, options)
+    assertSelect("dd", -1, options)
+  }
+
+  @Test fun selectSelect() {
+    val options = utf8Options("aa", "ab", "ba", "bb")
+    assertSelect("a", -1, options)
+    assertSelect("b", -1, options)
+    assertSelect("c", -1, options)
+    assertSelect("aa", 0, options)
+    assertSelect("ab", 1, options)
+    assertSelect("ac", -1, options)
+    assertSelect("ba", 2, options)
+    assertSelect("bb", 3, options)
+    assertSelect("bc", -1, options)
+    assertSelect("ca", -1, options)
+    assertSelect("cb", -1, options)
+    assertSelect("cc", -1, options)
+  }
+
+  @Test fun selectScan() {
+    val options = utf8Options("abcd", "defg")
+    assertSelect("a", -1, options)
+    assertSelect("d", -1, options)
+    assertSelect("h", -1, options)
+    assertSelect("ab", -1, options)
+    assertSelect("ae", -1, options)
+    assertSelect("de", -1, options)
+    assertSelect("db", -1, options)
+    assertSelect("hi", -1, options)
+    assertSelect("abcd", 0, options)
+    assertSelect("aefg", -1, options)
+    assertSelect("defg", 1, options)
+    assertSelect("dbcd", -1, options)
+    assertSelect("hijk", -1, options)
+    assertSelect("abcdh", 0, options)
+    assertSelect("defgh", 1, options)
+    assertSelect("hijkl", -1, options)
+  }
+
+  @Test fun scanSelect() {
+    val options = utf8Options("abcd", "abce")
+    assertSelect("a", -1, options)
+    assertSelect("f", -1, options)
+    assertSelect("abc", -1, options)
+    assertSelect("abf", -1, options)
+    assertSelect("abcd", 0, options)
+    assertSelect("abce", 1, options)
+    assertSelect("abcf", -1, options)
+    assertSelect("abcdf", 0, options)
+    assertSelect("abcef", 1, options)
+  }
+
+  @Test fun scanSpansSegments() {
+    val options = utf8Options("abcd")
+    assertSelect(bufferWithSegments("a", "bcd"), 0, options)
+    assertSelect(bufferWithSegments("a", "bcde"), 0, options)
+    assertSelect(bufferWithSegments("ab", "cd"), 0, options)
+    assertSelect(bufferWithSegments("ab", "cde"), 0, options)
+    assertSelect(bufferWithSegments("abc", "d"), 0, options)
+    assertSelect(bufferWithSegments("abc", "de"), 0, options)
+    assertSelect(bufferWithSegments("abcd", "e"), 0, options)
+    assertSelect(bufferWithSegments("a", "bce"), -1, options)
+    assertSelect(bufferWithSegments("a", "bce"), -1, options)
+    assertSelect(bufferWithSegments("ab", "ce"), -1, options)
+    assertSelect(bufferWithSegments("ab", "ce"), -1, options)
+    assertSelect(bufferWithSegments("abc", "e"), -1, options)
+    assertSelect(bufferWithSegments("abc", "ef"), -1, options)
+    assertSelect(bufferWithSegments("abce", "f"), -1, options)
+  }
+
+  @Test fun selectSpansSegments() {
+    val options = utf8Options("aa", "ab", "ba", "bb")
+    assertSelect(bufferWithSegments("a", "a"), 0, options)
+    assertSelect(bufferWithSegments("a", "b"), 1, options)
+    assertSelect(bufferWithSegments("a", "c"), -1, options)
+    assertSelect(bufferWithSegments("b", "a"), 2, options)
+    assertSelect(bufferWithSegments("b", "b"), 3, options)
+    assertSelect(bufferWithSegments("b", "c"), -1, options)
+    assertSelect(bufferWithSegments("c", "a"), -1, options)
+    assertSelect(bufferWithSegments("c", "b"), -1, options)
+    assertSelect(bufferWithSegments("c", "c"), -1, options)
+    assertSelect(bufferWithSegments("a", "ad"), 0, options)
+    assertSelect(bufferWithSegments("a", "bd"), 1, options)
+    assertSelect(bufferWithSegments("a", "cd"), -1, options)
+    assertSelect(bufferWithSegments("b", "ad"), 2, options)
+    assertSelect(bufferWithSegments("b", "bd"), 3, options)
+    assertSelect(bufferWithSegments("b", "cd"), -1, options)
+    assertSelect(bufferWithSegments("c", "ad"), -1, options)
+    assertSelect(bufferWithSegments("c", "bd"), -1, options)
+    assertSelect(bufferWithSegments("c", "cd"), -1, options)
+  }
+
   private fun utf8Options(vararg options: String): Options {
     return Options.of(*options.map { it.encodeUtf8() }.toTypedArray())
   }
 
   private fun assertSelect(data: String, expected: Int, options: Options) {
-    val buffer = Buffer().writeUtf8(data)
-    val dataSize = buffer.size
-    val actual = buffer.select(options)
-
-    assertThat(actual).isEqualTo(expected)
-    if (expected == -1) {
-      assertThat(buffer.size).isEqualTo(dataSize)
-    } else {
-      assertThat(buffer.size + options[expected].size).isEqualTo(dataSize)
-    }
+    assertSelect(Buffer().writeUtf8(data), expected, options)
   }
 
   private fun assertSelect(data: String, expected: Int, vararg options: String) {
     assertSelect(data, expected, utf8Options(*options))
+  }
+
+  private fun assertSelect(data: Buffer, expected: Int, options: Options) {
+    val initialSize = data.size
+    val actual = data.select(options)
+
+    assertThat(actual).isEqualTo(expected)
+    if (expected == -1) {
+      assertThat(data.size).isEqualTo(initialSize)
+    } else {
+      assertThat(data.size + options[expected].size).isEqualTo(initialSize)
+    }
   }
 
   private fun Options.trieString() : String {
