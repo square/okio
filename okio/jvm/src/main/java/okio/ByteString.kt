@@ -17,13 +17,18 @@ package okio
 
 import okio.common.COMMON_EMPTY
 import okio.common.COMMON_HEX_DIGITS
+import okio.common.commonBase64
+import okio.common.commonBase64Url
 import okio.common.commonCompareTo
+import okio.common.commonDecodeBase64
 import okio.common.commonDecodeHex
+import okio.common.commonEncodeUtf8
 import okio.common.commonEndsWith
 import okio.common.commonEquals
 import okio.common.commonGetByte
 import okio.common.commonGetSize
 import okio.common.commonHashCode
+import okio.common.commonHex
 import okio.common.commonInternalArray
 import okio.common.commonOf
 import okio.common.commonRangeEquals
@@ -32,6 +37,7 @@ import okio.common.commonSubstring
 import okio.common.commonToAsciiLowercase
 import okio.common.commonToAsciiUppercase
 import okio.common.commonToByteArray
+import okio.common.commonUtf8
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
@@ -70,15 +76,7 @@ internal actual constructor(
   @Transient internal actual var utf8: String? = null // Lazily computed.
 
   /** Constructs a new `String` by decoding the bytes as `UTF-8`.  */
-  actual open fun utf8(): String {
-    var result = utf8
-    if (result == null) {
-      // We don't care if we double-allocate in racy code.
-      result = String(data, Charsets.UTF_8)
-      utf8 = result
-    }
-    return result
-  }
+  actual open fun utf8(): String = commonUtf8()
 
   /** Constructs a new `String` by decoding the bytes using `charset`.  */
   open fun string(charset: Charset) = String(data, charset)
@@ -87,7 +85,7 @@ internal actual constructor(
    * Returns this byte string encoded as [Base64](http://www.ietf.org/rfc/rfc2045.txt). In violation
    * of the RFC, the returned string does not wrap lines at 76 columns.
    */
-  actual open fun base64() = data.encodeBase64()
+  actual open fun base64() = commonBase64()
 
   /** Returns the 128-bit MD5 hash of this byte string.  */
   open fun md5() = digest("MD5")
@@ -131,18 +129,10 @@ internal actual constructor(
   }
 
   /** Returns this byte string encoded as [URL-safe Base64](http://www.ietf.org/rfc/rfc4648.txt). */
-  actual open fun base64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
+  actual open fun base64Url() = commonBase64Url()
 
   /** Returns this byte string encoded in hexadecimal.  */
-  actual open fun hex(): String {
-    val result = CharArray(data.size * 2)
-    var c = 0
-    for (b in data) {
-      result[c++] = HEX_DIGITS[b shr 4 and 0xf]
-      result[c++] = HEX_DIGITS[b       and 0xf]
-    }
-    return String(result)
-  }
+  actual open fun hex(): String = commonHex()
 
   /**
    * Returns a byte string equal to this byte string, but with the bytes 'A' through 'Z' replaced
@@ -370,11 +360,7 @@ internal actual constructor(
 
     /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
     @JvmStatic
-    actual fun String.encodeUtf8(): ByteString {
-      val byteString = ByteString(toByteArray(Charsets.UTF_8))
-      byteString.utf8 = this
-      return byteString
-    }
+    actual fun String.encodeUtf8(): ByteString = commonEncodeUtf8()
 
     /** Returns a new [ByteString] containing the `charset`-encoded bytes of this [String].  */
     @JvmStatic
@@ -386,10 +372,7 @@ internal actual constructor(
      * this is not a Base64-encoded sequence of bytes.
      */
     @JvmStatic
-    actual fun String.decodeBase64(): ByteString? {
-      val decoded = decodeBase64ToArray()
-      return if (decoded != null) ByteString(decoded) else null
-    }
+    actual fun String.decodeBase64() = commonDecodeBase64()
 
     /** Decodes the hex-encoded bytes and returns their value a byte string.  */
     @JvmStatic

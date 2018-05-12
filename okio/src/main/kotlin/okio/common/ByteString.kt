@@ -16,14 +16,45 @@
 
 package okio.common
 
+import okio.BASE64_URL_SAFE
 import okio.ByteString
 import okio.and
 import okio.arrayRangeEquals
 import okio.arraycopy
+import okio.asUtf8ToByteArray
+import okio.createString
+import okio.decodeBase64ToArray
+import okio.encodeBase64
 import okio.hashCode
+import okio.shr
+import okio.toUtf8String
 
 // TODO Kotlin's expect classes can't have default implementations, so platform implementations
 // have to call these functions. Remove all this nonsense when expect class allow actual code.
+
+internal fun ByteString.commonUtf8(): String {
+  var result = utf8
+  if (result == null) {
+    // We don't care if we double-allocate in racy code.
+    result = data.toUtf8String()
+    utf8 = result
+  }
+  return result
+}
+
+internal fun ByteString.commonBase64(): String = data.encodeBase64()
+
+internal fun ByteString.commonBase64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
+
+internal fun ByteString.commonHex(): String {
+  val result = CharArray(data.size * 2)
+  var c = 0
+  for (b in data) {
+    result[c++] = ByteString.HEX_DIGITS[b shr 4 and 0xf]
+    result[c++] = ByteString.HEX_DIGITS[b       and 0xf]
+  }
+  return result.createString()
+}
 
 internal fun ByteString.commonToAsciiLowercase(): ByteString {
   // Search for an uppercase character. If we don't find one, return this.
@@ -172,6 +203,17 @@ internal val COMMON_HEX_DIGITS =
 internal val COMMON_EMPTY = ByteString.of()
 
 internal fun commonOf(vararg data: Byte) = ByteString(data.copyOf())
+
+internal fun String.commonEncodeUtf8(): ByteString {
+  val byteString = ByteString(asUtf8ToByteArray())
+  byteString.utf8 = this
+  return byteString
+}
+
+internal fun String.commonDecodeBase64(): ByteString? {
+  val decoded = decodeBase64ToArray()
+  return if (decoded != null) ByteString(decoded) else null
+}
 
 internal fun String.commonDecodeHex(): ByteString {
   require(length % 2 == 0) { "Unexpected hex string: ${this}" }
