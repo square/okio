@@ -35,6 +35,12 @@ internal actual fun arraycopy(
 
 internal actual fun hashCode(a: ByteArray): Int = Arrays.hashCode(a)
 
+internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
+
+internal actual fun CharArray.createString(): String = String(this)
+
+internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets.UTF_8)
+
 // TODO remove if https://youtrack.jetbrains.com/issue/KT-24167 provides a better solution
 actual typealias IndexOutOfBoundsException = java.lang.IndexOutOfBoundsException
 
