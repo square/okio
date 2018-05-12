@@ -529,11 +529,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    *     contains [ab] and the options are [abc, a].
    */
   internal fun selectPrefix(options: Options, selectTruncated: Boolean = false): Int {
-    val head = head
-    if (head == null) {
-      if (selectTruncated) return -2 // A result is present but truncated.
-      return options.indexOf(ByteString.EMPTY)
-    }
+    val head = head ?: return if (selectTruncated) -2 else -1
 
     var s: Segment? = head
     var data = head.data
