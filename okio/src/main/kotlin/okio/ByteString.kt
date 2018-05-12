@@ -34,8 +34,8 @@ expect class ByteString
 internal constructor(data: ByteArray) : Comparable<ByteString> {
   internal val data: ByteArray
 
-  @Transient internal var hashCode: Int
-  @Transient internal var utf8: String?
+  internal var hashCode: Int
+  internal var utf8: String?
 
   /** Constructs a new `String` by decoding the bytes as `UTF-8`.  */
   fun utf8(): String
@@ -45,27 +45,6 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
    * of the RFC, the returned string does not wrap lines at 76 columns.
    */
   fun base64(): String
-
-  /** Returns the 128-bit MD5 hash of this byte string.  */
-  fun md5(): ByteString
-
-  /** Returns the 160-bit SHA-1 hash of this byte string.  */
-  fun sha1(): ByteString
-
-  /** Returns the 256-bit SHA-256 hash of this byte string.  */
-  fun sha256(): ByteString
-
-  /** Returns the 512-bit SHA-512 hash of this byte string.  */
-  fun sha512(): ByteString
-
-  /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
-  fun hmacSha1(key: ByteString): ByteString
-
-  /** Returns the 256-bit SHA-256 HMAC of this byte string.  */
-  fun hmacSha256(key: ByteString): ByteString
-
-  /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
-  fun hmacSha512(key: ByteString): ByteString
 
   /** Returns this byte string encoded as [URL-safe Base64](http://www.ietf.org/rfc/rfc4648.txt). */
   fun base64Url(): String

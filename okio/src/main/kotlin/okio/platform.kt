@@ -42,11 +42,6 @@ expect annotation class JvmStatic()
 @Target(FILE, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER)
 expect annotation class JvmName(val name: String)
 
-// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
-// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
-@Target(FIELD)
-expect annotation class Transient()
-
 internal expect fun arraycopy(
   src: ByteArray,
   srcPos: Int,

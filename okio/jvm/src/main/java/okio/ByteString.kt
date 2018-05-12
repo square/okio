@@ -46,6 +46,7 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+import kotlin.jvm.Transient
 
 /**
  * An immutable sequence of bytes.
@@ -65,8 +66,8 @@ actual open class ByteString
 internal actual constructor(
   internal actual val data: ByteArray
 ) : Serializable, Comparable<ByteString> {
-  internal actual var hashCode: Int = 0 // Lazily computed; 0 if unknown.
-  internal actual var utf8: String? = null // Lazily computed.
+  @Transient internal actual var hashCode: Int = 0 // Lazily computed; 0 if unknown.
+  @Transient internal actual var utf8: String? = null // Lazily computed.
 
   /** Constructs a new `String` by decoding the bytes as `UTF-8`.  */
   actual open fun utf8(): String {
@@ -89,16 +90,16 @@ internal actual constructor(
   actual open fun base64() = data.encodeBase64()
 
   /** Returns the 128-bit MD5 hash of this byte string.  */
-  actual open fun md5() = digest("MD5")
+  open fun md5() = digest("MD5")
 
   /** Returns the 160-bit SHA-1 hash of this byte string.  */
-  actual open fun sha1() = digest("SHA-1")
+  open fun sha1() = digest("SHA-1")
 
   /** Returns the 256-bit SHA-256 hash of this byte string.  */
-  actual open fun sha256() = digest("SHA-256")
+  open fun sha256() = digest("SHA-256")
 
   /** Returns the 512-bit SHA-512 hash of this byte string.  */
-  actual open fun sha512() = digest("SHA-512")
+  open fun sha512() = digest("SHA-512")
 
   private fun digest(algorithm: String): ByteString {
     try {
@@ -109,13 +110,13 @@ internal actual constructor(
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
-  actual open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
+  open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
 
   /** Returns the 256-bit SHA-256 HMAC of this byte string.  */
-  actual open fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
+  open fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
 
   /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
-  actual open fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
+  open fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
 
   private fun hmac(algorithm: String, key: ByteString): ByteString {
     try {
