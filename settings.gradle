@@ -1,3 +1,4 @@
 include ':okio'
+include ':okio:js'
 include ':okio:jvm'
 include ':samples'

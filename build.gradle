@@ -10,6 +10,7 @@ buildscript {
       'junit': '4.12',
       'assertj': '1.7.0',
       'shadowPlugin': '2.0.2',
+      'nodePlugin': '1.2.0',
   ]
 
   ext.deps = [
@@ -20,11 +21,13 @@ buildscript {
               'jdk8': "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
               'jdk7': "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
               'jdk6': "org.jetbrains.kotlin:kotlin-stdlib",
+              'js': "org.jetbrains.kotlin:kotlin-stdlib-js",
           ],
           'test': [
               'common': "org.jetbrains.kotlin:kotlin-test-common",
               'annotations': "org.jetbrains.kotlin:kotlin-test-annotations-common",
               'jdk': "org.jetbrains.kotlin:kotlin-test-junit",
+              'js': "org.jetbrains.kotlin:kotlin-test-js",
           ],
       ],
       'jmh': [
@@ -40,6 +43,7 @@ buildscript {
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'jsr305': "com.google.code.findbugs:jsr305:${versions.jsr305}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
+      'node': "com.moowork.gradle:gradle-node-plugin:${versions.nodePlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
@@ -53,6 +57,7 @@ buildscript {
     classpath deps.dokka
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
+    classpath deps.node
   }
 
   repositories {

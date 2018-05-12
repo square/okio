@@ -1,0 +1,53 @@
+/*
+ * Copyright (C) 2018 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'org.jetbrains.kotlin.platform.js'
+apply plugin: 'com.moowork.node'
+
+dependencies {
+  expectedBy project(':okio')
+
+  implementation deps.kotlin.stdLib.js
+  testImplementation deps.kotlin.test.js
+}
+
+task populateNodeModules(type: Copy, dependsOn: compileKotlin2Js) {
+  from compileKotlin2Js.destinationDir
+  configurations.testCompileClasspath.each {
+    from zipTree(it.absolutePath).matching { include '*.js' }
+  }
+
+  into "${buildDir}/node_modules"
+}
+
+[compileKotlin2Js, compileTestKotlin2Js]*.configure {
+  kotlinOptions.moduleKind = "commonjs"
+}
+
+node {
+  download = true
+}
+
+task installQunit(type: NpmTask) {
+  args = ['install', 'qunit']
+}
+
+task runQunit(type: NodeTask, dependsOn: [compileTestKotlin2Js, populateNodeModules, installQunit]) {
+  script = file('node_modules/.bin/qunit')
+  args = [projectDir.toPath().relativize(file(compileTestKotlin2Js.outputFile).toPath())]
+}
+
+test.dependsOn(runQunit)
