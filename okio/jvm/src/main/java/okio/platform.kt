@@ -16,6 +16,8 @@
 
 package okio
 
+import java.util.Arrays
+
 actual typealias JvmOverloads = kotlin.jvm.JvmOverloads
 actual typealias JvmField = kotlin.jvm.JvmField
 actual typealias JvmStatic = kotlin.jvm.JvmStatic
@@ -30,6 +32,8 @@ internal actual fun arraycopy(
 ) {
   System.arraycopy(src, srcPos, dest, destPos, length)
 }
+
+internal actual fun hashCode(a: ByteArray): Int = Arrays.hashCode(a)
 
 // TODO remove if https://youtrack.jetbrains.com/issue/KT-24167 provides a better solution
 actual typealias IndexOutOfBoundsException = java.lang.IndexOutOfBoundsException
