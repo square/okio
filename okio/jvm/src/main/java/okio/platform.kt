@@ -37,8 +37,6 @@ internal actual fun hashCode(a: ByteArray): Int = Arrays.hashCode(a)
 
 internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
 
-internal actual fun ByteArray.toAsciiString(): String = String(this, Charsets.US_ASCII)
-
 internal actual fun CharArray.createString(): String = String(this)
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets.UTF_8)

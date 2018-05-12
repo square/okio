@@ -143,5 +143,5 @@ internal fun ByteArray.encodeBase64(map: ByteArray = BASE64): String {
       out[index] = '='.toByte()
     }
   }
-  return out.toAsciiString()
+  return out.toUtf8String()
 }
