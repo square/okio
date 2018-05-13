@@ -519,7 +519,7 @@ and ints:
 
 | Type  | Signed Range                  | Unsigned Range   | Signed to Unsigned          |
 | :---- | :---------------------------: | :--------------- | :-------------------------- |
-| byte  | -127..128                     | 0..255           | `int u = s & 0xff;`         |
+| byte  | -128..127                     | 0..255           | `int u = s & 0xff;`         |
 | short | -32,768..32,767               | 0..65,535        | `int u = s & 0xffff;`       |
 | int   | -2,147,483,648..2,147,483,647 | 0..4,294,967,295 | `long u = s & 0xffffffffL;` |
 
