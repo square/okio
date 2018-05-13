@@ -29,7 +29,6 @@ internal class RealBufferedSource(
 
   override fun buffer() = buffer
 
-  @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
@@ -43,18 +42,15 @@ internal class RealBufferedSource(
     return buffer.read(sink, toRead)
   }
 
-  @Throws(IOException::class)
   override fun exhausted(): Boolean {
     check(!closed) { "closed" }
     return buffer.exhausted() && source.read(buffer, Segment.SIZE.toLong()) == -1L
   }
 
-  @Throws(IOException::class)
   override fun require(byteCount: Long) {
     if (!request(byteCount)) throw EOFException()
   }
 
-  @Throws(IOException::class)
   override fun request(byteCount: Long): Boolean {
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
@@ -64,25 +60,21 @@ internal class RealBufferedSource(
     return true
   }
 
-  @Throws(IOException::class)
   override fun readByte(): Byte {
     require(1)
     return buffer.readByte()
   }
 
-  @Throws(IOException::class)
   override fun readByteString(): ByteString {
     buffer.writeAll(source)
     return buffer.readByteString()
   }
 
-  @Throws(IOException::class)
   override fun readByteString(byteCount: Long): ByteString {
     require(byteCount)
     return buffer.readByteString(byteCount)
   }
 
-  @Throws(IOException::class)
   override fun select(options: Options): Int {
     check(!closed) { "closed" }
 
@@ -106,22 +98,18 @@ internal class RealBufferedSource(
     }
   }
 
-  @Throws(IOException::class)
   override fun readByteArray(): ByteArray {
     buffer.writeAll(source)
     return buffer.readByteArray()
   }
 
-  @Throws(IOException::class)
   override fun readByteArray(byteCount: Long): ByteArray {
     require(byteCount)
     return buffer.readByteArray(byteCount)
   }
 
-  @Throws(IOException::class)
   override fun read(sink: ByteArray) = read(sink, 0, sink.size)
 
-  @Throws(IOException::class)
   override fun readFully(sink: ByteArray) {
     try {
       require(sink.size.toLong())
@@ -139,7 +127,6 @@ internal class RealBufferedSource(
     buffer.readFully(sink)
   }
 
-  @Throws(IOException::class)
   override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int {
     checkOffsetAndCount(sink.size.toLong(), offset.toLong(), byteCount.toLong())
 
@@ -152,7 +139,6 @@ internal class RealBufferedSource(
     return buffer.read(sink, offset, toRead)
   }
 
-  @Throws(IOException::class)
   override fun read(sink: ByteBuffer): Int {
     if (buffer.size == 0L) {
       val read = source.read(buffer, Segment.SIZE.toLong())
@@ -162,7 +148,6 @@ internal class RealBufferedSource(
     return buffer.read(sink)
   }
 
-  @Throws(IOException::class)
   override fun readFully(sink: Buffer, byteCount: Long) {
     try {
       require(byteCount)
@@ -175,7 +160,6 @@ internal class RealBufferedSource(
     buffer.readFully(sink, byteCount)
   }
 
-  @Throws(IOException::class)
   override fun readAll(sink: Sink): Long {
     var totalBytesWritten: Long = 0
     while (source.read(buffer, Segment.SIZE.toLong()) != -1L) {
@@ -192,31 +176,26 @@ internal class RealBufferedSource(
     return totalBytesWritten
   }
 
-  @Throws(IOException::class)
   override fun readUtf8(): String {
     buffer.writeAll(source)
     return buffer.readUtf8()
   }
 
-  @Throws(IOException::class)
   override fun readUtf8(byteCount: Long): String {
     require(byteCount)
     return buffer.readUtf8(byteCount)
   }
 
-  @Throws(IOException::class)
   override fun readString(charset: Charset): String {
     buffer.writeAll(source)
     return buffer.readString(charset)
   }
 
-  @Throws(IOException::class)
   override fun readString(byteCount: Long, charset: Charset): String {
     require(byteCount)
     return buffer.readString(byteCount, charset)
   }
 
-  @Throws(IOException::class)
   override fun readUtf8Line(): String? {
     val newline = indexOf('\n'.toByte())
 
@@ -231,10 +210,8 @@ internal class RealBufferedSource(
     }
   }
 
-  @Throws(IOException::class)
   override fun readUtf8LineStrict() = readUtf8LineStrict(Long.MAX_VALUE)
 
-  @Throws(IOException::class)
   override fun readUtf8LineStrict(limit: Long): String {
     require(limit >= 0) { "limit < 0: $limit" }
     val scanLength = if (limit == Long.MAX_VALUE) Long.MAX_VALUE else limit + 1
@@ -251,7 +228,6 @@ internal class RealBufferedSource(
         + " content=" + data.readByteString().hex() + '…'.toString())
   }
 
-  @Throws(IOException::class)
   override fun readUtf8CodePoint(): Int {
     require(1)
 
@@ -265,43 +241,36 @@ internal class RealBufferedSource(
     return buffer.readUtf8CodePoint()
   }
 
-  @Throws(IOException::class)
   override fun readShort(): Short {
     require(2)
     return buffer.readShort()
   }
 
-  @Throws(IOException::class)
   override fun readShortLe(): Short {
     require(2)
     return buffer.readShortLe()
   }
 
-  @Throws(IOException::class)
   override fun readInt(): Int {
     require(4)
     return buffer.readInt()
   }
 
-  @Throws(IOException::class)
   override fun readIntLe(): Int {
     require(4)
     return buffer.readIntLe()
   }
 
-  @Throws(IOException::class)
   override fun readLong(): Long {
     require(8)
     return buffer.readLong()
   }
 
-  @Throws(IOException::class)
   override fun readLongLe(): Long {
     require(8)
     return buffer.readLongLe()
   }
 
-  @Throws(IOException::class)
   override fun readDecimalLong(): Long {
     require(1)
 
@@ -322,7 +291,6 @@ internal class RealBufferedSource(
     return buffer.readDecimalLong()
   }
 
-  @Throws(IOException::class)
   override fun readHexadecimalUnsignedLong(): Long {
     require(1)
 
@@ -345,7 +313,6 @@ internal class RealBufferedSource(
     return buffer.readHexadecimalUnsignedLong()
   }
 
-  @Throws(IOException::class)
   override fun skip(byteCount: Long) {
     var byteCount = byteCount
     check(!closed) { "closed" }
@@ -359,13 +326,10 @@ internal class RealBufferedSource(
     }
   }
 
-  @Throws(IOException::class)
   override fun indexOf(b: Byte) = indexOf(b, 0L, Long.MAX_VALUE)
 
-  @Throws(IOException::class)
   override fun indexOf(b: Byte, fromIndex: Long) = indexOf(b, fromIndex, Long.MAX_VALUE)
 
-  @Throws(IOException::class)
   override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long {
     var fromIndex = fromIndex
     check(!closed) { "closed" }
@@ -386,10 +350,8 @@ internal class RealBufferedSource(
     return -1L
   }
 
-  @Throws(IOException::class)
   override fun indexOf(bytes: ByteString) = indexOf(bytes, 0L)
 
-  @Throws(IOException::class)
   override fun indexOf(bytes: ByteString, fromIndex: Long): Long {
     var fromIndex = fromIndex
     check(!closed) { "closed" }
@@ -406,10 +368,8 @@ internal class RealBufferedSource(
     }
   }
 
-  @Throws(IOException::class)
   override fun indexOfElement(targetBytes: ByteString) = indexOfElement(targetBytes, 0L)
 
-  @Throws(IOException::class)
   override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long {
     var fromIndex = fromIndex
     check(!closed) { "closed" }
@@ -426,11 +386,9 @@ internal class RealBufferedSource(
     }
   }
 
-  @Throws(IOException::class)
   override fun rangeEquals(offset: Long, bytes: ByteString) = rangeEquals(offset, bytes, 0,
       bytes.size)
 
-  @Throws(IOException::class)
   override fun rangeEquals(
     offset: Long,
     bytes: ByteString,
@@ -489,7 +447,6 @@ internal class RealBufferedSource(
 
   override fun isOpen() = !closed
 
-  @Throws(IOException::class)
   override fun close() {
     if (closed) return
     closed = true

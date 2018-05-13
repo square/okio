@@ -216,4 +216,4 @@ private const val SECTION_DONE: Byte = 3
  *
  * @see GzipSource
  */
-inline fun Source.gzip(): GzipSource = GzipSource(this)
+inline fun Source.gzip() = GzipSource(this)

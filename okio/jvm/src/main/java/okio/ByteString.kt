@@ -49,10 +49,8 @@ import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import kotlin.jvm.Transient
 
 /**
  * An immutable sequence of bytes.
@@ -99,13 +97,8 @@ internal actual constructor(
   /** Returns the 512-bit SHA-512 hash of this byte string.  */
   open fun sha512() = digest("SHA-512")
 
-  private fun digest(algorithm: String): ByteString {
-    try {
-      return ByteString.of(*MessageDigest.getInstance(algorithm).digest(data))
-    } catch (e: NoSuchAlgorithmException) {
-      throw AssertionError(e)
-    }
-  }
+  private fun digest(algorithm: String) =
+      ByteString.of(*MessageDigest.getInstance(algorithm).digest(data))
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
   open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
@@ -121,8 +114,6 @@ internal actual constructor(
       val mac = Mac.getInstance(algorithm)
       mac.init(SecretKeySpec(key.toByteArray(), algorithm))
       return ByteString.of(*mac.doFinal(data))
-    } catch (e: NoSuchAlgorithmException) {
-      throw AssertionError(e)
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
     }
@@ -156,8 +147,8 @@ internal actual constructor(
 
   /**
    * Returns a byte string that is a substring of this byte string, beginning at the specified
-   * `beginIndex` and ends at the specified `endIndex`. Returns this byte string if
-   * `beginIndex` is 0 and `endIndex` is the length of this byte string.
+   * `beginIndex` and ends at the specified `endIndex`. Returns this byte string if `beginIndex` is
+   * 0 and `endIndex` is the length of this byte string.
    */
   actual open fun substring(beginIndex: Int, endIndex: Int): ByteString =
       commonSubstring(beginIndex, endIndex)
@@ -304,15 +295,9 @@ internal actual constructor(
   private fun readObject(`in`: ObjectInputStream) {
     val dataLength = `in`.readInt()
     val byteString = `in`.readByteString(dataLength)
-    try {
-      val field = ByteString::class.java.getDeclaredField("data")
-      field.isAccessible = true
-      field.set(this, byteString.data)
-    } catch (e: NoSuchFieldException) {
-      throw AssertionError()
-    } catch (e: IllegalAccessException) {
-      throw AssertionError()
-    }
+    val field = ByteString::class.java.getDeclaredField("data")
+    field.isAccessible = true
+    field.set(this, byteString.data)
   }
 
   @Throws(IOException::class)

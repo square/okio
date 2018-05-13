@@ -247,9 +247,8 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun readHexadecimalUnsignedLong(): Long
 
   /**
-   * Reads and discards `byteCount` bytes from this source. Throws an
-   * [java.io.EOFException] if the source is exhausted before the
-   * requested bytes can be skipped.
+   * Reads and discards `byteCount` bytes from this source. Throws an [java.io.EOFException] if the
+   * source is exhausted before the requested bytes can be skipped.
    */
   @Throws(IOException::class)
   fun skip(byteCount: Long)
@@ -263,12 +262,12 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun readByteString(byteCount: Long): ByteString
 
   /**
-   * Finds the first string in `options` that is a prefix of this buffer, consumes it from
-   * this buffer, and returns its index. If no byte string in `options` is a prefix of this
-   * buffer this returns -1 and no bytes are consumed.
+   * Finds the first string in `options` that is a prefix of this buffer, consumes it from this
+   * buffer, and returns its index. If no byte string in `options` is a prefix of this buffer this
+   * returns -1 and no bytes are consumed.
    *
-   * This can be used as an alternative to [readByteString] or even [readUtf8] if
-   * the set of expected values is known in advance.
+   * This can be used as an alternative to [readByteString] or even [readUtf8] if the set of
+   * expected values is known in advance.
    * ```
    * Options FIELDS = Options.of(
    *     ByteString.encodeUtf8("depth="),
@@ -299,15 +298,15 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun readByteArray(byteCount: Long): ByteArray
 
   /**
-   * Removes up to `sink.length` bytes from this and copies them into `sink`. Returns
-   * the number of bytes read, or -1 if this source is exhausted.
+   * Removes up to `sink.length` bytes from this and copies them into `sink`. Returns the number of
+   * bytes read, or -1 if this source is exhausted.
    */
   @Throws(IOException::class)
   fun read(sink: ByteArray): Int
 
   /**
-   * Removes exactly `sink.length` bytes from this and copies them into `sink`. Throws
-   * an [java.io.EOFException] if the requested number of bytes cannot be read.
+   * Removes exactly `sink.length` bytes from this and copies them into `sink`. Throws an
+   * [java.io.EOFException] if the requested number of bytes cannot be read.
    */
   @Throws(IOException::class)
   fun readFully(sink: ByteArray)
@@ -418,16 +417,15 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun readUtf8LineStrict(): String
 
   /**
-   * Like [readUtf8LineStrict], except this allows the caller to specify the longest
-   * allowed match. Use this to protect against streams that may not include
-   * `"\n"` or `"\r\n"`.
+   * Like [readUtf8LineStrict], except this allows the caller to specify the longest allowed match.
+   * Use this to protect against streams that may not include `"\n"` or `"\r\n"`.
    *
-   * The returned string will have at most `limit` UTF-8 bytes, and the maximum number
-   * of bytes scanned is `limit + 2`. If `limit == 0` this will always throw
-   * an `EOFException` because no bytes will be scanned.
+   * The returned string will have at most `limit` UTF-8 bytes, and the maximum number of bytes
+   * scanned is `limit + 2`. If `limit == 0` this will always throw an `EOFException` because no
+   * bytes will be scanned.
    *
-   * This method is safe. No bytes are discarded if the match fails, and the caller is free
-   * to try another match:
+   * This method is safe. No bytes are discarded if the match fails, and the caller is free to try
+   * another match:
    * ```
    * Buffer buffer = new Buffer();
    * buffer.writeUtf8("12345\r\n");
@@ -448,11 +446,11 @@ interface BufferedSource : Source, ReadableByteChannel {
    * If this source is exhausted before a complete code point can be read, this throws an
    * [java.io.EOFException] and consumes no input.
    *
-   * If this source doesn't start with a properly-encoded UTF-8 code point, this method will
-   * remove 1 or more non-UTF-8 bytes and return the replacement character (`U+FFFD`). This
-   * covers encoding problems (the input is not properly-encoded UTF-8), characters out of range
-   * (beyond the 0x10ffff limit of Unicode), code points for UTF-16 surrogates (U+d800..U+dfff) and
-   * overlong encodings (such as `0xc080` for the NUL character in modified UTF-8).
+   * If this source doesn't start with a properly-encoded UTF-8 code point, this method will remove
+   * 1 or more non-UTF-8 bytes and return the replacement character (`U+FFFD`). This covers encoding
+   * problems (the input is not properly-encoded UTF-8), characters out of range (beyond the
+   * 0x10ffff limit of Unicode), code points for UTF-16 surrogates (U+d800..U+dfff) and overlong
+   * encodings (such as `0xc080` for the NUL character in modified UTF-8).
    */
   @Throws(IOException::class)
   fun readUtf8CodePoint(): Int
@@ -473,10 +471,9 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun indexOf(b: Byte): Long
 
   /**
-   * Returns the index of the first `b` in the buffer at or after `fromIndex`. This
-   * expands the buffer as necessary until `b` is found. This reads an unbounded number of
-   * bytes into the buffer. Returns -1 if the stream is exhausted before the requested byte is
-   * found.
+   * Returns the index of the first `b` in the buffer at or after `fromIndex`. This expands the
+   * buffer as necessary until `b` is found. This reads an unbounded number of bytes into the
+   * buffer. Returns -1 if the stream is exhausted before the requested byte is found.
    * ```
    * Buffer buffer = new Buffer();
    * buffer.writeUtf8("Don't move! He can't see us if we don't move.");
@@ -490,12 +487,11 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun indexOf(b: Byte, fromIndex: Long): Long
 
   /**
-   * Returns the index of `b` if it is found in the range of `fromIndex` inclusive
-   * to `toIndex` exclusive. If `b` isn't found, or if `fromIndex == toIndex`,
-   * then -1 is returned.
+   * Returns the index of `b` if it is found in the range of `fromIndex` inclusive to `toIndex`
+   * exclusive. If `b` isn't found, or if `fromIndex == toIndex`, then -1 is returned.
    *
-   * The scan terminates at either `toIndex` or the end of the buffer, whichever comes
-   * first. The maximum number of bytes scanned is `toIndex-fromIndex`.
+   * The scan terminates at either `toIndex` or the end of the buffer, whichever comes first. The
+   * maximum number of bytes scanned is `toIndex-fromIndex`.
    */
   @Throws(IOException::class)
   fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
@@ -527,10 +523,10 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun indexOfElement(targetBytes: ByteString): Long
 
   /**
-   * Returns the first index in this buffer that is at or after `fromIndex` and that contains
-   * any of the bytes in `targetBytes`. This expands the buffer as necessary until a target
-   * byte is found. This reads an unbounded number of bytes into the buffer. Returns -1 if the
-   * stream is exhausted before the requested byte is found.
+   * Returns the first index in this buffer that is at or after `fromIndex` and that contains any of
+   * the bytes in `targetBytes`. This expands the buffer as necessary until a target byte is found.
+   * This reads an unbounded number of bytes into the buffer. Returns -1 if the stream is exhausted
+   * before the requested byte is found.
    * ```
    * ByteString ANY_VOWEL = ByteString.encodeUtf8("AEOIUaeoiu");
    *
@@ -545,9 +541,9 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
 
   /**
-   * Returns true if the bytes at `offset` in this source equal `bytes`. This expands
-   * the buffer as necessary until a byte does not match, all bytes are matched, or if the stream
-   * is exhausted before enough bytes could determine a match.
+   * Returns true if the bytes at `offset` in this source equal `bytes`. This expands the buffer as
+   * necessary until a byte does not match, all bytes are matched, or if the stream is exhausted
+   * before enough bytes could determine a match.
    * ```
    * ByteString simonSays = ByteString.encodeUtf8("Simon says:");
    *
@@ -562,9 +558,9 @@ interface BufferedSource : Source, ReadableByteChannel {
   fun rangeEquals(offset: Long, bytes: ByteString): Boolean
 
   /**
-   * Returns true if `byteCount` bytes at `offset` in this source equal `bytes`
-   * at `bytesOffset`. This expands the buffer as necessary until a byte does not match, all
-   * bytes are matched, or if the stream is exhausted before enough bytes could determine a match.
+   * Returns true if `byteCount` bytes at `offset` in this source equal `bytes` at `bytesOffset`.
+   * This expands the buffer as necessary until a byte does not match, all bytes are matched, or if
+   * the stream is exhausted before enough bytes could determine a match.
    */
   @Throws(IOException::class)
   fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean

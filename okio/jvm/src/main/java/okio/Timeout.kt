@@ -20,41 +20,38 @@ import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 
 /**
- * A policy on how much time to spend on a task before giving up. When a task
- * times out, it is left in an unspecified state and should be abandoned. For
- * example, if reading from a source times out, that source should be closed and
- * the read should be retried later. If writing to a sink times out, the same
- * rules apply: close the sink and retry later.
+ * A policy on how much time to spend on a task before giving up. When a task times out, it is left
+ * in an unspecified state and should be abandoned. For example, if reading from a source times out,
+ * that source should be closed and the read should be retried later. If writing to a sink times
+ * out, the same rules apply: close the sink and retry later.
  *
  * ### Timeouts and Deadlines
+ *
  * This class offers two complementary controls to define a timeout policy.
  *
- * **Timeouts** specify the maximum time to wait for a single
- * operation to complete. Timeouts are typically used to detect problems like
- * network partitions. For example, if a remote peer doesn't return *any*
- * data for ten seconds, we may assume that the peer is unavailable.
+ * **Timeouts** specify the maximum time to wait for a single operation to complete. Timeouts are
+ * typically used to detect problems like network partitions. For example, if a remote peer doesn't
+ * return *any* data for ten seconds, we may assume that the peer is unavailable.
  *
- * **Deadlines** specify the maximum time to spend on a job,
- * composed of one or more operations. Use deadlines to set an upper bound on
- * the time invested on a job. For example, a battery-conscious app may limit
- * how much time it spends pre-loading content.
+ * **Deadlines** specify the maximum time to spend on a job, composed of one or more operations. Use
+ * deadlines to set an upper bound on the time invested on a job. For example, a battery-conscious
+ * app may limit how much time it spends pre-loading content.
  */
 open class Timeout {
   /**
-   * True if `deadlineNanoTime` is defined. There is no equivalent to null
-   * or 0 for [System.nanoTime].
+   * True if `deadlineNanoTime` is defined. There is no equivalent to null or 0 for
+   * [System.nanoTime].
    */
   private var hasDeadline = false
   private var deadlineNanoTime = 0L
   private var timeoutNanos = 0L
 
   /**
-   * Wait at most `timeout` time before aborting an operation. Using a
-   * per-operation timeout means that as long as forward progress is being made,
-   * no sequence of operations will fail.
+   * Wait at most `timeout` time before aborting an operation. Using a per-operation timeout means
+   * that as long as forward progress is being made, no sequence of operations will fail.
    *
-   * If `timeout == 0`, operations will run indefinitely. (Operating
-   * system timeouts may still apply.)
+   * If `timeout == 0`, operations will run indefinitely. (Operating system timeouts may still
+   * apply.)
    */
   open fun timeout(timeout: Long, unit: TimeUnit): Timeout {
     require(timeout >= 0) { "timeout < 0: $timeout" }
@@ -69,8 +66,7 @@ open class Timeout {
   open fun hasDeadline(): Boolean = hasDeadline
 
   /**
-   * Returns the [nano time][System.nanoTime] when the deadline will
-   * be reached.
+   * Returns the [nano time][System.nanoTime] when the deadline will be reached.
    *
    * @throws IllegalStateException if no deadline is set.
    */
@@ -80,9 +76,9 @@ open class Timeout {
   }
 
   /**
-   * Sets the [nano time][System.nanoTime] when the deadline will be
-   * reached. All operations must complete before this time. Use a deadline to
-   * set a maximum bound on the time spent on a sequence of operations.
+   * Sets the [nano time][System.nanoTime] when the deadline will be reached. All operations must
+   * complete before this time. Use a deadline to set a maximum bound on the time spent on a
+   * sequence of operations.
    */
   open fun deadlineNanoTime(deadlineNanoTime: Long): Timeout {
     this.hasDeadline = true
@@ -109,8 +105,8 @@ open class Timeout {
   }
 
   /**
-   * Throws an [InterruptedIOException] if the deadline has been reached or if the current
-   * thread has been interrupted. This method doesn't detect timeouts; that should be implemented to
+   * Throws an [InterruptedIOException] if the deadline has been reached or if the current thread
+   * has been interrupted. This method doesn't detect timeouts; that should be implemented to
    * asynchronously abort an in-progress operation.
    */
   @Throws(IOException::class)
@@ -125,13 +121,12 @@ open class Timeout {
   }
 
   /**
-   * Waits on `monitor` until it is notified. Throws [InterruptedIOException] if either
-   * the thread is interrupted or if this timeout elapses before `monitor` is notified. The
-   * caller must be synchronized on `monitor`.
+   * Waits on `monitor` until it is notified. Throws [InterruptedIOException] if either the thread
+   * is interrupted or if this timeout elapses before `monitor` is notified. The caller must be
+   * synchronized on `monitor`.
    *
-   * Here's a sample class that uses `waitUntilNotified()` to await a specific state. Note
-   * that the call is made within a loop to avoid unnecessary waiting and to mitigate spurious
-   * notifications.
+   * Here's a sample class that uses `waitUntilNotified()` to await a specific state. Note that the
+   * call is made within a loop to avoid unnecessary waiting and to mitigate spurious notifications.
    * ```
    * class Dice {
    *   Random random = new Random();
@@ -201,18 +196,13 @@ open class Timeout {
 
   companion object {
     /**
-     * An empty timeout that neither tracks nor detects timeouts. Use this when
-     * timeouts aren't necessary, such as in implementations whose operations
-     * do not block.
+     * An empty timeout that neither tracks nor detects timeouts. Use this when timeouts aren't
+     * necessary, such as in implementations whose operations do not block.
      */
     @JvmField val NONE: Timeout = object : Timeout() {
-      override fun timeout(timeout: Long, unit: TimeUnit): Timeout {
-        return this
-      }
+      override fun timeout(timeout: Long, unit: TimeUnit): Timeout = this
 
-      override fun deadlineNanoTime(deadlineNanoTime: Long): Timeout {
-        return this
-      }
+      override fun deadlineNanoTime(deadlineNanoTime: Long): Timeout = this
 
       override fun throwIfReached() {}
     }

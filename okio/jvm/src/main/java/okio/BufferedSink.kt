@@ -21,8 +21,8 @@ import java.nio.channels.WritableByteChannel
 import java.nio.charset.Charset
 
 /**
- * A sink that keeps a buffer internally so that callers can do small writes
- * without a performance penalty.
+ * A sink that keeps a buffer internally so that callers can do small writes without a performance
+ * penalty.
  */
 interface BufferedSink : Sink, WritableByteChannel {
   /** Returns this sink's internal buffer. */
@@ -31,23 +31,17 @@ interface BufferedSink : Sink, WritableByteChannel {
   @Throws(IOException::class)
   fun write(byteString: ByteString): BufferedSink
 
-  /**
-   * Like [OutputStream.write], this writes a complete byte array to
-   * this sink.
-   */
+  /** Like [OutputStream.write], this writes a complete byte array to this sink. */
   @Throws(IOException::class)
   fun write(source: ByteArray): BufferedSink
 
-  /**
-   * Like [OutputStream.write], this writes `byteCount`
-   * bytes of `source`, starting at `offset`.
-   */
+  /** Like [OutputStream.write], this writes `byteCount` bytes of `source`, starting at `offset`. */
   @Throws(IOException::class)
   fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
 
   /**
-   * Removes all bytes from `source` and appends them to this sink. Returns the
-   * number of bytes read which will be 0 if `source` is exhausted.
+   * Removes all bytes from `source` and appends them to this sink. Returns the number of bytes read
+   * which will be 0 if `source` is exhausted.
    */
   @Throws(IOException::class)
   fun writeAll(source: Source): Long
@@ -71,8 +65,8 @@ interface BufferedSink : Sink, WritableByteChannel {
   fun writeUtf8(string: String): BufferedSink
 
   /**
-   * Encodes the characters at `beginIndex` up to `endIndex` from `string` in
-   * UTF-8 and writes it to this sink.
+   * Encodes the characters at `beginIndex` up to `endIndex` from `string` in UTF-8 and writes it to
+   * this sink.
    * ```
    * Buffer buffer = new Buffer();
    * buffer.writeUtf8("I'm a hacker!\n", 6, 12);
@@ -96,8 +90,8 @@ interface BufferedSink : Sink, WritableByteChannel {
   fun writeString(string: String, charset: Charset): BufferedSink
 
   /**
-   * Encodes the characters at `beginIndex` up to `endIndex` from `string` in
-   * `charset` and writes it to this sink.
+   * Encodes the characters at `beginIndex` up to `endIndex` from `string` in `charset` and writes
+   * it to this sink.
    */
   @Throws(IOException::class)
   fun writeString(string: String, beginIndex: Int, endIndex: Int, charset: Charset): BufferedSink
@@ -302,9 +296,8 @@ interface BufferedSink : Sink, WritableByteChannel {
   override fun flush()
 
   /**
-   * Writes all buffered data to the underlying sink, if one exists. Like [flush], but
-   * weaker. Call this before this buffered sink goes out of scope so that its data can reach its
-   * destination.
+   * Writes all buffered data to the underlying sink, if one exists. Like [flush], but weaker. Call
+   * this before this buffered sink goes out of scope so that its data can reach its destination.
    * ```
    * BufferedSink b0 = new Buffer();
    * BufferedSink b1 = Okio.buffer(b0);
@@ -330,10 +323,10 @@ interface BufferedSink : Sink, WritableByteChannel {
   fun emit(): BufferedSink
 
   /**
-   * Writes complete segments to the underlying sink, if one exists. Like [flush], but
-   * weaker. Use this to limit the memory held in the buffer to a single segment. Typically
-   * application code will not need to call this: it is only necessary when application code writes
-   * directly to this [sink's buffer][buffer].
+   * Writes complete segments to the underlying sink, if one exists. Like [flush], but weaker. Use
+   * this to limit the memory held in the buffer to a single segment. Typically application code
+   * will not need to call this: it is only necessary when application code writes directly to this
+   * [sink's buffer][buffer].
    * ```
    * BufferedSink b0 = new Buffer();
    * BufferedSink b1 = Okio.buffer(b0);

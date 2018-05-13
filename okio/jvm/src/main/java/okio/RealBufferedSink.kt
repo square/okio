@@ -29,49 +29,42 @@ internal class RealBufferedSink(
 
   override fun buffer() = buffer
 
-  @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) {
     check(!closed) { "closed" }
     buffer.write(source, byteCount)
     emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun write(byteString: ByteString): BufferedSink {
     check(!closed) { "closed" }
     buffer.write(byteString)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeUtf8(string: String): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeUtf8(string)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeUtf8(string, beginIndex, endIndex)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeUtf8CodePoint(codePoint: Int): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeUtf8CodePoint(codePoint)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeString(string: String, charset: Charset): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeString(string, charset)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeString(
     string: String,
     beginIndex: Int,
@@ -83,21 +76,18 @@ internal class RealBufferedSink(
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun write(source: ByteArray): BufferedSink {
     check(!closed) { "closed" }
     buffer.write(source)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink {
     check(!closed) { "closed" }
     buffer.write(source, offset, byteCount)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun write(source: ByteBuffer): Int {
     check(!closed) { "closed" }
     val result = buffer.write(source)
@@ -105,7 +95,6 @@ internal class RealBufferedSink(
     return result
   }
 
-  @Throws(IOException::class)
   override fun writeAll(source: Source): Long {
     var totalBytesRead = 0L
     while (true) {
@@ -117,7 +106,6 @@ internal class RealBufferedSink(
     return totalBytesRead
   }
 
-  @Throws(IOException::class)
   override fun write(source: Source, byteCount: Long): BufferedSink {
     var byteCount = byteCount
     while (byteCount > 0L) {
@@ -129,70 +117,60 @@ internal class RealBufferedSink(
     return this
   }
 
-  @Throws(IOException::class)
   override fun writeByte(b: Int): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeByte(b)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeShort(s: Int): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeShort(s)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeShortLe(s: Int): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeShortLe(s)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeInt(i: Int): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeInt(i)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeIntLe(i: Int): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeIntLe(i)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeLong(v: Long): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeLong(v)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeLongLe(v: Long): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeLongLe(v)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeDecimalLong(v: Long): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeDecimalLong(v)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun writeHexadecimalUnsignedLong(v: Long): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeHexadecimalUnsignedLong(v)
     return emitCompleteSegments()
   }
 
-  @Throws(IOException::class)
   override fun emitCompleteSegments(): BufferedSink {
     check(!closed) { "closed" }
     val byteCount = buffer.completeSegmentByteCount()
@@ -200,7 +178,6 @@ internal class RealBufferedSink(
     return this
   }
 
-  @Throws(IOException::class)
   override fun emit(): BufferedSink {
     check(!closed) { "closed" }
     val byteCount = buffer.size
@@ -235,7 +212,6 @@ internal class RealBufferedSink(
     }
   }
 
-  @Throws(IOException::class)
   override fun flush() {
     check(!closed) { "closed" }
     if (buffer.size > 0L) {
@@ -246,7 +222,6 @@ internal class RealBufferedSink(
 
   override fun isOpen() = !closed
 
-  @Throws(IOException::class)
   override fun close() {
     if (closed) return
 

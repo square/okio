@@ -18,7 +18,6 @@ package okio
 import java.io.IOException
 import java.security.InvalidKeyException
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -43,12 +42,8 @@ class HashingSink : ForwardingSink {
   private val mac: Mac?
 
   internal constructor(sink: Sink, algorithm: String) : super(sink) {
-    try {
-      this.messageDigest = MessageDigest.getInstance(algorithm)
-      this.mac = null
-    } catch (e: NoSuchAlgorithmException) {
-      throw AssertionError()
-    }
+    this.messageDigest = MessageDigest.getInstance(algorithm)
+    this.mac = null
   }
 
   internal constructor(sink: Sink, key: ByteString, algorithm: String) : super(sink) {
@@ -57,8 +52,6 @@ class HashingSink : ForwardingSink {
         init(SecretKeySpec(key.toByteArray(), algorithm))
       }
       this.messageDigest = null
-    } catch (e: NoSuchAlgorithmException) {
-      throw AssertionError()
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
     }
@@ -93,45 +86,32 @@ class HashingSink : ForwardingSink {
    * internal state is cleared. This starts a new hash with zero bytes accepted.
    */
   @get:JvmName("hash")
-  val hash: ByteString get() {
-    val result = if (messageDigest != null) messageDigest.digest() else mac!!.doFinal()
-    return ByteString.of(*result)
-  }
+  val hash: ByteString
+    get() {
+      val result = if (messageDigest != null) messageDigest.digest() else mac!!.doFinal()
+      return ByteString.of(*result)
+    }
 
   companion object {
     /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
-    @JvmStatic fun md5(sink: Sink): HashingSink {
-      return HashingSink(sink, "MD5")
-    }
+    @JvmStatic fun md5(sink: Sink) = HashingSink(sink, "MD5")
 
     /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
-    @JvmStatic fun sha1(sink: Sink): HashingSink {
-      return HashingSink(sink, "SHA-1")
-    }
+    @JvmStatic fun sha1(sink: Sink) = HashingSink(sink, "SHA-1")
 
     /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    @JvmStatic fun sha256(sink: Sink): HashingSink {
-      return HashingSink(sink, "SHA-256")
-    }
+    @JvmStatic fun sha256(sink: Sink) = HashingSink(sink, "SHA-256")
 
     /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    @JvmStatic fun sha512(sink: Sink): HashingSink {
-      return HashingSink(sink, "SHA-512")
-    }
+    @JvmStatic fun sha512(sink: Sink) = HashingSink(sink, "SHA-512")
 
     /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    @JvmStatic fun hmacSha1(sink: Sink, key: ByteString): HashingSink {
-      return HashingSink(sink, key, "HmacSHA1")
-    }
+    @JvmStatic fun hmacSha1(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA1")
 
     /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    @JvmStatic fun hmacSha256(sink: Sink, key: ByteString): HashingSink {
-      return HashingSink(sink, key, "HmacSHA256")
-    }
+    @JvmStatic fun hmacSha256(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA256")
 
     /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    @JvmStatic fun hmacSha512(sink: Sink, key: ByteString): HashingSink {
-      return HashingSink(sink, key, "HmacSHA512")
-    }
+    @JvmStatic fun hmacSha512(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA512")
   }
 }

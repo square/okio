@@ -31,7 +31,7 @@ abstract class ForwardingSink(
   @Throws(IOException::class)
   override fun flush() = delegate.flush()
 
-  override fun timeout(): Timeout = delegate.timeout()
+  override fun timeout() = delegate.timeout()
 
   @Throws(IOException::class)
   override fun close() = delegate.close()
