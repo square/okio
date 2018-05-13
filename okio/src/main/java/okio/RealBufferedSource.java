@@ -89,18 +89,17 @@ final class RealBufferedSource implements BufferedSource {
     if (closed) throw new IllegalStateException("closed");
 
     while (true) {
-      int index = buffer.selectPrefix(options);
+      int index = buffer.selectPrefix(options, true);
       if (index == -1) return -1;
-
-      // If the prefix match actually matched a full byte string, consume it and return it.
-      int selectedSize = options.byteStrings[index].size();
-      if (selectedSize <= buffer.size) {
+      if (index == -2) {
+        // We need to grow the buffer. Do that, then try it all again.
+        if (source.read(buffer, Segment.SIZE) == -1L) return -1;
+      } else {
+        // We matched a full byte string: consume it and return it.
+        int selectedSize = options.byteStrings[index].size();
         buffer.skip(selectedSize);
         return index;
       }
-
-      // We need to grow the buffer. Do that, then try it all again.
-      if (source.read(buffer, Segment.SIZE) == -1) return -1;
     }
   }
 
