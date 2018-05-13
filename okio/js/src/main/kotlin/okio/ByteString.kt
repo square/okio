@@ -45,12 +45,6 @@ import okio.common.commonUtf8
  * Byte strings compare lexicographically as a sequence of **unsigned** bytes. That is, the byte
  * string `ff` sorts after `00`. This is counter to the sort order of the corresponding bytes,
  * where `-1` sorts before `0`.
- *
- * **Full disclosure:** this class provides untrusted input and output streams with raw access to
- * the underlying byte array. A hostile stream implementation could keep a reference to the mutable
- * byte string, violating the immutable guarantee of this class. For this reason a byte string's
- * immutability guarantee cannot be relied upon for security in applets and other environments that
- * run both trusted and untrusted code in the same process.
  */
 actual open class ByteString
 // Trusted internal constructor doesn't clone data.
