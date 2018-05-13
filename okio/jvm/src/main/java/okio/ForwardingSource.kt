@@ -28,7 +28,7 @@ abstract class ForwardingSource(
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long = delegate.read(sink, byteCount)
 
-  override fun timeout(): Timeout = delegate.timeout()
+  override fun timeout() = delegate.timeout()
 
   @Throws(IOException::class)
   override fun close() = delegate.close()

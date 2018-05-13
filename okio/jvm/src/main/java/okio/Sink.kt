@@ -20,17 +20,15 @@ import java.io.Flushable
 import java.io.IOException
 
 /**
- * Receives a stream of bytes. Use this interface to write data wherever it's
- * needed: to the network, storage, or a buffer in memory. Sinks may be layered
- * to transform received data, such as to compress, encrypt, throttle, or add
- * protocol framing.
+ * Receives a stream of bytes. Use this interface to write data wherever it's needed: to the
+ * network, storage, or a buffer in memory. Sinks may be layered to transform received data, such as
+ * to compress, encrypt, throttle, or add protocol framing.
  *
- * Most application code shouldn't operate on a sink directly, but rather on a
- * [BufferedSink] which is both more efficient and more convenient. Use
- * [buffer] to wrap any sink with a buffer.
+ * Most application code shouldn't operate on a sink directly, but rather on a [BufferedSink] which
+ * is both more efficient and more convenient. Use [buffer] to wrap any sink with a buffer.
  *
- * Sinks are easy to test: just use a [Buffer] in your tests, and
- * read from it to confirm it received the data that was expected.
+ * Sinks are easy to test: just use a [Buffer] in your tests, and read from it to confirm it
+ * received the data that was expected.
  *
  * ### Comparison with OutputStream
  *
@@ -61,9 +59,8 @@ interface Sink : Closeable, Flushable {
   fun timeout(): Timeout
 
   /**
-   * Pushes all buffered bytes to their final destination and releases the
-   * resources held by this sink. It is an error to write a closed sink. It is
-   * safe to close a sink more than once.
+   * Pushes all buffered bytes to their final destination and releases the resources held by this
+   * sink. It is an error to write a closed sink. It is safe to close a sink more than once.
    */
   @Throws(IOException::class)
   override fun close()

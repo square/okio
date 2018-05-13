@@ -35,16 +35,15 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 /**
- * Returns a new source that buffers reads from `source`. The returned
- * source will perform bulk reads into its in-memory buffer. Use this wherever
- * you read a source to get an ergonomic and efficient access to data.
+ * Returns a new source that buffers reads from `source`. The returned source will perform bulk
+ * reads into its in-memory buffer. Use this wherever you read a source to get an ergonomic and
+ * efficient access to data.
  */
 fun Source.buffer(): BufferedSource = RealBufferedSource(this)
 
 /**
- * Returns a new sink that buffers writes to `sink`. The returned sink
- * will batch writes to `sink`. Use this wherever you write to a sink to
- * get an ergonomic and efficient access to data.
+ * Returns a new sink that buffers writes to `sink`. The returned sink will batch writes to `sink`.
+ * Use this wherever you write to a sink to get an ergonomic and efficient access to data.
  */
 fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
 

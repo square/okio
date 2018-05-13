@@ -142,4 +142,4 @@ class GzipSink(sink: Sink) : Sink {
  *
  * @see GzipSource
  */
-inline fun Sink.gzip(): GzipSink = GzipSink(this)
+inline fun Sink.gzip() = GzipSink(this)

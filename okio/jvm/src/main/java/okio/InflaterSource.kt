@@ -25,21 +25,19 @@ import java.util.zip.DataFormatException
 import java.util.zip.Inflater
 
 /**
- * A source that uses [DEFLATE](http://tools.ietf.org/html/rfc1951)
- * to decompress data read from another source.
+ * A source that uses [DEFLATE](http://tools.ietf.org/html/rfc1951) to decompress data read from
+ * another source.
  */
 class InflaterSource
 /**
- * This internal constructor shares a buffer with its trusted caller.
- * In general we can't share a BufferedSource because the inflater holds input
- * bytes until they are inflated.
+ * This internal constructor shares a buffer with its trusted caller. In general we can't share a
+ * `BufferedSource` because the inflater holds input bytes until they are inflated.
  */
 internal constructor(private val source: BufferedSource, private val inflater: Inflater) : Source {
 
   /**
-   * When we call Inflater.setInput(), the inflater keeps our byte array until
-   * it needs input again. This tracks how many bytes the inflater is currently
-   * holding on to.
+   * When we call Inflater.setInput(), the inflater keeps our byte array until it needs input again.
+   * This tracks how many bytes the inflater is currently holding on to.
    */
   private var bufferBytesHeldByInflater = 0
   private var closed = false
@@ -82,9 +80,8 @@ internal constructor(private val source: BufferedSource, private val inflater: I
   }
 
   /**
-   * Refills the inflater with compressed data if it needs input. (And only if
-   * it needs input). Returns true if the inflater required input but the source
-   * was exhausted.
+   * Refills the inflater with compressed data if it needs input. (And only if it needs input).
+   * Returns true if the inflater required input but the source was exhausted.
    */
   @Throws(IOException::class)
   fun refill(): Boolean {

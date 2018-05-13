@@ -24,16 +24,16 @@ import java.util.concurrent.TimeUnit
  * implement timeouts where they aren't supported natively, such as to sockets that are blocked on
  * writing.
  *
- * Subclasses should override [timedOut] to take action when a timeout occurs. This method
- * will be invoked by the shared watchdog thread so it should not do any long-running operations.
- * Otherwise we risk starving other timeouts from being triggered.
+ * Subclasses should override [timedOut] to take action when a timeout occurs. This method will be
+ * invoked by the shared watchdog thread so it should not do any long-running operations. Otherwise
+ * we risk starving other timeouts from being triggered.
  *
- * Use [sink] and [source] to apply this timeout to a stream. The returned value
- * will apply the timeout to each operation on the wrapped stream.
+ * Use [sink] and [source] to apply this timeout to a stream. The returned value will apply the
+ * timeout to each operation on the wrapped stream.
  *
  * Callers should call [enter] before doing work that is subject to timeouts, and [exit] afterwards.
- * The return value of [exit] indicates whether a timeout was triggered.
- * Note that the call to [timedOut] is asynchronous, and may be called after [exit].
+ * The return value of [exit] indicates whether a timeout was triggered. Note that the call to
+ * [timedOut] is asynchronous, and may be called after [exit].
  */
 open class AsyncTimeout : Timeout() {
   /** True if this node is currently in the queue.  */
@@ -147,8 +147,8 @@ open class AsyncTimeout : Timeout() {
   }
 
   /**
-   * Returns a new source that delegates to `source`, using this to implement timeouts. This
-   * works best if [.timedOut] is overridden to interrupt `sink`'s current operation.
+   * Returns a new source that delegates to `source`, using this to implement timeouts. This works
+   * best if [AsyncTimeout.timedOut] is overridden to interrupt `sink`'s current operation.
    */
   fun source(source: Source): Source {
     return object : Source {
@@ -246,8 +246,8 @@ open class AsyncTimeout : Timeout() {
   companion object {
     /**
      * Don't write more than 64 KiB of data at a time, give or take a segment. Otherwise slow
-     * connections may suffer timeouts even when they're making (slow) progress. Without this, writing
-     * a single 1 MiB buffer may never succeed on a sufficiently slow connection.
+     * connections may suffer timeouts even when they're making (slow) progress. Without this,
+     * writing a single 1 MiB buffer may never succeed on a sufficiently slow connection.
      */
     private const val TIMEOUT_WRITE_SIZE = 64 * 1024
 
@@ -260,8 +260,8 @@ open class AsyncTimeout : Timeout() {
      * triggered. This class synchronizes on AsyncTimeout.class. This lock guards the queue.
      *
      * Head's 'next' points to the first element of the linked list. The first element is the next
-     * node to time out, or null if the queue is empty. The head is null until the watchdog thread is
-     * started and also after being idle for [.IDLE_TIMEOUT_MILLIS].
+     * node to time out, or null if the queue is empty. The head is null until the watchdog thread
+     * is started and also after being idle for [AsyncTimeout.IDLE_TIMEOUT_MILLIS].
      */
     @JvmStatic private var head: AsyncTimeout? = null
 
@@ -324,9 +324,9 @@ open class AsyncTimeout : Timeout() {
     }
 
     /**
-     * Removes and returns the node at the head of the list, waiting for it to time out if necessary.
-     * This returns [head] if there was no node at the head of the list when starting, and
-     * there continues to be no node after waiting `IDLE_TIMEOUT_NANOS`. It returns null if a
+     * Removes and returns the node at the head of the list, waiting for it to time out if
+     * necessary. This returns [head] if there was no node at the head of the list when starting,
+     * and there continues to be no node after waiting `IDLE_TIMEOUT_NANOS`. It returns null if a
      * new node was inserted while waiting. Otherwise this returns the node being waited on that has
      * been removed.
      */

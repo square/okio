@@ -19,25 +19,23 @@ import java.io.Closeable
 import java.io.IOException
 
 /**
- * Supplies a stream of bytes. Use this interface to read data from wherever
- * it's located: from the network, storage, or a buffer in memory. Sources may
- * be layered to transform supplied data, such as to decompress, decrypt, or
- * remove protocol framing.
+ * Supplies a stream of bytes. Use this interface to read data from wherever it's located: from the
+ * network, storage, or a buffer in memory. Sources may be layered to transform supplied data, such
+ * as to decompress, decrypt, or remove protocol framing.
  *
- * Most applications shouldn't operate on a source directly, but rather on a
- * [BufferedSource] which is both more efficient and more convenient. Use
- * [buffer] to wrap any source with a buffer.
+ * Most applications shouldn't operate on a source directly, but rather on a [BufferedSource] which
+ * is both more efficient and more convenient. Use [buffer] to wrap any source with a buffer.
  *
- * Sources are easy to test: just use a [Buffer] in your tests, and
- * fill it with the data your application is to read.
+ * Sources are easy to test: just use a [Buffer] in your tests, and fill it with the data your
+ * application is to read.
  *
  * ### Comparison with InputStream
 
  * This interface is functionally equivalent to [java.io.InputStream].
  *
  * `InputStream` requires multiple layers when consumed data is heterogeneous: a `DataInputStream`
- * for primitive values, a `BufferedInputStream` for buffering, and `InputStreamReader` for
- * strings. This library uses `BufferedSource` for all of the above.
+ * for primitive values, a `BufferedInputStream` for buffering, and `InputStreamReader` for strings.
+ * This library uses `BufferedSource` for all of the above.
  *
  * Source avoids the impossible-to-implement [available()][java.io.InputStream.available] method.
  * Instead callers specify how many bytes they [require][BufferedSource.require].
@@ -57,9 +55,8 @@ import java.io.IOException
  */
 interface Source : Closeable {
   /**
-   * Removes at least 1, and up to `byteCount` bytes from this and appends
-   * them to `sink`. Returns the number of bytes read, or -1 if this
-   * source is exhausted.
+   * Removes at least 1, and up to `byteCount` bytes from this and appends them to `sink`. Returns
+   * the number of bytes read, or -1 if this source is exhausted.
    */
   @Throws(IOException::class)
   fun read(sink: Buffer, byteCount: Long): Long
@@ -68,8 +65,8 @@ interface Source : Closeable {
   fun timeout(): Timeout
 
   /**
-   * Closes this source and releases the resources held by this source. It is an
-   * error to read a closed source. It is safe to close a source more than once.
+   * Closes this source and releases the resources held by this source. It is an error to read a
+   * closed source. It is safe to close a source more than once.
    */
   @Throws(IOException::class)
   override fun close()
