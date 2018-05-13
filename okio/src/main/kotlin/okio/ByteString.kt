@@ -66,19 +66,6 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
    */
   fun toAsciiUppercase(): ByteString
 
-  /**
-   * Returns a byte string that is a substring of this byte string, beginning at the specified
-   * index until the end of this string. Returns this byte string if `beginIndex` is 0.
-   */
-  fun substring(beginIndex: Int): ByteString
-
-  /**
-   * Returns a byte string that is a substring of this byte string, beginning at the specified
-   * `beginIndex` and ends at the specified `endIndex`. Returns this byte string if
-   * `beginIndex` is 0 and `endIndex` is the length of this byte string.
-   */
-  fun substring(beginIndex: Int, endIndex: Int): ByteString
-
   /** Returns the byte at `pos`.  */
   internal fun getByte(pos: Int): Byte
 

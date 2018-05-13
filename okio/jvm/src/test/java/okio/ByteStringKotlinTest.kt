@@ -92,4 +92,12 @@ class ByteStringKotlinTest {
     val expected = ByteString.of(1, 2, 3, 4)
     assertThat(actual).isEqualTo(expected)
   }
+
+  @Test fun substring() {
+    val byteString = "abcdef".encodeUtf8()
+    assertThat(byteString.substring()).isEqualTo("abcdef".encodeUtf8())
+    assertThat(byteString.substring(endIndex= 3)).isEqualTo("abc".encodeUtf8())
+    assertThat(byteString.substring(beginIndex = 3)).isEqualTo("def".encodeUtf8())
+    assertThat(byteString.substring(beginIndex = 1, endIndex = 5)).isEqualTo("bcde".encodeUtf8())
+  }
 }
