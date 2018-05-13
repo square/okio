@@ -955,12 +955,6 @@ public final class BufferedSourceTest {
     assertEquals("ef", source.readUtf8());
   }
 
-  @Test public void selectNoByteStrings() throws IOException {
-    Options options = Options.of();
-    sink.writeUtf8("abc");
-    assertEquals(-1, source.select(options));
-  }
-
   @Test public void selectFromEmptySource() throws IOException {
     Options options = Options.of(
         ByteString.encodeUtf8("abc"),
@@ -969,20 +963,19 @@ public final class BufferedSourceTest {
   }
 
   @Test public void selectNoByteStringsFromEmptySource() throws IOException {
-    Options options = Options.of();
-    assertEquals(-1, source.select(options));
+    try {
+      Options.of();
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
   @Test public void selectEmptyByteString() throws IOException {
-    Options options = Options.of(ByteString.of());
-    sink.writeUtf8("abc");
-    assertEquals(0, source.select(options));
-    assertEquals("abc", source.readUtf8());
-  }
-
-  @Test public void selectEmptyByteStringFromEmptySource() throws IOException {
-    Options options = Options.of(ByteString.of());
-    assertEquals(0, source.select(options));
+    try {
+      Options.of(ByteString.of());
+      fail();
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
   @Test public void rangeEquals() throws IOException {

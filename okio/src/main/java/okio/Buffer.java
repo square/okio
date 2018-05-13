@@ -545,40 +545,122 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   @Override public int select(Options options) {
-    Segment s = head;
-    if (s == null) return options.indexOf(ByteString.EMPTY);
+    int index = selectPrefix(options, false);
+    if (index == -1) return -1;
 
-    ByteString[] byteStrings = options.byteStrings;
-    for (int i = 0, listSize = byteStrings.length; i < listSize; i++) {
-      ByteString b = byteStrings[i];
-      if (size >= b.size() && rangeEquals(s, s.pos, b, 0, b.size())) {
-        try {
-          skip(b.size());
-          return i;
-        } catch (EOFException e) {
-          throw new AssertionError(e);
-        }
-      }
+    // If the prefix match actually matched a full byte string, consume it and return it.
+    int selectedSize = options.byteStrings[index].size();
+    try {
+      skip(selectedSize);
+    } catch (EOFException e) {
+      throw new AssertionError();
     }
-    return -1;
+    return index;
   }
 
   /**
-   * Returns the index of a value in {@code options} that is either the prefix of this buffer, or
-   * that this buffer is a prefix of. Unlike {@link #select} this never consumes the value, even
-   * if it is found in full.
+   * Returns the index of a value in options that is a prefix of this buffer. Returns -1 if no value
+   * is found. This method does two simultaneous iterations: it iterates the trie and it iterates
+   * this buffer. It returns when it reaches a result in the trie, when it mismatches in the trie,
+   * and when the buffer is exhausted.
+   *
+   * @param selectTruncated true to return -2 if a possible result is present but truncated. For
+   *     example, this will return -2 if the buffer contains [ab] and the options are [abc, abd].
+   *     Note that this is made complicated by the fact that options are listed in preference order,
+   *     and one option may be a prefix of another. For example, this returns -2 if the buffer
+   *     contains [ab] and the options are [abc, a].
    */
-  int selectPrefix(Options options) {
-    Segment s = head;
-    ByteString[] byteStrings = options.byteStrings;
-    for (int i = 0, listSize = byteStrings.length; i < listSize; i++) {
-      ByteString b = byteStrings[i];
-      int bytesLimit = (int) Math.min(size, b.size());
-      if (bytesLimit == 0 || rangeEquals(s, s.pos, b, 0, bytesLimit)) {
-        return i;
-      }
+  int selectPrefix(Options options, boolean selectTruncated) {
+    Segment head = this.head;
+    if (head == null) {
+      if (selectTruncated) return -2; // A result is present but truncated.
+      return options.indexOf(ByteString.EMPTY);
     }
-    return -1;
+
+    Segment s = head;
+    byte[] data = head.data;
+    int pos = head.pos;
+    int limit = head.limit;
+
+    int[] trie = options.trie;
+    int triePos = 0;
+
+    int prefixIndex = -1;
+
+    navigateTrie:
+    while (true) {
+      int scanOrSelect = trie[triePos++];
+
+      int possiblePrefixIndex = trie[triePos++];
+      if (possiblePrefixIndex != -1) {
+        prefixIndex = possiblePrefixIndex;
+      }
+
+      int nextStep;
+
+      if (s == null) {
+        break;
+      } else if (scanOrSelect < 0) {
+        // Scan: take multiple bytes from the buffer and the trie, looking for any mismatch.
+        int scanByteCount = -1 * scanOrSelect;
+        int trieLimit = triePos + scanByteCount;
+        while (true) {
+          int b = data[pos++] & 0xff;
+          if (b != trie[triePos++]) return prefixIndex; // Fail 'cause we found a mismatch.
+          boolean scanComplete = (triePos == trieLimit);
+
+          // Advance to the next buffer segment if this one is exhausted.
+          if (pos == limit) {
+            s = s.next;
+            pos = s.pos;
+            data = s.data;
+            limit = s.limit;
+            if (s == head) {
+              if (!scanComplete) break navigateTrie; // We were exhausted before the scan completed.
+              s = null; // We were exhausted at the end of the scan.
+            }
+          }
+
+          if (scanComplete) {
+            nextStep = trie[triePos];
+            break;
+          }
+        }
+      } else {
+        // Select: take one byte from the buffer and find a match in the trie.
+        int selectChoiceCount = scanOrSelect;
+        int b = data[pos++] & 0xff;
+        int selectLimit = triePos + selectChoiceCount;
+        while (true) {
+          if (triePos == selectLimit) return prefixIndex; // Fail 'cause we didn't find a match.
+
+          if (b == trie[triePos]) {
+            nextStep = trie[triePos + selectChoiceCount];
+            break;
+          }
+
+          triePos++;
+        }
+
+        // Advance to the next buffer segment if this one is exhausted.
+        if (pos == limit) {
+          s = s.next;
+          pos = s.pos;
+          data = s.data;
+          limit = s.limit;
+          if (s == head) {
+            s = null; // No more segments! The next trie node will be our last.
+          }
+        }
+      }
+
+      if (nextStep >= 0) return nextStep; // Found a matching option.
+      triePos = -nextStep; // Found another node to continue the search.
+    }
+
+    // We break out of the loop above when we've exhausted the buffer without exhausting the trie.
+    if (selectTruncated) return -2; // The buffer is a prefix of at least one option.
+    return prefixIndex; // Return any matches we encountered while searching for a deeper match.
   }
 
   @Override public void readFully(Buffer sink, long byteCount) throws EOFException {
