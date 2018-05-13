@@ -139,18 +139,15 @@ internal actual constructor(
    */
   actual open fun toAsciiUppercase(): ByteString = commonToAsciiUppercase()
 
-  /**
-   * Returns a byte string that is a substring of this byte string, beginning at the specified
-   * index until the end of this string. Returns this byte string if `beginIndex` is 0.
-   */
-  actual open fun substring(beginIndex: Int): ByteString = commonSubstring(beginIndex, data.size)
+  // TODO move substring() when https://youtrack.jetbrains.com/issue/KT-24357 is fixed
 
   /**
    * Returns a byte string that is a substring of this byte string, beginning at the specified
    * `beginIndex` and ends at the specified `endIndex`. Returns this byte string if `beginIndex` is
    * 0 and `endIndex` is the length of this byte string.
    */
-  actual open fun substring(beginIndex: Int, endIndex: Int): ByteString =
+  @JvmOverloads
+  open fun substring(beginIndex: Int = 0, endIndex: Int = size): ByteString =
       commonSubstring(beginIndex, endIndex)
 
   /** Returns the byte at `pos`.  */

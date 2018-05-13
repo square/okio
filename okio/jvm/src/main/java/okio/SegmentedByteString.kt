@@ -115,8 +115,6 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
 
   override fun base64Url() = toByteString().base64Url()
 
-  override fun substring(beginIndex: Int) = toByteString().substring(beginIndex)
-
   override fun substring(beginIndex: Int, endIndex: Int) = toByteString().substring(beginIndex,
       endIndex)
 
