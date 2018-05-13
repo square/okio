@@ -43,7 +43,7 @@ import okio.Source;
  * {@link Buffer.UnsafeCursor} class for efficient operations on the bytes
  * being written and read.
  */
-public class Interceptors {
+public final class Interceptors {
   public void run() throws Exception {
     final byte cipher = (byte) (new Random().nextInt(256) - 128);
     System.out.println("Cipher   : " + cipher);
