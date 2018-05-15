@@ -19,8 +19,8 @@ after_failure:
 
 env:
   global:
-    - secure: "gpdzVacMwUxhoHU1Ettfowgx0axV/L12bjoR8O4iKbRskE3Wr8AgM2GXmFMjoMVDr7vy45YhtOatuSlSKkwZRfgNIcAcTv8axjaFFt7xnPozXXPTU+pkIfaw5DnHzCwJlOo29mmY767Hz4CLomJi8znqKl5VguPAqXo/I8BqKwc="
-    - secure: "YMh3xjsPik4U9DORSFzyTlGMTGc5kXMeuhyu0/757g7fhG4fgwcuCFMm0hBJTUtBu5dV8Ao3EDqZj/hC7muiy7MODHPd3C/Q3LXolZViPVvu6cqaYFN4NGZpZY/fnxF7tz59lODE+OhvomI0RJHS34MdUDscnCAdYWjdkgmH8Y4="
+    - secure: "SWQBLsaI5fOfiM+48/oAOcynsnpa1hHADxs8Vsmt7gsqVrtL369znwsX+PkNOXTdAROPKHzfCw1PkMSKiWHwSB+Gc8fMqFoVjxPnpi0NAhm2b4q4pq6GLOed2xF93eLoQZ7x4UwcUie58Qlwif9ZSGyp+7V6fEy7/AexGLPAuD0="
+    - secure: "gFmZ18DktyZonExeAYGT4HtCodvAbRcH94AImWG6DrJZFzGkRSN//s1AjrgkAL/jZ4lLuoxyCs1nBoX2U83LmpJ8KxLIhU/45JlJgmD1tnE2zdFim6dHN+J6Yj7MCWqD5KO6E0dJickTJG2XzFu0oN3vBn7sETliQHzlw2lw8ME="
 
 branches:
   except:
