@@ -41,13 +41,13 @@ node {
   download = true
 }
 
-task installQunit(type: NpmTask) {
-  args = ['install', 'qunit']
+task installMocha(type: NpmTask) {
+  args = ['install', 'mocha']
 }
 
-task runQunit(type: NodeTask, dependsOn: [compileTestKotlin2Js, populateNodeModules, installQunit]) {
-  script = file('node_modules/.bin/qunit')
-  args = [projectDir.toPath().relativize(file(compileTestKotlin2Js.outputFile).toPath())]
+task runMocha(type: NodeTask, dependsOn: [compileTestKotlin2Js, populateNodeModules, installMocha]) {
+  script = file('node_modules/mocha/bin/mocha')
+  args = [compileTestKotlin2Js.outputFile]
 }
 
-test.dependsOn(runQunit)
+test.dependsOn runMocha
