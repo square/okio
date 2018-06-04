@@ -514,7 +514,7 @@ int port = fromSource.readShort() & 0xffff;
 
 Okio uses signed types like `byte` and `short`, but often protocols want
 unsigned values. The bitwise `&` operator is Java’s preferred idiom to convert
-an unsigned value into a signed value. Here’s a cheat sheet for bytes, shorts,
+a signed value into an unsigned value. Here’s a cheat sheet for bytes, shorts,
 and ints:
 
 | Type  | Signed Range                  | Unsigned Range   | Signed to Unsigned          |
