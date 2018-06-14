@@ -72,4 +72,49 @@ class ByteStringTest {
     assertFalse(byteString.endsWith("00112233".decodeHex().toByteArray()))
     assertFalse(byteString.endsWith("002233".decodeHex().toByteArray()))
   }
+
+  @Test fun indexOfByteString() {
+    val byteString = "112233".decodeHex()
+    assertEquals(0, byteString.indexOf("112233".decodeHex()).toLong())
+    assertEquals(0, byteString.indexOf("1122".decodeHex()).toLong())
+    assertEquals(0, byteString.indexOf("11".decodeHex()).toLong())
+    assertEquals(0, byteString.indexOf("11".decodeHex(), 0).toLong())
+    assertEquals(0, byteString.indexOf("".decodeHex()).toLong())
+    assertEquals(0, byteString.indexOf("".decodeHex(), 0).toLong())
+    assertEquals(1, byteString.indexOf("2233".decodeHex()).toLong())
+    assertEquals(1, byteString.indexOf("22".decodeHex()).toLong())
+    assertEquals(1, byteString.indexOf("22".decodeHex(), 1).toLong())
+    assertEquals(1, byteString.indexOf("".decodeHex(), 1).toLong())
+    assertEquals(2, byteString.indexOf("33".decodeHex()).toLong())
+    assertEquals(2, byteString.indexOf("33".decodeHex(), 2).toLong())
+    assertEquals(2, byteString.indexOf("".decodeHex(), 2).toLong())
+    assertEquals(3, byteString.indexOf("".decodeHex(), 3).toLong())
+    assertEquals(-1, byteString.indexOf("112233".decodeHex(), 1).toLong())
+    assertEquals(-1, byteString.indexOf("44".decodeHex()).toLong())
+    assertEquals(-1, byteString.indexOf("11223344".decodeHex()).toLong())
+    assertEquals(-1, byteString.indexOf("112244".decodeHex()).toLong())
+    assertEquals(-1, byteString.indexOf("112233".decodeHex(), 1).toLong())
+    assertEquals(-1, byteString.indexOf("2233".decodeHex(), 2).toLong())
+    assertEquals(-1, byteString.indexOf("33".decodeHex(), 3).toLong())
+    assertEquals(-1, byteString.indexOf("".decodeHex(), 4).toLong())
+  }
+
+  @Test fun indexOfWithOffset() {
+    val byteString = "112233112233".decodeHex()
+    assertEquals(0, byteString.indexOf("112233".decodeHex(), -1).toLong())
+    assertEquals(0, byteString.indexOf("112233".decodeHex(), 0).toLong())
+    assertEquals(0, byteString.indexOf("112233".decodeHex()).toLong())
+    assertEquals(3, byteString.indexOf("112233".decodeHex(), 1).toLong())
+    assertEquals(3, byteString.indexOf("112233".decodeHex(), 2).toLong())
+    assertEquals(3, byteString.indexOf("112233".decodeHex(), 3).toLong())
+    assertEquals(-1, byteString.indexOf("112233".decodeHex(), 4).toLong())
+  }
+
+  @Test fun indexOfByteArray() {
+    val byteString = "112233".decodeHex()
+    assertEquals(0, byteString.indexOf("112233".decodeHex().toByteArray()).toLong())
+    assertEquals(1, byteString.indexOf("2233".decodeHex().toByteArray()).toLong())
+    assertEquals(2, byteString.indexOf("33".decodeHex().toByteArray()).toLong())
+    assertEquals(-1, byteString.indexOf("112244".decodeHex().toByteArray()).toLong())
+  }
 }
