@@ -29,6 +29,7 @@ import okio.common.commonGetByte
 import okio.common.commonGetSize
 import okio.common.commonHashCode
 import okio.common.commonHex
+import okio.common.commonIndexOf
 import okio.common.commonInternalArray
 import okio.common.commonOf
 import okio.common.commonRangeEquals
@@ -139,7 +140,7 @@ internal actual constructor(
    */
   actual open fun toAsciiUppercase(): ByteString = commonToAsciiUppercase()
 
-  // TODO move substring() when https://youtrack.jetbrains.com/issue/KT-24357 is fixed
+  // TODO move substring() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
   /**
    * Returns a byte string that is a substring of this byte string, beginning at the specified
@@ -214,28 +215,15 @@ internal actual constructor(
 
   actual fun endsWith(suffix: ByteArray) = commonEndsWith(suffix)
 
-  // TODO move indexOf() when https://youtrack.jetbrains.com/issue/KT-24357 is fixed
+  // TODO move @JvmOverloads to common when https://youtrack.jetbrains.com/issue/KT-18882 lands
 
   @JvmOverloads
-  fun indexOf(other: ByteString, fromIndex: Int = 0) = indexOf(other.internalArray(), fromIndex)
+  actual fun indexOf(other: ByteString, fromIndex: Int) = indexOf(other.internalArray(), fromIndex)
 
   @JvmOverloads
-  open fun indexOf(other: ByteArray, fromIndex: Int = 0): Int {
-    var fromIndex = fromIndex
-    fromIndex = maxOf(fromIndex, 0)
-    var i = fromIndex
-    val limit = data.size - other.size
-    while (i <= limit) {
-      if (arrayRangeEquals(data, i, other, 0, other.size)) {
-        return i
-      }
-      i++
-    }
-    return -1
-  }
+  actual open fun indexOf(other: ByteArray, fromIndex: Int) = commonIndexOf(other, fromIndex)
 
-  // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-24356
-  // and https://youtrack.jetbrains.com/issue/KT-24356 are fixed
+  // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
   @JvmOverloads
   fun lastIndexOf(other: ByteString, fromIndex: Int = size) = lastIndexOf(other.internalArray(),
@@ -315,7 +303,7 @@ internal actual constructor(
     @JvmStatic
     actual fun of(vararg data: Byte) = commonOf(*data.copyOf())
 
-    // TODO move toByteString() when https://youtrack.jetbrains.com/issue/KT-24356 is fixed
+    // TODO move toByteString() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
     /**
      * Returns a new [ByteString] containing a copy of `byteCount` bytes of this [ByteArray]

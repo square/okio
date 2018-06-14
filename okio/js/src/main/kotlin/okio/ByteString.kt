@@ -29,6 +29,7 @@ import okio.common.commonGetByte
 import okio.common.commonGetSize
 import okio.common.commonHashCode
 import okio.common.commonHex
+import okio.common.commonIndexOf
 import okio.common.commonInternalArray
 import okio.common.commonOf
 import okio.common.commonRangeEquals
@@ -83,7 +84,7 @@ internal actual constructor(
    */
   actual open fun toAsciiUppercase(): ByteString = commonToAsciiUppercase()
 
-  // TODO move substring() when https://youtrack.jetbrains.com/issue/KT-24357 is fixed
+  // TODO move substring() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
   /**
    * Returns a byte string that is a substring of this byte string, beginning at the specified
@@ -97,12 +98,11 @@ internal actual constructor(
   internal actual open fun getByte(pos: Int) = commonGetByte(pos)
 
   /** Returns the byte at `index`.  */
-  @JvmName("getByte")
   actual operator fun get(index: Int): Byte = getByte(index)
 
   /** Returns the number of bytes in this ByteString. */
   actual val size
-    @JvmName("size") get() = getSize()
+    get() = getSize()
 
   // Hack to work around Kotlin's limitation for using JvmName on open/override vals/funs
   internal actual open fun getSize() = commonGetSize()
@@ -143,34 +143,15 @@ internal actual constructor(
 
   actual fun endsWith(suffix: ByteArray) = commonEndsWith(suffix)
 
-  // TODO move indexOf() when https://youtrack.jetbrains.com/issue/KT-24357 is fixed
+  actual fun indexOf(other: ByteString, fromIndex: Int) = indexOf(other.internalArray(), fromIndex)
 
-  @JvmOverloads
-  fun indexOf(other: ByteString, fromIndex: Int = 0) = indexOf(other.internalArray(), fromIndex)
+  actual open fun indexOf(other: ByteArray, fromIndex: Int) = commonIndexOf(other, fromIndex)
 
-  @JvmOverloads
-  open fun indexOf(other: ByteArray, fromIndex: Int = 0): Int {
-    var fromIndex = fromIndex
-    fromIndex = maxOf(fromIndex, 0)
-    var i = fromIndex
-    val limit = data.size - other.size
-    while (i <= limit) {
-      if (arrayRangeEquals(data, i, other, 0, other.size)) {
-        return i
-      }
-      i++
-    }
-    return -1
-  }
+  // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
-  // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-24356
-  // and https://youtrack.jetbrains.com/issue/KT-24356 are fixed
-
-  @JvmOverloads
   fun lastIndexOf(other: ByteString, fromIndex: Int = size) = lastIndexOf(other.internalArray(),
       fromIndex)
 
-  @JvmOverloads
   open fun lastIndexOf(other: ByteArray, fromIndex: Int = size): Int {
     var fromIndex = fromIndex
     fromIndex = minOf(fromIndex, data.size - other.size)
@@ -198,21 +179,17 @@ internal actual constructor(
     internal actual val HEX_DIGITS = COMMON_HEX_DIGITS
 
     /** A singleton empty `ByteString`.  */
-    @JvmField
     actual val EMPTY: ByteString = COMMON_EMPTY
 
     /** Returns a new byte string containing a clone of the bytes of `data`. */
-    @JvmStatic
     actual fun of(vararg data: Byte) = commonOf(*data.copyOf())
 
-    // TODO move toByteString() when https://youtrack.jetbrains.com/issue/KT-24356 is fixed
+    // TODO move toByteString() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
     /**
      * Returns a new [ByteString] containing a copy of `byteCount` bytes of this [ByteArray]
      * starting at `offset`.
      */
-    @JvmStatic
-    @JvmName("of")
     fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString {
       checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
 
@@ -222,18 +199,15 @@ internal actual constructor(
     }
 
     /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
-    @JvmStatic
     actual fun String.encodeUtf8(): ByteString = commonEncodeUtf8()
 
     /**
      * Decodes the Base64-encoded bytes and returns their value as a byte string. Returns null if
      * this is not a Base64-encoded sequence of bytes.
      */
-    @JvmStatic
     actual fun String.decodeBase64(): ByteString? = commonDecodeBase64()
 
     /** Decodes the hex-encoded bytes and returns their value a byte string.  */
-    @JvmStatic
     actual fun String.decodeHex() = commonDecodeHex()
   }
 }

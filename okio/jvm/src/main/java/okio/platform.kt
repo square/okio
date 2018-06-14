@@ -41,7 +41,7 @@ internal actual fun CharArray.createString(): String = String(this)
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets.UTF_8)
 
-// TODO remove if https://youtrack.jetbrains.com/issue/KT-24167 provides a better solution
+// TODO remove if https://youtrack.jetbrains.com/issue/KT-20641 provides a better solution
 actual typealias IndexOutOfBoundsException = java.lang.IndexOutOfBoundsException
 
 actual typealias ArrayIndexOutOfBoundsException = java.lang.ArrayIndexOutOfBoundsException

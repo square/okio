@@ -164,6 +164,20 @@ internal fun ByteString.commonEndsWith(suffix: ByteString) =
 internal fun ByteString.commonEndsWith(suffix: ByteArray) =
     rangeEquals(size - suffix.size, suffix, 0, suffix.size)
 
+internal fun ByteString.commonIndexOf(other: ByteArray, fromIndex: Int): Int {
+  var fromIndex = fromIndex
+  fromIndex = maxOf(fromIndex, 0)
+  var i = fromIndex
+  val limit = data.size - other.size
+  while (i <= limit) {
+    if (arrayRangeEquals(data, i, other, 0, other.size)) {
+      return i
+    }
+    i++
+  }
+  return -1
+}
+
 internal fun ByteString.commonEquals(other: Any?): Boolean {
   return when {
     other === this -> true
