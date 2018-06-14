@@ -106,6 +106,10 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
 
   fun endsWith(suffix: ByteArray): Boolean
 
+  fun indexOf(other: ByteString, fromIndex: Int = 0): Int
+
+  open fun indexOf(other: ByteArray, fromIndex: Int = 0): Int
+
   override fun equals(other: Any?): Boolean
 
   override fun hashCode(): Int

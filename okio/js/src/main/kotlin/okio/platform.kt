@@ -62,7 +62,7 @@ internal actual fun CharArray.createString(): String = buildString {
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = byteArrayOf() // TODO
 
-// TODO remove if https://youtrack.jetbrains.com/issue/KT-24167 provides a better solution
+// TODO remove if https://youtrack.jetbrains.com/issue/KT-20641 provides a better solution
 actual open class IndexOutOfBoundsException actual constructor(
   message: String
 ) : RuntimeException()
