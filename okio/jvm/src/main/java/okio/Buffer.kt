@@ -834,7 +834,6 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return toCopy
   }
 
-  @Throws(IOException::class)
   override fun read(sink: ByteBuffer): Int {
     val s = head ?: return -1
 
@@ -1034,7 +1033,6 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return this
   }
 
-  @Throws(IOException::class)
   override fun write(source: ByteBuffer): Int {
     val byteCount = source.remaining()
     var remaining = byteCount
