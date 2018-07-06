@@ -190,6 +190,7 @@ open class Timeout {
         throw InterruptedIOException("timeout")
       }
     } catch (e: InterruptedException) {
+      Thread.currentThread().interrupt() // Retain interrupted status.
       throw InterruptedIOException("interrupted")
     }
   }
