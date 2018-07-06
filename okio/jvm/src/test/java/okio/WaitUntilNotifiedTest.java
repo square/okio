@@ -22,18 +22,18 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Test;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public final class WaitUntilNotifiedTest {
   final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(0);
 
-  @After public void tearDown() throws Exception {
+  @After public void tearDown() {
     executorService.shutdown();
   }
 
-  @Test public synchronized void notified() throws Exception {
+  @Test public synchronized void notified() throws InterruptedIOException {
     Timeout timeout = new Timeout();
     timeout.timeout(5000, TimeUnit.MILLISECONDS);
 
@@ -50,7 +50,7 @@ public final class WaitUntilNotifiedTest {
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void timeout() throws Exception {
+  @Test public synchronized void timeout() {
     Timeout timeout = new Timeout();
     timeout.timeout(1000, TimeUnit.MILLISECONDS);
     double start = now();
@@ -63,7 +63,7 @@ public final class WaitUntilNotifiedTest {
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void deadline() throws Exception {
+  @Test public synchronized void deadline() {
     Timeout timeout = new Timeout();
     timeout.deadline(1000, TimeUnit.MILLISECONDS);
     double start = now();
@@ -76,7 +76,7 @@ public final class WaitUntilNotifiedTest {
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void deadlineBeforeTimeout() throws Exception {
+  @Test public synchronized void deadlineBeforeTimeout() {
     Timeout timeout = new Timeout();
     timeout.timeout(5000, TimeUnit.MILLISECONDS);
     timeout.deadline(1000, TimeUnit.MILLISECONDS);
@@ -90,7 +90,7 @@ public final class WaitUntilNotifiedTest {
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void timeoutBeforeDeadline() throws Exception {
+  @Test public synchronized void timeoutBeforeDeadline() {
     Timeout timeout = new Timeout();
     timeout.timeout(1000, TimeUnit.MILLISECONDS);
     timeout.deadline(5000, TimeUnit.MILLISECONDS);
@@ -104,7 +104,7 @@ public final class WaitUntilNotifiedTest {
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void deadlineAlreadyReached() throws Exception {
+  @Test public synchronized void deadlineAlreadyReached() {
     Timeout timeout = new Timeout();
     timeout.deadlineNanoTime(System.nanoTime());
     double start = now();
@@ -117,7 +117,7 @@ public final class WaitUntilNotifiedTest {
     assertElapsed(0.0, start);
   }
 
-  @Test public synchronized void threadInterrupted() throws Exception {
+  @Test public synchronized void threadInterrupted() {
     Timeout timeout = new Timeout();
     double start = now();
     Thread.currentThread().interrupt();
@@ -126,7 +126,7 @@ public final class WaitUntilNotifiedTest {
       fail();
     } catch (InterruptedIOException expected) {
       assertEquals("interrupted", expected.getMessage());
-      assertFalse(Thread.interrupted());
+      assertTrue(Thread.interrupted());
     }
     assertElapsed(0.0, start);
   }
