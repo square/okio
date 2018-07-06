@@ -221,6 +221,7 @@ public class Timeout {
         throw new InterruptedIOException("timeout");
       }
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt(); // Retain interrupted status.
       throw new InterruptedIOException("interrupted");
     }
   }
