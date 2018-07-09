@@ -37,3 +37,4 @@ cache:
     - $HOME/.gradle/wrapper/
     - $HOME/.gradle/native/
     - $HOME/.gradle/daemon/native/
+    - $HOME/.konan
