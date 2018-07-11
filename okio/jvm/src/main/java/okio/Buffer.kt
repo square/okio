@@ -1591,7 +1591,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         s = s.next!!
       }
     }
-    return ByteString.of(*messageDigest.digest())
+    return ByteString(messageDigest.digest())
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
@@ -1615,7 +1615,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
           s = s.next!!
         }
       }
-      return ByteString.of(*mac.doFinal())
+      return ByteString(mac.doFinal())
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
     }

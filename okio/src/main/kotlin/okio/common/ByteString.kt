@@ -212,7 +212,7 @@ internal val COMMON_HEX_DIGITS =
 
 internal val COMMON_EMPTY = ByteString.of()
 
-internal fun commonOf(vararg data: Byte) = ByteString(data.copyOf())
+internal fun commonOf(data: ByteArray) = ByteString(data.copyOf())
 
 internal fun String.commonEncodeUtf8(): ByteString {
   val byteString = ByteString(asUtf8ToByteArray())

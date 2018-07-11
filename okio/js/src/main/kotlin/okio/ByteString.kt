@@ -182,7 +182,7 @@ internal actual constructor(
     actual val EMPTY: ByteString = COMMON_EMPTY
 
     /** Returns a new byte string containing a clone of the bytes of `data`. */
-    actual fun of(vararg data: Byte) = commonOf(*data.copyOf())
+    actual fun of(vararg data: Byte) = commonOf(data)
 
     // TODO move toByteString() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 

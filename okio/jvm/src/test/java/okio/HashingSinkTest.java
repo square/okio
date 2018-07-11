@@ -99,10 +99,12 @@ public final class HashingSinkTest {
     HashingSink hashingSink = HashingSink.sha256(sink);
     source.writeUtf8("abc");
     hashingSink.write(source, 3L);
-    assertEquals(SHA256_abc, hashingSink.hash());
+    ByteString hash_abc = hashingSink.hash();
+    assertEquals(SHA256_abc, hash_abc);
     source.writeUtf8("def");
     hashingSink.write(source, 3L);
     assertEquals(SHA256_def, hashingSink.hash());
+    assertEquals(SHA256_abc, hash_abc);
   }
 
   @Test public void multipleSegments() throws Exception {

@@ -101,10 +101,12 @@ public final class HashingSourceTest {
     HashingSource hashingSource = HashingSource.sha256(source);
     source.writeUtf8("abc");
     assertEquals(3L, hashingSource.read(sink, Long.MAX_VALUE));
-    assertEquals(SHA256_abc, hashingSource.hash());
+    ByteString hash_abc = hashingSource.hash();
+    assertEquals(SHA256_abc, hash_abc);
     source.writeUtf8("def");
     assertEquals(3L, hashingSource.read(sink, Long.MAX_VALUE));
     assertEquals(SHA256_def, hashingSource.hash());
+    assertEquals(SHA256_abc, hash_abc);
   }
 
   @Test public void multipleSegments() throws Exception {

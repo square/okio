@@ -89,7 +89,7 @@ class HashingSink : ForwardingSink {
   val hash: ByteString
     get() {
       val result = if (messageDigest != null) messageDigest.digest() else mac!!.doFinal()
-      return ByteString.of(*result)
+      return ByteString(result)
     }
 
   companion object {

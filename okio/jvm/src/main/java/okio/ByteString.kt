@@ -99,7 +99,7 @@ internal actual constructor(
   open fun sha512() = digest("SHA-512")
 
   private fun digest(algorithm: String) =
-      ByteString.of(*MessageDigest.getInstance(algorithm).digest(data))
+      ByteString(MessageDigest.getInstance(algorithm).digest(data))
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
   open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
@@ -114,7 +114,7 @@ internal actual constructor(
     try {
       val mac = Mac.getInstance(algorithm)
       mac.init(SecretKeySpec(key.toByteArray(), algorithm))
-      return ByteString.of(*mac.doFinal(data))
+      return ByteString(mac.doFinal(data))
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
     }
@@ -301,7 +301,7 @@ internal actual constructor(
 
     /** Returns a new byte string containing a clone of the bytes of `data`. */
     @JvmStatic
-    actual fun of(vararg data: Byte) = commonOf(*data.copyOf())
+    actual fun of(vararg data: Byte) = commonOf(data)
 
     // TODO move toByteString() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
