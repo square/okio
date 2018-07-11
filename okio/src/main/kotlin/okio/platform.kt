@@ -22,23 +22,19 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.annotation.AnnotationTarget.PROPERTY_GETTER
 import kotlin.annotation.AnnotationTarget.PROPERTY_SETTER
 
-// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
-// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+// TODO remove after https://youtrack.jetbrains.com/issue/KT-24478
 @Target(FUNCTION)
 expect annotation class JvmOverloads()
 
-// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
-// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+// TODO remove after https://youtrack.jetbrains.com/issue/KT-24478
 @Target(FIELD)
 expect annotation class JvmField()
 
-// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
-// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+// TODO remove after https://youtrack.jetbrains.com/issue/KT-24478
 @Target(FUNCTION)
 expect annotation class JvmStatic()
 
-// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
-// TODO or remove after https://youtrack.jetbrains.com/issue/KT-18882
+// TODO remove after https://youtrack.jetbrains.com/issue/KT-24478
 @Target(FILE, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER)
 expect annotation class JvmName(val name: String)
 
