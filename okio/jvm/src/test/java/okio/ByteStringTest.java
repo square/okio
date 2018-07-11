@@ -93,6 +93,14 @@ public final class ByteStringTest {
   @Parameter(0) public Factory factory;
   @Parameter(1) public String name;
 
+  @Test public void ofCopy() {
+    byte[] bytes = "Hello, World!".getBytes(Charsets.UTF_8);
+    ByteString byteString = ByteString.of(bytes);
+    // Verify that the bytes were copied out.
+    bytes[4] = (byte) 'a';
+    assertEquals("Hello, World!", byteString.utf8());
+  }
+
   @Test public void ofCopyRange() {
     byte[] bytes = "Hello, World!".getBytes(Charsets.UTF_8);
     ByteString byteString = ByteString.of(bytes, 2, 9);
