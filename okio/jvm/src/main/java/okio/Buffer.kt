@@ -2144,6 +2144,5 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   companion object {
     private val DIGITS = "0123456789abcdef".toByteArray()
-    internal const val REPLACEMENT_CHARACTER: Int = '\ufffd'.toInt()
   }
 }

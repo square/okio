@@ -39,6 +39,7 @@ import okio.common.commonSubstring
 import okio.common.commonToAsciiLowercase
 import okio.common.commonToAsciiUppercase
 import okio.common.commonToByteArray
+import okio.common.commonToString
 import okio.common.commonUtf8
 
 /**
@@ -174,7 +175,7 @@ internal actual constructor(
    * Returns a human-readable string that describes the contents of this byte string. Typically this
    * is a string like `[text=Hello]` or `[hex=0000ffff]`.
    */
-  actual override fun toString(): String = data.toUtf8String()
+  actual override fun toString() = commonToString()
 
   actual companion object {
     internal actual val HEX_DIGITS = COMMON_HEX_DIGITS
