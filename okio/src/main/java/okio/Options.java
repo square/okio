@@ -122,17 +122,6 @@ public final class Options extends AbstractList<ByteString> implements RandomAcc
       if (byteStrings.get(i).size() < byteStringOffset) throw new AssertionError();
     }
 
-    // If there's only a single value to select from, and there are no further characters to
-    // scan, special case it as an empty SCAN. This should only happen when the only input to the
-    // entire Options is a single empty string.
-    if (fromIndex + 1 == toIndex && byteStrings.get(fromIndex).size() == byteStringOffset) {
-      if (byteStringOffset != 0) throw new AssertionError();
-      node.writeInt(0);
-      node.writeInt(-1);
-      node.writeInt(indexes.get(fromIndex));
-      return;
-    }
-
     ByteString from = byteStrings.get(fromIndex);
     ByteString to = byteStrings.get(toIndex - 1);
     int prefixIndex = -1;
