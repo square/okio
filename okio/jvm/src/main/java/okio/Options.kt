@@ -32,7 +32,10 @@ class Options private constructor(
   companion object {
     @JvmStatic
     fun of(vararg byteStrings: ByteString): Options {
-      require(byteStrings.isNotEmpty()) { "no options provided" }
+      if (byteStrings.isEmpty()) {
+        // With no choices we must always return -1. Create a trie that selects from an empty set.
+        return Options(arrayOf(), intArrayOf(0, -1))
+      }
 
       // Sort the byte strings which is required when recursively building the trie. Map the sorted
       // indexes to the caller's indexes.

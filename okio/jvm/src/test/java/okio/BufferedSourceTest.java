@@ -987,6 +987,11 @@ public final class BufferedSourceTest {
     assertEquals(-1, source.select(options));
   }
 
+  @Test public void selectNoByteStringsFromEmptySource() throws IOException {
+    Options options = Options.of();
+    assertEquals(-1, source.select(options));
+  }
+
   @Test public void rangeEquals() throws IOException {
     sink.writeUtf8("A man, a plan, a canal. Panama.");
     assertTrue(source.rangeEquals(7 , ByteString.encodeUtf8("a plan")));
