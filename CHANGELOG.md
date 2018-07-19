@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 1.15.0
+
+_2018-07-18_
+
+ * New: Trie-based `Buffer.select()`. This improves performance when selecting
+   among large lists of options.
+ * Fix: Retain interrupted state when throwing `InterruptedIOException`.
+
+
 ## Version 1.14.0
 
 _2018-02-11_
