@@ -116,17 +116,6 @@ class Options private constructor(
         require(byteStrings[i].size >= byteStringOffset)
       }
 
-      // If there's only a single value to select from, and there are no further characters to
-      // scan, special case it as an empty SCAN. This should only happen when the only input to the
-      // entire Options is a single empty string.
-      if (fromIndex + 1 == toIndex && byteStrings[fromIndex].size == byteStringOffset) {
-        check(byteStringOffset == 0)
-        node.writeInt(0)
-        node.writeInt(-1)
-        node.writeInt(indexes[fromIndex])
-        return
-      }
-
       var fromIndex = fromIndex
       var from = byteStrings[fromIndex]
       val to = byteStrings[toIndex - 1]
