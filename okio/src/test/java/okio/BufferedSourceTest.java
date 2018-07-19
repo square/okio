@@ -963,11 +963,8 @@ public final class BufferedSourceTest {
   }
 
   @Test public void selectNoByteStringsFromEmptySource() throws IOException {
-    try {
-      Options.of();
-      fail();
-    } catch (IllegalArgumentException expected) {
-    }
+    Options options = Options.of();
+    assertEquals(-1, source.select(options));
   }
 
   @Test public void selectEmptyByteString() throws IOException {

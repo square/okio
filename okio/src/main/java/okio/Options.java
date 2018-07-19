@@ -33,7 +33,10 @@ public final class Options extends AbstractList<ByteString> implements RandomAcc
   }
 
   public static Options of(ByteString... byteStrings) {
-    if (byteStrings.length == 0) throw new IllegalArgumentException("no options provided");
+    if (byteStrings.length == 0) {
+      // With no choices we must always return -1. Create a trie that selects from an empty set.
+      return new Options(new ByteString[0], new int[] { 0, -1 });
+    }
 
     // Sort the byte strings which is required when recursively building the trie. Map the sorted
     // indexes to the caller's indexes.
