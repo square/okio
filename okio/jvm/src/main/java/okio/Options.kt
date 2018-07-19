@@ -46,7 +46,6 @@ class Options private constructor(
         val sortedIndex = list.binarySearch(byteString)
         indexes[sortedIndex] = callerIndex
       }
-      require(list[0].size > 0) { "the empty byte string is not a supported option" }
 
       // Strip elements that will never be returned because they follow their own prefixes. For
       // example, if the caller provides ["abc", "abcde"] we will never return "abcde" because we
