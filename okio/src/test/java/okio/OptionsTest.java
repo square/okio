@@ -173,11 +173,10 @@ public final class OptionsTest {
   }
 
   @Test public void emptyOptions() {
-    try {
-      utf8Options();
-      fail();
-    } catch (IllegalArgumentException expected) {
-    }
+    Options options = utf8Options();
+    assertSelect("", -1, options);
+    assertSelect("a", -1, options);
+    assertSelect("abc", -1, options);
   }
 
   @Test public void emptyStringInOptionsTrie() {
