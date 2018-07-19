@@ -131,6 +131,18 @@ public final class WaitUntilNotifiedTest {
     assertElapsed(0.0, start);
   }
 
+  @Test public synchronized void threadInterruptedOnThrowIfReached() throws Exception {
+    Timeout timeout = new Timeout();
+    Thread.currentThread().interrupt();
+    try {
+      timeout.throwIfReached();
+      fail();
+    } catch (InterruptedIOException expected) {
+      assertEquals("interrupted", expected.getMessage());
+      assertTrue(Thread.interrupted());
+    }
+  }
+
   /** Returns the nanotime in milliseconds as a double for measuring timeouts. */
   private double now() {
     return System.nanoTime() / 1000000.0d;
