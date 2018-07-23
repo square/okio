@@ -45,6 +45,12 @@ jmh {
   duplicateClassesStrategy = 'warn'
 }
 
+compileKotlin {
+  kotlinOptions {
+    freeCompilerArgs = ["-Xno-param-assertions", "-Xno-call-assertions"]
+  }
+}
+
 dependencies {
   signature 'org.codehaus.mojo.signature:java16:1.1@signature'
 
