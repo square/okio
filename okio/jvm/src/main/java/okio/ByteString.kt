@@ -38,6 +38,7 @@ import okio.common.commonSubstring
 import okio.common.commonToAsciiLowercase
 import okio.common.commonToAsciiUppercase
 import okio.common.commonToByteArray
+import okio.common.commonToString
 import okio.common.commonUtf8
 import java.io.EOFException
 import java.io.IOException
@@ -251,30 +252,7 @@ internal actual constructor(
    * Returns a human-readable string that describes the contents of this byte string. Typically this
    * is a string like `[text=Hello]` or `[hex=0000ffff]`.
    */
-  actual override fun toString(): String {
-    if (data.isEmpty()) return "[size=0]"
-
-    val text = utf8()
-    val i = codePointIndexToCharIndex(text, 64)
-
-    if (i == -1) {
-      return if (data.size <= 64) {
-        "[hex=${hex()}]"
-      } else {
-        "[size=${data.size} hex=${substring(0, 64).hex()}…]"
-      }
-    }
-
-    val safeText = text.substring(0, i)
-        .replace("\\", "\\\\")
-        .replace("\n", "\\n")
-        .replace("\r", "\\r")
-    return if (i < text.length) {
-      "[size=${data.size} text=$safeText…]"
-    } else {
-      "[text=$safeText]"
-    }
-  }
+  actual override fun toString() = commonToString()
 
   @Throws(IOException::class)
   private fun readObject(`in`: ObjectInputStream) {
@@ -368,26 +346,6 @@ internal actual constructor(
         offset += read
       }
       return ByteString(result)
-    }
-
-    internal fun codePointIndexToCharIndex(s: String, codePointCount: Int): Int {
-      var i = 0
-      var j = 0
-      val length = s.length
-      var c: Int
-      while (i < length) {
-        if (j == codePointCount) {
-          return i
-        }
-        c = s.codePointAt(i)
-        if ((Character.isISOControl(c) && c != '\n'.toInt() && c != '\r'.toInt())
-            || c == Buffer.REPLACEMENT_CHARACTER) {
-          return -1
-        }
-        j++
-        i += Character.charCount(c)
-      }
-      return s.length
     }
   }
 }

@@ -18,14 +18,19 @@ package okio.common
 
 import okio.BASE64_URL_SAFE
 import okio.ByteString
+import okio.REPLACEMENT_CHARACTER
 import okio.and
 import okio.arrayRangeEquals
 import okio.arraycopy
 import okio.asUtf8ToByteArray
+import okio.codePointAt
+import okio.codePointByteCount
+import okio.codePointCharCount
 import okio.createString
 import okio.decodeBase64ToArray
 import okio.encodeBase64
 import okio.hashCode
+import okio.isIsoControl
 import okio.shr
 import okio.toUtf8String
 
@@ -244,4 +249,52 @@ private fun decodeHexDigit(c: Char): Int {
     in 'A'..'F' -> c - 'A' + 10
     else -> throw IllegalArgumentException("Unexpected hex digit: $c")
   }
+}
+
+internal fun ByteString.commonToString(): String {
+  if (data.isEmpty()) return "[size=0]"
+
+  val i = codePointIndexToCharIndex(data, 64)
+  if (i == -1) {
+    return if (data.size <= 64) {
+      "[hex=${hex()}]"
+    } else {
+      "[size=${data.size} hex=${commonSubstring(0, 64).hex()}…]"
+    }
+  }
+
+  val text = utf8()
+  val safeText = text.substring(0, i)
+    .replace("\\", "\\\\")
+    .replace("\n", "\\n")
+    .replace("\r", "\\r")
+  return if (i < text.length) {
+    "[size=${data.size} text=$safeText…]"
+  } else {
+    "[text=$safeText]"
+  }
+}
+
+internal fun codePointIndexToCharIndex(s: ByteArray, codePointCount: Int): Int {
+  var charCount = 0
+  var byteIndex = 0
+  var j = 0
+  val length = s.size
+  var c: Int
+  while (byteIndex < length) {
+    if (j == codePointCount) {
+      return charCount
+    }
+
+    c = s.codePointAt(byteIndex)
+    if ((c != '\n'.toInt() && c != '\r'.toInt() && isIsoControl(c))
+      || c == REPLACEMENT_CHARACTER) {
+      return -1
+    }
+
+    j++
+    charCount += codePointCharCount(c)
+    byteIndex += codePointByteCount(c)
+  }
+  return charCount
 }

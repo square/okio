@@ -113,3 +113,90 @@ fun String.utf8Size(beginIndex: Int = 0, endIndex: Int = length): Long {
 
   return result
 }
+
+internal const val REPLACEMENT_CHARACTER: Int = '\ufffd'.toInt()
+
+internal fun codePointByteCount(codePoint: Int): Int = when {
+  codePoint < 0x80 -> 1 // A 7-bit character with 1 byte.
+  codePoint < 0x800 -> 2 // An 11-bit character with 2 bytes.
+  codePoint < 0x10000 -> 3 // A 16-bit character with 3 bytes.
+  else -> 4 // A 21-bit character with 4 bytes.
+}
+
+internal fun codePointCharCount(codePoint: Int): Int = when {
+  codePoint < 0x10000 -> 1 // At most a 16-bit character.
+  else -> 2 // A 21-bit character.
+}
+
+internal fun isIsoControl(codePoint: Int): Boolean =
+  (codePoint in 0x00..0x1F) || (codePoint in 0x7F..0x9F)
+
+// TODO: Combine with Buffer.readUtf8CodePoint if possible
+internal fun ByteArray.codePointAt(index: Int): Int {
+  val b0 = this[index]
+
+  var codePoint: Int
+  val byteCount: Int
+  val min: Int
+  when {
+    b0 and 0x80 == 0 -> {
+      // 0xxxxxxx.
+      codePoint = b0 and 0x7f
+      byteCount = 1 // 7 bits (ASCII).
+      min = 0x0
+    }
+    b0 and 0xe0 == 0xc0 -> {
+      // 0x110xxxxx
+      codePoint = b0 and 0x1f
+      byteCount = 2 // 11 bits (5 + 6).
+      min = 0x80
+    }
+    b0 and 0xf0 == 0xe0 -> {
+      // 0x1110xxxx
+      codePoint = b0 and 0x0f
+      byteCount = 3 // 16 bits (4 + 6 + 6).
+      min = 0x800
+    }
+    b0 and 0xf8 == 0xf0 -> {
+      // 0x11110xxx
+      codePoint = b0 and 0x07
+      byteCount = 4 // 21 bits (3 + 6 + 6 + 6).
+      min = 0x10000
+    }
+    else -> {
+      // We expected the first byte of a code point but got something else.
+      return REPLACEMENT_CHARACTER
+    }
+  }
+
+  if (size < index + byteCount) {
+    // Not enough remaining data to interpret as a code point.
+    return REPLACEMENT_CHARACTER
+  }
+
+  // Read the continuation bytes. If we encounter a non-continuation byte, the sequence thus far is
+  // decoded as the replacement character.
+  for (i in 1 until byteCount) {
+    val b = this[index + i]
+    if (b and 0xc0 == 0x80) {
+      // 0x10xxxxxx
+      codePoint = codePoint shl 6
+      codePoint = codePoint or (b and 0x3f)
+    } else {
+      return REPLACEMENT_CHARACTER
+    }
+  }
+
+  return when {
+    codePoint > 0x10ffff -> {
+      REPLACEMENT_CHARACTER // Reject code points larger than the Unicode maximum.
+    }
+    codePoint in 0xd800..0xdfff -> {
+      REPLACEMENT_CHARACTER // Reject partial surrogates.
+    }
+    codePoint < min -> {
+      REPLACEMENT_CHARACTER // Reject overlong code points.
+    }
+    else -> codePoint
+  }
+}
