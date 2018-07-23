@@ -268,7 +268,7 @@ object TestUtil {
     result.head!!.prev = result.head
     result.head!!.next = result.head!!.prev
     var s = original.head!!.next
-    while (s != original.head) {
+    while (s !== original.head) {
       result.head!!.prev!!.push(s!!.unsharedCopy())
       s = s.next
     }

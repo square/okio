@@ -569,7 +569,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
             pos = s.pos
             data = s.data
             limit = s.limit
-            if (s == head) {
+            if (s === head) {
               if (!scanComplete) break@navigateTrie // We were exhausted before the scan completed.
               s = null // We were exhausted at the end of the scan.
             }
@@ -602,7 +602,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
           pos = s.pos
           data = s.data
           limit = s.limit
-          if (s == head) {
+          if (s === head) {
             s = null // No more segments! The next trie node will be our last.
           }
         }
@@ -1586,7 +1586,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     head?.let { head ->
       messageDigest.update(head.data, head.pos, head.limit - head.pos)
       var s = head.next!!
-      while (s != head) {
+      while (s !== head) {
         messageDigest.update(s.data, s.pos, s.limit - s.pos)
         s = s.next!!
       }
@@ -1610,7 +1610,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       head?.let { head ->
         mac.update(head.data, head.pos, head.limit - head.pos)
         var s = head.next!!
-        while (s != head) {
+        while (s !== head) {
           mac.update(s.data, s.pos, s.limit - s.pos)
           s = s.next!!
         }
@@ -1667,7 +1667,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         pos++
       }
       s = s.next!!
-    } while (s != head)
+    } while (s !== head)
     return result
   }
 
@@ -1686,7 +1686,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     result.head!!.prev = result.head
     result.head!!.next = result.head!!.prev
     var s = head!!.next
-    while (s != head) {
+    while (s !== head) {
       result.head!!.prev!!.push(s!!.sharedCopy())
       s = s.next
     }
@@ -1998,7 +1998,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       // If we're going to write and our segment is shared, swap it for a read-write one.
       if (readWrite && next!!.shared) {
         val unsharedNext = next.unsharedCopy()
-        if (buffer.head == next) {
+        if (buffer.head === next) {
           buffer.head = unsharedNext
         }
         next = next.push(unsharedNext)
