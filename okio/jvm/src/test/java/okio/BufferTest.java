@@ -17,6 +17,7 @@ package okio;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -55,29 +56,29 @@ public final class BufferTest {
     try {
       buffer.readUtf8(1);
       fail();
-    } catch (ArrayIndexOutOfBoundsException expected) {
+    } catch (EOFException expected) {
     }
   }
 
-  @Test public void completeSegmentByteCountOnEmptyBuffer() throws Exception {
+  @Test public void completeSegmentByteCountOnEmptyBuffer() {
     Buffer buffer = new Buffer();
     assertEquals(0, buffer.completeSegmentByteCount());
   }
 
-  @Test public void completeSegmentByteCountOnBufferWithFullSegments() throws Exception {
+  @Test public void completeSegmentByteCountOnBufferWithFullSegments() {
     Buffer buffer = new Buffer();
     buffer.writeUtf8(repeat('a', SEGMENT_SIZE * 4));
     assertEquals(SEGMENT_SIZE * 4, buffer.completeSegmentByteCount());
   }
 
-  @Test public void completeSegmentByteCountOnBufferWithIncompleteTailSegment() throws Exception {
+  @Test public void completeSegmentByteCountOnBufferWithIncompleteTailSegment() {
     Buffer buffer = new Buffer();
     buffer.writeUtf8(repeat('a', SEGMENT_SIZE * 4 - 10));
     assertEquals(SEGMENT_SIZE * 3, buffer.completeSegmentByteCount());
   }
 
   /** Buffer's toString is the same as ByteString's. */
-  @Test public void bufferToString() throws Exception {
+  @Test public void bufferToString() {
     assertEquals("[size=0]", new Buffer().toString());
     assertEquals("[text=a\\r\\nb\\nc\\rd\\\\e]",
         new Buffer().writeUtf8("a\r\nb\nc\rd\\e").toString());
@@ -168,7 +169,7 @@ public final class BufferTest {
   }
 
   /** The big part of source's first segment is being moved. */
-  @Test public void writeSplitSourceBufferLeft() throws Exception {
+  @Test public void writeSplitSourceBufferLeft() {
     int writeSize = SEGMENT_SIZE / 2 + 1;
 
     Buffer sink = new Buffer();
@@ -183,7 +184,7 @@ public final class BufferTest {
   }
 
   /** The big part of source's first segment is staying put. */
-  @Test public void writeSplitSourceBufferRight() throws Exception {
+  @Test public void writeSplitSourceBufferRight() {
     int writeSize = SEGMENT_SIZE / 2 - 1;
 
     Buffer sink = new Buffer();
@@ -197,7 +198,7 @@ public final class BufferTest {
     assertEquals(asList(SEGMENT_SIZE - writeSize, SEGMENT_SIZE), segmentSizes(source));
   }
 
-  @Test public void writePrefixDoesntSplit() throws Exception {
+  @Test public void writePrefixDoesntSplit() {
     Buffer sink = new Buffer();
     sink.writeUtf8(repeat('b', 10));
 
@@ -322,7 +323,7 @@ public final class BufferTest {
     assertEquals(repeat('a', 10) + repeat('b', 20), sink.readUtf8(30));
   }
 
-  @Test public void indexOfWithOffset() throws Exception {
+  @Test public void indexOfWithOffset() {
     Buffer buffer = new Buffer();
     int halfSegment = SEGMENT_SIZE / 2;
     buffer.writeUtf8(repeat('a', halfSegment));
@@ -339,7 +340,7 @@ public final class BufferTest {
     assertEquals(halfSegment * 4 - 1, buffer.indexOf((byte) 'd', halfSegment * 4 - 1));
   }
 
-  @Test public void byteAt() throws Exception {
+  @Test public void byteAt() {
     Buffer buffer = new Buffer();
     buffer.writeUtf8("a");
     buffer.writeUtf8(repeat('b', SEGMENT_SIZE));
@@ -351,7 +352,7 @@ public final class BufferTest {
     assertEquals('b', buffer.getByte(buffer.size() - 3));
   }
 
-  @Test public void getByteOfEmptyBuffer() throws Exception {
+  @Test public void getByteOfEmptyBuffer() {
     Buffer buffer = new Buffer();
     try {
       buffer.getByte(0);
@@ -368,7 +369,7 @@ public final class BufferTest {
     assertEquals("ab", sink.readUtf8(2));
   }
 
-  @Test public void cloneDoesNotObserveWritesToOriginal() throws Exception {
+  @Test public void cloneDoesNotObserveWritesToOriginal() {
     Buffer original = new Buffer();
     Buffer clone = original.clone();
     original.writeUtf8("abc");
@@ -384,7 +385,7 @@ public final class BufferTest {
     assertEquals("ab", clone.readUtf8(2));
   }
 
-  @Test public void originalDoesNotObserveWritesToClone() throws Exception {
+  @Test public void originalDoesNotObserveWritesToClone() {
     Buffer original = new Buffer();
     Buffer clone = original.clone();
     clone.writeUtf8("abc");
@@ -413,7 +414,7 @@ public final class BufferTest {
         clone.readUtf8(SEGMENT_SIZE * 6));
   }
 
-  @Test public void equalsAndHashCodeEmpty() throws Exception {
+  @Test public void equalsAndHashCodeEmpty() {
     Buffer a = new Buffer();
     Buffer b = new Buffer();
     assertTrue(a.equals(b));
@@ -507,7 +508,7 @@ public final class BufferTest {
     assertEquals(TestUtil.repeat('a', SEGMENT_SIZE * 3), sink.readUtf8());
   }
 
-  @Test public void copyTo() throws Exception {
+  @Test public void copyTo() {
     Buffer source = new Buffer();
     source.writeUtf8("party");
 
@@ -518,7 +519,7 @@ public final class BufferTest {
     assertEquals("party", source.readUtf8());
   }
 
-  @Test public void copyToOnSegmentBoundary() throws Exception {
+  @Test public void copyToOnSegmentBoundary() {
     String as = repeat('a', SEGMENT_SIZE);
     String bs = repeat('b', SEGMENT_SIZE);
     String cs = repeat('c', SEGMENT_SIZE);
@@ -536,7 +537,7 @@ public final class BufferTest {
     assertEquals(ds + bs + cs, target.readUtf8());
   }
 
-  @Test public void copyToOffSegmentBoundary() throws Exception {
+  @Test public void copyToOffSegmentBoundary() {
     String as = repeat('a', SEGMENT_SIZE - 1);
     String bs = repeat('b', SEGMENT_SIZE + 2);
     String cs = repeat('c', SEGMENT_SIZE - 4);
@@ -554,7 +555,7 @@ public final class BufferTest {
     assertEquals(ds + bs + cs, target.readUtf8());
   }
 
-  @Test public void copyToSourceAndTargetCanBeTheSame() throws Exception {
+  @Test public void copyToSourceAndTargetCanBeTheSame() {
     String as = repeat('a', SEGMENT_SIZE);
     String bs = repeat('b', SEGMENT_SIZE);
 
@@ -566,7 +567,7 @@ public final class BufferTest {
     assertEquals(as + bs + as + bs, source.readUtf8());
   }
 
-  @Test public void copyToEmptySource() throws Exception {
+  @Test public void copyToEmptySource() {
     Buffer source = new Buffer();
     Buffer target = new Buffer().writeUtf8("aaa");
     source.copyTo(target, 0L, 0L);
@@ -574,7 +575,7 @@ public final class BufferTest {
     assertEquals("aaa", target.readUtf8());
   }
 
-  @Test public void copyToEmptyTarget() throws Exception {
+  @Test public void copyToEmptyTarget() {
     Buffer source = new Buffer().writeUtf8("aaa");
     Buffer target = new Buffer();
     source.copyTo(target, 0L, 3L);
@@ -582,7 +583,7 @@ public final class BufferTest {
     assertEquals("aaa", target.readUtf8());
   }
 
-  @Test public void snapshotReportsAccurateSize() throws Exception {
+  @Test public void snapshotReportsAccurateSize() {
     Buffer buf = new Buffer().write(new byte[] { 0, 1, 2, 3 });
     assertEquals(1, buf.snapshot(1).size());
   }

@@ -252,8 +252,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return result
   }
 
+  @Throws(EOFException::class)
   override fun readByte(): Byte {
-    check(size != 0L) { "size == 0" }
+    if (size == 0L) throw EOFException()
 
     val segment = head!!
     var pos = segment.pos
@@ -282,8 +283,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     }
   }
 
+  @Throws(EOFException::class)
   override fun readShort(): Short {
-    check(size >= 2L) { "size < 2: $size" }
+    if (size < 2L) throw EOFException()
 
     val segment = head!!
     var pos = segment.pos
@@ -309,8 +311,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return s.toShort()
   }
 
+  @Throws(EOFException::class)
   override fun readInt(): Int {
-    check(size >= 4L) { "size < 4: $size" }
+    if (size < 4L) throw EOFException()
 
     val segment = head!!
     var pos = segment.pos
@@ -341,8 +344,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return i
   }
 
+  @Throws(EOFException::class)
   override fun readLong(): Long {
-    check(size >= 8L) { "size < 8: $size" }
+    if (size < 8L) throw EOFException()
 
     val segment = head!!
     var pos = segment.pos
@@ -375,14 +379,18 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return v
   }
 
+  @Throws(EOFException::class)
   override fun readShortLe() = readShort().reverseBytes()
 
+  @Throws(EOFException::class)
   override fun readIntLe() = readInt().reverseBytes()
 
+  @Throws(EOFException::class)
   override fun readLongLe() = readLong().reverseBytes()
 
+  @Throws(EOFException::class)
   override fun readDecimalLong(): Long {
-    check(size != 0L) { "size == 0" }
+    if (size == 0L) throw EOFException()
 
     // This value is always built negatively in order to accommodate Long.MIN_VALUE.
     var value = 0L
@@ -442,8 +450,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return if (negative) value else -value
   }
 
+  @Throws(EOFException::class)
   override fun readHexadecimalUnsignedLong(): Long {
-    check(size != 0L) { "size == 0" }
+    if (size == 0L) throw EOFException()
 
     var value = 0L
     var seen = 0
@@ -644,8 +653,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   @Throws(EOFException::class)
   override fun readString(byteCount: Long, charset: Charset): String {
-    checkOffsetAndCount(size, 0, byteCount)
-    require(byteCount <= Integer.MAX_VALUE) { "byteCount > Integer.MAX_VALUE: $byteCount" }
+    require(byteCount >= 0 && byteCount <= Integer.MAX_VALUE) { "byteCount: $byteCount" }
+    if (size < byteCount) throw EOFException()
     if (byteCount == 0L) return ""
 
     val s = head!!
@@ -796,8 +805,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   @Throws(EOFException::class)
   override fun readByteArray(byteCount: Long): ByteArray {
-    checkOffsetAndCount(size, 0, byteCount)
-    require(byteCount <= Integer.MAX_VALUE) { "byteCount > Integer.MAX_VALUE: $byteCount" }
+    require(byteCount >= 0 && byteCount <= Integer.MAX_VALUE) { "byteCount: $byteCount" }
+    if (size < byteCount) throw EOFException()
 
     val result = ByteArray(byteCount.toInt())
     readFully(result)
@@ -1696,7 +1705,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   /** Returns an immutable copy of this buffer as a byte string.  */
   fun snapshot(): ByteString {
-    require(size <= Integer.MAX_VALUE) { "size > Integer.MAX_VALUE: $size" }
+    check(size <= Integer.MAX_VALUE) { "size > Integer.MAX_VALUE: $size" }
     return snapshot(size.toInt())
   }
 
