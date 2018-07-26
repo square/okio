@@ -29,6 +29,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import static kotlin.text.Charsets.US_ASCII;
 import static kotlin.text.Charsets.UTF_8;
 import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.assertByteArrayEquals;
@@ -131,6 +132,14 @@ public final class BufferedSourceTest {
     assertTrue(source.exhausted());
   }
 
+  @Test public void readByteTooShortThrows() throws IOException {
+    try {
+      source.readByte();
+      fail();
+    } catch (EOFException expected) {
+    }
+  }
+
   @Test public void readShort() throws Exception {
     sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01
@@ -155,6 +164,26 @@ public final class BufferedSourceTest {
     source.skip(SEGMENT_SIZE - 1);
     assertEquals((short) 0xabcd, source.readShort());
     assertTrue(source.exhausted());
+  }
+
+  @Test public void readShortTooShortThrows() throws IOException {
+    sink.writeShort(Short.MAX_VALUE);
+    source.readByte();
+    try {
+      source.readShort();
+      fail();
+    } catch (EOFException expected) {
+    }
+  }
+
+  @Test public void readShortLeTooShortThrows() throws IOException {
+    sink.writeShortLe(Short.MAX_VALUE);
+    source.readByte();
+    try {
+      source.readShortLe();
+      fail();
+    } catch (EOFException expected) {
+    }
   }
 
   @Test public void readInt() throws Exception {
@@ -185,6 +214,26 @@ public final class BufferedSourceTest {
     source.skip(SEGMENT_SIZE - 3);
     assertEquals(0xabcdef01, source.readInt());
     assertTrue(source.exhausted());
+  }
+
+  @Test public void readIntTooShortThrows() throws IOException {
+    sink.writeInt(Integer.MAX_VALUE);
+    source.readByte();
+    try {
+      source.readInt();
+      fail();
+    } catch (EOFException expected) {
+    }
+  }
+
+  @Test public void readIntLeTooShortThrows() throws IOException {
+    sink.writeIntLe(Integer.MAX_VALUE);
+    source.readByte();
+    try {
+      source.readIntLe();
+      fail();
+    } catch (EOFException expected) {
+    }
   }
 
   @Test public void readLong() throws Exception {
@@ -218,6 +267,26 @@ public final class BufferedSourceTest {
     source.skip(SEGMENT_SIZE - 7);
     assertEquals(0xabcdef0187654321L, source.readLong());
     assertTrue(source.exhausted());
+  }
+
+  @Test public void readLongTooShortThrows() throws IOException {
+    sink.writeLong(Long.MAX_VALUE);
+    source.readByte();
+    try {
+      source.readLong();
+      fail();
+    } catch (EOFException expected) {
+    }
+  }
+
+  @Test public void readLongLeTooShortThrows() throws IOException {
+    sink.writeLongLe(Long.MAX_VALUE);
+    source.readByte();
+    try {
+      source.readLongLe();
+      fail();
+    } catch (EOFException expected) {
+    }
   }
 
   @Test public void readAll() throws IOException {
@@ -363,6 +432,16 @@ public final class BufferedSourceTest {
     assertEquals("d", source.readUtf8(1));
   }
 
+  @Test public void readByteArrayTooShortThrows() throws IOException {
+    sink.writeUtf8("abc");
+    try {
+      source.readByteArray(4);
+      fail();
+    } catch (EOFException expected) {
+    }
+    assertEquals("abc", source.readUtf8()); // The read shouldn't consume any data.
+  }
+
   @Test public void readByteString() throws IOException {
     sink.writeUtf8("abcd").writeUtf8(repeat('e', SEGMENT_SIZE));
     assertEquals("abcd" + repeat('e', SEGMENT_SIZE), source.readByteString().utf8());
@@ -372,6 +451,16 @@ public final class BufferedSourceTest {
     sink.writeUtf8("abcd").writeUtf8(repeat('e', SEGMENT_SIZE));
     assertEquals("abc", source.readByteString(3).utf8());
     assertEquals("d", source.readUtf8(1));
+  }
+
+  @Test public void readByteStringTooShortThrows() throws IOException {
+    sink.writeUtf8("abc");
+    try {
+      source.readByteString(4);
+      fail();
+    } catch (EOFException expected) {
+    }
+    assertEquals("abc", source.readUtf8()); // The read shouldn't consume any data.
   }
 
   @Test public void readSpecificCharsetPartial() throws Exception {
@@ -386,6 +475,16 @@ public final class BufferedSourceTest {
         ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
             + "000002cc000000720000006100000070000000740000025900000072"));
     assertEquals("vəˈläsəˌraptər", source.readString(Charset.forName("utf-32")));
+  }
+
+  @Test public void readStringTooShortThrows() throws IOException {
+    sink.writeString("abc", US_ASCII);
+    try {
+      source.readString(4, US_ASCII);
+      fail();
+    } catch (EOFException expected) {
+    }
+    assertEquals("abc", source.readUtf8()); // The read shouldn't consume any data.
   }
 
   @Test public void readUtf8SpansSegments() throws Exception {
@@ -407,6 +506,16 @@ public final class BufferedSourceTest {
   @Test public void readUtf8EntireBuffer() throws Exception {
     sink.writeUtf8(repeat('a', SEGMENT_SIZE * 2));
     assertEquals(repeat('a', SEGMENT_SIZE * 2), source.readUtf8());
+  }
+
+  @Test public void readUtf8TooShortThrows() throws IOException {
+    sink.writeUtf8("abc");
+    try {
+      source.readUtf8(4L);
+      fail();
+    } catch (EOFException expected) {
+    }
+    assertEquals("abc", source.readUtf8()); // The read shouldn't consume any data.
   }
 
   @Test public void skip() throws Exception {
@@ -804,7 +913,7 @@ public final class BufferedSourceTest {
       sink.writeUtf8("");
       source.readHexadecimalUnsignedLong();
       fail();
-    } catch (IllegalStateException | EOFException expected) {
+    } catch (EOFException expected) {
     }
   }
 
@@ -880,7 +989,7 @@ public final class BufferedSourceTest {
       sink.writeUtf8("");
       source.readDecimalLong();
       fail();
-    } catch (IllegalStateException | EOFException expected) {
+    } catch (EOFException expected) {
     }
   }
 
