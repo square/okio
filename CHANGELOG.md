@@ -32,15 +32,15 @@ are available.
 | ByteString.of(byte[], int, int)          |  fun ByteArray.toByteString()        | extension method   |
 | ByteString.read(InputStream, int)        |  fun InputStream.readByteString(Int) | extension method   |
 | ByteString.size()                        |  val ByteString.size                 | val                |
+| DeflaterSink(Sink)                       |  fun Sink.deflater()                 | extension function |
 | ForwardingSink.delegate()                |  val ForwardingSink.delegate         | val                |
 | ForwardingSource.delegate()              |  val ForwardingSource.delegate       | val                |
+| GzipSink(Sink, Deflater)                 |  fun Sink.gzip()                     | extension function |
 | GzipSink.deflater()                      |  val GzipSink.deflater               | val                |
+| GzipSource(Source)                       |  fun Source.gzip()                   | extension function |
 | HashingSink.hash()                       |  val HashingSink.hash                | val                |
 | HashingSource.hash()                     |  val HashingSource.hash              | val                |
-| Okio.DeflaterSink(Sink)                  |  fun Sink.deflater()                 | extension function |
-| Okio.GzipSink(Sink, Deflater)            |  fun Sink.gzip()                     | extension function |
-| Okio.GzipSource(Source)                  |  fun Source.gzip()                   | extension function |
-| Okio.InflaterSink(Source)                |  fun Source.inflater()               | extension function |
+| InflaterSink(Source)                     |  fun Source.inflater()               | extension function |
 | Okio.appendingSink(File)                 |  fun File.appendingSink()            | extension function |
 | Okio.blackhole()                         |  fun blackholeSink()                 | top level function |
 | Okio.buffer(Sink)                        |  fun Sink.buffer()                   | extension function |
