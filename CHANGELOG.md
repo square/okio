@@ -1,6 +1,74 @@
 Change Log
 ==========
 
+## Version 2.0.0-RC1
+
+_2018-07-26_
+
+Okio 2 is a major release that upgrades the library's implementation language from Java to Kotlin.
+
+Okio 2.x is **binary-compatible** with Okio 1.x and does not change any behavior. Classes and .jar
+files compiled against 1.x can be used with 2.x without recompiling.
+
+Okio 2.x is **.java source compatible** with Okio 1.x in all but one corner case. In Okio 1.x
+`Buffer` would throw an unchecked `IllegalStateException` when attempting to read more bytes than
+available. Okio 2.x now throws a checked `EOFException` in this case. This is now consistent with
+the behavior of its `BufferedSource` interface. Java callers that don't already catch `IOException`
+will now need to.
+
+Okio 2.x is **.kt source-incompatible** with Okio 1.x. This release adopts Kotlin idioms where they
+are available.
+
+| Java                                     |  Kotlin                              | Idiom              |
+| :--------------------------------------- |  :---------------------------------- | :----------------- |
+| Buffer.getByte()                         |  operator fun Buffer.get()           | operator function  |
+| Buffer.size()                            |  val Buffer.size                     | val                |
+| ByteString.decodeBase64(String)          |  fun String.decodeBase64()           | extension method   |
+| ByteString.decodeHex(String)             |  fun String.decodeHex()              | extension method   |
+| ByteString.encodeString(String, Charset) |  fun String.encode(Charset)          | extension method   |
+| ByteString.encodeUtf8(String)            |  fun String.encodeUtf8()             | extension method   |
+| ByteString.getByte()                     |  operator fun ByteString.get()       | operator function  |
+| ByteString.of(ByteBuffer)                |  fun ByteBuffer.toByteString()       | extension method   |
+| ByteString.of(byte[], int, int)          |  fun ByteArray.toByteString()        | extension method   |
+| ByteString.read(InputStream, int)        |  fun InputStream.readByteString(Int) | extension method   |
+| ByteString.size()                        |  val ByteString.size                 | val                |
+| ForwardingSink.delegate()                |  val ForwardingSink.delegate         | val                |
+| ForwardingSource.delegate()              |  val ForwardingSource.delegate       | val                |
+| GzipSink.deflater()                      |  val GzipSink.deflater               | val                |
+| HashingSink.hash()                       |  val HashingSink.hash                | val                |
+| HashingSource.hash()                     |  val HashingSource.hash              | val                |
+| Okio.DeflaterSink(Sink)                  |  fun Sink.deflater()                 | extension function |
+| Okio.GzipSink(Sink, Deflater)            |  fun Sink.gzip()                     | extension function |
+| Okio.GzipSource(Source)                  |  fun Source.gzip()                   | extension function |
+| Okio.InflaterSink(Source)                |  fun Source.inflater()               | extension function |
+| Okio.appendingSink(File)                 |  fun File.appendingSink()            | extension function |
+| Okio.blackhole()                         |  fun blackholeSink()                 | top level function |
+| Okio.buffer(Sink)                        |  fun Sink.buffer()                   | extension function |
+| Okio.buffer(Source)                      |  fun Source.buffer()                 | extension function |
+| Okio.sink(File)                          |  fun File.sink()                     | extension function |
+| Okio.sink(OutputStream)                  |  fun OutputStream.sink()             | extension function |
+| Okio.sink(Path)                          |  fun Path.sink()                     | extension function |
+| Okio.sink(Socket)                        |  fun Socket.sink()                   | extension function |
+| Okio.source(File)                        |  fun File.source()                   | extension function |
+| Okio.source(InputStream)                 |  fun InputStream.source()            | extension function |
+| Okio.source(Path)                        |  fun Path.source()                   | extension function |
+| Okio.source(Socket)                      |  fun Socket.source()                 | extension function |
+| Pipe.sink()                              |  val Pipe.sink                       | val                |
+| Pipe.source()                            |  val Pipe.source                     | val                |
+| Utf8.utf8Size(String)                    |  fun String.utf8Size()               | extension function |
+
+Okio 2.x has **similar performance** to Okio 1.x. We benchmarked both versions to find potential
+performance regressions. We found one regression and fixed it: we were using `==` instead of `===`.
+
+Other changes in this release:
+
+ * New: Add a dependency on kotlin-stdlib. Okio's transitive dependencies grow from none in 1.x to
+   three in 2.x. These are kotlin-stdlib (939 KiB), kotlin-stdlib-common (104 KiB), and JetBrains'
+   annotations (17 KiB).
+
+ * New: Change Okio to build with Gradle instead of Maven.
+
+
 ## Version 1.15.0
 
 _2018-07-18_
