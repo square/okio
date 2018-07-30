@@ -23,14 +23,14 @@ are available.
 | :--------------------------------------- |  :---------------------------------- | :----------------- |
 | Buffer.getByte()                         |  operator fun Buffer.get()           | operator function  |
 | Buffer.size()                            |  val Buffer.size                     | val                |
-| ByteString.decodeBase64(String)          |  fun String.decodeBase64()           | extension method   |
-| ByteString.decodeHex(String)             |  fun String.decodeHex()              | extension method   |
-| ByteString.encodeString(String, Charset) |  fun String.encode(Charset)          | extension method   |
-| ByteString.encodeUtf8(String)            |  fun String.encodeUtf8()             | extension method   |
+| ByteString.decodeBase64(String)          |  fun String.decodeBase64()           | extension function |
+| ByteString.decodeHex(String)             |  fun String.decodeHex()              | extension function |
+| ByteString.encodeString(String, Charset) |  fun String.encode(Charset)          | extension function |
+| ByteString.encodeUtf8(String)            |  fun String.encodeUtf8()             | extension function |
 | ByteString.getByte()                     |  operator fun ByteString.get()       | operator function  |
-| ByteString.of(ByteBuffer)                |  fun ByteBuffer.toByteString()       | extension method   |
-| ByteString.of(byte[], int, int)          |  fun ByteArray.toByteString()        | extension method   |
-| ByteString.read(InputStream, int)        |  fun InputStream.readByteString(Int) | extension method   |
+| ByteString.of(ByteBuffer)                |  fun ByteBuffer.toByteString()       | extension function |
+| ByteString.of(byte[], int, int)          |  fun ByteArray.toByteString()        | extension function |
+| ByteString.read(InputStream, int)        |  fun InputStream.readByteString(Int) | extension function |
 | ByteString.size()                        |  val ByteString.size                 | val                |
 | DeflaterSink(Sink)                       |  fun Sink.deflater()                 | extension function |
 | ForwardingSink.delegate()                |  val ForwardingSink.delegate         | val                |
@@ -55,7 +55,7 @@ are available.
 | Okio.source(Socket)                      |  fun Socket.source()                 | extension function |
 | Pipe.sink()                              |  val Pipe.sink                       | val                |
 | Pipe.source()                            |  val Pipe.source                     | val                |
-| Utf8.utf8Size(String)                    |  fun String.utf8Size()               | extension function |
+| Utf8.size(String)                        |  fun String.utf8Size()               | extension function |
 
 Okio 2.x has **similar performance** to Okio 1.x. We benchmarked both versions to find potential
 performance regressions. We found one regression and fixed it: we were using `==` instead of `===`.
