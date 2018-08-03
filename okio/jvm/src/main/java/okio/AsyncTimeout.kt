@@ -252,8 +252,8 @@ open class AsyncTimeout : Timeout() {
     private const val TIMEOUT_WRITE_SIZE = 64 * 1024
 
     /** Duration for the watchdog thread to be idle before it shuts itself down.  */
-    @JvmStatic private val IDLE_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60)
-    @JvmStatic private val IDLE_TIMEOUT_NANOS = TimeUnit.MILLISECONDS.toNanos(IDLE_TIMEOUT_MILLIS)
+    private val IDLE_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(60)
+    private val IDLE_TIMEOUT_NANOS = TimeUnit.MILLISECONDS.toNanos(IDLE_TIMEOUT_MILLIS)
 
     /**
      * The watchdog thread processes a linked list of pending timeouts, sorted in the order to be
@@ -263,7 +263,7 @@ open class AsyncTimeout : Timeout() {
      * node to time out, or null if the queue is empty. The head is null until the watchdog thread
      * is started and also after being idle for [AsyncTimeout.IDLE_TIMEOUT_MILLIS].
      */
-    @JvmStatic private var head: AsyncTimeout? = null
+    private var head: AsyncTimeout? = null
 
     private fun scheduleTimeout(node: AsyncTimeout, timeoutNanos: Long, hasDeadline: Boolean) {
       synchronized(AsyncTimeout::class.java) {
