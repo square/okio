@@ -108,7 +108,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
 
   fun indexOf(other: ByteString, fromIndex: Int = 0): Int
 
-  open fun indexOf(other: ByteArray, fromIndex: Int = 0): Int
+  fun indexOf(other: ByteArray, fromIndex: Int = 0): Int
 
   override fun equals(other: Any?): Boolean
 
@@ -123,8 +123,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   override fun toString(): String
 
   companion object {
-    internal val HEX_DIGITS: CharArray
-
+    // TODO null in JS and Native - https://youtrack.jetbrains.com/issue/KT-26497
     /** A singleton empty `ByteString`.  */
     @JvmField
     val EMPTY: ByteString

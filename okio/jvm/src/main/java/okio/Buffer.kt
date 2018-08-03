@@ -761,7 +761,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       else -> {
         // We expected the first byte of a code point but got something else.
         skip(1)
-        return REPLACEMENT_CHARACTER
+        return REPLACEMENT_CODE_POINT
       }
     }
 
@@ -781,7 +781,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         codePoint = codePoint or (b and 0x3f)
       } else {
         skip(i.toLong())
-        return REPLACEMENT_CHARACTER
+        return REPLACEMENT_CODE_POINT
       }
     }
 
@@ -789,13 +789,13 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
     return when {
       codePoint > 0x10ffff -> {
-        REPLACEMENT_CHARACTER // Reject code points larger than the Unicode maximum.
+        REPLACEMENT_CODE_POINT // Reject code points larger than the Unicode maximum.
       }
       codePoint in 0xd800..0xdfff -> {
-        REPLACEMENT_CHARACTER // Reject partial surrogates.
+        REPLACEMENT_CODE_POINT // Reject partial surrogates.
       }
       codePoint < min -> {
-        REPLACEMENT_CHARACTER // Reject overlong code points.
+        REPLACEMENT_CODE_POINT // Reject overlong code points.
       }
       else -> codePoint
     }
@@ -928,16 +928,22 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
         c < 0x800 -> {
           // Emit a 11-bit character with 2 bytes.
-          writeByte(c shr 6          or 0xc0) // 110xxxxx
-          writeByte(c       and 0x3f or 0x80) // 10xxxxxx
+          val tail = writableSegment(2)
+          tail.data[tail.limit    ] = (c shr 6          or 0xc0).toByte() // 110xxxxx
+          tail.data[tail.limit + 1] = (c       and 0x3f or 0x80).toByte() // 10xxxxxx
+          tail.limit += 2
+          size += 2L
           i++
         }
 
         c < 0xd800 || c > 0xdfff -> {
           // Emit a 16-bit character with 3 bytes.
-          writeByte(c shr 12          or 0xe0) // 1110xxxx
-          writeByte(c shr  6 and 0x3f or 0x80) // 10xxxxxx
-          writeByte(c        and 0x3f or 0x80) // 10xxxxxx
+          val tail = writableSegment(3)
+          tail.data[tail.limit    ] = (c shr 12          or 0xe0).toByte() // 1110xxxx
+          tail.data[tail.limit + 1] = (c shr  6 and 0x3f or 0x80).toByte() // 10xxxxxx
+          tail.data[tail.limit + 2] = (c        and 0x3f or 0x80).toByte() // 10xxxxxx
+          tail.limit += 3
+          size += 3L
           i++
         }
 
@@ -953,13 +959,16 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
             // UTF-16 high surrogate: 110110xxxxxxxxxx (10 bits)
             // UTF-16 low surrogate:  110111yyyyyyyyyy (10 bits)
             // Unicode code point:    00010000000000000000 + xxxxxxxxxxyyyyyyyyyy (21 bits)
-            val codePoint = 0x010000 + (c and 0xd800.inv() shl 10 or (low and 0xdc00.inv()))
+            val codePoint = 0x010000 + (c and 0x03ff shl 10 or (low and 0x03ff))
 
             // Emit a 21-bit character with 4 bytes.
-            writeByte(codePoint shr 18          or 0xf0) // 11110xxx
-            writeByte(codePoint shr 12 and 0x3f or 0x80) // 10xxxxxx
-            writeByte(codePoint shr  6 and 0x3f or 0x80) // 10xxyyyy
-            writeByte(codePoint        and 0x3f or 0x80) // 10yyyyyy
+            val tail = writableSegment(4)
+            tail.data[tail.limit    ] = (codePoint shr 18          or 0xf0).toByte() // 11110xxx
+            tail.data[tail.limit + 1] = (codePoint shr 12 and 0x3f or 0x80).toByte() // 10xxxxxx
+            tail.data[tail.limit + 2] = (codePoint shr  6 and 0x3f or 0x80).toByte() // 10xxyyyy
+            tail.data[tail.limit + 3] = (codePoint        and 0x3f or 0x80).toByte() // 10yyyyyy
+            tail.limit += 4
+            size += 4L
             i += 2
           }
         }
@@ -977,8 +986,11 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       }
       codePoint < 0x800 -> {
         // Emit a 11-bit code point with 2 bytes.
-        writeByte(codePoint shr 6          or 0xc0) // 110xxxxx
-        writeByte(codePoint       and 0x3f or 0x80) // 10xxxxxx
+        val tail = writableSegment(2)
+        tail.data[tail.limit    ] = (codePoint shr 6          or 0xc0).toByte() // 110xxxxx
+        tail.data[tail.limit + 1] = (codePoint       and 0x3f or 0x80).toByte() // 10xxxxxx
+        tail.limit += 2
+        size += 2L
       }
       codePoint in 0xd800..0xdfff -> {
         // Emit a replacement character for a partial surrogate.
@@ -986,16 +998,22 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       }
       codePoint < 0x10000 -> {
         // Emit a 16-bit code point with 3 bytes.
-        writeByte(codePoint shr 12          or 0xe0) // 1110xxxx
-        writeByte(codePoint shr  6 and 0x3f or 0x80) // 10xxxxxx
-        writeByte(codePoint        and 0x3f or 0x80) // 10xxxxxx
+        val tail = writableSegment(3)
+        tail.data[tail.limit    ] = (codePoint shr 12          or 0xe0).toByte() // 1110xxxx
+        tail.data[tail.limit + 1] = (codePoint shr  6 and 0x3f or 0x80).toByte() // 10xxxxxx
+        tail.data[tail.limit + 2] = (codePoint        and 0x3f or 0x80).toByte() // 10xxxxxx
+        tail.limit += 3
+        size += 3L
       }
       codePoint <= 0x10ffff -> {
         // Emit a 21-bit code point with 4 bytes.
-        writeByte(codePoint shr 18          or 0xf0) // 11110xxx
-        writeByte(codePoint shr 12 and 0x3f or 0x80) // 10xxxxxx
-        writeByte(codePoint shr  6 and 0x3f or 0x80) // 10xxxxxx
-        writeByte(codePoint        and 0x3f or 0x80) // 10xxxxxx
+        val tail = writableSegment(4)
+        tail.data[tail.limit    ] = (codePoint shr 18          or 0xf0).toByte() // 11110xxx
+        tail.data[tail.limit + 1] = (codePoint shr 12 and 0x3f or 0x80).toByte() // 10xxxxxx
+        tail.data[tail.limit + 2] = (codePoint shr  6 and 0x3f or 0x80).toByte() // 10xxyyyy
+        tail.data[tail.limit + 3] = (codePoint        and 0x3f or 0x80).toByte() // 10yyyyyy
+        tail.limit += 4
+        size += 4L
       }
       else -> {
         throw IllegalArgumentException("Unexpected code point: ${Integer.toHexString(codePoint)}")

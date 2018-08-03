@@ -30,7 +30,7 @@ object TestUtil {
   // Necessary to make an internal member visible to Java.
   const val SEGMENT_POOL_MAX_SIZE = SegmentPool.MAX_SIZE
   const val SEGMENT_SIZE = Segment.SIZE
-  const val REPLACEMENT_CHARACTER: Int = okio.REPLACEMENT_CHARACTER
+  const val REPLACEMENT_CODE_POINT: Int = okio.REPLACEMENT_CODE_POINT
   @JvmStatic fun segmentPoolByteCount() = SegmentPool.byteCount
 
   @JvmStatic

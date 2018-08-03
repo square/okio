@@ -16,7 +16,6 @@
 package okio
 
 import okio.internal.COMMON_EMPTY
-import okio.internal.COMMON_HEX_DIGITS
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
@@ -96,7 +95,10 @@ internal actual constructor(
       commonSubstring(beginIndex, endIndex)
 
   /** Returns the byte at `pos`.  */
-  internal actual open fun internalGet(pos: Int) = commonGetByte(pos)
+  internal actual open fun internalGet(pos: Int): Byte {
+    if (pos >= size || pos < 0) throw ArrayIndexOutOfBoundsException("size=$size pos=$pos")
+    return commonGetByte(pos)
+  }
 
   /** Returns the byte at `index`.  */
   actual operator fun get(index: Int): Byte = internalGet(index)
@@ -177,8 +179,6 @@ internal actual constructor(
   actual override fun toString() = commonToString()
 
   actual companion object {
-    internal actual val HEX_DIGITS = COMMON_HEX_DIGITS
-
     /** A singleton empty `ByteString`.  */
     actual val EMPTY: ByteString = COMMON_EMPTY
 

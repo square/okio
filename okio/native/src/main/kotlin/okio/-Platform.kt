@@ -16,6 +16,7 @@
 
 package okio
 
+import okio.internal.commonAsUtf8ToByteArray
 import kotlin.annotation.AnnotationTarget.FIELD
 import kotlin.annotation.AnnotationTarget.FILE
 import kotlin.annotation.AnnotationTarget.FUNCTION
@@ -46,25 +47,8 @@ internal actual fun arraycopy(
   }
 }
 
-internal actual fun hashCode(a: ByteArray): Int {
-  var result = 1
-  for (element in a) {
-    result = 31 * result + element
-  }
-  return result
-}
-
 internal actual fun ByteArray.toUtf8String(): String = stringFromUtf8()
 
-internal actual fun CharArray.createString(): String = String(this)
+internal actual fun String.asUtf8ToByteArray(): ByteArray = commonAsUtf8ToByteArray()
 
-internal actual fun String.asUtf8ToByteArray(): ByteArray = toUtf8()
-
-// TODO remove if https://youtrack.jetbrains.com/issue/KT-20641 provides a better solution
-actual open class IndexOutOfBoundsException actual constructor(
-  message: String
-) : RuntimeException()
-
-actual open class ArrayIndexOutOfBoundsException actual constructor(
-  message: String
-) : IndexOutOfBoundsException(message)
+actual typealias ArrayIndexOutOfBoundsException = kotlin.ArrayIndexOutOfBoundsException
