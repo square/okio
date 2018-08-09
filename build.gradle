@@ -1,6 +1,6 @@
 buildscript {
   ext.versions = [
-      'kotlin': '1.2.50',
+      'kotlin': '1.2.60',
       'kotlinNative': '0.8',
       'jmhPlugin': '0.4.5',
       'animalSnifferPlugin': '1.4.3',
