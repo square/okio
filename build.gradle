@@ -12,6 +12,7 @@ buildscript {
       'assertj': '1.7.0',
       'shadowPlugin': '2.0.2',
       'nodePlugin': '1.2.0',
+      'mavenPublishPlugin': '0.4.0'
   ]
 
   ext.deps = [
@@ -48,6 +49,7 @@ buildscript {
       'jsr305': "com.google.code.findbugs:jsr305:${versions.jsr305}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
       'node': "com.moowork.gradle:gradle-node-plugin:${versions.nodePlugin}",
+      'mavenPublish': "com.vanniktech:gradle-maven-publish-plugin:${versions.mavenPublishPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
@@ -63,6 +65,7 @@ buildscript {
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
     classpath deps.node
+    classpath deps.mavenPublish
   }
 
   repositories {
