@@ -1940,7 +1940,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
      * the readable range (at least 1), or -1 if we have reached the end of the buffer and there are
      * no more bytes to read.
      */
-    operator fun next(): Int {
+    fun next(): Int {
       check(offset != buffer!!.size) { "no more bytes" }
       return if (offset == -1L) seek(0L) else seek(offset + (end - start))
     }
