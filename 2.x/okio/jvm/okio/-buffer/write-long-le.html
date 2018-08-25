@@ -1,0 +1,39 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.writeLongLe - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./write-long-le.html">writeLongLe</a><br/>
+<br/>
+<h1>writeLongLe</h1>
+<a name="okio.Buffer$writeLongLe(kotlin.Long)"></a>
+<code><span class="keyword">fun </span><span class="identifier">writeLongLe</span><span class="symbol">(</span><span class="identifier" id="okio.Buffer$writeLongLe(kotlin.Long)/v">v</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">Buffer</span></a></code>
+<p>Overrides <a href="../-buffered-sink/write-long-le.html">BufferedSink.writeLongLe</a></p>
+<p>Writes a little-endian long to this sink using eight bytes.</p>
+<pre><code>Buffer buffer = new Buffer();
+buffer.writeLongLe(9223372036854775807L);
+buffer.writeLongLe(15);
+
+assertEquals(16, buffer.size());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0x7f, buffer.readByte());
+assertEquals((byte) 0x0f, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals(0, buffer.size());
+</code></pre>
+</BODY>
+</HTML>

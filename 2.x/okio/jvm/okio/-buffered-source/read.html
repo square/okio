@@ -1,0 +1,20 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>BufferedSource.read - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">BufferedSource</a>&nbsp;/&nbsp;<a href="./read.html">read</a><br/>
+<br/>
+<h1>read</h1>
+<a name="okio.BufferedSource$read(kotlin.ByteArray)"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">read</span><span class="symbol">(</span><span class="identifier" id="okio.BufferedSource$read(kotlin.ByteArray)/sink">sink</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Removes up to <code>sink.length</code> bytes from this and copies them into <code>sink</code>. Returns the number of
+bytes read, or -1 if this source is exhausted.</p>
+<a name="okio.BufferedSource$read(kotlin.ByteArray, kotlin.Int, kotlin.Int)"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">read</span><span class="symbol">(</span><span class="identifier" id="okio.BufferedSource$read(kotlin.ByteArray, kotlin.Int, kotlin.Int)/sink">sink</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">, </span><span class="identifier" id="okio.BufferedSource$read(kotlin.ByteArray, kotlin.Int, kotlin.Int)/offset">offset</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="okio.BufferedSource$read(kotlin.ByteArray, kotlin.Int, kotlin.Int)/byteCount">byteCount</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Removes up to <code>byteCount</code> bytes from this and copies them into <code>sink</code> at <code>offset</code>. Returns the
+number of bytes read, or -1 if this source is exhausted.</p>
+</BODY>
+</HTML>

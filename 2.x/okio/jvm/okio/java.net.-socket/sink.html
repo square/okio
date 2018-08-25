@@ -1,0 +1,17 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>sink - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">java.net.Socket</a>&nbsp;/&nbsp;<a href="./sink.html">sink</a><br/>
+<br/>
+<h1>sink</h1>
+<a name="okio$sink(java.net.Socket)"></a>
+<code><span class="keyword">fun </span><a href="http://docs.oracle.com/javase/6/docs/api/java/net/Socket.html"><span class="identifier">Socket</span></a><span class="symbol">.</span><span class="identifier">sink</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-sink/index.html"><span class="identifier">Sink</span></a></code>
+<p>Returns a sink that writes to <code>socket</code>. Prefer this over <a href="../java.io.-output-stream/sink.html">sink</a>
+because this method honors timeouts. When the socket
+write times out, the socket is asynchronously closed by a watchdog thread.</p>
+</BODY>
+</HTML>

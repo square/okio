@@ -1,0 +1,177 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Timeout - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="./index.html">Timeout</a><br/>
+<br/>
+<h1>Timeout</h1>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">Timeout</span></code>
+<p>A policy on how much time to spend on a task before giving up. When a task times out, it is left
+in an unspecified state and should be abandoned. For example, if reading from a source times out,
+that source should be closed and the read should be retried later. If writing to a sink times
+out, the same rules apply: close the sink and retry later.</p>
+<h3>Timeouts and Deadlines</h3>
+<p>This class offers two complementary controls to define a timeout policy.</p>
+<p><strong>Timeouts</strong> specify the maximum time to wait for a single operation to complete. Timeouts are
+typically used to detect problems like network partitions. For example, if a remote peer doesn't
+return <em>any</em> data for ten seconds, we may assume that the peer is unavailable.</p>
+<p><strong>Deadlines</strong> specify the maximum time to spend on a job, composed of one or more operations. Use
+deadlines to set an upper bound on the time invested on a job. For example, a battery-conscious
+app may limit how much time it spends pre-loading content.</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">Timeout</span><span class="symbol">(</span><span class="symbol">)</span></code>
+<p>A policy on how much time to spend on a task before giving up. When a task times out, it is left
+in an unspecified state and should be abandoned. For example, if reading from a source times out,
+that source should be closed and the read should be retried later. If writing to a sink times
+out, the same rules apply: close the sink and retry later.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="clear-deadline.html">clearDeadline</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">clearDeadline</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Timeout</span></a></code>
+<p>Clears the deadline.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="clear-timeout.html">clearTimeout</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">clearTimeout</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Timeout</span></a></code>
+<p>Clears the timeout. Operating system timeouts may still apply.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="deadline.html">deadline</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">deadline</span><span class="symbol">(</span><span class="identifier" id="okio.Timeout$deadline(kotlin.Long, java.util.concurrent.TimeUnit)/duration">duration</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">, </span><span class="identifier" id="okio.Timeout$deadline(kotlin.Long, java.util.concurrent.TimeUnit)/unit">unit</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/TimeUnit.html"><span class="identifier">TimeUnit</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Timeout</span></a></code>
+<p>Set a deadline of now plus <code>duration</code> time.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="deadline-nano-time.html">deadlineNanoTime</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">deadlineNanoTime</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Returns the <a href="http://docs.oracle.com/javase/6/docs/api/java/lang/System.html#nanoTime()">nano time</a> when the deadline will be reached.</p>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">deadlineNanoTime</span><span class="symbol">(</span><span class="identifier" id="okio.Timeout$deadlineNanoTime(kotlin.Long)/deadlineNanoTime">deadlineNanoTime</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Timeout</span></a></code>
+<p>Sets the <a href="http://docs.oracle.com/javase/6/docs/api/java/lang/System.html#nanoTime()">nano time</a> when the deadline will be reached. All operations must
+complete before this time. Use a deadline to set a maximum bound on the time spent on a
+sequence of operations.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="has-deadline.html">hasDeadline</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">hasDeadline</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<p>Returns true if a deadline is enabled.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="throw-if-reached.html">throwIfReached</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">throwIfReached</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Throws an <a href="http://docs.oracle.com/javase/6/docs/api/java/io/InterruptedIOException.html">InterruptedIOException</a> if the deadline has been reached or if the current thread
+has been interrupted. This method doesn't detect timeouts; that should be implemented to
+asynchronously abort an in-progress operation.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="timeout.html">timeout</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">timeout</span><span class="symbol">(</span><span class="identifier" id="okio.Timeout$timeout(kotlin.Long, java.util.concurrent.TimeUnit)/timeout">timeout</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">, </span><span class="identifier" id="okio.Timeout$timeout(kotlin.Long, java.util.concurrent.TimeUnit)/unit">unit</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/TimeUnit.html"><span class="identifier">TimeUnit</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Timeout</span></a></code>
+<p>Wait at most <code>timeout</code> time before aborting an operation. Using a per-operation timeout means
+that as long as forward progress is being made, no sequence of operations will fail.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="timeout-nanos.html">timeoutNanos</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">timeoutNanos</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Returns the timeout in nanoseconds, or <code>0</code> for no timeout.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="wait-until-notified.html">waitUntilNotified</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">waitUntilNotified</span><span class="symbol">(</span><span class="identifier" id="okio.Timeout$waitUntilNotified(kotlin.Any)/monitor">monitor</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Waits on <code>monitor</code> until it is notified. Throws <a href="http://docs.oracle.com/javase/6/docs/api/java/io/InterruptedIOException.html">InterruptedIOException</a> if either the thread
+is interrupted or if this timeout elapses before <code>monitor</code> is notified. The caller must be
+synchronized on <code>monitor</code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-n-o-n-e.html">NONE</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">NONE</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Timeout</span></a></code>
+<p>An empty timeout that neither tracks nor detects timeouts. Use this when timeouts aren't
+necessary, such as in implementations whose operations do not block.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../-async-timeout/index.html">AsyncTimeout</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">AsyncTimeout</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Timeout</span></a></code>
+<p>This timeout uses a background thread to take action exactly when the timeout occurs. Use this to
+implement timeouts where they aren't supported natively, such as to sockets that are blocked on
+writing.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-forwarding-timeout/index.html">ForwardingTimeout</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ForwardingTimeout</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Timeout</span></a></code>
+<p>A <a href="./index.html">Timeout</a> which forwards calls to another. Useful for subclassing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

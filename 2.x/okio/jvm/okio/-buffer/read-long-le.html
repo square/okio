@@ -1,0 +1,41 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.readLongLe - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./read-long-le.html">readLongLe</a><br/>
+<br/>
+<h1>readLongLe</h1>
+<a name="okio.Buffer$readLongLe()"></a>
+<code><span class="keyword">fun </span><span class="identifier">readLongLe</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Overrides <a href="../-buffered-source/read-long-le.html">BufferedSource.readLongLe</a></p>
+<p>Removes eight bytes from this source and returns a little-endian long.</p>
+<pre><code>Buffer buffer = new Buffer()
+    .writeByte(0xff)
+    .writeByte(0xff)
+    .writeByte(0xff)
+    .writeByte(0xff)
+    .writeByte(0xff)
+    .writeByte(0xff)
+    .writeByte(0xff)
+    .writeByte(0x7f)
+    .writeByte(0x0f)
+    .writeByte(0x00)
+    .writeByte(0x00)
+    .writeByte(0x00)
+    .writeByte(0x00)
+    .writeByte(0x00)
+    .writeByte(0x00)
+    .writeByte(0x00);
+assertEquals(16, buffer.size());
+
+assertEquals(9223372036854775807L, buffer.readLongLe());
+assertEquals(8, buffer.size());
+
+assertEquals(15, buffer.readLongLe());
+assertEquals(0, buffer.size());
+</code></pre>
+</BODY>
+</HTML>

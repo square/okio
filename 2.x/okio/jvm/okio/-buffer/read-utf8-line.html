@@ -1,0 +1,39 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.readUtf8Line - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./read-utf8-line.html">readUtf8Line</a><br/>
+<br/>
+<h1>readUtf8Line</h1>
+<a name="okio.Buffer$readUtf8Line()"></a>
+<code><span class="keyword">fun </span><span class="identifier">readUtf8Line</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span></code>
+<p>Overrides <a href="../-buffered-source/read-utf8-line.html">BufferedSource.readUtf8Line</a></p>
+<p>Removes and returns characters up to but not including the next line break. A line break is
+either <code>"\n"</code> or <code>"\r\n"</code>; these characters are not included in the result.</p>
+<pre><code>Buffer buffer = new Buffer()
+    .writeUtf8("I'm a hacker!\n")
+    .writeUtf8("That's what I said: you're a nerd.\n")
+    .writeUtf8("I prefer to be called a hacker!\n");
+assertEquals(81, buffer.size());
+
+assertEquals("I'm a hacker!", buffer.readUtf8Line());
+assertEquals(67, buffer.size());
+
+assertEquals("That's what I said: you're a nerd.", buffer.readUtf8Line());
+assertEquals(32, buffer.size());
+
+assertEquals("I prefer to be called a hacker!", buffer.readUtf8Line());
+assertEquals(0, buffer.size());
+
+assertEquals(null, buffer.readUtf8Line());
+assertEquals(0, buffer.size());
+</code></pre>
+<p><strong>On the end of the stream this method returns null,</strong> just like <a href="http://docs.oracle.com/javase/6/docs/api/java/io/BufferedReader.html">java.io.BufferedReader</a>. If
+the source doesn't end with a line break then an implicit line break is assumed. Null is
+returned once the source is exhausted. Use this for human-generated data, where a trailing
+line break is optional.</p>
+</BODY>
+</HTML>

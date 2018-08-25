@@ -1,0 +1,29 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.readShortLe - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./read-short-le.html">readShortLe</a><br/>
+<br/>
+<h1>readShortLe</h1>
+<a name="okio.Buffer$readShortLe()"></a>
+<code><span class="keyword">fun </span><span class="identifier">readShortLe</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html"><span class="identifier">Short</span></a></code>
+<p>Overrides <a href="../-buffered-source/read-short-le.html">BufferedSource.readShortLe</a></p>
+<p>Removes two bytes from this source and returns a little-endian short.</p>
+<pre><code>Buffer buffer = new Buffer()
+    .writeByte(0xff)
+    .writeByte(0x7f)
+    .writeByte(0x0f)
+    .writeByte(0x00);
+assertEquals(4, buffer.size());
+
+assertEquals(32767, buffer.readShortLe());
+assertEquals(2, buffer.size());
+
+assertEquals(15, buffer.readShortLe());
+assertEquals(0, buffer.size());
+</code></pre>
+</BODY>
+</HTML>

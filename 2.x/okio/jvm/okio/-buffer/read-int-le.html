@@ -1,0 +1,33 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.readIntLe - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./read-int-le.html">readIntLe</a><br/>
+<br/>
+<h1>readIntLe</h1>
+<a name="okio.Buffer$readIntLe()"></a>
+<code><span class="keyword">fun </span><span class="identifier">readIntLe</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Overrides <a href="../-buffered-source/read-int-le.html">BufferedSource.readIntLe</a></p>
+<p>Removes four bytes from this source and returns a little-endian int.</p>
+<pre><code>Buffer buffer = new Buffer()
+    .writeByte(0xff)
+    .writeByte(0xff)
+    .writeByte(0xff)
+    .writeByte(0x7f)
+    .writeByte(0x0f)
+    .writeByte(0x00)
+    .writeByte(0x00)
+    .writeByte(0x00);
+assertEquals(8, buffer.size());
+
+assertEquals(2147483647, buffer.readIntLe());
+assertEquals(4, buffer.size());
+
+assertEquals(15, buffer.readIntLe());
+assertEquals(0, buffer.size());
+</code></pre>
+</BODY>
+</HTML>

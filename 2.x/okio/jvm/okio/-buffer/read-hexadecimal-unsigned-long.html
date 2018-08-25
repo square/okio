@@ -1,0 +1,30 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.readHexadecimalUnsignedLong - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./read-hexadecimal-unsigned-long.html">readHexadecimalUnsignedLong</a><br/>
+<br/>
+<h1>readHexadecimalUnsignedLong</h1>
+<a name="okio.Buffer$readHexadecimalUnsignedLong()"></a>
+<code><span class="keyword">fun </span><span class="identifier">readHexadecimalUnsignedLong</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Overrides <a href="../-buffered-source/read-hexadecimal-unsigned-long.html">BufferedSource.readHexadecimalUnsignedLong</a></p>
+<p>Reads a long form this source in hexadecimal form (i.e., as a string in base 16). This will
+iterate until a non-hexadecimal character is found.</p>
+<pre><code>Buffer buffer = new Buffer()
+    .writeUtf8("ffff CAFEBABE 10");
+
+assertEquals(65535L, buffer.readHexadecimalUnsignedLong());
+assertEquals(' ', buffer.readByte());
+assertEquals(0xcafebabeL, buffer.readHexadecimalUnsignedLong());
+assertEquals(' ', buffer.readByte());
+assertEquals(0x10L, buffer.readHexadecimalUnsignedLong());
+</code></pre>
+<h3>Exceptions</h3>
+<p><a name="NumberFormatException"></a>
+<code>NumberFormatException</code> - if the found hexadecimal does not fit into a <code>long</code> or
+hexadecimal was not found.</p>
+</BODY>
+</HTML>

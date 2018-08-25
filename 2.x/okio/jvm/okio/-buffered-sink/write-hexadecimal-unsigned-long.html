@@ -1,0 +1,24 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>BufferedSink.writeHexadecimalUnsignedLong - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">BufferedSink</a>&nbsp;/&nbsp;<a href="./write-hexadecimal-unsigned-long.html">writeHexadecimalUnsignedLong</a><br/>
+<br/>
+<h1>writeHexadecimalUnsignedLong</h1>
+<a name="okio.BufferedSink$writeHexadecimalUnsignedLong(kotlin.Long)"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">writeHexadecimalUnsignedLong</span><span class="symbol">(</span><span class="identifier" id="okio.BufferedSink$writeHexadecimalUnsignedLong(kotlin.Long)/v">v</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BufferedSink</span></a></code>
+<p>Writes a long to this sink in hexadecimal form (i.e., as a string in base 16).</p>
+<pre><code>Buffer buffer = new Buffer();
+buffer.writeHexadecimalUnsignedLong(65535L);
+buffer.writeByte(' ');
+buffer.writeHexadecimalUnsignedLong(0xcafebabeL);
+buffer.writeByte(' ');
+buffer.writeHexadecimalUnsignedLong(0x10L);
+
+assertEquals("ffff cafebabe 10", buffer.readUtf8());
+</code></pre>
+</BODY>
+</HTML>

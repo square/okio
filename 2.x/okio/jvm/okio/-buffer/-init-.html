@@ -1,0 +1,22 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.<init> - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./-init-.html">&lt;init&gt;</a><br/>
+<br/>
+<h1>&lt;init&gt;</h1>
+<a name="okio.Buffer$&lt;init&gt;()"></a>
+<code><span class="identifier">Buffer</span><span class="symbol">(</span><span class="symbol">)</span></code>
+<p>A collection of bytes in memory.</p>
+<p><strong>Moving data from one buffer to another is fast.</strong> Instead of copying bytes from one place in
+memory to another, this class just changes ownership of the underlying byte arrays.</p>
+<p><strong>This buffer grows with your data.</strong> Just like ArrayList, each buffer starts small. It consumes
+only the memory it needs to.</p>
+<p><strong>This buffer pools its byte arrays.</strong> When you allocate a byte array in Java, the runtime must
+zero-fill the requested array before returning it to you. Even if you're going to write over that
+space anyway. This class avoids zero-fill and GC churn by pooling byte arrays.</p>
+</BODY>
+</HTML>

@@ -1,0 +1,30 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.readDecimalLong - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./read-decimal-long.html">readDecimalLong</a><br/>
+<br/>
+<h1>readDecimalLong</h1>
+<a name="okio.Buffer$readDecimalLong()"></a>
+<code><span class="keyword">fun </span><span class="identifier">readDecimalLong</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Overrides <a href="../-buffered-source/read-decimal-long.html">BufferedSource.readDecimalLong</a></p>
+<p>Reads a long from this source in signed decimal form (i.e., as a string in base 10 with
+optional leading '-'). This will iterate until a non-digit character is found.</p>
+<pre><code>Buffer buffer = new Buffer()
+    .writeUtf8("8675309 -123 00001");
+
+assertEquals(8675309L, buffer.readDecimalLong());
+assertEquals(' ', buffer.readByte());
+assertEquals(-123L, buffer.readDecimalLong());
+assertEquals(' ', buffer.readByte());
+assertEquals(1L, buffer.readDecimalLong());
+</code></pre>
+<h3>Exceptions</h3>
+<p><a name="NumberFormatException"></a>
+<code>NumberFormatException</code> - if the found digits do not fit into a <code>long</code> or a decimal
+number was not present.</p>
+</BODY>
+</HTML>

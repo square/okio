@@ -1,0 +1,35 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>BufferedSink.emit - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">BufferedSink</a>&nbsp;/&nbsp;<a href="./emit.html">emit</a><br/>
+<br/>
+<h1>emit</h1>
+<a name="okio.BufferedSink$emit()"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">emit</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BufferedSink</span></a></code>
+<p>Writes all buffered data to the underlying sink, if one exists. Like <a href="flush.html">flush</a>, but weaker. Call
+this before this buffered sink goes out of scope so that its data can reach its destination.</p>
+<pre><code>BufferedSink b0 = new Buffer();
+BufferedSink b1 = Okio.buffer(b0);
+BufferedSink b2 = Okio.buffer(b1);
+
+b2.writeUtf8("hello");
+assertEquals(5, b2.buffer().size());
+assertEquals(0, b1.buffer().size());
+assertEquals(0, b0.buffer().size());
+
+b2.emit();
+assertEquals(0, b2.buffer().size());
+assertEquals(5, b1.buffer().size());
+assertEquals(0, b0.buffer().size());
+
+b1.emit();
+assertEquals(0, b2.buffer().size());
+assertEquals(0, b1.buffer().size());
+assertEquals(5, b0.buffer().size());
+</code></pre>
+</BODY>
+</HTML>

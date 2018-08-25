@@ -1,0 +1,82 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>BufferPerformanceBenchmark.BufferSetup - jvm</title>
+<link rel="stylesheet" href="../../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../../index.html">com.squareup.okio.benchmarks</a>&nbsp;/&nbsp;<a href="../index.html">BufferPerformanceBenchmark</a>&nbsp;/&nbsp;<a href="./index.html">BufferSetup</a><br/>
+<br/>
+<h1>BufferSetup</h1>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">BufferSetup</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-buffer-state/index.html"><span class="identifier">BufferState</span></a></code>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">BufferSetup</span><span class="symbol">(</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="dispose.html">dispose</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">dispose</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="receive.html">receive</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">receive</span><span class="symbol">(</span><span class="identifier" id="com.squareup.okio.benchmarks.BufferPerformanceBenchmark.BufferSetup$receive(kotlin.ByteArray)/bytes">bytes</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../../okio/-buffered-source/index.html"><span class="identifier">BufferedSource</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="transmit.html">transmit</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">transmit</span><span class="symbol">(</span><span class="identifier" id="com.squareup.okio.benchmarks.BufferPerformanceBenchmark.BufferSetup$transmit(kotlin.ByteArray)/bytes">bytes</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../../okio/-buffered-source/index.html"><span class="identifier">BufferedSource</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inherited Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../-buffer-state/release-buffers.html">releaseBuffers</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">releaseBuffers</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../-cold-buffers/index.html">ColdBuffers</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ColdBuffers</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">BufferSetup</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="../-hot-buffers/index.html">HotBuffers</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">HotBuffers</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">BufferSetup</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

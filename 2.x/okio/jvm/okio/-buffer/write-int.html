@@ -1,0 +1,31 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.writeInt - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./write-int.html">writeInt</a><br/>
+<br/>
+<h1>writeInt</h1>
+<a name="okio.Buffer$writeInt(kotlin.Int)"></a>
+<code><span class="keyword">fun </span><span class="identifier">writeInt</span><span class="symbol">(</span><span class="identifier" id="okio.Buffer$writeInt(kotlin.Int)/i">i</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">Buffer</span></a></code>
+<p>Overrides <a href="../-buffered-sink/write-int.html">BufferedSink.writeInt</a></p>
+<p>Writes a big-endian int to this sink using four bytes.</p>
+<pre><code>Buffer buffer = new Buffer();
+buffer.writeInt(2147483647);
+buffer.writeInt(15);
+
+assertEquals(8, buffer.size());
+assertEquals((byte) 0x7f, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0xff, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x00, buffer.readByte());
+assertEquals((byte) 0x0f, buffer.readByte());
+assertEquals(0, buffer.size());
+</code></pre>
+</BODY>
+</HTML>

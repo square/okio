@@ -1,0 +1,29 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>BufferedSource.rangeEquals - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">BufferedSource</a>&nbsp;/&nbsp;<a href="./range-equals.html">rangeEquals</a><br/>
+<br/>
+<h1>rangeEquals</h1>
+<a name="okio.BufferedSource$rangeEquals(kotlin.Long, okio.ByteString)"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">rangeEquals</span><span class="symbol">(</span><span class="identifier" id="okio.BufferedSource$rangeEquals(kotlin.Long, okio.ByteString)/offset">offset</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">, </span><span class="identifier" id="okio.BufferedSource$rangeEquals(kotlin.Long, okio.ByteString)/bytes">bytes</span><span class="symbol">:</span>&nbsp;<a href="../-byte-string/index.html"><span class="identifier">ByteString</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<p>Returns true if the bytes at <code>offset</code> in this source equal <code>bytes</code>. This expands the buffer as
+necessary until a byte does not match, all bytes are matched, or if the stream is exhausted
+before enough bytes could determine a match.</p>
+<pre><code>ByteString simonSays = ByteString.encodeUtf8("Simon says:");
+
+Buffer standOnOneLeg = new Buffer().writeUtf8("Simon says: Stand on one leg.");
+assertTrue(standOnOneLeg.rangeEquals(0, simonSays));
+
+Buffer payMeMoney = new Buffer().writeUtf8("Pay me $1,000,000.");
+assertFalse(payMeMoney.rangeEquals(0, simonSays));
+</code></pre><a name="okio.BufferedSource$rangeEquals(kotlin.Long, okio.ByteString, kotlin.Int, kotlin.Int)"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">rangeEquals</span><span class="symbol">(</span><span class="identifier" id="okio.BufferedSource$rangeEquals(kotlin.Long, okio.ByteString, kotlin.Int, kotlin.Int)/offset">offset</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">, </span><span class="identifier" id="okio.BufferedSource$rangeEquals(kotlin.Long, okio.ByteString, kotlin.Int, kotlin.Int)/bytes">bytes</span><span class="symbol">:</span>&nbsp;<a href="../-byte-string/index.html"><span class="identifier">ByteString</span></a><span class="symbol">, </span><span class="identifier" id="okio.BufferedSource$rangeEquals(kotlin.Long, okio.ByteString, kotlin.Int, kotlin.Int)/bytesOffset">bytesOffset</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="okio.BufferedSource$rangeEquals(kotlin.Long, okio.ByteString, kotlin.Int, kotlin.Int)/byteCount">byteCount</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<p>Returns true if <code>byteCount</code> bytes at <code>offset</code> in this source equal <code>bytes</code> at <code>bytesOffset</code>.
+This expands the buffer as necessary until a byte does not match, all bytes are matched, or if
+the stream is exhausted before enough bytes could determine a match.</p>
+</BODY>
+</HTML>

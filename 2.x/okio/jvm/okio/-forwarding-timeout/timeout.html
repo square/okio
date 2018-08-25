@@ -1,0 +1,19 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>ForwardingTimeout.timeout - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">ForwardingTimeout</a>&nbsp;/&nbsp;<a href="./timeout.html">timeout</a><br/>
+<br/>
+<h1>timeout</h1>
+<a name="okio.ForwardingTimeout$timeout(kotlin.Long, java.util.concurrent.TimeUnit)"></a>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">timeout</span><span class="symbol">(</span><span class="identifier" id="okio.ForwardingTimeout$timeout(kotlin.Long, java.util.concurrent.TimeUnit)/timeout">timeout</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">, </span><span class="identifier" id="okio.ForwardingTimeout$timeout(kotlin.Long, java.util.concurrent.TimeUnit)/unit">unit</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/TimeUnit.html"><span class="identifier">TimeUnit</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../-timeout/index.html"><span class="identifier">Timeout</span></a></code>
+<p>Overrides <a href="../-timeout/timeout.html">Timeout.timeout</a></p>
+<p>Wait at most <code>timeout</code> time before aborting an operation. Using a per-operation timeout means
+that as long as forward progress is being made, no sequence of operations will fail.</p>
+<p>If <code>timeout == 0</code>, operations will run indefinitely. (Operating system timeouts may still
+apply.)</p>
+</BODY>
+</HTML>

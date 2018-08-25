@@ -1,0 +1,17 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Timeout.throwIfReached - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Timeout</a>&nbsp;/&nbsp;<a href="./throw-if-reached.html">throwIfReached</a><br/>
+<br/>
+<h1>throwIfReached</h1>
+<a name="okio.Timeout$throwIfReached()"></a>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">throwIfReached</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Throws an <a href="http://docs.oracle.com/javase/6/docs/api/java/io/InterruptedIOException.html">InterruptedIOException</a> if the deadline has been reached or if the current thread
+has been interrupted. This method doesn't detect timeouts; that should be implemented to
+asynchronously abort an in-progress operation.</p>
+</BODY>
+</HTML>

@@ -1,0 +1,277 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.UnsafeCursor - jvm</title>
+<link rel="stylesheet" href="../../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../../index.html">okio</a>&nbsp;/&nbsp;<a href="../index.html">Buffer</a>&nbsp;/&nbsp;<a href="./index.html">UnsafeCursor</a><br/>
+<br/>
+<h1>UnsafeCursor</h1>
+<code><span class="keyword">class </span><span class="identifier">UnsafeCursor</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/io/Closeable.html"><span class="identifier">Closeable</span></a></code>
+<p>A handle to the underlying data in a buffer. This handle is unsafe because it does not enforce
+its own invariants. Instead, it assumes a careful user who has studied Okio's implementation
+details and their consequences.</p>
+Buffer Internals
+<p>Most code should use <code>Buffer</code> as a black box: a class that holds 0 or more bytes of
+data with efficient APIs to append data to the end and to consume data from the front. Usually
+this is also the most efficient way to use buffers because it allows Okio to employ several
+optimizations, including:</p>
+<ul><li><strong>Fast Allocation:</strong> Buffers use a shared pool of memory that is not zero-filled before use.</li>
+<li><strong>Fast Resize:</strong> A buffer's capacity can change without copying its contents.</li>
+<li><strong>Fast Move:</strong> Memory ownership can be reassigned from one buffer to another.</li>
+<li><strong>Fast Copy:</strong> Multiple buffers can share the same underlying memory.</li>
+<li><strong>Fast Encoding and Decoding:</strong> Common operations like UTF-8 encoding and decimal decoding
+    do not require intermediate objects to be allocated.</li>
+</ul>
+<p>These optimizations all leverage the way Okio stores data internally. Okio Buffers are
+implemented using a doubly-linked list of segments. Each segment is a contiguous range within a
+8 KiB <code>byte[]</code>. Each segment has two indexes, <code>start</code>, the offset of the first byte of the
+array containing application data, and <code>end</code>, the offset of the first byte beyond <code>start</code> whose
+data is undefined.</p>
+<p>New buffers are empty and have no segments:</p>
+<pre><code>Buffer buffer = new Buffer();
+</code></pre>
+<p>We append 7 bytes of data to the end of our empty buffer. Internally, the buffer allocates a
+segment and writes its new data there. The lone segment has an 8 KiB byte array but only 7
+bytes of data:</p>
+<pre><code>buffer.writeUtf8("sealion");
+
+// [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
+//    ^                                  ^
+// start = 0                          end = 7
+</code></pre>
+<p>When we read 4 bytes of data from the buffer, it finds its first segment and returns that data
+to us. As bytes are read the data is consumed. The segment tracks this by adjusting its
+internal indices.</p>
+<pre><code>buffer.readUtf8(4); // "seal"
+
+// [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
+//                        ^              ^
+//                     start = 4      end = 7
+</code></pre>
+<p>As we write data into a buffer we fill up its internal segments. When a write doesn't fit into
+a buffer's last segment, additional segments are allocated and appended to the linked list of
+segments. Each segment has its own start and end indexes tracking where the user's data begins
+and ends.</p>
+<pre><code>Buffer xoxo = new Buffer();
+xoxo.writeUtf8(Strings.repeat("xo", 5_000));
+
+// [ 'x', 'o', 'x', 'o', 'x', 'o', 'x', 'o', ..., 'x', 'o', 'x', 'o']
+//    ^                                                               ^
+// start = 0                                                      end = 8192
+//
+// [ 'x', 'o', 'x', 'o', ..., 'x', 'o', 'x', 'o', '?', '?', '?', ...]
+//    ^                                            ^
+// start = 0                                   end = 1808
+</code></pre>
+<p>The start index is always <strong>inclusive</strong> and the end index is always <strong>exclusive</strong>. The data
+preceding the start index is undefined, and the data at and following the end index is
+undefined.</p>
+<p>After the last byte of a segment has been read, that segment may be returned to an internal
+segment pool. In addition to reducing the need to do garbage collection, segment pooling also
+saves the JVM from needing to zero-fill byte arrays. Okio doesn't need to zero-fill its arrays
+because it always writes memory before it reads it. But if you look at a segment in a debugger
+you may see its effects. In this example, one of the "xoxo" segments above is reused in an
+unrelated buffer:</p>
+<pre><code>Buffer abc = new Buffer();
+abc.writeUtf8("abc");
+
+// [ 'a', 'b', 'c', 'o', 'x', 'o', 'x', 'o', ...]
+//    ^              ^
+// start = 0     end = 3
+</code></pre>
+<p>There is an optimization in <code>Buffer.clone()</code> and other methods that allows two segments to
+share the same underlying byte array. Clones can't write to the shared byte array; instead they
+allocate a new (private) segment early.</p>
+<pre><code>Buffer nana = new Buffer();
+nana.writeUtf8(Strings.repeat("na", 2_500));
+nana.readUtf8(2); // "na"
+
+// [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
+//              ^                                  ^
+//           start = 0                         end = 5000
+
+nana2 = nana.clone();
+nana2.writeUtf8("batman");
+
+// [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
+//              ^                                  ^
+//           start = 0                         end = 5000
+//
+// [ 'b', 'a', 't', 'm', 'a', 'n', '?', '?', '?', ...]
+//    ^                             ^
+//  start = 0                    end = 7
+</code></pre>
+<p>Segments are not shared when the shared region is small (ie. less than 1 KiB). This is intended
+to prevent fragmentation in sharing-heavy use cases.</p>
+Unsafe Cursor API
+<p>This class exposes privileged access to the internal byte arrays of a buffer. A cursor either
+references the data of a single segment, it is before the first segment (<code>offset == -1</code>), or it
+is after the last segment (<code>offset == buffer.size</code>).</p>
+<p>Call <a href="seek.html">UnsafeCursor.seek</a> to move the cursor to the segment that contains a specified offset.
+After seeking, <a href="data.html">UnsafeCursor.data</a> references the segment's internal byte array,
+<a href="start.html">UnsafeCursor.start</a> is the segment's start and <a href="end.html">UnsafeCursor.end</a> is its end.</p>
+<p>Call <a href="next.html">UnsafeCursor.next</a> to advance the cursor to the next segment. This returns -1 if there
+are no further segments in the buffer.</p>
+<p>Use <a href="../read-unsafe.html">Buffer.readUnsafe</a> to create a cursor to read buffer data and <a href="../read-and-write-unsafe.html">Buffer.readAndWriteUnsafe</a>
+to create a cursor to read and write buffer data. In either case, always call
+<a href="close.html">UnsafeCursor.close</a> when done with a cursor. This is convenient with Java 7's
+try-with-resources syntax. In this example we read all of the bytes in a buffer into a byte
+array:</p>
+<pre><code>byte[] bufferBytes = new byte[(int) buffer.size()];
+
+try (UnsafeCursor cursor = buffer.readUnsafe()) {
+  while (cursor.next() != -1) {
+    System.arraycopy(cursor.data, cursor.start,
+        bufferBytes, (int) cursor.offset, cursor.end - cursor.start);
+  }
+}
+</code></pre>
+<p>Change the capacity of a buffer with <a href="#">.resizeBuffer</a>. This is only permitted for
+read+write cursors. The buffer's size always changes from the end: shrinking it removes bytes
+from the end; growing it adds capacity to the end.</p>
+Warnings
+<p>Most application developers should avoid this API. Those that must use this API should
+respect these warnings.</p>
+<p><strong>Don't mutate a cursor.</strong> This class has public, non-final fields because that is convenient
+for low-level I/O frameworks. Never assign values to these fields; instead use the cursor API
+to adjust these.</p>
+<p><strong>Never mutate <code>data</code> unless you have read+write access.</strong> You are on the honor system to never
+write the buffer in read-only mode. Read-only mode may be more efficient than read+write mode
+because it does not need to make private copies of shared segments.</p>
+<p><strong>Only access data in <code>[start..end)</code>.</strong> Other data in the byte array is undefined! It may
+contain private or sensitive data from other parts of your process.</p>
+<p><strong>Always fill the new capacity when you grow a buffer.</strong> New capacity is not zero-filled and
+may contain data from other parts of your process. Avoid leaking this information by always
+writing something to the newly-allocated capacity. Do not assume that new capacity will be
+filled with <code>0</code>; it will not be.</p>
+<p><strong>Do not access a buffer while is being accessed by a cursor.</strong> Even simple read-only
+operations like <a href="../clone.html">Buffer.clone</a> are unsafe because they mark segments as shared.</p>
+<p><strong>Do not hard-code the segment size in your application.</strong> It is possible that segment sizes
+will change with advances in hardware. Future versions of Okio may even have heterogeneous
+segment sizes.</p>
+<p>These warnings are intended to help you to use this API safely. It's here for developers
+that need absolutely the most throughput. Since that's you, here's one final performance tip.
+You can reuse instances of this class if you like. Use the overloads of <a href="../read-unsafe.html">Buffer.readUnsafe</a> and
+<a href="../read-and-write-unsafe.html">Buffer.readAndWriteUnsafe</a> that take a cursor and close it after use.</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">UnsafeCursor</span><span class="symbol">(</span><span class="symbol">)</span></code>
+<p>A handle to the underlying data in a buffer. This handle is unsafe because it does not enforce
+its own invariants. Instead, it assumes a careful user who has studied Okio's implementation
+details and their consequences.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="buffer.html">buffer</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">buffer</span><span class="symbol">: </span><a href="../index.html"><span class="identifier">Buffer</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="data.html">data</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">data</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="end.html">end</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">end</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="offset.html">offset</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">offset</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="read-write.html">readWrite</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">readWrite</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="start.html">start</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">start</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="close.html">close</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">close</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="expand-buffer.html">expandBuffer</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">expandBuffer</span><span class="symbol">(</span><span class="identifier" id="okio.Buffer.UnsafeCursor$expandBuffer(kotlin.Int)/minByteCount">minByteCount</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Grow the buffer by adding a <strong>contiguous range</strong> of capacity in a single segment. This adds
+at least <code>minByteCount</code> bytes but may add up to a full segment of additional capacity.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="next.html">next</a></p>
+</td>
+<td>
+<code><span class="keyword">operator</span> <span class="keyword">fun </span><span class="identifier">next</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Seeks to the next range of bytes, advancing the offset by <code>end - start</code>. Returns the size of
+the readable range (at least 1), or -1 if we have reached the end of the buffer and there are
+no more bytes to read.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="resize-buffer.html">resizeBuffer</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">resizeBuffer</span><span class="symbol">(</span><span class="identifier" id="okio.Buffer.UnsafeCursor$resizeBuffer(kotlin.Long)/newSize">newSize</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Change the size of the buffer so that it equals <code>newSize</code> by either adding new
+capacity at the end or truncating the buffer at the end. Newly added capacity may span
+multiple segments.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="seek.html">seek</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">seek</span><span class="symbol">(</span><span class="identifier" id="okio.Buffer.UnsafeCursor$seek(kotlin.Long)/offset">offset</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Reposition the cursor so that the data at <code>offset</code> is readable at <code>data[start]</code>.
+Returns the number of bytes readable in <code>data</code> (at least 1), or -1 if there are no data
+to read.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

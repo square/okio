@@ -1,0 +1,45 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Timeout.waitUntilNotified - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Timeout</a>&nbsp;/&nbsp;<a href="./wait-until-notified.html">waitUntilNotified</a><br/>
+<br/>
+<h1>waitUntilNotified</h1>
+<a name="okio.Timeout$waitUntilNotified(kotlin.Any)"></a>
+<code><span class="keyword">fun </span><span class="identifier">waitUntilNotified</span><span class="symbol">(</span><span class="identifier" id="okio.Timeout$waitUntilNotified(kotlin.Any)/monitor">monitor</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Waits on <code>monitor</code> until it is notified. Throws <a href="http://docs.oracle.com/javase/6/docs/api/java/io/InterruptedIOException.html">InterruptedIOException</a> if either the thread
+is interrupted or if this timeout elapses before <code>monitor</code> is notified. The caller must be
+synchronized on <code>monitor</code>.</p>
+<p>Here's a sample class that uses <code>waitUntilNotified()</code> to await a specific state. Note that the
+call is made within a loop to avoid unnecessary waiting and to mitigate spurious notifications.</p>
+<pre><code>class Dice {
+  Random random = new Random();
+  int latestTotal;
+
+  public synchronized void roll() {
+    latestTotal = 2 + random.nextInt(6) + random.nextInt(6);
+    System.out.println("Rolled " + latestTotal);
+    notifyAll();
+  }
+
+  public void rollAtFixedRate(int period, TimeUnit timeUnit) {
+    Executors.newScheduledThreadPool(0).scheduleAtFixedRate(new Runnable() {
+      public void run() {
+        roll();
+      }
+    }, 0, period, timeUnit);
+  }
+
+  public synchronized void awaitTotal(Timeout timeout, int total)
+      throws InterruptedIOException {
+    while (latestTotal != total) {
+      timeout.waitUntilNotified(this);
+    }
+  }
+}
+</code></pre>
+</BODY>
+</HTML>

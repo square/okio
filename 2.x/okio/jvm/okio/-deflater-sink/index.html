@@ -1,0 +1,117 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>DeflaterSink - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="./index.html">DeflaterSink</a><br/>
+<br/>
+<h1>DeflaterSink</h1>
+<code><span class="keyword">class </span><span class="identifier">DeflaterSink</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-sink/index.html"><span class="identifier">Sink</span></a></code>
+<p>A sink that uses <a href="http://tools.ietf.org/html/rfc1951">DEFLATE</a> to
+compress data written to another source.</p>
+<h3>Sync flush</h3>
+<p>Aggressive flushing of this stream may result in reduced compression. Each
+call to <a href="flush.html">flush</a> immediately compresses all currently-buffered data;
+this early compression may be less effective than compression performed
+without flushing.</p>
+<p>This is equivalent to using <a href="http://docs.oracle.com/javase/6/docs/api/java/util/zip/Deflater.html">Deflater</a> with the sync flush option.
+This class does not offer any partial flush mechanism. For best performance,
+only call <a href="flush.html">flush</a> when application behavior requires it.</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">DeflaterSink</span><span class="symbol">(</span><span class="identifier" id="okio.DeflaterSink$<init>(okio.Sink, java.util.zip.Deflater)/sink">sink</span><span class="symbol">:</span>&nbsp;<a href="../-sink/index.html"><span class="identifier">Sink</span></a><span class="symbol">, </span><span class="identifier" id="okio.DeflaterSink$<init>(okio.Sink, java.util.zip.Deflater)/deflater">deflater</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/util/zip/Deflater.html"><span class="identifier">Deflater</span></a><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="close.html">close</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">close</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Pushes all buffered bytes to their final destination and releases the resources held by this
+sink. It is an error to write a closed sink. It is safe to close a sink more than once.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="flush.html">flush</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">flush</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Pushes all buffered bytes to their final destination.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="timeout.html">timeout</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">timeout</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-timeout/index.html"><span class="identifier">Timeout</span></a></code>
+<p>Returns the timeout for this sink.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="to-string.html">toString</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">toString</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="write.html">write</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">write</span><span class="symbol">(</span><span class="identifier" id="okio.DeflaterSink$write(okio.Buffer, kotlin.Long)/source">source</span><span class="symbol">:</span>&nbsp;<a href="../-buffer/index.html"><span class="identifier">Buffer</span></a><span class="symbol">, </span><span class="identifier" id="okio.DeflaterSink$write(okio.Buffer, kotlin.Long)/byteCount">byteCount</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Removes <code>byteCount</code> bytes from <code>source</code> and appends them to this.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Extension Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../buffer.html">buffer</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../-sink/index.html"><span class="identifier">Sink</span></a><span class="symbol">.</span><span class="identifier">buffer</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-buffered-sink/index.html"><span class="identifier">BufferedSink</span></a></code>
+<p>Returns a new sink that buffers writes to <code>sink</code>. The returned sink will batch writes to <code>sink</code>.
+Use this wherever you write to a sink to get an ergonomic and efficient access to data.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../deflate.html">deflate</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../-sink/index.html"><span class="identifier">Sink</span></a><span class="symbol">.</span><span class="identifier">deflate</span><span class="symbol">(</span><span class="identifier" id="okio$deflate(okio.Sink, java.util.zip.Deflater)/deflater">deflater</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/util/zip/Deflater.html"><span class="identifier">Deflater</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Deflater()<span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">DeflaterSink</span></a></code>
+<p>Returns an <a href="./index.html">DeflaterSink</a> that DEFLATE-compresses data to this <a href="../-sink/index.html">Sink</a> while writing.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../gzip.html">gzip</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../-sink/index.html"><span class="identifier">Sink</span></a><span class="symbol">.</span><span class="identifier">gzip</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-gzip-sink/index.html"><span class="identifier">GzipSink</span></a></code>
+<p>Returns a <a href="../-gzip-sink/index.html">GzipSink</a> that gzip-compresses to this <a href="../-sink/index.html">Sink</a> while writing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

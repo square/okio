@@ -1,0 +1,27 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.UnsafeCursor.resizeBuffer - jvm</title>
+<link rel="stylesheet" href="../../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../../index.html">okio</a>&nbsp;/&nbsp;<a href="../index.html">Buffer</a>&nbsp;/&nbsp;<a href="index.html">UnsafeCursor</a>&nbsp;/&nbsp;<a href="./resize-buffer.html">resizeBuffer</a><br/>
+<br/>
+<h1>resizeBuffer</h1>
+<a name="okio.Buffer.UnsafeCursor$resizeBuffer(kotlin.Long)"></a>
+<code><span class="keyword">fun </span><span class="identifier">resizeBuffer</span><span class="symbol">(</span><span class="identifier" id="okio.Buffer.UnsafeCursor$resizeBuffer(kotlin.Long)/newSize">newSize</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Change the size of the buffer so that it equals <code>newSize</code> by either adding new
+capacity at the end or truncating the buffer at the end. Newly added capacity may span
+multiple segments.</p>
+<p>As a side-effect this cursor will <a href="seek.html">seek</a>. If the buffer is being enlarged
+it will move <a href="offset.html">UnsafeCursor.offset</a> to the first byte of newly-added capacity. This is the
+size of the buffer prior to the <code>resizeBuffer()</code> call. If the buffer is being shrunk it will move
+<a href="offset.html">UnsafeCursor.offset</a> to the end of the buffer.</p>
+<p>Warning: it is the caller’s responsibility to write new data to every byte of the
+newly-allocated capacity. Failure to do so may cause serious security problems as the data
+in the returned buffers is not zero filled. Buffers may contain dirty pooled segments that
+hold very sensitive data from other parts of the current process.</p>
+<p><strong>Return</strong><br/>
+the previous size of the buffer.</p>
+</BODY>
+</HTML>

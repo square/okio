@@ -1,0 +1,22 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>BufferedSource.readUtf8CodePoint - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">BufferedSource</a>&nbsp;/&nbsp;<a href="./read-utf8-code-point.html">readUtf8CodePoint</a><br/>
+<br/>
+<h1>readUtf8CodePoint</h1>
+<a name="okio.BufferedSource$readUtf8CodePoint()"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">readUtf8CodePoint</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Removes and returns a single UTF-8 code point, reading between 1 and 4 bytes as necessary.</p>
+<p>If this source is exhausted before a complete code point can be read, this throws an
+<a href="http://docs.oracle.com/javase/6/docs/api/java/io/EOFException.html">java.io.EOFException</a> and consumes no input.</p>
+<p>If this source doesn't start with a properly-encoded UTF-8 code point, this method will remove
+1 or more non-UTF-8 bytes and return the replacement character (<code>U+FFFD</code>). This covers encoding
+problems (the input is not properly-encoded UTF-8), characters out of range (beyond the
+0x10ffff limit of Unicode), code points for UTF-16 surrogates (U+d800..U+dfff) and overlong
+encodings (such as <code>0xc080</code> for the NUL character in modified UTF-8).</p>
+</BODY>
+</HTML>

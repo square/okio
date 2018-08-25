@@ -1,0 +1,36 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.select - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./select.html">select</a><br/>
+<br/>
+<h1>select</h1>
+<a name="okio.Buffer$select(okio.Options)"></a>
+<code><span class="keyword">fun </span><span class="identifier">select</span><span class="symbol">(</span><span class="identifier" id="okio.Buffer$select(okio.Options)/options">options</span><span class="symbol">:</span>&nbsp;<a href="../-options/index.html"><span class="identifier">Options</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Overrides <a href="../-buffered-source/select.html">BufferedSource.select</a></p>
+<p>Finds the first string in <code>options</code> that is a prefix of this buffer, consumes it from this
+buffer, and returns its index. If no byte string in <code>options</code> is a prefix of this buffer this
+returns -1 and no bytes are consumed.</p>
+<p>This can be used as an alternative to <a href="read-byte-string.html">readByteString</a> or even <a href="read-utf8.html">readUtf8</a> if the set of
+expected values is known in advance.</p>
+<pre><code>Options FIELDS = Options.of(
+    ByteString.encodeUtf8("depth="),
+    ByteString.encodeUtf8("height="),
+    ByteString.encodeUtf8("width="));
+
+Buffer buffer = new Buffer()
+    .writeUtf8("width=640\n")
+    .writeUtf8("height=480\n");
+
+assertEquals(2, buffer.select(FIELDS));
+assertEquals(640, buffer.readDecimalLong());
+assertEquals('\n', buffer.readByte());
+assertEquals(1, buffer.select(FIELDS));
+assertEquals(480, buffer.readDecimalLong());
+assertEquals('\n', buffer.readByte());
+</code></pre>
+</BODY>
+</HTML>
