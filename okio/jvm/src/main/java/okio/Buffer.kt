@@ -1754,14 +1754,14 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    *
    * These optimizations all leverage the way Okio stores data internally. Okio Buffers are
    * implemented using a doubly-linked list of segments. Each segment is a contiguous range within a
-   * 8 KiB `byte[]`. Each segment has two indexes, `start`, the offset of the first byte of the
+   * 8 KiB `ByteArray`. Each segment has two indexes, `start`, the offset of the first byte of the
    * array containing application data, and `end`, the offset of the first byte beyond `start` whose
    * data is undefined.
    *
    * New buffers are empty and have no segments:
    *
    * ```
-   *   Buffer buffer = new Buffer();
+   *   val buffer = Buffer()
    * ```
    *
    * We append 7 bytes of data to the end of our empty buffer. Internally, the buffer allocates a
@@ -1769,7 +1769,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * bytes of data:
    *
    * ```
-   * buffer.writeUtf8("sealion");
+   * buffer.writeUtf8("sealion")
    *
    * // [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
    * //    ^                                  ^
@@ -1781,7 +1781,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * internal indices.
    *
    * ```
-   * buffer.readUtf8(4); // "seal"
+   * buffer.readUtf8(4) // "seal"
    *
    * // [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
    * //                        ^              ^
@@ -1794,8 +1794,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * and ends.
    *
    * ```
-   * Buffer xoxo = new Buffer();
-   * xoxo.writeUtf8(Strings.repeat("xo", 5_000));
+   * val xoxo = new Buffer()
+   * xoxo.writeUtf8("xo".repeat(5_000))
    *
    * // [ 'x', 'o', 'x', 'o', 'x', 'o', 'x', 'o', ..., 'x', 'o', 'x', 'o']
    * //    ^                                                               ^
@@ -1818,8 +1818,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * unrelated buffer:
    *
    * ```
-   * Buffer abc = new Buffer();
-   * abc.writeUtf8("abc");
+   * val abc = new Buffer()
+   * abc.writeUtf8("abc")
    *
    * // [ 'a', 'b', 'c', 'o', 'x', 'o', 'x', 'o', ...]
    * //    ^              ^
@@ -1831,16 +1831,16 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * allocate a new (private) segment early.
    *
    * ```
-   * Buffer nana = new Buffer();
-   * nana.writeUtf8(Strings.repeat("na", 2_500));
-   * nana.readUtf8(2); // "na"
+   * val nana = new Buffer()
+   * nana.writeUtf8("na".repeat(2_500))
+   * nana.readUtf8(2) // "na"
    *
    * // [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
    * //              ^                                  ^
    * //           start = 0                         end = 5000
    *
-   * nana2 = nana.clone();
-   * nana2.writeUtf8("batman");
+   * nana2 = nana.clone()
+   * nana2.writeUtf8("batman")
    *
    * // [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
    * //              ^                                  ^
@@ -1872,17 +1872,17 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    *
    * Use [Buffer.readUnsafe] to create a cursor to read buffer data and [Buffer.readAndWriteUnsafe]
    * to create a cursor to read and write buffer data. In either case, always call
-   * [UnsafeCursor.close] when done with a cursor. This is convenient with Java 7's
-   * try-with-resources syntax. In this example we read all of the bytes in a buffer into a byte
+   * [UnsafeCursor.close] when done with a cursor. This is convenient with Kotlin's
+   * [use] extension function. In this example we read all of the bytes in a buffer into a byte
    * array:
    *
    * ```
-   * byte[] bufferBytes = new byte[(int) buffer.size()];
+   * val bufferBytes = ByteArray(buffer.size.toInt())
    *
-   * try (UnsafeCursor cursor = buffer.readUnsafe()) {
+   * buffer.readUnsafe().use { cursor ->
    *   while (cursor.next() != -1) {
    *     System.arraycopy(cursor.data, cursor.start,
-   *         bufferBytes, (int) cursor.offset, cursor.end - cursor.start);
+   *         bufferBytes, cursor.offset.toInt(), cursor.end - cursor.start);
    *   }
    * }
    * ```
