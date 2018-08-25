@@ -153,11 +153,11 @@ internal actual constructor(
       commonSubstring(beginIndex, endIndex)
 
   /** Returns the byte at `pos`.  */
-  internal actual open fun getByte(pos: Int) = commonGetByte(pos)
+  internal actual open fun internalGet(pos: Int) = commonGetByte(pos)
 
   /** Returns the byte at `index`.  */
   @JvmName("getByte")
-  actual operator fun get(index: Int): Byte = getByte(index)
+  actual operator fun get(index: Int): Byte = internalGet(index)
 
   /** Returns the number of bytes in this ByteString. */
   actual val size
@@ -269,6 +269,20 @@ internal actual constructor(
     out.write(data)
   }
 
+  @JvmName("-deprecated_getByte")
+  @Deprecated(
+      message = "moved to operator function",
+      replaceWith = ReplaceWith(expression = "this[index]"),
+      level = DeprecationLevel.ERROR)
+  fun getByte(index: Int) = this[index]
+
+  @JvmName("-deprecated_size")
+  @Deprecated(
+      message = "moved to val",
+      replaceWith = ReplaceWith(expression = "size"),
+      level = DeprecationLevel.ERROR)
+  fun size() = size
+
   actual companion object {
     internal actual val HEX_DIGITS = COMMON_HEX_DIGITS
     private const val serialVersionUID = 1L
@@ -347,5 +361,68 @@ internal actual constructor(
       }
       return ByteString(result)
     }
+
+    @JvmName("-deprecated_decodeBase64")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "string.decodeBase64()",
+            imports = ["okio.ByteString.Companion.decodeBase64"]),
+        level = DeprecationLevel.ERROR)
+    fun decodeBase64(string: String) = string.decodeBase64()
+
+    @JvmName("-deprecated_decodeHex")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "string.decodeHex()",
+            imports = ["okio.ByteString.Companion.decodeHex"]),
+        level = DeprecationLevel.ERROR)
+    fun decodeHex(string: String) = string.decodeHex()
+
+    @JvmName("-deprecated_encodeString")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "string.encode(charset)",
+            imports = ["okio.ByteString.Companion.encode"]),
+        level = DeprecationLevel.ERROR)
+    fun encodeString(string: String, charset: Charset) = string.encode(charset)
+
+    @JvmName("-deprecated_encodeUtf8")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "string.encodeUtf8()",
+            imports = ["okio.ByteString.Companion.encodeUtf8"]),
+        level = DeprecationLevel.ERROR)
+    fun encodeUtf8(string: String) = string.encodeUtf8()
+
+    @JvmName("-deprecated_of")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "buffer.toByteString()",
+            imports = ["okio.ByteString.Companion.toByteString"]),
+        level = DeprecationLevel.ERROR)
+    fun of(buffer: ByteBuffer) = buffer.toByteString()
+
+    @JvmName("-deprecated_of")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "array.toByteString(offset, byteCount)",
+            imports = ["okio.ByteString.Companion.toByteString"]),
+        level = DeprecationLevel.ERROR)
+    fun of(array: ByteArray, offset: Int, byteCount: Int) = array.toByteString(offset, byteCount)
+
+    @JvmName("-deprecated_read")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "inputstream.readByteString(byteCount)",
+            imports = ["okio.ByteString.Companion.readByteString"]),
+        level = DeprecationLevel.ERROR)
+    fun read(inputstream: InputStream, byteCount: Int) = inputstream.readByteString(byteCount)
   }
 }
