@@ -276,4 +276,20 @@ object TestUtil {
 
     return result
   }
+
+  @JvmStatic
+  fun Int.reverseBytes(): Int {
+    return (this and -0x1000000 ushr 24) or
+        (this and 0x00ff0000 ushr  8) or
+        (this and 0x0000ff00  shl  8) or
+        (this and 0x000000ff  shl 24)
+  }
+
+  @JvmStatic
+  fun Short.reverseBytes(): Short {
+    val i = toInt() and 0xffff
+    val reversed = (i and 0xff00 ushr 8) or
+        (i and 0x00ff  shl 8)
+    return reversed.toShort()
+  }
 }

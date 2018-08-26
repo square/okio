@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:JvmName("Util")
+@file:JvmName("-Util")
 
 package okio
 

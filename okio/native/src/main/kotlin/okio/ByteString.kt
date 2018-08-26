@@ -16,31 +16,31 @@
 
 package okio
 
-import okio.common.COMMON_EMPTY
-import okio.common.COMMON_HEX_DIGITS
-import okio.common.commonBase64
-import okio.common.commonBase64Url
-import okio.common.commonCompareTo
-import okio.common.commonDecodeBase64
-import okio.common.commonDecodeHex
-import okio.common.commonEncodeUtf8
-import okio.common.commonEndsWith
-import okio.common.commonEquals
-import okio.common.commonGetByte
-import okio.common.commonGetSize
-import okio.common.commonHashCode
-import okio.common.commonHex
-import okio.common.commonIndexOf
-import okio.common.commonInternalArray
-import okio.common.commonOf
-import okio.common.commonRangeEquals
-import okio.common.commonStartsWith
-import okio.common.commonSubstring
-import okio.common.commonToAsciiLowercase
-import okio.common.commonToAsciiUppercase
-import okio.common.commonToByteArray
-import okio.common.commonToString
-import okio.common.commonUtf8
+import okio.internal.COMMON_EMPTY
+import okio.internal.COMMON_HEX_DIGITS
+import okio.internal.commonBase64
+import okio.internal.commonBase64Url
+import okio.internal.commonCompareTo
+import okio.internal.commonDecodeBase64
+import okio.internal.commonDecodeHex
+import okio.internal.commonEncodeUtf8
+import okio.internal.commonEndsWith
+import okio.internal.commonEquals
+import okio.internal.commonGetByte
+import okio.internal.commonGetSize
+import okio.internal.commonHashCode
+import okio.internal.commonHex
+import okio.internal.commonIndexOf
+import okio.internal.commonInternalArray
+import okio.internal.commonOf
+import okio.internal.commonRangeEquals
+import okio.internal.commonStartsWith
+import okio.internal.commonSubstring
+import okio.internal.commonToAsciiLowercase
+import okio.internal.commonToAsciiUppercase
+import okio.internal.commonToByteArray
+import okio.internal.commonToString
+import okio.internal.commonUtf8
 
 /**
  * An immutable sequence of bytes.

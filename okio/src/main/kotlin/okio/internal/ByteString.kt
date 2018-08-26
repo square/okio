@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package okio.common
+package okio.internal
 
 import okio.BASE64_URL_SAFE
 import okio.ByteString
