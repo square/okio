@@ -1731,6 +1731,20 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return unsafeCursor
   }
 
+  @JvmName("-deprecated_getByte")
+  @Deprecated(
+      message = "moved to operator function",
+      replaceWith = ReplaceWith(expression = "this[index]"),
+      level = DeprecationLevel.ERROR)
+  fun getByte(index: Long) = this[index]
+
+  @JvmName("-deprecated_size")
+  @Deprecated(
+      message = "moved to val",
+      replaceWith = ReplaceWith(expression = "size"),
+      level = DeprecationLevel.ERROR)
+  fun size() = size
+
   /**
    * A handle to the underlying data in a buffer. This handle is unsafe because it does not enforce
    * its own invariants. Instead, it assumes a careful user who has studied Okio's implementation

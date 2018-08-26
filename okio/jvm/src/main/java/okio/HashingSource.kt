@@ -103,6 +103,13 @@ class HashingSource : ForwardingSource {
       return ByteString(result)
     }
 
+  @JvmName("-deprecated_hash")
+  @Deprecated(
+      message = "moved to val",
+      replaceWith = ReplaceWith(expression = "hash"),
+      level = DeprecationLevel.ERROR)
+  fun hash() = hash
+
   companion object {
     /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
     @JvmStatic fun md5(source: Source) = HashingSource(source, "MD5")

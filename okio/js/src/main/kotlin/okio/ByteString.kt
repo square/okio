@@ -96,10 +96,10 @@ internal actual constructor(
       commonSubstring(beginIndex, endIndex)
 
   /** Returns the byte at `pos`.  */
-  internal actual open fun getByte(pos: Int) = commonGetByte(pos)
+  internal actual open fun internalGet(pos: Int) = commonGetByte(pos)
 
   /** Returns the byte at `index`.  */
-  actual operator fun get(index: Int): Byte = getByte(index)
+  actual operator fun get(index: Int): Byte = internalGet(index)
 
   /** Returns the number of bytes in this ByteString. */
   actual val size
