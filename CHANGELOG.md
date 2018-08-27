@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+## Version 2.0.0
+
+_2018-08-27_
+
+This release commits to a stable 2.0 API. Read the 2.0.0-RC1 changes for advice on upgrading from
+1.x to 2.x.
+
+We've also added APIs to ease migration for Kotlin users. They use Kotlin's `@Deprecated` annotation
+to help you change call sites from the 1.x style to the 2.x style.
+
+
 ## Version 2.0.0-RC1
 
 _2018-07-26_
