@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+@file:JvmName("-Platform")
 package okio
 
 import java.util.Arrays
