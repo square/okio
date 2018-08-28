@@ -570,14 +570,14 @@ License
     
  [1]: https://github.com/square/okhttp
  [2]: https://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=LATEST
- [3]: https://square.github.io/okio/1.x/okio/okio/ByteString.html
- [4]: https://square.github.io/okio/1.x/okio/okio/Buffer.html
- [5]: https://square.github.io/okio/1.x/okio/okio/Source.html
- [6]: https://square.github.io/okio/1.x/okio/okio/Sink.html
- [7]: https://square.github.io/okio/1.x/okio/okio/BufferedSource.html
- [8]: https://square.github.io/okio/1.x/okio/okio/BufferedSink.html
+ [3]: https://square.github.io/okio/2.x/okio/jvm/okio/-byte-string/index.html
+ [4]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffer/index.html
+ [5]: https://square.github.io/okio/2.x/okio/jvm/okio/-source/index.html
+ [6]: https://square.github.io/okio/2.x/okio/jvm/okio/-sink/index.html
+ [7]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-source/index.html
+ [8]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-sink/index.html
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
- [javadoc]: http://square.github.io/okio/1.x/okio
+ [javadoc]: http://square.github.io/okio/2.x/okio/jvm/okio/index.html
  [nfd]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
  [base64]: https://tools.ietf.org/html/rfc4648#section-4
