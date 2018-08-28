@@ -577,7 +577,7 @@ License
  [7]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-source/index.html
  [8]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-sink/index.html
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
- [javadoc]: http://square.github.io/okio/2.x/okio/jvm/okio/index.html
+ [javadoc]: https://square.github.io/okio/2.x/okio/jvm/okio/index.html
  [nfd]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
  [base64]: https://tools.ietf.org/html/rfc4648#section-4
