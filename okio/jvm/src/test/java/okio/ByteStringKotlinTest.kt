@@ -21,18 +21,30 @@ import okio.ByteString.Companion.encode
 import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.readByteString
 import okio.ByteString.Companion.toByteString
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import kotlin.test.fail
 
+
+/**
+ * ```actual shouldBe expected```
+ *  as a replacement for junit style's assert
+ *
+ * Inspired by kotlintest which has a ton of other nice matchers
+ * https://github.com/kotlintest/kotlintest/blob/master/doc/matchers.md
+ */
+infix fun <T> T.shouldBe(any: Any?) {
+  if ((this == null && any != null) || this != any)
+    throw AssertionError( "expected: $any but was: $this")
+}
+
 class ByteStringKotlinTest {
   @Test fun get() {
     val actual = "abc".encodeUtf8()
-    assertThat(actual[0]).isEqualTo('a'.toByte())
-    assertThat(actual[1]).isEqualTo('b'.toByte())
-    assertThat(actual[2]).isEqualTo('c'.toByte())
+    actual[0] shouldBe 'a'.toByte()
+    actual[1] shouldBe 'b'.toByte()
+    actual[2] shouldBe 'c'.toByte()
     try {
       actual[-1]
       fail()
@@ -46,58 +58,50 @@ class ByteStringKotlinTest {
   }
 
   @Test fun decodeBase64() {
-    val actual = "YfCfjalj".decodeBase64()
-    val expected = "a\uD83C\uDF69c".encodeUtf8()
-    assertThat(actual).isEqualTo(expected)
+    "YfCfjalj".decodeBase64() shouldBe "a\uD83C\uDF69c".encodeUtf8()
   }
 
   @Test fun decodeBase64Invalid() {
-    val actual = ";-)".decodeBase64()
-    assertThat(actual).isNull()
+    ";-)".decodeBase64() shouldBe null
   }
 
   @Test fun decodeHex() {
-    val actual = "CAFEBABE".decodeHex()
-    val expected = ByteString.of(-54, -2, -70, -66)
-    assertThat(actual).isEqualTo(expected)
+    "CAFEBABE".decodeHex() shouldBe ByteString.of(-54, -2, -70, -66)
   }
 
   @Test fun arrayToByteString() {
-    val actual = byteArrayOf(1, 2, 3, 4).toByteString()
-    val expected = ByteString.of(1, 2, 3, 4)
-    assertThat(actual).isEqualTo(expected)
+    byteArrayOf(1, 2, 3, 4).toByteString() shouldBe ByteString.of(1, 2, 3, 4)
   }
 
   @Test fun arraySubsetToByteString() {
     val actual = byteArrayOf(1, 2, 3, 4).toByteString(1, 2)
     val expected = ByteString.of(2, 3)
-    assertThat(actual).isEqualTo(expected)
+    actual shouldBe expected
   }
 
   @Test fun byteBufferToByteString() {
     val actual = ByteBuffer.wrap(byteArrayOf(1, 2, 3, 4)).toByteString()
     val expected = ByteString.of(1, 2, 3, 4)
-    assertThat(actual).isEqualTo(expected)
+    actual shouldBe expected
   }
 
   @Test fun stringEncodeByteStringDefaultCharset() {
-    val actual = "a\uD83C\uDF69c".encode()
-    val expected = "a\uD83C\uDF69c".encodeUtf8()
-    assertThat(actual).isEqualTo(expected)
+    "a\uD83C\uDF69c".encode() shouldBe "a\uD83C\uDF69c".encodeUtf8()
   }
 
   @Test fun streamReadByteString() {
     val stream = ByteArrayInputStream(byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8))
     val actual = stream.readByteString(4)
     val expected = ByteString.of(1, 2, 3, 4)
-    assertThat(actual).isEqualTo(expected)
+    actual shouldBe expected
   }
 
   @Test fun substring() {
     val byteString = "abcdef".encodeUtf8()
-    assertThat(byteString.substring()).isEqualTo("abcdef".encodeUtf8())
-    assertThat(byteString.substring(endIndex= 3)).isEqualTo("abc".encodeUtf8())
-    assertThat(byteString.substring(beginIndex = 3)).isEqualTo("def".encodeUtf8())
-    assertThat(byteString.substring(beginIndex = 1, endIndex = 5)).isEqualTo("bcde".encodeUtf8())
+    byteString.substring() shouldBe "abcdef".encodeUtf8()
+    byteString.substring(endIndex= 3) shouldBe "abc".encodeUtf8()
+    byteString.substring(beginIndex = 3) shouldBe "def".encodeUtf8()
+    byteString.substring(beginIndex = 1, endIndex = 5) shouldBe "bcde".encodeUtf8()
   }
+
 }
