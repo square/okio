@@ -32,7 +32,10 @@ class Options private constructor(
   companion object {
     @JvmStatic
     fun of(vararg byteStrings: ByteString): Options {
-      require(byteStrings.isNotEmpty()) { "no options provided" }
+      if (byteStrings.isEmpty()) {
+        // With no choices we must always return -1. Create a trie that selects from an empty set.
+        return Options(arrayOf(), intArrayOf(0, -1))
+      }
 
       // Sort the byte strings which is required when recursively building the trie. Map the sorted
       // indexes to the caller's indexes.
@@ -114,17 +117,6 @@ class Options private constructor(
       require(fromIndex < toIndex)
       for (i in fromIndex until toIndex) {
         require(byteStrings[i].size >= byteStringOffset)
-      }
-
-      // If there's only a single value to select from, and there are no further characters to
-      // scan, special case it as an empty SCAN. This should only happen when the only input to the
-      // entire Options is a single empty string.
-      if (fromIndex + 1 == toIndex && byteStrings[fromIndex].size == byteStringOffset) {
-        check(byteStringOffset == 0)
-        node.writeInt(0)
-        node.writeInt(-1)
-        node.writeInt(indexes[fromIndex])
-        return
       }
 
       var fromIndex = fromIndex

@@ -15,30 +15,31 @@
  */
 package okio
 
-import okio.common.COMMON_EMPTY
-import okio.common.COMMON_HEX_DIGITS
-import okio.common.commonBase64
-import okio.common.commonBase64Url
-import okio.common.commonCompareTo
-import okio.common.commonDecodeBase64
-import okio.common.commonDecodeHex
-import okio.common.commonEncodeUtf8
-import okio.common.commonEndsWith
-import okio.common.commonEquals
-import okio.common.commonGetByte
-import okio.common.commonGetSize
-import okio.common.commonHashCode
-import okio.common.commonHex
-import okio.common.commonIndexOf
-import okio.common.commonInternalArray
-import okio.common.commonOf
-import okio.common.commonRangeEquals
-import okio.common.commonStartsWith
-import okio.common.commonSubstring
-import okio.common.commonToAsciiLowercase
-import okio.common.commonToAsciiUppercase
-import okio.common.commonToByteArray
-import okio.common.commonUtf8
+import okio.internal.COMMON_EMPTY
+import okio.internal.COMMON_HEX_DIGITS
+import okio.internal.commonBase64
+import okio.internal.commonBase64Url
+import okio.internal.commonCompareTo
+import okio.internal.commonDecodeBase64
+import okio.internal.commonDecodeHex
+import okio.internal.commonEncodeUtf8
+import okio.internal.commonEndsWith
+import okio.internal.commonEquals
+import okio.internal.commonGetByte
+import okio.internal.commonGetSize
+import okio.internal.commonHashCode
+import okio.internal.commonHex
+import okio.internal.commonIndexOf
+import okio.internal.commonInternalArray
+import okio.internal.commonOf
+import okio.internal.commonRangeEquals
+import okio.internal.commonStartsWith
+import okio.internal.commonSubstring
+import okio.internal.commonToAsciiLowercase
+import okio.internal.commonToAsciiUppercase
+import okio.internal.commonToByteArray
+import okio.internal.commonToString
+import okio.internal.commonUtf8
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
@@ -99,7 +100,7 @@ internal actual constructor(
   open fun sha512() = digest("SHA-512")
 
   private fun digest(algorithm: String) =
-      ByteString.of(*MessageDigest.getInstance(algorithm).digest(data))
+      ByteString(MessageDigest.getInstance(algorithm).digest(data))
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
   open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
@@ -114,7 +115,7 @@ internal actual constructor(
     try {
       val mac = Mac.getInstance(algorithm)
       mac.init(SecretKeySpec(key.toByteArray(), algorithm))
-      return ByteString.of(*mac.doFinal(data))
+      return ByteString(mac.doFinal(data))
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
     }
@@ -152,11 +153,11 @@ internal actual constructor(
       commonSubstring(beginIndex, endIndex)
 
   /** Returns the byte at `pos`.  */
-  internal actual open fun getByte(pos: Int) = commonGetByte(pos)
+  internal actual open fun internalGet(pos: Int) = commonGetByte(pos)
 
   /** Returns the byte at `index`.  */
   @JvmName("getByte")
-  actual operator fun get(index: Int): Byte = getByte(index)
+  actual operator fun get(index: Int): Byte = internalGet(index)
 
   /** Returns the number of bytes in this ByteString. */
   actual val size
@@ -251,30 +252,7 @@ internal actual constructor(
    * Returns a human-readable string that describes the contents of this byte string. Typically this
    * is a string like `[text=Hello]` or `[hex=0000ffff]`.
    */
-  actual override fun toString(): String {
-    if (data.isEmpty()) return "[size=0]"
-
-    val text = utf8()
-    val i = codePointIndexToCharIndex(text, 64)
-
-    if (i == -1) {
-      return if (data.size <= 64) {
-        "[hex=${hex()}]"
-      } else {
-        "[size=${data.size} hex=${substring(0, 64).hex()}…]"
-      }
-    }
-
-    val safeText = text.substring(0, i)
-        .replace("\\", "\\\\")
-        .replace("\n", "\\n")
-        .replace("\r", "\\r")
-    return if (i < text.length) {
-      "[size=${data.size} text=$safeText…]"
-    } else {
-      "[text=$safeText]"
-    }
-  }
+  actual override fun toString() = commonToString()
 
   @Throws(IOException::class)
   private fun readObject(`in`: ObjectInputStream) {
@@ -291,6 +269,20 @@ internal actual constructor(
     out.write(data)
   }
 
+  @JvmName("-deprecated_getByte")
+  @Deprecated(
+      message = "moved to operator function",
+      replaceWith = ReplaceWith(expression = "this[index]"),
+      level = DeprecationLevel.ERROR)
+  fun getByte(index: Int) = this[index]
+
+  @JvmName("-deprecated_size")
+  @Deprecated(
+      message = "moved to val",
+      replaceWith = ReplaceWith(expression = "size"),
+      level = DeprecationLevel.ERROR)
+  fun size() = size
+
   actual companion object {
     internal actual val HEX_DIGITS = COMMON_HEX_DIGITS
     private const val serialVersionUID = 1L
@@ -301,7 +293,7 @@ internal actual constructor(
 
     /** Returns a new byte string containing a clone of the bytes of `data`. */
     @JvmStatic
-    actual fun of(vararg data: Byte) = commonOf(*data.copyOf())
+    actual fun of(vararg data: Byte) = commonOf(data)
 
     // TODO move toByteString() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
@@ -370,24 +362,67 @@ internal actual constructor(
       return ByteString(result)
     }
 
-    internal fun codePointIndexToCharIndex(s: String, codePointCount: Int): Int {
-      var i = 0
-      var j = 0
-      val length = s.length
-      var c: Int
-      while (i < length) {
-        if (j == codePointCount) {
-          return i
-        }
-        c = s.codePointAt(i)
-        if ((Character.isISOControl(c) && c != '\n'.toInt() && c != '\r'.toInt())
-            || c == Buffer.REPLACEMENT_CHARACTER) {
-          return -1
-        }
-        j++
-        i += Character.charCount(c)
-      }
-      return s.length
-    }
+    @JvmName("-deprecated_decodeBase64")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "string.decodeBase64()",
+            imports = ["okio.ByteString.Companion.decodeBase64"]),
+        level = DeprecationLevel.ERROR)
+    fun decodeBase64(string: String) = string.decodeBase64()
+
+    @JvmName("-deprecated_decodeHex")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "string.decodeHex()",
+            imports = ["okio.ByteString.Companion.decodeHex"]),
+        level = DeprecationLevel.ERROR)
+    fun decodeHex(string: String) = string.decodeHex()
+
+    @JvmName("-deprecated_encodeString")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "string.encode(charset)",
+            imports = ["okio.ByteString.Companion.encode"]),
+        level = DeprecationLevel.ERROR)
+    fun encodeString(string: String, charset: Charset) = string.encode(charset)
+
+    @JvmName("-deprecated_encodeUtf8")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "string.encodeUtf8()",
+            imports = ["okio.ByteString.Companion.encodeUtf8"]),
+        level = DeprecationLevel.ERROR)
+    fun encodeUtf8(string: String) = string.encodeUtf8()
+
+    @JvmName("-deprecated_of")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "buffer.toByteString()",
+            imports = ["okio.ByteString.Companion.toByteString"]),
+        level = DeprecationLevel.ERROR)
+    fun of(buffer: ByteBuffer) = buffer.toByteString()
+
+    @JvmName("-deprecated_of")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "array.toByteString(offset, byteCount)",
+            imports = ["okio.ByteString.Companion.toByteString"]),
+        level = DeprecationLevel.ERROR)
+    fun of(array: ByteArray, offset: Int, byteCount: Int) = array.toByteString(offset, byteCount)
+
+    @JvmName("-deprecated_read")
+    @Deprecated(
+        message = "moved to extension function",
+        replaceWith = ReplaceWith(
+            expression = "inputstream.readByteString(byteCount)",
+            imports = ["okio.ByteString.Companion.readByteString"]),
+        level = DeprecationLevel.ERROR)
+    fun read(inputstream: InputStream, byteCount: Int) = inputstream.readByteString(byteCount)
   }
 }

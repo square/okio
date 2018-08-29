@@ -1,6 +1,7 @@
 buildscript {
   ext.versions = [
-      'kotlin': '1.2.50',
+      'kotlin': '1.2.60',
+      'kotlinNative': '0.8',
       'jmhPlugin': '0.4.5',
       'animalSnifferPlugin': '1.4.3',
       'dokka': '0.9.16',
@@ -11,6 +12,7 @@ buildscript {
       'assertj': '1.7.0',
       'shadowPlugin': '2.0.2',
       'nodePlugin': '1.2.0',
+      'mavenPublishPlugin': '0.4.0'
   ]
 
   ext.deps = [
@@ -29,6 +31,9 @@ buildscript {
               'jdk': "org.jetbrains.kotlin:kotlin-test-junit",
               'js': "org.jetbrains.kotlin:kotlin-test-js",
           ],
+          'native': [
+              'gradlePlugin': "org.jetbrains.kotlin:kotlin-native-gradle-plugin:${versions.kotlinNative}",
+          ]
       ],
       'jmh': [
           'gradlePlugin': "me.champeau.gradle:jmh-gradle-plugin:${versions.jmhPlugin}",
@@ -44,6 +49,7 @@ buildscript {
       'jsr305': "com.google.code.findbugs:jsr305:${versions.jsr305}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
       'node': "com.moowork.gradle:gradle-node-plugin:${versions.nodePlugin}",
+      'mavenPublish': "com.vanniktech:gradle-maven-publish-plugin:${versions.mavenPublishPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
@@ -52,12 +58,14 @@ buildscript {
 
   dependencies {
     classpath deps.kotlin.gradlePlugin
+    classpath deps.kotlin.native.gradlePlugin
     classpath deps.animalSniffer.gradlePlugin
     classpath deps.japicmp
     classpath deps.dokka
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
     classpath deps.node
+    classpath deps.mavenPublish
   }
 
   repositories {

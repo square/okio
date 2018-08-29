@@ -67,7 +67,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   fun toAsciiUppercase(): ByteString
 
   /** Returns the byte at `pos`.  */
-  internal fun getByte(pos: Int): Byte
+  internal fun internalGet(pos: Int): Byte
 
   /** Returns the byte at `index`.  */
   @JvmName("getByte")

@@ -30,7 +30,7 @@ object TestUtil {
   // Necessary to make an internal member visible to Java.
   const val SEGMENT_POOL_MAX_SIZE = SegmentPool.MAX_SIZE
   const val SEGMENT_SIZE = Segment.SIZE
-  const val REPLACEMENT_CHARACTER: Int = Buffer.REPLACEMENT_CHARACTER
+  const val REPLACEMENT_CHARACTER: Int = okio.REPLACEMENT_CHARACTER
   @JvmStatic fun segmentPoolByteCount() = SegmentPool.byteCount
 
   @JvmStatic
@@ -268,12 +268,28 @@ object TestUtil {
     result.head!!.prev = result.head
     result.head!!.next = result.head!!.prev
     var s = original.head!!.next
-    while (s != original.head) {
+    while (s !== original.head) {
       result.head!!.prev!!.push(s!!.unsharedCopy())
       s = s.next
     }
     result.size = original.size
 
     return result
+  }
+
+  @JvmStatic
+  fun Int.reverseBytes(): Int {
+    return (this and -0x1000000 ushr 24) or
+        (this and 0x00ff0000 ushr  8) or
+        (this and 0x0000ff00  shl  8) or
+        (this and 0x000000ff  shl 24)
+  }
+
+  @JvmStatic
+  fun Short.reverseBytes(): Short {
+    val i = toInt() and 0xffff
+    val reversed = (i and 0xff00 ushr 8) or
+        (i and 0x00ff  shl 8)
+    return reversed.toShort()
   }
 }

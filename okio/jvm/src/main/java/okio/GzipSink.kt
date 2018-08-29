@@ -135,6 +135,13 @@ class GzipSink(sink: Sink) : Sink {
       head = head.next!!
     }
   }
+
+  @JvmName("-deprecated_deflater")
+  @Deprecated(
+      message = "moved to val",
+      replaceWith = ReplaceWith(expression = "deflater"),
+      level = DeprecationLevel.ERROR)
+  fun deflater() = deflater
 }
 
 /**

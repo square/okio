@@ -252,8 +252,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return result
   }
 
+  @Throws(EOFException::class)
   override fun readByte(): Byte {
-    check(size != 0L) { "size == 0" }
+    if (size == 0L) throw EOFException()
 
     val segment = head!!
     var pos = segment.pos
@@ -282,8 +283,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     }
   }
 
+  @Throws(EOFException::class)
   override fun readShort(): Short {
-    check(size >= 2L) { "size < 2: $size" }
+    if (size < 2L) throw EOFException()
 
     val segment = head!!
     var pos = segment.pos
@@ -309,8 +311,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return s.toShort()
   }
 
+  @Throws(EOFException::class)
   override fun readInt(): Int {
-    check(size >= 4L) { "size < 4: $size" }
+    if (size < 4L) throw EOFException()
 
     val segment = head!!
     var pos = segment.pos
@@ -341,8 +344,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return i
   }
 
+  @Throws(EOFException::class)
   override fun readLong(): Long {
-    check(size >= 8L) { "size < 8: $size" }
+    if (size < 8L) throw EOFException()
 
     val segment = head!!
     var pos = segment.pos
@@ -375,14 +379,18 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return v
   }
 
+  @Throws(EOFException::class)
   override fun readShortLe() = readShort().reverseBytes()
 
+  @Throws(EOFException::class)
   override fun readIntLe() = readInt().reverseBytes()
 
+  @Throws(EOFException::class)
   override fun readLongLe() = readLong().reverseBytes()
 
+  @Throws(EOFException::class)
   override fun readDecimalLong(): Long {
-    check(size != 0L) { "size == 0" }
+    if (size == 0L) throw EOFException()
 
     // This value is always built negatively in order to accommodate Long.MIN_VALUE.
     var value = 0L
@@ -442,8 +450,9 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return if (negative) value else -value
   }
 
+  @Throws(EOFException::class)
   override fun readHexadecimalUnsignedLong(): Long {
-    check(size != 0L) { "size == 0" }
+    if (size == 0L) throw EOFException()
 
     var value = 0L
     var seen = 0
@@ -569,7 +578,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
             pos = s.pos
             data = s.data
             limit = s.limit
-            if (s == head) {
+            if (s === head) {
               if (!scanComplete) break@navigateTrie // We were exhausted before the scan completed.
               s = null // We were exhausted at the end of the scan.
             }
@@ -602,7 +611,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
           pos = s.pos
           data = s.data
           limit = s.limit
-          if (s == head) {
+          if (s === head) {
             s = null // No more segments! The next trie node will be our last.
           }
         }
@@ -644,8 +653,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   @Throws(EOFException::class)
   override fun readString(byteCount: Long, charset: Charset): String {
-    checkOffsetAndCount(size, 0, byteCount)
-    require(byteCount <= Integer.MAX_VALUE) { "byteCount > Integer.MAX_VALUE: $byteCount" }
+    require(byteCount >= 0 && byteCount <= Integer.MAX_VALUE) { "byteCount: $byteCount" }
+    if (size < byteCount) throw EOFException()
     if (byteCount == 0L) return ""
 
     val s = head!!
@@ -796,8 +805,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   @Throws(EOFException::class)
   override fun readByteArray(byteCount: Long): ByteArray {
-    checkOffsetAndCount(size, 0, byteCount)
-    require(byteCount <= Integer.MAX_VALUE) { "byteCount > Integer.MAX_VALUE: $byteCount" }
+    require(byteCount >= 0 && byteCount <= Integer.MAX_VALUE) { "byteCount: $byteCount" }
+    if (size < byteCount) throw EOFException()
 
     val result = ByteArray(byteCount.toInt())
     readFully(result)
@@ -1586,12 +1595,12 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     head?.let { head ->
       messageDigest.update(head.data, head.pos, head.limit - head.pos)
       var s = head.next!!
-      while (s != head) {
+      while (s !== head) {
         messageDigest.update(s.data, s.pos, s.limit - s.pos)
         s = s.next!!
       }
     }
-    return ByteString.of(*messageDigest.digest())
+    return ByteString(messageDigest.digest())
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
@@ -1610,12 +1619,12 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       head?.let { head ->
         mac.update(head.data, head.pos, head.limit - head.pos)
         var s = head.next!!
-        while (s != head) {
+        while (s !== head) {
           mac.update(s.data, s.pos, s.limit - s.pos)
           s = s.next!!
         }
       }
-      return ByteString.of(*mac.doFinal())
+      return ByteString(mac.doFinal())
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
     }
@@ -1667,7 +1676,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         pos++
       }
       s = s.next!!
-    } while (s != head)
+    } while (s !== head)
     return result
   }
 
@@ -1686,7 +1695,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     result.head!!.prev = result.head
     result.head!!.next = result.head!!.prev
     var s = head!!.next
-    while (s != head) {
+    while (s !== head) {
       result.head!!.prev!!.push(s!!.sharedCopy())
       s = s.next
     }
@@ -1696,7 +1705,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   /** Returns an immutable copy of this buffer as a byte string.  */
   fun snapshot(): ByteString {
-    require(size <= Integer.MAX_VALUE) { "size > Integer.MAX_VALUE: $size" }
+    check(size <= Integer.MAX_VALUE) { "size > Integer.MAX_VALUE: $size" }
     return snapshot(size.toInt())
   }
 
@@ -1722,6 +1731,20 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return unsafeCursor
   }
 
+  @JvmName("-deprecated_getByte")
+  @Deprecated(
+      message = "moved to operator function",
+      replaceWith = ReplaceWith(expression = "this[index]"),
+      level = DeprecationLevel.ERROR)
+  fun getByte(index: Long) = this[index]
+
+  @JvmName("-deprecated_size")
+  @Deprecated(
+      message = "moved to val",
+      replaceWith = ReplaceWith(expression = "size"),
+      level = DeprecationLevel.ERROR)
+  fun size() = size
+
   /**
    * A handle to the underlying data in a buffer. This handle is unsafe because it does not enforce
    * its own invariants. Instead, it assumes a careful user who has studied Okio's implementation
@@ -1745,14 +1768,14 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    *
    * These optimizations all leverage the way Okio stores data internally. Okio Buffers are
    * implemented using a doubly-linked list of segments. Each segment is a contiguous range within a
-   * 8 KiB `byte[]`. Each segment has two indexes, `start`, the offset of the first byte of the
+   * 8 KiB `ByteArray`. Each segment has two indexes, `start`, the offset of the first byte of the
    * array containing application data, and `end`, the offset of the first byte beyond `start` whose
    * data is undefined.
    *
    * New buffers are empty and have no segments:
    *
    * ```
-   *   Buffer buffer = new Buffer();
+   *   val buffer = Buffer()
    * ```
    *
    * We append 7 bytes of data to the end of our empty buffer. Internally, the buffer allocates a
@@ -1760,7 +1783,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * bytes of data:
    *
    * ```
-   * buffer.writeUtf8("sealion");
+   * buffer.writeUtf8("sealion")
    *
    * // [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
    * //    ^                                  ^
@@ -1772,7 +1795,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * internal indices.
    *
    * ```
-   * buffer.readUtf8(4); // "seal"
+   * buffer.readUtf8(4) // "seal"
    *
    * // [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
    * //                        ^              ^
@@ -1785,8 +1808,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * and ends.
    *
    * ```
-   * Buffer xoxo = new Buffer();
-   * xoxo.writeUtf8(Strings.repeat("xo", 5_000));
+   * val xoxo = new Buffer()
+   * xoxo.writeUtf8("xo".repeat(5_000))
    *
    * // [ 'x', 'o', 'x', 'o', 'x', 'o', 'x', 'o', ..., 'x', 'o', 'x', 'o']
    * //    ^                                                               ^
@@ -1809,8 +1832,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * unrelated buffer:
    *
    * ```
-   * Buffer abc = new Buffer();
-   * abc.writeUtf8("abc");
+   * val abc = new Buffer()
+   * abc.writeUtf8("abc")
    *
    * // [ 'a', 'b', 'c', 'o', 'x', 'o', 'x', 'o', ...]
    * //    ^              ^
@@ -1822,16 +1845,16 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * allocate a new (private) segment early.
    *
    * ```
-   * Buffer nana = new Buffer();
-   * nana.writeUtf8(Strings.repeat("na", 2_500));
-   * nana.readUtf8(2); // "na"
+   * val nana = new Buffer()
+   * nana.writeUtf8("na".repeat(2_500))
+   * nana.readUtf8(2) // "na"
    *
    * // [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
    * //              ^                                  ^
    * //           start = 0                         end = 5000
    *
-   * nana2 = nana.clone();
-   * nana2.writeUtf8("batman");
+   * nana2 = nana.clone()
+   * nana2.writeUtf8("batman")
    *
    * // [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
    * //              ^                                  ^
@@ -1863,17 +1886,17 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    *
    * Use [Buffer.readUnsafe] to create a cursor to read buffer data and [Buffer.readAndWriteUnsafe]
    * to create a cursor to read and write buffer data. In either case, always call
-   * [UnsafeCursor.close] when done with a cursor. This is convenient with Java 7's
-   * try-with-resources syntax. In this example we read all of the bytes in a buffer into a byte
+   * [UnsafeCursor.close] when done with a cursor. This is convenient with Kotlin's
+   * [use] extension function. In this example we read all of the bytes in a buffer into a byte
    * array:
    *
    * ```
-   * byte[] bufferBytes = new byte[(int) buffer.size()];
+   * val bufferBytes = ByteArray(buffer.size.toInt())
    *
-   * try (UnsafeCursor cursor = buffer.readUnsafe()) {
+   * buffer.readUnsafe().use { cursor ->
    *   while (cursor.next() != -1) {
    *     System.arraycopy(cursor.data, cursor.start,
-   *         bufferBytes, (int) cursor.offset, cursor.end - cursor.start);
+   *         bufferBytes, cursor.offset.toInt(), cursor.end - cursor.start);
    *   }
    * }
    * ```
@@ -1931,7 +1954,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
      * the readable range (at least 1), or -1 if we have reached the end of the buffer and there are
      * no more bytes to read.
      */
-    operator fun next(): Int {
+    fun next(): Int {
       check(offset != buffer!!.size) { "no more bytes" }
       return if (offset == -1L) seek(0L) else seek(offset + (end - start))
     }
@@ -1998,7 +2021,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       // If we're going to write and our segment is shared, swap it for a read-write one.
       if (readWrite && next!!.shared) {
         val unsharedNext = next.unsharedCopy()
-        if (buffer.head == next) {
+        if (buffer.head === next) {
           buffer.head = unsharedNext
         }
         next = next.push(unsharedNext)
@@ -2144,6 +2167,5 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   companion object {
     private val DIGITS = "0123456789abcdef".toByteArray()
-    internal const val REPLACEMENT_CHARACTER: Int = '\ufffd'.toInt()
   }
 }

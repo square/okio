@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package okio
 
 import okio.internal.COMMON_EMPTY
@@ -93,7 +94,7 @@ internal actual constructor(
    * 0 and `endIndex` is the length of this byte string.
    */
   open fun substring(beginIndex: Int = 0, endIndex: Int = size): ByteString =
-      commonSubstring(beginIndex, endIndex)
+    commonSubstring(beginIndex, endIndex)
 
   /** Returns the byte at `pos`.  */
   internal actual open fun internalGet(pos: Int) = commonGetByte(pos)
@@ -151,7 +152,7 @@ internal actual constructor(
   // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
   fun lastIndexOf(other: ByteString, fromIndex: Int = size) = lastIndexOf(other.internalArray(),
-      fromIndex)
+    fromIndex)
 
   open fun lastIndexOf(other: ByteArray, fromIndex: Int = size): Int {
     var fromIndex = fromIndex

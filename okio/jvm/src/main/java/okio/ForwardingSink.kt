@@ -37,4 +37,11 @@ abstract class ForwardingSink(
   override fun close() = delegate.close()
 
   override fun toString() = "${javaClass.simpleName}($delegate)"
+
+  @JvmName("-deprecated_delegate")
+  @Deprecated(
+      message = "moved to val",
+      replaceWith = ReplaceWith(expression = "delegate"),
+      level = DeprecationLevel.ERROR)
+  fun delegate() = delegate
 }

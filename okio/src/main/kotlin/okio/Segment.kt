@@ -83,7 +83,7 @@ internal class Segment {
    * Returns null if the list is now empty.
    */
   fun pop(): Segment? {
-    val result = if (next != this) next else null
+    val result = if (next !== this) next else null
     prev!!.next = next
     next!!.prev = prev
     next = null
@@ -137,7 +137,7 @@ internal class Segment {
    * data so that segments can be recycled.
    */
   fun compact() {
-    check(prev != this) { "cannot compact" }
+    check(prev !== this) { "cannot compact" }
     if (!prev!!.owner) return  // Cannot compact: prev isn't writable.
     val byteCount = limit - pos
     val availableByteCount = SIZE - prev!!.limit + if (prev!!.shared) 0 else prev!!.pos

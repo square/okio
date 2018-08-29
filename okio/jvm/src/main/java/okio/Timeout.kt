@@ -112,7 +112,8 @@ open class Timeout {
   @Throws(IOException::class)
   open fun throwIfReached() {
     if (Thread.interrupted()) {
-      throw InterruptedIOException("thread interrupted")
+      Thread.currentThread().interrupt() // Retain interrupted status.
+      throw InterruptedIOException("interrupted")
     }
 
     if (hasDeadline && deadlineNanoTime - System.nanoTime() <= 0) {
@@ -190,6 +191,7 @@ open class Timeout {
         throw InterruptedIOException("timeout")
       }
     } catch (e: InterruptedException) {
+      Thread.currentThread().interrupt() // Retain interrupted status.
       throw InterruptedIOException("interrupted")
     }
   }

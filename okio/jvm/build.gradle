@@ -5,10 +5,10 @@ apply plugin: 'java-library'
 apply plugin: 'org.jetbrains.kotlin.platform.jvm'
 apply plugin: 'ru.vyarus.animalsniffer'
 apply plugin: 'me.champeau.gradle.japicmp'
-apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'me.champeau.gradle.jmh'
-
-apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
+apply plugin: 'com.vanniktech.maven.publish'
+apply plugin: 'org.jetbrains.dokka'
 
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
@@ -86,3 +86,12 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask, dependsOn: 'jar') {
 check.dependsOn(japicmp)
 
 assemble.dependsOn(tasks['jmhJar'])
+
+dokka {
+  skipDeprecated = true
+
+  packageOptions {
+    prefix = "com.squareup"
+    suppress = true
+  }
+}
