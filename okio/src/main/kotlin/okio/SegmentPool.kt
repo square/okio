@@ -48,10 +48,10 @@ internal object SegmentPool {
   @JvmStatic
   fun recycle(segment: Segment) {
     require(segment.next == null && segment.prev == null)
-    if (segment.shared) return  // This segment cannot be recycled.
+    if (segment.shared) return // This segment cannot be recycled.
 
     synchronized(this) {
-      if (byteCount + Segment.SIZE > MAX_SIZE) return  // Pool is full.
+      if (byteCount + Segment.SIZE > MAX_SIZE) return // Pool is full.
       byteCount += Segment.SIZE
       segment.next = next
       segment.limit = 0

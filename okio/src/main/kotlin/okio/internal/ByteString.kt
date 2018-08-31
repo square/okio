@@ -56,7 +56,7 @@ internal fun ByteString.commonHex(): String {
   var c = 0
   for (b in data) {
     result[c++] = ByteString.HEX_DIGITS[b shr 4 and 0xf]
-    result[c++] = ByteString.HEX_DIGITS[b       and 0xf]
+    result[c++] = ByteString.HEX_DIGITS[b       and 0xf] // ktlint-disable no-multi-spaces
   }
   return result.createString()
 }
@@ -152,9 +152,9 @@ internal fun ByteString.commonRangeEquals(
   otherOffset: Int,
   byteCount: Int
 ): Boolean {
-  return (offset >= 0 && offset <= data.size - byteCount
-      && otherOffset >= 0 && otherOffset <= other.size - byteCount
-      && arrayRangeEquals(data, offset, other, otherOffset, byteCount))
+  return (offset >= 0 && offset <= data.size - byteCount &&
+    otherOffset >= 0 && otherOffset <= other.size - byteCount &&
+    arrayRangeEquals(data, offset, other, otherOffset, byteCount))
 }
 
 internal fun ByteString.commonStartsWith(prefix: ByteString) =
@@ -231,7 +231,7 @@ internal fun String.commonDecodeBase64(): ByteString? {
 }
 
 internal fun String.commonDecodeHex(): ByteString {
-  require(length % 2 == 0) { "Unexpected hex string: ${this}" }
+  require(length % 2 == 0) { "Unexpected hex string: $this" }
 
   val result = ByteArray(length / 2)
   for (i in result.indices) {
@@ -287,8 +287,8 @@ internal fun codePointIndexToCharIndex(s: ByteArray, codePointCount: Int): Int {
     }
 
     c = s.codePointAt(byteIndex)
-    if ((c != '\n'.toInt() && c != '\r'.toInt() && isIsoControl(c))
-      || c == REPLACEMENT_CHARACTER) {
+    if ((c != '\n'.toInt() && c != '\r'.toInt() && isIsoControl(c)) ||
+      c == REPLACEMENT_CHARACTER) {
       return -1
     }
 
