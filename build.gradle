@@ -12,7 +12,8 @@ buildscript {
       'assertj': '1.7.0',
       'shadowPlugin': '2.0.2',
       'nodePlugin': '1.2.0',
-      'mavenPublishPlugin': '0.4.0'
+      'mavenPublishPlugin': '0.4.0',
+      'ktlintPlugin': '5.0.0',
   ]
 
   ext.deps = [
@@ -50,6 +51,7 @@ buildscript {
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
       'node': "com.moowork.gradle:gradle-node-plugin:${versions.nodePlugin}",
       'mavenPublish': "com.vanniktech:gradle-maven-publish-plugin:${versions.mavenPublishPlugin}",
+      'ktlint': "gradle.plugin.org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
@@ -66,6 +68,7 @@ buildscript {
     classpath deps.jmh.gradlePlugin
     classpath deps.node
     classpath deps.mavenPublish
+    classpath deps.ktlint
   }
 
   repositories {
@@ -82,5 +85,8 @@ allprojects {
 subprojects {
   repositories {
     mavenCentral()
+    jcenter()
   }
+
+  apply plugin: "org.jlleitschuh.gradle.ktlint"
 }
