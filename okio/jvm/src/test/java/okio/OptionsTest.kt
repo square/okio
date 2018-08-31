@@ -381,7 +381,7 @@ class OptionsTest {
     }
   }
 
-  private fun Options.trieString() : String {
+  private fun Options.trieString(): String {
     val result = StringBuilder()
     printTrieNode(result, 0)
     return result.toString()
