@@ -138,10 +138,10 @@ internal class Segment {
    */
   fun compact() {
     check(prev !== this) { "cannot compact" }
-    if (!prev!!.owner) return  // Cannot compact: prev isn't writable.
+    if (!prev!!.owner) return // Cannot compact: prev isn't writable.
     val byteCount = limit - pos
     val availableByteCount = SIZE - prev!!.limit + if (prev!!.shared) 0 else prev!!.pos
-    if (byteCount > availableByteCount) return  // Cannot compact: not enough writable space.
+    if (byteCount > availableByteCount) return // Cannot compact: not enough writable space.
     writeTo(prev!!, byteCount)
     pop()
     SegmentPool.recycle(this)
