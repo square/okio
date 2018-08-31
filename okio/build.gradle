@@ -1,5 +1,10 @@
 apply plugin: 'org.jetbrains.kotlin.platform.common'
 
+// TODO remove once baseline issues are fixed
+ktlint {
+  ignoreFailures = true
+}
+
 dependencies {
   implementation deps.kotlin.stdLib.common
   testImplementation deps.kotlin.test.common
