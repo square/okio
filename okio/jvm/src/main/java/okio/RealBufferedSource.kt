@@ -217,15 +217,15 @@ internal class RealBufferedSource(
     val scanLength = if (limit == Long.MAX_VALUE) Long.MAX_VALUE else limit + 1
     val newline = indexOf('\n'.toByte(), 0, scanLength)
     if (newline != -1L) return buffer.readUtf8Line(newline)
-    if (scanLength < Long.MAX_VALUE
-        && request(scanLength) && buffer[scanLength - 1] == '\r'.toByte()
-        && request(scanLength + 1) && buffer[scanLength] == '\n'.toByte()) {
+    if (scanLength < Long.MAX_VALUE &&
+        request(scanLength) && buffer[scanLength - 1] == '\r'.toByte() &&
+        request(scanLength + 1) && buffer[scanLength] == '\n'.toByte()) {
       return buffer.readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
     }
     val data = Buffer()
     buffer.copyTo(data, 0, minOf(32, buffer.size))
-    throw EOFException("\\n not found: limit=" + minOf(buffer.size, limit)
-        + " content=" + data.readByteString().hex() + '…'.toString())
+    throw EOFException("\\n not found: limit=" + minOf(buffer.size, limit) +
+      " content=" + data.readByteString().hex() + '…'.toString())
   }
 
   override fun readUtf8CodePoint(): Int {
@@ -297,9 +297,9 @@ internal class RealBufferedSource(
     var pos = 0
     while (request((pos + 1).toLong())) {
       val b = buffer[pos.toLong()]
-      if ((b < '0'.toByte() || b > '9'.toByte())
-          && (b < 'a'.toByte() || b > 'f'.toByte())
-          && (b < 'A'.toByte() || b > 'F'.toByte())) {
+      if ((b < '0'.toByte() || b > '9'.toByte()) &&
+          (b < 'a'.toByte() || b > 'f'.toByte()) &&
+          (b < 'A'.toByte() || b > 'F'.toByte())) {
         // Non-digit, or non-leading negative sign.
         if (pos == 0) {
           throw NumberFormatException(String.format(
@@ -397,10 +397,10 @@ internal class RealBufferedSource(
   ): Boolean {
     check(!closed) { "closed" }
 
-    if (offset < 0L
-        || bytesOffset < 0
-        || byteCount < 0
-        || bytes.size - bytesOffset < byteCount) {
+    if (offset < 0L ||
+        bytesOffset < 0 ||
+        byteCount < 0 ||
+        bytes.size - bytesOffset < byteCount) {
       return false
     }
     for (i in 0 until byteCount) {

@@ -165,8 +165,8 @@ class Options private constructor(
             }
           }
 
-          if (rangeStart + 1 == rangeEnd
-              && byteStringOffset + 1 == byteStrings[rangeStart].size) {
+          if (rangeStart + 1 == rangeEnd &&
+              byteStringOffset + 1 == byteStrings[rangeStart].size) {
             // The result is a single index.
             node.writeInt(indexes[rangeStart])
           } else {
@@ -186,7 +186,6 @@ class Options private constructor(
         }
 
         node.writeAll(childNodes)
-
       } else {
         // If all of the bytes are the same, encode a SCAN node.
         var scanByteCount = 0
