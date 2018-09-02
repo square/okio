@@ -59,7 +59,7 @@ class ByteStringKotlinTest {
   @Test fun substring() {
     val byteString = "abcdef".encodeUtf8()
     assertEquals(byteString.substring(), "abcdef".encodeUtf8())
-    assertEquals(byteString.substring(endIndex= 3), "abc".encodeUtf8())
+    assertEquals(byteString.substring(endIndex = 3), "abc".encodeUtf8())
     assertEquals(byteString.substring(beginIndex = 3), "def".encodeUtf8())
     assertEquals(byteString.substring(beginIndex = 1, endIndex = 5), "bcde".encodeUtf8())
   }

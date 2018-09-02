@@ -50,7 +50,7 @@ open class AsyncTimeout : Timeout() {
     val timeoutNanos = timeoutNanos()
     val hasDeadline = hasDeadline()
     if (timeoutNanos == 0L && !hasDeadline) {
-      return  // No timeout and no deadline? Don't bother with the queue.
+      return // No timeout and no deadline? Don't bother with the queue.
     }
     inQueue = true
     scheduleTimeout(this, timeoutNanos, hasDeadline)
