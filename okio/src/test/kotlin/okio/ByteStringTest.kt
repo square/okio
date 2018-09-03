@@ -20,6 +20,7 @@ import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 import okio.internal.commonAsUtf8ToByteArray
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -29,20 +30,28 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class CommonByteStringTest {
-  class Platform : AbstractByteStringTest(ByteStringFactory.PLATFORM)
-  class Okio : AbstractByteStringTest(ByteStringFactory.OKIO)
+  class ByteString : AbstractByteStringTest(ByteStringFactory.BYTE_STRING)
+  class OkioEncoder : AbstractByteStringTest(ByteStringFactory.OKIO_ENCODER)
 }
 
 interface ByteStringFactory {
+  // Unused, but useful if/when SegmentedByteString is moved to common
+  // This also keeps the unit tests the same between Kotlin/JVM for easy
+  // copying as functionality and unit tests are moved
   fun decodeHex(hex: String): ByteString
+
   fun encodeUtf8(s: String): ByteString
 
   companion object {
-    val PLATFORM: ByteStringFactory = object : ByteStringFactory {
+    val BYTE_STRING: ByteStringFactory = object : ByteStringFactory {
       override fun decodeHex(hex: String) = hex.decodeHex()
       override fun encodeUtf8(s: String) = s.encodeUtf8()
     }
-    val OKIO: ByteStringFactory = object : ByteStringFactory {
+
+    // For Kotlin/JVM, the native Java UTF-8 encoder is used. This forces
+    // testing of the Okio encoder used for Kotlin/JS and Kotlin/Native to be
+    // tested on JVM as well.
+    val OKIO_ENCODER: ByteStringFactory = object : ByteStringFactory {
       override fun decodeHex(hex: String) = hex.decodeHex()
       override fun encodeUtf8(s: String) = ByteString.of(*s.commonAsUtf8ToByteArray())
     }
@@ -54,6 +63,7 @@ abstract class AbstractByteStringTest(
 ) {
   @Test fun get() {
     val actual = factory.encodeUtf8("abc")
+    assertEquals(3, actual.size)
     assertEquals(actual[0], 'a'.toByte())
     assertEquals(actual[1], 'b'.toByte())
     assertEquals(actual[2], 'c'.toByte())
@@ -164,17 +174,20 @@ abstract class AbstractByteStringTest(
     assertEquals(-1, byteString.indexOf("112244".decodeHex().toByteArray()).toLong())
   }
 
-  // TODO Kotlin/Native and Kotlin/JS have a null ByteString.EMPTY
   @Test fun equalsTest() {
     val byteString = factory.decodeHex("000102")
     assertEquals(byteString, byteString)
     assertEquals(byteString, "000102".decodeHex())
-    // assertEquals(factory.decodeHex(""), ByteString.EMPTY)
-    assertEquals(factory.decodeHex(""), ByteString.of())
-    // assertEquals(ByteString.EMPTY, factory.decodeHex(""))
-    assertEquals(ByteString.of(), factory.decodeHex(""))
     assertNotEquals(byteString, Any())
     assertNotEquals(byteString, "000201".decodeHex())
+  }
+
+  @Ignore // TODO enable when https://youtrack.jetbrains.com/issue/KT-26497 is resolved
+  @Test fun equalsEmptyTest() {
+    assertEquals(factory.decodeHex(""), ByteString.EMPTY)
+    assertEquals(factory.decodeHex(""), ByteString.of())
+    assertEquals(ByteString.EMPTY, factory.decodeHex(""))
+    assertEquals(ByteString.of(), factory.decodeHex(""))
   }
 
   private val bronzeHorseman = "На берегу пустынных волн"
@@ -197,7 +210,7 @@ abstract class AbstractByteStringTest(
   @Test fun toAsciiLowerCaseNoUppercase() {
     val s = factory.encodeUtf8("a1_+")
     assertEquals(s, s.toAsciiLowercase())
-    if (factory === ByteStringFactory.PLATFORM) {
+    if (factory === ByteStringFactory.BYTE_STRING) {
       assertSame(s, s.toAsciiLowercase())
     }
   }

@@ -49,6 +49,11 @@ internal actual fun arraycopy(
 
 internal actual fun ByteArray.toUtf8String(): String = stringFromUtf8()
 
+// We are NOT using the Kotlin/Native function `toUtf8()` because it encodes
+// invalide UTF-16 characters as '\ufffd' instead of '?' like Okio does. In an
+// effort to keep the library consistent with itself, we use the Okio encoder
+// implementation instead. This will hopefully help avoid weird gotcha's as this
+// library starts to be used more across platforms.
 internal actual fun String.asUtf8ToByteArray(): ByteArray = commonAsUtf8ToByteArray()
 
 actual typealias ArrayIndexOutOfBoundsException = kotlin.ArrayIndexOutOfBoundsException

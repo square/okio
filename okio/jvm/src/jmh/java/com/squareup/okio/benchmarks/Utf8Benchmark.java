@@ -66,12 +66,13 @@ public class Utf8Benchmark {
             + "αｓ γ𝛐𝕦 𝔠ﻫ𝛖lԁ, 𝚊π𝑑 Ь𝑒𝙛૦𝓇𝘦 𝓎٥𝖚 ⅇｖℯ𝝅 𝜅ո𝒆ｗ ｗ𝗵𝒂𝘁 ᶌ੦𝗎 ｈ𝐚𝗱, 𝜸ﮨ𝒖 𝓹𝝰𝔱𝖾𝗇𝓽𝔢ⅆ і𝕥, 𝚊𝜛𝓭 𝓹𝖺ⅽϰ𝘢ℊеᏧ 𝑖𝞃, "
             + "𝐚𝛑ꓒ 𝙨l𝔞р𝘱𝔢𝓭 ɩ𝗍 ہ𝛑 𝕒 ｐl𝛂ѕᴛ𝗂𝐜 l𝞄ℼ𝔠𝒽𝑏ﮪ⨯, 𝔞ϖ𝒹 ｎ𝛔ｗ 𝛾𝐨𝞄'𝗿𝔢 ꜱ℮ll𝙞ｎɡ ɩ𝘁, 𝙮𝕠𝛖 ｗ𝑎ℼ𝚗𝛂 𝕤𝓮ll 𝙞𝓉.");
 
+    // The first 't' is actually a '𝓽'
     strings.put(
         "sparse",
-        "Um, I'll tell you the problem with the scientific power that you're using here, "
-            + "it didn't require any discipline to attain it. 𝒀ο𝗎 read what others had done and you "
-            + "took the next step. 𝘠ⲟ𝖚 didn't earn the knowledge for yourselves, so you don't take any "
-            + "responsibility for it. 𝛶𝛔𝔲 stood on the shoulders of geniuses to accomplish something "
+        "Um, I'll 𝓽ell you the problem with the scientific power that you're using here, "
+            + "it didn't require any discipline to attain it. You read what others had done and you "
+            + "took the next step. You didn't earn the knowledge for yourselves, so you don't take any "
+            + "responsibility for it. You stood on the shoulders of geniuses to accomplish something "
             + "as fast as you could, and before you even knew what you had, you patented it, and "
             + "packaged it, and slapped it on a plastic lunchbox, and now you're selling it, you wanna "
             + "sell it.");
@@ -86,8 +87,8 @@ public class Utf8Benchmark {
     strings.put("bad", "\ud800\u0061\udc00\u0061");
   }
 
-  @Param({"short", "long"})
-  String length;
+  @Param({"20", "2000", "200000"})
+  int length;
 
   @Param({"ascii", "utf8", "sparse", "2bytes", "3bytes", "4bytes", "bad"})
   String encoding;
@@ -99,12 +100,12 @@ public class Utf8Benchmark {
   public void setup() {
     String part = strings.get(encoding);
 
-    // Try to make all the strings about the same length for comparison
-    int target = "long".equals(length) ? 250_000 : 2_500;
-    StringBuilder builder = new StringBuilder(target + 1_000);
-    while (builder.length() < target) {
+    // Make all the strings the same length for comparison
+    StringBuilder builder = new StringBuilder(length + 1_000);
+    while (builder.length() < length) {
       builder.append(part);
     }
+    builder.setLength(length);
 
     // Prepare a string and byte array for encoding and decoding
     encode = builder.toString();
@@ -123,7 +124,7 @@ public class Utf8Benchmark {
 
   @Benchmark
   public String bytesToStringOkio() {
-    // For ASCII only encoding, this will never be faster than Java. Because
+    // For ASCII only decoding, this will never be faster than Java. Because
     // Java can trust the decoded char array and it will be the correct size for
     // ASCII, it is able to avoid the extra defensive copy Okio is forced to
     // make because it doesn't have access to String internals.

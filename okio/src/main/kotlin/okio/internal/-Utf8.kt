@@ -17,7 +17,7 @@
 package okio.internal
 
 import okio.processUtf8Bytes
-import okio.processUtf8Chars
+import okio.processUtf16Chars
 
 // TODO For benchmarking, these methods need to be available but preferably invisible
 // to everything else. Putting them in this file, `-Utf8.kt`, makes them invisible to
@@ -27,7 +27,7 @@ fun ByteArray.commonToUtf8String(): String {
   val chars = CharArray(size)
 
   var length = 0
-  processUtf8Chars(0, size) { c ->
+  processUtf16Chars(0, size) { c ->
     chars[length++] = c
   }
 

@@ -239,8 +239,13 @@ internal inline fun ByteArray.processUtf8CodePoints(
   }
 }
 
+// Value added to the high UTF-16 surrogate after shifting
+internal const val HIGH_SURROGATE_HEADER = 0xd800 - (0x010000 ushr 10)
+// Value added to the low UTF-16 surrogate after masking
+internal const val LOG_SURROGATE_HEADER = 0xdc00
+
 // TODO combine with Buffer.readUtf8?
-internal inline fun ByteArray.processUtf8Chars(
+internal inline fun ByteArray.processUtf16Chars(
   beginIndex: Int,
   endIndex: Int,
   yield: (Char) -> Unit
@@ -276,8 +281,8 @@ internal inline fun ByteArray.processUtf8Chars(
             // UTF-16 high surrogate: 110110xxxxxxxxxx (10 bits)
             // UTF-16 low surrogate:  110111yyyyyyyyyy (10 bits)
             /* ktlint-disable no-multi-spaces */
-            yield(((codePoint ushr 10   ) + (0xd800 - (0x010000 ushr 10))).toChar())
-            yield(((codePoint and 0x03ff) + (0xdc00                     )).toChar())
+            yield(((codePoint ushr 10   ) + HIGH_SURROGATE_HEADER).toChar())
+            yield(((codePoint and 0x03ff) + LOG_SURROGATE_HEADER).toChar())
             /* ktlint-enable no-multi-spaces */
           } else {
             yield(REPLACEMENT_CHARACTER)
@@ -294,11 +299,88 @@ internal inline fun ByteArray.processUtf8Chars(
   }
 }
 
-/* ktlint-disable indent */
-internal val mask2 =
-    ((0xc0.toByte() shl 6) xor
-     (0x80.toByte().toInt()))
-/* ktlint-enable indent */
+// ===== UTF-8 Encoding and Decoding ===== //
+/*
+The following 3 methods take advantage of using XOR on 2's complement store
+numbers to quickly and efficiently combine the important data of UTF-8 encoded
+bytes. This will be best explained using an example, so lets take the following
+encoded character '∇' = \u2207.
+
+Using the Unicode code point for this character, 0x2207, we will split the
+binary representation into 3 sections as follows:
+
+    0x2207 = 0b0010 0010 0000 0111
+               xxxx yyyy yyzz zzzz
+
+Now take each section of bits and add the appropriate header:
+
+    utf8(0x2207) = 0b1110 xxxx 0b10yy yyyy 0b10zz zzzz
+                 = 0b1110 0010 0b1000 1000 0b1000 0111
+                 = 0xe2        0x88        0x87
+
+We have now just encoded this as a 3 byte UTF-8 character. More information
+about different sizes of characters can be found here:
+    https://en.wikipedia.org/wiki/UTF-8
+
+Encoding was pretty easy, but decoding is a bit more complicated. We need to
+first determine the number of bytes used to represent the character, strip all
+the headers, and then combine all the bits into a single integer. Let's use the
+character we just encoded and work backwards, taking advantage of 2's complement
+integer representation and the XOR function.
+
+Let's look at the decimal representation of these bytes:
+
+    0xe2, 0x88, 0x87 = -30, -120, -121
+
+The first interesting thing to notice is that UTF-8 headers all start with 1 -
+except for ASCII which is encoded as a single byte - which means all UTF-8 bytes
+will be negative. So converting these to integers results in a lot of 1's added
+because they are store as 2's complement:
+
+    0xe2 =  -30 = 0xffff ffe2
+    0x88 = -120 = 0xffff ff88
+    0x87 = -121 = 0xffff ff87
+
+Now let's XOR these with their corresponding UTF-8 byte headers to see what
+happens:
+
+    0xffff ffe2 xor 0xffff ffe0 = 0x0000 0002
+    0xffff ff88 xor 0xffff ff80 = 0x0000 0008
+    0xffff ff87 xor 0xffff ff80 = 0x0000 0007
+
+***This is why we must first convert the byte header mask to a byte and then
+back to an integer, so it is properly converted to a 2's complement negative
+number which can be applied to each byte.***
+
+Now let's look at the binary representation to see how we can combine these to
+create the Unicode code point:
+
+    0b0000 0010    0b0000 1000    0b0000 0111
+    0b1110 xxxx    0b10yy yyyy    0b10zz zzzz
+
+Combining each section will require some bit shifting, but then they can just
+be OR'd together. They can also be XOR'd together which makes use of a single,
+COMMUTATIVE, operator through the entire calculation.
+
+      << 12 = 00000010
+      <<  6 =       00001000
+      <<  0 =             00000111
+        XOR = 00000010001000000111
+
+ code point = 0b0010 0010 0000 0111
+            = 0x2207
+
+And there we have it! The decoded UTF-8 character '∇'! And because the XOR
+operator is commutative, we can re-arrange all this XOR and shifting to create
+a single mask that can be applied to 3-byte UTF-8 characters after their bytes
+have been shifted and XOR'd together.
+ */
+
+// Mask used to remove byte headers from a 2 byte encoded UTF-8 character
+internal const val MASK_2BYTES = 0x0f80
+// MASK_2BYTES =
+//    (0xc0.toByte() shl 6) xor
+//    (0x80.toByte().toInt())
 
 internal inline fun ByteArray.process2Utf8Bytes(
   beginIndex: Int,
@@ -319,7 +401,7 @@ internal inline fun ByteArray.process2Utf8Bytes(
   }
 
   val codePoint =
-    (mask2
+    (MASK_2BYTES
         xor (b1.toInt())
         xor (b0.toInt() shl 6))
 
@@ -334,12 +416,12 @@ internal inline fun ByteArray.process2Utf8Bytes(
   return 2
 }
 
-/* ktlint-disable indent */
-internal val mask3 =
-    ((0xe0.toByte() shl 12) xor
-     (0x80.toByte() shl 6) xor
-     (0x80.toByte().toInt()))
-/* ktlint-enable indent */
+// Mask used to remove byte headers from a 3 byte encoded UTF-8 character
+internal const val MASK_3BYTES = -0x01e080
+// MASK_3BYTES =
+//    (0xe0.toByte() shl 12) xor
+//    (0x80.toByte() shl 6) xor
+//    (0x80.toByte().toInt())
 
 internal inline fun ByteArray.process3Utf8Bytes(
   beginIndex: Int,
@@ -372,7 +454,7 @@ internal inline fun ByteArray.process3Utf8Bytes(
   }
 
   val codePoint =
-    (mask3
+    (MASK_3BYTES
         xor (b2.toInt())
         xor (b1.toInt() shl 6)
         xor (b0.toInt() shl 12))
@@ -391,13 +473,13 @@ internal inline fun ByteArray.process3Utf8Bytes(
   return 3
 }
 
-/* ktlint-disable indent */
-internal val mask4 =
-    ((0xf0.toByte() shl 18) xor
-     (0x80.toByte() shl 12) xor
-     (0x80.toByte() shl 6) xor
-     (0x80.toByte().toInt()))
-/* ktlint-enable indent */
+// Mask used to remove byte headers from a 4 byte encoded UTF-8 character
+internal const val MASK_4BYTES = 0x381f80
+// MASK_4BYTES =
+//    (0xf0.toByte() shl 18) xor
+//    (0x80.toByte() shl 12) xor
+//    (0x80.toByte() shl 6) xor
+//    (0x80.toByte().toInt())
 
 internal inline fun ByteArray.process4Utf8Bytes(
   beginIndex: Int,
@@ -439,7 +521,7 @@ internal inline fun ByteArray.process4Utf8Bytes(
   }
 
   val codePoint =
-    (mask4
+    (MASK_4BYTES
         xor (b3.toInt())
         xor (b2.toInt() shl 6)
         xor (b1.toInt() shl 12)
