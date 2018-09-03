@@ -59,6 +59,9 @@ internal fun Long.reverseBytes(): Long {
 internal inline infix fun Byte.shr(other: Int): Int = toInt() shr other
 
 @Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
+internal inline infix fun Byte.shl(other: Int): Int = toInt() shl other
+
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline infix fun Byte.and(other: Int): Int = toInt() and other
 
 @Suppress("NOTHING_TO_INLINE") // Syntactic sugar.

@@ -62,6 +62,7 @@ dependencies {
     force = true
   }
 
+  jmh deps.kotlin.stdLib.jdk6
   jmh deps.jmh.core
   jmh deps.jmh.generator
 }

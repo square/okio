@@ -16,7 +16,6 @@
 package okio
 
 import okio.internal.COMMON_EMPTY
-import okio.internal.COMMON_HEX_DIGITS
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
@@ -284,7 +283,6 @@ internal actual constructor(
   fun size() = size
 
   actual companion object {
-    internal actual val HEX_DIGITS = COMMON_HEX_DIGITS
     private const val serialVersionUID = 1L
 
     /** A singleton empty `ByteString`.  */

@@ -17,8 +17,6 @@
 @file:JvmName("-Platform")
 package okio
 
-import java.util.Arrays
-
 actual typealias JvmOverloads = kotlin.jvm.JvmOverloads
 actual typealias JvmField = kotlin.jvm.JvmField
 actual typealias JvmStatic = kotlin.jvm.JvmStatic
@@ -34,15 +32,9 @@ internal actual fun arraycopy(
   System.arraycopy(src, srcPos, dest, destPos, length)
 }
 
-internal actual fun hashCode(a: ByteArray): Int = Arrays.hashCode(a)
-
 internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
-
-internal actual fun CharArray.createString(): String = String(this)
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets.UTF_8)
 
 // TODO remove if https://youtrack.jetbrains.com/issue/KT-20641 provides a better solution
-actual typealias IndexOutOfBoundsException = java.lang.IndexOutOfBoundsException
-
 actual typealias ArrayIndexOutOfBoundsException = java.lang.ArrayIndexOutOfBoundsException

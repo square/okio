@@ -18,19 +18,15 @@ package okio.internal
 
 import okio.BASE64_URL_SAFE
 import okio.ByteString
-import okio.REPLACEMENT_CHARACTER
+import okio.REPLACEMENT_CODE_POINT
 import okio.and
 import okio.arrayRangeEquals
 import okio.arraycopy
 import okio.asUtf8ToByteArray
-import okio.codePointAt
-import okio.codePointByteCount
-import okio.codePointCharCount
-import okio.createString
 import okio.decodeBase64ToArray
 import okio.encodeBase64
-import okio.hashCode
 import okio.isIsoControl
+import okio.processUtf8CodePoints
 import okio.shr
 import okio.toUtf8String
 
@@ -51,14 +47,17 @@ internal fun ByteString.commonBase64(): String = data.encodeBase64()
 
 internal fun ByteString.commonBase64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
 
+private val HEX_DIGITS =
+  charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
+
 internal fun ByteString.commonHex(): String {
   val result = CharArray(data.size * 2)
   var c = 0
   for (b in data) {
-    result[c++] = ByteString.HEX_DIGITS[b shr 4 and 0xf]
-    result[c++] = ByteString.HEX_DIGITS[b       and 0xf] // ktlint-disable no-multi-spaces
+    result[c++] = HEX_DIGITS[b shr 4 and 0xf]
+    result[c++] = HEX_DIGITS[b       and 0xf] // ktlint-disable no-multi-spaces
   }
-  return result.createString()
+  return String(result)
 }
 
 internal fun ByteString.commonToAsciiLowercase(): ByteString {
@@ -190,7 +189,7 @@ internal fun ByteString.commonEquals(other: Any?): Boolean {
 internal fun ByteString.commonHashCode(): Int {
   val result = hashCode
   if (result != 0) return result
-  hashCode = hashCode(data)
+  hashCode = data.contentHashCode()
   return hashCode
 }
 
@@ -211,9 +210,6 @@ internal fun ByteString.commonCompareTo(other: ByteString): Int {
   if (sizeA == sizeB) return 0
   return if (sizeA < sizeB) -1 else 1
 }
-
-internal val COMMON_HEX_DIGITS =
-    charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 
 internal val COMMON_EMPTY = ByteString.of()
 
@@ -275,26 +271,20 @@ internal fun ByteString.commonToString(): String {
   }
 }
 
-internal fun codePointIndexToCharIndex(s: ByteArray, codePointCount: Int): Int {
+private fun codePointIndexToCharIndex(s: ByteArray, codePointCount: Int): Int {
   var charCount = 0
-  var byteIndex = 0
   var j = 0
-  val length = s.size
-  var c: Int
-  while (byteIndex < length) {
-    if (j == codePointCount) {
+  s.processUtf8CodePoints(0, s.size) { c ->
+    if (j++ == codePointCount) {
       return charCount
     }
 
-    c = s.codePointAt(byteIndex)
     if ((c != '\n'.toInt() && c != '\r'.toInt() && isIsoControl(c)) ||
-      c == REPLACEMENT_CHARACTER) {
+      c == REPLACEMENT_CODE_POINT) {
       return -1
     }
 
-    j++
-    charCount += codePointCharCount(c)
-    byteIndex += codePointByteCount(c)
+    charCount += if (c < 0x10000) 1 else 2
   }
   return charCount
 }

@@ -46,16 +46,9 @@ internal expect fun arraycopy(
   length: Int
 )
 
-internal expect fun hashCode(a: ByteArray): Int
-
 internal expect fun ByteArray.toUtf8String(): String
-
-internal expect fun CharArray.createString(): String
 
 internal expect fun String.asUtf8ToByteArray(): ByteArray
 
 // TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
-expect open class IndexOutOfBoundsException(message: String) : RuntimeException
-
-// TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
-expect class ArrayIndexOutOfBoundsException(message: String) : IndexOutOfBoundsException
+expect class ArrayIndexOutOfBoundsException(message: String?) : IndexOutOfBoundsException
