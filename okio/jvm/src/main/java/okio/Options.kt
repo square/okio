@@ -58,7 +58,7 @@ class Options private constructor(
         while (b < list.size) {
           val byteString = list[b]
           if (!byteString.startsWith(prefix)) break
-          require (byteString.size != prefix.size) { "duplicate option: $byteString" }
+          require(byteString.size != prefix.size) { "duplicate option: $byteString" }
           if (indexes[b] > indexes[a]) {
             list.removeAt(b)
             indexes.removeAt(b)
