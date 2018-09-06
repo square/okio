@@ -24,8 +24,7 @@ internal fun checkOffsetAndCount(size: Long, offset: Long, byteCount: Long) {
   }
 }
 
-/* ktlint-disable indent */
-/* ktlint-disable no-multi-spaces */
+/* ktlint-disable no-multi-spaces indent */
 
 internal fun Short.reverseBytes(): Short {
   val i = toInt() and 0xffff
@@ -52,8 +51,7 @@ internal fun Long.reverseBytes(): Long {
          (this and 0x00000000000000ffL  shl 56)
 }
 
-/* ktlint-enable indent */
-/* ktlint-enable no-multi-spaces */
+/* ktlint-enable no-multi-spaces indent */
 
 @Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline infix fun Byte.shr(other: Int): Int = toInt() shr other

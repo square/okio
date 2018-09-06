@@ -13,7 +13,7 @@ buildscript {
       'shadowPlugin': '2.0.2',
       'nodePlugin': '1.2.0',
       'mavenPublishPlugin': '0.4.0',
-      'ktlintPlugin': '5.0.0',
+      'ktlintPlugin': '5.1.0',
   ]
 
   ext.deps = [

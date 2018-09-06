@@ -279,25 +279,21 @@ object TestUtil {
 
   @JvmStatic
   fun Int.reverseBytes(): Int {
-    /* ktlint-disable indent */
-    /* ktlint-disable no-multi-spaces */
+    /* ktlint-disable no-multi-spaces indent */
     return (this and -0x1000000 ushr 24) or
            (this and 0x00ff0000 ushr  8) or
            (this and 0x0000ff00  shl  8) or
            (this and 0x000000ff  shl 24)
-    /* ktlint-enable indent */
-    /* ktlint-enable no-multi-spaces */
+    /* ktlint-enable no-multi-spaces indent */
   }
 
   @JvmStatic
   fun Short.reverseBytes(): Short {
     val i = toInt() and 0xffff
-    /* ktlint-disable indent */
-    /* ktlint-disable no-multi-spaces */
+    /* ktlint-disable no-multi-spaces indent */
     val reversed = (i and 0xff00 ushr 8) or
                    (i and 0x00ff  shl 8)
-    /* ktlint-enable indent */
-    /* ktlint-enable no-multi-spaces */
+    /* ktlint-enable no-multi-spaces indent */
     return reversed.toShort()
   }
 }

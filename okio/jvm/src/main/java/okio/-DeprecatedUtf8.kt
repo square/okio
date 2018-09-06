@@ -1,3 +1,4 @@
+// ktlint-disable filename
 /*
  * Copyright (C) 2018 Square, Inc.
  *

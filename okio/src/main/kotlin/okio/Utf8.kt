@@ -280,10 +280,10 @@ internal inline fun ByteArray.processUtf16Chars(
             // Unicode code point:    00010000000000000000 + xxxxxxxxxxyyyyyyyyyy (21 bits)
             // UTF-16 high surrogate: 110110xxxxxxxxxx (10 bits)
             // UTF-16 low surrogate:  110111yyyyyyyyyy (10 bits)
-            /* ktlint-disable no-multi-spaces */
+            /* ktlint-disable no-multi-spaces paren-spacing */
             yield(((codePoint ushr 10   ) + HIGH_SURROGATE_HEADER).toChar())
+            /* ktlint-enable no-multi-spaces paren-spacing */
             yield(((codePoint and 0x03ff) + LOG_SURROGATE_HEADER).toChar())
-            /* ktlint-enable no-multi-spaces */
           } else {
             yield(REPLACEMENT_CHARACTER)
           }
