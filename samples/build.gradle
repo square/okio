@@ -7,7 +7,6 @@ targetCompatibility = JavaVersion.VERSION_1_8
 dependencies {
   implementation project(':okio:jvm')
   implementation deps.kotlin.stdLib.jdk8
-  compileOnly deps.jsr305
   testImplementation deps.test.junit
   testImplementation deps.test.assertj
   testImplementation deps.kotlin.test.jdk

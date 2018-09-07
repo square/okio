@@ -52,7 +52,6 @@ dependencies {
 
   implementation deps.kotlin.stdLib.jdk6
   compileOnly deps.animalSniffer.annotations
-  compileOnly deps.jsr305
   testImplementation deps.test.junit
   testImplementation deps.test.assertj
   testImplementation deps.kotlin.test.jdk
