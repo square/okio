@@ -543,13 +543,10 @@ compile 'com.squareup.okio:okio:2.0.0'
 
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
 
-ProGuard
+R8 / ProGuard
 --------
 
-If you are using ProGuard you might need to add the following option:
-```
--dontwarn okio.**
-```
+If you are using R8 or ProGuard add the options from [this file](https://github.com/square/okio/blob/master/okio/jvm/src/main/resources/META-INF/proguard/okio.pro).
 
 License
 --------
