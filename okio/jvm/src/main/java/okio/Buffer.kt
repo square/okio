@@ -50,6 +50,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun buffer() = this
 
+  override val buffer get() = this
+
   override fun outputStream(): OutputStream {
     return object : OutputStream() {
       override fun write(b: Int) {

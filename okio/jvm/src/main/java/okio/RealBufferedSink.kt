@@ -24,10 +24,14 @@ import java.nio.charset.Charset
 internal class RealBufferedSink(
   @JvmField val sink: Sink
 ) : BufferedSink {
-  @JvmField val buffer = Buffer()
+  @JvmField val bufferField = Buffer()
   @JvmField var closed: Boolean = false
 
-  override fun buffer() = buffer
+  @Suppress("OVERRIDE_BY_INLINE") // Prevent internal code from calling the getter.
+  override val buffer: Buffer
+    inline get() = bufferField
+
+  override fun buffer() = bufferField
 
   override fun write(source: Buffer, byteCount: Long) {
     check(!closed) { "closed" }

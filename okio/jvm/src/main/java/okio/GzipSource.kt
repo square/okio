@@ -102,9 +102,9 @@ class GzipSource(source: Source) : Source {
     // |ID1|ID2|CM |FLG|     MTIME     |XFL|OS | (more-->)
     // +---+---+---+---+---+---+---+---+---+---+
     source.require(10)
-    val flags = source.buffer()[3].toInt()
+    val flags = source.buffer[3].toInt()
     val fhcrc = flags.getBit(FHCRC)
-    if (fhcrc) updateCrc(source.buffer(), 0, 10)
+    if (fhcrc) updateCrc(source.buffer, 0, 10)
 
     val id1id2 = source.readShort()
     checkEqual("ID1ID2", 0x1f8b, id1id2.toInt())
@@ -116,10 +116,10 @@ class GzipSource(source: Source) : Source {
     // +---+---+=================================+
     if (flags.getBit(FEXTRA)) {
       source.require(2)
-      if (fhcrc) updateCrc(source.buffer(), 0, 2)
-      val xlen = source.buffer().readShortLe().toLong()
+      if (fhcrc) updateCrc(source.buffer, 0, 2)
+      val xlen = source.buffer.readShortLe().toLong()
       source.require(xlen)
-      if (fhcrc) updateCrc(source.buffer(), 0, xlen)
+      if (fhcrc) updateCrc(source.buffer, 0, xlen)
       source.skip(xlen)
     }
 
@@ -130,7 +130,7 @@ class GzipSource(source: Source) : Source {
     if (flags.getBit(FNAME)) {
       val index = source.indexOf(0)
       if (index == -1L) throw EOFException()
-      if (fhcrc) updateCrc(source.buffer(), 0, index + 1)
+      if (fhcrc) updateCrc(source.buffer, 0, index + 1)
       source.skip(index + 1)
     }
 
@@ -141,7 +141,7 @@ class GzipSource(source: Source) : Source {
     if (flags.getBit(FCOMMENT)) {
       val index = source.indexOf(0)
       if (index == -1L) throw EOFException()
-      if (fhcrc) updateCrc(source.buffer(), 0, index + 1)
+      if (fhcrc) updateCrc(source.buffer, 0, index + 1)
       source.skip(index + 1)
     }
 

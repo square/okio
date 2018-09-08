@@ -24,10 +24,14 @@ import java.nio.charset.Charset
 internal class RealBufferedSource(
   @JvmField val source: Source
 ) : BufferedSource {
+  @JvmField val bufferField = Buffer()
   @JvmField var closed: Boolean = false
-  @JvmField val buffer = Buffer()
 
-  override fun buffer() = buffer
+  @Suppress("OVERRIDE_BY_INLINE") // Prevent internal code from calling the getter.
+  override val buffer: Buffer
+    inline get() = bufferField
+
+  override fun buffer() = bufferField
 
   override fun read(sink: Buffer, byteCount: Long): Long {
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }

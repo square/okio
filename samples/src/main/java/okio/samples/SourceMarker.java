@@ -68,7 +68,7 @@ public final class SourceMarker {
     this.markSource = new MarkSource(source);
     this.markBuffer = new Buffer();
     this.userSource = Okio.buffer(markSource);
-    this.userBuffer = userSource.buffer();
+    this.userBuffer = userSource.getBuffer();
   }
 
   public BufferedSource source() {

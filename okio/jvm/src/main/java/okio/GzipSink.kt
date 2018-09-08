@@ -61,7 +61,7 @@ class GzipSink(sink: Sink) : Sink {
 
   init {
     // Write the Gzip header directly into the buffer for the sink to avoid handling IOException.
-    this.sink.buffer().apply {
+    this.sink.buffer.apply {
       writeShort(0x1f8b) // Two-byte Gzip ID.
       writeByte(0x08) // 8 == Deflate compression method.
       writeByte(0x00) // No flags.

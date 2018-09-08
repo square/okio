@@ -97,10 +97,10 @@ public final class RealBufferedSourceTest {
     source.writeUtf8("bb");
 
     BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.buffer().writeUtf8("aa");
+    bufferedSource.getBuffer().writeUtf8("aa");
 
     bufferedSource.require(2);
-    assertEquals(2, bufferedSource.buffer().size());
+    assertEquals(2, bufferedSource.getBuffer().size());
     assertEquals(2, source.size());
   }
 
@@ -109,10 +109,10 @@ public final class RealBufferedSourceTest {
     source.writeUtf8("b");
 
     BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.buffer().writeUtf8("a");
+    bufferedSource.getBuffer().writeUtf8("a");
 
     bufferedSource.require(2);
-    assertEquals("ab", bufferedSource.buffer().readUtf8(2));
+    assertEquals("ab", bufferedSource.getBuffer().readUtf8(2));
   }
 
   @Test public void requireInsufficientData() throws Exception {
@@ -137,7 +137,7 @@ public final class RealBufferedSourceTest {
 
     bufferedSource.require(2);
     assertEquals(SEGMENT_SIZE, source.size());
-    assertEquals(SEGMENT_SIZE, bufferedSource.buffer().size());
+    assertEquals(SEGMENT_SIZE, bufferedSource.getBuffer().size());
   }
 
   @Test public void skipReadsOneSegmentAtATime() throws Exception {
@@ -147,7 +147,7 @@ public final class RealBufferedSourceTest {
     BufferedSource bufferedSource = Okio.buffer((Source) source);
     bufferedSource.skip(2);
     assertEquals(SEGMENT_SIZE, source.size());
-    assertEquals(SEGMENT_SIZE - 2, bufferedSource.buffer().size());
+    assertEquals(SEGMENT_SIZE - 2, bufferedSource.getBuffer().size());
   }
 
   @Test public void skipTracksBufferFirst() throws Exception {
@@ -155,10 +155,10 @@ public final class RealBufferedSourceTest {
     source.writeUtf8("bb");
 
     BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.buffer().writeUtf8("aa");
+    bufferedSource.getBuffer().writeUtf8("aa");
 
     bufferedSource.skip(2);
-    assertEquals(0, bufferedSource.buffer().size());
+    assertEquals(0, bufferedSource.getBuffer().size());
     assertEquals(2, source.size());
   }
 

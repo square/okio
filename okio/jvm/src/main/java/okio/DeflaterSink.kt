@@ -77,7 +77,7 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
 
   @IgnoreJRERequirement
   private fun deflate(syncFlush: Boolean) {
-    val buffer = sink.buffer()
+    val buffer = sink.buffer
     while (true) {
       val s = buffer.writableSegment(1)
 
