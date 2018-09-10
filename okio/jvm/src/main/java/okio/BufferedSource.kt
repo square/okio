@@ -27,7 +27,14 @@ import java.nio.charset.Charset
  */
 interface BufferedSource : Source, ReadableByteChannel {
   /** Returns this source's internal buffer. */
+  @Deprecated(
+    message = "moved to val: use getBuffer() instead",
+    replaceWith = ReplaceWith(expression = "buffer"),
+    level = DeprecationLevel.WARNING)
   fun buffer(): Buffer
+
+  /** This source's internal buffer. */
+  val buffer: Buffer
 
   /**
    * Returns true if there are no more bytes in this source. This will block until there are bytes

@@ -350,7 +350,7 @@ public final class BufferedSourceTest {
   }
 
   @Test public void readAll() throws IOException {
-    source.buffer().writeUtf8("abc");
+    source.getBuffer().writeUtf8("abc");
     sink.writeUtf8("def");
     sink.emit();
 
@@ -1254,7 +1254,7 @@ public final class BufferedSourceTest {
     sink.writeUtf8("A man, a plan, a canal. Panama.");
     sink.emit();
     assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A man.")));
-    assertEquals("A man,", source.buffer().readUtf8());
+    assertEquals("A man,", source.getBuffer().readUtf8());
   }
 
   @Test public void rangeEqualsArgumentValidation() throws IOException {
@@ -1313,9 +1313,9 @@ public final class BufferedSourceTest {
     sink.emit();
     source.require(3);
     if (factory.isOneByteAtATime()) {
-      assertEquals(Arrays.asList(1, 1, 1), TestUtil.segmentSizes(source.buffer()));
+      assertEquals(Arrays.asList(1, 1, 1), TestUtil.segmentSizes(source.getBuffer()));
     } else {
-      assertEquals(Collections.singletonList(3), TestUtil.segmentSizes(source.buffer()));
+      assertEquals(Collections.singletonList(3), TestUtil.segmentSizes(source.getBuffer()));
     }
   }
 }

@@ -48,7 +48,7 @@ public final class RealBufferedSinkTest {
     assertEquals(0, sink.size());
     bufferedSink.writeByte(0);
     assertEquals(SEGMENT_SIZE, sink.size());
-    assertEquals(0, bufferedSink.buffer().size());
+    assertEquals(0, bufferedSink.getBuffer().size());
   }
 
   @Test public void bufferedSinkEmitMultipleSegments() throws IOException {
@@ -56,7 +56,7 @@ public final class RealBufferedSinkTest {
     BufferedSink bufferedSink = Okio.buffer((Sink) sink);
     bufferedSink.writeUtf8(repeat('a', SEGMENT_SIZE * 4 - 1));
     assertEquals(SEGMENT_SIZE * 3, sink.size());
-    assertEquals(SEGMENT_SIZE - 1, bufferedSink.buffer().size());
+    assertEquals(SEGMENT_SIZE - 1, bufferedSink.getBuffer().size());
   }
 
   @Test public void bufferedSinkFlush() throws IOException {
@@ -65,7 +65,7 @@ public final class RealBufferedSinkTest {
     bufferedSink.writeByte('a');
     assertEquals(0, sink.size());
     bufferedSink.flush();
-    assertEquals(0, bufferedSink.buffer().size());
+    assertEquals(0, bufferedSink.getBuffer().size());
     assertEquals(1, sink.size());
   }
 
@@ -206,11 +206,11 @@ public final class RealBufferedSinkTest {
     MockSink mockSink = new MockSink();
     BufferedSink bufferedSink = Okio.buffer(mockSink);
 
-    bufferedSink.buffer().writeUtf8("abc");
+    bufferedSink.getBuffer().writeUtf8("abc");
     assertEquals(3, bufferedSink.writeAll(new Buffer().writeUtf8("def")));
 
-    assertEquals(6, bufferedSink.buffer().size());
-    assertEquals("abcdef", bufferedSink.buffer().readUtf8(6));
+    assertEquals(6, bufferedSink.getBuffer().size());
+    assertEquals("abcdef", bufferedSink.getBuffer().readUtf8(6));
     mockSink.assertLog(); // No writes.
  }
 
@@ -219,7 +219,7 @@ public final class RealBufferedSinkTest {
     BufferedSink bufferedSink = Okio.buffer(mockSink);
 
     assertEquals(0, bufferedSink.writeAll(new Buffer()));
-    assertEquals(0, bufferedSink.buffer().size());
+    assertEquals(0, bufferedSink.getBuffer().size());
     mockSink.assertLog(); // No writes.
  }
 

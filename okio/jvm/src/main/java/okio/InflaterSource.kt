@@ -94,7 +94,7 @@ internal constructor(private val source: BufferedSource, private val inflater: I
     if (source.exhausted()) return true
 
     // Assign buffer bytes to the inflater.
-    val head = source.buffer().head!!
+    val head = source.buffer.head!!
     bufferBytesHeldByInflater = head.limit - head.pos
     inflater.setInput(head.data, head.pos, bufferBytesHeldByInflater)
     return false
