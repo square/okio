@@ -18,6 +18,8 @@
 
 package okio
 
+import kotlin.jvm.JvmName
+
 internal fun checkOffsetAndCount(size: Long, offset: Long, byteCount: Long) {
   if (offset or byteCount < 0 || offset > size || size - offset < byteCount) {
     throw ArrayIndexOutOfBoundsException("size=$size offset=$offset byteCount=$byteCount")

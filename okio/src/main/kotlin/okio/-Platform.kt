@@ -16,28 +16,6 @@
 
 package okio
 
-import kotlin.annotation.AnnotationTarget.FIELD
-import kotlin.annotation.AnnotationTarget.FILE
-import kotlin.annotation.AnnotationTarget.FUNCTION
-import kotlin.annotation.AnnotationTarget.PROPERTY_GETTER
-import kotlin.annotation.AnnotationTarget.PROPERTY_SETTER
-
-// TODO remove after https://youtrack.jetbrains.com/issue/KT-24478
-@Target(FUNCTION)
-expect annotation class JvmOverloads()
-
-// TODO remove after https://youtrack.jetbrains.com/issue/KT-24478
-@Target(FIELD)
-expect annotation class JvmField()
-
-// TODO remove after https://youtrack.jetbrains.com/issue/KT-24478
-@Target(FUNCTION)
-expect annotation class JvmStatic()
-
-// TODO remove after https://youtrack.jetbrains.com/issue/KT-24478
-@Target(FILE, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER)
-expect annotation class JvmName(val name: String)
-
 internal expect fun arraycopy(
   src: ByteArray,
   srcPos: Int,

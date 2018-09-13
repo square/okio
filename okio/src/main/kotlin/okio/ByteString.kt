@@ -16,6 +16,10 @@
 
 package okio
 
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
+
 /**
  * An immutable sequence of bytes.
  *
