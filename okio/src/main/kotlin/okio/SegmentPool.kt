@@ -15,6 +15,9 @@
  */
 package okio
 
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmStatic
+
 /**
  * A collection of unused segments, necessary to avoid GC churn and zero-fill.
  * This pool is a thread-safe static singleton.

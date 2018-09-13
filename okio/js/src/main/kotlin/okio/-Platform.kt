@@ -18,23 +18,6 @@ package okio
 
 import okio.internal.commonAsUtf8ToByteArray
 import okio.internal.commonToUtf8String
-import kotlin.annotation.AnnotationTarget.FIELD
-import kotlin.annotation.AnnotationTarget.FILE
-import kotlin.annotation.AnnotationTarget.FUNCTION
-import kotlin.annotation.AnnotationTarget.PROPERTY_GETTER
-import kotlin.annotation.AnnotationTarget.PROPERTY_SETTER
-
-@Target(FUNCTION)
-actual annotation class JvmOverloads
-
-@Target(FIELD)
-actual annotation class JvmField
-
-@Target(FUNCTION)
-actual annotation class JvmStatic
-
-@Target(FILE, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER)
-actual annotation class JvmName(actual val name: String)
 
 internal actual fun arraycopy(
   src: ByteArray,
