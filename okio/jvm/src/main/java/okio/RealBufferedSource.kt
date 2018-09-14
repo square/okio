@@ -415,6 +415,10 @@ internal class RealBufferedSource(
     return true
   }
 
+  override fun peek(): BufferedSource {
+    return PeekSource(this).buffer()
+  }
+
   override fun inputStream(): InputStream {
     return object : InputStream() {
       override fun read(): Int {

@@ -83,6 +83,10 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun request(byteCount: Long) = size >= byteCount
 
+  override fun peek(): BufferedSource {
+    return PeekSource(this).buffer()
+  }
+
   override fun inputStream(): InputStream {
     return object : InputStream() {
       override fun read(): Int {
