@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+## Version 2.1.0
+
+_2018-09-22_
+
+ * New: `BufferedSource.peek()` returns another `BufferedSource` that reads ahead on the current
+   source. Use this to process the same data multiple times.
+
+ * New: Deprecate `BufferedSource.buffer()`, replacing it with either `BufferedSource.getBuffer()`
+   (in Java) or `BufferedSource.buffer` (in Kotlin). We have done likewise for `BufferedSink`.
+   When we introduced the new extension method `Source.buffer()` in Okio 2.0 we inadvertently
+   collided with an existing method. This fixes that.
+
+ * New: Improve performance of `Buffer.writeUtf8()`. This comes alongside initial implementation of
+   UTF-8 encoding and decoding in JavaScript which [uses XOR masks][xor_utf8] for great performance.
+
 ## Version 2.0.0
 
 _2018-08-27_
@@ -374,3 +389,4 @@ _2014-04-08_
 
 
  [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
+ [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
