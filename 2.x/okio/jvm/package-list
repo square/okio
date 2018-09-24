@@ -12,8 +12,6 @@ $dokka.location:okio$source(java.nio.file.Path, kotlin.Array((java.nio.file.Open
 $dokka.location:okio$utf8Size(kotlin.String, kotlin.Int, kotlin.Int)okio/kotlin.-string/utf8-size.html
 $dokka.location:okio.ArrayIndexOutOfBoundsExceptionokio/-array-index-out-of-bounds-exception/index.html
 $dokka.location:okio.ArrayIndexOutOfBoundsException$<init>(kotlin.String)okio/-array-index-out-of-bounds-exception/-array-index-out-of-bounds-exception/-init-.html
-$dokka.location:okio.IndexOutOfBoundsExceptionokio/-index-out-of-bounds-exception/index.html
-$dokka.location:okio.IndexOutOfBoundsException$<init>(kotlin.String)okio/-index-out-of-bounds-exception/-index-out-of-bounds-exception/-init-.html
 $dokka.location:okio.JvmFieldokio/-jvm-field/index.html
 $dokka.location:okio.JvmField$<init>()okio/-jvm-field/-jvm-field/-init-.html
 $dokka.location:okio.JvmNameokio/-jvm-name/index.html
@@ -23,5 +21,7 @@ $dokka.location:okio.JvmOverloadsokio/-jvm-overloads/index.html
 $dokka.location:okio.JvmOverloads$<init>()okio/-jvm-overloads/-jvm-overloads/-init-.html
 $dokka.location:okio.JvmStaticokio/-jvm-static/index.html
 $dokka.location:okio.JvmStatic$<init>()okio/-jvm-static/-jvm-static/-init-.html
-com.squareup.okio.benchmarks
+$dokka.location:okio.internal$commonAsUtf8ToByteArray(kotlin.String)okio.internal/kotlin.-string/common-as-utf8-to-byte-array.html
+$dokka.location:okio.internal$commonToUtf8String(kotlin.ByteArray)okio.internal/kotlin.-byte-array/common-to-utf8-string.html
 okio
+okio.internal

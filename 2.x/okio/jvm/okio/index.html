@@ -13,6 +13,20 @@
 <tbody>
 <tr>
 <td>
+<p><a href="--deprecated-okio.html">-DeprecatedOkio</a></p>
+</td>
+<td>
+<code><span class="keyword">object </span><span class="identifier">-DeprecatedOkio</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="--deprecated-utf8.html">-DeprecatedUtf8</a></p>
+</td>
+<td>
+<code><span class="keyword">object </span><span class="identifier">-DeprecatedUtf8</span></code></td>
+</tr>
+<tr>
+<td>
 <p><a href="-async-timeout/index.html">AsyncTimeout</a></p>
 </td>
 <td>
@@ -126,7 +140,7 @@ decompress data read from another source.</p>
 <code><span class="keyword">class </span><span class="identifier">HashingSink</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-forwarding-sink/index.html"><span class="identifier">ForwardingSink</span></a></code>
 <p>A sink that computes a hash of the full stream of bytes it has accepted. To use, create an
 instance with your preferred hash algorithm. Write all of the data to the sink and then call
-<a href="-hashing-sink/hash.html">hash</a> to compute the final hash value.</p>
+<a href="#">hash</a> to compute the final hash value.</p>
 </td>
 </tr>
 <tr>
@@ -137,7 +151,7 @@ instance with your preferred hash algorithm. Write all of the data to the sink a
 <code><span class="keyword">class </span><span class="identifier">HashingSource</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-forwarding-source/index.html"><span class="identifier">ForwardingSource</span></a></code>
 <p>A source that computes a hash of the full stream of bytes it has supplied. To use, create an
 instance with your preferred hash algorithm. Exhaust the source by reading all of its bytes and
-then call <a href="-hashing-source/hash.html">hash</a> to compute the final hash value.</p>
+then call <a href="#">hash</a> to compute the final hash value.</p>
 </td>
 </tr>
 <tr>
@@ -247,14 +261,7 @@ out, the same rules apply: close the sink and retry later.</p>
 <p><a href="-array-index-out-of-bounds-exception/index.html">ArrayIndexOutOfBoundsException</a></p>
 </td>
 <td>
-<code><span class="keyword">expect</span> <span class="keyword">class </span><span class="identifier">ArrayIndexOutOfBoundsException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-index-out-of-bounds-exception/index.html"><span class="identifier">IndexOutOfBoundsException</span></a></code></td>
-</tr>
-<tr>
-<td>
-<p><a href="-index-out-of-bounds-exception/index.html">IndexOutOfBoundsException</a></p>
-</td>
-<td>
-<code><span class="keyword">open</span> <span class="keyword">expect</span> <span class="keyword">class </span><span class="identifier">IndexOutOfBoundsException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-runtime-exception/index.html"><span class="identifier">RuntimeException</span></a></code></td>
+<code><span class="keyword">expect</span> <span class="keyword">class </span><span class="identifier">ArrayIndexOutOfBoundsException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-index-out-of-bounds-exception/index.html"><span class="identifier">IndexOutOfBoundsException</span></a></code></td>
 </tr>
 </tbody>
 </table>
@@ -267,13 +274,6 @@ out, the same rules apply: close the sink and retry later.</p>
 </td>
 <td>
 <code><span class="keyword">actual</span> <span class="keyword">typealias </span><span class="identifier">ArrayIndexOutOfBoundsException</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/lang/ArrayIndexOutOfBoundsException.html"><span class="identifier">ArrayIndexOutOfBoundsException</span></a></code></td>
-</tr>
-<tr>
-<td>
-<p><a href="-index-out-of-bounds-exception/index.html">IndexOutOfBoundsException</a></p>
-</td>
-<td>
-<code><span class="keyword">actual</span> <span class="keyword">typealias </span><span class="identifier">IndexOutOfBoundsException</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="http://docs.oracle.com/javase/6/docs/api/java/lang/IndexOutOfBoundsException.html"><span class="identifier">IndexOutOfBoundsException</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -349,6 +349,25 @@ out, the same rules apply: close the sink and retry later.</p>
 </td>
 <td>
 </td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-okio.html">Okio</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">Okio</span><span class="symbol">: </span><a href="--deprecated-okio.html"><span class="identifier">-DeprecatedOkio</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="-utf8.html">Utf8</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">Utf8</span><span class="symbol">: </span><a href="--deprecated-utf8.html"><span class="identifier">-DeprecatedUtf8</span></a></code></td>
 </tr>
 </tbody>
 </table>

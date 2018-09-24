@@ -12,7 +12,7 @@
 <p>A source that keeps a buffer internally so that callers can do small reads without a performance
 penalty. It also allows clients to read ahead, buffering as much as necessary before consuming
 input.</p>
-<h3>Functions</h3>
+<h3>Properties</h3>
 <table>
 <tbody>
 <tr>
@@ -20,10 +20,15 @@ input.</p>
 <p><a href="buffer.html">buffer</a></p>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">buffer</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-buffer/index.html"><span class="identifier">Buffer</span></a></code>
-<p>Returns this source's internal buffer.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">buffer</span><span class="symbol">: </span><a href="../-buffer/index.html"><span class="identifier">Buffer</span></a></code>
+<p>This source's internal buffer.</p>
 </td>
 </tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
 <tr>
 <td>
 <p><a href="exhausted.html">exhausted</a></p>
@@ -78,6 +83,16 @@ before the requested byte is found.</p>
 <td>
 <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">inputStream</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/6/docs/api/java/io/InputStream.html"><span class="identifier">InputStream</span></a></code>
 <p>Returns an input stream that reads from this source.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="peek.html">peek</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">peek</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">BufferedSource</span></a></code>
+<p>Returns a new <code>BufferedSource</code> that can read data from this <code>BufferedSource</code> without consuming
+it. The returned source becomes invalid once this source is next read or closed.</p>
 </td>
 </tr>
 <tr>

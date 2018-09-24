@@ -27,16 +27,16 @@ optimizations, including:</p>
 </ul>
 <p>These optimizations all leverage the way Okio stores data internally. Okio Buffers are
 implemented using a doubly-linked list of segments. Each segment is a contiguous range within a
-8 KiB <code>byte[]</code>. Each segment has two indexes, <code>start</code>, the offset of the first byte of the
+8 KiB <code>ByteArray</code>. Each segment has two indexes, <code>start</code>, the offset of the first byte of the
 array containing application data, and <code>end</code>, the offset of the first byte beyond <code>start</code> whose
 data is undefined.</p>
 <p>New buffers are empty and have no segments:</p>
-<pre><code>Buffer buffer = new Buffer();
+<pre><code>val buffer = Buffer()
 </code></pre>
 <p>We append 7 bytes of data to the end of our empty buffer. Internally, the buffer allocates a
 segment and writes its new data there. The lone segment has an 8 KiB byte array but only 7
 bytes of data:</p>
-<pre><code>buffer.writeUtf8("sealion");
+<pre><code>buffer.writeUtf8("sealion")
 
 // [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
 //    ^                                  ^
@@ -45,7 +45,7 @@ bytes of data:</p>
 <p>When we read 4 bytes of data from the buffer, it finds its first segment and returns that data
 to us. As bytes are read the data is consumed. The segment tracks this by adjusting its
 internal indices.</p>
-<pre><code>buffer.readUtf8(4); // "seal"
+<pre><code>buffer.readUtf8(4) // "seal"
 
 // [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
 //                        ^              ^
@@ -55,8 +55,8 @@ internal indices.</p>
 a buffer's last segment, additional segments are allocated and appended to the linked list of
 segments. Each segment has its own start and end indexes tracking where the user's data begins
 and ends.</p>
-<pre><code>Buffer xoxo = new Buffer();
-xoxo.writeUtf8(Strings.repeat("xo", 5_000));
+<pre><code>val xoxo = new Buffer()
+xoxo.writeUtf8("xo".repeat(5_000))
 
 // [ 'x', 'o', 'x', 'o', 'x', 'o', 'x', 'o', ..., 'x', 'o', 'x', 'o']
 //    ^                                                               ^
@@ -75,8 +75,8 @@ saves the JVM from needing to zero-fill byte arrays. Okio doesn't need to zero-f
 because it always writes memory before it reads it. But if you look at a segment in a debugger
 you may see its effects. In this example, one of the "xoxo" segments above is reused in an
 unrelated buffer:</p>
-<pre><code>Buffer abc = new Buffer();
-abc.writeUtf8("abc");
+<pre><code>val abc = new Buffer()
+abc.writeUtf8("abc")
 
 // [ 'a', 'b', 'c', 'o', 'x', 'o', 'x', 'o', ...]
 //    ^              ^
@@ -85,16 +85,16 @@ abc.writeUtf8("abc");
 <p>There is an optimization in <code>Buffer.clone()</code> and other methods that allows two segments to
 share the same underlying byte array. Clones can't write to the shared byte array; instead they
 allocate a new (private) segment early.</p>
-<pre><code>Buffer nana = new Buffer();
-nana.writeUtf8(Strings.repeat("na", 2_500));
-nana.readUtf8(2); // "na"
+<pre><code>val nana = new Buffer()
+nana.writeUtf8("na".repeat(2_500))
+nana.readUtf8(2) // "na"
 
 // [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
 //              ^                                  ^
 //           start = 0                         end = 5000
 
-nana2 = nana.clone();
-nana2.writeUtf8("batman");
+nana2 = nana.clone()
+nana2.writeUtf8("batman")
 
 // [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
 //              ^                                  ^
@@ -117,15 +117,15 @@ After seeking, <a href="data.html">UnsafeCursor.data</a> references the segment'
 are no further segments in the buffer.</p>
 <p>Use <a href="../read-unsafe.html">Buffer.readUnsafe</a> to create a cursor to read buffer data and <a href="../read-and-write-unsafe.html">Buffer.readAndWriteUnsafe</a>
 to create a cursor to read and write buffer data. In either case, always call
-<a href="close.html">UnsafeCursor.close</a> when done with a cursor. This is convenient with Java 7's
-try-with-resources syntax. In this example we read all of the bytes in a buffer into a byte
+<a href="close.html">UnsafeCursor.close</a> when done with a cursor. This is convenient with Kotlin's
+<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.io/use.html">use</a> extension function. In this example we read all of the bytes in a buffer into a byte
 array:</p>
-<pre><code>byte[] bufferBytes = new byte[(int) buffer.size()];
+<pre><code>val bufferBytes = ByteArray(buffer.size.toInt())
 
-try (UnsafeCursor cursor = buffer.readUnsafe()) {
+buffer.readUnsafe().use { cursor -&gt;
   while (cursor.next() != -1) {
     System.arraycopy(cursor.data, cursor.start,
-        bufferBytes, (int) cursor.offset, cursor.end - cursor.start);
+        bufferBytes, cursor.offset.toInt(), cursor.end - cursor.start);
   }
 }
 </code></pre>

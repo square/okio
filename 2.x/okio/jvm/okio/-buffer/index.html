@@ -52,6 +52,15 @@ details and their consequences.</p>
 <tbody>
 <tr>
 <td>
+<p><a href="buffer.html">buffer</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">buffer</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Buffer</span></a></code>
+<p>This source's internal buffer.</p>
+</td>
+</tr>
+<tr>
+<td>
 <p><a href="size.html">size</a></p>
 </td>
 <td>
@@ -278,6 +287,16 @@ before the requested byte is found.</p>
 <td>
 <code><span class="keyword">fun </span><span class="identifier">outputStream</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/6/docs/api/java/io/OutputStream.html"><span class="identifier">OutputStream</span></a></code>
 <p>Returns an output stream that writes to this sink.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="peek.html">peek</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">peek</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-buffered-source/index.html"><span class="identifier">BufferedSource</span></a></code>
+<p>Returns a new <code>BufferedSource</code> that can read data from this <code>BufferedSource</code> without consuming
+it. The returned source becomes invalid once this source is next read or closed.</p>
 </td>
 </tr>
 <tr>

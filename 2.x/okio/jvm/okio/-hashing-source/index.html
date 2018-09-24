@@ -11,7 +11,7 @@
 <code><span class="keyword">class </span><span class="identifier">HashingSource</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-forwarding-source/index.html"><span class="identifier">ForwardingSource</span></a></code>
 <p>A source that computes a hash of the full stream of bytes it has supplied. To use, create an
 instance with your preferred hash algorithm. Exhaust the source by reading all of its bytes and
-then call <a href="hash.html">hash</a> to compute the final hash value.</p>
+then call <a href="#">hash</a> to compute the final hash value.</p>
 <p>In this example we use <code>HashingSource</code> with a <a href="../-buffered-source/index.html">BufferedSource</a> to make reading
 from the source easier.</p>
 <pre><code>HashingSource hashingSource = HashingSource.sha256(rawSource);

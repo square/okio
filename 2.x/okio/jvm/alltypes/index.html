@@ -10,6 +10,18 @@
 <tbody>
 <tr>
 <td>
+<a href="../okio/--deprecated-okio.html">okio.-DeprecatedOkio</a></td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<a href="../okio/--deprecated-utf8.html">okio.-DeprecatedUtf8</a></td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
 <a href="../okio/-async-timeout/index.html">okio.AsyncTimeout</a></td>
 <td>
 <p>This timeout uses a background thread to take action exactly when the timeout occurs. Use this to
@@ -22,18 +34,6 @@ writing.</p>
 <a href="../okio/-buffer/index.html">okio.Buffer</a></td>
 <td>
 <p>A collection of bytes in memory.</p>
-</td>
-</tr>
-<tr>
-<td>
-<a href="../com.squareup.okio.benchmarks/-buffer-cursor-seek-benchmark/index.html">com.squareup.okio.benchmarks.BufferCursorSeekBenchmark</a></td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-<a href="../com.squareup.okio.benchmarks/-buffer-performance-benchmark/index.html">com.squareup.okio.benchmarks.BufferPerformanceBenchmark</a></td>
-<td>
 </td>
 </tr>
 <tr>
@@ -51,6 +51,12 @@ penalty.</p>
 <p>A source that keeps a buffer internally so that callers can do small reads without a performance
 penalty. It also allows clients to read ahead, buffering as much as necessary before consuming
 input.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="../okio.internal/kotlin.-byte-array/index.html">kotlin.ByteArray</a> (extensions in package okio.internal)</td>
+<td>
 </td>
 </tr>
 <tr>
@@ -97,12 +103,6 @@ compress data written to another source.</p>
 </tr>
 <tr>
 <td>
-<a href="../com.squareup.okio.benchmarks/-get-byte-benchmark/index.html">com.squareup.okio.benchmarks.GetByteBenchmark</a></td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
 <a href="../okio/-gzip-sink/index.html">okio.GzipSink</a></td>
 <td>
 <p>A sink that uses <a href="http://www.ietf.org/rfc/rfc1952.txt">GZIP</a> to
@@ -123,7 +123,7 @@ decompress data read from another source.</p>
 <td>
 <p>A sink that computes a hash of the full stream of bytes it has accepted. To use, create an
 instance with your preferred hash algorithm. Write all of the data to the sink and then call
-<a href="../okio/-hashing-sink/hash.html">hash</a> to compute the final hash value.</p>
+<a href="#">hash</a> to compute the final hash value.</p>
 </td>
 </tr>
 <tr>
@@ -132,13 +132,7 @@ instance with your preferred hash algorithm. Write all of the data to the sink a
 <td>
 <p>A source that computes a hash of the full stream of bytes it has supplied. To use, create an
 instance with your preferred hash algorithm. Exhaust the source by reading all of its bytes and
-then call <a href="../okio/-hashing-source/hash.html">hash</a> to compute the final hash value.</p>
-</td>
-</tr>
-<tr>
-<td>
-<a href="../com.squareup.okio.benchmarks/-index-of-element-benchmark/index.html">com.squareup.okio.benchmarks.IndexOfElementBenchmark</a></td>
-<td>
+then call <a href="#">hash</a> to compute the final hash value.</p>
 </td>
 </tr>
 <tr>
@@ -185,12 +179,6 @@ reads data from the source.</p>
 </tr>
 <tr>
 <td>
-<a href="../com.squareup.okio.benchmarks/-select-benchmark/index.html">com.squareup.okio.benchmarks.SelectBenchmark</a></td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
 <a href="../okio/-sink/index.html">okio.Sink</a></td>
 <td>
 <p>Receives a stream of bytes. Use this interface to write data wherever it's needed: to the
@@ -216,6 +204,12 @@ as to decompress, decrypt, or remove protocol framing.</p>
 <tr>
 <td>
 <a href="../okio/kotlin.-string/index.html">kotlin.String</a> (extensions in package okio)</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<a href="../okio.internal/kotlin.-string/index.html">kotlin.String</a> (extensions in package okio.internal)</td>
 <td>
 </td>
 </tr>

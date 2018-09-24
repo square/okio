@@ -1,0 +1,29 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Buffer.peek - jvm</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">jvm</a>&nbsp;/&nbsp;<a href="../index.html">okio</a>&nbsp;/&nbsp;<a href="index.html">Buffer</a>&nbsp;/&nbsp;<a href="./peek.html">peek</a><br/>
+<br/>
+<h1>peek</h1>
+<a name="okio.Buffer$peek()"></a>
+<code><span class="keyword">fun </span><span class="identifier">peek</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-buffered-source/index.html"><span class="identifier">BufferedSource</span></a></code>
+<p>Overrides <a href="../-buffered-source/peek.html">BufferedSource.peek</a></p>
+<p>Returns a new <code>BufferedSource</code> that can read data from this <code>BufferedSource</code> without consuming
+it. The returned source becomes invalid once this source is next read or closed.</p>
+<p>For example, we can use <code>peek()</code> to lookahead and read the same data multiple times.</p>
+<pre><code>val buffer = Buffer()
+buffer.writeUtf8("abcdefghi")
+
+buffer.readUtf8(3) // returns "abc", buffer contains "defghi"
+
+val peek = buffer.peek()
+peek.readUtf8(3) // returns "def", buffer contains "defghi"
+peek.readUtf8(3) // returns "ghi", buffer contains "defghi"
+
+buffer.readUtf8(3) // returns "def", buffer contains "ghi"
+</code></pre>
+</BODY>
+</HTML>
