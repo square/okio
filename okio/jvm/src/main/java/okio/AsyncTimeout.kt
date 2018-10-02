@@ -168,6 +168,7 @@ open class AsyncTimeout : Timeout() {
 
       override fun close() {
         var throwOnTimeout = false
+        enter()
         try {
           source.close()
           throwOnTimeout = true

@@ -202,6 +202,46 @@ public final class AsyncTimeoutTest {
     }
   }
 
+  @Test public void wrappedSinkFlushTimesOut() throws Exception {
+    Sink sink = new ForwardingSink(new Buffer()) {
+      @Override public void flush() throws IOException {
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          throw new AssertionError();
+        }
+      }
+    };
+    AsyncTimeout timeout = new AsyncTimeout();
+    timeout.timeout(250, TimeUnit.MILLISECONDS);
+    Sink timeoutSink = timeout.sink(sink);
+    try {
+      timeoutSink.flush();
+      fail();
+    } catch (InterruptedIOException expected) {
+    }
+  }
+
+  @Test public void wrappedSinkCloseTimesOut() throws Exception {
+    Sink sink = new ForwardingSink(new Buffer()) {
+      @Override public void close() throws IOException {
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          throw new AssertionError();
+        }
+      }
+    };
+    AsyncTimeout timeout = new AsyncTimeout();
+    timeout.timeout(250, TimeUnit.MILLISECONDS);
+    Sink timeoutSink = timeout.sink(sink);
+    try {
+      timeoutSink.close();
+      fail();
+    } catch (InterruptedIOException expected) {
+    }
+  }
+
   @Test public void wrappedSourceTimesOut() throws Exception {
     Source source = new ForwardingSource(new Buffer()) {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
@@ -218,6 +258,26 @@ public final class AsyncTimeoutTest {
     Source timeoutSource = timeout.source(source);
     try {
       timeoutSource.read(new Buffer(), 0);
+      fail();
+    } catch (InterruptedIOException expected) {
+    }
+  }
+
+  @Test public void wrappedSourceCloseTimesOut() throws Exception {
+    Source source = new ForwardingSource(new Buffer()) {
+      @Override public void close() throws IOException {
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          throw new AssertionError();
+        }
+      }
+    };
+    AsyncTimeout timeout = new AsyncTimeout();
+    timeout.timeout(250, TimeUnit.MILLISECONDS);
+    Source timeoutSource = timeout.source(source);
+    try {
+      timeoutSource.close();
       fail();
     } catch (InterruptedIOException expected) {
     }
