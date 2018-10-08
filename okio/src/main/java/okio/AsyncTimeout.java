@@ -246,6 +246,7 @@ public class AsyncTimeout extends Timeout {
 
       @Override public void close() throws IOException {
         boolean throwOnTimeout = false;
+        enter();
         try {
           source.close();
           throwOnTimeout = true;
