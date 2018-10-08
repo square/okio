@@ -38,6 +38,10 @@ final class RealBufferedSource implements BufferedSource {
     return buffer;
   }
 
+  @Override public Buffer getBuffer() {
+    return buffer;
+  }
+
   @Override public long read(Buffer sink, long byteCount) throws IOException {
     if (sink == null) throw new IllegalArgumentException("sink == null");
     if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
@@ -418,6 +422,10 @@ final class RealBufferedSource implements BufferedSource {
       if (buffer.getByte(bufferOffset) != bytes.getByte(bytesOffset + i)) return false;
     }
     return true;
+  }
+
+  @Override public BufferedSource peek() {
+    return Okio.buffer(new PeekSource(this));
   }
 
   @Override public InputStream inputStream() {
