@@ -3,6 +3,8 @@ Change Log
 
 ## Version 1.16.0
 
+_2018-10-08_
+
  * New: Backport `BufferedSource.peek()` and `BufferedSource.getBuffer()` to Okio 1.x.
  * Fix: Enforce timeouts when closing `AsyncTimeout` sources.
 
