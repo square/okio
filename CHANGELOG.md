@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## Version 1.16.0
+
+ * New: Backport `BufferedSource.peek()` and `BufferedSource.getBuffer()` to Okio 1.x.
+ * Fix: Enforce timeouts when closing `AsyncTimeout` sources.
+
+
 ## Version 2.1.0
 
 _2018-09-22_
@@ -15,6 +21,7 @@ _2018-09-22_
 
  * New: Improve performance of `Buffer.writeUtf8()`. This comes alongside initial implementation of
    UTF-8 encoding and decoding in JavaScript which [uses XOR masks][xor_utf8] for great performance.
+
 
 ## Version 2.0.0
 
