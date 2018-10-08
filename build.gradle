@@ -1,7 +1,7 @@
 buildscript {
   ext.versions = [
-      'kotlin': '1.2.70',
-      'kotlinNative': '0.9.1',
+      'kotlin': '1.3.0-rc-146',
+      'kotlinNative': '0.9.3',
       'jmhPlugin': '0.4.5',
       'animalSnifferPlugin': '1.4.3',
       'dokka': '0.9.16',
@@ -32,7 +32,7 @@ buildscript {
               'js': "org.jetbrains.kotlin:kotlin-test-js",
           ],
           'native': [
-              'gradlePlugin': "org.jetbrains.kotlin:kotlin-native-gradle-plugin:${versions.kotlinNative}",
+              'gradlePlugin': "org.jetbrains.kotlin:kotlin-native-gradle-plugin:${versions.kotlin}",
           ]
       ],
       'jmh': [
@@ -72,6 +72,7 @@ buildscript {
   repositories {
     mavenCentral()
     gradlePluginPortal()
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
   }
 }
 
@@ -84,6 +85,7 @@ subprojects {
   repositories {
     mavenCentral()
     jcenter()
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
   }
 
   apply plugin: "org.jlleitschuh.gradle.ktlint"

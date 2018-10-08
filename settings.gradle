@@ -3,3 +3,5 @@ include ':okio:js'
 include ':okio:jvm'
 include ':okio:native'
 include ':samples'
+
+enableFeaturePreview('GRADLE_METADATA')
