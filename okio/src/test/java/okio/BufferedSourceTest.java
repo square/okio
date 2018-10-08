@@ -97,6 +97,34 @@ public final class BufferedSourceTest {
       }
     };
 
+    Factory PEEK_BUFFER = new Factory() {
+      @Override public Pipe pipe() {
+        Buffer buffer = new Buffer();
+        Pipe result = new Pipe();
+        result.sink = buffer;
+        result.source = buffer.peek();
+        return result;
+      }
+
+      @Override public String toString() {
+        return "PeekBuffer";
+      }
+    };
+
+    Factory PEEK_BUFFERED_SOURCE = new Factory() {
+      @Override public Pipe pipe() {
+        Buffer buffer = new Buffer();
+        Pipe result = new Pipe();
+        result.sink = buffer;
+        result.source = Okio.buffer((Source) buffer).peek();
+        return result;
+      }
+
+      @Override public String toString() {
+        return "PeekBufferedSource";
+      }
+    };
+
     Pipe pipe();
   }
 
@@ -110,7 +138,9 @@ public final class BufferedSourceTest {
     return Arrays.asList(
         new Object[] { Factory.BUFFER},
         new Object[] { Factory.REAL_BUFFERED_SOURCE},
-        new Object[] { Factory.ONE_BYTE_AT_A_TIME});
+        new Object[] { Factory.ONE_BYTE_AT_A_TIME},
+        new Object[] { Factory.PEEK_BUFFER },
+        new Object[] { Factory.PEEK_BUFFERED_SOURCE });
   }
 
   @Parameter public Factory factory;
@@ -972,6 +1002,104 @@ public final class BufferedSourceTest {
       Options.of(ByteString.of());
       fail();
     } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void peek() throws IOException {
+    sink.writeUtf8("abcdefghi");
+    sink.emit();
+
+    assertEquals("abc", source.readUtf8(3));
+
+    BufferedSource peek = source.peek();
+    assertEquals("def", peek.readUtf8(3));
+    assertEquals("ghi", peek.readUtf8(3));
+    assertFalse(peek.request(1));
+
+    assertEquals("def", source.readUtf8(3));
+  }
+
+  @Test public void peekMultiple() throws IOException {
+    sink.writeUtf8("abcdefghi");
+    sink.emit();
+
+    assertEquals("abc", source.readUtf8(3));
+
+    BufferedSource peek1 = source.peek();
+    BufferedSource peek2 = source.peek();
+
+    assertEquals("def", peek1.readUtf8(3));
+
+    assertEquals("def", peek2.readUtf8(3));
+    assertEquals("ghi", peek2.readUtf8(3));
+    assertFalse(peek2.request(1));
+
+    assertEquals("ghi", peek1.readUtf8(3));
+    assertFalse(peek1.request(1));
+
+    assertEquals("def", source.readUtf8(3));
+  }
+
+  @Test public void peekLarge() throws IOException {
+    sink.writeUtf8("abcdef");
+    sink.writeUtf8(repeat('g', 2 * Segment.SIZE));
+    sink.writeUtf8("hij");
+    sink.emit();
+
+    assertEquals("abc", source.readUtf8(3));
+
+    BufferedSource peek = source.peek();
+    assertEquals("def", peek.readUtf8(3));
+    peek.skip(2 * Segment.SIZE);
+    assertEquals("hij", peek.readUtf8(3));
+    assertFalse(peek.request(1));
+
+    assertEquals("def", source.readUtf8(3));
+    source.skip(2 * Segment.SIZE);
+    assertEquals("hij", source.readUtf8(3));
+  }
+
+  @Test public void peekInvalid() throws IOException {
+    sink.writeUtf8("abcdefghi");
+    sink.emit();
+
+    assertEquals("abc", source.readUtf8(3));
+
+    BufferedSource peek = source.peek();
+    assertEquals("def", peek.readUtf8(3));
+    assertEquals("ghi", peek.readUtf8(3));
+    assertFalse(peek.request(1));
+
+    assertEquals("def", source.readUtf8(3));
+
+    try {
+      peek.readUtf8();
+      fail();
+    } catch (IllegalStateException e) {
+      assertEquals("Peek source is invalid because upstream source was used", e.getMessage());
+    }
+  }
+
+  @Test public void peekSegmentThenInvalid() throws IOException {
+    sink.writeUtf8("abc");
+    sink.writeUtf8(repeat('d', 2 * Segment.SIZE));
+    sink.emit();
+
+    assertEquals("abc", source.readUtf8(3));
+
+    // Peek a little data and skip the rest of the upstream source
+    BufferedSource peek = source.peek();
+    assertEquals("ddd", peek.readUtf8(3));
+    source.readAll(Okio.blackhole());
+
+    // Skip the rest of the buffered data
+    peek.skip(Segment.SIZE - 3);
+
+    try {
+      peek.readByte();
+      fail();
+    } catch (IllegalStateException e) {
+      assertEquals("Peek source is invalid because upstream source was used", e.getMessage());
     }
   }
 

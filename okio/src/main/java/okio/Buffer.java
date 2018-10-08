@@ -71,6 +71,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     return this;
   }
 
+  @Override public Buffer getBuffer() {
+    return this;
+  }
+
   @Override public OutputStream outputStream() {
     return new OutputStream() {
       @Override public void write(int b) {
@@ -111,6 +115,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
 
   @Override public boolean request(long byteCount) {
     return size >= byteCount;
+  }
+
+  @Override public BufferedSource peek() {
+    return Okio.buffer(new PeekSource(this));
   }
 
   @Override public InputStream inputStream() {
