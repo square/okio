@@ -1755,7 +1755,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
   fun snapshot(byteCount: Int): ByteString {
-    return if (byteCount == 0) ByteString.EMPTY else SegmentedByteString(this, byteCount)
+    return if (byteCount == 0) ByteString.EMPTY else SegmentedByteString.of(this, byteCount)
   }
 
   @JvmOverloads fun readUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor {

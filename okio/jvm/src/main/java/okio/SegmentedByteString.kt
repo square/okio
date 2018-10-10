@@ -50,45 +50,46 @@ import javax.crypto.spec.SecretKeySpec
  * This structure is chosen so that the segment holding a particular offset can be found by
  * binary search. We use one array rather than two for the directory as a micro-optimization.
  */
-internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(EMPTY.data) {
-  @Transient val segments: Array<ByteArray>
+internal class SegmentedByteString private constructor(
+  @Transient val segments: Array<ByteArray>,
   @Transient val directory: IntArray
+) : ByteString(EMPTY.data) {
 
-  init {
-    checkOffsetAndCount(buffer.size, 0, byteCount.toLong())
+  companion object {
+    fun of(buffer: Buffer, byteCount: Int): ByteString {
+      checkOffsetAndCount(buffer.size, 0, byteCount.toLong())
 
-    // Walk through the buffer to count how many segments we'll need.
-    var offset = 0
-    var segmentCount = 0
-    var s = buffer.head
-    while (offset < byteCount) {
-      if (s!!.limit == s.pos) {
-        throw AssertionError("s.limit == s.pos") // Empty segment. This should not happen!
+      // Walk through the buffer to count how many segments we'll need.
+      var offset = 0
+      var segmentCount = 0
+      var s = buffer.head
+      while (offset < byteCount) {
+        if (s!!.limit == s.pos) {
+          throw AssertionError("s.limit == s.pos") // Empty segment. This should not happen!
+        }
+        offset += s.limit - s.pos
+        segmentCount++
+        s = s.next
       }
-      offset += s.limit - s.pos
-      segmentCount++
-      s = s.next
-    }
 
-    // Walk through the buffer again to assign segments and build the directory.
-    val segments = arrayOfNulls<ByteArray?>(segmentCount)
-    this.directory = IntArray(segmentCount * 2)
-    offset = 0
-    segmentCount = 0
-    s = buffer.head
-    while (offset < byteCount) {
-      segments[segmentCount] = s!!.data
-      offset += s.limit - s.pos
-      if (offset > byteCount) {
-        offset = byteCount // Despite sharing more bytes, only report having up to byteCount.
+      // Walk through the buffer again to assign segments and build the directory.
+      val segments = arrayOfNulls<ByteArray?>(segmentCount)
+      val directory = IntArray(segmentCount * 2)
+      offset = 0
+      segmentCount = 0
+      s = buffer.head
+      while (offset < byteCount) {
+        segments[segmentCount] = s!!.data
+        offset += s.limit - s.pos
+        // Despite sharing more bytes, only report having up to byteCount.
+        directory[segmentCount] = minOf(offset, byteCount)
+        directory[segmentCount + segments.size] = s.pos
+        s.shared = true
+        segmentCount++
+        s = s.next
       }
-      directory[segmentCount] = offset
-      directory[segmentCount + segments.size] = s.pos
-      s.shared = true
-      segmentCount++
-      s = s.next
+      return SegmentedByteString(segments as Array<ByteArray>, directory)
     }
-    this.segments = segments as Array<ByteArray>
   }
 
   override fun string(charset: Charset) = toByteString().string(charset)
@@ -124,8 +125,34 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
 
   override fun base64Url() = toByteString().base64Url()
 
-  override fun substring(beginIndex: Int, endIndex: Int) = toByteString().substring(beginIndex,
-      endIndex)
+  override fun substring(beginIndex: Int, endIndex: Int): ByteString {
+    require(beginIndex >= 0) { "beginIndex=$beginIndex < 0" }
+    require(endIndex <= size) { "endIndex=$endIndex > length($size)" }
+
+    val subLen = endIndex - beginIndex
+    require(subLen >= 0) { "endIndex=$endIndex < beginIndex=$beginIndex" }
+
+    when {
+      beginIndex == 0 && endIndex == size -> return this
+      beginIndex == endIndex -> return ByteString.EMPTY
+    }
+
+    val beginSegment = segment(beginIndex) // First segment to include
+    val endSegment = segment(endIndex - 1) // Last segment to include
+
+    val newSegments = segments.copyOfRange(beginSegment, endSegment + 1)
+    val newDirectory = IntArray(newSegments.size * 2)
+    for ((index, s) in (beginSegment..endSegment).withIndex()) {
+      newDirectory[index] = minOf(directory[s] - beginIndex, subLen)
+      newDirectory[index + newSegments.size] = directory[s + segments.size]
+    }
+
+    // Set the new position of the first segment
+    val segmentOffset = if (beginSegment == 0) 0 else directory[beginSegment - 1]
+    newDirectory[newSegments.size] += beginIndex - segmentOffset
+
+    return SegmentedByteString(newSegments, newDirectory)
+  }
 
   override fun internalGet(pos: Int): Byte {
     checkOffsetAndCount(directory[segments.size - 1].toLong(), pos.toLong(), 1)
