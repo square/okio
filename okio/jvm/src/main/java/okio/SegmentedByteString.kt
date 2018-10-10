@@ -136,17 +136,11 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
   override fun getSize() = directory[segments.size - 1]
 
   override fun toByteArray(): ByteArray {
-    val result = ByteArray(directory[segments.size - 1])
-    var segmentOffset = 0
-    var s = 0
-    val segmentCount = segments.size
-    while (s < segmentCount) {
-      val segmentPos = directory[segmentCount + s]
-      val nextSegmentOffset = directory[s]
-      arraycopy(segments[s], segmentPos, result, segmentOffset,
-          nextSegmentOffset - segmentOffset)
-      segmentOffset = nextSegmentOffset
-      s++
+    val result = ByteArray(size)
+    var resultPos = 0
+    processSegments { data, offset, byteCount ->
+      arraycopy(data, offset, result, resultPos, byteCount)
+      resultPos += byteCount
     }
     return result
   }
@@ -155,27 +149,14 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
 
   @Throws(IOException::class)
   override fun write(out: OutputStream) {
-    var segmentOffset = 0
-    var s = 0
-    val segmentCount = segments.size
-    while (s < segmentCount) {
-      val segmentPos = directory[segmentCount + s]
-      val nextSegmentOffset = directory[s]
-      out.write(segments[s], segmentPos, nextSegmentOffset - segmentOffset)
-      segmentOffset = nextSegmentOffset
-      s++
+    processSegments { data, offset, byteCount ->
+      out.write(data, offset, byteCount)
     }
   }
 
   override fun write(buffer: Buffer) {
-    var segmentOffset = 0
-    var s = 0
-    val segmentCount = segments.size
-    while (s < segmentCount) {
-      val segmentPos = directory[segmentCount + s]
-      val nextSegmentOffset = directory[s]
-      val segment = Segment(segments[s], segmentPos,
-          segmentPos + nextSegmentOffset - segmentOffset, true, false)
+    processSegments { data, offset, byteCount ->
+      val segment = Segment(data, offset, offset + byteCount, true, false)
       if (buffer.head == null) {
         segment.prev = segment
         segment.next = segment.prev
@@ -183,10 +164,8 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
       } else {
         buffer.head!!.prev!!.push(segment)
       }
-      segmentOffset = nextSegmentOffset
-      s++
     }
-    buffer.size += segmentOffset.toLong()
+    buffer.size += size
   }
 
   override fun rangeEquals(
@@ -195,23 +174,12 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     otherOffset: Int,
     byteCount: Int
   ): Boolean {
-    var offset = offset
-    var otherOffset = otherOffset
-    var byteCount = byteCount
     if (offset < 0 || offset > size - byteCount) return false
     // Go segment-by-segment through this, passing arrays to other's rangeEquals().
-    var s = segment(offset)
-    while (byteCount > 0) {
-      val segmentOffset = if (s == 0) 0 else directory[s - 1]
-      val segmentSize = directory[s] - segmentOffset
-      val stepSize = minOf(byteCount, segmentOffset + segmentSize - offset)
-      val segmentPos = directory[segments.size + s]
-      val arrayOffset = offset - segmentOffset + segmentPos
-      if (!other.rangeEquals(otherOffset, segments[s], arrayOffset, stepSize)) return false
-      offset += stepSize
-      otherOffset += stepSize
-      byteCount -= stepSize
-      s++
+    var otherOffset = otherOffset
+    processSegments(offset, offset + byteCount) { data, offset, byteCount ->
+      if (!other.rangeEquals(otherOffset, data, offset, byteCount)) return false
+      otherOffset += byteCount
     }
     return true
   }
@@ -222,26 +190,15 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     otherOffset: Int,
     byteCount: Int
   ): Boolean {
-    var offset = offset
-    var otherOffset = otherOffset
-    var byteCount = byteCount
     if (offset < 0 || offset > size - byteCount ||
         otherOffset < 0 || otherOffset > other.size - byteCount) {
       return false
     }
     // Go segment-by-segment through this, comparing ranges of arrays.
-    var s = segment(offset)
-    while (byteCount > 0) {
-      val segmentOffset = if (s == 0) 0 else directory[s - 1]
-      val segmentSize = directory[s] - segmentOffset
-      val stepSize = minOf(byteCount, segmentOffset + segmentSize - offset)
-      val segmentPos = directory[segments.size + s]
-      val arrayOffset = offset - segmentOffset + segmentPos
-      if (!arrayRangeEquals(segments[s], arrayOffset, other, otherOffset, stepSize)) return false
-      offset += stepSize
-      otherOffset += stepSize
-      byteCount -= stepSize
-      s++
+    var otherOffset = otherOffset
+    processSegments(offset, offset + byteCount) { data, offset, byteCount ->
+      if (!arrayRangeEquals(data, offset, other, otherOffset, byteCount)) return false
+      otherOffset += byteCount
     }
     return true
   }
@@ -255,6 +212,47 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
   private fun toByteString() = ByteString(toByteArray())
 
   override fun internalArray() = toByteArray()
+
+  /** Processes all segments, invoking `yield` with the ByteArray and range of valid data. */
+  private inline fun processSegments(
+    yield: (data: ByteArray, offset: Int, byteCount: Int) -> Unit
+  ) {
+    val segmentCount = segments.size
+    var s = 0
+    var pos = 0
+    while (s < segmentCount) {
+      val segmentPos = directory[segmentCount + s]
+      val nextSegmentOffset = directory[s]
+
+      yield(segments[s], segmentPos, nextSegmentOffset - pos)
+      pos = nextSegmentOffset
+      s++
+    }
+  }
+
+  /**
+   * Processes the segments between `beginIndex` and `endIndex`, invoking `yield` with the ByteArray
+   * and range of the valid data.
+   */
+  private inline fun processSegments(
+    beginIndex: Int,
+    endIndex: Int,
+    yield: (data: ByteArray, offset: Int, byteCount: Int) -> Unit
+  ) {
+    var s = segment(beginIndex)
+    var pos = beginIndex
+    while (pos < endIndex) {
+      val segmentOffset = if (s == 0) 0 else directory[s - 1]
+      val segmentSize = directory[s] - segmentOffset
+      val segmentPos = directory[segments.size + s]
+
+      val byteCount = minOf(endIndex, segmentOffset + segmentSize) - pos
+      val offset = segmentPos + (pos - segmentOffset)
+      yield(segments[s], offset, byteCount)
+      pos += byteCount
+      s++
+    }
+  }
 
   override fun equals(other: Any?): Boolean {
     return when {
@@ -270,22 +268,13 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
 
     // Equivalent to Arrays.hashCode(toByteArray()).
     result = 1
-    var segmentOffset = 0
-    var s = 0
-    val segmentCount = segments.size
-    while (s < segmentCount) {
-      val segment = segments[s]
-      val segmentPos = directory[segmentCount + s]
-      val nextSegmentOffset = directory[s]
-      val segmentSize = nextSegmentOffset - segmentOffset
-      var i = segmentPos
-      val limit = segmentPos + segmentSize
+    processSegments { data, offset, byteCount ->
+      var i = offset
+      val limit = offset + byteCount
       while (i < limit) {
-        result = 31 * result + segment[i]
+        result = 31 * result + data[i]
         i++
       }
-      segmentOffset = nextSegmentOffset
-      s++
     }
     hashCode = result
     return result
