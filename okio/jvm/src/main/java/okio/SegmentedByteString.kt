@@ -87,8 +87,6 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
     this.segments = segments as Array<ByteArray>
   }
 
-  override fun utf8() = toByteString().utf8()
-
   override fun string(charset: Charset) = toByteString().string(charset)
 
   override fun base64() = toByteString().base64()

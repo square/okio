@@ -37,7 +37,7 @@ internal fun ByteString.commonUtf8(): String {
   var result = utf8
   if (result == null) {
     // We don't care if we double-allocate in racy code.
-    result = data.toUtf8String()
+    result = internalArray().toUtf8String()
     utf8 = result
   }
   return result
