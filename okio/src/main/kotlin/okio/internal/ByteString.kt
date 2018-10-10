@@ -168,10 +168,42 @@ internal fun ByteString.commonEndsWith(suffix: ByteString) =
 internal fun ByteString.commonEndsWith(suffix: ByteArray) =
     rangeEquals(size - suffix.size, suffix, 0, suffix.size)
 
-internal fun ByteString.commonIndexOf(other: ByteArray, fromIndex: Int): Int {
-  val limit = data.size - other.size
+internal fun ByteString.commonIndexOf(other: ByteString, fromIndex: Int): Int {
+  val limit = size - other.size
   for (i in maxOf(fromIndex, 0)..limit) {
-    if (arrayRangeEquals(data, i, other, 0, other.size)) {
+    if (rangeEquals(i, other, 0, other.size)) {
+      return i
+    }
+  }
+  return -1
+}
+
+internal fun ByteString.commonIndexOf(other: ByteArray, fromIndex: Int): Int {
+  val limit = size - other.size
+  for (i in maxOf(fromIndex, 0)..limit) {
+    if (rangeEquals(i, other, 0, other.size)) {
+      return i
+    }
+  }
+  return -1
+}
+
+internal fun ByteString.commonLastIndexOf(other: ByteString, fromIndex: Int): Int {
+  var fromIndex = fromIndex
+  fromIndex = minOf(fromIndex, size - other.size)
+  for (i in fromIndex downTo 0) {
+    if (rangeEquals(i, other, 0, other.size)) {
+      return i
+    }
+  }
+  return -1
+}
+
+internal fun ByteString.commonLastIndexOf(other: ByteArray, fromIndex: Int): Int {
+  var fromIndex = fromIndex
+  fromIndex = minOf(fromIndex, size - other.size)
+  for (i in fromIndex downTo 0) {
+    if (rangeEquals(i, other, 0, other.size)) {
       return i
     }
   }

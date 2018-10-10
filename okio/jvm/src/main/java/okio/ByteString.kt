@@ -30,6 +30,7 @@ import okio.internal.commonHashCode
 import okio.internal.commonHex
 import okio.internal.commonIndexOf
 import okio.internal.commonInternalArray
+import okio.internal.commonLastIndexOf
 import okio.internal.commonOf
 import okio.internal.commonRangeEquals
 import okio.internal.commonStartsWith
@@ -218,7 +219,7 @@ internal actual constructor(
   // TODO move @JvmOverloads to common when https://youtrack.jetbrains.com/issue/KT-18882 lands
 
   @JvmOverloads
-  actual fun indexOf(other: ByteString, fromIndex: Int) = indexOf(other.internalArray(), fromIndex)
+  actual fun indexOf(other: ByteString, fromIndex: Int) = commonIndexOf(other, fromIndex)
 
   @JvmOverloads
   actual open fun indexOf(other: ByteArray, fromIndex: Int) = commonIndexOf(other, fromIndex)
@@ -226,20 +227,10 @@ internal actual constructor(
   // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
   @JvmOverloads
-  fun lastIndexOf(other: ByteString, fromIndex: Int = size) = lastIndexOf(other.internalArray(),
-      fromIndex)
+  fun lastIndexOf(other: ByteString, fromIndex: Int = size) = commonLastIndexOf(other, fromIndex)
 
   @JvmOverloads
-  open fun lastIndexOf(other: ByteArray, fromIndex: Int = size): Int {
-    var fromIndex = fromIndex
-    fromIndex = minOf(fromIndex, data.size - other.size)
-    for (i in fromIndex downTo 0) {
-      if (arrayRangeEquals(data, i, other, 0, other.size)) {
-        return i
-      }
-    }
-    return -1
-  }
+  open fun lastIndexOf(other: ByteArray, fromIndex: Int = size) = commonLastIndexOf(other, fromIndex)
 
   actual override fun equals(other: Any?) = commonEquals(other)
 

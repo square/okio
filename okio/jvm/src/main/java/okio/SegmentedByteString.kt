@@ -239,11 +239,6 @@ internal class SegmentedByteString private constructor(
     return true
   }
 
-  override fun indexOf(other: ByteArray, fromIndex: Int) = toByteString().indexOf(other, fromIndex)
-
-  override fun lastIndexOf(other: ByteArray, fromIndex: Int) = toByteString().lastIndexOf(other,
-      fromIndex)
-
   /** Returns a copy as a non-segmented byte string.  */
   private fun toByteString() = ByteString(toByteArray())
 
