@@ -98,7 +98,7 @@ internal actual constructor(
   /** Returns the 512-bit SHA-512 hash of this byte string.  */
   open fun sha512() = digest("SHA-512")
 
-  private fun digest(algorithm: String) =
+  internal open fun digest(algorithm: String) =
       ByteString(MessageDigest.getInstance(algorithm).digest(data))
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
@@ -110,7 +110,7 @@ internal actual constructor(
   /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
   open fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
 
-  private fun hmac(algorithm: String, key: ByteString): ByteString {
+  internal open fun hmac(algorithm: String, key: ByteString): ByteString {
     try {
       val mac = Mac.getInstance(algorithm)
       mac.init(SecretKeySpec(key.toByteArray(), algorithm))

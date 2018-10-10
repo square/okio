@@ -19,7 +19,11 @@ import java.io.IOException
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
+import java.security.InvalidKeyException
+import java.security.MessageDigest
 import java.util.Arrays
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 /**
  * An immutable byte string composed of segments of byte arrays. This class exists to implement
@@ -97,19 +101,26 @@ internal class SegmentedByteString(buffer: Buffer, byteCount: Int) : ByteString(
 
   override fun toAsciiUppercase() = toByteString().toAsciiUppercase()
 
-  override fun md5() = toByteString().md5()
+  override fun digest(algorithm: String): ByteString {
+    val digest = MessageDigest.getInstance(algorithm)
+    processSegments { data, offset, byteCount ->
+      digest.update(data, offset, byteCount)
+    }
+    return ByteString(digest.digest())
+  }
 
-  override fun sha1() = toByteString().sha1()
-
-  override fun sha256() = toByteString().sha256()
-
-  override fun sha512() = toByteString().sha512()
-
-  override fun hmacSha1(key: ByteString) = toByteString().hmacSha1(key)
-
-  override fun hmacSha256(key: ByteString) = toByteString().hmacSha256(key)
-
-  override fun hmacSha512(key: ByteString) = toByteString().hmacSha512(key)
+  override fun hmac(algorithm: String, key: ByteString): ByteString {
+    try {
+      val mac = Mac.getInstance(algorithm)
+      mac.init(SecretKeySpec(key.toByteArray(), algorithm))
+      processSegments { data, offset, byteCount ->
+        mac.update(data, offset, byteCount)
+      }
+      return ByteString(mac.doFinal())
+    } catch (e: InvalidKeyException) {
+      throw IllegalArgumentException(e)
+    }
+  }
 
   override fun base64Url() = toByteString().base64Url()
 
