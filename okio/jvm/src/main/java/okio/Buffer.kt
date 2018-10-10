@@ -1470,7 +1470,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
       // Scan through the segments, searching for the lead byte. Each time that is found, delegate
       // to rangeEquals() to check for a complete match.
-      val b0 = bytes[0]
+      val targetByteArray = bytes.internalArray()
+      val b0 = targetByteArray[0]
       val bytesSize = bytes.size
       val resultLimit = size - bytesSize + 1L
       while (offset < resultLimit) {
@@ -1478,7 +1479,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
         val data = s.data
         val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
         for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
-          if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes.internalArray(), 1, bytesSize)) {
+          if (data[pos] == b0 && rangeEquals(s, pos + 1, targetByteArray, 1, bytesSize)) {
             return pos - s.pos + offset
           }
         }
