@@ -104,7 +104,7 @@ internal class SegmentedByteString private constructor(
 
   override fun digest(algorithm: String): ByteString {
     val digest = MessageDigest.getInstance(algorithm)
-    processSegments { data, offset, byteCount ->
+    forEachSegment { data, offset, byteCount ->
       digest.update(data, offset, byteCount)
     }
     return ByteString(digest.digest())
@@ -114,7 +114,7 @@ internal class SegmentedByteString private constructor(
     try {
       val mac = Mac.getInstance(algorithm)
       mac.init(SecretKeySpec(key.toByteArray(), algorithm))
-      processSegments { data, offset, byteCount ->
+      forEachSegment { data, offset, byteCount ->
         mac.update(data, offset, byteCount)
       }
       return ByteString(mac.doFinal())
@@ -142,9 +142,10 @@ internal class SegmentedByteString private constructor(
 
     val newSegments = segments.copyOfRange(beginSegment, endSegment + 1)
     val newDirectory = IntArray(newSegments.size * 2)
-    for ((index, s) in (beginSegment..endSegment).withIndex()) {
+    var index = 0
+    for (s in beginSegment..endSegment) {
       newDirectory[index] = minOf(directory[s] - beginIndex, subLen)
-      newDirectory[index + newSegments.size] = directory[s + segments.size]
+      newDirectory[index++ + newSegments.size] = directory[s + segments.size]
     }
 
     // Set the new position of the first segment
@@ -174,7 +175,7 @@ internal class SegmentedByteString private constructor(
   override fun toByteArray(): ByteArray {
     val result = ByteArray(size)
     var resultPos = 0
-    processSegments { data, offset, byteCount ->
+    forEachSegment { data, offset, byteCount ->
       arraycopy(data, offset, result, resultPos, byteCount)
       resultPos += byteCount
     }
@@ -185,13 +186,13 @@ internal class SegmentedByteString private constructor(
 
   @Throws(IOException::class)
   override fun write(out: OutputStream) {
-    processSegments { data, offset, byteCount ->
+    forEachSegment { data, offset, byteCount ->
       out.write(data, offset, byteCount)
     }
   }
 
   override fun write(buffer: Buffer) {
-    processSegments { data, offset, byteCount ->
+    forEachSegment { data, offset, byteCount ->
       val segment = Segment(data, offset, offset + byteCount, true, false)
       if (buffer.head == null) {
         segment.prev = segment
@@ -213,7 +214,7 @@ internal class SegmentedByteString private constructor(
     if (offset < 0 || offset > size - byteCount) return false
     // Go segment-by-segment through this, passing arrays to other's rangeEquals().
     var otherOffset = otherOffset
-    processSegments(offset, offset + byteCount) { data, offset, byteCount ->
+    forEachSegment(offset, offset + byteCount) { data, offset, byteCount ->
       if (!other.rangeEquals(otherOffset, data, offset, byteCount)) return false
       otherOffset += byteCount
     }
@@ -232,7 +233,7 @@ internal class SegmentedByteString private constructor(
     }
     // Go segment-by-segment through this, comparing ranges of arrays.
     var otherOffset = otherOffset
-    processSegments(offset, offset + byteCount) { data, offset, byteCount ->
+    forEachSegment(offset, offset + byteCount) { data, offset, byteCount ->
       if (!arrayRangeEquals(data, offset, other, otherOffset, byteCount)) return false
       otherOffset += byteCount
     }
@@ -244,9 +245,9 @@ internal class SegmentedByteString private constructor(
 
   override fun internalArray() = toByteArray()
 
-  /** Processes all segments, invoking `yield` with the ByteArray and range of valid data. */
-  private inline fun processSegments(
-    yield: (data: ByteArray, offset: Int, byteCount: Int) -> Unit
+  /** Processes all segments, invoking `action` with the ByteArray and range of valid data. */
+  private inline fun forEachSegment(
+    action: (data: ByteArray, offset: Int, byteCount: Int) -> Unit
   ) {
     val segmentCount = segments.size
     var s = 0
@@ -255,20 +256,20 @@ internal class SegmentedByteString private constructor(
       val segmentPos = directory[segmentCount + s]
       val nextSegmentOffset = directory[s]
 
-      yield(segments[s], segmentPos, nextSegmentOffset - pos)
+      action(segments[s], segmentPos, nextSegmentOffset - pos)
       pos = nextSegmentOffset
       s++
     }
   }
 
   /**
-   * Processes the segments between `beginIndex` and `endIndex`, invoking `yield` with the ByteArray
+   * Processes the segments between `beginIndex` and `endIndex`, invoking `action` with the ByteArray
    * and range of the valid data.
    */
-  private inline fun processSegments(
+  private inline fun forEachSegment(
     beginIndex: Int,
     endIndex: Int,
-    yield: (data: ByteArray, offset: Int, byteCount: Int) -> Unit
+    action: (data: ByteArray, offset: Int, byteCount: Int) -> Unit
   ) {
     var s = segment(beginIndex)
     var pos = beginIndex
@@ -279,7 +280,7 @@ internal class SegmentedByteString private constructor(
 
       val byteCount = minOf(endIndex, segmentOffset + segmentSize) - pos
       val offset = segmentPos + (pos - segmentOffset)
-      yield(segments[s], offset, byteCount)
+      action(segments[s], offset, byteCount)
       pos += byteCount
       s++
     }
@@ -299,7 +300,7 @@ internal class SegmentedByteString private constructor(
 
     // Equivalent to Arrays.hashCode(toByteArray()).
     result = 1
-    processSegments { data, offset, byteCount ->
+    forEachSegment { data, offset, byteCount ->
       var i = offset
       val limit = offset + byteCount
       while (i < limit) {

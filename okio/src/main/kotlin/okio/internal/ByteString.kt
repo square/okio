@@ -189,9 +189,8 @@ internal fun ByteString.commonIndexOf(other: ByteArray, fromIndex: Int): Int {
 }
 
 internal fun ByteString.commonLastIndexOf(other: ByteString, fromIndex: Int): Int {
-  var fromIndex = fromIndex
-  fromIndex = minOf(fromIndex, size - other.size)
-  for (i in fromIndex downTo 0) {
+  val limit = size - other.size
+  for (i in minOf(fromIndex, limit) downTo 0) {
     if (rangeEquals(i, other, 0, other.size)) {
       return i
     }
@@ -200,9 +199,8 @@ internal fun ByteString.commonLastIndexOf(other: ByteString, fromIndex: Int): In
 }
 
 internal fun ByteString.commonLastIndexOf(other: ByteArray, fromIndex: Int): Int {
-  var fromIndex = fromIndex
-  fromIndex = minOf(fromIndex, size - other.size)
-  for (i in fromIndex downTo 0) {
+  val limit = size - other.size
+  for (i in minOf(fromIndex, limit) downTo 0) {
     if (rangeEquals(i, other, 0, other.size)) {
       return i
     }
