@@ -145,13 +145,13 @@ internal actual constructor(
 
   actual fun endsWith(suffix: ByteArray) = commonEndsWith(suffix)
 
-  actual fun indexOf(other: ByteString, fromIndex: Int) = commonIndexOf(other, fromIndex)
+  actual fun indexOf(other: ByteString, fromIndex: Int) = indexOf(other.internalArray(), fromIndex)
 
   actual open fun indexOf(other: ByteArray, fromIndex: Int) = commonIndexOf(other, fromIndex)
 
   // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
-  fun lastIndexOf(other: ByteString, fromIndex: Int = size) = commonLastIndexOf(other, fromIndex)
+  fun lastIndexOf(other: ByteString, fromIndex: Int = size) = lastIndexOf(other.internalArray(), fromIndex)
 
   fun lastIndexOf(other: ByteArray, fromIndex: Int = size) = commonLastIndexOf(other, fromIndex)
 

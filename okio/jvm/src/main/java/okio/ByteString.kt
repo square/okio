@@ -219,7 +219,7 @@ internal actual constructor(
   // TODO move @JvmOverloads to common when https://youtrack.jetbrains.com/issue/KT-18882 lands
 
   @JvmOverloads
-  actual fun indexOf(other: ByteString, fromIndex: Int) = commonIndexOf(other, fromIndex)
+  actual fun indexOf(other: ByteString, fromIndex: Int) = indexOf(other.internalArray(), fromIndex)
 
   @JvmOverloads
   actual open fun indexOf(other: ByteArray, fromIndex: Int) = commonIndexOf(other, fromIndex)
@@ -227,7 +227,8 @@ internal actual constructor(
   // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
 
   @JvmOverloads
-  fun lastIndexOf(other: ByteString, fromIndex: Int = size) = commonLastIndexOf(other, fromIndex)
+  fun lastIndexOf(other: ByteString, fromIndex: Int = size) = lastIndexOf(other.internalArray(),
+      fromIndex)
 
   @JvmOverloads
   open fun lastIndexOf(other: ByteArray, fromIndex: Int = size) = commonLastIndexOf(other, fromIndex)
