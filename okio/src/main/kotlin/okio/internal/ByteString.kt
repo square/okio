@@ -37,7 +37,7 @@ internal fun ByteString.commonUtf8(): String {
   var result = utf8
   if (result == null) {
     // We don't care if we double-allocate in racy code.
-    result = data.toUtf8String()
+    result = internalArray().toUtf8String()
     utf8 = result
   }
   return result
@@ -171,6 +171,16 @@ internal fun ByteString.commonEndsWith(suffix: ByteArray) =
 internal fun ByteString.commonIndexOf(other: ByteArray, fromIndex: Int): Int {
   val limit = data.size - other.size
   for (i in maxOf(fromIndex, 0)..limit) {
+    if (arrayRangeEquals(data, i, other, 0, other.size)) {
+      return i
+    }
+  }
+  return -1
+}
+
+internal fun ByteString.commonLastIndexOf(other: ByteArray, fromIndex: Int): Int {
+  val limit = data.size - other.size
+  for (i in minOf(fromIndex, limit) downTo 0) {
     if (arrayRangeEquals(data, i, other, 0, other.size)) {
       return i
     }

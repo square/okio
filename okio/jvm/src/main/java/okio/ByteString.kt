@@ -30,6 +30,7 @@ import okio.internal.commonHashCode
 import okio.internal.commonHex
 import okio.internal.commonIndexOf
 import okio.internal.commonInternalArray
+import okio.internal.commonLastIndexOf
 import okio.internal.commonOf
 import okio.internal.commonRangeEquals
 import okio.internal.commonStartsWith
@@ -98,7 +99,7 @@ internal actual constructor(
   /** Returns the 512-bit SHA-512 hash of this byte string.  */
   open fun sha512() = digest("SHA-512")
 
-  private fun digest(algorithm: String) =
+  internal open fun digest(algorithm: String) =
       ByteString(MessageDigest.getInstance(algorithm).digest(data))
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
@@ -110,7 +111,7 @@ internal actual constructor(
   /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
   open fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
 
-  private fun hmac(algorithm: String, key: ByteString): ByteString {
+  internal open fun hmac(algorithm: String, key: ByteString): ByteString {
     try {
       val mac = Mac.getInstance(algorithm)
       mac.init(SecretKeySpec(key.toByteArray(), algorithm))
@@ -230,16 +231,7 @@ internal actual constructor(
       fromIndex)
 
   @JvmOverloads
-  open fun lastIndexOf(other: ByteArray, fromIndex: Int = size): Int {
-    var fromIndex = fromIndex
-    fromIndex = minOf(fromIndex, data.size - other.size)
-    for (i in fromIndex downTo 0) {
-      if (arrayRangeEquals(data, i, other, 0, other.size)) {
-        return i
-      }
-    }
-    return -1
-  }
+  open fun lastIndexOf(other: ByteArray, fromIndex: Int = size) = commonLastIndexOf(other, fromIndex)
 
   actual override fun equals(other: Any?) = commonEquals(other)
 
