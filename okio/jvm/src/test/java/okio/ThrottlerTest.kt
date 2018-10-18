@@ -21,6 +21,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 
 class ThrottlerTest {
@@ -267,5 +268,16 @@ class ThrottlerTest {
       future.get()
     }
     stopwatch.assertElapsed(1.0)
+  }
+
+  @Test fun infiniteWait() {
+    val throttlerLocal = Throttler()
+    throttlerLocal.bytesPerSecond(size - 1, maxByteCount = 8192)
+    val future =
+      executorService.submit {
+        val source = randomSource(size)
+        source.buffer().readAll(throttlerLocal.sink(blackholeSink()))
+      }
+    future.get(2, TimeUnit.SECONDS)
   }
 }
