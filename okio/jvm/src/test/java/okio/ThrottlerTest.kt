@@ -16,12 +16,10 @@
 package okio
 
 import okio.TestUtil.randomSource
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.Executors
-import kotlin.test.assertEquals
 
 class ThrottlerTest {
   private val size = 1024L * 80L // 80 KiB
@@ -44,74 +42,6 @@ class ThrottlerTest {
     executorService.shutdown()
   }
 
-  @Test fun sourceByteCount() {
-    throttler.bytesPerSecond(bytesPerSecond = 20, waitByteCount = 5, maxByteCount = 10)
-    val source = throttler.source(source)
-    val buffer = Buffer()
-
-    // We get the first 10 bytes immediately (that's maxByteCount).
-    assertThat(source.read(buffer, size)).isEqualTo(10)
-    stopwatch.assertElapsed(0.0)
-
-    // Wait a quarter second for each subsequent 5 bytes (that's waitByteCount).
-    assertThat(source.read(buffer, size)).isEqualTo(5)
-    stopwatch.assertElapsed(0.25)
-
-    assertThat(source.read(buffer, size)).isEqualTo(5)
-    stopwatch.assertElapsed(0.25)
-
-    // Wait three quarters of a second to build up 15 bytes of potential.
-    // Since maxByteCount = 10, there will only be 10 bytes of potential.
-    Thread.sleep(750)
-    stopwatch.assertElapsed(0.75)
-
-    // We get 10 bytes immediately (that's maxByteCount again).
-    assertThat(source.read(buffer, size)).isEqualTo(10)
-    stopwatch.assertElapsed(0.0)
-
-    // Wait a quarter second for each subsequent 5 bytes (that's waitByteCount again).
-    assertThat(source.read(buffer, size)).isEqualTo(5)
-    stopwatch.assertElapsed(0.25)
-  }
-
-  @Test fun sinkByteCount() {
-    throttler.bytesPerSecond(bytesPerSecond = 20, waitByteCount = 5, maxByteCount = 10)
-    val sinkBuffer = Buffer()
-    val sourceBuffer = Buffer().apply { writeAll(source) }
-    val sink = throttler.sink(sinkBuffer)
-    var written = 0L
-
-    // We write the first 10 bytes immediately (that's maxByteCount again).
-    sink.write(sourceBuffer, 10)
-    written += 10
-    assertEquals(written, size - sourceBuffer.size)
-    stopwatch.assertElapsed(0.0)
-
-    // Wait a quarter second for each subsequent 5 bytes (that's waitByteCount).
-    sink.write(sourceBuffer, 5)
-    written += 5
-    assertEquals(written, size - sourceBuffer.size)
-    stopwatch.assertElapsed(0.25)
-
-    // Wait a half second for 10 bytes.
-    sink.write(sourceBuffer, 10)
-    written += 10
-    assertEquals(written, size - sourceBuffer.size)
-    stopwatch.assertElapsed(0.5)
-
-    // Wait a three quarters of a second to build up 15 bytes of potential.
-    // Since maxByteCount = 10, there will only be 10 bytes of potential.
-    Thread.sleep(750)
-    stopwatch.assertElapsed(0.75)
-
-    // We write the first 10 bytes immediately (that's maxByteCount again).
-    // Wait a quarter second for each subsequent 5 bytes (that's waitByteCount again).
-    sink.write(sourceBuffer, 15)
-    written += 15
-    assertEquals(written, size - sourceBuffer.size)
-    stopwatch.assertElapsed(0.25)
-  }
-
   @Test fun source() {
     throttler.source(source).buffer().readAll(blackholeSink())
     stopwatch.assertElapsed(0.25)
@@ -120,18 +50,6 @@ class ThrottlerTest {
   @Test fun sink() {
     source.buffer().readAll(throttler.sink(blackholeSink()))
     stopwatch.assertElapsed(0.25)
-  }
-
-  @Test fun sourceAfterClear() {
-    throttler.bytesPerSecond(0)
-    throttler.source(source).buffer().readAll(blackholeSink())
-    stopwatch.assertElapsed(0.0)
-  }
-
-  @Test fun sinkAfterClear() {
-    throttler.bytesPerSecond(0)
-    source.buffer().readAll(throttler.sink(blackholeSink()))
-    stopwatch.assertElapsed(0.0)
   }
 
   @Test fun doubleSourceThrottle() {
@@ -175,36 +93,6 @@ class ThrottlerTest {
       future.get()
     }
     stopwatch.assertElapsed(1.0)
-  }
-
-  @Test fun parallelAfterClear() {
-    throttler.bytesPerSecond(0)
-
-    val futures = List(threads) {
-      executorService.submit {
-        val source = randomSource(size)
-        source.buffer().readAll(throttler.sink(blackholeSink()))
-      }
-    }
-    for (future in futures) {
-      future.get()
-    }
-    stopwatch.assertElapsed(0.0)
-  }
-
-  @Test fun parallelWithClear() {
-    val futures = List(threads) {
-      executorService.submit {
-        val source = randomSource(size)
-        source.buffer().readAll(throttler.sink(blackholeSink()))
-      }
-    }
-    Thread.sleep(500)
-    throttler.bytesPerSecond(0)
-    for (future in futures) {
-      future.get()
-    }
-    stopwatch.assertElapsed(0.5)
   }
 
   @Test fun parallelFastThenSlower() {
