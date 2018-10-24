@@ -96,6 +96,16 @@ class ThrottlerTakeTest {
     assertElapsed(0L)
   }
 
+  /**
+   * We had a bug where integer division truncation would cause us to call wait() for 0 nanos. We
+   * fixed it by minimizing integer division generally, and by handling that case specifically.
+   */
+  @Test fun infiniteWait() {
+    throttler.bytesPerSecond(3, maxByteCount = 4, waitByteCount = 4)
+    takeFully(7)
+    assertElapsed(1000L)
+  }
+
   /** Take at least the minimum and up to `byteCount` bytes, sleeping once if necessary. */
   private fun take(byteCount: Long): Long {
     val byteCountOrWaitNanos = throttler.byteCountOrWaitNanos(nowNanos, byteCount)
