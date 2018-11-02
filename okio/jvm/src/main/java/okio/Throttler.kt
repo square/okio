@@ -15,6 +15,7 @@
  */
 package okio
 
+import kotlinx.coroutines.delay
 import java.io.IOException
 import java.io.InterruptedIOException
 
@@ -85,6 +86,19 @@ class Throttler internal constructor(
     throw AssertionError() // Unreachable, but synchronized() doesn't know that.
   }
 
+  internal suspend fun takeAsync(byteCount: Long): Long {
+    require(byteCount > 0)
+
+    while (true) {
+      val now = System.nanoTime()
+      val byteCountOrWaitNanos: Long = synchronized(this) {
+        byteCountOrWaitNanos(now, byteCount)
+      }
+      if (byteCountOrWaitNanos >= 0) return byteCountOrWaitNanos
+      waitNanosAsync(-byteCountOrWaitNanos)
+    }
+  }
+
   /**
    * Returns the byte count to take immediately or -1 times the number of nanos to wait until the
    * next attempt. If the returned value is negative it should be interpreted as a duration in
@@ -131,6 +145,11 @@ class Throttler internal constructor(
     (this as Object).wait(millisToWait, remainderNanos.toInt())
   }
 
+  private suspend fun waitNanosAsync(nanosToWait: Long) {
+    val millisToWait = (nanosToWait + 999_999) / 1_000_000L
+    delay(millisToWait)
+  }
+
   /** Create a Source which honors this Throttler.  */
   fun source(source: Source): Source {
     return object : ForwardingSource(source) {
@@ -138,6 +157,16 @@ class Throttler internal constructor(
         try {
           val toRead = take(byteCount)
           return super.read(sink, toRead)
+        } catch (e: InterruptedException) {
+          Thread.currentThread().interrupt()
+          throw InterruptedIOException("interrupted")
+        }
+      }
+
+      override suspend fun readAsync(sink: Buffer, byteCount: Long): Long {
+        try {
+          val toRead = takeAsync(byteCount)
+          return super.readAsync(sink, toRead)
         } catch (e: InterruptedException) {
           Thread.currentThread().interrupt()
           throw InterruptedIOException("interrupted")
@@ -156,6 +185,20 @@ class Throttler internal constructor(
           while (remaining > 0L) {
             val toWrite = take(remaining)
             super.write(source, toWrite)
+            remaining -= toWrite
+          }
+        } catch (e: InterruptedException) {
+          Thread.currentThread().interrupt()
+          throw InterruptedIOException("interrupted")
+        }
+      }
+
+      override suspend fun writeAsync(source: Buffer, byteCount: Long) {
+        try {
+          var remaining = byteCount
+          while (remaining > 0L) {
+            val toWrite = takeAsync(remaining)
+            super.writeAsync(source, toWrite)
             remaining -= toWrite
           }
         } catch (e: InterruptedException) {

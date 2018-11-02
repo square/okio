@@ -46,13 +46,35 @@ internal class RealBufferedSource(
     return buffer.read(sink, toRead)
   }
 
+  override suspend fun readAsync(sink: Buffer, byteCount: Long): Long {
+    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+    check(!closed) { "closed" }
+
+    if (buffer.size == 0L) {
+      val read = source.readAsync(buffer, Segment.SIZE.toLong())
+      if (read == -1L) return -1L
+    }
+
+    val toRead = minOf(byteCount, buffer.size)
+    return buffer.read(sink, toRead)
+  }
+
   override fun exhausted(): Boolean {
     check(!closed) { "closed" }
     return buffer.exhausted() && source.read(buffer, Segment.SIZE.toLong()) == -1L
   }
 
+  override suspend fun exhaustedAsync(): Boolean {
+    check(!closed) { "closed" }
+    return buffer.exhausted() && source.readAsync(buffer, Segment.SIZE.toLong()) == -1L
+  }
+
   override fun require(byteCount: Long) {
     if (!request(byteCount)) throw EOFException()
+  }
+
+  override suspend fun requireAsync(byteCount: Long) {
+    if (!requestAsync(byteCount)) throw EOFException()
   }
 
   override fun request(byteCount: Long): Boolean {
@@ -60,6 +82,15 @@ internal class RealBufferedSource(
     check(!closed) { "closed" }
     while (buffer.size < byteCount) {
       if (source.read(buffer, Segment.SIZE.toLong()) == -1L) return false
+    }
+    return true
+  }
+
+  override suspend fun requestAsync(byteCount: Long): Boolean {
+    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+    check(!closed) { "closed" }
+    while (buffer.size < byteCount) {
+      if (source.readAsync(buffer, Segment.SIZE.toLong()) == -1L) return false
     }
     return true
   }
@@ -176,6 +207,25 @@ internal class RealBufferedSource(
     if (buffer.size > 0L) {
       totalBytesWritten += buffer.size
       sink.write(buffer, buffer.size)
+    }
+    return totalBytesWritten
+  }
+
+  override suspend fun readAllAsync(sink: Sink): Long {
+    var totalBytesWritten: Long = 0
+    while (true) {
+      val bytesRead = source.readAsync(buffer, Segment.SIZE.toLong())
+      if (bytesRead == -1L) break
+
+      val emitByteCount = buffer.completeSegmentByteCount()
+      if (emitByteCount > 0L) {
+        totalBytesWritten += emitByteCount
+        sink.writeAsync(buffer, emitByteCount)
+      }
+    }
+    if (buffer.size > 0L) {
+      totalBytesWritten += buffer.size
+      sink.writeAsync(buffer, buffer.size)
     }
     return totalBytesWritten
   }
@@ -459,6 +509,13 @@ internal class RealBufferedSource(
     if (closed) return
     closed = true
     source.close()
+    buffer.clear()
+  }
+
+  override suspend fun closeAsync() {
+    if (closed) return
+    closed = true
+    source.closeAsync()
     buffer.clear()
   }
 

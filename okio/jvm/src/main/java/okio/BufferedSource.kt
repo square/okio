@@ -43,12 +43,16 @@ interface BufferedSource : Source, ReadableByteChannel {
   @Throws(IOException::class)
   fun exhausted(): Boolean
 
-  /**
+  suspend fun exhaustedAsync(): Boolean
+
+    /**
    * Returns when the buffer contains at least `byteCount` bytes. Throws an
    * [java.io.EOFException] if the source is exhausted before the required bytes can be read.
    */
   @Throws(IOException::class)
   fun require(byteCount: Long)
+
+  suspend fun requireAsync(byteCount: Long)
 
   /**
    * Returns true when the buffer contains at least `byteCount` bytes, expanding it as
@@ -56,6 +60,8 @@ interface BufferedSource : Source, ReadableByteChannel {
    */
   @Throws(IOException::class)
   fun request(byteCount: Long): Boolean
+
+  suspend fun requestAsync(byteCount: Long): Boolean
 
   /** Removes a byte from this source and returns it. */
   @Throws(IOException::class)
@@ -338,6 +344,9 @@ interface BufferedSource : Source, ReadableByteChannel {
    */
   @Throws(IOException::class)
   fun readAll(sink: Sink): Long
+
+  @Throws(IOException::class)
+  suspend fun readAllAsync(sink: Sink): Long
 
   /**
    * Removes all bytes from this, decodes them as UTF-8, and returns the string. Returns the empty

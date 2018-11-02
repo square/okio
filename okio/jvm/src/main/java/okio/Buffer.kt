@@ -72,16 +72,24 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun emitCompleteSegments() = this // Nowhere to emit to!
 
+  override suspend fun emitCompleteSegmentsAsync() = emitCompleteSegments()
+
   override fun emit() = this // Nowhere to emit to!
 
   override fun exhausted() = size == 0L
+
+  override suspend fun exhaustedAsync() = exhausted()
 
   @Throws(EOFException::class)
   override fun require(byteCount: Long) {
     if (size < byteCount) throw EOFException()
   }
 
+  override suspend fun requireAsync(byteCount: Long) = require(byteCount)
+
   override fun request(byteCount: Long) = size >= byteCount
+
+  override suspend fun requestAsync(byteCount: Long) = request(byteCount)
 
   override fun peek(): BufferedSource {
     return PeekSource(this).buffer()
@@ -646,6 +654,14 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     val byteCount = size
     if (byteCount > 0L) {
       sink.write(this, byteCount)
+    }
+    return byteCount
+  }
+
+  override suspend fun readAllAsync(sink: Sink): Long {
+    val byteCount = size
+    if (byteCount > 0L) {
+      sink.writeAsync(this, byteCount)
     }
     return byteCount
   }
@@ -1376,6 +1392,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     }
   }
 
+  override suspend fun writeAsync(source: Buffer, byteCount: Long) = write(source, byteCount)
+
   override fun read(sink: Buffer, byteCount: Long): Long {
     var byteCount = byteCount
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }
@@ -1384,6 +1402,8 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     sink.write(this, byteCount)
     return byteCount
   }
+
+  override suspend fun readAsync(sink: Buffer, byteCount: Long) = read(sink, byteCount)
 
   override fun indexOf(b: Byte) = indexOf(b, 0, Long.MAX_VALUE)
 
@@ -1616,9 +1636,13 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun flush() {}
 
+  override suspend fun flushAsync() {}
+
   override fun isOpen() = true
 
   override fun close() {}
+
+  override suspend fun closeAsync() {}
 
   override fun timeout() = Timeout.NONE
 

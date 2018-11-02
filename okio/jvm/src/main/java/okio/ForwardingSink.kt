@@ -29,12 +29,22 @@ abstract class ForwardingSink(
   override fun write(source: Buffer, byteCount: Long) = delegate.write(source, byteCount)
 
   @Throws(IOException::class)
+  override suspend fun writeAsync(source: Buffer, byteCount: Long) =
+    delegate.writeAsync(source, byteCount)
+
+  @Throws(IOException::class)
   override fun flush() = delegate.flush()
+
+  @Throws(IOException::class)
+  override suspend fun flushAsync() = delegate.flushAsync()
 
   override fun timeout() = delegate.timeout()
 
   @Throws(IOException::class)
   override fun close() = delegate.close()
+
+  @Throws(IOException::class)
+  override suspend fun closeAsync() = delegate.closeAsync()
 
   override fun toString() = "${javaClass.simpleName}($delegate)"
 

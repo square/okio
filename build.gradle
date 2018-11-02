@@ -1,7 +1,8 @@
 buildscript {
   ext.versions = [
-      'kotlin': '1.2.60',
-      'kotlinNative': '0.8.2',
+      'kotlin': '1.3.0',
+      'kotlinNative': '1.3.0',
+      'kotlinCoroutinesCore': '1.0.0',
       'jmhPlugin': '0.4.5',
       'animalSnifferPlugin': '1.4.3',
       'dokka': '0.9.16',
@@ -32,8 +33,11 @@ buildscript {
               'js': "org.jetbrains.kotlin:kotlin-test-js",
           ],
           'native': [
-              'gradlePlugin': "org.jetbrains.kotlin:kotlin-native-gradle-plugin:${versions.kotlinNative}",
+              'gradlePlugin': "org.jetbrains.kotlin:kotlin-native-gradle-plugin:${versions.kotlin}",
           ]
+      ],
+      'kotlinx': [
+          'coroutinesCore': "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.kotlinCoroutinesCore}",
       ],
       'jmh': [
           'gradlePlugin': "me.champeau.gradle:jmh-gradle-plugin:${versions.jmhPlugin}",

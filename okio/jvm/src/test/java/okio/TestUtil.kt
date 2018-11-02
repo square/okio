@@ -93,12 +93,16 @@ object TestUtil {
         }
       }
 
+      override suspend fun readAsync(sink: Buffer, byteCount: Long) = read(sink, byteCount)
+
       override fun timeout() = Timeout.NONE
 
       @Throws(IOException::class)
       override fun close() {
         closed = true
       }
+
+      override suspend fun closeAsync() = close()
     }
   }
 

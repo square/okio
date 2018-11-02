@@ -39,6 +39,12 @@ internal class RealBufferedSink(
     emitCompleteSegments()
   }
 
+  override suspend fun writeAsync(source: Buffer, byteCount: Long) {
+    check(!closed) { "closed" }
+    buffer.write(source, byteCount)
+    emitCompleteSegmentsAsync()
+  }
+
   override fun write(byteString: ByteString): BufferedSink {
     check(!closed) { "closed" }
     buffer.write(byteString)
@@ -176,9 +182,18 @@ internal class RealBufferedSink(
   }
 
   override fun emitCompleteSegments(): BufferedSink {
+    // TODO(jwilson): if async, avoid the blocking write unless we have many complete segments?
+
     check(!closed) { "closed" }
     val byteCount = buffer.completeSegmentByteCount()
     if (byteCount > 0L) sink.write(buffer, byteCount)
+    return this
+  }
+
+  override suspend fun emitCompleteSegmentsAsync(): BufferedSink {
+    check(!closed) { "closed" }
+    val byteCount = buffer.completeSegmentByteCount()
+    if (byteCount > 0L) sink.writeAsync(buffer, byteCount)
     return this
   }
 
@@ -224,6 +239,14 @@ internal class RealBufferedSink(
     sink.flush()
   }
 
+  override suspend fun flushAsync() {
+    check(!closed) { "closed" }
+    if (buffer.size > 0L) {
+      sink.writeAsync(buffer, buffer.size)
+    }
+    sink.flushAsync()
+  }
+
   override fun isOpen() = !closed
 
   override fun close() {
@@ -242,6 +265,31 @@ internal class RealBufferedSink(
 
     try {
       sink.close()
+    } catch (e: Throwable) {
+      if (thrown == null) thrown = e
+    }
+
+    closed = true
+
+    if (thrown != null) throw thrown
+  }
+
+  override suspend fun closeAsync() {
+    if (closed) return
+
+    // Emit buffered data to the underlying sink. If this fails, we still need
+    // to close the sink; otherwise we risk leaking resources.
+    var thrown: Throwable? = null
+    try {
+      if (buffer.size > 0) {
+        sink.writeAsync(buffer, buffer.size)
+      }
+    } catch (e: Throwable) {
+      thrown = e
+    }
+
+    try {
+      sink.closeAsync()
     } catch (e: Throwable) {
       if (thrown == null) thrown = e
     }

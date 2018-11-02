@@ -10,8 +10,21 @@ apply plugin: 'me.champeau.gradle.jmh'
 apply plugin: 'com.vanniktech.maven.publish'
 apply plugin: 'org.jetbrains.dokka'
 
-sourceCompatibility = JavaVersion.VERSION_1_7
-targetCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+compileKotlin {
+  kotlinOptions {
+    jvmTarget = "1.8"
+    freeCompilerArgs = ['-Xjvm-default=enable']
+  }
+}
+compileTestKotlin {
+  kotlinOptions {
+    jvmTarget = "1.8"
+    freeCompilerArgs = ['-Xjvm-default=enable']
+  }
+}
 
 jar {
   manifest {
@@ -51,6 +64,7 @@ dependencies {
   expectedBy project(':okio')
 
   implementation deps.kotlin.stdLib.jdk6
+  implementation deps.kotlinx.coroutinesCore
   compileOnly deps.animalSniffer.annotations
   testImplementation deps.test.junit
   testImplementation deps.test.assertj

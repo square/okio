@@ -15,6 +15,7 @@
  */
 package okio
 
+import kotlinx.coroutines.runBlocking
 import okio.TestUtil.randomSource
 import org.junit.After
 import org.junit.Before
@@ -155,5 +156,15 @@ class ThrottlerTest {
       future.get()
     }
     stopwatch.assertElapsed(1.0)
+  }
+
+  @Test fun asyncSource() = runBlocking {
+    throttler.source(source).buffer().readAllAsync(blackholeSink())
+    stopwatch.assertElapsed(0.25)
+  }
+
+  @Test fun asyncSink() = runBlocking {
+    source.buffer().readAllAsync(throttler.sink(blackholeSink()))
+    stopwatch.assertElapsed(0.25)
   }
 }
