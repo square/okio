@@ -15,6 +15,8 @@
  */
 package okio
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.Closeable
 import java.io.Flushable
 import java.io.IOException
@@ -51,9 +53,23 @@ interface Sink : Closeable, Flushable {
   @Throws(IOException::class)
   fun write(source: Buffer, byteCount: Long)
 
+  /** Non-blocking variant of [write]. Uses the IO dispatcher if blocking is necessary. */
+  @Throws(IOException::class)
+  @JvmDefault
+  suspend fun writeAsync(source: Buffer, byteCount: Long) = withContext(Dispatchers.IO) {
+    write(source, byteCount)
+  }
+
   /** Pushes all buffered bytes to their final destination.  */
   @Throws(IOException::class)
   override fun flush()
+
+  /** Non-blocking variant of [flush]. Uses the IO dispatcher if blocking is necessary. */
+  @Throws(IOException::class)
+  @JvmDefault
+  suspend fun flushAsync() = withContext(Dispatchers.IO) {
+    flush()
+  }
 
   /** Returns the timeout for this sink.  */
   fun timeout(): Timeout
@@ -64,4 +80,11 @@ interface Sink : Closeable, Flushable {
    */
   @Throws(IOException::class)
   override fun close()
+
+  /** Non-blocking variant of [close]. Uses the IO dispatcher if blocking is necessary. */
+  @Throws(IOException::class)
+  @JvmDefault
+  suspend fun closeAsync() = withContext(Dispatchers.IO) {
+    close()
+  }
 }

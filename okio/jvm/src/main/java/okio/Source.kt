@@ -15,6 +15,8 @@
  */
 package okio
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.Closeable
 import java.io.IOException
 
@@ -61,6 +63,13 @@ interface Source : Closeable {
   @Throws(IOException::class)
   fun read(sink: Buffer, byteCount: Long): Long
 
+  /** Non-blocking variant of [read]. Uses the IO dispatcher if blocking is necessary. */
+  @Throws(IOException::class)
+  @JvmDefault
+  suspend fun readAsync(sink: Buffer, byteCount: Long): Long = withContext(Dispatchers.IO) {
+    read(sink, byteCount)
+  }
+
   /** Returns the timeout for this source.  */
   fun timeout(): Timeout
 
@@ -70,4 +79,11 @@ interface Source : Closeable {
    */
   @Throws(IOException::class)
   override fun close()
+
+  /** Non-blocking variant of [close]. Uses the IO dispatcher if blocking is necessary. */
+  @Throws(IOException::class)
+  @JvmDefault
+  suspend fun closeAsync() = withContext(Dispatchers.IO) {
+    close()
+  }
 }

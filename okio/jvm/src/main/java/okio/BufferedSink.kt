@@ -353,6 +353,8 @@ interface BufferedSink : Sink, WritableByteChannel {
   @Throws(IOException::class)
   fun emitCompleteSegments(): BufferedSink
 
+  suspend fun emitCompleteSegmentsAsync(): BufferedSink
+
   /** Returns an output stream that writes to this sink. */
   fun outputStream(): OutputStream
 }

@@ -28,10 +28,15 @@ abstract class ForwardingSource(
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long = delegate.read(sink, byteCount)
 
+  override suspend fun readAsync(sink: Buffer, byteCount: Long) =
+    delegate.readAsync(sink, byteCount)
+
   override fun timeout() = delegate.timeout()
 
   @Throws(IOException::class)
   override fun close() = delegate.close()
+
+  override suspend fun closeAsync() = delegate.closeAsync()
 
   override fun toString() = "${javaClass.simpleName}($delegate)"
 

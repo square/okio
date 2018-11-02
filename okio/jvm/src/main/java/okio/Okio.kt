@@ -19,6 +19,7 @@
 
 package okio
 
+import kotlinx.coroutines.runBlocking
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.io.File
 import java.io.FileNotFoundException
@@ -28,6 +29,9 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
 import java.net.SocketTimeoutException
+import java.nio.ByteBuffer
+import java.nio.channels.SelectionKey
+import java.nio.channels.SocketChannel
 import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.Path
@@ -93,14 +97,14 @@ private class InputStreamSource(
 ) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {
-    if (byteCount == 0L) return 0
-    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+    if (byteCount == 0L) return 0L
+    require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     try {
       timeout.throwIfReached()
       val tail = sink.writableSegment(1)
       val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
       val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
-      if (bytesRead == -1) return -1
+      if (bytesRead == -1) return -1L
       tail.limit += bytesRead
       sink.size += bytesRead
       return bytesRead.toLong()
@@ -123,9 +127,12 @@ fun blackholeSink(): Sink = BlackholeSink()
 
 private class BlackholeSink : Sink {
   override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
+  override suspend fun writeAsync(source: Buffer, byteCount: Long) = write(source, byteCount)
   override fun flush() {}
+  override suspend fun flushAsync() {}
   override fun timeout() = Timeout.NONE
   override fun close() {}
+  override suspend fun closeAsync() {}
 }
 
 /**
@@ -136,8 +143,124 @@ private class BlackholeSink : Sink {
 @Throws(IOException::class)
 fun Socket.sink(): Sink {
   val timeout = SocketAsyncTimeout(this)
-  val sink = OutputStreamSink(getOutputStream(), timeout)
-  return timeout.sink(sink)
+  val sink = SelectableSocketSink(this, timeout)
+  return sink // TODO(jwilson): restore timeouts.
+}
+
+private class SelectableSocketSource(
+  socket: Socket,
+  val timeout: SocketAsyncTimeout
+) : Source {
+  val channel: SocketChannel = socket.channel!!
+
+  override fun read(sink: Buffer, byteCount: Long): Long {
+    return runBlocking {
+      readAsync(sink, byteCount)
+    }
+  }
+
+  override suspend fun readAsync(sink: Buffer, byteCount: Long): Long {
+    return channel.selectAsync(SelectionKey.OP_READ) {
+      channel.read(sink, byteCount)
+    }
+  }
+
+  override fun timeout(): Timeout = timeout
+
+  override fun close() {
+    channel.close() // TODO(jwilson): confirm nonblocking.
+  }
+
+  override suspend fun closeAsync() {
+    channel.close() // TODO(jwilson): confirm nonblocking.
+  }
+}
+
+private class SelectableSocketSink(
+  socket: Socket,
+  val timeout: SocketAsyncTimeout
+) : Sink {
+  val channel: SocketChannel = socket.channel!!
+
+  override fun write(source: Buffer, byteCount: Long) {
+    runBlocking {
+      writeAsync(source, byteCount)
+    }
+  }
+
+  override suspend fun writeAsync(source: Buffer, byteCount: Long) {
+    var byteCount = byteCount
+    while (byteCount > 0) {
+      byteCount = channel.selectAsync(SelectionKey.OP_WRITE) {
+        channel.write(source, byteCount)
+      }
+    }
+  }
+
+  override fun flush() {
+    // Do nothing. No buffering beneath this layer.
+  }
+
+  override suspend fun flushAsync() {
+    // Do nothing. No buffering beneath this layer.
+  }
+
+  override fun timeout(): Timeout = timeout
+
+  override fun close() {
+    channel.close() // TODO(jwilson): confirm nonblocking.
+  }
+
+  override suspend fun closeAsync() {
+    channel.close() // TODO(jwilson): confirm nonblocking.
+  }
+}
+
+/**
+ * Writes up to `byteCount` bytes to this socket channel from `source`. Returns 0 if all requested
+ * data was written; otherwise the number of bytes still to be written.
+ */
+private fun SocketChannel.write(source: Buffer, byteCount: Long): Long {
+  checkOffsetAndCount(source.size, 0, byteCount)
+  var remaining = byteCount
+  while (remaining > 0) {
+    val head = source.head!!
+    val toCopy = minOf(byteCount, head.limit - head.pos).toInt()
+    val bytesWritten = write(ByteBuffer.wrap(head.data, head.pos, toCopy))
+
+    if (bytesWritten == 0) break
+
+    head.pos += bytesWritten
+    remaining -= bytesWritten
+    source.size -= bytesWritten
+
+    if (head.pos == head.limit) {
+      source.head = head.pop()
+      SegmentPool.recycle(head)
+    }
+  }
+  return remaining
+}
+
+/**
+ * Writes up to `byteCount` bytes from this socket channel to `sink`. Returns the number of bytes
+ * that were read. Returns -1L if no bytes were read.
+ */
+private fun SocketChannel.read(sink: Buffer, byteCount: Long): Long {
+  if (byteCount == 0L) return 0L
+  require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
+  try {
+    val tail = sink.writableSegment(1)
+    val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
+    val bytesRead = read(ByteBuffer.wrap(tail.data, tail.limit, maxToCopy))
+    if (bytesRead == -1) return -1L
+    tail.limit += bytesRead
+    sink.size += bytesRead
+    return bytesRead.toLong()
+  } catch (e: AssertionError) {
+    if (e.isAndroidGetsocknameError) throw IOException(e)
+    throw e
+  }
 }
 
 /**
@@ -148,8 +271,8 @@ fun Socket.sink(): Sink {
 @Throws(IOException::class)
 fun Socket.source(): Source {
   val timeout = SocketAsyncTimeout(this)
-  val source = InputStreamSource(getInputStream(), timeout)
-  return timeout.source(source)
+  val source = SelectableSocketSource(this, timeout)
+  return source // TODO(jwilson): restore timeouts.
 }
 
 private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
