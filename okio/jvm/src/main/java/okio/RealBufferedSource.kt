@@ -34,24 +34,25 @@ internal class RealBufferedSource(
   override fun buffer() = bufferField
 
   override fun read(sink: Buffer, byteCount: Long): Long {
-    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
-    check(!closed) { "closed" }
-
-    if (buffer.size == 0L) {
-      val read = source.read(buffer, Segment.SIZE.toLong())
-      if (read == -1L) return -1L
-    }
-
-    val toRead = minOf(byteCount, buffer.size)
-    return buffer.read(sink, toRead)
+    return readMaybeAsync(sink, byteCount, Source::read)
   }
 
   override suspend fun readAsync(sink: Buffer, byteCount: Long): Long {
+    // Can't use a suspend function reference here apparently.
+    return readMaybeAsync(sink, byteCount) { a, b -> readAsync(a, b) }
+  }
+
+  // Inline function can take suspending lambdas if called from a suspend function.
+  private inline fun readMaybeAsync(
+    sink: Buffer,
+    byteCount: Long,
+    readFromSource: Source.(Buffer, Long) -> Long
+  ): Long {
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
 
     if (buffer.size == 0L) {
-      val read = source.readAsync(buffer, Segment.SIZE.toLong())
+      val read = source.readFromSource(buffer, Segment.SIZE.toLong())
       if (read == -1L) return -1L
     }
 
