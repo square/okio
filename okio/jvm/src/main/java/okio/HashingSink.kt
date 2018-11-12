@@ -79,6 +79,28 @@ class HashingSink : ForwardingSink {
     super.write(source, byteCount)
   }
 
+  @Throws(IOException::class)
+  override suspend fun writeAsync(source: Buffer, byteCount: Long) {
+    checkOffsetAndCount(source.size, 0, byteCount)
+
+    // Hash byteCount bytes from the prefix of source.
+    var hashedCount = 0L
+    var s = source.head!!
+    while (hashedCount < byteCount) {
+      val toHash = minOf(byteCount - hashedCount, s.limit - s.pos).toInt()
+      if (messageDigest != null) {
+        messageDigest.update(s.data, s.pos, toHash)
+      } else {
+        mac!!.update(s.data, s.pos, toHash)
+      }
+      hashedCount += toHash
+      s = s.next!!
+    }
+
+    // Write those bytes to the sink.
+    super.writeAsync(source, byteCount)
+  }
+
   /**
    * Returns the hash of the bytes accepted thus far and resets the internal state of this sink.
    *

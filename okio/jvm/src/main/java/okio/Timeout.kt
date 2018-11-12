@@ -15,9 +15,17 @@
  */
 package okio
 
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.ContinuationInterceptor
 
 /**
  * A policy on how much time to spend on a task before giving up. When a task times out, it is left
@@ -193,6 +201,57 @@ open class Timeout {
     } catch (e: InterruptedException) {
       Thread.currentThread().interrupt() // Retain interrupted status.
       throw InterruptedIOException("interrupted")
+    }
+  }
+
+  /**
+   * Cancels `continuation` if the timeout or deadline is reached before it is resumed.
+   *
+   * Cancelation is scheduled using the dispatcher from `continuation`'s context, if there is one.
+   * It would be much more efficient to just pull the Delay out of the context and ask it directly
+   * to schedule the cancelation, however all that machinery is internal to the coroutines library.
+   *
+   * The timeout/deadline calculation was just copied from [waitUntilNotified], it could use some
+   * DRYing up.
+   */
+  @Suppress("EXPERIMENTAL_API_USAGE")
+  internal fun cancelAfterTimeoutOrDeadline(continuation: CancellableContinuation<*>) {
+    val hasDeadline = hasDeadline()
+    val timeoutNanos = timeoutNanos()
+
+    if (!hasDeadline && timeoutNanos == 0L) {
+      // There is no timeout, never cancel.
+      return
+    }
+
+    // Compute how long we'll wait.
+    val start = System.nanoTime()
+    val waitNanos = if (hasDeadline && timeoutNanos != 0L) {
+      val deadlineNanos = deadlineNanoTime() - start
+      minOf(timeoutNanos, deadlineNanos)
+    } else if (hasDeadline) {
+      deadlineNanoTime() - start
+    } else {
+      timeoutNanos
+    }
+
+    val dispatcher = continuation.context[ContinuationInterceptor] ?: Dispatchers.Default
+
+    if (waitNanos > 0L) {
+      val waitMillis = waitNanos / 1000000L
+      // Start immediately on the current thread so the timeout calculation happens ASAP.
+      GlobalScope.launch(dispatcher, UNDISPATCHED) {
+        select<Unit> {
+          // Attempt to wait that long.
+          onTimeout(waitMillis) { continuation.cancel(InterruptedIOException("timeout")) }
+
+          // If the continuation has a Job, abort cancelation if the job is canceled before
+          // timeout.
+          continuation.context[Job]?.apply {
+            onJoin {}
+          }
+        }
+      }
     }
   }
 
