@@ -64,6 +64,20 @@ Sources and sinks interoperate with `InputStream` and `OutputStream`. You can
 view any `Source` as an `InputStream`, and you can view any `InputStream` as a
 `Source`. Similarly for `Sink` and `OutputStream`.
 
+
+Presentations
+-------------
+
+[A Few “Ok” Libraries][ok_libraries_talk] ([slides][ok_libraries_slides]): An introduction to Okio
+and three libraries written with it.
+
+[Decoding the Secrets of Binary Data][encoding_talk] ([slides][encoding_slides]): How data encoding
+works and how Okio does it.
+
+[Ok Multiplatform!][ok_multiplatform_talk] ([slides][ok_multiplatform_slides]): How we changed
+Okio’s implementation language from Java to Kotlin.
+
+
 Recipes
 -------
 
@@ -525,6 +539,101 @@ and ints:
 
 Java has no primitive type that can represent unsigned longs.
 
+
+### [Hashing](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/Hashing.java)
+
+We’re bombarded by hashing in our lives as Java programmers. Early on we're introduced to the
+`hashCode()` method, something we know we need to override otherwise unforeseen bad things happen.
+Later we’re shown `LinkedHashMap` and its friends. These build on that `hashCode()` method to
+organize data for fast retrieval.
+
+Elsewhere we have cryptographic hash functions. These get used all over the place. HTTPS
+certificates, Git commits, BitTorrent integrity checking, and Blockchain blocks all use
+cryptographic hashes. Good use of hashes can improve the performance, privacy, security, and
+simplicity of an application.
+
+Each cryptographic hash function accepts a variable-length stream of input bytes and produces a
+fixed-length byte string value called the “hash”. Hash functions have these important qualities:
+
+ * Deterministic: each input always produces the same output.
+ * Uniform: each output byte string is equally likely. It is very difficult to find or create pairs
+   of different inputs that yield the same output. This is called a “collision”.
+ * Non-reversible: knowing an output doesn't help you to find the input. Note that if you know some
+   possible inputs you can hash them to see if their hashes match.
+ * Well-known: the hash is implemented everywhere and rigorously understood.
+
+Good hash functions are very cheap to compute (dozens of microseconds) and expensive to reverse
+(quintillions of millenia). Steady advances in computing and mathematics have caused once-great hash
+functions to become inexpensive to reverse. When choosing a hash function, beware that not all are
+created equal! Okio supports these well-known cryptographic hash functions:
+
+ * **MD5**: a 128-bit (16 byte) cryptographic hash. It is both insecure and obsolete because it is
+   inexpensive to reverse! This hash is offered because it is popular and convenient for use in
+   legacy systems that are not security-sensitive.
+ * **SHA-1**: a 160-bit (20 byte) cryptographic hash. It was recently demonstrated that it is
+   feasible to create SHA-1 collisions. Consider upgrading from SHA-1 to SHA-256.
+ * **SHA-256**: a 256-bit (32 byte) cryptographic hash. SHA-256 is widely understood and expensive
+   to reverse. This is the hash most systems should use.
+ * **SHA-512**: a 512-bit (64 byte) cryptographic hash. It is expensive to reverse.
+
+Each hash creates a `ByteString` of the specified length. Use `hex()` to get the conventional
+human-readable form. Or leave it as a `ByteString` because that’s a convenient model type!
+
+Okio can produce cryptographic hashes from byte strings:
+
+```
+ByteString byteString = readByteString(new File("README.md"));
+System.out.println("   md5: " + byteString.md5().hex());
+System.out.println("  sha1: " + byteString.sha1().hex());
+System.out.println("sha256: " + byteString.sha256().hex());
+System.out.println("sha512: " + byteString.sha512().hex());
+```
+
+From buffers:
+
+```
+Buffer buffer = readBuffer(new File("README.md"));
+System.out.println("   md5: " + buffer.md5().hex());
+System.out.println("  sha1: " + buffer.sha1().hex());
+System.out.println("sha256: " + buffer.sha256().hex());
+System.out.println("sha512: " + buffer.sha512().hex());
+```
+
+While streaming from a source:
+
+```
+try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
+     BufferedSource source = Okio.buffer(Okio.source(file))) {
+  source.readAll(hashingSink);
+  System.out.println("sha256: " + hashingSink.hash().hex());
+}
+```
+
+While streaming to a sink:
+
+```
+try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
+     BufferedSink sink = Okio.buffer(hashingSink);
+     Source source = Okio.source(file)) {
+  sink.writeAll(source);
+  sink.close(); // Emit anything buffered.
+  System.out.println("sha256: " + hashingSink.hash().hex());
+}
+```
+
+Okio also supports HMAC (Hash Message Authentication Code) which combines a secret and a hash.
+Applications use HMAC for data integrity and authentication.
+
+```
+ByteString secret = ByteString.decodeHex("7065616e7574627574746572");
+System.out.println("hmacSha256: " + byteString.hmacSha256(secret).hex());
+```
+
+As with hashing, you can generate an HMAC from a `ByteString`, `Buffer`, `HashingSource`, and
+`HashingSink`. Note that Okio doesn’t implement HMAC for MD5. Okio uses Java’s
+`java.security.MessageDigest` for cryptographic hashes and `javax.crypto.Mac` for HMAC.
+
+
 Download
 --------
 
@@ -580,3 +689,9 @@ License
  [base64]: https://tools.ietf.org/html/rfc4648#section-4
  [bmp]: https://en.wikipedia.org/wiki/BMP_file_format
  [socks]: https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/SocksProxyServer.java
+ [ok_libraries_talk]: https://www.youtube.com/watch?v=WvyScM_S88c
+ [ok_libraries_slides]: https://speakerdeck.com/jakewharton/a-few-ok-libraries-droidcon-mtl-2015
+ [encoding_talk]: https://www.youtube.com/watch?v=T_p22jMZSrk&t=2345s
+ [encoding_slides]: https://speakerdeck.com/swankjesse/decoding-the-secrets-of-binary-data-droidcon-nyc-2016
+ [ok_multiplatform_talk]: https://www.youtube.com/watch?v=Q8B4eDirgk0
+ [ok_multiplatform_slides]: https://speakerdeck.com/swankjesse/ok-multiplatform
