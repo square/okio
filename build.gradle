@@ -3,7 +3,7 @@ buildscript {
       'kotlin': '1.2.60',
       'kotlinNative': '0.8.2',
       'jmhPlugin': '0.4.5',
-      'animalSnifferPlugin': '1.4.3',
+      'animalSnifferPlugin': '1.4.6',
       'dokka': '0.9.16',
       'jmh': '1.20',
       'animalSniffer': '1.16',
