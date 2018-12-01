@@ -1895,18 +1895,18 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    *
    * // [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
    * //              ^                                  ^
-   * //           start = 0                         end = 5000
+   * //           start = 2                         end = 5000
    *
    * nana2 = nana.clone()
    * nana2.writeUtf8("batman")
    *
    * // [ 'n', 'a', 'n', 'a', ..., 'n', 'a', 'n', 'a', '?', '?', '?', ...]
    * //              ^                                  ^
-   * //           start = 0                         end = 5000
+   * //           start = 2                         end = 5000
    * //
    * // [ 'b', 'a', 't', 'm', 'a', 'n', '?', '?', '?', ...]
    * //    ^                             ^
-   * //  start = 0                    end = 7
+   * //  start = 0                    end = 6
    * ```
    *
    * Segments are not shared when the shared region is small (ie. less than 1 KiB). This is intended
@@ -1945,7 +1945,7 @@ class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * }
    * ```
    *
-   * Change the capacity of a buffer with [.resizeBuffer]. This is only permitted for
+   * Change the capacity of a buffer with [resizeBuffer]. This is only permitted for
    * read+write cursors. The buffer's size always changes from the end: shrinking it removes bytes
    * from the end; growing it adds capacity to the end.
    *
