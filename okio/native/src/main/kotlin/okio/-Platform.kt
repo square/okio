@@ -57,3 +57,5 @@ internal actual fun ByteArray.toUtf8String(): String = stringFromUtf8()
 internal actual fun String.asUtf8ToByteArray(): ByteArray = commonAsUtf8ToByteArray()
 
 actual typealias ArrayIndexOutOfBoundsException = kotlin.ArrayIndexOutOfBoundsException
+
+internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R = block()

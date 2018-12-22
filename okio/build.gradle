@@ -1,7 +1,69 @@
-apply plugin: 'org.jetbrains.kotlin.platform.common'
+apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
-dependencies {
-  implementation deps.kotlin.stdLib.common
-  testImplementation deps.kotlin.test.common
-  testImplementation deps.kotlin.test.annotations
+kotlin {
+  targets {
+    fromPreset(presets.jvm, 'jvm')
+    fromPreset(presets.js, 'js')
+    fromPreset(presets.iosX64, 'iosX64')
+    fromPreset(presets.iosArm64, 'iosArm64')
+  }
+  sourceSets {
+    commonMain {
+      kotlin.srcDir('src/main/kotlin')
+      dependencies {
+        implementation deps.kotlin.stdLib.common
+      }
+    }
+    commonTest {
+      kotlin.srcDir('src/test/kotlin')
+      dependencies {
+        implementation deps.kotlin.test.common
+        implementation deps.kotlin.test.annotations
+      }
+    }
+    jvmMain {
+      kotlin.srcDir('jvm/src/main/java')
+      dependsOn commonMain
+      dependencies {
+        implementation deps.kotlin.stdLib.jdk6
+        compileOnly deps.animalSniffer.annotations
+      }
+    }
+    jvmTest {
+      kotlin.srcDir('jvm/src/test/java')
+      dependsOn commonTest
+      dependencies {
+        implementation deps.test.junit
+        implementation deps.test.assertj
+        implementation deps.kotlin.test.jdk
+      }
+    }
+    jsMain {
+      kotlin.srcDir('js/src/main/kotlin')
+      dependsOn commonMain
+      dependencies {
+        implementation deps.kotlin.stdLib.js
+      }
+    }
+    jsTest {
+      dependsOn commonTest
+      dependencies {
+        implementation deps.kotlin.test.js
+      }
+    }
+    iosX64Main {
+      kotlin.srcDir('native/src/main/kotlin')
+      dependsOn commonMain
+    }
+    iosX64Test {
+      dependsOn commonTest
+    }
+    iosArm64Main {
+      kotlin.srcDir('native/src/main/kotlin')
+      dependsOn commonMain
+    }
+    iosArm64Test {
+      dependsOn commonTest
+    }
+  }
 }
