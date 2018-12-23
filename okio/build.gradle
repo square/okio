@@ -3,7 +3,13 @@ apply plugin: 'org.jetbrains.kotlin.multiplatform'
 kotlin {
   targets {
     fromPreset(presets.jvm, 'jvm')
-    fromPreset(presets.js, 'js')
+    fromPreset(presets.js, 'js') {
+      configure([compilations.main, compilations.test]) {
+        tasks.getByName(compileKotlinTaskName).kotlinOptions {
+          moduleKind = "commonjs"
+        }
+      }
+    }
     fromPreset(presets.iosX64, 'iosX64')
     fromPreset(presets.iosArm64, 'iosArm64')
   }
@@ -66,3 +72,5 @@ kotlin {
     compilations.test.source(sourceSets.nativeTest)
   }
 }
+
+apply from: 'js/build.gradle'
