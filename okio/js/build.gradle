@@ -14,28 +14,7 @@
  * limitations under the License.
  */
 
-apply plugin: 'org.jetbrains.kotlin.platform.js'
 apply plugin: 'com.moowork.node'
-
-dependencies {
-  expectedBy project(':okio')
-
-  implementation deps.kotlin.stdLib.js
-  testImplementation deps.kotlin.test.js
-}
-
-task populateNodeModules(type: Copy, dependsOn: compileKotlin2Js) {
-  from compileKotlin2Js.destinationDir
-  configurations.testCompileClasspath.each {
-    from zipTree(it.absolutePath).matching { include '*.js' }
-  }
-
-  into "${buildDir}/node_modules"
-}
-
-[compileKotlin2Js, compileTestKotlin2Js]*.configure {
-  kotlinOptions.moduleKind = "commonjs"
-}
 
 node {
   download = true
@@ -45,9 +24,33 @@ task installMocha(type: NpmTask) {
   args = ['install', 'mocha']
 }
 
-task runMocha(type: NodeTask, dependsOn: [compileTestKotlin2Js, populateNodeModules, installMocha]) {
-  script = file('node_modules/mocha/bin/mocha')
-  args = [compileTestKotlin2Js.outputFile]
-}
+kotlin.targets.matching { it.platformType.name == 'js' }.all { target ->
+  def testCompilation = target.compilations["test"]
+  def mainCompilation = target.compilations["main"]
+  def targetName = target.name
 
-test.dependsOn runMocha
+  def testCompilationTask = tasks[testCompilation.compileKotlinTaskName]
+  def mainCompilationTask = tasks[mainCompilation.compileKotlinTaskName]
+
+  def populateNodeModules = task populateNodeModules(type: Copy, dependsOn: mainCompilationTask) {
+    from mainCompilationTask.destinationDir
+    into "$node.nodeModulesDir/node_modules"
+
+    def configuration = testCompilation.runtimeDependencyFiles
+    from(files {
+      configuration.collect { File file ->
+        file.name.endsWith(".jar") ?
+                zipTree(file.absolutePath).matching {
+                  include '*.js'
+                } :
+                files()
+      }
+    }.builtBy(configuration))
+  }
+
+  task runMocha(type: NodeTask, dependsOn: [testCompilationTask, populateNodeModules, installMocha]) {
+    script = file("$node.nodeModulesDir/node_modules/mocha/bin/mocha")
+    args = [testCompilationTask.outputFile]
+  }
+  tasks["${targetName}Test"].dependsOn runMocha
+}
