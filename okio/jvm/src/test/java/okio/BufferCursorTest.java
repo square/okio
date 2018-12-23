@@ -15,10 +15,8 @@
  */
 package okio;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -27,8 +25,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import static okio.Buffer.UnsafeCursor;
 import static okio.TestUtil.SEGMENT_SIZE;
-import static okio.TestUtil.bufferWithRandomSegmentLayout;
-import static okio.TestUtil.bufferWithSegments;
 import static okio.TestUtil.deepCopy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -40,47 +36,6 @@ import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public final class BufferCursorTest {
-  public enum BufferFactory {
-    EMPTY {
-      @Override Buffer newBuffer() {
-        return new Buffer();
-      }
-    },
-
-    SMALL_BUFFER {
-      @Override Buffer newBuffer() {
-        return new Buffer().writeUtf8("abcde");
-      }
-    },
-
-    SMALL_SEGMENTED_BUFFER {
-      @Override Buffer newBuffer() throws Exception {
-        return bufferWithSegments("abc", "defg", "hijkl");
-      }
-    },
-
-    LARGE_BUFFER {
-      @Override Buffer newBuffer() throws Exception {
-        Random dice = new Random(0);
-        byte[] largeByteArray = new byte[512 * 1024];
-        dice.nextBytes(largeByteArray);
-
-        return new Buffer().write(largeByteArray);
-      }
-    },
-
-    LARGE_BUFFER_WITH_RANDOM_LAYOUT {
-      @Override Buffer newBuffer() throws Exception {
-        Random dice = new Random(0);
-        byte[] largeByteArray = new byte[512 * 1024];
-        dice.nextBytes(largeByteArray);
-
-        return bufferWithRandomSegmentLayout(dice, largeByteArray);
-      }
-    };
-
-    abstract Buffer newBuffer() throws Exception;
-  }
 
   @Parameters(name = "{0}")
   public static List<Object[]> parameters() throws Exception {
