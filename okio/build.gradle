@@ -46,24 +46,23 @@ kotlin {
       }
     }
     jsTest {
+      kotlin.srcDir('js/src/test/kotlin')
       dependsOn commonTest
       dependencies {
         implementation deps.kotlin.test.js
       }
     }
-    iosX64Main {
+    nativeMain {
       kotlin.srcDir('native/src/main/kotlin')
       dependsOn commonMain
     }
-    iosX64Test {
+    nativeTest {
+      kotlin.srcDir('native/src/test/kotlin')
       dependsOn commonTest
     }
-    iosArm64Main {
-      kotlin.srcDir('native/src/main/kotlin')
-      dependsOn commonMain
-    }
-    iosArm64Test {
-      dependsOn commonTest
-    }
+  }
+  configure([targets.iosX64, targets.iosArm64]) {
+    compilations.main.source(sourceSets.nativeMain)
+    compilations.test.source(sourceSets.nativeTest)
   }
 }
