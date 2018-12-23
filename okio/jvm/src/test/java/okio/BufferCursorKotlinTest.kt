@@ -24,7 +24,6 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameter
 import org.junit.runners.Parameterized.Parameters
 import java.util.Arrays
-import kotlin.test.Ignore
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
@@ -32,15 +31,16 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 @RunWith(Parameterized::class)
-@Ignore("Won't run with Kotlin Gradle MPP 1.3")
 class BufferCursorKotlinTest {
   companion object {
     @Parameters(name = "{0}")
     @JvmStatic
-    fun parameters() = BufferCursorTest.parameters()
+    fun parameters(): List<Array<out Any?>> {
+      return BufferFactory.values().map { arrayOf(it) }
+    }
   }
 
-  @Parameter lateinit var bufferFactory: BufferCursorTest.BufferFactory
+  @Parameter lateinit var bufferFactory: BufferFactory
 
   @Test fun acquireReadOnlyDoesNotCopySharedDataArray() {
     val buffer = deepCopy(bufferFactory.newBuffer())
