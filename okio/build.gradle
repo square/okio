@@ -10,8 +10,12 @@ kotlin {
         }
       }
     }
-    fromPreset(presets.iosX64, 'iosX64')
-    fromPreset(presets.iosArm64, 'iosArm64')
+    fromPreset(presets.iosX64, 'iosX64') {
+      compilations.main.outputKinds 'framework'
+    }
+    fromPreset(presets.iosArm64, 'iosArm64') {
+      compilations.main.outputKinds 'framework'
+    }
   }
   sourceSets {
     commonMain {
