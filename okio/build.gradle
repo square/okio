@@ -22,6 +22,7 @@ kotlin {
     fromPreset(presets.linuxX64, 'linuxX64')
     fromPreset(presets.macosX64, 'macosX64')
     fromPreset(presets.mingwX64, 'winX64')
+    fromPreset(presets.mingwX64, 'mingwX64')
   }
   sourceSets {
     commonMain {
@@ -77,7 +78,7 @@ kotlin {
       dependsOn commonTest
     }
   }
-  configure([targets.iosX64, targets.iosArm64, targets.linuxX64, targets.macosX64, targets.winX64]) {
+  configure([targets.iosX64, targets.iosArm64, targets.linuxX64, targets.macosX64, targets.winX64, targets.mingwX64]) {
     compilations.main.source(sourceSets.nativeMain)
     compilations.test.source(sourceSets.nativeTest)
   }
