@@ -48,5 +48,5 @@ enum class BufferFactory {
   };
 
   @Throws(Exception::class)
-  internal abstract fun newBuffer(): Buffer
+  abstract fun newBuffer(): Buffer
 }
