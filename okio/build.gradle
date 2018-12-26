@@ -2,7 +2,9 @@ apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
 kotlin {
   targets {
-    fromPreset(presets.jvm, 'jvm')
+    fromPreset(presets.jvmWithJava, 'jvm') {
+      project.sourceSets.test.java.srcDir('jvm/src/test/java')
+    }
     fromPreset(presets.js, 'js') {
       configure([compilations.main, compilations.test]) {
         tasks.getByName(compileKotlinTaskName).kotlinOptions {

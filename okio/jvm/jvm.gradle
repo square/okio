@@ -5,9 +5,7 @@ kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
   target.project.sourceCompatibility = JavaVersion.VERSION_1_7
   target.project.targetCompatibility = JavaVersion.VERSION_1_7
 
-  def targetName = target.name
-  def jar = tasks["${targetName}Jar"]
-  jar.configure {
+  tasks['jar'].configure {
     manifest {
       attributes('Automatic-Module-Name': 'okio')
     }
