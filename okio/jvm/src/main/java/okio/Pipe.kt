@@ -37,6 +37,7 @@ class Pipe(internal val maxBufferSize: Long) {
   internal val buffer = Buffer()
   internal var sinkClosed = false
   internal var sourceClosed = false
+  internal var foldedSink: Sink? = null
 
   init {
     require(maxBufferSize >= 1L) { "maxBufferSize < 1: $maxBufferSize" }
@@ -48,10 +49,16 @@ class Pipe(internal val maxBufferSize: Long) {
 
     override fun write(source: Buffer, byteCount: Long) {
       var byteCount = byteCount
+      var delegate: Sink? = null
       synchronized(buffer) {
         check(!sinkClosed) { "closed" }
 
         while (byteCount > 0) {
+          foldedSink?.let {
+            delegate = it
+            return@synchronized
+          }
+
           if (sourceClosed) throw IOException("source is closed")
 
           val bufferSpaceAvailable = maxBufferSize - buffer.size
@@ -66,22 +73,44 @@ class Pipe(internal val maxBufferSize: Long) {
           (buffer as Object).notifyAll() // Notify the source that it can resume reading.
         }
       }
+
+      delegate?.forward { write(source, byteCount) }
     }
 
     override fun flush() {
+      var delegate: Sink? = null
       synchronized(buffer) {
         check(!sinkClosed) { "closed" }
-        if (sourceClosed && buffer.size > 0L) throw IOException("source is closed")
+
+        foldedSink?.let {
+          delegate = it
+          return@synchronized
+        }
+
+        if (sourceClosed && buffer.size > 0L) {
+          throw IOException("source is closed")
+        }
       }
+
+      delegate?.forward { flush() }
     }
 
     override fun close() {
+      var delegate: Sink? = null
       synchronized(buffer) {
         if (sinkClosed) return
+
+        foldedSink?.let {
+          delegate = it
+          return@synchronized
+        }
+
         if (sourceClosed && buffer.size > 0L) throw IOException("source is closed")
         sinkClosed = true
         (buffer as Object).notifyAll() // Notify the source that no more bytes are coming.
       }
+
+      delegate?.forward { close() }
     }
 
     override fun timeout(): Timeout = timeout
@@ -114,6 +143,53 @@ class Pipe(internal val maxBufferSize: Long) {
     }
 
     override fun timeout(): Timeout = timeout
+  }
+
+  /**
+   * Writes any buffered contents of this pipe to `sink`, then replace this pipe's source with
+   * `sink`. This pipe's source is closed and attempts to read it will throw an
+   * [IllegalStateException].
+   *
+   * This method must not be called while concurrently accessing this pipe's source. It is safe,
+   * however, to call this while concurrently writing this pipe's sink.
+   */
+  @Throws(IOException::class)
+  fun fold(sink: Sink) {
+    while (true) {
+      // Either the buffer is empty and we can swap and return. Or the buffer is non-empty and we
+      // must copy it to sink without holding any locks, then try it all again.
+      val sinkBuffer: Buffer = synchronized(buffer) {
+        check(foldedSink == null) { "sink already folded" }
+
+        if (buffer.exhausted()) {
+          sourceClosed = true
+          foldedSink = sink
+          return@fold
+        }
+
+        val sinkBuffer = Buffer()
+        sinkBuffer.write(buffer, buffer.size)
+        (buffer as Object).notifyAll() // Notify the sink that it can resume writing.
+        return@synchronized sinkBuffer
+      }
+
+      var success = false
+      try {
+        sink.write(sinkBuffer, sinkBuffer.size)
+        success = true
+      } finally {
+        if (!success) {
+          synchronized(buffer) {
+            sourceClosed = true
+            (buffer as Object).notifyAll() // Notify the sink that it can resume writing.
+          }
+        }
+      }
+    }
+  }
+
+  private inline fun Sink.forward(block: Sink.() -> Unit) {
+    this.timeout().intersectWith(this@Pipe.sink.timeout()) { this.block() }
   }
 
   @JvmName("-deprecated_sink")

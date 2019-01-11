@@ -196,6 +196,42 @@ open class Timeout {
     }
   }
 
+  /**
+   * Applies the minimum intersection between this timeout and `other`, run `block`, then finally
+   * rollback this timeout's values.
+   */
+  inline fun intersectWith(other: Timeout, block: () -> Unit) {
+    val originalTimeout = this.timeoutNanos()
+    this.timeout(minTimeout(other.timeoutNanos(), this.timeoutNanos()), TimeUnit.NANOSECONDS)
+
+    if (this.hasDeadline()) {
+      val originalDeadline = this.deadlineNanoTime()
+      if (other.hasDeadline()) {
+        this.deadlineNanoTime(Math.min(this.deadlineNanoTime(), other.deadlineNanoTime()))
+      }
+      try {
+        block()
+      } finally {
+        this.timeout(originalTimeout, TimeUnit.NANOSECONDS)
+        if (other.hasDeadline()) {
+          this.deadlineNanoTime(originalDeadline)
+        }
+      }
+    } else {
+      if (other.hasDeadline()) {
+        this.deadlineNanoTime(other.deadlineNanoTime())
+      }
+      try {
+        block()
+      } finally {
+        this.timeout(originalTimeout, TimeUnit.NANOSECONDS)
+        if (other.hasDeadline()) {
+          this.clearDeadline()
+        }
+      }
+    }
+  }
+
   companion object {
     /**
      * An empty timeout that neither tracks nor detects timeouts. Use this when timeouts aren't
@@ -207,6 +243,13 @@ open class Timeout {
       override fun deadlineNanoTime(deadlineNanoTime: Long): Timeout = this
 
       override fun throwIfReached() {}
+    }
+
+    fun minTimeout(aNanos: Long, bNanos: Long) = when {
+      aNanos == 0L -> bNanos
+      bNanos == 0L -> aNanos
+      aNanos < bNanos -> aNanos
+      else -> bNanos
     }
   }
 }
