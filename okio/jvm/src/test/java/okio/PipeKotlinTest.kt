@@ -21,6 +21,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.io.IOException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -509,8 +510,50 @@ class PipeKotlinTest {
     assertEquals(underlyingOriginalDeadline, underlying.timeout().deadlineNanoTime())
   }
 
-  @Test fun folderingTwiceThrows() {
-    // TODO(oldergod)
+  @Test fun foldingTwiceThrows() {
+    val pipe = Pipe(128)
+    pipe.fold(Buffer())
+    assertFailsWith<IllegalStateException> {
+      pipe.fold(Buffer())
+    }
+  }
+
+  @Test fun sinkWriteThrowsIOExceptionUnblockBlockedWriter() {
+    val pipe = Pipe(4)
+
+    val foldFuture = executorService.schedule({
+      val foldFailure = assertFailsWith<IOException> {
+        pipe.fold(object : ForwardingSink(blackholeSink()) {
+          override fun write(source: Buffer, byteCount: Long) {
+            throw IOException("boom")
+          }
+        })
+      }
+      assertEquals("boom", foldFailure.message)
+    }, 500, TimeUnit.MILLISECONDS)
+
+    val writeFailure = assertFailsWith<IOException> {
+      val pipeSink = pipe.sink.buffer()
+      pipeSink.writeUtf8("abcdefghij")
+      pipeSink.emit() // Block writing 10 bytes to a 4 byte pipe.
+    }
+    assertEquals("source is closed", writeFailure.message)
+
+    foldFuture.get() // Confirm no unexpected exceptions.
+  }
+
+  @Test fun foldHoldsNoLocksWhenForwardingWrites() {
+    val pipe = Pipe(4)
+
+    val pipeSink = pipe.sink.buffer()
+    pipeSink.writeUtf8("abcd")
+    pipeSink.emit()
+
+    pipe.fold(object : ForwardingSink(blackholeSink()) {
+      override fun write(source: Buffer, byteCount: Long) {
+        assertFalse(Thread.holdsLock(pipe.buffer))
+      }
+    })
   }
 
   private fun assertDuration(expected: Long, block: () -> Unit) {
