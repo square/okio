@@ -17,7 +17,6 @@ package okio;
 
 import java.io.IOException;
 import javax.annotation.Nullable;
-import okio.Timeout.TimeoutFolder;
 
 /**
  * A source and a sink that are attached. The sink's output is the source's input. Typically each
@@ -43,7 +42,6 @@ public final class Pipe {
   private final Sink sink = new PipeSink();
   private final Source source = new PipeSource();
   private @Nullable Sink foldedSink;
-  private @Nullable TimeoutFolder timeoutFolder;
 
   public Pipe(long maxBufferSize) {
     if (maxBufferSize < 1L) {
@@ -70,14 +68,13 @@ public final class Pipe {
    */
   void fold(Sink sink) throws IOException {
     while (true) {
-      Buffer sinkBuffer = null;
+      Buffer sinkBuffer;
       synchronized (buffer) {
         if (foldedSink != null) throw new IllegalStateException("sink already folded");
 
         if (buffer.exhausted()) {
           sourceClosed = true;
           foldedSink = sink;
-          timeoutFolder = new TimeoutFolder(sink.timeout());
           return;
         }
 
@@ -102,39 +99,40 @@ public final class Pipe {
   }
 
   final class PipeSink implements Sink {
-    final Timeout timeout = new Timeout();
+    final PushableTimeout timeout = new PushableTimeout();
 
     @Override public void write(Buffer source, long byteCount) throws IOException {
       Sink delegate = null;
       synchronized (buffer) {
         if (sinkClosed) throw new IllegalStateException("closed");
 
-        while (byteCount > 0 && delegate == null) {
+        while (byteCount > 0) {
           if (foldedSink != null) {
             delegate = foldedSink;
-          } else {
-            if (sourceClosed) throw new IOException("source is closed");
-
-            long bufferSpaceAvailable = maxBufferSize - buffer.size();
-            if (bufferSpaceAvailable == 0) {
-              timeout.waitUntilNotified(buffer); // Wait until the source drains the buffer.
-              continue;
-            }
-
-            long bytesToWrite = Math.min(bufferSpaceAvailable, byteCount);
-            buffer.write(source, bytesToWrite);
-            byteCount -= bytesToWrite;
-            buffer.notifyAll(); // Notify the source that it can resume reading.
+            break;
           }
+
+          if (sourceClosed) throw new IOException("source is closed");
+
+          long bufferSpaceAvailable = maxBufferSize - buffer.size();
+          if (bufferSpaceAvailable == 0) {
+            timeout.waitUntilNotified(buffer); // Wait until the source drains the buffer.
+            continue;
+          }
+
+          long bytesToWrite = Math.min(bufferSpaceAvailable, byteCount);
+          buffer.write(source, bytesToWrite);
+          byteCount -= bytesToWrite;
+          buffer.notifyAll(); // Notify the source that it can resume reading.
         }
       }
 
       if (delegate != null) {
-        timeoutFolder.push(this.timeout());
+        timeout.push(delegate.timeout());
         try {
           delegate.write(source, byteCount);
         } finally {
-          timeoutFolder.pop();
+          timeout.pop();
         }
       }
     }
@@ -152,11 +150,11 @@ public final class Pipe {
       }
 
       if (delegate != null) {
-        timeoutFolder.push(this.timeout());
+        timeout.push(delegate.timeout());
         try {
           delegate.flush();
         } finally {
-          timeoutFolder.pop();
+          timeout.pop();
         }
       }
     }
@@ -176,11 +174,11 @@ public final class Pipe {
       }
 
       if (delegate != null) {
-        timeoutFolder.push(this.timeout());
+        timeout.push(delegate.timeout());
         try {
           delegate.close();
         } finally {
-          timeoutFolder.pop();
+          timeout.pop();
         }
       }
     }
