@@ -1,13 +1,6 @@
 Change Log
 ==========
 
-## Version 1.17.1
-
-_2019-01-16_
-
- * Fix: Make the newly-backported `Pipe.fold()` public.
-
-
 ## Version 2.2.0
 
 _2019-01-16_
@@ -21,6 +14,13 @@ _2019-01-16_
    This can be used to forward one sink to a target that is initially undetermined.
 
  * New: Optimize performance of ByteStrings created with `Buffer.snapshot()`.
+
+
+## Version 1.17.1
+
+_2019-01-16_
+
+ * Fix: Make the newly-backported `Pipe.fold()` public.
 
 
 ## Version 1.17.0
