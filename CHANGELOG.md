@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## Version 1.17.1
+
+_2019-01-16_
+
+ * Fix: Make the newly-backported `Pipe.fold()` public.
+
+
 ## Version 2.2.0
 
 _2019-01-16_
