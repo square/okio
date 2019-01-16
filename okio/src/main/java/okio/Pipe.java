@@ -16,6 +16,8 @@
 package okio;
 
 import java.io.IOException;
+import javax.annotation.Nullable;
+import okio.Timeout.TimeoutFolder;
 
 /**
  * A source and a sink that are attached. The sink's output is the source's input. Typically each
@@ -40,6 +42,8 @@ public final class Pipe {
   boolean sourceClosed;
   private final Sink sink = new PipeSink();
   private final Source source = new PipeSource();
+  private @Nullable Sink foldedSink;
+  private @Nullable TimeoutFolder timeoutFolder;
 
   public Pipe(long maxBufferSize) {
     if (maxBufferSize < 1L) {
@@ -56,43 +60,128 @@ public final class Pipe {
     return sink;
   }
 
+  /**
+   * Writes any buffered contents of this pipe to {@code sink}, then replace this pipe's source
+   * with {@code sink}. This pipe's source is closed and attempts to read it will throw an
+   * {@link IllegalStateException}.
+   *
+   * This method must not be called while concurrently accessing this pipe's source. It is safe,
+   * however, to call this while concurrently writing this pipe's sink.
+   */
+  void fold(Sink sink) throws IOException {
+    while (true) {
+      Buffer sinkBuffer = null;
+      synchronized (buffer) {
+        if (foldedSink != null) throw new IllegalStateException("sink already folded");
+
+        if (buffer.exhausted()) {
+          sourceClosed = true;
+          foldedSink = sink;
+          timeoutFolder = new TimeoutFolder(sink.timeout());
+          return;
+        }
+
+        sinkBuffer = new Buffer();
+        sinkBuffer.write(buffer, buffer.size);
+        buffer.notifyAll(); // Notify the sink that it can resume writing.
+      }
+
+      boolean success = false;
+      try {
+        sink.write(sinkBuffer, sinkBuffer.size);
+        success = true;
+      } finally {
+        if (!success) {
+          synchronized (buffer) {
+            sourceClosed = true;
+            buffer.notifyAll(); // Notify the sink that it can resume writing.
+          }
+        }
+      }
+    }
+  }
+
   final class PipeSink implements Sink {
     final Timeout timeout = new Timeout();
 
     @Override public void write(Buffer source, long byteCount) throws IOException {
+      Sink delegate = null;
       synchronized (buffer) {
         if (sinkClosed) throw new IllegalStateException("closed");
 
-        while (byteCount > 0) {
-          if (sourceClosed) throw new IOException("source is closed");
+        while (byteCount > 0 && delegate == null) {
+          if (foldedSink != null) {
+            delegate = foldedSink;
+          } else {
+            if (sourceClosed) throw new IOException("source is closed");
 
-          long bufferSpaceAvailable = maxBufferSize - buffer.size();
-          if (bufferSpaceAvailable == 0) {
-            timeout.waitUntilNotified(buffer); // Wait until the source drains the buffer.
-            continue;
+            long bufferSpaceAvailable = maxBufferSize - buffer.size();
+            if (bufferSpaceAvailable == 0) {
+              timeout.waitUntilNotified(buffer); // Wait until the source drains the buffer.
+              continue;
+            }
+
+            long bytesToWrite = Math.min(bufferSpaceAvailable, byteCount);
+            buffer.write(source, bytesToWrite);
+            byteCount -= bytesToWrite;
+            buffer.notifyAll(); // Notify the source that it can resume reading.
           }
+        }
+      }
 
-          long bytesToWrite = Math.min(bufferSpaceAvailable, byteCount);
-          buffer.write(source, bytesToWrite);
-          byteCount -= bytesToWrite;
-          buffer.notifyAll(); // Notify the source that it can resume reading.
+      if (delegate != null) {
+        timeoutFolder.push(this.timeout());
+        try {
+          delegate.write(source, byteCount);
+        } finally {
+          timeoutFolder.pop();
         }
       }
     }
 
     @Override public void flush() throws IOException {
+      Sink delegate = null;
       synchronized (buffer) {
         if (sinkClosed) throw new IllegalStateException("closed");
-        if (sourceClosed && buffer.size() > 0) throw new IOException("source is closed");
+
+        if (foldedSink != null) {
+          delegate = foldedSink;
+        } else if (sourceClosed && buffer.size() > 0) {
+          throw new IOException("source is closed");
+        }
+      }
+
+      if (delegate != null) {
+        timeoutFolder.push(this.timeout());
+        try {
+          delegate.flush();
+        } finally {
+          timeoutFolder.pop();
+        }
       }
     }
 
     @Override public void close() throws IOException {
+      Sink delegate = null;
       synchronized (buffer) {
         if (sinkClosed) return;
-        if (sourceClosed && buffer.size() > 0) throw new IOException("source is closed");
-        sinkClosed = true;
-        buffer.notifyAll(); // Notify the source that no more bytes are coming.
+
+        if (foldedSink != null) {
+          delegate = foldedSink;
+        } else {
+          if (sourceClosed && buffer.size() > 0) throw new IOException("source is closed");
+          sinkClosed = true;
+          buffer.notifyAll(); // Notify the source that no more bytes are coming.
+        }
+      }
+
+      if (delegate != null) {
+        timeoutFolder.push(this.timeout());
+        try {
+          delegate.close();
+        } finally {
+          timeoutFolder.pop();
+        }
       }
     }
 

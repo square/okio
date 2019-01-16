@@ -226,4 +226,44 @@ public class Timeout {
       throw new InterruptedIOException("interrupted");
     }
   }
+
+  static final class TimeoutFolder {
+    private final Timeout timeout;
+    private final long originalTimeoutNanos;
+    private final boolean originalHasDeadline;
+    private final long originalDeadlineNanos;
+
+    TimeoutFolder(Timeout timeout) {
+      this.timeout = timeout;
+      this.originalTimeoutNanos = timeout.timeoutNanos;
+      this.originalHasDeadline = timeout.hasDeadline;
+      this.originalDeadlineNanos = timeout.hasDeadline ? timeout.deadlineNanoTime : -1L;
+    }
+
+    void push(Timeout other) {
+      timeout.timeout(minTimeout(originalTimeoutNanos, other.timeoutNanos), TimeUnit.NANOSECONDS);
+
+      if (originalHasDeadline && other.hasDeadline) {
+        timeout.deadlineNanoTime(Math.min(other.deadlineNanoTime, originalDeadlineNanos));
+      } else if (other.hasDeadline) {
+        timeout.deadlineNanoTime(other.deadlineNanoTime);
+      }
+    }
+
+    void pop() {
+      timeout.timeout(originalTimeoutNanos, TimeUnit.NANOSECONDS);
+      if (originalHasDeadline) {
+        timeout.deadlineNanoTime(originalDeadlineNanos);
+      } else {
+        timeout.clearDeadline();
+      }
+    }
+  }
+
+  static long minTimeout(long aNanos, long bNanos) {
+    if (aNanos == 0L) return bNanos;
+    if (bNanos == 0L) return aNanos;
+    if (aNanos < bNanos) return aNanos;
+    return bNanos;
+  }
 }

@@ -19,19 +19,34 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
+import static okio.Okio.blackhole;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class PipeTest {
+  @Rule public org.junit.rules.Timeout timeout =
+      new org.junit.rules.Timeout((int) TimeUnit.SECONDS.toMillis(5));
+
   final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+
+  final long smallerTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(500L);
+  final long biggerTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(1500L);
+
+  final long smallerDeadlineNanos = TimeUnit.MILLISECONDS.toNanos(500L);
+  final long biggerDeadlineNanos = TimeUnit.MILLISECONDS.toNanos(1500L);
 
   @After public void tearDown() throws Exception {
     executorService.shutdown();
@@ -357,6 +372,195 @@ public final class PipeTest {
     assertElapsed(4000.0, start);
   }
 
+  @Test public void fold() throws IOException {
+    final Pipe pipe = new Pipe(128);
+
+    final BufferedSink pipeSink = Okio.buffer(pipe.sink());
+    pipeSink.writeUtf8("hello");
+    pipeSink.emit();
+
+    final BufferedSource pipeSource = Okio.buffer(pipe.source());
+    assertEquals("hello", pipeSource.readUtf8(5));
+
+    final Buffer foldedSinkBuffer = new Buffer();
+    final boolean[] foldedSinkClosed = {false};
+    ForwardingSink foldedSink = new ForwardingSink(foldedSinkBuffer) {
+      @Override public void close() throws IOException {
+        foldedSinkClosed[0] = true;
+        super.close();
+      }
+    };
+    pipe.fold(foldedSink);
+
+    pipeSink.writeUtf8("world");
+    pipeSink.emit();
+    assertEquals("world", foldedSinkBuffer.readUtf8(5));
+
+    try {
+      pipeSource.readUtf8();
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+
+    pipeSink.close();
+    assertTrue(foldedSinkClosed[0]);
+  }
+
+  @Test public void foldWritesPipeContentsToSink() throws IOException {
+    final Pipe pipe = new Pipe(128);
+
+    final BufferedSink pipeSink = Okio.buffer(pipe.sink());
+    pipeSink.writeUtf8("hello");
+    pipeSink.emit();
+
+    final Buffer foldSink = new Buffer();
+    pipe.fold(foldSink);
+
+    assertEquals("hello", foldSink.readUtf8(5));
+  }
+
+  @Test public void foldUnblocksBlockedWrite() throws IOException, InterruptedException {
+    final Pipe pipe = new Pipe(4);
+    final Buffer foldSink = new Buffer();
+
+    final CountDownLatch latch = new CountDownLatch(1);
+    executorService.schedule(new Runnable() {
+      @Override public void run() {
+        try {
+          pipe.fold(foldSink);
+        } catch (IOException e) {
+          throw new AssertionError();
+        }
+        latch.countDown();
+      }
+    }, 500, TimeUnit.MILLISECONDS);
+
+    final BufferedSink sink = Okio.buffer(pipe.sink());
+    sink.writeUtf8("abcdefgh"); // Blocks writing 8 bytes to a 4 byte pipe.
+    sink.close();
+
+    latch.await();
+    assertEquals("abcdefgh", foldSink.readUtf8());
+  }
+
+  @Test public void accessSourceAfterFold() throws IOException {
+    final Pipe pipe = new Pipe(100L);
+    pipe.fold(new Buffer());
+    try {
+      pipe.source().read(new Buffer(), 1L);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void foldingTwiceThrows() throws IOException {
+    final Pipe pipe = new Pipe(128);
+    pipe.fold(new Buffer());
+    try {
+      pipe.fold(new Buffer());
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void sinkWriteThrowsIOExceptionUnblockBlockedWriter()
+      throws ExecutionException, InterruptedException {
+    final Pipe pipe = new Pipe(4);
+
+    ScheduledFuture<?> foldFuture = executorService.schedule(new Runnable() {
+      @Override public void run() {
+        try {
+          pipe.fold(new ForwardingSink(blackhole()) {
+            @Override public void write(Buffer source, long byteCount) throws IOException {
+              throw new IOException("boom");
+            }
+          });
+        } catch (IOException expected) {
+          assertEquals("boom", expected.getMessage());
+        }
+      }
+    }, 500, TimeUnit.MILLISECONDS);
+
+    try {
+      final BufferedSink pipeSink = Okio.buffer(pipe.sink());
+      pipeSink.writeUtf8("abcdefghij");
+      pipeSink.emit(); // Block writing 10 bytes to a 4 byte pipe.
+    } catch (IOException writingFailure) {
+      assertEquals("source is closed", writingFailure.getMessage());
+    }
+
+    foldFuture.get(); // Confirm no unexpected exceptions.
+  }
+
+  @Test public void foldHoldsNoLocksWhenForwardingWrites() throws IOException {
+    final Pipe pipe = new Pipe(4);
+
+    final BufferedSink pipeSink = Okio.buffer(pipe.sink());
+    pipeSink.writeUtf8("abcd");
+    pipeSink.emit();
+
+    pipe.fold(new ForwardingSink(blackhole()) {
+      @Override public void write(Buffer source, long byteCount) throws IOException {
+        assertFalse(Thread.holdsLock(pipe.buffer));
+      }
+    });
+  }
+
+  @Test public void honorsUnderlyingTimeoutOnWritingWhenItIsSmaller() throws IOException {
+    final Pipe pipe = new Pipe(4);
+    final TimeoutWritingSink underlying = new TimeoutWritingSink();
+
+    underlying.timeout.timeout(smallerTimeoutNanos, TimeUnit.NANOSECONDS);
+    pipe.sink().timeout().timeout(biggerTimeoutNanos, TimeUnit.NANOSECONDS);
+
+    pipe.fold(underlying);
+
+    final long start = System.currentTimeMillis();
+    pipe.sink().write(new Buffer().writeUtf8("abc"), 3);
+    final long elapsed = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis() - start);
+
+    assertEquals((double) smallerTimeoutNanos, elapsed, TimeUnit.MILLISECONDS.toNanos(100));
+    assertEquals(smallerTimeoutNanos, underlying.timeout().timeoutNanos());
+  }
+
+  @Test public void honorsUnderlyingSinkDeadlineOnFlushingWhenItIsSmaller() throws IOException {
+    final Pipe pipe = new Pipe(4);
+    final TimeoutFlushingSink underlying = new TimeoutFlushingSink();
+
+    final long underlyingOriginalDeadline = System.nanoTime() + smallerDeadlineNanos;
+    underlying.timeout.deadlineNanoTime(underlyingOriginalDeadline);
+    pipe.sink().timeout().deadlineNanoTime(System.nanoTime() + biggerDeadlineNanos);
+
+    pipe.fold(underlying);
+
+    final long start = System.currentTimeMillis();
+    pipe.sink().flush();
+    final long elapsed = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis() - start);
+
+    assertEquals((double) smallerDeadlineNanos, elapsed, TimeUnit.MILLISECONDS.toNanos(100));
+    assertEquals(underlyingOriginalDeadline, underlying.timeout().deadlineNanoTime());
+  }
+
+  @Test public void honorsUnderlyingSinkDeadlineOnClosingWhenPipeSinkHasNoDeadline()
+      throws IOException {
+    final long deadlineNanos = smallerDeadlineNanos;
+
+    final Pipe pipe = new Pipe(4);
+    final TimeoutClosingSink underlying = new TimeoutClosingSink();
+
+    final long underlyingOriginalDeadline = System.nanoTime() + deadlineNanos;
+    underlying.timeout().deadlineNanoTime(underlyingOriginalDeadline);
+    pipe.sink().timeout().clearDeadline();
+
+    pipe.fold(underlying);
+
+    final long start = System.currentTimeMillis();
+    pipe.sink().close();
+    final long elapsed = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis() - start);
+
+    assertEquals((double) deadlineNanos, elapsed, TimeUnit.MILLISECONDS.toNanos(100));
+    assertEquals(underlyingOriginalDeadline, underlying.timeout().deadlineNanoTime());
+  }
+
   /** Returns the nanotime in milliseconds as a double for measuring timeouts. */
   private double now() {
     return System.nanoTime() / 1000000.0d;
@@ -368,5 +572,110 @@ public final class PipeTest {
    */
   private void assertElapsed(double duration, double start) {
     assertEquals(duration, now() - start - 200d, 250.0);
+  }
+
+  /** Writes on this sink never complete. They can only time out. */
+  private static final class TimeoutWritingSink implements Sink {
+    private final AsyncTimeout timeout = new AsyncTimeout() {
+      @Override protected void timedOut() {
+        synchronized (TimeoutWritingSink.this) {
+          TimeoutWritingSink.this.notifyAll();
+        }
+      }
+    };
+
+    @Override public void write(Buffer source, long byteCount) throws IOException {
+      timeout.enter();
+      try {
+        synchronized (TimeoutWritingSink.this) {
+          TimeoutWritingSink.this.wait();
+        }
+      } catch (InterruptedException e) {
+        throw new AssertionError();
+      } finally {
+        timeout.exit();
+      }
+      source.skip(byteCount);
+    }
+
+    @Override public void flush() throws IOException {
+    }
+
+    @Override public Timeout timeout() {
+      return timeout;
+    }
+
+    @Override public void close() throws IOException {
+    }
+  }
+
+  /** Flushes on this sink never complete. They can only time out. */
+  private static final class TimeoutFlushingSink implements Sink {
+    private final AsyncTimeout timeout = new AsyncTimeout() {
+      @Override protected void timedOut() {
+        synchronized (TimeoutFlushingSink.this) {
+          TimeoutFlushingSink.this.notifyAll();
+        }
+      }
+    };
+
+    @Override public void write(Buffer source, long byteCount) throws IOException {
+      source.skip(byteCount);
+    }
+
+    @Override public void flush() throws IOException {
+      timeout.enter();
+      try {
+        synchronized (TimeoutFlushingSink.this) {
+          TimeoutFlushingSink.this.wait();
+        }
+      } catch (InterruptedException e) {
+        throw new AssertionError();
+      } finally {
+        timeout.exit();
+      }
+    }
+
+    @Override public Timeout timeout() {
+      return timeout;
+    }
+
+    @Override public void close() throws IOException {
+    }
+  }
+
+  /** Closes on this sink never complete. They can only time out. */
+  private static final class TimeoutClosingSink implements Sink {
+    private final AsyncTimeout timeout = new AsyncTimeout() {
+      @Override protected void timedOut() {
+        synchronized (TimeoutClosingSink.this) {
+          TimeoutClosingSink.this.notifyAll();
+        }
+      }
+    };
+
+    @Override public void write(Buffer source, long byteCount) throws IOException {
+      source.skip(byteCount);
+    }
+
+    @Override public void flush() throws IOException {
+    }
+
+    @Override public Timeout timeout() {
+      return timeout;
+    }
+
+    @Override public void close() throws IOException {
+      timeout.enter();
+      try {
+        synchronized (TimeoutClosingSink.this) {
+          TimeoutClosingSink.this.wait();
+        }
+      } catch (InterruptedException e) {
+        throw new AssertionError();
+      } finally {
+        timeout.exit();
+      }
+    }
   }
 }
