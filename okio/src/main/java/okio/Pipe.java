@@ -66,7 +66,7 @@ public final class Pipe {
    * This method must not be called while concurrently accessing this pipe's source. It is safe,
    * however, to call this while concurrently writing this pipe's sink.
    */
-  void fold(Sink sink) throws IOException {
+  public void fold(Sink sink) throws IOException {
     while (true) {
       Buffer sinkBuffer;
       synchronized (buffer) {
