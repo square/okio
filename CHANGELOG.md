@@ -1,6 +1,28 @@
 Change Log
 ==========
 
+## Version 2.2.0
+
+_2019-01-16_
+
+ * New: `Throttler` limits sources and sinks to a maximum desired throughput. Multiple sources and
+   sinks can be attached to the same throttler and their combined throughput will not exceed the
+   desired throughput. Multiple throttlers can also be used on the same source or sink and they will
+   all be honored.
+
+ * New: `Pipe.fold()` replaces the actively-readable `Source` with a passively-writable `Sink`.
+   This can be used to forward one sink to a target that is initially undetermined.
+
+ * New: Optimize performance of ByteStrings created with `Buffer.snapshot()`.
+
+
+## Version 1.17.0
+
+_2019-01-16_
+
+ * New: Backport `Pipe.fold()` to Okio 1.x.
+
+
 ## Version 1.16.0
 
 _2018-10-08_

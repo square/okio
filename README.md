@@ -642,12 +642,12 @@ Download [the latest JAR][2] or grab via Maven:
 <dependency>
     <groupId>com.squareup.okio</groupId>
     <artifactId>okio</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
 </dependency>
 ```
 or Gradle:
 ```groovy
-compile 'com.squareup.okio:okio:2.1.0'
+compile 'com.squareup.okio:okio:2.2.0'
 ```
 
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
