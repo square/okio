@@ -26,6 +26,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -383,10 +384,10 @@ public final class PipeTest {
     assertEquals("hello", pipeSource.readUtf8(5));
 
     final Buffer foldedSinkBuffer = new Buffer();
-    final boolean[] foldedSinkClosed = {false};
+    final AtomicBoolean foldedSinkClosed = new AtomicBoolean(false);
     ForwardingSink foldedSink = new ForwardingSink(foldedSinkBuffer) {
       @Override public void close() throws IOException {
-        foldedSinkClosed[0] = true;
+        foldedSinkClosed.set(true);
         super.close();
       }
     };
@@ -403,7 +404,7 @@ public final class PipeTest {
     }
 
     pipeSink.close();
-    assertTrue(foldedSinkClosed[0]);
+    assertTrue(foldedSinkClosed.get());
   }
 
   @Test public void foldWritesPipeContentsToSink() throws IOException {
