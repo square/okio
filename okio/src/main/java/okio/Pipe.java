@@ -86,6 +86,7 @@ public final class Pipe {
       boolean success = false;
       try {
         sink.write(sinkBuffer, sinkBuffer.size);
+        sink.flush();
         success = true;
       } finally {
         if (!success) {
