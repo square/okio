@@ -556,6 +556,38 @@ class PipeKotlinTest {
     })
   }
 
+  /**
+   * Flushing the pipe wasn't causing the sink to be flushed when it was later folded. This was
+   * causing problems because the folded data was stalled.
+   */
+  @Test fun foldFlushesWhenThereIsFoldedData() {
+    val pipe = Pipe(128)
+    val pipeSink = pipe.sink.buffer()
+    pipeSink.writeUtf8("hello")
+    pipeSink.emit()
+
+    val ultimateSink = Buffer()
+    val unnecessaryWrapper = (ultimateSink as Sink).buffer()
+
+    pipe.fold(unnecessaryWrapper)
+
+    // Data should not have been flushed through the wrapper to the ultimate sink.
+    assertEquals("hello", ultimateSink.readUtf8())
+  }
+
+  @Test fun foldDoesNotFlushWhenThereIsNoFoldedData() {
+    val pipe = Pipe(128)
+
+    val ultimateSink = Buffer()
+    val unnecessaryWrapper = (ultimateSink as Sink).buffer()
+    unnecessaryWrapper.writeUtf8("hello")
+
+    pipe.fold(unnecessaryWrapper)
+
+    // Data should not have been flushed through the wrapper to the ultimate sink.
+    assertEquals("", ultimateSink.readUtf8())
+  }
+
   private fun assertDuration(expected: Long, block: () -> Unit) {
     val start = System.currentTimeMillis()
     block()
