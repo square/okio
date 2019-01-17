@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+## Version 1.17.1
+
+_2019-01-17_
+
+ * Fix: Make `Pipe.fold()` flush the underlying sink.
+
+
+## Version 2.2.1
+
+_2019-01-17_
+
+ * Fix: Make `Pipe.fold()` flush the underlying sink.
+
+
 ## Version 2.2.0
 
 _2019-01-16_
