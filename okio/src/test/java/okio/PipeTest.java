@@ -562,6 +562,38 @@ public final class PipeTest {
     assertEquals(underlyingOriginalDeadline, underlying.timeout().deadlineNanoTime());
   }
 
+  /**
+   * Flushing the pipe wasn't causing the sink to be flushed when it was later folded. This was
+   * causing problems because the folded data was stalled.
+   */
+  @Test public void foldFlushesWhenThereIsFoldedData() throws IOException {
+    Pipe pipe = new Pipe(128);
+    BufferedSink pipeSink = Okio.buffer(pipe.sink());
+    pipeSink.writeUtf8("hello");
+    pipeSink.emit();
+
+    Buffer ultimateSink = new Buffer();
+    BufferedSink unnecessaryWrapper = Okio.buffer((Sink) ultimateSink);
+
+    pipe.fold(unnecessaryWrapper);
+
+    // Data should not have been flushed through the wrapper to the ultimate sink.
+    assertEquals("hello", ultimateSink.readUtf8());
+  }
+
+  @Test public void foldDoesNotFlushWhenThereIsNoFoldedData() throws IOException {
+    Pipe pipe = new Pipe(128);
+
+    Buffer ultimateSink = new Buffer();
+    BufferedSink unnecessaryWrapper = Okio.buffer((Sink) ultimateSink);
+    unnecessaryWrapper.writeUtf8("hello");
+
+    pipe.fold(unnecessaryWrapper);
+
+    // Data should not have been flushed through the wrapper to the ultimate sink.
+    assertEquals("", ultimateSink.readUtf8());
+  }
+
   /** Returns the nanotime in milliseconds as a double for measuring timeouts. */
   private double now() {
     return System.nanoTime() / 1000000.0d;
