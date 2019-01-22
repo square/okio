@@ -68,6 +68,7 @@ public final class Pipe {
    */
   public void fold(Sink sink) throws IOException {
     while (true) {
+      boolean closed = false;
       Buffer sinkBuffer;
       synchronized (buffer) {
         if (foldedSink != null) throw new IllegalStateException("sink already folded");
@@ -78,6 +79,7 @@ public final class Pipe {
           return;
         }
 
+        closed = sinkClosed;
         sinkBuffer = new Buffer();
         sinkBuffer.write(buffer, buffer.size);
         buffer.notifyAll(); // Notify the sink that it can resume writing.
@@ -86,7 +88,11 @@ public final class Pipe {
       boolean success = false;
       try {
         sink.write(sinkBuffer, sinkBuffer.size);
-        sink.flush();
+        if (closed) {
+          sink.close();
+        } else {
+          sink.flush();
+        }
         success = true;
       } finally {
         if (!success) {
