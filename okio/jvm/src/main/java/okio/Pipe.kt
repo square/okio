@@ -158,7 +158,9 @@ class Pipe(internal val maxBufferSize: Long) {
     while (true) {
       // Either the buffer is empty and we can swap and return. Or the buffer is non-empty and we
       // must copy it to sink without holding any locks, then try it all again.
-      val sinkBuffer: Buffer = synchronized(buffer) {
+      var closed = false
+      lateinit var sinkBuffer: Buffer
+      synchronized(buffer) {
         check(foldedSink == null) { "sink already folded" }
 
         if (buffer.exhausted()) {
@@ -167,16 +169,20 @@ class Pipe(internal val maxBufferSize: Long) {
           return@fold
         }
 
-        val sinkBuffer = Buffer()
+        closed = sinkClosed
+        sinkBuffer = Buffer()
         sinkBuffer.write(buffer, buffer.size)
         (buffer as Object).notifyAll() // Notify the sink that it can resume writing.
-        return@synchronized sinkBuffer
       }
 
       var success = false
       try {
         sink.write(sinkBuffer, sinkBuffer.size)
-        sink.flush()
+        if (closed) {
+          sink.close()
+        } else {
+          sink.flush()
+        }
         success = true
       } finally {
         if (!success) {

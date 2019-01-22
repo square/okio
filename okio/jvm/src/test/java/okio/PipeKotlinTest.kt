@@ -588,6 +588,27 @@ class PipeKotlinTest {
     assertEquals("", ultimateSink.readUtf8())
   }
 
+  @Test fun foldingClosesUnderlyingSinkWhenPipeSinkIsClose() {
+    val pipe = Pipe(128)
+
+    val pipeSink = pipe.sink.buffer()
+    pipeSink.writeUtf8("world")
+    pipeSink.close()
+
+    val foldedSinkBuffer = Buffer()
+    var foldedSinkClosed = false
+    val foldedSink = object : ForwardingSink(foldedSinkBuffer) {
+      override fun close() {
+        foldedSinkClosed = true
+        super.close()
+      }
+    }
+
+    pipe.fold(foldedSink)
+    assertEquals("world", foldedSinkBuffer.readUtf8(5))
+    assertTrue(foldedSinkClosed)
+  }
+
   private fun assertDuration(expected: Long, block: () -> Unit) {
     val start = System.currentTimeMillis()
     block()
