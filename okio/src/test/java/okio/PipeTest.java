@@ -594,6 +594,27 @@ public final class PipeTest {
     assertEquals("", ultimateSink.readUtf8());
   }
 
+  @Test public void foldingClosesUnderlyingSinkWhenPipeSinkIsClose() throws IOException {
+    final Pipe pipe = new Pipe(128);
+
+    final BufferedSink pipeSink = Okio.buffer(pipe.sink());
+    pipeSink.writeUtf8("world");
+    pipeSink.close();
+
+    final Buffer foldedSinkBuffer = new Buffer();
+    final AtomicBoolean foldedSinkClosed = new AtomicBoolean(false);
+    ForwardingSink foldedSink = new ForwardingSink(foldedSinkBuffer) {
+      @Override public void close() throws IOException {
+        foldedSinkClosed.set(true);
+        super.close();
+      }
+    };
+
+    pipe.fold(foldedSink);
+    assertEquals("world", foldedSinkBuffer.readUtf8(5));
+    assertTrue(foldedSinkClosed.get());
+  }
+
   /** Returns the nanotime in milliseconds as a double for measuring timeouts. */
   private double now() {
     return System.nanoTime() / 1000000.0d;
