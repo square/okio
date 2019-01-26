@@ -10,7 +10,6 @@ buildscript {
       'assertj': '1.7.0',
       'shadowPlugin': '4.0.4',
       'nodePlugin': '1.2.0',
-      'mavenPublishPlugin': '0.4.0',
       'ktlintPlugin': '5.1.0',
   ]
 
@@ -44,7 +43,6 @@ buildscript {
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
       'node': "com.moowork.gradle:gradle-node-plugin:${versions.nodePlugin}",
-      'mavenPublish': "com.vanniktech:gradle-maven-publish-plugin:${versions.mavenPublishPlugin}",
       'ktlint': "gradle.plugin.org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
@@ -60,7 +58,6 @@ buildscript {
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
     classpath deps.node
-    classpath deps.mavenPublish
     classpath deps.ktlint
   }
 

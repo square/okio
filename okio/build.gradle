@@ -86,3 +86,4 @@ kotlin {
 
 apply from: 'js/build.gradle'
 apply from: 'jvm/build.gradle'
+apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"
