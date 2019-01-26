@@ -111,6 +111,14 @@ publishing {
       }
     }
   }
+  
+  // Use default artifact name for the JVM target until we start publishing artifacts for all
+  // platforms
+  publications {
+    jvm {
+      artifactId = 'okio'
+    }
+  }
 
   afterEvaluate {
     publications.getByName('kotlinMultiplatform') {
