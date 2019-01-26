@@ -85,4 +85,4 @@ kotlin {
 }
 
 apply from: 'js/build.gradle'
-apply from: 'jvm/jvm.gradle'
+apply from: 'jvm/build.gradle'
