@@ -2,28 +2,30 @@ apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
 kotlin {
   targets {
+    // egor: jvmWithJava is getting deprecated but it's not clear what the replacement is. For now 
+    // gonna keep it inside targets {}
     fromPreset(presets.jvmWithJava, 'jvm') {
       project.sourceSets.test.java.srcDir('jvm/src/test/java')
     }
-    fromPreset(presets.js, 'js') {
-      configure([compilations.main, compilations.test]) {
-        tasks.getByName(compileKotlinTaskName).kotlinOptions {
-          moduleKind = "commonjs"
-        }
+  }
+  js() {
+    configure([compilations.main, compilations.test]) {
+      tasks.getByName(compileKotlinTaskName).kotlinOptions {
+        moduleKind = "commonjs"
       }
     }
-    fromPreset(presets.iosX64, 'iosX64') {
-      compilations.main.outputKinds 'framework'
-    }
-    fromPreset(presets.iosArm64, 'iosArm64') {
-      compilations.main.outputKinds 'framework'
-    }
-    // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
-    fromPreset(presets.linuxX64, 'linuxX64')
-    fromPreset(presets.macosX64, 'macosX64')
-    fromPreset(presets.mingwX64, 'winX64')
-    fromPreset(presets.mingwX64, 'mingwX64')
   }
+  iosX64() {
+    compilations.main.outputKinds 'framework'
+  }
+  iosArm64() {
+    compilations.main.outputKinds 'framework'
+  }
+  // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
+  linuxX64()
+  macosX64()
+  mingwX64('winX64')
+  mingwX64()
   sourceSets {
     commonMain {
       kotlin.srcDir('src/main/kotlin')
@@ -85,5 +87,5 @@ kotlin {
 }
 
 apply from: 'js/build.gradle'
-apply from: 'jvm/build.gradle'
+apply from: 'jvm/jvm.gradle'
 apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"
