@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+## Version 2.2.2
+
+_2019-01-28_
+
+ * Fix: Make `Pipe.fold()` close the underlying sink when necessary.
+
+
+## Version 1.17.3
+
+_2019-01-28_
+
+ * Fix: Make `Pipe.fold()` close the underlying sink when necessary.
+
+
 ## Version 1.17.2
 
 _2019-01-17_
