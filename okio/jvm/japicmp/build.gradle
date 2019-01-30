@@ -1,0 +1,40 @@
+import me.champeau.gradle.japicmp.JapicmpTask
+
+apply plugin: 'java-library'
+apply plugin: 'me.champeau.gradle.japicmp'
+
+configurations {
+  baseline
+  latest
+}
+
+dependencies {
+  baseline('com.squareup.okio:okio:1.14.1') {
+    transitive = false
+    force = true
+  }
+  latest project(path: ':okio', configuration: 'runtimeElements')
+}
+
+task japicmp(type: JapicmpTask, dependsOn: 'jar') {
+  oldClasspath = configurations.baseline
+  newClasspath = configurations.latest
+  onlyBinaryIncompatibleModified = true
+  failOnModification = true
+  txtOutputFile = file("$buildDir/reports/japi.txt")
+  ignoreMissingClasses = true
+  includeSynthetic = true
+  classExcludes = [
+      'okio.SegmentedByteString', // Internal.
+      'okio.Util', // Internal.
+  ]
+  methodExcludes = [
+      'okio.ByteString#getByte(int)', // Became 'final' in 1.15.0.
+      'okio.ByteString#size()', // Became 'final' in 1.15.0.
+  ]
+  fieldExcludes = [
+      'okio.RealBufferedSink#buffer', // Became 'bufferField' in 2.1.0.
+      'okio.RealBufferedSource#buffer', // Became 'bufferField' in 2.1.0.
+  ]
+}
+check.dependsOn japicmp

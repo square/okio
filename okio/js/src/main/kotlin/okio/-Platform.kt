@@ -55,3 +55,5 @@ internal actual fun String.asUtf8ToByteArray(): ByteArray = commonAsUtf8ToByteAr
 actual open class ArrayIndexOutOfBoundsException actual constructor(
   message: String?
 ) : IndexOutOfBoundsException(message)
+
+internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R = block()

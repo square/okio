@@ -1,0 +1,21 @@
+apply plugin: 'java-library'
+apply plugin: 'ru.vyarus.animalsniffer'
+
+kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
+  target.project.sourceCompatibility = JavaVersion.VERSION_1_7
+  target.project.targetCompatibility = JavaVersion.VERSION_1_7
+
+  tasks['jar'].configure {
+    manifest {
+      attributes('Automatic-Module-Name': 'okio')
+    }
+  }
+
+  target.project.animalsniffer {
+    sourceSets = [target.project.sourceSets.main]
+  }
+  
+  target.project.dependencies {
+    signature 'org.codehaus.mojo.signature:java16:1.1@signature'
+  }
+}

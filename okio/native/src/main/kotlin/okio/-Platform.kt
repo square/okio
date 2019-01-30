@@ -17,6 +17,7 @@
 package okio
 
 import okio.internal.commonAsUtf8ToByteArray
+import okio.internal.commonToUtf8String
 import kotlin.annotation.AnnotationTarget.FIELD
 import kotlin.annotation.AnnotationTarget.FILE
 import kotlin.annotation.AnnotationTarget.FUNCTION
@@ -47,7 +48,7 @@ internal actual fun arraycopy(
   }
 }
 
-internal actual fun ByteArray.toUtf8String(): String = stringFromUtf8()
+internal actual fun ByteArray.toUtf8String(): String = commonToUtf8String()
 
 // We are NOT using the Kotlin/Native function `toUtf8()` because it encodes
 // invalide UTF-16 characters as '\ufffd' instead of '?' like Okio does. In an
@@ -57,3 +58,5 @@ internal actual fun ByteArray.toUtf8String(): String = stringFromUtf8()
 internal actual fun String.asUtf8ToByteArray(): ByteArray = commonAsUtf8ToByteArray()
 
 actual typealias ArrayIndexOutOfBoundsException = kotlin.ArrayIndexOutOfBoundsException
+
+internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R = block()

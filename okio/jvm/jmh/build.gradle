@@ -1,0 +1,35 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.DontIncludeResourceTransformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.IncludeResourceTransformer
+
+apply plugin: 'java-library'
+apply plugin: 'org.jetbrains.kotlin.platform.jvm'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'me.champeau.gradle.jmh'
+
+jmhJar {
+  def excludeAllBenchmarkLists = new DontIncludeResourceTransformer()
+  excludeAllBenchmarkLists.resource = "META-INF/BenchmarkList"
+  transform(excludeAllBenchmarkLists)
+
+  def includeCorrectBenchmarkList = new IncludeResourceTransformer()
+  includeCorrectBenchmarkList.resource = "META-INF/BenchmarkList"
+  includeCorrectBenchmarkList.file = new File("${project.buildDir}/jmh-generated-resources/META-INF/BenchmarkList")
+  transform(includeCorrectBenchmarkList)
+}
+
+jmh {
+  include = ['com\\.squareup\\.okio\\.benchmarks\\.SelectBenchmark.*']
+  duplicateClassesStrategy = 'warn'
+}
+
+dependencies {
+  compile project(path: ':okio', configuration: 'runtimeElements')
+  compile deps.kotlin.stdLib.jdk6
+  compile deps.jmh.core
+  jmh project(path: ':okio', configuration: 'runtimeElements')
+  jmh deps.kotlin.stdLib.jdk6
+  jmh deps.jmh.core
+  jmh deps.jmh.generator
+}
+
+assemble.dependsOn(jmhJar)

@@ -52,3 +52,5 @@ internal expect fun String.asUtf8ToByteArray(): ByteArray
 
 // TODO make internal https://youtrack.jetbrains.com/issue/KT-19664
 expect class ArrayIndexOutOfBoundsException(message: String?) : IndexOutOfBoundsException
+
+internal expect inline fun <R> synchronized(lock: Any, block: () -> R): R

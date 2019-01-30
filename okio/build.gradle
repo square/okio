@@ -1,7 +1,85 @@
-apply plugin: 'org.jetbrains.kotlin.platform.common'
+apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
-dependencies {
-  implementation deps.kotlin.stdLib.common
-  testImplementation deps.kotlin.test.common
-  testImplementation deps.kotlin.test.annotations
+kotlin {
+  targets {
+    // egor: jvmWithJava is getting deprecated but it's not clear what the replacement is. For now 
+    // gonna keep it inside targets {}
+    fromPreset(presets.jvmWithJava, 'jvm') {
+      project.sourceSets.test.java.srcDir('jvm/src/test/java')
+    }
+  }
+  js() {
+    configure([compilations.main, compilations.test]) {
+      tasks.getByName(compileKotlinTaskName).kotlinOptions {
+        moduleKind = "commonjs"
+      }
+    }
+  }
+  iosX64() {
+    compilations.main.outputKinds 'framework'
+  }
+  iosArm64() {
+    compilations.main.outputKinds 'framework'
+  }
+  // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
+  linuxX64()
+  macosX64()
+  mingwX64('winX64')
+  sourceSets {
+    commonMain {
+      kotlin.srcDir('src/main/kotlin')
+      dependencies {
+        implementation deps.kotlin.stdLib.common
+      }
+    }
+    commonTest {
+      kotlin.srcDir('src/test/kotlin')
+      dependencies {
+        implementation deps.kotlin.test.common
+        implementation deps.kotlin.test.annotations
+      }
+    }
+    jvmMain {
+      kotlin.srcDir('jvm/src/main/java')
+      resources.srcDir('jvm/src/main/resources')
+      dependencies {
+        implementation deps.kotlin.stdLib.jdk6
+        compileOnly deps.animalSniffer.annotations
+      }
+    }
+    jvmTest {
+      kotlin.srcDir('jvm/src/test/java')
+      dependencies {
+        implementation deps.test.junit
+        implementation deps.test.assertj
+        implementation deps.kotlin.test.jdk
+      }
+    }
+    jsMain {
+      kotlin.srcDir('js/src/main/kotlin')
+      dependencies {
+        implementation deps.kotlin.stdLib.js
+      }
+    }
+    jsTest {
+      kotlin.srcDir('js/src/test/kotlin')
+      dependencies {
+        implementation deps.kotlin.test.js
+      }
+    }
+    nativeMain {
+      kotlin.srcDir('native/src/main/kotlin')
+    }
+    nativeTest {
+      kotlin.srcDir('native/src/test/kotlin')
+    }
+  }
+  configure([targets.iosX64, targets.iosArm64, targets.linuxX64, targets.macosX64, targets.winX64]) {
+    compilations.main.source(sourceSets.nativeMain)
+    compilations.test.source(sourceSets.nativeTest)
+  }
 }
+
+apply from: 'js/build.gradle'
+apply from: 'jvm/jvm.gradle'
+apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"

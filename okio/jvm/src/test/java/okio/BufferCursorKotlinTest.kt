@@ -35,10 +35,12 @@ class BufferCursorKotlinTest {
   companion object {
     @Parameters(name = "{0}")
     @JvmStatic
-    fun parameters() = BufferCursorTest.parameters()
+    fun parameters(): List<Array<out Any?>> {
+      return BufferFactory.values().map { arrayOf(it) }
+    }
   }
 
-  @Parameter lateinit var bufferFactory: BufferCursorTest.BufferFactory
+  @Parameter lateinit var bufferFactory: BufferFactory
 
   @Test fun acquireReadOnlyDoesNotCopySharedDataArray() {
     val buffer = deepCopy(bufferFactory.newBuffer())

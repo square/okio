@@ -38,3 +38,7 @@ internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets
 
 // TODO remove if https://youtrack.jetbrains.com/issue/KT-20641 provides a better solution
 actual typealias ArrayIndexOutOfBoundsException = java.lang.ArrayIndexOutOfBoundsException
+
+internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R {
+  return kotlin.synchronized(lock, block)
+}

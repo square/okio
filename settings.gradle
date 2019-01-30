@@ -1,5 +1,4 @@
 include ':okio'
-include ':okio:js'
-include ':okio:jvm'
-include ':okio:native'
+include ':okio:jvm:japicmp'
+include ':okio:jvm:jmh'
 include ':samples'
