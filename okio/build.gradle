@@ -25,7 +25,6 @@ kotlin {
   linuxX64()
   macosX64()
   mingwX64('winX64')
-  mingwX64()
   sourceSets {
     commonMain {
       kotlin.srcDir('src/main/kotlin')
@@ -42,7 +41,7 @@ kotlin {
     }
     jvmMain {
       kotlin.srcDir('jvm/src/main/java')
-      dependsOn commonMain
+      resources.srcDir('jvm/src/main/resources')
       dependencies {
         implementation deps.kotlin.stdLib.jdk6
         compileOnly deps.animalSniffer.annotations
@@ -50,7 +49,6 @@ kotlin {
     }
     jvmTest {
       kotlin.srcDir('jvm/src/test/java')
-      dependsOn commonTest
       dependencies {
         implementation deps.test.junit
         implementation deps.test.assertj
@@ -59,28 +57,24 @@ kotlin {
     }
     jsMain {
       kotlin.srcDir('js/src/main/kotlin')
-      dependsOn commonMain
       dependencies {
         implementation deps.kotlin.stdLib.js
       }
     }
     jsTest {
       kotlin.srcDir('js/src/test/kotlin')
-      dependsOn commonTest
       dependencies {
         implementation deps.kotlin.test.js
       }
     }
     nativeMain {
       kotlin.srcDir('native/src/main/kotlin')
-      dependsOn commonMain
     }
     nativeTest {
       kotlin.srcDir('native/src/test/kotlin')
-      dependsOn commonTest
     }
   }
-  configure([targets.iosX64, targets.iosArm64, targets.linuxX64, targets.macosX64, targets.winX64, targets.mingwX64]) {
+  configure([targets.iosX64, targets.iosArm64, targets.linuxX64, targets.macosX64, targets.winX64]) {
     compilations.main.source(sourceSets.nativeMain)
     compilations.test.source(sourceSets.nativeTest)
   }
