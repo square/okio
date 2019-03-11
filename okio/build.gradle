@@ -29,7 +29,7 @@ kotlin {
     commonMain {
       kotlin.srcDir('src/main/kotlin')
       dependencies {
-        implementation deps.kotlin.stdLib.common
+        api deps.kotlin.stdLib.common
       }
     }
     commonTest {
@@ -43,7 +43,7 @@ kotlin {
       kotlin.srcDir('jvm/src/main/java')
       resources.srcDir('jvm/src/main/resources')
       dependencies {
-        implementation deps.kotlin.stdLib.jdk6
+        api deps.kotlin.stdLib.jdk6
         compileOnly deps.animalSniffer.annotations
       }
     }
@@ -58,7 +58,7 @@ kotlin {
     jsMain {
       kotlin.srcDir('js/src/main/kotlin')
       dependencies {
-        implementation deps.kotlin.stdLib.js
+        api deps.kotlin.stdLib.js
       }
     }
     jsTest {
