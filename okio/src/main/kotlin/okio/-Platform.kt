@@ -38,14 +38,6 @@ expect annotation class JvmStatic()
 @Target(FILE, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER)
 expect annotation class JvmName(val name: String)
 
-internal expect fun arraycopy(
-  src: ByteArray,
-  srcPos: Int,
-  dest: ByteArray,
-  destPos: Int,
-  length: Int
-)
-
 internal expect fun ByteArray.toUtf8String(): String
 
 internal expect fun String.asUtf8ToByteArray(): ByteArray

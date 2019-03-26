@@ -108,9 +108,7 @@ internal fun String.decodeBase64ToArray(): ByteArray? {
   if (outCount == out.size) return out
 
   // Copy the decoded bytes to a new, right-sized array.
-  val prefix = ByteArray(outCount)
-  arraycopy(out, 0, prefix, 0, outCount)
-  return prefix
+  return out.copyOf(outCount)
 }
 
 internal fun ByteArray.encodeBase64(map: ByteArray = BASE64): String {

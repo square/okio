@@ -123,7 +123,7 @@ internal class Segment {
       prefix = sharedCopy()
     } else {
       prefix = SegmentPool.take()
-      arraycopy(data, pos, prefix.data, 0, byteCount)
+      data.copyInto(prefix.data, startIndex = pos, endIndex = pos + byteCount)
     }
 
     prefix.limit = prefix.pos + byteCount
@@ -154,12 +154,13 @@ internal class Segment {
       // We can't fit byteCount bytes at the sink's current position. Shift sink first.
       if (sink.shared) throw IllegalArgumentException()
       if (sink.limit + byteCount - sink.pos > SIZE) throw IllegalArgumentException()
-      arraycopy(sink.data, sink.pos, sink.data, 0, sink.limit - sink.pos)
+      sink.data.copyInto(sink.data, startIndex = sink.pos, endIndex = sink.limit)
       sink.limit -= sink.pos
       sink.pos = 0
     }
 
-    arraycopy(data, pos, sink.data, sink.limit, byteCount)
+    data.copyInto(sink.data, destinationOffset = sink.limit, startIndex = pos,
+        endIndex = pos + byteCount)
     sink.limit += byteCount
     pos += byteCount
   }

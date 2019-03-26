@@ -182,10 +182,7 @@ internal actual constructor(
      */
     fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString {
       checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
-
-      val copy = ByteArray(byteCount)
-      arraycopy(this, offset, copy, 0, byteCount)
-      return ByteString(copy)
+      return ByteString(copyOfRange(offset, offset + byteCount))
     }
 
     /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */

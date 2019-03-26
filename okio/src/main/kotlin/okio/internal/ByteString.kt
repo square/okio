@@ -21,7 +21,6 @@ import okio.ByteString
 import okio.REPLACEMENT_CODE_POINT
 import okio.and
 import okio.arrayRangeEquals
-import okio.arraycopy
 import okio.asUtf8ToByteArray
 import okio.decodeBase64ToArray
 import okio.encodeBase64
@@ -124,10 +123,7 @@ internal fun ByteString.commonSubstring(beginIndex: Int, endIndex: Int): ByteStr
   if (beginIndex == 0 && endIndex == data.size) {
     return this
   }
-
-  val copy = ByteArray(subLen)
-  arraycopy(data, beginIndex, copy, 0, subLen)
-  return ByteString(copy)
+  return ByteString(data.copyOfRange(beginIndex, endIndex))
 }
 
 internal fun ByteString.commonGetByte(pos: Int) = data[pos]

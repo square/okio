@@ -22,16 +22,6 @@ actual typealias JvmField = kotlin.jvm.JvmField
 actual typealias JvmStatic = kotlin.jvm.JvmStatic
 actual typealias JvmName = kotlin.jvm.JvmName
 
-internal actual fun arraycopy(
-  src: ByteArray,
-  srcPos: Int,
-  dest: ByteArray,
-  destPos: Int,
-  length: Int
-) {
-  System.arraycopy(src, srcPos, dest, destPos, length)
-}
-
 internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets.UTF_8)
