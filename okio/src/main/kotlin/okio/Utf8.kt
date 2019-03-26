@@ -65,6 +65,9 @@
 
 package okio
 
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+
 /**
  * Returns the number of bytes used to encode the slice of `string` as UTF-8 when using
  * [BufferedSink.writeUtf8].
