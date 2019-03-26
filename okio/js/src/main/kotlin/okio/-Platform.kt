@@ -36,18 +36,6 @@ actual annotation class JvmStatic
 @Target(FILE, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER)
 actual annotation class JvmName(actual val name: String)
 
-internal actual fun arraycopy(
-  src: ByteArray,
-  srcPos: Int,
-  dest: ByteArray,
-  destPos: Int,
-  length: Int
-) {
-  for (i in 0 until length) {
-    dest[destPos + i] = src[srcPos + i]
-  }
-}
-
 internal actual fun ByteArray.toUtf8String(): String = commonToUtf8String()
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = commonAsUtf8ToByteArray()

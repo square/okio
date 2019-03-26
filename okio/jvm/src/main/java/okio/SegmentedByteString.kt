@@ -176,7 +176,8 @@ internal class SegmentedByteString private constructor(
     val result = ByteArray(size)
     var resultPos = 0
     forEachSegment { data, offset, byteCount ->
-      arraycopy(data, offset, result, resultPos, byteCount)
+      data.copyInto(result, destinationOffset = resultPos, startIndex = offset,
+          endIndex = offset + byteCount)
       resultPos += byteCount
     }
     return result
