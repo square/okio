@@ -216,8 +216,6 @@ internal actual constructor(
 
   actual fun endsWith(suffix: ByteArray) = commonEndsWith(suffix)
 
-  // TODO move @JvmOverloads to common when https://youtrack.jetbrains.com/issue/KT-18882 lands
-
   @JvmOverloads
   actual fun indexOf(other: ByteString, fromIndex: Int) = indexOf(other.internalArray(), fromIndex)
 
