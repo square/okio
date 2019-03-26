@@ -15,6 +15,8 @@
  */
 package okio
 
+import kotlin.jvm.JvmField
+
 /**
  * A segment of a buffer.
  *

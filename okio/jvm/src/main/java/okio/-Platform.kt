@@ -17,11 +17,6 @@
 @file:JvmName("-Platform")
 package okio
 
-actual typealias JvmOverloads = kotlin.jvm.JvmOverloads
-actual typealias JvmField = kotlin.jvm.JvmField
-actual typealias JvmStatic = kotlin.jvm.JvmStatic
-actual typealias JvmName = kotlin.jvm.JvmName
-
 internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets.UTF_8)
