@@ -151,5 +151,13 @@ actual class Buffer : BufferedSource, BufferedSink {
     byteCount: Int
   ): Boolean = throw UnsupportedOperationException()
 
+  actual override fun flush() {
+    throw UnsupportedOperationException()
+  }
+
+  actual override fun close() {
+    throw UnsupportedOperationException()
+  }
+
   actual override fun timeout(): Timeout = throw UnsupportedOperationException()
 }

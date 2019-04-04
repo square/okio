@@ -53,7 +53,7 @@ actual interface Sink : Closeable, Flushable {
 
   /** Pushes all buffered bytes to their final destination.  */
   @Throws(IOException::class)
-  override fun flush()
+  actual override fun flush()
 
   /** Returns the timeout for this sink.  */
   actual fun timeout(): Timeout
@@ -63,5 +63,5 @@ actual interface Sink : Closeable, Flushable {
    * sink. It is an error to write a closed sink. It is safe to close a sink more than once.
    */
   @Throws(IOException::class)
-  override fun close()
+  actual override fun close()
 }

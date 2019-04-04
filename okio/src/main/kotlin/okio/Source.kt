@@ -19,4 +19,6 @@ expect interface Source {
   fun read(sink: Buffer, byteCount: Long): Long
 
   fun timeout(): Timeout
+
+  fun close()
 }

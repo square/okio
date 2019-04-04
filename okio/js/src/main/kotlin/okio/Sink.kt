@@ -18,5 +18,9 @@ package okio
 actual interface Sink {
   actual fun write(source: Buffer, byteCount: Long)
 
+  actual fun flush()
+
   actual fun timeout(): Timeout
+
+  actual fun close()
 }

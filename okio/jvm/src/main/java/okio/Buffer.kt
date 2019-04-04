@@ -1614,11 +1614,11 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return true
   }
 
-  override fun flush() {}
+  actual override fun flush() {}
 
   override fun isOpen() = true
 
-  override fun close() {}
+  actual override fun close() {}
 
   actual override fun timeout() = Timeout.NONE
 

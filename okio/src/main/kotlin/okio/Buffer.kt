@@ -141,5 +141,9 @@ expect class Buffer : BufferedSource, BufferedSink {
     byteCount: Int
   ): Boolean
 
+  override fun flush()
+
+  override fun close()
+
   override fun timeout(): Timeout
 }

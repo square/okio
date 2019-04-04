@@ -69,5 +69,5 @@ actual interface Source : Closeable {
    * closed source. It is safe to close a source more than once.
    */
   @Throws(IOException::class)
-  override fun close()
+  actual override fun close()
 }
