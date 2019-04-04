@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit
  * deadlines to set an upper bound on the time invested on a job. For example, a battery-conscious
  * app may limit how much time it spends pre-loading content.
  */
-open class Timeout {
+actual open class Timeout {
   /**
    * True if `deadlineNanoTime` is defined. There is no equivalent to null or 0 for
    * [System.nanoTime].

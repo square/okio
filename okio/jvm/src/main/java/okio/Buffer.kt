@@ -41,7 +41,7 @@ import javax.crypto.spec.SecretKeySpec
  * zero-fill the requested array before returning it to you. Even if you're going to write over that
  * space anyway. This class avoids zero-fill and GC churn by pooling byte arrays.
  */
-class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
+actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @JvmField internal var head: Segment? = null
 
   @get:JvmName("size")
