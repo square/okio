@@ -34,32 +34,32 @@ actual interface BufferedSource : Source, ReadableByteChannel {
   fun buffer(): Buffer
 
   /** This source's internal buffer. */
-  val buffer: Buffer
+  actual val buffer: Buffer
 
   /**
    * Returns true if there are no more bytes in this source. This will block until there are bytes
    * to read or the source is definitely exhausted.
    */
   @Throws(IOException::class)
-  fun exhausted(): Boolean
+  actual fun exhausted(): Boolean
 
   /**
    * Returns when the buffer contains at least `byteCount` bytes. Throws an
    * [java.io.EOFException] if the source is exhausted before the required bytes can be read.
    */
   @Throws(IOException::class)
-  fun require(byteCount: Long)
+  actual fun require(byteCount: Long)
 
   /**
    * Returns true when the buffer contains at least `byteCount` bytes, expanding it as
    * necessary. Returns false if the source is exhausted before the requested bytes can be read.
    */
   @Throws(IOException::class)
-  fun request(byteCount: Long): Boolean
+  actual fun request(byteCount: Long): Boolean
 
   /** Removes a byte from this source and returns it. */
   @Throws(IOException::class)
-  fun readByte(): Byte
+  actual fun readByte(): Byte
 
   /**
    * Removes two bytes from this source and returns a big-endian short.
@@ -79,7 +79,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readShort(): Short
+  actual fun readShort(): Short
 
   /**
    * Removes two bytes from this source and returns a little-endian short.
@@ -99,7 +99,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readShortLe(): Short
+  actual fun readShortLe(): Short
 
   /**
    * Removes four bytes from this source and returns a big-endian int.
@@ -123,7 +123,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readInt(): Int
+  actual fun readInt(): Int
 
   /**
    * Removes four bytes from this source and returns a little-endian int.
@@ -147,7 +147,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readIntLe(): Int
+  actual fun readIntLe(): Int
 
   /**
    * Removes eight bytes from this source and returns a big-endian long.
@@ -179,7 +179,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readLong(): Long
+  actual fun readLong(): Long
 
   /**
    * Removes eight bytes from this source and returns a little-endian long.
@@ -211,7 +211,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readLongLe(): Long
+  actual fun readLongLe(): Long
 
   /**
    * Reads a long from this source in signed decimal form (i.e., as a string in base 10 with
@@ -231,7 +231,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * number was not present.
    */
   @Throws(IOException::class)
-  fun readDecimalLong(): Long
+  actual fun readDecimalLong(): Long
 
   /**
    * Reads a long form this source in hexadecimal form (i.e., as a string in base 16). This will
@@ -251,22 +251,22 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * hexadecimal was not found.
    */
   @Throws(IOException::class)
-  fun readHexadecimalUnsignedLong(): Long
+  actual fun readHexadecimalUnsignedLong(): Long
 
   /**
    * Reads and discards `byteCount` bytes from this source. Throws an [java.io.EOFException] if the
    * source is exhausted before the requested bytes can be skipped.
    */
   @Throws(IOException::class)
-  fun skip(byteCount: Long)
+  actual fun skip(byteCount: Long)
 
   /** Removes all bytes bytes from this and returns them as a byte string. */
   @Throws(IOException::class)
-  fun readByteString(): ByteString
+  actual fun readByteString(): ByteString
 
   /** Removes `byteCount` bytes from this and returns them as a byte string. */
   @Throws(IOException::class)
-  fun readByteString(byteCount: Long): ByteString
+  actual fun readByteString(byteCount: Long): ByteString
 
   /**
    * Finds the first string in `options` that is a prefix of this buffer, consumes it from this
@@ -298,46 +298,46 @@ actual interface BufferedSource : Source, ReadableByteChannel {
 
   /** Removes all bytes from this and returns them as a byte array. */
   @Throws(IOException::class)
-  fun readByteArray(): ByteArray
+  actual fun readByteArray(): ByteArray
 
   /** Removes `byteCount` bytes from this and returns them as a byte array. */
   @Throws(IOException::class)
-  fun readByteArray(byteCount: Long): ByteArray
+  actual fun readByteArray(byteCount: Long): ByteArray
 
   /**
    * Removes up to `sink.length` bytes from this and copies them into `sink`. Returns the number of
    * bytes read, or -1 if this source is exhausted.
    */
   @Throws(IOException::class)
-  fun read(sink: ByteArray): Int
+  actual fun read(sink: ByteArray): Int
 
   /**
    * Removes exactly `sink.length` bytes from this and copies them into `sink`. Throws an
    * [java.io.EOFException] if the requested number of bytes cannot be read.
    */
   @Throws(IOException::class)
-  fun readFully(sink: ByteArray)
+  actual fun readFully(sink: ByteArray)
 
   /**
    * Removes up to `byteCount` bytes from this and copies them into `sink` at `offset`. Returns the
    * number of bytes read, or -1 if this source is exhausted.
    */
   @Throws(IOException::class)
-  fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
+  actual fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
 
   /**
    * Removes exactly `byteCount` bytes from this and appends them to `sink`. Throws an
    * [java.io.EOFException] if the requested number of bytes cannot be read.
    */
   @Throws(IOException::class)
-  fun readFully(sink: Buffer, byteCount: Long)
+  actual fun readFully(sink: Buffer, byteCount: Long)
 
   /**
    * Removes all bytes from this and appends them to `sink`. Returns the total number of bytes
    * written to `sink` which will be 0 if this is exhausted.
    */
   @Throws(IOException::class)
-  fun readAll(sink: Sink): Long
+  actual fun readAll(sink: Sink): Long
 
   /**
    * Removes all bytes from this, decodes them as UTF-8, and returns the string. Returns the empty
@@ -356,7 +356,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readUtf8(): String
+  actual fun readUtf8(): String
 
   /**
    * Removes `byteCount` bytes from this, decodes them as UTF-8, and returns the string.
@@ -378,7 +378,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readUtf8(byteCount: Long): String
+  actual fun readUtf8(byteCount: Long): String
 
   /**
    * Removes and returns characters up to but not including the next line break. A line break is
@@ -409,7 +409,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * line break is optional.
    */
   @Throws(IOException::class)
-  fun readUtf8Line(): String?
+  actual fun readUtf8Line(): String?
 
   /**
    * Removes and returns characters up to but not including the next line break. A line break is
@@ -421,7 +421,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * input.
    */
   @Throws(IOException::class)
-  fun readUtf8LineStrict(): String
+  actual fun readUtf8LineStrict(): String
 
   /**
    * Like [readUtf8LineStrict], except this allows the caller to specify the longest allowed match.
@@ -445,7 +445,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun readUtf8LineStrict(limit: Long): String
+  actual fun readUtf8LineStrict(limit: Long): String
 
   /**
    * Removes and returns a single UTF-8 code point, reading between 1 and 4 bytes as necessary.
@@ -460,7 +460,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * encodings (such as `0xc080` for the NUL character in modified UTF-8).
    */
   @Throws(IOException::class)
-  fun readUtf8CodePoint(): Int
+  actual fun readUtf8CodePoint(): Int
 
   /** Removes all bytes from this, decodes them as `charset`, and returns the string. */
   @Throws(IOException::class)
@@ -475,7 +475,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
 
   /** Equivalent to [indexOf(b, 0)][indexOf]. */
   @Throws(IOException::class)
-  fun indexOf(b: Byte): Long
+  actual fun indexOf(b: Byte): Long
 
   /**
    * Returns the index of the first `b` in the buffer at or after `fromIndex`. This expands the
@@ -491,7 +491,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun indexOf(b: Byte, fromIndex: Long): Long
+  actual fun indexOf(b: Byte, fromIndex: Long): Long
 
   /**
    * Returns the index of `b` if it is found in the range of `fromIndex` inclusive to `toIndex`
@@ -501,11 +501,11 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * maximum number of bytes scanned is `toIndex-fromIndex`.
    */
   @Throws(IOException::class)
-  fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
+  actual fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
 
   /** Equivalent to [indexOf(bytes, 0)][indexOf]. */
   @Throws(IOException::class)
-  fun indexOf(bytes: ByteString): Long
+  actual fun indexOf(bytes: ByteString): Long
 
   /**
    * Returns the index of the first match for `bytes` in the buffer at or after `fromIndex`. This
@@ -523,11 +523,11 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun indexOf(bytes: ByteString, fromIndex: Long): Long
+  actual fun indexOf(bytes: ByteString, fromIndex: Long): Long
 
   /** Equivalent to [indexOfElement(targetBytes, 0)][indexOfElement]. */
   @Throws(IOException::class)
-  fun indexOfElement(targetBytes: ByteString): Long
+  actual fun indexOfElement(targetBytes: ByteString): Long
 
   /**
    * Returns the first index in this buffer that is at or after `fromIndex` and that contains any of
@@ -545,7 +545,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
+  actual fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
 
   /**
    * Returns true if the bytes at `offset` in this source equal `bytes`. This expands the buffer as
@@ -562,7 +562,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun rangeEquals(offset: Long, bytes: ByteString): Boolean
+  actual fun rangeEquals(offset: Long, bytes: ByteString): Boolean
 
   /**
    * Returns true if `byteCount` bytes at `offset` in this source equal `bytes` at `bytesOffset`.
@@ -570,7 +570,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * the stream is exhausted before enough bytes could determine a match.
    */
   @Throws(IOException::class)
-  fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
+  actual fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
 
   /**
    * Returns a new `BufferedSource` that can read data from this `BufferedSource` without consuming
@@ -591,7 +591,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * buffer.readUtf8(3) // returns "def", buffer contains "ghi"
    * ```
    */
-  fun peek(): BufferedSource
+  actual fun peek(): BufferedSource
 
   /** Returns an input stream that reads from this source. */
   fun inputStream(): InputStream

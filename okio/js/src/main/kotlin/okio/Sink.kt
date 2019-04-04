@@ -15,4 +15,8 @@
  */
 package okio
 
-actual interface Sink
+actual interface Sink {
+  actual fun write(source: Buffer, byteCount: Long)
+
+  actual fun timeout(): Timeout
+}

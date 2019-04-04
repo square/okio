@@ -15,4 +15,44 @@
  */
 package okio
 
-actual interface BufferedSink : Sink
+actual interface BufferedSink : Sink {
+  actual val buffer: Buffer
+
+  actual fun write(byteString: ByteString): BufferedSink
+
+  actual fun write(source: ByteArray): BufferedSink
+
+  actual fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
+
+  actual fun writeAll(source: Source): Long
+
+  actual fun write(source: Source, byteCount: Long): BufferedSink
+
+  actual fun writeUtf8(string: String): BufferedSink
+
+  actual fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink
+
+  actual fun writeUtf8CodePoint(codePoint: Int): BufferedSink
+
+  actual fun writeByte(b: Int): BufferedSink
+
+  actual fun writeShort(s: Int): BufferedSink
+
+  actual fun writeShortLe(s: Int): BufferedSink
+
+  actual fun writeInt(i: Int): BufferedSink
+
+  actual fun writeIntLe(i: Int): BufferedSink
+
+  actual fun writeLong(v: Long): BufferedSink
+
+  actual fun writeLongLe(v: Long): BufferedSink
+
+  actual fun writeDecimalLong(v: Long): BufferedSink
+
+  actual fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
+
+  actual fun emit(): BufferedSink
+
+  actual fun emitCompleteSegments(): BufferedSink
+}

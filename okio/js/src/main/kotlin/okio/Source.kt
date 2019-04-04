@@ -15,4 +15,8 @@
  */
 package okio
 
-actual interface Source
+actual interface Source {
+  actual fun read(sink: Buffer, byteCount: Long): Long
+
+  actual fun timeout(): Timeout
+}
