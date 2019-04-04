@@ -16,4 +16,15 @@
 
 package okio
 
+/**
+ * Supplies a stream of bytes. Use this interface to read data from wherever it's located: from the
+ * network, storage, or a buffer in memory. Sources may be layered to transform supplied data, such
+ * as to decompress, decrypt, or remove protocol framing.
+ *
+ * Most applications shouldn't operate on a source directly, but rather on a [BufferedSource] which
+ * is both more efficient and more convenient. Use [buffer] to wrap any source with a buffer.
+ *
+ * Sources are easy to test: just use a [Buffer] in your tests, and fill it with the data your
+ * application is to read.
+ */
 expect interface Source

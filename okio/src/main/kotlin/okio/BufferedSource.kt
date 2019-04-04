@@ -16,4 +16,9 @@
 
 package okio
 
+/**
+ * A source that keeps a buffer internally so that callers can do small reads without a performance
+ * penalty. It also allows clients to read ahead, buffering as much as necessary before consuming
+ * input.
+ */
 expect interface BufferedSource : Source

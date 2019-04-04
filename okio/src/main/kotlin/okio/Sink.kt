@@ -16,4 +16,15 @@
 
 package okio
 
+/**
+ * Receives a stream of bytes. Use this interface to write data wherever it's needed: to the
+ * network, storage, or a buffer in memory. Sinks may be layered to transform received data, such as
+ * to compress, encrypt, throttle, or add protocol framing.
+ *
+ * Most application code shouldn't operate on a sink directly, but rather on a [BufferedSink] which
+ * is both more efficient and more convenient. Use [buffer] to wrap any sink with a buffer.
+ *
+ * Sinks are easy to test: just use a [Buffer] in your tests, and read from it to confirm it
+ * received the data that was expected.
+ */
 expect interface Sink
