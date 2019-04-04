@@ -17,6 +17,7 @@
 package okio.internal
 
 import okio.BASE64_URL_SAFE
+import okio.Buffer
 import okio.ByteString
 import okio.REPLACEMENT_CODE_POINT
 import okio.and
@@ -250,6 +251,11 @@ internal fun String.commonDecodeHex(): ByteString {
     result[i] = (d1 + d2).toByte()
   }
   return ByteString(result)
+}
+
+/** Writes the contents of this byte string to `buffer`.  */
+internal fun ByteString.commonWrite(buffer: Buffer) {
+  buffer.write(data, 0, data.size)
 }
 
 private fun decodeHexDigit(c: Char): Int {

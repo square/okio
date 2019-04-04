@@ -95,6 +95,9 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   /** Returns a byte array containing a copy of the bytes in this `ByteString`. */
   fun toByteArray(): ByteArray
 
+  /** Writes the contents of this byte string to `buffer`.  */
+  internal fun write(buffer: Buffer)
+
   /** Returns the bytes of this string without a defensive copy. Do not mutate!  */
   internal fun internalArray(): ByteArray
 

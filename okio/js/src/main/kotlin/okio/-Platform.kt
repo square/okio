@@ -28,3 +28,7 @@ actual open class ArrayIndexOutOfBoundsException actual constructor(
 ) : IndexOutOfBoundsException(message)
 
 internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R = block()
+
+actual open class IOException actual constructor(message: String?) : Exception(message)
+
+actual open class EOFException actual constructor(message: String?) : IOException(message)

@@ -37,46 +37,6 @@ class BufferKotlinTest {
     }
   }
 
-  @Test fun copyToBuffer() {
-    val source = Buffer()
-    source.writeUtf8("party")
-
-    val target = Buffer()
-    source.copyTo(target)
-    assertThat(target.readUtf8()).isEqualTo("party")
-    assertThat(source.readUtf8()).isEqualTo("party")
-  }
-
-  @Test fun copyToBufferWithOffset() {
-    val source = Buffer()
-    source.writeUtf8("party")
-
-    val target = Buffer()
-    source.copyTo(target, offset = 2)
-    assertThat(target.readUtf8()).isEqualTo("rty")
-    assertThat(source.readUtf8()).isEqualTo("party")
-  }
-
-  @Test fun copyToBufferWithByteCount() {
-    val source = Buffer()
-    source.writeUtf8("party")
-
-    val target = Buffer()
-    source.copyTo(target, byteCount = 3)
-    assertThat(target.readUtf8()).isEqualTo("par")
-    assertThat(source.readUtf8()).isEqualTo("party")
-  }
-
-  @Test fun copyToBufferWithOffsetAndByteCount() {
-    val source = Buffer()
-    source.writeUtf8("party")
-
-    val target = Buffer()
-    source.copyTo(target, offset = 1, byteCount = 3)
-    assertThat(target.readUtf8()).isEqualTo("art")
-    assertThat(source.readUtf8()).isEqualTo("party")
-  }
-
   @Test fun copyToOutputStream() {
     val source = Buffer()
     source.writeUtf8("party")

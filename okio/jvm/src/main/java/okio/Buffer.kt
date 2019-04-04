@@ -15,6 +15,16 @@
  */
 package okio
 
+import okio.internal.commonCopyTo
+import okio.internal.commonGet
+import okio.internal.commonRead
+import okio.internal.commonReadByte
+import okio.internal.commonReadByteArray
+import okio.internal.commonReadByteString
+import okio.internal.commonReadFully
+import okio.internal.commonWritableSegment
+import okio.internal.commonWrite
+import okio.internal.seek
 import java.io.Closeable
 import java.io.EOFException
 import java.io.IOException
@@ -42,10 +52,10 @@ import javax.crypto.spec.SecretKeySpec
  * space anyway. This class avoids zero-fill and GC churn by pooling byte arrays.
  */
 actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
-  @JvmField internal var head: Segment? = null
+  @JvmField internal actual var head: Segment? = null
 
   @get:JvmName("size")
-  var size: Long = 0L
+  actual var size: Long = 0L
     internal set
 
   override fun buffer() = this
@@ -143,44 +153,20 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Copy `byteCount` bytes from this, starting at `offset`, to `out`.  */
-  fun copyTo(
+  actual fun copyTo(
     out: Buffer,
-    offset: Long = 0L,
-    byteCount: Long = size - offset
-  ): Buffer {
-    var offset = offset
-    var byteCount = byteCount
-    checkOffsetAndCount(size, offset, byteCount)
-    if (byteCount == 0L) return this
+    offset: Long,
+    byteCount: Long
+  ): Buffer = commonCopyTo(out, offset, byteCount)
 
-    out.size += byteCount
-
-    // Skip segments that we aren't copying from.
-    var s = head
-    while (offset >= s!!.limit - s.pos) {
-      offset -= (s.limit - s.pos).toLong()
-      s = s.next
-    }
-
-    // Copy one segment at a time.
-    while (byteCount > 0L) {
-      val copy = s!!.sharedCopy()
-      copy.pos += offset.toInt()
-      copy.limit = minOf(copy.pos + byteCount.toInt(), copy.limit)
-      if (out.head == null) {
-        copy.prev = copy
-        copy.next = copy.prev
-        out.head = copy.next
-      } else {
-        out.head!!.prev!!.push(copy)
-      }
-      byteCount -= (copy.limit - copy.pos).toLong()
-      offset = 0L
-      s = s.next
-    }
-
-    return this
-  }
+  /**
+   * Overload of [copyTo] with byteCount = size - offset, work around for
+   *  https://youtrack.jetbrains.com/issue/KT-30847
+   */
+  actual fun copyTo(
+    out: Buffer,
+    offset: Long
+  ): Buffer = copyTo(out, offset, size - offset)
 
   /** Write `byteCount` bytes from this to `out`.  */
   @Throws(IOException::class)
@@ -259,35 +245,11 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   @Throws(EOFException::class)
-  override fun readByte(): Byte {
-    if (size == 0L) throw EOFException()
-
-    val segment = head!!
-    var pos = segment.pos
-    val limit = segment.limit
-
-    val data = segment.data
-    val b = data[pos++]
-    size -= 1L
-
-    if (pos == limit) {
-      head = segment.pop()
-      SegmentPool.recycle(segment)
-    } else {
-      segment.pos = pos
-    }
-
-    return b
-  }
+  override fun readByte(): Byte = commonReadByte()
 
   /** Returns the byte at `pos`.  */
   @JvmName("getByte")
-  operator fun get(pos: Long): Byte {
-    checkOffsetAndCount(size, pos, 1L)
-    seek(pos) { s, offset ->
-      return s!!.data[(s.pos + pos - offset).toInt()]
-    }
-  }
+  operator fun get(pos: Long): Byte = commonGet(pos)
 
   @Throws(EOFException::class)
   override fun readShort(): Short {
@@ -516,10 +478,10 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return value
   }
 
-  override fun readByteString(): ByteString = ByteString(readByteArray())
+  override fun readByteString(): ByteString = commonReadByteString()
 
   @Throws(EOFException::class)
-  override fun readByteString(byteCount: Long) = ByteString(readByteArray(byteCount))
+  override fun readByteString(byteCount: Long) = commonReadByteString(byteCount)
 
   override fun select(options: Options): Int {
     val index = selectPrefix(options)
@@ -807,47 +769,18 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     }
   }
 
-  override fun readByteArray() = readByteArray(size)
+  override fun readByteArray() = commonReadByteArray()
 
   @Throws(EOFException::class)
-  override fun readByteArray(byteCount: Long): ByteArray {
-    require(byteCount >= 0 && byteCount <= Integer.MAX_VALUE) { "byteCount: $byteCount" }
-    if (size < byteCount) throw EOFException()
+  override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
 
-    val result = ByteArray(byteCount.toInt())
-    readFully(result)
-    return result
-  }
-
-  override fun read(sink: ByteArray) = read(sink, 0, sink.size)
+  override fun read(sink: ByteArray) = commonRead(sink)
 
   @Throws(EOFException::class)
-  override fun readFully(sink: ByteArray) {
-    var offset = 0
-    while (offset < sink.size) {
-      val read = read(sink, offset, sink.size - offset)
-      if (read == -1) throw EOFException()
-      offset += read
-    }
-  }
+  override fun readFully(sink: ByteArray) = commonReadFully(sink)
 
-  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int {
-    checkOffsetAndCount(sink.size.toLong(), offset.toLong(), byteCount.toLong())
-
-    val s = head ?: return -1
-    val toCopy = minOf(byteCount, s.limit - s.pos)
-    System.arraycopy(s.data, s.pos, sink, offset, toCopy)
-
-    s.pos += toCopy
-    size -= toCopy.toLong()
-
-    if (s.pos == s.limit) {
-      head = s.pop()
-      SegmentPool.recycle(s)
-    }
-
-    return toCopy
-  }
+  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int =
+    commonRead(sink, offset, byteCount)
 
   @Throws(IOException::class)
   override fun read(sink: ByteBuffer): Int {
@@ -892,12 +825,9 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     }
   }
 
-  actual override fun write(byteString: ByteString): Buffer {
-    byteString.write(this)
-    return this
-  }
+  actual override fun write(byteString: ByteString): Buffer = commonWrite(byteString)
 
-  actual override fun writeUtf8(string: String) = writeUtf8(string, 0, string.length)
+  actual override fun writeUtf8(string: String): Buffer = writeUtf8(string, 0, string.length)
 
   actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer {
     require(beginIndex >= 0) { "beginIndex < 0: $beginIndex" }
@@ -1058,26 +988,13 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return write(data, 0, data.size)
   }
 
-  actual override fun write(source: ByteArray) = write(source, 0, source.size)
+  actual override fun write(source: ByteArray): Buffer = commonWrite(source)
 
-  actual override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer {
-    var offset = offset
-    checkOffsetAndCount(source.size.toLong(), offset.toLong(), byteCount.toLong())
-
-    val limit = offset + byteCount
-    while (offset < limit) {
-      val tail = writableSegment(1)
-
-      val toCopy = minOf(limit - offset, Segment.SIZE - tail.limit)
-      System.arraycopy(source, offset, tail.data, tail.limit, toCopy)
-
-      offset += toCopy
-      tail.limit += toCopy
-    }
-
-    size += byteCount.toLong()
-    return this
-  }
+  actual override fun write(
+    source: ByteArray,
+    offset: Int,
+    byteCount: Int
+  ): Buffer = commonWrite(source, offset, byteCount)
 
   @Throws(IOException::class)
   override fun write(source: ByteBuffer): Int {
@@ -1262,27 +1179,8 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return this
   }
 
-  /**
-   * Returns a tail segment that we can write at least `minimumCapacity`
-   * bytes to, creating it if necessary.
-   */
-  internal fun writableSegment(minimumCapacity: Int): Segment {
-    require(minimumCapacity >= 1 && minimumCapacity <= Segment.SIZE) { "unexpected capacity" }
-
-    if (head == null) {
-      val result = SegmentPool.take() // Acquire a first segment.
-      head = result
-      result.prev = result
-      result.next = result
-      return result
-    }
-
-    var tail = head!!.prev
-    if (tail!!.limit + minimumCapacity > Segment.SIZE || !tail.owner) {
-      tail = tail.push(SegmentPool.take()) // Append a new empty segment to fill up.
-    }
-    return tail
-  }
+  internal actual fun writableSegment(minimumCapacity: Int): Segment =
+    commonWritableSegment(minimumCapacity)
 
   override fun write(source: Buffer, byteCount: Long) {
     var byteCount = byteCount
@@ -1386,34 +1284,6 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   override fun indexOf(b: Byte) = indexOf(b, 0, Long.MAX_VALUE)
-
-  /**
-   * Invoke `lambda` with the segment and offset at `fromIndex`. Searches from the front or the back
-   * depending on what's closer to `fromIndex`.
-   */
-  private inline fun <T> seek(fromIndex: Long, lambda: (Segment?, Long) -> T): T {
-    var s: Segment = head ?: return lambda(null, -1L)
-
-    if (size - fromIndex < fromIndex) {
-      // We're scanning in the back half of this buffer. Find the segment starting at the back.
-      var offset = size
-      while (offset > fromIndex) {
-        s = s.prev!!
-        offset -= (s.limit - s.pos).toLong()
-      }
-      return lambda(s, offset)
-    } else {
-      // We're scanning in the front half of this buffer. Find the segment starting at the front.
-      var offset = 0L
-      while (true) {
-        val nextOffset = offset + (s.limit - s.pos)
-        if (nextOffset > fromIndex) break
-        s = s.next!!
-        offset = nextOffset
-      }
-      return lambda(s, offset)
-    }
-  }
 
   /**
    * Returns the index of `b` in this at or beyond `fromIndex`, or -1 if this buffer does not

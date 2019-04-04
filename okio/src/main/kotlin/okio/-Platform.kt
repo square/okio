@@ -24,3 +24,7 @@ internal expect fun String.asUtf8ToByteArray(): ByteArray
 expect class ArrayIndexOutOfBoundsException(message: String?) : IndexOutOfBoundsException
 
 internal expect inline fun <R> synchronized(lock: Any, block: () -> R): R
+
+expect open class IOException(message: String? = null) : Exception
+
+expect open class EOFException(message: String? = null) : IOException

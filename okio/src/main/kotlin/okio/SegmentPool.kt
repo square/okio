@@ -15,9 +15,6 @@
  */
 package okio
 
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmStatic
-
 /**
  * A collection of unused segments, necessary to avoid GC churn and zero-fill.
  * This pool is a thread-safe static singleton.
@@ -28,14 +25,11 @@ internal object SegmentPool {
   const val MAX_SIZE = 64 * 1024L // 64 KiB.
 
   /** Singly-linked list of segments.  */
-  @JvmField
   var next: Segment? = null
 
   /** Total bytes in this pool.  */
-  @JvmField
   var byteCount = 0L
 
-  @JvmStatic
   fun take(): Segment {
     synchronized(this) {
       next?.let { result ->
@@ -48,7 +42,6 @@ internal object SegmentPool {
     return Segment() // Pool is empty. Don't zero-fill while holding a lock.
   }
 
-  @JvmStatic
   fun recycle(segment: Segment) {
     require(segment.next == null && segment.prev == null)
     if (segment.shared) return // This segment cannot be recycled.

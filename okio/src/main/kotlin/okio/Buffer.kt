@@ -15,12 +15,32 @@
  */
 package okio
 
-expect class Buffer : BufferedSource, BufferedSink {
+expect class Buffer() : BufferedSource, BufferedSink {
+  internal var head: Segment?
+
+  var size: Long
+    internal set
+
   override val buffer: Buffer
 
   override fun emitCompleteSegments(): Buffer
 
   override fun emit(): Buffer
+
+  fun copyTo(
+    out: Buffer,
+    offset: Long = 0L,
+    byteCount: Long
+  ): Buffer
+
+  /**
+   * Overload of [copyTo] with byteCount = size - offset, work around for
+   *  https://youtrack.jetbrains.com/issue/KT-30847
+   */
+  fun copyTo(
+    out: Buffer,
+    offset: Long = 0L
+  ): Buffer
 
   override fun write(byteString: ByteString): Buffer
 
@@ -31,6 +51,12 @@ expect class Buffer : BufferedSource, BufferedSink {
   override fun writeUtf8CodePoint(codePoint: Int): Buffer
 
   override fun write(source: ByteArray): Buffer
+
+  /**
+   * Returns a tail segment that we can write at least `minimumCapacity`
+   * bytes to, creating it if necessary.
+   */
+  internal fun writableSegment(minimumCapacity: Int): Segment
 
   override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
 

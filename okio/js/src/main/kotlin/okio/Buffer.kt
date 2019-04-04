@@ -15,141 +15,172 @@
  */
 package okio
 
+import okio.internal.commonCopyTo
+import okio.internal.commonGet
+import okio.internal.commonRead
+import okio.internal.commonReadByte
+import okio.internal.commonReadByteArray
+import okio.internal.commonReadByteString
+import okio.internal.commonReadFully
+import okio.internal.commonWritableSegment
+import okio.internal.commonWrite
+
 actual class Buffer : BufferedSource, BufferedSink {
+  internal actual var head: Segment? = null
+
+  actual var size: Long = 0L
+    internal set
+
   actual override val buffer: Buffer get() = this
 
   actual override fun emitCompleteSegments(): Buffer = this // Nowhere to emit to!
 
   actual override fun emit(): Buffer = this // Nowhere to emit to!
 
-  override fun exhausted(): Boolean = throw UnsupportedOperationException()
+  override fun exhausted(): Boolean = TODO()
 
   override fun require(byteCount: Long) {
-    throw UnsupportedOperationException()
+    TODO()
   }
 
-  override fun request(byteCount: Long): Boolean = throw UnsupportedOperationException()
+  override fun request(byteCount: Long): Boolean = TODO()
 
-  override fun peek(): BufferedSource = throw UnsupportedOperationException()
+  override fun peek(): BufferedSource = PeekSource(this).buffer()
 
-  override fun readByte(): Byte = throw UnsupportedOperationException()
+  actual fun copyTo(
+    out: Buffer,
+    offset: Long,
+    byteCount: Long
+  ): Buffer = commonCopyTo(out, offset, byteCount)
 
-  override fun readShort(): Short = throw UnsupportedOperationException()
+  /**
+   * Overload of [copyTo] with byteCount = size - offset, work around for
+   *  https://youtrack.jetbrains.com/issue/KT-30847
+   */
+  actual fun copyTo(
+    out: Buffer,
+    offset: Long
+  ): Buffer = copyTo(out, offset, size - offset)
 
-  override fun readInt(): Int = throw UnsupportedOperationException()
+  operator fun get(pos: Long): Byte = commonGet(pos)
 
-  override fun readLong(): Long = throw UnsupportedOperationException()
+  override fun readByte(): Byte = commonReadByte()
 
-  override fun readShortLe(): Short = throw UnsupportedOperationException()
+  override fun readShort(): Short = TODO()
 
-  override fun readIntLe(): Int = throw UnsupportedOperationException()
+  override fun readInt(): Int = TODO()
 
-  override fun readLongLe(): Long = throw UnsupportedOperationException()
+  override fun readLong(): Long = TODO()
 
-  override fun readDecimalLong(): Long = throw UnsupportedOperationException()
+  override fun readShortLe(): Short = TODO()
 
-  override fun readHexadecimalUnsignedLong(): Long = throw UnsupportedOperationException()
+  override fun readIntLe(): Int = TODO()
 
-  override fun readByteString(): ByteString = throw UnsupportedOperationException()
+  override fun readLongLe(): Long = TODO()
 
-  override fun readByteString(byteCount: Long): ByteString = throw UnsupportedOperationException()
+  override fun readDecimalLong(): Long = TODO()
 
-  override fun readFully(sink: Buffer, byteCount: Long) {
-    throw UnsupportedOperationException()
-  }
+  override fun readHexadecimalUnsignedLong(): Long = TODO()
 
-  override fun readAll(sink: Sink): Long = throw UnsupportedOperationException()
+  override fun readByteString(): ByteString = commonReadByteString()
 
-  override fun readUtf8(): String = throw UnsupportedOperationException()
+  override fun readByteString(byteCount: Long): ByteString = commonReadByteString(byteCount)
 
-  override fun readUtf8(byteCount: Long): String = throw UnsupportedOperationException()
+  override fun readFully(sink: Buffer, byteCount: Long) = TODO()
 
-  override fun readUtf8Line(): String? = throw UnsupportedOperationException()
+  override fun readAll(sink: Sink): Long = TODO()
 
-  override fun readUtf8LineStrict(): String = throw UnsupportedOperationException()
+  override fun readUtf8(): String = TODO()
 
-  override fun readUtf8LineStrict(limit: Long): String = throw UnsupportedOperationException()
+  override fun readUtf8(byteCount: Long): String = TODO()
 
-  override fun readUtf8CodePoint(): Int = throw UnsupportedOperationException()
+  override fun readUtf8Line(): String? = TODO()
 
-  override fun readByteArray(): ByteArray = throw UnsupportedOperationException()
+  override fun readUtf8LineStrict(): String = TODO()
 
-  override fun readByteArray(byteCount: Long): ByteArray = throw UnsupportedOperationException()
+  override fun readUtf8LineStrict(limit: Long): String = TODO()
 
-  override fun read(sink: ByteArray): Int = throw UnsupportedOperationException()
+  override fun readUtf8CodePoint(): Int = TODO()
 
-  override fun readFully(sink: ByteArray) {
-    throw UnsupportedOperationException()
-  }
+  override fun readByteArray(): ByteArray = commonReadByteArray()
 
-  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int = throw UnsupportedOperationException()
+  override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
 
-  override fun skip(byteCount: Long) {
-    throw UnsupportedOperationException()
-  }
+  override fun read(sink: ByteArray): Int = commonRead(sink)
 
-  actual override fun write(byteString: ByteString): Buffer = throw UnsupportedOperationException()
+  override fun readFully(sink: ByteArray) = commonReadFully(sink)
 
-  actual override fun writeUtf8(string: String): Buffer = throw UnsupportedOperationException()
+  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int =
+    commonRead(sink, offset, byteCount)
 
-  actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer = throw UnsupportedOperationException()
+  override fun skip(byteCount: Long) = TODO()
 
-  actual override fun writeUtf8CodePoint(codePoint: Int): Buffer = throw UnsupportedOperationException()
+  actual override fun write(byteString: ByteString): Buffer = commonWrite(byteString)
 
-  actual override fun write(source: ByteArray): Buffer = throw UnsupportedOperationException()
+  internal actual fun writableSegment(minimumCapacity: Int): Segment =
+    commonWritableSegment(minimumCapacity)
 
-  actual override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer = throw UnsupportedOperationException()
+  actual override fun writeUtf8(string: String): Buffer = TODO()
 
-  override fun writeAll(source: Source): Long = throw UnsupportedOperationException()
+  actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer = TODO()
 
-  actual override fun write(source: Source, byteCount: Long): Buffer = throw UnsupportedOperationException()
+  actual override fun writeUtf8CodePoint(codePoint: Int): Buffer = TODO()
 
-  actual override fun writeByte(b: Int): Buffer = throw UnsupportedOperationException()
+  actual override fun write(source: ByteArray): Buffer = commonWrite(source)
 
-  actual override fun writeShort(s: Int): Buffer = throw UnsupportedOperationException()
+  actual override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer =
+    commonWrite(source, offset, byteCount)
 
-  actual override fun writeShortLe(s: Int): Buffer = throw UnsupportedOperationException()
+  override fun writeAll(source: Source): Long = TODO()
 
-  actual override fun writeInt(i: Int): Buffer = throw UnsupportedOperationException()
+  actual override fun write(source: Source, byteCount: Long): Buffer = TODO()
 
-  actual override fun writeIntLe(i: Int): Buffer = throw UnsupportedOperationException()
+  actual override fun writeByte(b: Int): Buffer = TODO()
 
-  actual override fun writeLong(v: Long): Buffer = throw UnsupportedOperationException()
+  actual override fun writeShort(s: Int): Buffer = TODO()
 
-  actual override fun writeLongLe(v: Long): Buffer = throw UnsupportedOperationException()
+  actual override fun writeShortLe(s: Int): Buffer = TODO()
 
-  actual override fun writeDecimalLong(v: Long): Buffer = throw UnsupportedOperationException()
+  actual override fun writeInt(i: Int): Buffer = TODO()
 
-  actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer = throw UnsupportedOperationException()
+  actual override fun writeIntLe(i: Int): Buffer = TODO()
+
+  actual override fun writeLong(v: Long): Buffer = TODO()
+
+  actual override fun writeLongLe(v: Long): Buffer = TODO()
+
+  actual override fun writeDecimalLong(v: Long): Buffer = TODO()
+
+  actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer = TODO()
 
   override fun write(source: Buffer, byteCount: Long) {
-    throw UnsupportedOperationException()
+    TODO()
   }
 
-  override fun read(sink: Buffer, byteCount: Long): Long = throw UnsupportedOperationException()
+  override fun read(sink: Buffer, byteCount: Long): Long = TODO()
 
-  override fun indexOf(b: Byte): Long = throw UnsupportedOperationException()
+  override fun indexOf(b: Byte): Long = TODO()
 
-  override fun indexOf(b: Byte, fromIndex: Long): Long = throw UnsupportedOperationException()
+  override fun indexOf(b: Byte, fromIndex: Long): Long = TODO()
 
-  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long = throw UnsupportedOperationException()
+  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long = TODO()
 
-  override fun indexOf(bytes: ByteString): Long = throw UnsupportedOperationException()
+  override fun indexOf(bytes: ByteString): Long = TODO()
 
-  override fun indexOf(bytes: ByteString, fromIndex: Long): Long = throw UnsupportedOperationException()
+  override fun indexOf(bytes: ByteString, fromIndex: Long): Long = TODO()
 
-  override fun indexOfElement(targetBytes: ByteString): Long = throw UnsupportedOperationException()
+  override fun indexOfElement(targetBytes: ByteString): Long = TODO()
 
-  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long = throw UnsupportedOperationException()
+  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long = TODO()
 
-  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean = throw UnsupportedOperationException()
+  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean = TODO()
 
   override fun rangeEquals(
     offset: Long,
     bytes: ByteString,
     bytesOffset: Int,
     byteCount: Int
-  ): Boolean = throw UnsupportedOperationException()
+  ): Boolean = TODO()
 
   override fun flush() {
   }

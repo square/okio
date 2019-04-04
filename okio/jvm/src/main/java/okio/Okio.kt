@@ -34,18 +34,9 @@ import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Logger
 
-/**
- * Returns a new source that buffers reads from `source`. The returned source will perform bulk
- * reads into its in-memory buffer. Use this wherever you read a source to get an ergonomic and
- * efficient access to data.
- */
-fun Source.buffer(): BufferedSource = RealBufferedSource(this)
+actual fun Source.buffer(): BufferedSource = RealBufferedSource(this)
 
-/**
- * Returns a new sink that buffers writes to `sink`. The returned sink will batch writes to `sink`.
- * Use this wherever you write to a sink to get an ergonomic and efficient access to data.
- */
-fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
+actual fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -117,9 +108,8 @@ private class InputStreamSource(
   override fun toString() = "source($input)"
 }
 
-/** Returns a sink that writes nowhere. */
 @JvmName("blackhole")
-fun blackholeSink(): Sink = BlackholeSink()
+actual fun blackholeSink(): Sink = BlackholeSink()
 
 private class BlackholeSink : Sink {
   override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
