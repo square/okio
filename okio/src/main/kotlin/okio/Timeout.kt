@@ -15,4 +15,4 @@
  */
 package okio
 
-expect interface Source
+expect open class Timeout

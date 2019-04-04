@@ -15,4 +15,4 @@
  */
 package okio
 
-expect interface Source
+actual class Buffer : BufferedSource, BufferedSink
