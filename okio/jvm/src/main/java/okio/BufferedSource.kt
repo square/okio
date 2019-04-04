@@ -25,7 +25,7 @@ import java.nio.charset.Charset
  * penalty. It also allows clients to read ahead, buffering as much as necessary before consuming
  * input.
  */
-interface BufferedSource : Source, ReadableByteChannel {
+actual interface BufferedSource : Source, ReadableByteChannel {
   /** Returns this source's internal buffer. */
   @Deprecated(
     message = "moved to val: use getBuffer() instead",

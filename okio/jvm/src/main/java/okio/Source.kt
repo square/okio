@@ -53,7 +53,7 @@ import java.io.IOException
  * Use [source] to adapt an `InputStream` to a source. Use [BufferedSource.inputStream] to adapt a
  * source to an `InputStream`.
  */
-interface Source : Closeable {
+actual interface Source : Closeable {
   /**
    * Removes at least 1, and up to `byteCount` bytes from this and appends them to `sink`. Returns
    * the number of bytes read, or -1 if this source is exhausted.
