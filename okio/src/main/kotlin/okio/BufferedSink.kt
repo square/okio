@@ -15,4 +15,44 @@
  */
 package okio
 
-expect interface BufferedSink : Sink
+expect interface BufferedSink : Sink {
+  val buffer: Buffer
+
+  fun write(byteString: ByteString): BufferedSink
+
+  fun write(source: ByteArray): BufferedSink
+
+  fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
+
+  fun writeAll(source: Source): Long
+
+  fun write(source: Source, byteCount: Long): BufferedSink
+
+  fun writeUtf8(string: String): BufferedSink
+
+  fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink
+
+  fun writeUtf8CodePoint(codePoint: Int): BufferedSink
+
+  fun writeByte(b: Int): BufferedSink
+
+  fun writeShort(s: Int): BufferedSink
+
+  fun writeShortLe(s: Int): BufferedSink
+
+  fun writeInt(i: Int): BufferedSink
+
+  fun writeIntLe(i: Int): BufferedSink
+
+  fun writeLong(v: Long): BufferedSink
+
+  fun writeLongLe(v: Long): BufferedSink
+
+  fun writeDecimalLong(v: Long): BufferedSink
+
+  fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
+
+  fun emit(): BufferedSink
+
+  fun emitCompleteSegments(): BufferedSink
+}

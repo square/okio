@@ -15,4 +15,12 @@
  */
 package okio
 
-expect interface Sink
+expect interface Sink {
+  fun write(source: Buffer, byteCount: Long)
+
+  fun flush()
+
+  fun timeout(): Timeout
+
+  fun close()
+}

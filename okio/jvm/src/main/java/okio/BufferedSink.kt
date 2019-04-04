@@ -33,29 +33,29 @@ actual interface BufferedSink : Sink, WritableByteChannel {
   fun buffer(): Buffer
 
   /** This sink's internal buffer. */
-  val buffer: Buffer
+  actual val buffer: Buffer
 
   @Throws(IOException::class)
-  fun write(byteString: ByteString): BufferedSink
+  actual fun write(byteString: ByteString): BufferedSink
 
   /** Like [OutputStream.write], this writes a complete byte array to this sink. */
   @Throws(IOException::class)
-  fun write(source: ByteArray): BufferedSink
+  actual fun write(source: ByteArray): BufferedSink
 
   /** Like [OutputStream.write], this writes `byteCount` bytes of `source`, starting at `offset`. */
   @Throws(IOException::class)
-  fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
+  actual fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
 
   /**
    * Removes all bytes from `source` and appends them to this sink. Returns the number of bytes read
    * which will be 0 if `source` is exhausted.
    */
   @Throws(IOException::class)
-  fun writeAll(source: Source): Long
+  actual fun writeAll(source: Source): Long
 
   /** Removes `byteCount` bytes from `source` and appends them to this sink. */
   @Throws(IOException::class)
-  fun write(source: Source, byteCount: Long): BufferedSink
+  actual fun write(source: Source, byteCount: Long): BufferedSink
 
   /**
    * Encodes `string` in UTF-8 and writes it to this sink.
@@ -69,7 +69,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeUtf8(string: String): BufferedSink
+  actual fun writeUtf8(string: String): BufferedSink
 
   /**
    * Encodes the characters at `beginIndex` up to `endIndex` from `string` in UTF-8 and writes it to
@@ -86,11 +86,11 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink
+  actual fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink
 
   /** Encodes `codePoint` in UTF-8 and writes it to this sink. */
   @Throws(IOException::class)
-  fun writeUtf8CodePoint(codePoint: Int): BufferedSink
+  actual fun writeUtf8CodePoint(codePoint: Int): BufferedSink
 
   /** Encodes `string` in `charset` and writes it to this sink. */
   @Throws(IOException::class)
@@ -105,7 +105,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
 
   /** Writes a byte to this sink. */
   @Throws(IOException::class)
-  fun writeByte(b: Int): BufferedSink
+  actual fun writeByte(b: Int): BufferedSink
 
   /**
    * Writes a big-endian short to this sink using two bytes.
@@ -123,7 +123,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeShort(s: Int): BufferedSink
+  actual fun writeShort(s: Int): BufferedSink
 
   /**
    * Writes a little-endian short to this sink using two bytes.
@@ -141,7 +141,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeShortLe(s: Int): BufferedSink
+  actual fun writeShortLe(s: Int): BufferedSink
 
   /**
    * Writes a big-endian int to this sink using four bytes.
@@ -163,7 +163,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeInt(i: Int): BufferedSink
+  actual fun writeInt(i: Int): BufferedSink
 
   /**
    * Writes a little-endian int to this sink using four bytes.
@@ -185,7 +185,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeIntLe(i: Int): BufferedSink
+  actual fun writeIntLe(i: Int): BufferedSink
 
   /**
    * Writes a big-endian long to this sink using eight bytes.
@@ -215,7 +215,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeLong(v: Long): BufferedSink
+  actual fun writeLong(v: Long): BufferedSink
 
   /**
    * Writes a little-endian long to this sink using eight bytes.
@@ -245,7 +245,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeLongLe(v: Long): BufferedSink
+  actual fun writeLongLe(v: Long): BufferedSink
 
   /**
    * Writes a long to this sink in signed decimal form (i.e., as a string in base 10).
@@ -261,7 +261,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeDecimalLong(v: Long): BufferedSink
+  actual fun writeDecimalLong(v: Long): BufferedSink
 
   /**
    * Writes a long to this sink in hexadecimal form (i.e., as a string in base 16).
@@ -277,7 +277,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
+  actual fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
 
   /**
    * Writes all buffered data to the underlying sink, if one exists. Then that sink is recursively
@@ -327,7 +327,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun emit(): BufferedSink
+  actual fun emit(): BufferedSink
 
   /**
    * Writes complete segments to the underlying sink, if one exists. Like [flush], but weaker. Use
@@ -351,7 +351,7 @@ actual interface BufferedSink : Sink, WritableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun emitCompleteSegments(): BufferedSink
+  actual fun emitCompleteSegments(): BufferedSink
 
   /** Returns an output stream that writes to this sink. */
   fun outputStream(): OutputStream
