@@ -65,6 +65,13 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   fun toAsciiLowercase(): ByteString
 
   /**
+   * Returns a byte string that is a substring of this byte string, beginning at the specified
+   * `beginIndex` and ends at the specified `endIndex`. Returns this byte string if `beginIndex` is
+   * 0 and `endIndex` is the length of this byte string.
+   */
+  fun substring(beginIndex: Int = 0, endIndex: Int = size): ByteString
+
+  /**
    * Returns a byte string equal to this byte string, but with the bytes 'a' through 'z' replaced
    * with the corresponding byte in 'A' through 'Z'. Returns this byte string if it contains no
    * bytes in 'a' through 'z'.
@@ -117,6 +124,10 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   @JvmOverloads
   fun indexOf(other: ByteArray, fromIndex: Int = 0): Int
 
+  fun lastIndexOf(other: ByteString, fromIndex: Int = size) : Int
+
+  fun lastIndexOf(other: ByteArray, fromIndex: Int = size) : Int
+
   override fun equals(other: Any?): Boolean
 
   override fun hashCode(): Int
@@ -138,6 +149,13 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
     /** Returns a new byte string containing a clone of the bytes of `data`. */
     @JvmStatic
     fun of(vararg data: Byte): ByteString
+
+    /**
+     * Returns a new [ByteString] containing a copy of `byteCount` bytes of this [ByteArray]
+     * starting at `offset`.
+     */
+    @JvmStatic
+    fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString
 
     /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
     @JvmStatic

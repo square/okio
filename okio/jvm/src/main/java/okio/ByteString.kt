@@ -38,6 +38,7 @@ import okio.internal.commonSubstring
 import okio.internal.commonToAsciiLowercase
 import okio.internal.commonToAsciiUppercase
 import okio.internal.commonToByteArray
+import okio.internal.commonToByteString
 import okio.internal.commonToString
 import okio.internal.commonUtf8
 import java.io.EOFException
@@ -141,15 +142,8 @@ internal actual constructor(
    */
   actual open fun toAsciiUppercase(): ByteString = commonToAsciiUppercase()
 
-  // TODO move substring() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
-
-  /**
-   * Returns a byte string that is a substring of this byte string, beginning at the specified
-   * `beginIndex` and ends at the specified `endIndex`. Returns this byte string if `beginIndex` is
-   * 0 and `endIndex` is the length of this byte string.
-   */
   @JvmOverloads
-  open fun substring(beginIndex: Int = 0, endIndex: Int = size): ByteString =
+  actual open fun substring(beginIndex: Int, endIndex: Int): ByteString =
       commonSubstring(beginIndex, endIndex)
 
   /** Returns the byte at `pos`.  */
@@ -222,14 +216,11 @@ internal actual constructor(
   @JvmOverloads
   actual open fun indexOf(other: ByteArray, fromIndex: Int) = commonIndexOf(other, fromIndex)
 
-  // TODO move lastIndexOf() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
+  @JvmOverloads
+  actual fun lastIndexOf(other: ByteString, fromIndex: Int) = commonLastIndexOf(other, fromIndex)
 
   @JvmOverloads
-  fun lastIndexOf(other: ByteString, fromIndex: Int = size) = lastIndexOf(other.internalArray(),
-      fromIndex)
-
-  @JvmOverloads
-  open fun lastIndexOf(other: ByteArray, fromIndex: Int = size) = commonLastIndexOf(other, fromIndex)
+  actual open fun lastIndexOf(other: ByteArray, fromIndex: Int) = commonLastIndexOf(other, fromIndex)
 
   actual override fun equals(other: Any?) = commonEquals(other)
 
@@ -283,18 +274,10 @@ internal actual constructor(
     @JvmStatic
     actual fun of(vararg data: Byte) = commonOf(data)
 
-    // TODO move toByteString() when https://youtrack.jetbrains.com/issue/KT-22818 is fixed
-
-    /**
-     * Returns a new [ByteString] containing a copy of `byteCount` bytes of this [ByteArray]
-     * starting at `offset`.
-     */
     @JvmStatic
     @JvmName("of")
-    fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString {
-      checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
-      return ByteString(copyOfRange(offset, offset + byteCount))
-    }
+    actual fun ByteArray.toByteString(offset: Int, byteCount: Int): ByteString =
+      commonToByteString(offset, byteCount)
 
     /** Returns a [ByteString] containing a copy of this [ByteBuffer]. */
     @JvmStatic

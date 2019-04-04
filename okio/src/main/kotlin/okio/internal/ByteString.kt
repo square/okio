@@ -22,6 +22,7 @@ import okio.REPLACEMENT_CODE_POINT
 import okio.and
 import okio.arrayRangeEquals
 import okio.asUtf8ToByteArray
+import okio.checkOffsetAndCount
 import okio.decodeBase64ToArray
 import okio.encodeBase64
 import okio.isIsoControl
@@ -174,6 +175,8 @@ internal fun ByteString.commonIndexOf(other: ByteArray, fromIndex: Int): Int {
   return -1
 }
 
+internal fun ByteString.commonLastIndexOf(other: ByteString, fromIndex: Int) = lastIndexOf(other.internalArray(), fromIndex)
+
 internal fun ByteString.commonLastIndexOf(other: ByteArray, fromIndex: Int): Int {
   val limit = data.size - other.size
   for (i in minOf(fromIndex, limit) downTo 0) {
@@ -220,6 +223,11 @@ internal fun ByteString.commonCompareTo(other: ByteString): Int {
 internal val COMMON_EMPTY = ByteString.of()
 
 internal fun commonOf(data: ByteArray) = ByteString(data.copyOf())
+
+internal fun ByteArray.commonToByteString(offset: Int, byteCount: Int): ByteString {
+  checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
+  return ByteString(copyOfRange(offset, offset + byteCount))
+}
 
 internal fun String.commonEncodeUtf8(): ByteString {
   val byteString = ByteString(asUtf8ToByteArray())
