@@ -24,7 +24,7 @@ import java.nio.charset.Charset
  * A sink that keeps a buffer internally so that callers can do small writes without a performance
  * penalty.
  */
-interface BufferedSink : Sink, WritableByteChannel {
+actual interface BufferedSink : Sink, WritableByteChannel {
   /** Returns this sink's internal buffer. */
   @Deprecated(
     message = "moved to val: use getBuffer() instead",
