@@ -22,69 +22,69 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun emit(): Buffer = this // Nowhere to emit to!
 
-  actual override fun exhausted(): Boolean = throw UnsupportedOperationException()
+  override fun exhausted(): Boolean = throw UnsupportedOperationException()
 
-  actual override fun require(byteCount: Long) {
+  override fun require(byteCount: Long) {
     throw UnsupportedOperationException()
   }
 
-  actual override fun request(byteCount: Long): Boolean = throw UnsupportedOperationException()
+  override fun request(byteCount: Long): Boolean = throw UnsupportedOperationException()
 
-  actual override fun peek(): BufferedSource = throw UnsupportedOperationException()
+  override fun peek(): BufferedSource = throw UnsupportedOperationException()
 
-  actual override fun readByte(): Byte = throw UnsupportedOperationException()
+  override fun readByte(): Byte = throw UnsupportedOperationException()
 
-  actual override fun readShort(): Short = throw UnsupportedOperationException()
+  override fun readShort(): Short = throw UnsupportedOperationException()
 
-  actual override fun readInt(): Int = throw UnsupportedOperationException()
+  override fun readInt(): Int = throw UnsupportedOperationException()
 
-  actual override fun readLong(): Long = throw UnsupportedOperationException()
+  override fun readLong(): Long = throw UnsupportedOperationException()
 
-  actual override fun readShortLe(): Short = throw UnsupportedOperationException()
+  override fun readShortLe(): Short = throw UnsupportedOperationException()
 
-  actual override fun readIntLe(): Int = throw UnsupportedOperationException()
+  override fun readIntLe(): Int = throw UnsupportedOperationException()
 
-  actual override fun readLongLe(): Long = throw UnsupportedOperationException()
+  override fun readLongLe(): Long = throw UnsupportedOperationException()
 
-  actual override fun readDecimalLong(): Long = throw UnsupportedOperationException()
+  override fun readDecimalLong(): Long = throw UnsupportedOperationException()
 
-  actual override fun readHexadecimalUnsignedLong(): Long = throw UnsupportedOperationException()
+  override fun readHexadecimalUnsignedLong(): Long = throw UnsupportedOperationException()
 
-  actual override fun readByteString(): ByteString = throw UnsupportedOperationException()
+  override fun readByteString(): ByteString = throw UnsupportedOperationException()
 
-  actual override fun readByteString(byteCount: Long): ByteString = throw UnsupportedOperationException()
+  override fun readByteString(byteCount: Long): ByteString = throw UnsupportedOperationException()
 
-  actual override fun readFully(sink: Buffer, byteCount: Long) {
+  override fun readFully(sink: Buffer, byteCount: Long) {
     throw UnsupportedOperationException()
   }
 
-  actual override fun readAll(sink: Sink): Long = throw UnsupportedOperationException()
+  override fun readAll(sink: Sink): Long = throw UnsupportedOperationException()
 
-  actual override fun readUtf8(): String = throw UnsupportedOperationException()
+  override fun readUtf8(): String = throw UnsupportedOperationException()
 
-  actual override fun readUtf8(byteCount: Long): String = throw UnsupportedOperationException()
+  override fun readUtf8(byteCount: Long): String = throw UnsupportedOperationException()
 
-  actual override fun readUtf8Line(): String? = throw UnsupportedOperationException()
+  override fun readUtf8Line(): String? = throw UnsupportedOperationException()
 
-  actual override fun readUtf8LineStrict(): String = throw UnsupportedOperationException()
+  override fun readUtf8LineStrict(): String = throw UnsupportedOperationException()
 
-  actual override fun readUtf8LineStrict(limit: Long): String = throw UnsupportedOperationException()
+  override fun readUtf8LineStrict(limit: Long): String = throw UnsupportedOperationException()
 
-  actual override fun readUtf8CodePoint(): Int = throw UnsupportedOperationException()
+  override fun readUtf8CodePoint(): Int = throw UnsupportedOperationException()
 
-  actual override fun readByteArray(): ByteArray = throw UnsupportedOperationException()
+  override fun readByteArray(): ByteArray = throw UnsupportedOperationException()
 
-  actual override fun readByteArray(byteCount: Long): ByteArray = throw UnsupportedOperationException()
+  override fun readByteArray(byteCount: Long): ByteArray = throw UnsupportedOperationException()
 
-  actual override fun read(sink: ByteArray): Int = throw UnsupportedOperationException()
+  override fun read(sink: ByteArray): Int = throw UnsupportedOperationException()
 
-  actual override fun readFully(sink: ByteArray) {
+  override fun readFully(sink: ByteArray) {
     throw UnsupportedOperationException()
   }
 
-  actual override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int = throw UnsupportedOperationException()
+  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int = throw UnsupportedOperationException()
 
-  actual override fun skip(byteCount: Long) {
+  override fun skip(byteCount: Long) {
     throw UnsupportedOperationException()
   }
 
@@ -100,9 +100,9 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer = throw UnsupportedOperationException()
 
-  actual override fun writeAll(source: Source): Long = throw UnsupportedOperationException()
+  override fun writeAll(source: Source): Long = throw UnsupportedOperationException()
 
-  actual override fun write(source: Source, byteCount: Long): BufferedSink = throw UnsupportedOperationException()
+  actual override fun write(source: Source, byteCount: Long): Buffer = throw UnsupportedOperationException()
 
   actual override fun writeByte(b: Int): Buffer = throw UnsupportedOperationException()
 
@@ -122,40 +122,40 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer = throw UnsupportedOperationException()
 
-  actual override fun write(source: Buffer, byteCount: Long) {
+  override fun write(source: Buffer, byteCount: Long) {
     throw UnsupportedOperationException()
   }
 
-  actual override fun read(sink: Buffer, byteCount: Long): Long = throw UnsupportedOperationException()
+  override fun read(sink: Buffer, byteCount: Long): Long = throw UnsupportedOperationException()
 
-  actual override fun indexOf(b: Byte): Long = throw UnsupportedOperationException()
+  override fun indexOf(b: Byte): Long = throw UnsupportedOperationException()
 
-  actual override fun indexOf(b: Byte, fromIndex: Long): Long = throw UnsupportedOperationException()
+  override fun indexOf(b: Byte, fromIndex: Long): Long = throw UnsupportedOperationException()
 
-  actual override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long = throw UnsupportedOperationException()
+  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long = throw UnsupportedOperationException()
 
-  actual override fun indexOf(bytes: ByteString): Long = throw UnsupportedOperationException()
+  override fun indexOf(bytes: ByteString): Long = throw UnsupportedOperationException()
 
-  actual override fun indexOf(bytes: ByteString, fromIndex: Long): Long = throw UnsupportedOperationException()
+  override fun indexOf(bytes: ByteString, fromIndex: Long): Long = throw UnsupportedOperationException()
 
-  actual override fun indexOfElement(targetBytes: ByteString): Long = throw UnsupportedOperationException()
+  override fun indexOfElement(targetBytes: ByteString): Long = throw UnsupportedOperationException()
 
-  actual override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long = throw UnsupportedOperationException()
+  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long = throw UnsupportedOperationException()
 
-  actual override fun rangeEquals(offset: Long, bytes: ByteString): Boolean = throw UnsupportedOperationException()
+  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean = throw UnsupportedOperationException()
 
-  actual override fun rangeEquals(
+  override fun rangeEquals(
     offset: Long,
     bytes: ByteString,
     bytesOffset: Int,
     byteCount: Int
   ): Boolean = throw UnsupportedOperationException()
 
-  actual override fun flush() {
+  override fun flush() {
   }
 
-  actual override fun close() {
+  override fun close() {
   }
 
-  actual override fun timeout() = Timeout.NONE
+  override fun timeout() = Timeout.NONE
 }
