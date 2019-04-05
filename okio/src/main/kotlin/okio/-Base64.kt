@@ -18,7 +18,6 @@
 @file:JvmName("-Base64")
 package okio
 
-import okio.ByteString.Companion.encodeUtf8
 import kotlin.jvm.JvmName
 
 /** @author Alexander Y. Kleymenov */

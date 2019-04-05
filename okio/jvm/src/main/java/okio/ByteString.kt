@@ -15,13 +15,13 @@
  */
 package okio
 
-import okio.internal.COMMON_EMPTY
+import okio.decodeBase64 as commonDecodeBase64
+import okio.decodeHex as commonDecodeHex
+import okio.encodeUtf8 as commonEncodeUtf8
+import okio.toByteString as commonToByteString
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
-import okio.internal.commonDecodeBase64
-import okio.internal.commonDecodeHex
-import okio.internal.commonEncodeUtf8
 import okio.internal.commonEndsWith
 import okio.internal.commonEquals
 import okio.internal.commonGetByte
@@ -31,14 +31,12 @@ import okio.internal.commonHex
 import okio.internal.commonIndexOf
 import okio.internal.commonInternalArray
 import okio.internal.commonLastIndexOf
-import okio.internal.commonOf
 import okio.internal.commonRangeEquals
 import okio.internal.commonStartsWith
 import okio.internal.commonSubstring
 import okio.internal.commonToAsciiLowercase
 import okio.internal.commonToAsciiUppercase
 import okio.internal.commonToByteArray
-import okio.internal.commonToByteString
 import okio.internal.commonToString
 import okio.internal.commonUtf8
 import java.io.EOFException
@@ -266,18 +264,18 @@ internal actual constructor(
   actual companion object {
     private const val serialVersionUID = 1L
 
-    /** A singleton empty `ByteString`.  */
+    /** A singleton empty `ByteString`. */
     @JvmField
-    actual val EMPTY: ByteString = COMMON_EMPTY
+    actual val EMPTY = byteStringOf()
 
     /** Returns a new byte string containing a clone of the bytes of `data`. */
     @JvmStatic
-    actual fun of(vararg data: Byte) = commonOf(data)
+    inline fun of(vararg data: Byte) = byteStringOf(*data)
 
     @JvmStatic
     @JvmName("of")
-    actual fun ByteArray.toByteString(offset: Int, byteCount: Int): ByteString =
-      commonToByteString(offset, byteCount)
+    inline fun ByteArray.toByteString(offset: Int, byteCount: Int): ByteString =
+        commonToByteString(offset, byteCount)
 
     /** Returns a [ByteString] containing a copy of this [ByteBuffer]. */
     @JvmStatic
@@ -290,7 +288,7 @@ internal actual constructor(
 
     /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
     @JvmStatic
-    actual fun String.encodeUtf8(): ByteString = commonEncodeUtf8()
+    inline fun String.encodeUtf8(): ByteString = commonEncodeUtf8()
 
     /** Returns a new [ByteString] containing the `charset`-encoded bytes of this [String].  */
     @JvmStatic
@@ -302,11 +300,11 @@ internal actual constructor(
      * this is not a Base64-encoded sequence of bytes.
      */
     @JvmStatic
-    actual fun String.decodeBase64() = commonDecodeBase64()
+    fun String.decodeBase64() = commonDecodeBase64()
 
     /** Decodes the hex-encoded bytes and returns their value a byte string.  */
     @JvmStatic
-    actual fun String.decodeHex() = commonDecodeHex()
+    fun String.decodeHex() = commonDecodeHex()
 
     /**
      * Reads `count` bytes from this [InputStream] and returns the result.
@@ -335,7 +333,7 @@ internal actual constructor(
         message = "moved to extension function",
         replaceWith = ReplaceWith(
             expression = "string.decodeBase64()",
-            imports = ["okio.ByteString.Companion.decodeBase64"]),
+            imports = ["okio.decodeBase64"]),
         level = DeprecationLevel.ERROR)
     fun decodeBase64(string: String) = string.decodeBase64()
 
@@ -344,7 +342,7 @@ internal actual constructor(
         message = "moved to extension function",
         replaceWith = ReplaceWith(
             expression = "string.decodeHex()",
-            imports = ["okio.ByteString.Companion.decodeHex"]),
+            imports = ["okio.decodeHex"]),
         level = DeprecationLevel.ERROR)
     fun decodeHex(string: String) = string.decodeHex()
 
@@ -362,7 +360,7 @@ internal actual constructor(
         message = "moved to extension function",
         replaceWith = ReplaceWith(
             expression = "string.encodeUtf8()",
-            imports = ["okio.ByteString.Companion.encodeUtf8"]),
+            imports = ["okio.encodeUtf8"]),
         level = DeprecationLevel.ERROR)
     fun encodeUtf8(string: String) = string.encodeUtf8()
 
@@ -371,7 +369,7 @@ internal actual constructor(
         message = "moved to extension function",
         replaceWith = ReplaceWith(
             expression = "buffer.toByteString()",
-            imports = ["okio.ByteString.Companion.toByteString"]),
+            imports = ["okio.toByteString"]),
         level = DeprecationLevel.ERROR)
     fun of(buffer: ByteBuffer) = buffer.toByteString()
 
@@ -380,7 +378,7 @@ internal actual constructor(
         message = "moved to extension function",
         replaceWith = ReplaceWith(
             expression = "array.toByteString(offset, byteCount)",
-            imports = ["okio.ByteString.Companion.toByteString"]),
+            imports = ["okio.toByteString"]),
         level = DeprecationLevel.ERROR)
     fun of(array: ByteArray, offset: Int, byteCount: Int) = array.toByteString(offset, byteCount)
 

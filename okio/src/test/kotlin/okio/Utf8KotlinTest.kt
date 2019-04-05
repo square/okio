@@ -16,7 +16,6 @@
 
 package okio
 
-import okio.ByteString.Companion.decodeHex
 import okio.internal.commonAsUtf8ToByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -179,11 +178,11 @@ class Utf8KotlinTest {
     val expectedUtf8 = hex.decodeHex()
 
     // Confirm our expectations are consistent with the platform.
-    val platformUtf8 = ByteString.of(*string.asUtf8ToByteArray())
+    val platformUtf8 = byteStringOf(*string.asUtf8ToByteArray())
     assertEquals(expectedUtf8, platformUtf8)
 
     // Confirm our implementations matches those expectations.
-    val actualUtf8 = ByteString.of(*string.commonAsUtf8ToByteArray())
+    val actualUtf8 = byteStringOf(*string.commonAsUtf8ToByteArray())
     assertEquals(expectedUtf8, actualUtf8)
 
     // TODO Confirm we are consistent when writing one code point at a time.

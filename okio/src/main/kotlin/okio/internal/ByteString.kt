@@ -21,9 +21,6 @@ import okio.ByteString
 import okio.REPLACEMENT_CODE_POINT
 import okio.and
 import okio.arrayRangeEquals
-import okio.asUtf8ToByteArray
-import okio.checkOffsetAndCount
-import okio.decodeBase64ToArray
 import okio.encodeBase64
 import okio.isIsoControl
 import okio.processUtf8CodePoints
@@ -218,47 +215,6 @@ internal fun ByteString.commonCompareTo(other: ByteString): Int {
   }
   if (sizeA == sizeB) return 0
   return if (sizeA < sizeB) -1 else 1
-}
-
-internal val COMMON_EMPTY = ByteString.of()
-
-internal fun commonOf(data: ByteArray) = ByteString(data.copyOf())
-
-internal fun ByteArray.commonToByteString(offset: Int, byteCount: Int): ByteString {
-  checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
-  return ByteString(copyOfRange(offset, offset + byteCount))
-}
-
-internal fun String.commonEncodeUtf8(): ByteString {
-  val byteString = ByteString(asUtf8ToByteArray())
-  byteString.utf8 = this
-  return byteString
-}
-
-internal fun String.commonDecodeBase64(): ByteString? {
-  val decoded = decodeBase64ToArray()
-  return if (decoded != null) ByteString(decoded) else null
-}
-
-internal fun String.commonDecodeHex(): ByteString {
-  require(length % 2 == 0) { "Unexpected hex string: $this" }
-
-  val result = ByteArray(length / 2)
-  for (i in result.indices) {
-    val d1 = decodeHexDigit(this[i * 2]) shl 4
-    val d2 = decodeHexDigit(this[i * 2 + 1])
-    result[i] = (d1 + d2).toByte()
-  }
-  return ByteString(result)
-}
-
-private fun decodeHexDigit(c: Char): Int {
-  return when (c) {
-    in '0'..'9' -> c - '0'
-    in 'a'..'f' -> c - 'a' + 10
-    in 'A'..'F' -> c - 'A' + 10
-    else -> throw IllegalArgumentException("Unexpected hex digit: $c")
-  }
 }
 
 internal fun ByteString.commonToString(): String {

@@ -16,9 +16,6 @@
 
 package okio
 
-import okio.ByteString.Companion.decodeBase64
-import okio.ByteString.Companion.decodeHex
-import okio.ByteString.Companion.encodeUtf8
 import okio.internal.commonAsUtf8ToByteArray
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -53,7 +50,7 @@ interface ByteStringFactory {
     // tested on JVM as well.
     val OKIO_ENCODER: ByteStringFactory = object : ByteStringFactory {
       override fun decodeHex(hex: String) = hex.decodeHex()
-      override fun encodeUtf8(s: String) = ByteString.of(*s.commonAsUtf8ToByteArray())
+      override fun encodeUtf8(s: String) = byteStringOf(*s.commonAsUtf8ToByteArray())
     }
   }
 }
@@ -185,9 +182,9 @@ abstract class AbstractByteStringTest(
   @Ignore // TODO enable when https://youtrack.jetbrains.com/issue/KT-26497 is resolved
   @Test fun equalsEmptyTest() {
     assertEquals(factory.decodeHex(""), ByteString.EMPTY)
-    assertEquals(factory.decodeHex(""), ByteString.of())
+    assertEquals(factory.decodeHex(""), byteStringOf())
     assertEquals(ByteString.EMPTY, factory.decodeHex(""))
-    assertEquals(ByteString.of(), factory.decodeHex(""))
+    assertEquals(byteStringOf(), factory.decodeHex(""))
   }
 
   private val bronzeHorseman = "На берегу пустынных волн"
@@ -195,7 +192,7 @@ abstract class AbstractByteStringTest(
   @Test fun utf8() {
     val byteString = factory.encodeUtf8(bronzeHorseman)
     assertEquals(byteString.toByteArray().toList(), bronzeHorseman.commonAsUtf8ToByteArray().toList())
-    assertTrue(byteString == ByteString.of(*bronzeHorseman.commonAsUtf8ToByteArray()))
+    assertTrue(byteString == byteStringOf(*bronzeHorseman.commonAsUtf8ToByteArray()))
     assertEquals(byteString, ("d09dd0b020d0b1d0b5d180d0b5d0b3d18320d0bfd183d181" +
       "d182d18bd0bdd0bdd18bd18520d0b2d0bed0bbd0bd").decodeHex())
     assertEquals(byteString.utf8(), bronzeHorseman)
@@ -279,12 +276,12 @@ abstract class AbstractByteStringTest(
   }
 
   @Test fun encodeHex() {
-    assertEquals("000102", ByteString.of(0x0, 0x1, 0x2).hex())
+    assertEquals("000102", byteStringOf(0x0, 0x1, 0x2).hex())
   }
 
   @Test fun decodeHex() {
     val actual = "CAFEBABE".decodeHex()
-    val expected = ByteString.of(-54, -2, -70, -66)
+    val expected = byteStringOf(-54, -2, -70, -66)
     assertEquals(expected, actual)
   }
 

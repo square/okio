@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+@file:JvmName("-ByteStrings")
+
 package okio
 
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmStatic
 
 /**
  * An immutable sequence of bytes.
@@ -145,31 +146,45 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
     /** A singleton empty `ByteString`.  */
     @JvmField
     val EMPTY: ByteString
-
-    /** Returns a new byte string containing a clone of the bytes of `data`. */
-    @JvmStatic
-    fun of(vararg data: Byte): ByteString
-
-    /**
-     * Returns a new [ByteString] containing a copy of `byteCount` bytes of this [ByteArray]
-     * starting at `offset`.
-     */
-    @JvmStatic
-    fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString
-
-    /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
-    @JvmStatic
-    fun String.encodeUtf8(): ByteString
-
-    /**
-     * Decodes the Base64-encoded bytes and returns their value as a byte string. Returns null if
-     * this is not a Base64-encoded sequence of bytes.
-     */
-    @JvmStatic
-    fun String.decodeBase64(): ByteString?
-
-      /** Decodes the hex-encoded bytes and returns their value a byte string.  */
-    @JvmStatic
-    fun String.decodeHex(): ByteString
   }
+}
+
+/** Returns a new byte string containing a clone of the bytes of `data`. */
+fun byteStringOf(vararg data: Byte) = ByteString(data.copyOf())
+
+/**
+ * Returns a new [ByteString] containing a copy of `byteCount` bytes of this [ByteArray]
+ * starting at `offset`.
+ */
+fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString {
+  checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
+  return ByteString(copyOfRange(offset, offset + byteCount))
+}
+
+/** Returns a new byte string containing the `UTF-8` bytes of this [String]. */
+fun String.encodeUtf8() = ByteString(asUtf8ToByteArray()).also { it.utf8 = this }
+
+/**
+ * Decodes the Base64-encoded bytes and returns their value as a byte string. Returns null if
+ * this is not a Base64-encoded sequence of bytes.
+ */
+fun String.decodeBase64() = decodeBase64ToArray()?.let(::ByteString)
+
+/** Decodes the hex-encoded bytes and returns their value a byte string. */
+fun String.decodeHex(): ByteString {
+  require(length % 2 == 0) { "Unexpected hex string: $this" }
+
+  fun decodeHexDigit(c: Char) = when (c) {
+    in '0'..'9' -> c - '0'
+    in 'a'..'f' -> c - 'a' + 10
+    in 'A'..'F' -> c - 'A' + 10
+    else -> throw IllegalArgumentException("Unexpected hex digit: $c")
+  }
+
+  val result = ByteArray(length / 2) { i ->
+    val d1 = decodeHexDigit(this[i * 2]) shl 4
+    val d2 = decodeHexDigit(this[i * 2 + 1])
+    (d1 + d2).toByte()
+  }
+  return ByteString(result)
 }

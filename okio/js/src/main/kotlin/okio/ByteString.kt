@@ -15,13 +15,9 @@
  */
 package okio
 
-import okio.internal.COMMON_EMPTY
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
-import okio.internal.commonDecodeBase64
-import okio.internal.commonDecodeHex
-import okio.internal.commonEncodeUtf8
 import okio.internal.commonEndsWith
 import okio.internal.commonEquals
 import okio.internal.commonGetByte
@@ -31,14 +27,12 @@ import okio.internal.commonHex
 import okio.internal.commonIndexOf
 import okio.internal.commonInternalArray
 import okio.internal.commonLastIndexOf
-import okio.internal.commonOf
 import okio.internal.commonRangeEquals
 import okio.internal.commonStartsWith
 import okio.internal.commonSubstring
 import okio.internal.commonToAsciiLowercase
 import okio.internal.commonToAsciiUppercase
 import okio.internal.commonToByteArray
-import okio.internal.commonToByteString
 import okio.internal.commonToString
 import okio.internal.commonUtf8
 
@@ -162,25 +156,7 @@ internal actual constructor(
   actual override fun toString() = commonToString()
 
   actual companion object {
-    /** A singleton empty `ByteString`.  */
-    actual val EMPTY: ByteString = COMMON_EMPTY
-
-    /** Returns a new byte string containing a clone of the bytes of `data`. */
-    actual fun of(vararg data: Byte) = commonOf(data)
-
-    actual fun ByteArray.toByteString(offset: Int, byteCount: Int): ByteString =
-      commonToByteString(offset, byteCount)
-
-    /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
-    actual fun String.encodeUtf8(): ByteString = commonEncodeUtf8()
-
-    /**
-     * Decodes the Base64-encoded bytes and returns their value as a byte string. Returns null if
-     * this is not a Base64-encoded sequence of bytes.
-     */
-    actual fun String.decodeBase64(): ByteString? = commonDecodeBase64()
-
-    /** Decodes the hex-encoded bytes and returns their value a byte string.  */
-    actual fun String.decodeHex() = commonDecodeHex()
+    /** A singleton empty `ByteString`. */
+    actual val EMPTY = byteStringOf()
   }
 }
