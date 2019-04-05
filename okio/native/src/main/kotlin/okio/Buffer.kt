@@ -16,11 +16,11 @@
 package okio
 
 actual class Buffer : BufferedSource, BufferedSink {
-  actual override val buffer: Buffer = throw UnsupportedOperationException()
+  actual override val buffer: Buffer get() = this
 
-  actual override fun emitCompleteSegments(): Buffer = throw UnsupportedOperationException()
+  actual override fun emitCompleteSegments(): Buffer = this // Nowhere to emit to!
 
-  actual override fun emit(): Buffer = throw UnsupportedOperationException()
+  actual override fun emit(): Buffer = this // Nowhere to emit to!
 
   actual override fun exhausted(): Boolean = throw UnsupportedOperationException()
 
@@ -152,12 +152,10 @@ actual class Buffer : BufferedSource, BufferedSink {
   ): Boolean = throw UnsupportedOperationException()
 
   actual override fun flush() {
-    throw UnsupportedOperationException()
   }
 
   actual override fun close() {
-    throw UnsupportedOperationException()
   }
 
-  actual override fun timeout(): Timeout = throw UnsupportedOperationException()
+  actual override fun timeout() = Timeout.NONE
 }

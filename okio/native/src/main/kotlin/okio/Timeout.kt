@@ -15,4 +15,8 @@
  */
 package okio
 
-actual open class Timeout
+actual open class Timeout {
+  actual companion object {
+    actual val NONE = Timeout()
+  }
+}
