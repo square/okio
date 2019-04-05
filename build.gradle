@@ -39,7 +39,7 @@ buildscript {
           'gradlePlugin': "ru.vyarus:gradle-animalsniffer-plugin:${versions.animalSnifferPlugin}",
           'annotations': "org.codehaus.mojo:animal-sniffer-annotations:${versions.animalSniffer}",
       ],
-      'japicmp': 'me.champeau.gradle:japicmp-gradle-plugin:0.2.6',
+      'japicmp': 'me.champeau.gradle:japicmp-gradle-plugin:0.2.8',
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
       'node': "com.moowork.gradle:gradle-node-plugin:${versions.nodePlugin}",

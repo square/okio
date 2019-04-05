@@ -25,16 +25,14 @@ task japicmp(type: JapicmpTask, dependsOn: 'jar') {
   ignoreMissingClasses = true
   includeSynthetic = true
   classExcludes = [
+      'okio.RealBufferedSink', // Internal.
+      'okio.RealBufferedSource', // Internal.
       'okio.SegmentedByteString', // Internal.
       'okio.Util', // Internal.
   ]
   methodExcludes = [
       'okio.ByteString#getByte(int)', // Became 'final' in 1.15.0.
       'okio.ByteString#size()', // Became 'final' in 1.15.0.
-  ]
-  fieldExcludes = [
-      'okio.RealBufferedSink#buffer', // Became 'bufferField' in 2.1.0.
-      'okio.RealBufferedSource#buffer', // Became 'bufferField' in 2.1.0.
   ]
 }
 check.dependsOn japicmp
