@@ -5,7 +5,11 @@ kotlin {
     // egor: jvmWithJava is getting deprecated but it's not clear what the replacement is. For now 
     // gonna keep it inside targets {}
     fromPreset(presets.jvmWithJava, 'jvm') {
-      project.sourceSets.test.java.srcDir('jvm/src/test/java')
+      project.sourceSets.main.java.setSrcDirs(['jvm/src/main/java'])
+      project.sourceSets.test.java.setSrcDirs(['jvm/src/test/java'])
+      project.sourceSets.main.resources.setSrcDirs(['jvm/src/main/resources'])
+      project.sourceSets.main.kotlin.setSrcDirs(['jvm/src/main/kotlin'])
+      project.sourceSets.test.kotlin.setSrcDirs(['jvm/src/test/kotlin'])
     }
   }
   js() {
@@ -27,28 +31,28 @@ kotlin {
   mingwX64('winX64')
   sourceSets {
     commonMain {
-      kotlin.srcDir('src/main/kotlin')
+      kotlin.setSrcDirs(['src/main/kotlin'])
       dependencies {
         api deps.kotlin.stdLib.common
       }
     }
     commonTest {
-      kotlin.srcDir('src/test/kotlin')
+      kotlin.setSrcDirs(['src/test/kotlin'])
       dependencies {
         implementation deps.kotlin.test.common
         implementation deps.kotlin.test.annotations
       }
     }
     jvmMain {
-      kotlin.srcDir('jvm/src/main/java')
-      resources.srcDir('jvm/src/main/resources')
+      kotlin.setSrcDirs(['jvm/src/main/java'])
+      resources.setSrcDirs(['jvm/src/main/resources'])
       dependencies {
         api deps.kotlin.stdLib.jdk6
         compileOnly deps.animalSniffer.annotations
       }
     }
     jvmTest {
-      kotlin.srcDir('jvm/src/test/java')
+      kotlin.setSrcDirs(['jvm/src/test/java'])
       dependencies {
         implementation deps.test.junit
         implementation deps.test.assertj
@@ -56,27 +60,32 @@ kotlin {
       }
     }
     jsMain {
-      kotlin.srcDir('js/src/main/kotlin')
+      kotlin.setSrcDirs(['js/src/main/kotlin'])
       dependencies {
         api deps.kotlin.stdLib.js
       }
     }
     jsTest {
-      kotlin.srcDir('js/src/test/kotlin')
+      kotlin.setSrcDirs(['js/src/test/kotlin'])
       dependencies {
         implementation deps.kotlin.test.js
       }
     }
     nativeMain {
-      kotlin.srcDir('native/src/main/kotlin')
+      kotlin.setSrcDirs(['native/src/main/kotlin'])
+      dependsOn commonMain
     }
     nativeTest {
-      kotlin.srcDir('native/src/test/kotlin')
+      kotlin.setSrcDirs(['native/src/test/kotlin'])
+      dependsOn commonTest
     }
-  }
-  configure([targets.iosX64, targets.iosArm64, targets.linuxX64, targets.macosX64, targets.winX64]) {
-    compilations.main.source(sourceSets.nativeMain)
-    compilations.test.source(sourceSets.nativeTest)
+
+    configure([iosX64Main, iosArm64Main, linuxX64Main, macosX64Main, winX64Main]) {
+      dependsOn nativeMain
+    }
+    configure([iosX64Test, iosArm64Test, linuxX64Test, macosX64Test, winX64Test]) {
+      dependsOn nativeTest
+    }
   }
 }
 
