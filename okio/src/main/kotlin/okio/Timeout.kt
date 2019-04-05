@@ -15,4 +15,8 @@
  */
 package okio
 
-expect open class Timeout
+expect open class Timeout {
+  companion object {
+    val NONE: Timeout
+  }
+}
