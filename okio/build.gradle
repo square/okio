@@ -20,10 +20,14 @@ kotlin {
     }
   }
   iosX64() {
-    compilations.main.outputKinds 'framework'
+    binaries {
+      framework()
+    }
   }
   iosArm64() {
-    compilations.main.outputKinds 'framework'
+    binaries {
+      framework()
+    }
   }
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
   linuxX64()
