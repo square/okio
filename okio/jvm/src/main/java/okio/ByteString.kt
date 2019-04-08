@@ -41,6 +41,7 @@ import okio.internal.commonToByteArray
 import okio.internal.commonToByteString
 import okio.internal.commonToString
 import okio.internal.commonUtf8
+import okio.internal.commonWrite
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
@@ -175,10 +176,7 @@ internal actual constructor(
     out.write(data)
   }
 
-  /** Writes the contents of this byte string to `buffer`.  */
-  internal open fun write(buffer: Buffer) {
-    buffer.write(data, 0, data.size)
-  }
+  internal actual open fun write(buffer: Buffer) = commonWrite(buffer)
 
   /**
    * Returns true if the bytes of this in `[offset..offset+byteCount)` equal the bytes of `other` in

@@ -27,3 +27,7 @@ actual typealias ArrayIndexOutOfBoundsException = java.lang.ArrayIndexOutOfBound
 internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R {
   return kotlin.synchronized(lock, block)
 }
+
+actual typealias IOException = java.io.IOException
+
+actual typealias EOFException = java.io.EOFException
