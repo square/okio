@@ -1,13 +1,23 @@
-apply plugin: 'java-library'
-apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-
-dependencies {
-  implementation project(path: ':okio', configuration: 'runtimeElements')
-  implementation deps.kotlin.stdLib.jdk8
-  testImplementation deps.test.junit
-  testImplementation deps.test.assertj
-  testImplementation deps.kotlin.test.jdk
+kotlin {
+  targets {
+    fromPreset(presets.jvmWithJava, 'jvm') {
+      project.sourceSets.main.java.setSrcDirs(['src/main/java'])
+      project.sourceSets.test.java.setSrcDirs(['src/test/java'])
+    }
+  }
+  sourceSets {
+    commonMain {
+      dependencies {
+        implementation project(':okio')
+      }
+    }
+    jvmTest {
+      dependencies {
+        implementation deps.test.junit
+        implementation deps.test.assertj
+      }
+    }
+  }
 }
