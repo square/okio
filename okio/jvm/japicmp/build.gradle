@@ -45,6 +45,7 @@ task japicmp(type: JapicmpTask, dependsOn: 'jar') {
       'okio.SegmentedByteString', // Internal.
       'okio.SegmentPool', // Internal.
       'okio.Util', // Internal.
+      'okio.Options', // Bytecode version changed from 51.0 to 50.0    
   ]
   methodExcludes = [
       'okio.ByteString#getByte(int)', // Became 'final' in 1.15.0.
