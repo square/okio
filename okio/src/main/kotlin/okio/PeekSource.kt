@@ -36,6 +36,7 @@ internal class PeekSource(
   private var pos = 0L
 
   override fun read(sink: Buffer, byteCount: Long): Long {
+    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
     // Source becomes invalid if there is an expected Segment and it and the expected position
     // do not match the current head and head position of the upstream buffer
@@ -43,8 +44,9 @@ internal class PeekSource(
       expectedSegment === buffer.head && expectedPos == buffer.head!!.pos) {
       "Peek source is invalid because upstream source was used"
     }
+    if (byteCount == 0L) return 0L
+    if (!upstream.request(pos + 1)) return -1L
 
-    upstream.request(pos + byteCount)
     if (expectedSegment == null && buffer.head != null) {
       // Only once the buffer actually holds data should an expected Segment and position be
       // recorded. This allows reads from the peek source to repeatedly return -1 and for data to be
@@ -54,10 +56,6 @@ internal class PeekSource(
     }
 
     val toCopy = minOf(byteCount, buffer.size - pos)
-    if (toCopy <= 0L) {
-      return -1L
-    }
-
     buffer.copyTo(sink, pos, toCopy)
     pos += toCopy
     return toCopy
