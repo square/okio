@@ -112,8 +112,7 @@ publishing {
     }
   }
   
-  // Use default artifact name for the JVM target until we start publishing artifacts for all
-  // platforms
+  // Use default artifact name for the JVM target
   publications {
     jvm {
       artifactId = 'okio'
