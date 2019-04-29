@@ -1,17 +1,9 @@
 apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
 kotlin {
-  targets {
-    // egor: jvmWithJava is getting deprecated but it's not clear what the replacement is. For now 
-    // gonna keep it inside targets {}
-    fromPreset(presets.jvmWithJava, 'jvm') {
-      project.sourceSets.main.java.setSrcDirs(['jvm/src/main/java'])
-      project.sourceSets.test.java.setSrcDirs(['jvm/src/test/java'])
-      project.sourceSets.main.resources.setSrcDirs(['jvm/src/main/resources'])
-      project.sourceSets.main.kotlin.setSrcDirs(['jvm/src/main/kotlin'])
-      project.sourceSets.test.kotlin.setSrcDirs(['jvm/src/test/kotlin'])
-    }
-  }
+  // jvmWithJava is getting deprecated but it's not clear what the replacement is:
+  // https://youtrack.jetbrains.com/issue/KT-26256 
+  targetFromPreset(presets.jvmWithJava, 'jvm')
   js() {
     configure([compilations.main, compilations.test]) {
       tasks.getByName(compileKotlinTaskName).kotlinOptions {
@@ -35,52 +27,48 @@ kotlin {
   mingwX64('winX64')
   sourceSets {
     commonMain {
-      kotlin.setSrcDirs(['src/main/kotlin'])
       dependencies {
         api deps.kotlin.stdLib.common
       }
     }
     commonTest {
-      kotlin.setSrcDirs(['src/test/kotlin'])
       dependencies {
         implementation deps.kotlin.test.common
         implementation deps.kotlin.test.annotations
       }
     }
     jvmMain {
-      kotlin.setSrcDirs(['jvm/src/main/java'])
-      resources.setSrcDirs(['jvm/src/main/resources'])
       dependencies {
         api deps.kotlin.stdLib.jdk6
         compileOnly deps.animalSniffer.annotations
       }
     }
     jvmTest {
-      kotlin.setSrcDirs(['jvm/src/test/java'])
       dependencies {
         implementation deps.test.junit
         implementation deps.test.assertj
         implementation deps.kotlin.test.jdk
       }
     }
+    test {
+      // Not required, but helps IntelliJ configure inter-project dependencies:
+      // https://youtrack.jetbrains.com/issue/KT-31179
+      dependsOn jvmTest
+    }
     jsMain {
-      kotlin.setSrcDirs(['js/src/main/kotlin'])
       dependencies {
         api deps.kotlin.stdLib.js
       }
     }
     jsTest {
-      kotlin.setSrcDirs(['js/src/test/kotlin'])
       dependencies {
         implementation deps.kotlin.test.js
       }
     }
     nativeMain {
-      kotlin.setSrcDirs(['native/src/main/kotlin'])
       dependsOn commonMain
     }
     nativeTest {
-      kotlin.setSrcDirs(['native/src/test/kotlin'])
       dependsOn commonTest
     }
 
