@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## Version 1.17.4
+
+_2019-04-29_
+
+ * Fix: Don't block unless strictly necessary in `BufferedSource.peek()`.
+
+
 ## Version 2.2.2
 
 _2019-01-28_
