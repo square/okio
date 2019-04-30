@@ -655,7 +655,7 @@ Snapshots of the development version are available in [Sonatype's `snapshots` re
 R8 / ProGuard
 --------
 
-If you are using R8 or ProGuard add the options from [this file](https://github.com/square/okio/blob/master/okio/jvm/src/main/resources/META-INF/proguard/okio.pro).
+If you are using R8 or ProGuard add the options from [this file](https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro).
 
 License
 --------
