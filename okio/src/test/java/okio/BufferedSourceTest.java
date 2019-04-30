@@ -1093,7 +1093,7 @@ public final class BufferedSourceTest {
     source.readAll(Okio.blackhole());
 
     // Skip the rest of the buffered data
-    peek.skip(Segment.SIZE - 3);
+    peek.skip(peek.getBuffer().size());
 
     try {
       peek.readByte();
@@ -1101,6 +1101,39 @@ public final class BufferedSourceTest {
     } catch (IllegalStateException e) {
       assertEquals("Peek source is invalid because upstream source was used", e.getMessage());
     }
+  }
+
+  @Test public void peekDoesntReadTooMuch() throws IOException {
+    // 6 bytes in source's buffer plus 3 bytes upstream.
+    sink.writeUtf8("abcdef");
+    sink.emit();
+    source.require(6L);
+    sink.writeUtf8("ghi");
+    sink.emit();
+
+    BufferedSource peek = source.peek();
+
+    // Read 3 bytes. This reads some of the buffered data.
+    assertTrue(peek.request(3));
+    if (!(source instanceof Buffer)) {
+      assertEquals(6, source.getBuffer().size());
+      assertEquals(6, peek.getBuffer().size());
+    }
+    assertEquals("abc", peek.readUtf8(3L));
+
+    // Read 3 more bytes. This exhausts the buffered data.
+    assertTrue(peek.request(3));
+    if (!(source instanceof Buffer)) {
+      assertEquals(6, source.getBuffer().size());
+      assertEquals(3, peek.getBuffer().size());
+    }
+    assertEquals("def", peek.readUtf8(3L));
+
+    // Read 3 more bytes. This draws new bytes.
+    assertTrue(peek.request(3));
+    assertEquals(9, source.getBuffer().size());
+    assertEquals(3, peek.getBuffer().size());
+    assertEquals("ghi", peek.readUtf8(3L));
   }
 
   @Test public void rangeEquals() throws IOException {
