@@ -81,6 +81,15 @@ kotlin {
   }
 }
 
+// TODO(egorand): Remove when https://github.com/srs/gradle-node-plugin/issues/301 is fixed
+repositories.whenObjectAdded {
+  if (this instanceof IvyArtifactRepository) {
+    metadataSources {
+      artifact()
+    }
+  }
+}
+
 apply from: 'js/build.gradle'
 apply from: 'jvm/jvm.gradle'
 apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"
