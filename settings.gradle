@@ -2,3 +2,5 @@ include ':okio'
 include ':okio:jvm:japicmp'
 include ':okio:jvm:jmh'
 include ':samples'
+
+enableFeaturePreview("GRADLE_METADATA")
