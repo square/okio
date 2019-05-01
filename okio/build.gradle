@@ -83,7 +83,7 @@ kotlin {
 
 // TODO(egorand): Remove when https://github.com/srs/gradle-node-plugin/issues/301 is fixed
 repositories.whenObjectAdded {
-  if (this instanceof IvyArtifactRepository) {
+  if (it instanceof IvyArtifactRepository) {
     metadataSources {
       artifact()
     }
