@@ -19,8 +19,8 @@ import java.io.IOException
 import java.io.InterruptedIOException
 
 /**
- * Enables limiting of Source and Sink throughput. Attach to this throttler via [.source] and
- * [.sink] and set the desired throughput via [.bytesPerSecond]. Multiple Sources and Sinks can be
+ * Enables limiting of Source and Sink throughput. Attach to this throttler via [source] and [sink]
+ * and set the desired throughput via [bytesPerSecond]. Multiple Sources and Sinks can be
  * attached to a single Throttler and they will be throttled as a group, where their combined
  * throughput will not exceed the desired throughput. The same Source or Sink can be attached to
  * multiple Throttlers and its throughput will not exceed the desired throughput of any of the
