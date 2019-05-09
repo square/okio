@@ -1,12 +1,12 @@
+os:
+  - osx
+
+osx_image: xcode9.3
+
 language: java
 
 jdk:
   - oraclejdk8
-
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer # Updates JDK 8 to the latest available.
 
 script:
   - ./gradlew clean build
