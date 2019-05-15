@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.internal.commonClear
 import okio.internal.commonCopyTo
 import okio.internal.commonGet
 import okio.internal.commonRead
@@ -22,6 +23,7 @@ import okio.internal.commonReadByte
 import okio.internal.commonReadByteArray
 import okio.internal.commonReadByteString
 import okio.internal.commonReadFully
+import okio.internal.commonSkip
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
 import okio.internal.seek
@@ -804,26 +806,11 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * Discards all bytes in this buffer. Calling this method when you're done with a buffer will
    * return its segments to the pool.
    */
-  fun clear() = skip(size)
+  actual fun clear() = commonClear()
 
   /** Discards `byteCount` bytes from the head of this buffer.  */
   @Throws(EOFException::class)
-  override fun skip(byteCount: Long) {
-    var byteCount = byteCount
-    while (byteCount > 0) {
-      val head = this.head ?: throw EOFException()
-
-      val toSkip = minOf(byteCount, head.limit - head.pos).toInt()
-      size -= toSkip.toLong()
-      byteCount -= toSkip.toLong()
-      head.pos += toSkip
-
-      if (head.pos == head.limit) {
-        this.head = head.pop()
-        SegmentPool.recycle(head)
-      }
-    }
-  }
+  actual override fun skip(byteCount: Long) = commonSkip(byteCount)
 
   actual override fun write(byteString: ByteString): Buffer = commonWrite(byteString)
 

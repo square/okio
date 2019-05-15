@@ -42,6 +42,10 @@ expect class Buffer() : BufferedSource, BufferedSink {
     offset: Long = 0L
   ): Buffer
 
+  fun clear()
+
+  override fun skip(byteCount: Long)
+
   override fun write(byteString: ByteString): Buffer
 
   override fun writeUtf8(string: String): Buffer

@@ -21,6 +21,7 @@ import okio.EOFException
 import okio.Segment
 import okio.SegmentPool
 import okio.checkOffsetAndCount
+import okio.minOf
 
 // TODO Kotlin's expect classes can't have default implementations, so platform implementations
 // have to call these functions. Remove all this nonsense when expect class allow actual code.
@@ -120,6 +121,25 @@ internal inline fun <T> Buffer.seek(
       offset = nextOffset
     }
     return lambda(s, offset)
+  }
+}
+
+internal fun Buffer.commonClear() = skip(size)
+
+internal fun Buffer.commonSkip(byteCount: Long) {
+  var byteCount = byteCount
+  while (byteCount > 0) {
+    val head = this.head ?: throw EOFException()
+
+    val toSkip = minOf(byteCount, head.limit - head.pos).toInt()
+    size -= toSkip.toLong()
+    byteCount -= toSkip.toLong()
+    head.pos += toSkip
+
+    if (head.pos == head.limit) {
+      this.head = head.pop()
+      SegmentPool.recycle(head)
+    }
   }
 }
 
