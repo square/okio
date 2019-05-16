@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.internal.commonClear
 import okio.internal.commonCopyTo
 import okio.internal.commonGet
 import okio.internal.commonRead
@@ -22,6 +23,7 @@ import okio.internal.commonReadByte
 import okio.internal.commonReadByteArray
 import okio.internal.commonReadByteString
 import okio.internal.commonReadFully
+import okio.internal.commonSkip
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
 
@@ -113,7 +115,9 @@ actual class Buffer : BufferedSource, BufferedSink {
   override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int =
     commonRead(sink, offset, byteCount)
 
-  override fun skip(byteCount: Long) = TODO()
+  actual fun clear() = commonClear()
+
+  actual override fun skip(byteCount: Long) = commonSkip(byteCount)
 
   actual override fun write(byteString: ByteString): Buffer = commonWrite(byteString)
 
