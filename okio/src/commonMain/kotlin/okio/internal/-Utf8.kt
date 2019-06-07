@@ -23,11 +23,12 @@ import okio.processUtf16Chars
 // to everything else. Putting them in this file, `-Utf8.kt`, makes them invisible to
 // Java but still visible to Kotlin.
 
-fun ByteArray.commonToUtf8String(): String {
-  val chars = CharArray(size)
+fun ByteArray.commonToUtf8String(offset: Int = 0, byteCount: Int = size): String {
+  require(offset + byteCount <= size) { "offset=$offset byteCount=$byteCount size=$size" }
+  val chars = CharArray(byteCount)
 
   var length = 0
-  processUtf16Chars(0, size) { c ->
+  processUtf16Chars(offset, offset + byteCount) { c ->
     chars[length++] = c
   }
 

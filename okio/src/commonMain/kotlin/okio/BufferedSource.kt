@@ -48,6 +48,8 @@ expect interface BufferedSource : Source {
 
   fun readByteString(byteCount: Long): ByteString
 
+  fun select(options: Options): Int
+
   fun readByteArray(): ByteArray
 
   fun readByteArray(byteCount: Long): ByteArray

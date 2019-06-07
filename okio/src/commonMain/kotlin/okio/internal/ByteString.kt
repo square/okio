@@ -51,7 +51,7 @@ internal inline fun ByteString.commonBase64(): String = data.encodeBase64()
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonBase64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
 
-private val HEX_DIGITS =
+internal val HEX_DIGITS =
   charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 
 @Suppress("NOTHING_TO_INLINE")

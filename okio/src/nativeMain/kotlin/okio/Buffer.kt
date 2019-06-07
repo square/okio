@@ -17,15 +17,37 @@ package okio
 
 import okio.internal.commonClear
 import okio.internal.commonCopyTo
+import okio.internal.commonEquals
 import okio.internal.commonGet
+import okio.internal.commonHashCode
+import okio.internal.commonIndexOf
+import okio.internal.commonIndexOfElement
+import okio.internal.commonRangeEquals
 import okio.internal.commonRead
+import okio.internal.commonReadAll
 import okio.internal.commonReadByte
 import okio.internal.commonReadByteArray
 import okio.internal.commonReadByteString
 import okio.internal.commonReadFully
 import okio.internal.commonSkip
+import okio.internal.commonReadInt
+import okio.internal.commonReadLong
+import okio.internal.commonReadShort
+import okio.internal.commonReadUtf8
+import okio.internal.commonReadUtf8CodePoint
+import okio.internal.commonReadUtf8Line
+import okio.internal.commonReadUtf8LineStrict
+import okio.internal.commonSelect
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
+import okio.internal.commonWriteAll
+import okio.internal.commonWriteByte
+import okio.internal.commonWriteDecimalLong
+import okio.internal.commonWriteInt
+import okio.internal.commonWriteLong
+import okio.internal.commonWriteShort
+import okio.internal.commonWriteUtf8
+import okio.internal.commonWriteUtf8CodePoint
 
 actual class Buffer : BufferedSource, BufferedSink {
   internal actual var head: Segment? = null
@@ -39,13 +61,13 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun emit(): Buffer = this // Nowhere to emit to!
 
-  override fun exhausted(): Boolean = TODO()
+  override fun exhausted(): Boolean = size == 0L
 
   override fun require(byteCount: Long) {
-    TODO()
+    if (size < byteCount) throw EOFException(null)
   }
 
-  override fun request(byteCount: Long): Boolean = TODO()
+  override fun request(byteCount: Long): Boolean = size >= byteCount
 
   override fun peek(): BufferedSource = PeekSource(this).buffer()
 
@@ -64,21 +86,21 @@ actual class Buffer : BufferedSource, BufferedSink {
     offset: Long
   ): Buffer = copyTo(out, offset, size - offset)
 
-  operator fun get(pos: Long): Byte = commonGet(pos)
+  actual operator fun get(pos: Long): Byte = commonGet(pos)
 
   override fun readByte(): Byte = commonReadByte()
 
-  override fun readShort(): Short = TODO()
+  override fun readShort(): Short = commonReadShort()
 
-  override fun readInt(): Int = TODO()
+  override fun readInt(): Int = commonReadInt()
 
-  override fun readLong(): Long = TODO()
+  override fun readLong(): Long = commonReadLong()
 
-  override fun readShortLe(): Short = TODO()
+  override fun readShortLe(): Short = readShort().reverseBytes()
 
-  override fun readIntLe(): Int = TODO()
+  override fun readIntLe(): Int = readInt().reverseBytes()
 
-  override fun readLongLe(): Long = TODO()
+  override fun readLongLe(): Long = readLong().reverseBytes()
 
   override fun readDecimalLong(): Long = TODO()
 
@@ -88,23 +110,23 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   override fun readByteString(byteCount: Long): ByteString = commonReadByteString(byteCount)
 
-  override fun readFully(sink: Buffer, byteCount: Long) {
-    TODO()
-  }
+  override fun select(options: Options): Int = commonSelect(options)
 
-  override fun readAll(sink: Sink): Long = TODO()
+  override fun readFully(sink: Buffer, byteCount: Long): Unit = commonReadFully(sink, byteCount)
 
-  override fun readUtf8(): String = TODO()
+  override fun readAll(sink: Sink): Long = commonReadAll(sink)
 
-  override fun readUtf8(byteCount: Long): String = TODO()
+  override fun readUtf8(): String = readUtf8(size)
 
-  override fun readUtf8Line(): String? = TODO()
+  override fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
 
-  override fun readUtf8LineStrict(): String = TODO()
+  override fun readUtf8Line(): String? = commonReadUtf8Line()
 
-  override fun readUtf8LineStrict(limit: Long): String = TODO()
+  override fun readUtf8LineStrict(): String = readUtf8LineStrict(Long.MAX_VALUE)
 
-  override fun readUtf8CodePoint(): Int = TODO()
+  override fun readUtf8LineStrict(limit: Long): String = commonReadUtf8LineStrict(limit)
+
+  override fun readUtf8CodePoint(): Int = commonReadUtf8CodePoint()
 
   override fun readByteArray(): ByteArray = commonReadByteArray()
 
@@ -112,81 +134,85 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   override fun read(sink: ByteArray): Int = commonRead(sink)
 
-  override fun readFully(sink: ByteArray) = commonReadFully(sink)
+  override fun readFully(sink: ByteArray): Unit = commonReadFully(sink)
 
   override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int =
     commonRead(sink, offset, byteCount)
 
-  actual fun clear() = commonClear()
+  actual fun clear(): Unit = commonClear()
 
-  actual override fun skip(byteCount: Long) = commonSkip(byteCount)
+  actual override fun skip(byteCount: Long): Unit = commonSkip(byteCount)
 
   actual override fun write(byteString: ByteString): Buffer = commonWrite(byteString)
 
-  actual override fun writeUtf8(string: String): Buffer = TODO()
+  actual override fun writeUtf8(string: String): Buffer = writeUtf8(string, 0, string.length)
 
   internal actual fun writableSegment(minimumCapacity: Int): Segment =
     commonWritableSegment(minimumCapacity)
 
-  actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer = TODO()
+  actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer =
+    commonWriteUtf8(string, beginIndex, endIndex)
 
-  actual override fun writeUtf8CodePoint(codePoint: Int): Buffer = TODO()
+  actual override fun writeUtf8CodePoint(codePoint: Int): Buffer =
+    commonWriteUtf8CodePoint(codePoint)
 
   actual override fun write(source: ByteArray): Buffer = commonWrite(source)
 
   actual override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer =
     commonWrite(source, offset, byteCount)
 
-  override fun writeAll(source: Source): Long = TODO()
+  override fun writeAll(source: Source): Long = commonWriteAll(source)
 
-  actual override fun write(source: Source, byteCount: Long): Buffer = TODO()
+  actual override fun write(source: Source, byteCount: Long): Buffer =
+    commonWrite(source, byteCount)
 
-  actual override fun writeByte(b: Int): Buffer = TODO()
+  actual override fun writeByte(b: Int): Buffer = commonWriteByte(b)
 
-  actual override fun writeShort(s: Int): Buffer = TODO()
+  actual override fun writeShort(s: Int): Buffer = commonWriteShort(s)
 
-  actual override fun writeShortLe(s: Int): Buffer = TODO()
+  actual override fun writeShortLe(s: Int): Buffer = writeShort(s.reverseBytes())
 
-  actual override fun writeInt(i: Int): Buffer = TODO()
+  actual override fun writeInt(i: Int): Buffer = commonWriteInt(i)
 
-  actual override fun writeIntLe(i: Int): Buffer = TODO()
+  actual override fun writeIntLe(i: Int): Buffer = writeInt(i.reverseBytes())
 
-  actual override fun writeLong(v: Long): Buffer = TODO()
+  actual override fun writeLong(v: Long): Buffer = commonWriteLong(v)
 
-  actual override fun writeLongLe(v: Long): Buffer = TODO()
+  actual override fun writeLongLe(v: Long): Buffer = writeLong(v.reverseBytes())
 
-  actual override fun writeDecimalLong(v: Long): Buffer = TODO()
+  actual override fun writeDecimalLong(v: Long): Buffer = commonWriteDecimalLong(v)
 
   actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer = TODO()
 
-  override fun write(source: Buffer, byteCount: Long) {
-    TODO()
-  }
+  override fun write(source: Buffer, byteCount: Long): Unit = commonWrite(source, byteCount)
 
-  override fun read(sink: Buffer, byteCount: Long): Long = TODO()
+  override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
 
-  override fun indexOf(b: Byte): Long = TODO()
+  override fun indexOf(b: Byte): Long = indexOf(b, 0, Long.MAX_VALUE)
 
-  override fun indexOf(b: Byte, fromIndex: Long): Long = TODO()
+  override fun indexOf(b: Byte, fromIndex: Long): Long = indexOf(b, fromIndex, Long.MAX_VALUE)
 
-  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long = TODO()
+  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long =
+    commonIndexOf(b, fromIndex, toIndex)
 
-  override fun indexOf(bytes: ByteString): Long = TODO()
+  override fun indexOf(bytes: ByteString): Long = indexOf(bytes, 0)
 
-  override fun indexOf(bytes: ByteString, fromIndex: Long): Long = TODO()
+  override fun indexOf(bytes: ByteString, fromIndex: Long): Long = commonIndexOf(bytes, fromIndex)
 
-  override fun indexOfElement(targetBytes: ByteString): Long = TODO()
+  override fun indexOfElement(targetBytes: ByteString): Long = indexOfElement(targetBytes, 0L)
 
-  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long = TODO()
+  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long =
+    commonIndexOfElement(targetBytes, fromIndex)
 
-  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean = TODO()
+  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean =
+    rangeEquals(offset, bytes, 0, bytes.size)
 
   override fun rangeEquals(
     offset: Long,
     bytes: ByteString,
     bytesOffset: Int,
     byteCount: Int
-  ): Boolean = TODO()
+  ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
   override fun flush() {
   }
@@ -195,4 +221,8 @@ actual class Buffer : BufferedSource, BufferedSink {
   }
 
   override fun timeout(): Timeout = Timeout.NONE
+
+  override fun equals(other: Any?): Boolean = commonEquals(other)
+
+  override fun hashCode(): Int = commonHashCode()
 }

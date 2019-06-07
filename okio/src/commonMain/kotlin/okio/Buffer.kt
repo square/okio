@@ -42,6 +42,9 @@ expect class Buffer() : BufferedSource, BufferedSink {
     offset: Long = 0L
   ): Buffer
 
+  /** Returns the byte at `pos`.  */
+  operator fun get(pos: Long): Byte
+
   fun clear()
 
   override fun skip(byteCount: Long)
