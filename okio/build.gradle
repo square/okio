@@ -1,9 +1,9 @@
 apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
 kotlin {
-  // jvmWithJava is getting deprecated but it's not clear what the replacement is:
-  // https://youtrack.jetbrains.com/issue/KT-26256 
-  targetFromPreset(presets.jvmWithJava, 'jvm')
+  jvm {
+    withJava()
+  }
   js() {
     configure([compilations.main, compilations.test]) {
       tasks.getByName(compileKotlinTaskName).kotlinOptions {
@@ -49,11 +49,6 @@ kotlin {
         implementation deps.test.assertj
         implementation deps.kotlin.test.jdk
       }
-    }
-    test {
-      // Not required, but helps IntelliJ configure inter-project dependencies:
-      // https://youtrack.jetbrains.com/issue/KT-31179
-      dependsOn jvmTest
     }
     jsMain {
       dependencies {

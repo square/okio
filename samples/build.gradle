@@ -1,9 +1,9 @@
 apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
 kotlin {
-  // jvmWithJava is getting deprecated but it's not clear what the replacement is:
-  // https://youtrack.jetbrains.com/issue/KT-26256
-  targetFromPreset(presets.jvmWithJava, 'jvm')
+  jvm {
+    withJava()
+  }
   sourceSets {
     commonMain {
       dependencies {
@@ -17,10 +17,4 @@ kotlin {
       }
     }
   }
-}
-
-// Not required, but helps IntelliJ configure inter-project dependencies:
-// https://youtrack.jetbrains.com/issue/KT-31179
-dependencies {
-  implementation project(':okio').kotlin.targets.jvm.compilations.main.javaSourceSet.output
 }

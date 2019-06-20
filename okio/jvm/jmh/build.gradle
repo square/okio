@@ -23,10 +23,10 @@ jmh {
 }
 
 dependencies {
-  compile project(path: ':okio', configuration: 'runtimeElements')
+  compile project(':okio')
   compile deps.kotlin.stdLib.jdk6
   compile deps.jmh.core
-  jmh project(path: ':okio', configuration: 'runtimeElements')
+  jmh project(path: ':okio', configuration: 'jvmRuntimeElements')
   jmh deps.kotlin.stdLib.jdk6
   jmh deps.jmh.core
   jmh deps.jmh.generator
