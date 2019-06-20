@@ -91,6 +91,8 @@ internal fun arrayRangeEquals(
 }
 
 internal fun Byte.toHexString(): String {
+  if (this == 0.toByte()) return "0x00"
+
   val result = CharArray(4)
   result[0] = '0'
   result[1] = 'x'
@@ -100,10 +102,9 @@ internal fun Byte.toHexString(): String {
 }
 
 internal fun Int.toHexString(): String {
-  // Should this trim leading 0's?
+  if (this == 0) return "0x00"
+
   val result = CharArray(10)
-  result[0] = '0'
-  result[1] = 'x'
   result[2] = HEX_DIGITS[this shr 28 and 0xf]
   result[3] = HEX_DIGITS[this shr 24 and 0xf]
   result[4] = HEX_DIGITS[this shr 20 and 0xf]
@@ -112,5 +113,18 @@ internal fun Int.toHexString(): String {
   result[7] = HEX_DIGITS[this shr 8  and 0xf] // ktlint-disable no-multi-spaces
   result[8] = HEX_DIGITS[this shr 4  and 0xf] // ktlint-disable no-multi-spaces
   result[9] = HEX_DIGITS[this        and 0xf] // ktlint-disable no-multi-spaces
-  return String(result)
+
+  // Find the first non-zero index
+  var i = 2
+  while (i < 10) {
+    if (result[i] != '0') break
+    i++
+  }
+
+  // truncate on a whole byte and shift to start of "0x"
+  i -= 2 + (i % 2)
+  result[i] = '0'
+  result[i + 1] = 'x'
+
+  return String(result, i, 10 - i)
 }

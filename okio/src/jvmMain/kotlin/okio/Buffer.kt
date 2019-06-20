@@ -17,7 +17,9 @@ package okio
 
 import okio.internal.commonClear
 import okio.internal.commonCopyTo
+import okio.internal.commonEquals
 import okio.internal.commonGet
+import okio.internal.commonHashCode
 import okio.internal.commonIndexOf
 import okio.internal.commonIndexOfElement
 import okio.internal.commonRangeEquals
@@ -705,55 +707,9 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     }
   }
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Buffer) return false
-    if (size != other.size) return false
-    if (size == 0L) return true // Both buffers are empty.
+  override fun equals(other: Any?): Boolean = commonEquals(other)
 
-    var sa = this.head!!
-    var sb = other.head!!
-    var posA = sa.pos
-    var posB = sb.pos
-
-    var pos = 0L
-    var count: Long
-    while (pos < size) {
-      count = minOf(sa.limit - posA, sb.limit - posB).toLong()
-
-      for (i in 0L until count) {
-        if (sa.data[posA++] != sb.data[posB++]) return false
-      }
-
-      if (posA == sa.limit) {
-        sa = sa.next!!
-        posA = sa.pos
-      }
-
-      if (posB == sb.limit) {
-        sb = sb.next!!
-        posB = sb.pos
-      }
-      pos += count
-    }
-
-    return true
-  }
-
-  override fun hashCode(): Int {
-    var s = head ?: return 0
-    var result = 1
-    do {
-      var pos = s.pos
-      val limit = s.limit
-      while (pos < limit) {
-        result = 31 * result + s.data[pos]
-        pos++
-      }
-      s = s.next!!
-    } while (s !== head)
-    return result
-  }
+  override fun hashCode(): Int = commonHashCode()
 
   /**
    * Returns a human-readable string that describes the contents of this buffer. Typically this

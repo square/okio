@@ -189,6 +189,7 @@ public final class Utf8Test {
       buffer.writeUtf8CodePoint(0x110000);
       fail();
     } catch (IllegalArgumentException expected) {
+      assertEquals("Unexpected code point: 0x110000", expected.getMessage());
     }
   }
 
