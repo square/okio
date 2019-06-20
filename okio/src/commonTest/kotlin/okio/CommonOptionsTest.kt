@@ -16,12 +16,11 @@
 package okio
 
 import okio.ByteString.Companion.encodeUtf8
-import okio.TestUtil.bufferWithSegments
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class OptionsTest {
+class CommonOptionsTest {
   /** Confirm that options prefers the first-listed option, not the longest or shortest one. */
   @Test fun optionOrderTakesPrecedence() {
     assertSelect("abcdefg", 0, "abc", "abcdef")
@@ -29,7 +28,7 @@ class OptionsTest {
   }
 
   @Test fun simpleOptionsTrie() {
-    assertThat(utf8Options("hotdog", "hoth", "hot").trieString()).isEqualTo("""
+    assertEquals(utf8Options("hotdog", "hoth", "hot").trieString(), """
         |hot
         |   -> 2
         |   d
@@ -68,7 +67,7 @@ class OptionsTest {
         "readTimeout",
         "writeTimeout",
         "pingInterval")
-    assertThat(options.trieString()).isEqualTo("""
+    assertEquals(options.trieString(), """
         |a
         | uthenticator -> 17
         |c
@@ -200,13 +199,13 @@ class OptionsTest {
       utf8Options("abc", "abc")
       fail()
     } catch (expected: IllegalArgumentException) {
-      assertThat(expected).hasMessage("duplicate option: [text=abc]")
+      assertEquals(expected.message, "duplicate option: [text=abc]")
     }
   }
 
   @Test fun prefixesAreStripped() {
     val options = utf8Options("abcA", "abc", "abcB")
-    assertThat(options.trieString()).isEqualTo("""
+    assertEquals(options.trieString(), """
         |abc
         |   -> 1
         |   A -> 0
@@ -219,22 +218,22 @@ class OptionsTest {
   }
 
   @Test fun multiplePrefixesAreStripped() {
-    assertThat(utf8Options("a", "ab", "abc", "abcd", "abcde").trieString()).isEqualTo("""
+    assertEquals(utf8Options("a", "ab", "abc", "abcd", "abcde").trieString(), """
         |a -> 0
         |""".trimMargin())
-    assertThat(utf8Options("abc", "a", "ab", "abe", "abcd", "abcf").trieString()).isEqualTo("""
+    assertEquals(utf8Options("abc", "a", "ab", "abe", "abcd", "abcf").trieString(), """
         |a
         | -> 1
         | bc -> 0
         |""".trimMargin())
-    assertThat(utf8Options("abc", "ab", "a").trieString()).isEqualTo("""
+    assertEquals(utf8Options("abc", "ab", "a").trieString(), """
         |a
         | -> 2
         | b
         |  -> 1
         |  c -> 0
         |""".trimMargin())
-    assertThat(utf8Options("abcd", "abce", "abc", "abcf", "abcg").trieString()).isEqualTo("""
+    assertEquals(utf8Options("abcd", "abce", "abc", "abcf", "abcg").trieString(), """
         |abc
         |   -> 2
         |   d -> 0
@@ -373,11 +372,11 @@ class OptionsTest {
     val initialSize = data.size
     val actual = data.select(options)
 
-    assertThat(actual).isEqualTo(expected)
+    assertEquals(actual, expected)
     if (expected == -1) {
-      assertThat(data.size).isEqualTo(initialSize)
+      assertEquals(data.size, initialSize)
     } else {
-      assertThat(data.size + options[expected].size).isEqualTo(initialSize)
+      assertEquals(data.size + options[expected].size, initialSize)
     }
   }
 

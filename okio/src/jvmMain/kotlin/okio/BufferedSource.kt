@@ -294,7 +294,7 @@ actual interface BufferedSource : Source, ReadableByteChannel {
    * ```
    */
   @Throws(IOException::class)
-  fun select(options: Options): Int
+  actual fun select(options: Options): Int
 
   /** Removes all bytes from this and returns them as a byte array. */
   @Throws(IOException::class)

@@ -48,6 +48,8 @@ actual interface BufferedSource : Source {
 
   actual fun readByteString(byteCount: Long): ByteString
 
+  actual fun select(options: Options): Int
+
   actual fun readByteArray(): ByteArray
 
   actual fun readByteArray(byteCount: Long): ByteArray

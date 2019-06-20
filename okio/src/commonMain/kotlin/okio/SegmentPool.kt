@@ -15,10 +15,13 @@
  */
 package okio
 
+import kotlin.native.concurrent.ThreadLocal
+
 /**
  * A collection of unused segments, necessary to avoid GC churn and zero-fill.
  * This pool is a thread-safe static singleton.
  */
+@ThreadLocal
 internal object SegmentPool {
   /** The maximum number of bytes to pool.  */
   // TODO: Is 64 KiB a good maximum size? Do we ever have that many idle segments?

@@ -18,15 +18,33 @@ package okio
 import okio.internal.commonClear
 import okio.internal.commonCopyTo
 import okio.internal.commonGet
+import okio.internal.commonIndexOf
+import okio.internal.commonIndexOfElement
+import okio.internal.commonRangeEquals
 import okio.internal.commonRead
+import okio.internal.commonReadAll
 import okio.internal.commonReadByte
 import okio.internal.commonReadByteArray
 import okio.internal.commonReadByteString
 import okio.internal.commonReadFully
+import okio.internal.commonReadInt
+import okio.internal.commonReadLong
+import okio.internal.commonReadShort
+import okio.internal.commonReadUtf8CodePoint
+import okio.internal.commonReadUtf8Line
+import okio.internal.commonReadUtf8LineStrict
+import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
-import okio.internal.seek
+import okio.internal.commonWriteAll
+import okio.internal.commonWriteByte
+import okio.internal.commonWriteDecimalLong
+import okio.internal.commonWriteInt
+import okio.internal.commonWriteLong
+import okio.internal.commonWriteShort
+import okio.internal.commonWriteUtf8
+import okio.internal.commonWriteUtf8CodePoint
 import java.io.Closeable
 import java.io.EOFException
 import java.io.IOException
@@ -251,103 +269,16 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   /** Returns the byte at `pos`.  */
   @JvmName("getByte")
-  operator fun get(pos: Long): Byte = commonGet(pos)
+  actual operator fun get(pos: Long): Byte = commonGet(pos)
 
   @Throws(EOFException::class)
-  override fun readShort(): Short {
-    if (size < 2L) throw EOFException()
-
-    val segment = head!!
-    var pos = segment.pos
-    val limit = segment.limit
-
-    // If the short is split across multiple segments, delegate to readByte().
-    if (limit - pos < 2) {
-      val s = readByte() and 0xff shl 8 or (readByte() and 0xff)
-      return s.toShort()
-    }
-
-    val data = segment.data
-    val s = data[pos++] and 0xff shl 8 or (data[pos++] and 0xff)
-    size -= 2L
-
-    if (pos == limit) {
-      head = segment.pop()
-      SegmentPool.recycle(segment)
-    } else {
-      segment.pos = pos
-    }
-
-    return s.toShort()
-  }
+  override fun readShort(): Short = commonReadShort()
 
   @Throws(EOFException::class)
-  override fun readInt(): Int {
-    if (size < 4L) throw EOFException()
-
-    val segment = head!!
-    var pos = segment.pos
-    val limit = segment.limit
-
-    // If the int is split across multiple segments, delegate to readByte().
-    if (limit - pos < 4L) {
-      return (readByte() and 0xff shl 24
-          or (readByte() and 0xff shl 16)
-          or (readByte() and 0xff shl  8) // ktlint-disable no-multi-spaces
-          or (readByte() and 0xff))
-    }
-
-    val data = segment.data
-    val i = (data[pos++] and 0xff shl 24
-        or (data[pos++] and 0xff shl 16)
-        or (data[pos++] and 0xff shl 8)
-        or (data[pos++] and 0xff))
-    size -= 4L
-
-    if (pos == limit) {
-      head = segment.pop()
-      SegmentPool.recycle(segment)
-    } else {
-      segment.pos = pos
-    }
-
-    return i
-  }
+  override fun readInt(): Int = commonReadInt()
 
   @Throws(EOFException::class)
-  override fun readLong(): Long {
-    if (size < 8L) throw EOFException()
-
-    val segment = head!!
-    var pos = segment.pos
-    val limit = segment.limit
-
-    // If the long is split across multiple segments, delegate to readInt().
-    if (limit - pos < 8L) {
-      return (readInt() and 0xffffffffL shl 32
-          or (readInt() and 0xffffffffL))
-    }
-
-    val data = segment.data
-    val v = (data[pos++] and 0xffL shl 56
-        or (data[pos++] and 0xffL shl 48)
-        or (data[pos++] and 0xffL shl 40)
-        or (data[pos++] and 0xffL shl 32)
-        or (data[pos++] and 0xffL shl 24)
-        or (data[pos++] and 0xffL shl 16)
-        or (data[pos++] and 0xffL shl  8) // ktlint-disable no-multi-spaces
-        or (data[pos++] and 0xffL))
-    size -= 8L
-
-    if (pos == limit) {
-      head = segment.pop()
-      SegmentPool.recycle(segment)
-    } else {
-      segment.pos = pos
-    }
-
-    return v
-  }
+  override fun readLong(): Long = commonReadLong()
 
   @Throws(EOFException::class)
   override fun readShortLe() = readShort().reverseBytes()
@@ -485,134 +416,13 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @Throws(EOFException::class)
   override fun readByteString(byteCount: Long) = commonReadByteString(byteCount)
 
-  override fun select(options: Options): Int {
-    val index = selectPrefix(options)
-    if (index == -1) return -1
-
-    // If the prefix match actually matched a full byte string, consume it and return it.
-    val selectedSize = options.byteStrings[index].size
-    skip(selectedSize.toLong())
-    return index
-  }
-
-  /**
-   * Returns the index of a value in options that is a prefix of this buffer. Returns -1 if no value
-   * is found. This method does two simultaneous iterations: it iterates the trie and it iterates
-   * this buffer. It returns when it reaches a result in the trie, when it mismatches in the trie,
-   * and when the buffer is exhausted.
-   *
-   * @param selectTruncated true to return -2 if a possible result is present but truncated. For
-   *     example, this will return -2 if the buffer contains [ab] and the options are [abc, abd].
-   *     Note that this is made complicated by the fact that options are listed in preference order,
-   *     and one option may be a prefix of another. For example, this returns -2 if the buffer
-   *     contains [ab] and the options are [abc, a].
-   */
-  internal fun selectPrefix(options: Options, selectTruncated: Boolean = false): Int {
-    val head = head ?: return if (selectTruncated) -2 else -1
-
-    var s: Segment? = head
-    var data = head.data
-    var pos = head.pos
-    var limit = head.limit
-
-    val trie = options.trie
-    var triePos = 0
-
-    var prefixIndex = -1
-
-    navigateTrie@
-    while (true) {
-      val scanOrSelect = trie[triePos++]
-
-      val possiblePrefixIndex = trie[triePos++]
-      if (possiblePrefixIndex != -1) {
-        prefixIndex = possiblePrefixIndex
-      }
-
-      val nextStep: Int
-
-      if (s == null) {
-        break@navigateTrie
-      } else if (scanOrSelect < 0) {
-        // Scan: take multiple bytes from the buffer and the trie, looking for any mismatch.
-        val scanByteCount = -1 * scanOrSelect
-        val trieLimit = triePos + scanByteCount
-        while (true) {
-          val byte = data[pos++] and 0xff
-          if (byte != trie[triePos++]) return prefixIndex // Fail 'cause we found a mismatch.
-          val scanComplete = (triePos == trieLimit)
-
-          // Advance to the next buffer segment if this one is exhausted.
-          if (pos == limit) {
-            s = s!!.next!!
-            pos = s.pos
-            data = s.data
-            limit = s.limit
-            if (s === head) {
-              if (!scanComplete) break@navigateTrie // We were exhausted before the scan completed.
-              s = null // We were exhausted at the end of the scan.
-            }
-          }
-
-          if (scanComplete) {
-            nextStep = trie[triePos]
-            break
-          }
-        }
-      } else {
-        // Select: take one byte from the buffer and find a match in the trie.
-        val selectChoiceCount = scanOrSelect
-        val byte = data[pos++] and 0xff
-        val selectLimit = triePos + selectChoiceCount
-        while (true) {
-          if (triePos == selectLimit) return prefixIndex // Fail 'cause we didn't find a match.
-
-          if (byte == trie[triePos]) {
-            nextStep = trie[triePos + selectChoiceCount]
-            break
-          }
-
-          triePos++
-        }
-
-        // Advance to the next buffer segment if this one is exhausted.
-        if (pos == limit) {
-          s = s.next!!
-          pos = s.pos
-          data = s.data
-          limit = s.limit
-          if (s === head) {
-            s = null // No more segments! The next trie node will be our last.
-          }
-        }
-      }
-
-      if (nextStep >= 0) return nextStep // Found a matching option.
-      triePos = -nextStep // Found another node to continue the search.
-    }
-
-    // We break out of the loop above when we've exhausted the buffer without exhausting the trie.
-    if (selectTruncated) return -2 // The buffer is a prefix of at least one option.
-    return prefixIndex // Return any matches we encountered while searching for a deeper match.
-  }
+  override fun select(options: Options): Int = commonSelect(options)
 
   @Throws(EOFException::class)
-  override fun readFully(sink: Buffer, byteCount: Long) {
-    if (size < byteCount) {
-      sink.write(this, size) // Exhaust ourselves.
-      throw EOFException()
-    }
-    sink.write(this, byteCount)
-  }
+  override fun readFully(sink: Buffer, byteCount: Long): Unit = commonReadFully(sink, byteCount)
 
   @Throws(IOException::class)
-  override fun readAll(sink: Sink): Long {
-    val byteCount = size
-    if (byteCount > 0L) {
-      sink.write(this, byteCount)
-    }
-    return byteCount
-  }
+  override fun readAll(sink: Sink): Long = commonReadAll(sink)
 
   override fun readUtf8() = readString(size, Charsets.UTF_8)
 
@@ -646,130 +456,16 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   @Throws(EOFException::class)
-  override fun readUtf8Line(): String? {
-    val newline = indexOf('\n'.toByte())
-
-    return when {
-      newline != -1L -> readUtf8Line(newline)
-      size != 0L -> readUtf8(size)
-      else -> null
-    }
-  }
+  override fun readUtf8Line(): String? = commonReadUtf8Line()
 
   @Throws(EOFException::class)
   override fun readUtf8LineStrict() = readUtf8LineStrict(Long.MAX_VALUE)
 
   @Throws(EOFException::class)
-  override fun readUtf8LineStrict(limit: Long): String {
-    require(limit >= 0L) { "limit < 0: $limit" }
-    val scanLength = if (limit == Long.MAX_VALUE) Long.MAX_VALUE else limit + 1L
-    val newline = indexOf('\n'.toByte(), 0L, scanLength)
-    if (newline != -1L) return readUtf8Line(newline)
-    if (scanLength < size &&
-        this[scanLength - 1] == '\r'.toByte() &&
-        this[scanLength] == '\n'.toByte()) {
-      return readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
-    }
-    val data = Buffer()
-    copyTo(data, 0, minOf(32, size))
-    throw EOFException("\\n not found: limit=${minOf(size,
-        limit)} content=${data.readByteString().hex()}${'…'}")
-  }
+  override fun readUtf8LineStrict(limit: Long): String = commonReadUtf8LineStrict(limit)
 
   @Throws(EOFException::class)
-  internal fun readUtf8Line(newline: Long): String {
-    return when {
-      newline > 0 && this[newline - 1] == '\r'.toByte() -> {
-        // Read everything until '\r\n', then skip the '\r\n'.
-        val result = readUtf8(newline - 1L)
-        skip(2L)
-        result
-      }
-      else -> {
-        // Read everything until '\n', then skip the '\n'.
-        val result = readUtf8(newline)
-        skip(1L)
-        result
-      }
-    }
-  }
-
-  @Throws(EOFException::class)
-  override fun readUtf8CodePoint(): Int {
-    if (size == 0L) throw EOFException()
-
-    val b0 = this[0]
-    var codePoint: Int
-    val byteCount: Int
-    val min: Int
-
-    when {
-      b0 and 0x80 == 0 -> {
-        // 0xxxxxxx.
-        codePoint = b0 and 0x7f
-        byteCount = 1 // 7 bits (ASCII).
-        min = 0x0
-      }
-      b0 and 0xe0 == 0xc0 -> {
-        // 0x110xxxxx
-        codePoint = b0 and 0x1f
-        byteCount = 2 // 11 bits (5 + 6).
-        min = 0x80
-      }
-      b0 and 0xf0 == 0xe0 -> {
-        // 0x1110xxxx
-        codePoint = b0 and 0x0f
-        byteCount = 3 // 16 bits (4 + 6 + 6).
-        min = 0x800
-      }
-      b0 and 0xf8 == 0xf0 -> {
-        // 0x11110xxx
-        codePoint = b0 and 0x07
-        byteCount = 4 // 21 bits (3 + 6 + 6 + 6).
-        min = 0x10000
-      }
-      else -> {
-        // We expected the first byte of a code point but got something else.
-        skip(1)
-        return REPLACEMENT_CODE_POINT
-      }
-    }
-
-    if (size < byteCount) {
-      throw EOFException("size < " + byteCount + ": " + size +
-        " (to read code point prefixed 0x" + Integer.toHexString(b0.toInt()) + ")")
-    }
-
-    // Read the continuation bytes. If we encounter a non-continuation byte, the sequence consumed
-    // thus far is truncated and is decoded as the replacement character. That non-continuation byte
-    // is left in the stream for processing by the next call to readUtf8CodePoint().
-    for (i in 1 until byteCount) {
-      val b = this[i.toLong()]
-      if (b and 0xc0 == 0x80) {
-        // 0x10xxxxxx
-        codePoint = codePoint shl 6
-        codePoint = codePoint or (b and 0x3f)
-      } else {
-        skip(i.toLong())
-        return REPLACEMENT_CODE_POINT
-      }
-    }
-
-    skip(byteCount.toLong())
-
-    return when {
-      codePoint > 0x10ffff -> {
-        REPLACEMENT_CODE_POINT // Reject code points larger than the Unicode maximum.
-      }
-      codePoint in 0xd800..0xdfff -> {
-        REPLACEMENT_CODE_POINT // Reject partial surrogates.
-      }
-      codePoint < min -> {
-        REPLACEMENT_CODE_POINT // Reject overlong code points.
-      }
-      else -> codePoint
-    }
-  }
+  override fun readUtf8CodePoint(): Int = commonReadUtf8CodePoint()
 
   override fun readByteArray() = commonReadByteArray()
 
@@ -816,147 +512,11 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   actual override fun writeUtf8(string: String): Buffer = writeUtf8(string, 0, string.length)
 
-  actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer {
-    require(beginIndex >= 0) { "beginIndex < 0: $beginIndex" }
-    require(endIndex >= beginIndex) { "endIndex < beginIndex: $endIndex < $beginIndex" }
-    require(endIndex <= string.length) { "endIndex > string.length: $endIndex > ${string.length}" }
+  actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer =
+    commonWriteUtf8(string, beginIndex, endIndex)
 
-    // Transcode a UTF-16 Java String to UTF-8 bytes.
-    var i = beginIndex
-    while (i < endIndex) {
-      var c = string[i].toInt()
-
-      when {
-        c < 0x80 -> {
-          val tail = writableSegment(1)
-          val data = tail.data
-          val segmentOffset = tail.limit - i
-          val runLimit = minOf(endIndex, Segment.SIZE - segmentOffset)
-
-          // Emit a 7-bit character with 1 byte.
-          data[segmentOffset + i++] = c.toByte() // 0xxxxxxx
-
-          // Fast-path contiguous runs of ASCII characters. This is ugly, but yields a ~4x performance
-          // improvement over independent calls to writeByte().
-          while (i < runLimit) {
-            c = string[i].toInt()
-            if (c >= 0x80) break
-            data[segmentOffset + i++] = c.toByte() // 0xxxxxxx
-          }
-
-          val runSize = i + segmentOffset - tail.limit // Equivalent to i - (previous i).
-          tail.limit += runSize
-          size += runSize.toLong()
-        }
-
-        c < 0x800 -> {
-          // Emit a 11-bit character with 2 bytes.
-          val tail = writableSegment(2)
-          /* ktlint-disable no-multi-spaces */
-          tail.data[tail.limit    ] = (c shr 6          or 0xc0).toByte() // 110xxxxx
-          tail.data[tail.limit + 1] = (c       and 0x3f or 0x80).toByte() // 10xxxxxx
-          /* ktlint-enable no-multi-spaces */
-          tail.limit += 2
-          size += 2L
-          i++
-        }
-
-        c < 0xd800 || c > 0xdfff -> {
-          // Emit a 16-bit character with 3 bytes.
-          val tail = writableSegment(3)
-          /* ktlint-disable no-multi-spaces */
-          tail.data[tail.limit    ] = (c shr 12          or 0xe0).toByte() // 1110xxxx
-          tail.data[tail.limit + 1] = (c shr  6 and 0x3f or 0x80).toByte() // 10xxxxxx
-          tail.data[tail.limit + 2] = (c        and 0x3f or 0x80).toByte() // 10xxxxxx
-          /* ktlint-enable no-multi-spaces */
-          tail.limit += 3
-          size += 3L
-          i++
-        }
-
-        else -> {
-          // c is a surrogate. Make sure it is a high surrogate & that its successor is a low
-          // surrogate. If not, the UTF-16 is invalid, in which case we emit a replacement
-          // character.
-          val low = (if (i + 1 < endIndex) string[i + 1].toInt() else 0)
-          if (c > 0xdbff || low !in 0xdc00..0xdfff) {
-            writeByte('?'.toInt())
-            i++
-          } else {
-            // UTF-16 high surrogate: 110110xxxxxxxxxx (10 bits)
-            // UTF-16 low surrogate:  110111yyyyyyyyyy (10 bits)
-            // Unicode code point:    00010000000000000000 + xxxxxxxxxxyyyyyyyyyy (21 bits)
-            val codePoint = 0x010000 + (c and 0x03ff shl 10 or (low and 0x03ff))
-
-            // Emit a 21-bit character with 4 bytes.
-            val tail = writableSegment(4)
-            /* ktlint-disable no-multi-spaces */
-            tail.data[tail.limit    ] = (codePoint shr 18          or 0xf0).toByte() // 11110xxx
-            tail.data[tail.limit + 1] = (codePoint shr 12 and 0x3f or 0x80).toByte() // 10xxxxxx
-            tail.data[tail.limit + 2] = (codePoint shr  6 and 0x3f or 0x80).toByte() // 10xxyyyy
-            tail.data[tail.limit + 3] = (codePoint        and 0x3f or 0x80).toByte() // 10yyyyyy
-            /* ktlint-enable no-multi-spaces */
-            tail.limit += 4
-            size += 4L
-            i += 2
-          }
-        }
-      }
-    }
-
-    return this
-  }
-
-  actual override fun writeUtf8CodePoint(codePoint: Int): Buffer {
-    when {
-      codePoint < 0x80 -> {
-        // Emit a 7-bit code point with 1 byte.
-        writeByte(codePoint)
-      }
-      codePoint < 0x800 -> {
-        // Emit a 11-bit code point with 2 bytes.
-        val tail = writableSegment(2)
-        /* ktlint-disable no-multi-spaces */
-        tail.data[tail.limit    ] = (codePoint shr 6          or 0xc0).toByte() // 110xxxxx
-        tail.data[tail.limit + 1] = (codePoint       and 0x3f or 0x80).toByte() // 10xxxxxx
-        /* ktlint-enable no-multi-spaces */
-        tail.limit += 2
-        size += 2L
-      }
-      codePoint in 0xd800..0xdfff -> {
-        // Emit a replacement character for a partial surrogate.
-        writeByte('?'.toInt())
-      }
-      codePoint < 0x10000 -> {
-        // Emit a 16-bit code point with 3 bytes.
-        val tail = writableSegment(3)
-        /* ktlint-disable no-multi-spaces */
-        tail.data[tail.limit    ] = (codePoint shr 12          or 0xe0).toByte() // 1110xxxx
-        tail.data[tail.limit + 1] = (codePoint shr  6 and 0x3f or 0x80).toByte() // 10xxxxxx
-        tail.data[tail.limit + 2] = (codePoint        and 0x3f or 0x80).toByte() // 10xxxxxx
-        /* ktlint-enable no-multi-spaces */
-        tail.limit += 3
-        size += 3L
-      }
-      codePoint <= 0x10ffff -> {
-        // Emit a 21-bit code point with 4 bytes.
-        val tail = writableSegment(4)
-        /* ktlint-disable no-multi-spaces */
-        tail.data[tail.limit    ] = (codePoint shr 18          or 0xf0).toByte() // 11110xxx
-        tail.data[tail.limit + 1] = (codePoint shr 12 and 0x3f or 0x80).toByte() // 10xxxxxx
-        tail.data[tail.limit + 2] = (codePoint shr  6 and 0x3f or 0x80).toByte() // 10xxyyyy
-        tail.data[tail.limit + 3] = (codePoint        and 0x3f or 0x80).toByte() // 10yyyyyy
-        /* ktlint-enable no-multi-spaces */
-        tail.limit += 4
-        size += 4L
-      }
-      else -> {
-        throw IllegalArgumentException("Unexpected code point: ${Integer.toHexString(codePoint)}")
-      }
-    }
-
-    return this
-  }
+  actual override fun writeUtf8CodePoint(codePoint: Int): Buffer =
+    commonWriteUtf8CodePoint(codePoint)
 
   override fun writeString(string: String, charset: Charset) = writeString(string, 0, string.length,
       charset)
@@ -1002,146 +562,27 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   @Throws(IOException::class)
-  override fun writeAll(source: Source): Long {
-    var totalBytesRead = 0L
-    while (true) {
-      val readCount = source.read(this, Segment.SIZE.toLong())
-      if (readCount == -1L) break
-      totalBytesRead += readCount
-    }
-    return totalBytesRead
-  }
+  override fun writeAll(source: Source): Long = commonWriteAll(source)
 
   @Throws(IOException::class)
-  actual override fun write(source: Source, byteCount: Long): Buffer {
-    var byteCount = byteCount
-    while (byteCount > 0L) {
-      val read = source.read(this, byteCount)
-      if (read == -1L) throw EOFException()
-      byteCount -= read
-    }
-    return this
-  }
+  actual override fun write(source: Source, byteCount: Long): Buffer =
+    commonWrite(source, byteCount)
 
-  actual override fun writeByte(b: Int): Buffer {
-    val tail = writableSegment(1)
-    tail.data[tail.limit++] = b.toByte()
-    size += 1L
-    return this
-  }
+  actual override fun writeByte(b: Int): Buffer = commonWriteByte(b)
 
-  actual override fun writeShort(s: Int): Buffer {
-    val tail = writableSegment(2)
-    val data = tail.data
-    var limit = tail.limit
-    data[limit++] = (s ushr 8 and 0xff).toByte()
-    data[limit++] = (s        and 0xff).toByte() // ktlint-disable no-multi-spaces
-    tail.limit = limit
-    size += 2L
-    return this
-  }
+  actual override fun writeShort(s: Int): Buffer = commonWriteShort(s)
 
   actual override fun writeShortLe(s: Int) = writeShort(s.toShort().reverseBytes().toInt())
 
-  actual override fun writeInt(i: Int): Buffer {
-    val tail = writableSegment(4)
-    val data = tail.data
-    var limit = tail.limit
-    data[limit++] = (i ushr 24 and 0xff).toByte()
-    data[limit++] = (i ushr 16 and 0xff).toByte()
-    data[limit++] = (i ushr  8 and 0xff).toByte() // ktlint-disable no-multi-spaces
-    data[limit++] = (i         and 0xff).toByte() // ktlint-disable no-multi-spaces
-    tail.limit = limit
-    size += 4L
-    return this
-  }
+  actual override fun writeInt(i: Int): Buffer = commonWriteInt(i)
 
   actual override fun writeIntLe(i: Int) = writeInt(i.reverseBytes())
 
-  actual override fun writeLong(v: Long): Buffer {
-    val tail = writableSegment(8)
-    val data = tail.data
-    var limit = tail.limit
-    data[limit++] = (v ushr 56 and 0xffL).toByte()
-    data[limit++] = (v ushr 48 and 0xffL).toByte()
-    data[limit++] = (v ushr 40 and 0xffL).toByte()
-    data[limit++] = (v ushr 32 and 0xffL).toByte()
-    data[limit++] = (v ushr 24 and 0xffL).toByte()
-    data[limit++] = (v ushr 16 and 0xffL).toByte()
-    data[limit++] = (v ushr  8 and 0xffL).toByte() // ktlint-disable no-multi-spaces
-    data[limit++] = (v         and 0xffL).toByte() // ktlint-disable no-multi-spaces
-    tail.limit = limit
-    size += 8L
-    return this
-  }
+  actual override fun writeLong(v: Long): Buffer = commonWriteLong(v)
 
   actual override fun writeLongLe(v: Long) = writeLong(v.reverseBytes())
 
-  actual override fun writeDecimalLong(v: Long): Buffer {
-    var v = v
-    if (v == 0L) {
-      // Both a shortcut and required since the following code can't handle zero.
-      return writeByte('0'.toInt())
-    }
-
-    var negative = false
-    if (v < 0L) {
-      v = -v
-      if (v < 0L) { // Only true for Long.MIN_VALUE.
-        return writeUtf8("-9223372036854775808")
-      }
-      negative = true
-    }
-
-    // Binary search for character width which favors matching lower numbers.
-    var width =
-        if (v < 100000000L)
-          if (v < 10000L)
-            if (v < 100L)
-              if (v < 10L) 1
-              else 2
-            else if (v < 1000L) 3
-            else 4
-          else if (v < 1000000L)
-            if (v < 100000L) 5
-            else 6
-          else if (v < 10000000L) 7
-          else 8
-        else if (v < 1000000000000L)
-          if (v < 10000000000L)
-            if (v < 1000000000L) 9
-            else 10
-          else if (v < 100000000000L) 11
-          else 12
-        else if (v < 1000000000000000L)
-          if (v < 10000000000000L) 13
-          else if (v < 100000000000000L) 14
-          else 15
-        else if (v < 100000000000000000L)
-          if (v < 10000000000000000L) 16
-          else 17
-        else if (v < 1000000000000000000L) 18
-        else 19
-    if (negative) {
-      ++width
-    }
-
-    val tail = writableSegment(width)
-    val data = tail.data
-    var pos = tail.limit + width // We write backwards from right to left.
-    while (v != 0L) {
-      val digit = (v % 10).toInt()
-      data[--pos] = DIGITS[digit]
-      v /= 10
-    }
-    if (negative) {
-      data[--pos] = '-'.toByte()
-    }
-
-    tail.limit += width
-    this.size += width.toLong()
-    return this
-  }
+  actual override fun writeDecimalLong(v: Long): Buffer = commonWriteDecimalLong(v)
 
   actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer {
     var v = v
@@ -1169,106 +610,9 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   internal actual fun writableSegment(minimumCapacity: Int): Segment =
     commonWritableSegment(minimumCapacity)
 
-  override fun write(source: Buffer, byteCount: Long) {
-    var byteCount = byteCount
-    // Move bytes from the head of the source buffer to the tail of this buffer
-    // while balancing two conflicting goals: don't waste CPU and don't waste
-    // memory.
-    //
-    //
-    // Don't waste CPU (ie. don't copy data around).
-    //
-    // Copying large amounts of data is expensive. Instead, we prefer to
-    // reassign entire segments from one buffer to the other.
-    //
-    //
-    // Don't waste memory.
-    //
-    // As an invariant, adjacent pairs of segments in a buffer should be at
-    // least 50% full, except for the head segment and the tail segment.
-    //
-    // The head segment cannot maintain the invariant because the application is
-    // consuming bytes from this segment, decreasing its level.
-    //
-    // The tail segment cannot maintain the invariant because the application is
-    // producing bytes, which may require new nearly-empty tail segments to be
-    // appended.
-    //
-    //
-    // Moving segments between buffers
-    //
-    // When writing one buffer to another, we prefer to reassign entire segments
-    // over copying bytes into their most compact form. Suppose we have a buffer
-    // with these segment levels [91%, 61%]. If we append a buffer with a
-    // single [72%] segment, that yields [91%, 61%, 72%]. No bytes are copied.
-    //
-    // Or suppose we have a buffer with these segment levels: [100%, 2%], and we
-    // want to append it to a buffer with these segment levels [99%, 3%]. This
-    // operation will yield the following segments: [100%, 2%, 99%, 3%]. That
-    // is, we do not spend time copying bytes around to achieve more efficient
-    // memory use like [100%, 100%, 4%].
-    //
-    // When combining buffers, we will compact adjacent buffers when their
-    // combined level doesn't exceed 100%. For example, when we start with
-    // [100%, 40%] and append [30%, 80%], the result is [100%, 70%, 80%].
-    //
-    //
-    // Splitting segments
-    //
-    // Occasionally we write only part of a source buffer to a sink buffer. For
-    // example, given a sink [51%, 91%], we may want to write the first 30% of
-    // a source [92%, 82%] to it. To simplify, we first transform the source to
-    // an equivalent buffer [30%, 62%, 82%] and then move the head segment,
-    // yielding sink [51%, 91%, 30%] and source [62%, 82%].
+  override fun write(source: Buffer, byteCount: Long): Unit = commonWrite(source, byteCount)
 
-    require(source !== this) { "source == this" }
-    checkOffsetAndCount(source.size, 0, byteCount)
-
-    while (byteCount > 0L) {
-      // Is a prefix of the source's head segment all that we need to move?
-      if (byteCount < source.head!!.limit - source.head!!.pos) {
-        val tail = if (head != null) head!!.prev else null
-        if (tail != null && tail.owner &&
-            byteCount + tail.limit - (if (tail.shared) 0 else tail.pos) <= Segment.SIZE) {
-          // Our existing segments are sufficient. Move bytes from source's head to our tail.
-          source.head!!.writeTo(tail, byteCount.toInt())
-          source.size -= byteCount
-          size += byteCount
-          return
-        } else {
-          // We're going to need another segment. Split the source's head
-          // segment in two, then move the first of those two to this buffer.
-          source.head = source.head!!.split(byteCount.toInt())
-        }
-      }
-
-      // Remove the source's head segment and append it to our tail.
-      val segmentToMove = source.head
-      val movedByteCount = (segmentToMove!!.limit - segmentToMove.pos).toLong()
-      source.head = segmentToMove.pop()
-      if (head == null) {
-        head = segmentToMove
-        segmentToMove.prev = segmentToMove
-        segmentToMove.next = segmentToMove.prev
-      } else {
-        var tail = head!!.prev
-        tail = tail!!.push(segmentToMove)
-        tail.compact()
-      }
-      source.size -= movedByteCount
-      size += movedByteCount
-      byteCount -= movedByteCount
-    }
-  }
-
-  override fun read(sink: Buffer, byteCount: Long): Long {
-    var byteCount = byteCount
-    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
-    if (size == 0L) return -1L
-    if (byteCount > size) byteCount = size
-    sink.write(this, byteCount)
-    return byteCount
-  }
+  override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
 
   override fun indexOf(b: Byte) = indexOf(b, 0, Long.MAX_VALUE)
 
@@ -1278,198 +622,28 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    */
   override fun indexOf(b: Byte, fromIndex: Long) = indexOf(b, fromIndex, Long.MAX_VALUE)
 
-  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long {
-    var fromIndex = fromIndex
-    var toIndex = toIndex
-    require(fromIndex in 0..toIndex) { "size=$size fromIndex=$fromIndex toIndex=$toIndex" }
-
-    if (toIndex > size) toIndex = size
-    if (fromIndex == toIndex) return -1L
-
-    seek(fromIndex) { s, offset ->
-      var s = s ?: return -1L
-      var offset = offset
-
-      // Scan through the segments, searching for b.
-      while (offset < toIndex) {
-        val data = s.data
-        val limit = minOf(s.limit.toLong(), s.pos + toIndex - offset).toInt()
-        var pos = (s.pos + fromIndex - offset).toInt()
-        while (pos < limit) {
-          if (data[pos] == b) {
-            return pos - s.pos + offset
-          }
-          pos++
-        }
-
-        // Not in this segment. Try the next one.
-        offset += (s.limit - s.pos).toLong()
-        fromIndex = offset
-        s = s.next!!
-      }
-
-      return -1L
-    }
-  }
+  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long = commonIndexOf(b, fromIndex, toIndex)
 
   @Throws(IOException::class)
   override fun indexOf(bytes: ByteString): Long = indexOf(bytes, 0)
 
   @Throws(IOException::class)
-  override fun indexOf(bytes: ByteString, fromIndex: Long): Long {
-    var fromIndex = fromIndex
-    require(bytes.size > 0) { "bytes is empty" }
-    require(fromIndex >= 0L) { "fromIndex < 0: $fromIndex" }
-
-    seek(fromIndex) { s, offset ->
-      var s = s ?: return -1L
-      var offset = offset
-
-      // Scan through the segments, searching for the lead byte. Each time that is found, delegate
-      // to rangeEquals() to check for a complete match.
-      val targetByteArray = bytes.internalArray()
-      val b0 = targetByteArray[0]
-      val bytesSize = bytes.size
-      val resultLimit = size - bytesSize + 1L
-      while (offset < resultLimit) {
-        // Scan through the current segment.
-        val data = s.data
-        val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
-        for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
-          if (data[pos] == b0 && rangeEquals(s, pos + 1, targetByteArray, 1, bytesSize)) {
-            return pos - s.pos + offset
-          }
-        }
-
-        // Not in this segment. Try the next one.
-        offset += (s.limit - s.pos).toLong()
-        fromIndex = offset
-        s = s.next!!
-      }
-
-      return -1L
-    }
-  }
+  override fun indexOf(bytes: ByteString, fromIndex: Long): Long = commonIndexOf(bytes, fromIndex)
 
   override fun indexOfElement(targetBytes: ByteString) = indexOfElement(targetBytes, 0L)
 
-  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long {
-    var fromIndex = fromIndex
-    require(fromIndex >= 0L) { "fromIndex < 0: $fromIndex" }
-
-    seek(fromIndex) { s, offset ->
-      var s = s ?: return -1L
-      var offset = offset
-
-      // Special case searching for one of two bytes. This is a common case for tools like Moshi,
-      // which search for pairs of chars like `\r` and `\n` or {@code `"` and `\`. The impact of this
-      // optimization is a ~5x speedup for this case without a substantial cost to other cases.
-      if (targetBytes.size == 2) {
-        // Scan through the segments, searching for either of the two bytes.
-        val b0 = targetBytes[0]
-        val b1 = targetBytes[1]
-        while (offset < size) {
-          val data = s.data
-          var pos = (s.pos + fromIndex - offset).toInt()
-          val limit = s.limit
-          while (pos < limit) {
-            val b = data[pos].toInt()
-            if (b == b0.toInt() || b == b1.toInt()) {
-              return pos - s.pos + offset
-            }
-            pos++
-          }
-
-          // Not in this segment. Try the next one.
-          offset += (s.limit - s.pos).toLong()
-          fromIndex = offset
-          s = s.next!!
-        }
-      } else {
-        // Scan through the segments, searching for a byte that's also in the array.
-        val targetByteArray = targetBytes.internalArray()
-        while (offset < size) {
-          val data = s.data
-          var pos = (s.pos + fromIndex - offset).toInt()
-          val limit = s.limit
-          while (pos < limit) {
-            val b = data[pos].toInt()
-            for (t in targetByteArray) {
-              if (b == t.toInt()) return pos - s.pos + offset
-            }
-            pos++
-          }
-
-          // Not in this segment. Try the next one.
-          offset += (s.limit - s.pos).toLong()
-          fromIndex = offset
-          s = s.next!!
-        }
-      }
-
-      return -1L
-    }
-  }
+  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long =
+    commonIndexOfElement(targetBytes, fromIndex)
 
   override fun rangeEquals(offset: Long, bytes: ByteString) =
-      rangeEquals(offset, bytes, 0, bytes.size)
+    rangeEquals(offset, bytes, 0, bytes.size)
 
   override fun rangeEquals(
     offset: Long,
     bytes: ByteString,
     bytesOffset: Int,
     byteCount: Int
-  ): Boolean {
-    if (offset < 0L ||
-        bytesOffset < 0 ||
-        byteCount < 0 ||
-        size - offset < byteCount ||
-        bytes.size - bytesOffset < byteCount) {
-      return false
-    }
-    for (i in 0 until byteCount) {
-      if (this[offset + i] != bytes[bytesOffset + i]) {
-        return false
-      }
-    }
-    return true
-  }
-
-  /**
-   * Returns true if the range within this buffer starting at `segmentPos` in `segment` is equal to
-   * `bytes[bytesOffset..bytesLimit)`.
-   */
-  private fun rangeEquals(
-    segment: Segment,
-    segmentPos: Int,
-    bytes: ByteArray,
-    bytesOffset: Int,
-    bytesLimit: Int
-  ): Boolean {
-    var segment = segment
-    var segmentPos = segmentPos
-    var segmentLimit = segment.limit
-    var data = segment.data
-
-    var i = bytesOffset
-    while (i < bytesLimit) {
-      if (segmentPos == segmentLimit) {
-        segment = segment.next!!
-        data = segment.data
-        segmentPos = segment.pos
-        segmentLimit = segment.limit
-      }
-
-      if (data[segmentPos] != bytes[i]) {
-        return false
-      }
-
-      segmentPos++
-      i++
-    }
-
-    return true
-  }
+  ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
   override fun flush() {}
 

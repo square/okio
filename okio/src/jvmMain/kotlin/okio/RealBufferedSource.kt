@@ -15,6 +15,8 @@
  */
 package okio
 
+import okio.internal.readUtf8Line
+import okio.internal.selectPrefix
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
