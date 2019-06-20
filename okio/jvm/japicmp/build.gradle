@@ -28,7 +28,7 @@ dependencies {
     transitive = false
     force = true
   }
-  latest project(path: ':okio', configuration: 'runtimeElements')
+  latest project(path: ':okio', configuration: 'jvmRuntimeElements')
 }
 
 task japicmp(type: JapicmpTask, dependsOn: 'jar') {
