@@ -26,6 +26,7 @@ import okio.Options
 import okio.REPLACEMENT_CODE_POINT
 import okio.Segment
 import okio.SegmentPool
+import okio.SegmentedByteString
 import okio.Sink
 import okio.Source
 import okio.and
@@ -1195,7 +1196,7 @@ internal inline fun Buffer.commonEquals(other: Any?): Boolean {
   var pos = 0L
   var count: Long
   while (pos < size) {
-    count = kotlin.comparisons.minOf(sa.limit - posA, sb.limit - posB).toLong()
+    count = minOf(sa.limit - posA, sb.limit - posB).toLong()
 
     for (i in 0L until count) {
       if (sa.data[posA++] != sb.data[posB++]) return false
@@ -1229,4 +1230,48 @@ internal inline fun Buffer.commonHashCode(): Int {
     s = s.next!!
   } while (s !== head)
   return result
+}
+
+/** Returns an immutable copy of this buffer as a byte string.  */
+internal inline fun Buffer.commonSnapshot(): ByteString {
+  check(size <= Int.MAX_VALUE) { "size > Int.MAX_VALUE: $size" }
+  return snapshot(size.toInt())
+}
+
+/** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
+internal inline fun Buffer.commonSnapshot(byteCount: Int): ByteString {
+  if (byteCount == 0) return ByteString.EMPTY
+  checkOffsetAndCount(size, 0, byteCount.toLong())
+
+  // Walk through the buffer to count how many segments we'll need.
+  var offset = 0
+  var segmentCount = 0
+  var s = head
+  while (offset < byteCount) {
+    if (s!!.limit == s.pos) {
+      throw AssertionError("s.limit == s.pos") // Empty segment. This should not happen!
+    }
+    offset += s.limit - s.pos
+    segmentCount++
+    s = s.next
+  }
+
+  // Walk through the buffer again to assign segments and build the directory.
+  val segments = arrayOfNulls<ByteArray?>(segmentCount)
+  val directory = IntArray(segmentCount * 2)
+  offset = 0
+  segmentCount = 0
+  s = head
+  while (offset < byteCount) {
+    segments[segmentCount] = s!!.data
+    offset += s.limit - s.pos
+    // Despite sharing more bytes, only report having up to byteCount.
+    directory[segmentCount] = minOf(offset, byteCount)
+    directory[segmentCount + segments.size] = s.pos
+    s.shared = true
+    segmentCount++
+    s = s.next
+  }
+  @Suppress("UNCHECKED_CAST")
+  return SegmentedByteString(segments as Array<ByteArray>, directory)
 }

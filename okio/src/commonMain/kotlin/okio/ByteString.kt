@@ -34,7 +34,7 @@ import kotlin.jvm.JvmStatic
  * immutability guarantee cannot be relied upon for security in applets and other environments that
  * run both trusted and untrusted code in the same process.
  */
-expect class ByteString
+expect open class ByteString
 // Trusted internal constructor doesn't clone data.
 internal constructor(data: ByteArray) : Comparable<ByteString> {
   internal val data: ByteArray
@@ -144,7 +144,6 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   override fun toString(): String
 
   companion object {
-    // TODO null in JS and Native - https://youtrack.jetbrains.com/issue/KT-26497
     /** A singleton empty `ByteString`.  */
     @JvmField
     val EMPTY: ByteString

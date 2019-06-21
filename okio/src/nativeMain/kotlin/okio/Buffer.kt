@@ -38,6 +38,7 @@ import okio.internal.commonReadUtf8CodePoint
 import okio.internal.commonReadUtf8Line
 import okio.internal.commonReadUtf8LineStrict
 import okio.internal.commonSelect
+import okio.internal.commonSnapshot
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
 import okio.internal.commonWriteAll
@@ -225,4 +226,16 @@ actual class Buffer : BufferedSource, BufferedSink {
   override fun equals(other: Any?): Boolean = commonEquals(other)
 
   override fun hashCode(): Int = commonHashCode()
+
+  /**
+   * Returns a human-readable string that describes the contents of this buffer. Typically this
+   * is a string like `[text=Hello]` or `[hex=0000ffff]`.
+   */
+  override fun toString() = snapshot().toString()
+
+  /** Returns an immutable copy of this buffer as a byte string.  */
+  actual fun snapshot(): ByteString = commonSnapshot()
+
+  /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
+  actual fun snapshot(byteCount: Int): ByteString = commonSnapshot(byteCount)
 }

@@ -37,6 +37,7 @@ import okio.internal.commonReadUtf8Line
 import okio.internal.commonReadUtf8LineStrict
 import okio.internal.commonSelect
 import okio.internal.commonSkip
+import okio.internal.commonSnapshot
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
 import okio.internal.commonWriteAll
@@ -735,15 +736,10 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Returns an immutable copy of this buffer as a byte string.  */
-  fun snapshot(): ByteString {
-    check(size <= Integer.MAX_VALUE) { "size > Integer.MAX_VALUE: $size" }
-    return snapshot(size.toInt())
-  }
+  actual fun snapshot(): ByteString = commonSnapshot()
 
   /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
-  fun snapshot(byteCount: Int): ByteString {
-    return if (byteCount == 0) ByteString.EMPTY else SegmentedByteString.of(this, byteCount)
-  }
+  actual fun snapshot(byteCount: Int): ByteString = commonSnapshot(byteCount)
 
   @JvmOverloads fun readUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor {
     check(unsafeCursor.buffer == null) { "already attached to a buffer" }

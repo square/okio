@@ -23,16 +23,6 @@ import okio.internal.commonRangeEquals
 import okio.internal.commonSubstring
 import okio.internal.commonToByteArray
 import okio.internal.commonWrite
-import okio.internal.forEachSegment
-import java.io.IOException
-import java.io.OutputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
-import java.security.InvalidKeyException
-import java.security.MessageDigest
-import java.util.Arrays
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
 
 /**
  * An immutable byte string composed of segments of byte arrays. This class exists to implement
@@ -60,11 +50,9 @@ import javax.crypto.spec.SecretKeySpec
  * binary search. We use one array rather than two for the directory as a micro-optimization.
  */
 internal actual class SegmentedByteString internal actual constructor(
-  @Transient internal actual val segments: Array<ByteArray>,
-  @Transient internal actual val directory: IntArray
+  internal actual val segments: Array<ByteArray>,
+  internal actual val directory: IntArray
 ) : ByteString(EMPTY.data) {
-
-  override fun string(charset: Charset) = toByteString().string(charset)
 
   override fun base64() = toByteString().base64()
 
@@ -73,27 +61,6 @@ internal actual class SegmentedByteString internal actual constructor(
   override fun toAsciiLowercase() = toByteString().toAsciiLowercase()
 
   override fun toAsciiUppercase() = toByteString().toAsciiUppercase()
-
-  override fun digest(algorithm: String): ByteString {
-    val digest = MessageDigest.getInstance(algorithm)
-    forEachSegment { data, offset, byteCount ->
-      digest.update(data, offset, byteCount)
-    }
-    return ByteString(digest.digest())
-  }
-
-  override fun hmac(algorithm: String, key: ByteString): ByteString {
-    try {
-      val mac = Mac.getInstance(algorithm)
-      mac.init(SecretKeySpec(key.toByteArray(), algorithm))
-      forEachSegment { data, offset, byteCount ->
-        mac.update(data, offset, byteCount)
-      }
-      return ByteString(mac.doFinal())
-    } catch (e: InvalidKeyException) {
-      throw IllegalArgumentException(e)
-    }
-  }
 
   override fun base64Url() = toByteString().base64Url()
 
@@ -105,15 +72,6 @@ internal actual class SegmentedByteString internal actual constructor(
   override fun getSize() = commonGetSize()
 
   override fun toByteArray(): ByteArray = commonToByteArray()
-
-  override fun asByteBuffer(): ByteBuffer = ByteBuffer.wrap(toByteArray()).asReadOnlyBuffer()
-
-  @Throws(IOException::class)
-  override fun write(out: OutputStream) {
-    forEachSegment { data, offset, byteCount ->
-      out.write(data, offset, byteCount)
-    }
-  }
 
   override fun write(buffer: Buffer): Unit = commonWrite(buffer)
 
@@ -133,8 +91,10 @@ internal actual class SegmentedByteString internal actual constructor(
 
   override fun indexOf(other: ByteArray, fromIndex: Int) = toByteString().indexOf(other, fromIndex)
 
-  override fun lastIndexOf(other: ByteArray, fromIndex: Int) = toByteString().lastIndexOf(other,
-      fromIndex)
+  override fun lastIndexOf(other: ByteArray, fromIndex: Int) = toByteString().lastIndexOf(
+    other,
+    fromIndex
+  )
 
   /** Returns a copy as a non-segmented byte string.  */
   private fun toByteString() = ByteString(toByteArray())
@@ -146,7 +106,4 @@ internal actual class SegmentedByteString internal actual constructor(
   override fun hashCode(): Int = commonHashCode()
 
   override fun toString() = toByteString().toString()
-
-  @Suppress("unused", "PLATFORM_CLASS_MAPPED_TO_KOTLIN") // For Java Serialization.
-  private fun writeReplace(): Object = toByteString() as Object
 }

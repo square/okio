@@ -247,8 +247,6 @@ internal inline fun ByteString.commonCompareTo(other: ByteString): Int {
   return if (sizeA < sizeB) -1 else 1
 }
 
-internal val COMMON_EMPTY = ByteString.of()
-
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun commonOf(data: ByteArray) = ByteString(data.copyOf())
 

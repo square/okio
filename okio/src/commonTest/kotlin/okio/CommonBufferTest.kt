@@ -17,7 +17,6 @@ package okio
 
 import okio.ByteString.Companion.decodeHex
 import kotlin.random.Random
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -45,7 +44,6 @@ class CommonBufferTest {
   }
 
   /** Buffer's toString is the same as ByteString's.  */
-  @Ignore // TODO: enable when toString() uses SegmentedByteString
   @Test fun bufferToString() {
     assertEquals("[size=0]", Buffer().toString())
     assertEquals(
@@ -241,31 +239,13 @@ class CommonBufferTest {
     buffer.writeUtf8('c'.repeat(halfSegment))
     buffer.writeUtf8('d'.repeat(halfSegment))
     assertEquals(0, buffer.indexOf('a'.toByte(), 0))
-    assertEquals(
-      (halfSegment - 1).toLong(),
-      buffer.indexOf('a'.toByte(), (halfSegment - 1).toLong())
-    )
+    assertEquals((halfSegment - 1).toLong(), buffer.indexOf('a'.toByte(), (halfSegment - 1).toLong()))
     assertEquals(halfSegment.toLong(), buffer.indexOf('b'.toByte(), (halfSegment - 1).toLong()))
-    assertEquals(
-      (halfSegment * 2).toLong(),
-      buffer.indexOf('c'.toByte(), (halfSegment - 1).toLong())
-    )
-    assertEquals(
-      (halfSegment * 3).toLong(),
-      buffer.indexOf('d'.toByte(), (halfSegment - 1).toLong())
-    )
-    assertEquals(
-      (halfSegment * 3).toLong(),
-      buffer.indexOf('d'.toByte(), (halfSegment * 2).toLong())
-    )
-    assertEquals(
-      (halfSegment * 3).toLong(),
-      buffer.indexOf('d'.toByte(), (halfSegment * 3).toLong())
-    )
-    assertEquals(
-      (halfSegment * 4 - 1).toLong(),
-      buffer.indexOf('d'.toByte(), (halfSegment * 4 - 1).toLong())
-    )
+    assertEquals((halfSegment * 2).toLong(), buffer.indexOf('c'.toByte(), (halfSegment - 1).toLong()))
+    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.toByte(), (halfSegment - 1).toLong()))
+    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.toByte(), (halfSegment * 2).toLong()))
+    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.toByte(), (halfSegment * 3).toLong()))
+    assertEquals((halfSegment * 4 - 1).toLong(), buffer.indexOf('d'.toByte(), (halfSegment * 4 - 1).toLong()))
   }
 
   @Test fun byteAt() {
@@ -354,7 +334,7 @@ class CommonBufferTest {
 
     assertEquals((Segment.SIZE * 3).toLong(), source.readAll(mockSink))
     assertEquals(0, source.size)
-    mockSink.assertLog("write(" + write1 + ", " + write1.size + ")")
+    mockSink.assertLog("write($write1, ${write1.size})")
   }
 
   @Test fun writeAllMultipleSegments() {
@@ -439,5 +419,10 @@ class CommonBufferTest {
     source.copyTo(target, 0L, 3L)
     assertEquals("aaa", source.readUtf8())
     assertEquals("aaa", target.readUtf8())
+  }
+
+  @Test fun snapshotReportsAccurateSize() {
+    val buf = Buffer().write(byteArrayOf(0, 1, 2, 3))
+    assertEquals(1, buf.snapshot(1).size)
   }
 }

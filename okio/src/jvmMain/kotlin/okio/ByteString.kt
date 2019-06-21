@@ -15,7 +15,6 @@
  */
 package okio
 
-import okio.internal.COMMON_EMPTY
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
@@ -266,7 +265,7 @@ internal actual constructor(
 
     /** A singleton empty `ByteString`.  */
     @JvmField
-    actual val EMPTY: ByteString = COMMON_EMPTY
+    actual val EMPTY: ByteString = ByteString(byteArrayOf())
 
     /** Returns a new byte string containing a clone of the bytes of `data`. */
     @JvmStatic
