@@ -45,7 +45,8 @@ class CommonBufferTest {
   }
 
   /** Buffer's toString is the same as ByteString's.  */
-  @Ignore @Test fun bufferToString() {
+  @Ignore // TODO: enable when toString() uses SegmentedByteString
+  @Test fun bufferToString() {
     assertEquals("[size=0]", Buffer().toString())
     assertEquals(
       "[text=a\\r\\nb\\nc\\rd\\\\e]",

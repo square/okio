@@ -72,7 +72,7 @@ internal fun rangeEquals(
   return true
 }
 
-internal inline fun Buffer.readUtf8Line(newline: Long): String {
+internal fun Buffer.readUtf8Line(newline: Long): String {
   return when {
     newline > 0 && this[newline - 1] == '\r'.toByte() -> {
       // Read everything until '\r\n', then skip the '\r\n'.
@@ -224,7 +224,7 @@ internal fun Buffer.selectPrefix(options: Options, selectTruncated: Boolean = fa
 // TODO Kotlin's expect classes can't have default implementations, so platform implementations
 // have to call these functions. Remove all this nonsense when expect class allow actual code.
 
-internal fun Buffer.commonCopyTo(
+internal inline fun Buffer.commonCopyTo(
   out: Buffer,
   offset: Long,
   byteCount: Long
@@ -263,7 +263,7 @@ internal fun Buffer.commonCopyTo(
   return this
 }
 
-internal fun Buffer.commonReadByte(): Byte {
+internal inline fun Buffer.commonReadByte(): Byte {
   if (size == 0L) throw EOFException()
 
   val segment = head!!
@@ -377,16 +377,16 @@ internal inline fun Buffer.commonReadLong(): Long {
   return v
 }
 
-internal fun Buffer.commonGet(pos: Long): Byte {
+internal inline fun Buffer.commonGet(pos: Long): Byte {
   checkOffsetAndCount(size, pos, 1L)
   seek(pos) { s, offset ->
     return s!!.data[(s.pos + pos - offset).toInt()]
   }
 }
 
-internal fun Buffer.commonClear() = skip(size)
+internal inline fun Buffer.commonClear() = skip(size)
 
-internal fun Buffer.commonSkip(byteCount: Long) {
+internal inline fun Buffer.commonSkip(byteCount: Long) {
   var byteCount = byteCount
   while (byteCount > 0) {
     val head = this.head ?: throw EOFException()
@@ -403,7 +403,7 @@ internal fun Buffer.commonSkip(byteCount: Long) {
   }
 }
 
-internal fun Buffer.commonWrite(byteString: ByteString): Buffer {
+internal inline fun Buffer.commonWrite(byteString: ByteString): Buffer {
   byteString.write(this)
   return this
 }
@@ -474,7 +474,7 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
   return this
 }
 
-internal fun Buffer.commonWritableSegment(minimumCapacity: Int): Segment {
+internal inline fun Buffer.commonWritableSegment(minimumCapacity: Int): Segment {
   require(minimumCapacity >= 1 && minimumCapacity <= Segment.SIZE) { "unexpected capacity" }
 
   if (head == null) {
@@ -492,9 +492,9 @@ internal fun Buffer.commonWritableSegment(minimumCapacity: Int): Segment {
   return tail
 }
 
-internal fun Buffer.commonWrite(source: ByteArray) = write(source, 0, source.size)
+internal inline fun Buffer.commonWrite(source: ByteArray) = write(source, 0, source.size)
 
-internal fun Buffer.commonWrite(
+internal inline fun Buffer.commonWrite(
   source: ByteArray,
   offset: Int,
   byteCount: Int
@@ -523,9 +523,9 @@ internal fun Buffer.commonWrite(
 }
 
 
-internal fun Buffer.commonReadByteArray() = readByteArray(size)
+internal inline fun Buffer.commonReadByteArray() = readByteArray(size)
 
-internal fun Buffer.commonReadByteArray(byteCount: Long): ByteArray {
+internal inline fun Buffer.commonReadByteArray(byteCount: Long): ByteArray {
   require(byteCount >= 0 && byteCount <= Int.MAX_VALUE) { "byteCount: $byteCount" }
   if (size < byteCount) throw EOFException()
 
@@ -534,9 +534,9 @@ internal fun Buffer.commonReadByteArray(byteCount: Long): ByteArray {
   return result
 }
 
-internal fun Buffer.commonRead(sink: ByteArray) = read(sink, 0, sink.size)
+internal inline fun Buffer.commonRead(sink: ByteArray) = read(sink, 0, sink.size)
 
-internal fun Buffer.commonReadFully(sink: ByteArray) {
+internal inline fun Buffer.commonReadFully(sink: ByteArray) {
   var offset = 0
   while (offset < sink.size) {
     val read = read(sink, offset, sink.size - offset)
@@ -545,7 +545,7 @@ internal fun Buffer.commonReadFully(sink: ByteArray) {
   }
 }
 
-internal fun Buffer.commonRead(sink: ByteArray, offset: Int, byteCount: Int): Int {
+internal inline fun Buffer.commonRead(sink: ByteArray, offset: Int, byteCount: Int): Int {
   checkOffsetAndCount(sink.size.toLong(), offset.toLong(), byteCount.toLong())
 
   val s = head ?: return -1
@@ -565,9 +565,9 @@ internal fun Buffer.commonRead(sink: ByteArray, offset: Int, byteCount: Int): In
   return toCopy
 }
 
-internal fun Buffer.commonReadByteString(): ByteString = ByteString(readByteArray())
+internal inline fun Buffer.commonReadByteString(): ByteString = ByteString(readByteArray())
 
-internal fun Buffer.commonReadByteString(byteCount: Long) = ByteString(readByteArray(byteCount))
+internal inline fun Buffer.commonReadByteString(byteCount: Long) = ByteString(readByteArray(byteCount))
 
 internal inline fun Buffer.commonSelect(options: Options): Int {
   val index = selectPrefix(options)
@@ -609,7 +609,7 @@ internal inline fun Buffer.commonReadUtf8(byteCount: Long): String {
   }
 
 
-  val result = s.data.commonToUtf8String(s.pos, byteCount.toInt())
+  val result = s.data.commonToUtf8String(s.pos, s.pos + byteCount.toInt())
   s.pos += byteCount.toInt()
   size -= byteCount
 
@@ -642,7 +642,7 @@ internal inline fun Buffer.commonReadUtf8LineStrict(limit: Long): String {
     return readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
   }
   val data = Buffer()
-  copyTo(data, 0, okio.minOf(32, size))
+  copyTo(data, 0, minOf(32, size))
   throw EOFException("\\n not found: limit=${minOf(size,
     limit)} content=${data.readByteString().hex()}${'…'}")
 }
@@ -688,7 +688,7 @@ internal inline fun Buffer.commonReadUtf8CodePoint(): Int {
   }
 
   if (size < byteCount) {
-    throw EOFException("size < $byteCount: $size (to read code point prefixed 0x${b0.toHexString()})")
+    throw EOFException("size < $byteCount: $size (to read code point prefixed ${b0.toHexString()})")
   }
 
   // Read the continuation bytes. If we encounter a non-continuation byte, the sequence consumed
@@ -1180,8 +1180,6 @@ internal inline fun Buffer.commonRangeEquals(
   }
   return true
 }
-
-
 
 internal inline fun Buffer.commonEquals(other: Any?): Boolean {
   if (this === other) return true

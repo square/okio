@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2019 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package okio
 
 import kotlin.random.Random
@@ -7,9 +22,15 @@ fun Char.repeat(count: Int): String {
 }
 
 fun segmentSizes(buffer: Buffer): List<Int> {
-  return generateSequence(buffer.head) { segment -> segment.next.takeIf { it !== buffer.head }}
-    .map { segment -> segment.limit - segment.pos }
-    .toList()
+  var segment = buffer.head ?: return emptyList()
+
+  val sizes = mutableListOf(segment.limit - segment.pos)
+  segment = segment.next!!
+  while (segment !== buffer.head) {
+    sizes.add(segment.limit - segment.pos)
+    segment = segment.next!!
+  }
+  return sizes
 }
 
 fun bufferWithRandomSegmentLayout(dice: Random, data: ByteArray): Buffer {
