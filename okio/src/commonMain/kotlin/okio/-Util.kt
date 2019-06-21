@@ -91,8 +91,6 @@ internal fun arrayRangeEquals(
 }
 
 internal fun Byte.toHexString(): String {
-  if (this == 0.toByte()) return "0x00"
-
   val result = CharArray(4)
   result[0] = '0'
   result[1] = 'x'
@@ -102,8 +100,6 @@ internal fun Byte.toHexString(): String {
 }
 
 internal fun Int.toHexString(): String {
-  if (this == 0) return "0x00"
-
   val result = CharArray(10)
   result[2] = HEX_DIGITS[this shr 28 and 0xf]
   result[3] = HEX_DIGITS[this shr 24 and 0xf]
@@ -121,8 +117,8 @@ internal fun Int.toHexString(): String {
     i++
   }
 
-  // truncate on a whole byte and shift to start of "0x"
-  i -= 2 + (i % 2)
+  // shift and insert "0x"
+  i -= 2
   result[i] = '0'
   result[i + 1] = 'x'
 

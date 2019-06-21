@@ -40,7 +40,7 @@ private val DIGITS = "0123456789abcdef".asUtf8ToByteArray()
  * Returns true if the range within this buffer starting at `segmentPos` in `segment` is equal to
  * `bytes[bytesOffset..bytesLimit)`.
  */
-internal inline fun rangeEquals(
+internal fun rangeEquals(
   segment: Segment,
   segmentPos: Int,
   bytes: ByteArray,
@@ -72,7 +72,7 @@ internal inline fun rangeEquals(
   return true
 }
 
-internal inline fun Buffer.readUtf8Line(newline: Long): String {
+internal fun Buffer.readUtf8Line(newline: Long): String {
   return when {
     newline > 0 && this[newline - 1] == '\r'.toByte() -> {
       // Read everything until '\r\n', then skip the '\r\n'.
@@ -132,7 +132,7 @@ internal inline fun <T> Buffer.seek(
  *     and one option may be a prefix of another. For example, this returns -2 if the buffer
  *     contains [ab] and the options are [abc, a].
  */
-internal inline fun Buffer.selectPrefix(options: Options, selectTruncated: Boolean = false): Int {
+internal fun Buffer.selectPrefix(options: Options, selectTruncated: Boolean = false): Int {
   val head = head ?: return if (selectTruncated) -2 else -1
 
   var s: Segment? = head
@@ -688,7 +688,7 @@ internal inline fun Buffer.commonReadUtf8CodePoint(): Int {
   }
 
   if (size < byteCount) {
-    throw EOFException("size < $byteCount: $size (to read code point prefixed 0x${b0.toHexString()})")
+    throw EOFException("size < $byteCount: $size (to read code point prefixed ${b0.toHexString()})")
   }
 
   // Read the continuation bytes. If we encounter a non-continuation byte, the sequence consumed
