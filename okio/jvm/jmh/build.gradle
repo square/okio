@@ -18,7 +18,8 @@ jmhJar {
 }
 
 jmh {
-  include = ['com\\.squareup\\.okio\\.benchmarks\\.SelectBenchmark.*']
+  jvmArgs = ['-Djmh.separateClasspathJAR=true']
+  include = ['com\\.squareup\\.okio\\.benchmarks\\.WriteHexadecimalBenchmark.*']
   duplicateClassesStrategy = 'warn'
 }
 
