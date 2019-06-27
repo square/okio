@@ -23,9 +23,27 @@ kotlin {
     }
   }
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
-  linuxX64()
-  macosX64()
-  mingwX64('winX64')
+  linuxX64() {
+//    compilations.main.cinterops {
+//      openssl {
+//        includeDirs.headerFilterOnly("/usr/include", "/usr/include/x86_64-linux-gnu")
+//      }
+//    }
+  }
+  macosX64() {
+//    compilations.main.cinterops {
+//      openssl {
+//        includeDirs.headerFilterOnly("/opt/local/include", "/usr/local/include")
+//      }
+//    }
+  }
+  mingwX64('winX64') {
+    compilations.main.cinterops {
+      openssl {
+        includeDirs.headerFilterOnly("C:/msys64/mingw64/include")
+      }
+    }
+  }
   sourceSets {
     commonMain {
       dependencies {

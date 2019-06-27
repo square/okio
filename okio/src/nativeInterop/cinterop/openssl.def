@@ -1,0 +1,6 @@
+headers = openssl/evp.h openssl/err.h
+headerFilter = openssl/**
+
+#linkerOpts.osx = -L/opt/local/lib -L/usr/local/opt/ssl/lib -lssl -lcrypto
+#linkerOpts.linux = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -lssl -lcrypto
+linkerOpts.mingw = -LC:/msys64/mingw64/lib -lssl -lcrypto
