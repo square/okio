@@ -51,7 +51,7 @@ internal inline fun ByteString.commonBase64(): String = data.encodeBase64()
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonBase64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
 
-internal val HEX_DIGITS =
+internal val HEX_DIGIT_CHARS =
   charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 
 @Suppress("NOTHING_TO_INLINE")
@@ -59,8 +59,8 @@ internal inline fun ByteString.commonHex(): String {
   val result = CharArray(data.size * 2)
   var c = 0
   for (b in data) {
-    result[c++] = HEX_DIGITS[b shr 4 and 0xf]
-    result[c++] = HEX_DIGITS[b       and 0xf] // ktlint-disable no-multi-spaces
+    result[c++] = HEX_DIGIT_CHARS[b shr 4 and 0xf]
+    result[c++] = HEX_DIGIT_CHARS[b       and 0xf] // ktlint-disable no-multi-spaces
   }
   return String(result)
 }

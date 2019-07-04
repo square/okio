@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.internal.HEX_DIGIT_BYTES
 import okio.internal.commonClear
 import okio.internal.commonCompleteSegmentByteCount
 import okio.internal.commonCopyTo
@@ -590,7 +591,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     var pos = tail.limit + width - 1
     val start = tail.limit
     while (pos >= start) {
-      data[pos] = DIGITS[(v and 0xF).toInt()]
+      data[pos] = HEX_DIGIT_BYTES[(v and 0xF).toInt()]
       v = v ushr 4
       pos--
     }
@@ -1184,9 +1185,5 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       start = -1
       end = -1
     }
-  }
-
-  companion object {
-    private val DIGITS = "0123456789abcdef".toByteArray()
   }
 }
