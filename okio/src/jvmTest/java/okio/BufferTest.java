@@ -60,23 +60,6 @@ public final class BufferTest {
     }
   }
 
-  @Test public void completeSegmentByteCountOnEmptyBuffer() {
-    Buffer buffer = new Buffer();
-    assertEquals(0, buffer.completeSegmentByteCount());
-  }
-
-  @Test public void completeSegmentByteCountOnBufferWithFullSegments() {
-    Buffer buffer = new Buffer();
-    buffer.writeUtf8(repeat('a', SEGMENT_SIZE * 4));
-    assertEquals(SEGMENT_SIZE * 4, buffer.completeSegmentByteCount());
-  }
-
-  @Test public void completeSegmentByteCountOnBufferWithIncompleteTailSegment() {
-    Buffer buffer = new Buffer();
-    buffer.writeUtf8(repeat('a', SEGMENT_SIZE * 4 - 10));
-    assertEquals(SEGMENT_SIZE * 3, buffer.completeSegmentByteCount());
-  }
-
   /** Buffer's toString is the same as ByteString's. */
   @Test public void bufferToString() {
     assertEquals("[size=0]", new Buffer().toString());

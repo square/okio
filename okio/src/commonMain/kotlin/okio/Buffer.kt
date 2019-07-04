@@ -42,6 +42,12 @@ expect class Buffer() : BufferedSource, BufferedSink {
     offset: Long = 0L
   ): Buffer
 
+  /**
+   * Returns the number of bytes in segments that are not writable. This is the number of bytes that
+   * can be flushed immediately to an underlying sink without harming throughput.
+   */
+  fun completeSegmentByteCount(): Long
+
   /** Returns the byte at `pos`.  */
   operator fun get(pos: Long): Byte
 

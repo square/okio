@@ -16,6 +16,7 @@
 package okio
 
 import okio.internal.commonClear
+import okio.internal.commonCompleteSegmentByteCount
 import okio.internal.commonCopyTo
 import okio.internal.commonEquals
 import okio.internal.commonGet
@@ -87,6 +88,12 @@ actual class Buffer : BufferedSource, BufferedSink {
   ): Buffer = copyTo(out, offset, size - offset)
 
   actual operator fun get(pos: Long): Byte = commonGet(pos)
+
+  /**
+   * Returns the number of bytes in segments that are not writable. This is the number of bytes that
+   * can be flushed immediately to an underlying sink without harming throughput.
+   */
+  actual fun completeSegmentByteCount(): Long = commonCompleteSegmentByteCount()
 
   override fun readByte(): Byte = commonReadByte()
 
