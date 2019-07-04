@@ -60,4 +60,21 @@ class BufferCommonTest {
     assertEquals("art", target.readByteString().utf8())
     assertEquals("party", source.readByteString().utf8())
   }
+
+  @Test fun completeSegmentByteCountOnEmptyBuffer() {
+    val buffer = Buffer()
+    assertEquals(0, buffer.completeSegmentByteCount())
+  }
+
+  @Test fun completeSegmentByteCountOnBufferWithFullSegments() {
+    val buffer = Buffer()
+    buffer.writeUtf8("a".repeat(Segment.SIZE * 4))
+    assertEquals((Segment.SIZE * 4).toLong(), buffer.completeSegmentByteCount())
+  }
+
+  @Test fun completeSegmentByteCountOnBufferWithIncompleteTailSegment() {
+    val buffer = Buffer()
+    buffer.writeUtf8("a".repeat(Segment.SIZE * 4 - 10))
+    assertEquals((Segment.SIZE * 3).toLong(), buffer.completeSegmentByteCount())
+  }
 }

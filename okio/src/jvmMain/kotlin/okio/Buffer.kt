@@ -16,6 +16,7 @@
 package okio
 
 import okio.internal.commonClear
+import okio.internal.commonCompleteSegmentByteCount
 import okio.internal.commonCopyTo
 import okio.internal.commonEquals
 import okio.internal.commonGet
@@ -253,18 +254,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    * Returns the number of bytes in segments that are not writable. This is the number of bytes that
    * can be flushed immediately to an underlying sink without harming throughput.
    */
-  fun completeSegmentByteCount(): Long {
-    var result = size
-    if (result == 0L) return 0L
-
-    // Omit the tail if it's still writable.
-    val tail = head!!.prev!!
-    if (tail.limit < Segment.SIZE && tail.owner) {
-      result -= (tail.limit - tail.pos).toLong()
-    }
-
-    return result
-  }
+  actual fun completeSegmentByteCount(): Long = commonCompleteSegmentByteCount()
 
   @Throws(EOFException::class)
   override fun readByte(): Byte = commonReadByte()

@@ -263,6 +263,19 @@ internal inline fun Buffer.commonCopyTo(
   return this
 }
 
+internal inline fun Buffer.commonCompleteSegmentByteCount(): Long {
+  var result = size
+  if (result == 0L) return 0L
+
+  // Omit the tail if it's still writable.
+  val tail = head!!.prev!!
+  if (tail.limit < Segment.SIZE && tail.owner) {
+    result -= (tail.limit - tail.pos).toLong()
+  }
+
+  return result
+}
+
 internal inline fun Buffer.commonReadByte(): Byte {
   if (size == 0L) throw EOFException()
 
