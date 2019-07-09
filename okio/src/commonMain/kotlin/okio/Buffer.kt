@@ -92,4 +92,10 @@ expect class Buffer() : BufferedSource, BufferedSink {
   override fun writeDecimalLong(v: Long): Buffer
 
   override fun writeHexadecimalUnsignedLong(v: Long): Buffer
+
+  /** Returns an immutable copy of this buffer as a byte string.  */
+  fun snapshot(): ByteString
+
+  /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
+  fun snapshot(byteCount: Int): ByteString
 }

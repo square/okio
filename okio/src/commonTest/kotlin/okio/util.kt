@@ -69,3 +69,14 @@ fun bufferWithSegments(vararg segments: String): Buffer {
   }
   return result
 }
+
+fun makeSegments(source: ByteString): ByteString {
+  val buffer = Buffer()
+  for (i in 0 until source.size) {
+    val segment = buffer.writableSegment(Segment.SIZE)
+    segment.data[segment.pos] = source[i]
+    segment.limit++
+    buffer.size++
+  }
+  return buffer.snapshot()
+}

@@ -15,7 +15,6 @@
  */
 package okio
 
-import okio.internal.COMMON_EMPTY
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
@@ -150,7 +149,7 @@ internal actual constructor(
 
   actual fun lastIndexOf(other: ByteString, fromIndex: Int) = commonLastIndexOf(other, fromIndex)
 
-  actual fun lastIndexOf(other: ByteArray, fromIndex: Int) = commonLastIndexOf(other, fromIndex)
+  actual open fun lastIndexOf(other: ByteArray, fromIndex: Int) = commonLastIndexOf(other, fromIndex)
 
   actual override fun equals(other: Any?) = commonEquals(other)
 
@@ -166,7 +165,7 @@ internal actual constructor(
 
   actual companion object {
     /** A singleton empty `ByteString`.  */
-    actual val EMPTY: ByteString = COMMON_EMPTY
+    actual val EMPTY: ByteString = ByteString(byteArrayOf())
 
     /** Returns a new byte string containing a clone of the bytes of `data`. */
     actual fun of(vararg data: Byte) = commonOf(data)

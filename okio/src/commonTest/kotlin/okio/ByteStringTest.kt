@@ -20,7 +20,7 @@ import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 import okio.internal.commonAsUtf8ToByteArray
-import kotlin.test.Ignore
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -31,13 +31,12 @@ import kotlin.test.fail
 
 class CommonByteStringTest {
   class ByteString : AbstractByteStringTest(ByteStringFactory.BYTE_STRING)
+  class SegmentedByteString : AbstractByteStringTest(ByteStringFactory.SEGMENTED_BYTE_STRING)
+  class OneBytePerSegment : AbstractByteStringTest(ByteStringFactory.ONE_BYTE_PER_SEGMENT)
   class OkioEncoder : AbstractByteStringTest(ByteStringFactory.OKIO_ENCODER)
 }
 
 interface ByteStringFactory {
-  // Unused, but useful if/when SegmentedByteString is moved to common
-  // This also keeps the unit tests the same between Kotlin/JVM for easy
-  // copying as functionality and unit tests are moved
   fun decodeHex(hex: String): ByteString
 
   fun encodeUtf8(s: String): ByteString
@@ -46,6 +45,16 @@ interface ByteStringFactory {
     val BYTE_STRING: ByteStringFactory = object : ByteStringFactory {
       override fun decodeHex(hex: String) = hex.decodeHex()
       override fun encodeUtf8(s: String) = s.encodeUtf8()
+    }
+
+    val SEGMENTED_BYTE_STRING: ByteStringFactory = object : ByteStringFactory {
+      override fun decodeHex(hex: String) = Buffer().apply { write(hex.decodeHex()) }.snapshot()
+      override fun encodeUtf8(s: String) = Buffer().apply { writeUtf8(s) }.snapshot()
+    }
+
+    val ONE_BYTE_PER_SEGMENT: ByteStringFactory = object : ByteStringFactory {
+      override fun decodeHex(hex: String) = makeSegments(hex.decodeHex())
+      override fun encodeUtf8(s: String) = makeSegments(s.encodeUtf8())
     }
 
     // For Kotlin/JVM, the native Java UTF-8 encoder is used. This forces
@@ -174,6 +183,43 @@ abstract class AbstractByteStringTest(
     assertEquals(-1, byteString.indexOf("112244".decodeHex().toByteArray()).toLong())
   }
 
+  @Test fun lastIndexOfByteString() {
+    val byteString = factory.decodeHex("112233")
+    assertEquals(0, byteString.lastIndexOf("112233".decodeHex()).toLong())
+    assertEquals(0, byteString.lastIndexOf("1122".decodeHex()).toLong())
+    assertEquals(0, byteString.lastIndexOf("11".decodeHex()).toLong())
+    assertEquals(0, byteString.lastIndexOf("11".decodeHex(), 3).toLong())
+    assertEquals(0, byteString.lastIndexOf("11".decodeHex(), 0).toLong())
+    assertEquals(0, byteString.lastIndexOf("".decodeHex(), 0).toLong())
+    assertEquals(1, byteString.lastIndexOf("2233".decodeHex()).toLong())
+    assertEquals(1, byteString.lastIndexOf("22".decodeHex()).toLong())
+    assertEquals(1, byteString.lastIndexOf("22".decodeHex(), 3).toLong())
+    assertEquals(1, byteString.lastIndexOf("22".decodeHex(), 1).toLong())
+    assertEquals(1, byteString.lastIndexOf("".decodeHex(), 1).toLong())
+    assertEquals(2, byteString.lastIndexOf("33".decodeHex()).toLong())
+    assertEquals(2, byteString.lastIndexOf("33".decodeHex(), 3).toLong())
+    assertEquals(2, byteString.lastIndexOf("33".decodeHex(), 2).toLong())
+    assertEquals(2, byteString.lastIndexOf("".decodeHex(), 2).toLong())
+    assertEquals(3, byteString.lastIndexOf("".decodeHex(), 3).toLong())
+    assertEquals(3, byteString.lastIndexOf("".decodeHex()).toLong())
+    assertEquals(-1, byteString.lastIndexOf("112233".decodeHex(), -1).toLong())
+    assertEquals(-1, byteString.lastIndexOf("112233".decodeHex(), -2).toLong())
+    assertEquals(-1, byteString.lastIndexOf("44".decodeHex()).toLong())
+    assertEquals(-1, byteString.lastIndexOf("11223344".decodeHex()).toLong())
+    assertEquals(-1, byteString.lastIndexOf("112244".decodeHex()).toLong())
+    assertEquals(-1, byteString.lastIndexOf("2233".decodeHex(), 0).toLong())
+    assertEquals(-1, byteString.lastIndexOf("33".decodeHex(), 1).toLong())
+    assertEquals(-1, byteString.lastIndexOf("".decodeHex(), -1).toLong())
+  }
+
+  @Test fun lastIndexOfByteArray() {
+    val byteString = factory.decodeHex("112233")
+    assertEquals(0, byteString.lastIndexOf("112233".decodeHex().toByteArray()).toLong())
+    assertEquals(1, byteString.lastIndexOf("2233".decodeHex().toByteArray()).toLong())
+    assertEquals(2, byteString.lastIndexOf("33".decodeHex().toByteArray()).toLong())
+    assertEquals(3, byteString.lastIndexOf("".decodeHex().toByteArray()).toLong())
+  }
+
   @Test fun equalsTest() {
     val byteString = factory.decodeHex("000102")
     assertEquals(byteString, byteString)
@@ -182,7 +228,6 @@ abstract class AbstractByteStringTest(
     assertNotEquals(byteString, "000201".decodeHex())
   }
 
-  @Ignore // TODO enable when https://youtrack.jetbrains.com/issue/KT-26497 is resolved
   @Test fun equalsEmptyTest() {
     assertEquals(factory.decodeHex(""), ByteString.EMPTY)
     assertEquals(factory.decodeHex(""), ByteString.of())
@@ -225,6 +270,38 @@ abstract class AbstractByteStringTest(
 
   @Test fun toAsciiStartsUppercaseEndsLowercase() {
     assertEquals("ABCD".encodeUtf8(), factory.encodeUtf8("ABcd").toAsciiUppercase())
+  }
+
+  @Test fun substring() {
+    val byteString = factory.encodeUtf8("Hello, World!")
+
+    assertEquals(byteString.substring(0), byteString)
+    assertEquals(byteString.substring(0, 5), "Hello".encodeUtf8())
+    assertEquals(byteString.substring(7), "World!".encodeUtf8())
+    assertEquals(byteString.substring(6, 6), "".encodeUtf8())
+  }
+
+  @Test fun substringWithInvalidBounds() {
+    val byteString = factory.encodeUtf8("Hello, World!")
+
+    try {
+      byteString.substring(-1)
+      fail()
+    } catch (expected: IllegalArgumentException) {
+    }
+
+    try {
+      byteString.substring(0, 14)
+      fail()
+    } catch (expected: IllegalArgumentException) {
+    }
+
+    try {
+      byteString.substring(8, 7)
+      fail()
+    } catch (expected: IllegalArgumentException) {
+    }
+
   }
 
   @Test fun encodeBase64() {
@@ -371,9 +448,10 @@ abstract class AbstractByteStringTest(
       factory.decodeHex("ff"))
 
     val sortedByteStrings = originalByteStrings.toMutableList()
-    sortedByteStrings.shuffle() // TODO Constant random for repeatability
-    sortedByteStrings.sort()
+    sortedByteStrings.shuffle(Random(0))
+    assertNotEquals(originalByteStrings, sortedByteStrings)
 
+    sortedByteStrings.sort()
     assertEquals(originalByteStrings, sortedByteStrings)
   }
 
@@ -407,9 +485,10 @@ abstract class AbstractByteStringTest(
       factory.decodeHex("ffffff"))
 
     val sortedByteStrings = originalByteStrings.toMutableList()
-    sortedByteStrings.shuffle() // TODO Constant random for repeatability
-    sortedByteStrings.sort()
+    sortedByteStrings.shuffle(Random(0))
+    assertNotEquals(originalByteStrings, sortedByteStrings)
 
+    sortedByteStrings.sort()
     assertEquals(originalByteStrings, sortedByteStrings)
   }
 }
