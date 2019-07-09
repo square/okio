@@ -34,7 +34,7 @@ import okio.checkOffsetAndCount
 import okio.toHexString
 import okio.minOf
 
-private val DIGITS = "0123456789abcdef".asUtf8ToByteArray()
+internal val HEX_DIGIT_BYTES = "0123456789abcdef".asUtf8ToByteArray()
 
 /**
  * Returns true if the range within this buffer starting at `segmentPos` in `segment` is equal to
@@ -475,7 +475,7 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
   var pos = tail.limit + width // We write backwards from right to left.
   while (v != 0L) {
     val digit = (v % 10).toInt()
-    data[--pos] = DIGITS[digit]
+    data[--pos] = HEX_DIGIT_BYTES[digit]
     v /= 10
   }
   if (negative) {
