@@ -28,7 +28,7 @@ internal class MockSink : Sink {
   }
 
   fun assertLogContains(message: String) {
-    assertTrue(message in log)
+    assertTrue(message in log, message = "message=\"$message\" not in log=$log")
   }
 
   fun scheduleThrow(call: Int, e: IOException) {

@@ -23,11 +23,11 @@ import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.pin
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
-import platform.zlib.Z_DATA_ERROR
+import platform.zlib.Z_BUF_ERROR
 import platform.zlib.Z_DEFAULT_COMPRESSION
 import platform.zlib.Z_FINISH
-import platform.zlib.Z_MEM_ERROR
 import platform.zlib.Z_NO_FLUSH
+import platform.zlib.Z_OK
 import platform.zlib.Z_STREAM_END
 import platform.zlib.Z_SYNC_FLUSH
 import platform.zlib.deflate
@@ -71,6 +71,7 @@ class Deflater(level: Int = Z_DEFAULT_COMPRESSION) {
     pinned?.unpin()
     pinned = null
     deflateEnd(stream.ptr)
+    nativeHeap.free(stream.rawPtr)
   }
 
   fun deflate(output: ByteArray, off: Int, len: Int, flush: Boolean = false): Int {
@@ -83,13 +84,15 @@ class Deflater(level: Int = Z_DEFAULT_COMPRESSION) {
     stream.avail_out = len.toUInt()
     output.asUByteArray().usePinned { data ->
       stream.next_out = data.addressOf(off)
-      when (deflate(stream.ptr, flushCode)) {
-        Z_STREAM_END -> finished = true
-        Z_DATA_ERROR -> TODO()
-        Z_MEM_ERROR -> TODO()
+      return when (val result = deflate(stream.ptr, flushCode)) {
+        Z_OK -> len - stream.avail_out.toInt()
+        Z_STREAM_END -> {
+          finished = true
+          len - stream.avail_out.toInt()
+        }
+        Z_BUF_ERROR -> 0
+        else -> TODO("unknown deflate result=$result")
       }
     }
-    return len - stream.avail_out.toInt()
   }
-
 }

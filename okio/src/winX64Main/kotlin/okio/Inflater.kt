@@ -23,10 +23,10 @@ import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.pin
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
-import platform.zlib.Z_DATA_ERROR
-import platform.zlib.Z_MEM_ERROR
+import platform.zlib.Z_BUF_ERROR
 import platform.zlib.Z_NEED_DICT
 import platform.zlib.Z_NO_FLUSH
+import platform.zlib.Z_OK
 import platform.zlib.Z_STREAM_END
 import platform.zlib.inflate
 import platform.zlib.inflateEnd
@@ -54,14 +54,20 @@ class Inflater {
     stream.avail_out = len.toUInt()
     output.asUByteArray().usePinned { data ->
       stream.next_out = data.addressOf(off)
-      when (inflate(stream.ptr, Z_NO_FLUSH)) {
-        Z_STREAM_END -> finished = true
-        Z_NEED_DICT -> needsDictionary = true
-        Z_DATA_ERROR -> TODO()
-        Z_MEM_ERROR -> TODO()
+      return when (val result = inflate(stream.ptr, Z_NO_FLUSH)) {
+        Z_OK -> len - stream.avail_out.toInt()
+        Z_STREAM_END -> {
+          finished = true
+          len - stream.avail_out.toInt()
+        }
+        Z_NEED_DICT -> {
+          needsDictionary = true
+          len - stream.avail_out.toInt()
+        }
+        Z_BUF_ERROR -> 0
+        else -> TODO("unknown inflate result=$result")
       }
     }
-    return len - stream.avail_out.toInt()
   }
 
   fun setInput(input: ByteArray, off: Int, len: Int) {
@@ -77,6 +83,7 @@ class Inflater {
     pinned?.unpin()
     pinned = null
     inflateEnd(stream.ptr)
+    nativeHeap.free(stream.rawPtr)
   }
 
   fun finished(): Boolean = finished

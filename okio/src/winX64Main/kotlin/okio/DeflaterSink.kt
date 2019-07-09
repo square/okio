@@ -16,8 +16,10 @@
 
 package okio
 
+import okio.internal.foldError
+
 class DeflaterSink internal constructor(
-  private val sink: Sink,
+  private val sink: Sink, // TODO: Use a BufferedSink
   private val deflater: Deflater = Deflater()
 ) : Sink {
   private val buffer = Buffer()
@@ -56,8 +58,7 @@ class DeflaterSink internal constructor(
       if (deflated > 0) {
         s.limit += deflated
         buffer.size += deflated
-
-        sink.write(buffer, buffer.size) // TODO emitCompleteSegments
+        buffer.emitCompleteSegments(sink)
       } else if (deflater.needsInput()) {
         if (s.pos == s.limit) {
           // We allocated a tail segment, but didn't end up needing it. Recycle!
@@ -71,7 +72,9 @@ class DeflaterSink internal constructor(
 
   override fun flush() {
     deflate(true)
-    sink.write(buffer, buffer.size) // TODO emitCompleteSegments
+    if (buffer.size > 0) {
+      sink.write(buffer, buffer.size)
+    }
     sink.flush()
   }
 
@@ -87,24 +90,22 @@ class DeflaterSink internal constructor(
 
     // Emit deflated data to the underlying sink. If this fails, we still need
     // to close the deflater and the sink; otherwise we risk leaking resources.
-    var thrown: Throwable? = null
-    try {
+    var thrown = foldError {
       finishDeflate()
-    } catch (e: Throwable) {
-      thrown = e
     }
 
-    try {
+    thrown = foldError(thrown) {
       deflater.end()
-    } catch (e: Throwable) {
-      if (thrown == null) thrown = e
     }
 
-    try {
-      sink.write(buffer, buffer.size) // TODO emitCompleteSegments
+    thrown = foldError(thrown) {
+      if (buffer.size > 0) {
+        sink.write(buffer, buffer.size)
+      }
+    }
+
+    thrown = foldError(thrown) {
       sink.close()
-    } catch (e: Throwable) {
-      if (thrown == null) thrown = e
     }
 
     closed = true

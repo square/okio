@@ -17,7 +17,7 @@
 package okio
 
 class InflaterSource internal constructor(
-  private val source: Source,
+  private val source: Source, // TODO: Use a BufferedSource
   private val inflater: Inflater = Inflater()
 ) : Source {
   private val buffer = Buffer()

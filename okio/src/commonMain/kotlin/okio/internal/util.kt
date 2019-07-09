@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package okio
+package okio.internal
 
-import openssl.ERR_get_error
-
-internal fun Int.checkEvpError() {
-  if (this == 0) {
-    throw IOException("Error performing EVP operation: ${ERR_get_error()}")
+internal inline fun foldError(previous: Throwable? = null, block: () -> Unit): Throwable? {
+  return try {
+    block()
+    previous
+  } catch (e: Throwable) {
+    previous ?: e
   }
-}
-
-// TODO replace with BufferedSink when implemented
-internal fun Buffer.emitCompleteSegments(sink: Sink) {
-  val byteCount = buffer.completeSegmentByteCount()
-  if (byteCount > 0L) sink.write(buffer, byteCount)
 }

@@ -96,22 +96,22 @@ class HashingSinkTest {
     assertEquals(SHA256_abc, hash_abc)
   }
 
-//  @Test fun multipleSegments() {
-//    val hashingSink = HashingSink.sha256(sink)
-//    source.write(r32k)
-//    hashingSink.write(source, r32k.size().toLong())
-//    assertEquals(SHA256_r32k, hashingSink.hash)
-//  }
-//
-//  @Test fun readFromPrefixOfBuffer() {
-//    source.writeUtf8("z")
-//    source.write(r32k)
-//    source.skip(1)
-//    source.writeUtf8(TestUtil.repeat('z', SEGMENT_SIZE * 2 - 1))
-//    val hashingSink = HashingSink.sha256(sink)
-//    hashingSink.write(source, r32k.size().toLong())
-//    assertEquals(SHA256_r32k, hashingSink.hash)
-//  }
+  @Test fun multipleSegments() {
+    val hashingSink = HashingSink.sha256(sink)
+    source.write(r32k)
+    hashingSink.write(source, r32k.size.toLong())
+    assertEquals(SHA256_r32k, hashingSink.hash)
+  }
+
+  @Test fun readFromPrefixOfBuffer() {
+    source.writeUtf8("z")
+    source.write(r32k)
+    source.skip(1)
+    source.writeUtf8('z'.repeat(Segment.SIZE * 2 - 1))
+    val hashingSink = HashingSink.sha256(sink)
+    hashingSink.write(source, r32k.size.toLong())
+    assertEquals(SHA256_r32k, hashingSink.hash)
+  }
 
   @Test fun hmacEmptyKey() {
     try {

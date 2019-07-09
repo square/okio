@@ -74,7 +74,7 @@ class HashingSourceTest {
     assertEquals(HMAC_SHA512_abc, hashingSource.hash)
   }
 
-  @Ignore // TODO: implement buffer()
+  @Ignore // TODO: enable when Source.buffer() is implemented
   @Test fun multipleReads() {
     val hashingSource = HashingSource.sha256(source)
     val bufferedSource = hashingSource.buffer()
@@ -99,21 +99,22 @@ class HashingSourceTest {
     assertEquals(SHA256_abc, hash_abc, "abc")
   }
 
-//  @Test fun multipleSegments() {
-//    val hashingSource = HashingSource.sha256(source)
-//    val bufferedSource = hashingSource.buffer()
-//    source.write(r32k)
-//    assertEquals(r32k, bufferedSource.readByteString())
-//    assertEquals(SHA256_r32k, hashingSource.hash)
-//  }
-//
-//  @Test fun readIntoSuffixOfBuffer() {
-//    val hashingSource = HashingSource.sha256(source)
-//    source.write(r32k)
-//    sink.writeUtf8(TestUtil.repeat('z', SEGMENT_SIZE * 2 - 1))
-//    assertEquals(r32k.size().toLong(), hashingSource.read(sink, Long.MAX_VALUE))
-//    assertEquals(SHA256_r32k, hashingSource.hash)
-//  }
+  @Test fun multipleSegments() {
+    val hashingSource = HashingSource.sha256(source)
+    val buffer = Buffer()
+    source.write(r32k)
+    hashingSource.read(buffer, r32k.size.toLong())
+    assertEquals(r32k, buffer.readByteString())
+    assertEquals(SHA256_r32k, hashingSource.hash)
+  }
+
+  @Test fun readIntoSuffixOfBuffer() {
+    val hashingSource = HashingSource.sha256(source)
+    source.write(r32k)
+    sink.writeUtf8('z'.repeat(Segment.SIZE * 2 - 1))
+    assertEquals(r32k.size.toLong(), hashingSource.read(sink, Long.MAX_VALUE))
+    assertEquals(SHA256_r32k, hashingSource.hash)
+  }
 
   @Test fun hmacEmptyKey() {
     try {
