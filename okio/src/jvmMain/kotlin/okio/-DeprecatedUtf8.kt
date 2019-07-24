@@ -16,6 +16,7 @@
  */
 package okio
 
+@Deprecated(message = "changed in Okio 2.x")
 object `-DeprecatedUtf8` {
   @Deprecated(
       message = "moved to extension function",
