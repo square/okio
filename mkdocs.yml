@@ -1,0 +1,46 @@
+site_name: Okio
+repo_name: Okio
+repo_url: https://github.com/square/okio
+site_description: "A modern I/O library for Android, Kotlin, and Java."
+site_author: Square, Inc.
+remote_branch: gh-pages
+
+copyright: 'Copyright &copy; 2019 Square, Inc.'
+
+theme:
+  name: 'material'
+  favicon: images/icon-square.png
+  logo: images/icon-square.png
+  palette:
+    primary: 'deep purple'
+    accent: 'white'
+
+extra_css:
+  - 'css/app.css'
+
+markdown_extensions:
+  - smarty
+  - codehilite:
+      guess_lang: false
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - tables
+
+nav:
+  - 'Overview': index.md
+  - 'Stack Overflow ⏏': https://stackoverflow.com/questions/tagged/okio?sort=active
+  - '2.x API': 2.x/okio/okio/index.md
+  - '1.x API ⏏': https://square.github.io/okio/1.x/okio/
+  - 'Change Log': changelog.md
+  - 'Contributing': contributing.md
+  - 'Code of Conduct': code_of_conduct.md
+

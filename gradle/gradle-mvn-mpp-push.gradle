@@ -3,6 +3,11 @@ apply plugin: 'signing'
 apply plugin: 'org.jetbrains.dokka'
 
 dokka {
+  outputDirectory = "$rootDir/docs/2.x"
+  outputFormat = 'gfm'
+  reportUndocumented = false
+  skipDeprecated = true
+  jdkVersion = 8
   impliedPlatforms = ["Common"] // This will force platform tags for all non-common sources e.g. "JVM"
   kotlinTasks {
     // dokka fails to retrieve sources from MPP-tasks so they must be set empty to avoid exception
@@ -11,6 +16,10 @@ dokka {
   }
   packageOptions {
     prefix = "com.squareup.okio"
+    suppress = true
+  }
+  packageOptions {
+    prefix = "okio.internal"
     suppress = true
   }
   sourceRoot {

@@ -23,3 +23,9 @@ obj
 .DS_Store
 
 node_modules
+
+# Special Mkdocs files
+docs/2.x
+docs/changelog.md
+docs/contributing.md
+docs/index.md
