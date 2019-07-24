@@ -1,6 +1,8 @@
 Okio
 ====
 
+See the [project website][okio] for documentation and APIs.
+
 Okio is a library that complements `java.io` and `java.nio` to make it much
 easier to access, store, and process your data. It started as a component of
 [OkHttp][1], the capable HTTP client included in Android. It's well-exercised
@@ -691,6 +693,7 @@ License
  [socks]: https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/SocksProxyServer.java
  [ok_libraries_talk]: https://www.youtube.com/watch?v=WvyScM_S88c
  [ok_libraries_slides]: https://speakerdeck.com/jakewharton/a-few-ok-libraries-droidcon-mtl-2015
+ [okio]: https://square.github.io/okio/
  [encoding_talk]: https://www.youtube.com/watch?v=T_p22jMZSrk
  [encoding_slides]: https://speakerdeck.com/swankjesse/decoding-the-secrets-of-binary-data-droidcon-nyc-2016
  [ok_multiplatform_talk]: https://www.youtube.com/watch?v=Q8B4eDirgk0

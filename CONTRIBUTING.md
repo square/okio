@@ -1,15 +1,38 @@
 Contributing
 ============
 
-If you would like to contribute code to Okio you can do so through GitHub by
-forking the repository and sending a pull request.
+Keeping the project small and stable limits our ability to accept new contributors. We are not
+seeking new committers at this time, but some small contributions are welcome.
 
-When submitting code, please make every effort to follow existing conventions
-and style in order to keep the code as readable as possible. Please also make
-sure your code compiles by running `./gradlew clean build`.
+If you've found a security problem, please follow our [bug bounty][security] program.
 
-Before your code can be accepted into the project you must also sign the
-[Individual Contributor License Agreement (CLA)][1].
+If you've found a bug, please contribute a failing test case so we can study and fix it.
+
+Before code can be accepted all contributors must complete our
+[Individual Contributor License Agreement (CLA)][cla].
 
 
- [1]: https://spreadsheets.google.com/spreadsheet/viewform?formkey=dDViT2xzUHAwRkI3X3k5Z0lQM091OGc6MQ&ndplr=1
+Code Contributions
+------------------
+
+Get working code on a personal branch with tests passing before you submit a PR:
+
+```
+./gradlew clean check
+```
+
+Please make every effort to follow existing conventions and style in order to keep the code as
+readable as possible.
+
+Contribute code changes through GitHub by forking the repository and sending a pull request. We
+squash all pull requests on merge.
+
+
+Committer's Guides
+------------------
+
+ * [Releasing][releasing]
+
+ [cla]: https://spreadsheets.google.com/spreadsheet/viewform?formkey=dDViT2xzUHAwRkI3X3k5Z0lQM091OGc6MQ&ndplr=1
+ [releasing]: http://square.github.io/okio/releasing/
+ [security]: http://square.github.io/okio/security/
