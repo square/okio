@@ -23,6 +23,7 @@ import java.net.Socket
 import java.nio.file.OpenOption
 import java.nio.file.Path
 
+@Deprecated(message = "changed in Okio 2.x")
 object `-DeprecatedOkio` {
   @Deprecated(
       message = "moved to extension function",
