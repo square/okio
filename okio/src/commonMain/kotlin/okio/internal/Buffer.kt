@@ -488,6 +488,49 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
   return this
 }
 
+internal inline fun Buffer.commonWriteHexadecimalUnsignedLong(v: Long): Buffer {
+  var v = v
+  if (v == 0L) {
+    // Both a shortcut and required since the following code can't handle zero.
+    return writeByte('0'.toInt())
+  }
+
+  // Mask every bit below the most significant bit to a 1
+  // http://aggregate.org/MAGIC/#Most%20Significant%201%20Bit
+  var x = v
+  x = x or (x ushr 1)
+  x = x or (x ushr 2)
+  x = x or (x ushr 4)
+  x = x or (x ushr 8)
+  x = x or (x ushr 16)
+  x = x or (x ushr 32)
+
+  // Count the number of 1s
+  // http://aggregate.org/MAGIC/#Population%20Count%20(Ones%20Count)
+  x -= x ushr 1 and 0x5555555555555555
+  x = (x ushr 2 and 0x3333333333333333) + (x and 0x3333333333333333)
+  x = (x ushr 4) + x and 0x0f0f0f0f0f0f0f0f
+  x += x ushr 8
+  x += x ushr 16
+  x = (x and 0x3f) + ((x ushr 32) and 0x3f)
+
+  // Round up to the nearest full byte
+  val width = ((x + 3) / 4).toInt()
+
+  val tail = writableSegment(width)
+  val data = tail.data
+  var pos = tail.limit + width - 1
+  val start = tail.limit
+  while (pos >= start) {
+    data[pos] = HEX_DIGIT_BYTES[(v and 0xF).toInt()]
+    v = v ushr 4
+    pos--
+  }
+  tail.limit += width
+  size += width.toLong()
+  return this
+}
+
 internal inline fun Buffer.commonWritableSegment(minimumCapacity: Int): Segment {
   require(minimumCapacity >= 1 && minimumCapacity <= Segment.SIZE) { "unexpected capacity" }
 
@@ -577,6 +620,126 @@ internal inline fun Buffer.commonRead(sink: ByteArray, offset: Int, byteCount: I
   }
 
   return toCopy
+}
+
+internal const val OVERFLOW_ZONE = Long.MIN_VALUE / 10L
+internal const val OVERFLOW_DIGIT_START = Long.MIN_VALUE % 10L + 1
+
+internal inline fun Buffer.commonReadDecimalLong(): Long {
+  if (size == 0L) throw EOFException()
+
+  // This value is always built negatively in order to accommodate Long.MIN_VALUE.
+  var value = 0L
+  var seen = 0
+  var negative = false
+  var done = false
+
+  var overflowDigit = OVERFLOW_DIGIT_START
+
+  do {
+    val segment = head!!
+
+    val data = segment.data
+    var pos = segment.pos
+    val limit = segment.limit
+
+    while (pos < limit) {
+      val b = data[pos]
+      if (b >= '0'.toByte() && b <= '9'.toByte()) {
+        val digit = '0'.toByte() - b
+
+        // Detect when the digit would cause an overflow.
+        if (value < OVERFLOW_ZONE || value == OVERFLOW_ZONE && digit < overflowDigit) {
+          val buffer = Buffer().writeDecimalLong(value).writeByte(b.toInt())
+          if (!negative) buffer.readByte() // Skip negative sign.
+          throw NumberFormatException("Number too large: ${buffer.readUtf8()}")
+        }
+        value *= 10L
+        value += digit.toLong()
+      } else if (b == '-'.toByte() && seen == 0) {
+        negative = true
+        overflowDigit -= 1
+      } else {
+        if (seen == 0) {
+          throw NumberFormatException(
+            "Expected leading [0-9] or '-' character but was ${b.toHexString()}")
+        }
+        // Set a flag to stop iteration. We still need to run through segment updating below.
+        done = true
+        break
+      }
+      pos++
+      seen++
+    }
+
+    if (pos == limit) {
+      head = segment.pop()
+      SegmentPool.recycle(segment)
+    } else {
+      segment.pos = pos
+    }
+  } while (!done && head != null)
+
+  size -= seen.toLong()
+  return if (negative) value else -value
+}
+
+internal inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
+  if (size == 0L) throw EOFException()
+
+  var value = 0L
+  var seen = 0
+  var done = false
+
+  do {
+    val segment = head!!
+
+    val data = segment.data
+    var pos = segment.pos
+    val limit = segment.limit
+
+    while (pos < limit) {
+      val digit: Int
+
+      val b = data[pos]
+      if (b >= '0'.toByte() && b <= '9'.toByte()) {
+        digit = b - '0'.toByte()
+      } else if (b >= 'a'.toByte() && b <= 'f'.toByte()) {
+        digit = b - 'a'.toByte() + 10
+      } else if (b >= 'A'.toByte() && b <= 'F'.toByte()) {
+        digit = b - 'A'.toByte() + 10 // We never write uppercase, but we support reading it.
+      } else {
+        if (seen == 0) {
+          throw NumberFormatException(
+            "Expected leading [0-9a-fA-F] character but was ${b.toHexString()}")
+        }
+        // Set a flag to stop iteration. We still need to run through segment updating below.
+        done = true
+        break
+      }
+
+      // Detect when the shift will overflow.
+      if (value and -0x1000000000000000L != 0L) {
+        val buffer = Buffer().writeHexadecimalUnsignedLong(value).writeByte(b.toInt())
+        throw NumberFormatException("Number too large: " + buffer.readUtf8())
+      }
+
+      value = value shl 4
+      value = value or digit.toLong()
+      pos++
+      seen++
+    }
+
+    if (pos == limit) {
+      head = segment.pop()
+      SegmentPool.recycle(segment)
+    } else {
+      segment.pos = pos
+    }
+  } while (!done && head != null)
+
+  size -= seen.toLong()
+  return value
 }
 
 internal inline fun Buffer.commonReadByteString(): ByteString = ByteString(readByteArray())

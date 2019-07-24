@@ -309,9 +309,9 @@ public final class BufferedSinkTest {
     assertLongHexString(Long.MIN_VALUE);
     assertLongHexString(Long.MAX_VALUE);
 
-    for (int i = 0; i < 16; i++) {
-      assertLongHexString((1 << i) - 1);
-      assertLongHexString(1 << i);
+    for (int i = 0; i < 63; i++) {
+      assertLongHexString((1L << i) - 1);
+      assertLongHexString(1L << i);
     }
   }
 

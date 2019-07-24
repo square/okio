@@ -29,7 +29,9 @@ import okio.internal.commonReadAll
 import okio.internal.commonReadByte
 import okio.internal.commonReadByteArray
 import okio.internal.commonReadByteString
+import okio.internal.commonReadDecimalLong
 import okio.internal.commonReadFully
+import okio.internal.commonReadHexadecimalUnsignedLong
 import okio.internal.commonSkip
 import okio.internal.commonReadInt
 import okio.internal.commonReadLong
@@ -45,6 +47,7 @@ import okio.internal.commonWrite
 import okio.internal.commonWriteAll
 import okio.internal.commonWriteByte
 import okio.internal.commonWriteDecimalLong
+import okio.internal.commonWriteHexadecimalUnsignedLong
 import okio.internal.commonWriteInt
 import okio.internal.commonWriteLong
 import okio.internal.commonWriteShort
@@ -110,9 +113,9 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   override fun readLongLe(): Long = readLong().reverseBytes()
 
-  override fun readDecimalLong(): Long = TODO()
+  override fun readDecimalLong(): Long = commonReadDecimalLong()
 
-  override fun readHexadecimalUnsignedLong(): Long = TODO()
+  override fun readHexadecimalUnsignedLong(): Long = commonReadHexadecimalUnsignedLong()
 
   override fun readByteString(): ByteString = commonReadByteString()
 
@@ -190,7 +193,8 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun writeDecimalLong(v: Long): Buffer = commonWriteDecimalLong(v)
 
-  actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer = TODO()
+  actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer =
+    commonWriteHexadecimalUnsignedLong(v)
 
   override fun write(source: Buffer, byteCount: Long): Unit = commonWrite(source, byteCount)
 
