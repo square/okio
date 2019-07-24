@@ -1,0 +1,13 @@
+$dokka.format:gfm
+$dokka.linkExtension:md
+$dokka.location:okio$appendingSink(java.io.File)okio/java.io.-file/appending-sink.md
+$dokka.location:okio$sink(java.io.File, kotlin.Boolean)okio/java.io.-file/sink.md
+$dokka.location:okio$sink(java.io.OutputStream)okio/java.io.-output-stream/sink.md
+$dokka.location:okio$sink(java.net.Socket)okio/java.net.-socket/sink.md
+$dokka.location:okio$sink(java.nio.file.Path, kotlin.Array((java.nio.file.OpenOption)))okio/java.nio.file.-path/sink.md
+$dokka.location:okio$source(java.io.File)okio/java.io.-file/source.md
+$dokka.location:okio$source(java.io.InputStream)okio/java.io.-input-stream/source.md
+$dokka.location:okio$source(java.net.Socket)okio/java.net.-socket/source.md
+$dokka.location:okio$source(java.nio.file.Path, kotlin.Array((java.nio.file.OpenOption)))okio/java.nio.file.-path/source.md
+$dokka.location:okio$utf8Size(kotlin.String, kotlin.Int, kotlin.Int)okio/kotlin.-string/utf8-size.md
+okio

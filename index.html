@@ -1,0 +1,1390 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="A modern I/O library for Android, Kotlin, and Java.">
+      
+      
+      
+        <meta name="author" content="Square, Inc.">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="images/icon-square.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.0">
+    
+    
+      
+        <title>Okio</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/application.0284f74d.css">
+      
+        <link rel="stylesheet" href="assets/stylesheets/application-palette.01803549.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#7e57c2">
+      
+    
+    
+      <script src="assets/javascripts/modernizr.74668098.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="assets/fonts/material-icons.css">
+    
+    
+      <link rel="stylesheet" href="css/app.css">
+    
+    
+      
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="deep-purple" data-md-color-accent="white">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#okio" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="." title="Okio" class="md-header-nav__button md-logo">
+          
+            <img src="images/icon-square.png" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              Okio
+            </span>
+            <span class="md-header-nav__topic">
+              
+                Overview
+              
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/square/okio/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    Okio
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="." title="Okio" class="md-nav__button md-logo">
+      
+        <img src="images/icon-square.png" width="48" height="48">
+      
+    </a>
+    Okio
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/square/okio/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    Okio
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Overview
+      </label>
+    
+    <a href="." title="Overview" class="md-nav__link md-nav__link--active">
+      Overview
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bytestrings-and-buffers" title="ByteStrings and Buffers" class="md-nav__link">
+    ByteStrings and Buffers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources-and-sinks" title="Sources and Sinks" class="md-nav__link">
+    Sources and Sinks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#presentations" title="Presentations" class="md-nav__link">
+    Presentations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" title="Recipes" class="md-nav__link">
+    Recipes
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#read-a-text-file-line-by-line" title="Read a text file line-by-line" class="md-nav__link">
+    Read a text file line-by-line
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-a-text-file" title="Write a text file" class="md-nav__link">
+    Write a text file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utf-8" title="UTF-8" class="md-nav__link">
+    UTF-8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#golden-values" title="Golden Values" class="md-nav__link">
+    Golden Values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-a-binary-file" title="Write a binary file" class="md-nav__link">
+    Write a binary file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#communicate-on-a-socket" title="Communicate on a Socket" class="md-nav__link">
+    Communicate on a Socket
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hashing" title="Hashing" class="md-nav__link">
+    Hashing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#download" title="Download" class="md-nav__link">
+    Download
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#r8-proguard" title="R8 / ProGuard" class="md-nav__link">
+    R8 / ProGuard
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" title="License" class="md-nav__link">
+    License
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="https://stackoverflow.com/questions/tagged/okio?sort=active" title="Stack Overflow ⏏" class="md-nav__link">
+      Stack Overflow ⏏
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="2.x/okio/okio/" title="2.x API" class="md-nav__link">
+      2.x API
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="https://square.github.io/okio/1.x/okio/" title="1.x API ⏏" class="md-nav__link">
+      1.x API ⏏
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="changelog/" title="Change Log" class="md-nav__link">
+      Change Log
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="contributing/" title="Contributing" class="md-nav__link">
+      Contributing
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="code_of_conduct/" title="Code of Conduct" class="md-nav__link">
+      Code of Conduct
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bytestrings-and-buffers" title="ByteStrings and Buffers" class="md-nav__link">
+    ByteStrings and Buffers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources-and-sinks" title="Sources and Sinks" class="md-nav__link">
+    Sources and Sinks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#presentations" title="Presentations" class="md-nav__link">
+    Presentations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" title="Recipes" class="md-nav__link">
+    Recipes
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#read-a-text-file-line-by-line" title="Read a text file line-by-line" class="md-nav__link">
+    Read a text file line-by-line
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-a-text-file" title="Write a text file" class="md-nav__link">
+    Write a text file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utf-8" title="UTF-8" class="md-nav__link">
+    UTF-8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#golden-values" title="Golden Values" class="md-nav__link">
+    Golden Values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-a-binary-file" title="Write a binary file" class="md-nav__link">
+    Write a binary file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#communicate-on-a-socket" title="Communicate on a Socket" class="md-nav__link">
+    Communicate on a Socket
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hashing" title="Hashing" class="md-nav__link">
+    Hashing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#download" title="Download" class="md-nav__link">
+    Download
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#r8-proguard" title="R8 / ProGuard" class="md-nav__link">
+    R8 / ProGuard
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" title="License" class="md-nav__link">
+    License
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/square/okio/edit/master/docs/index.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                <h1 id="okio">Okio<a class="headerlink" href="#okio" title="Permanent link">&para;</a></h1>
+<p>Okio is a library that complements <code>java.io</code> and <code>java.nio</code> to make it much
+easier to access, store, and process your data. It started as a component of
+<a href="https://github.com/square/okhttp">OkHttp</a>, the capable HTTP client included in Android. It&rsquo;s well-exercised
+and ready to solve new problems.</p>
+<h2 id="bytestrings-and-buffers">ByteStrings and Buffers<a class="headerlink" href="#bytestrings-and-buffers" title="Permanent link">&para;</a></h2>
+<p>Okio is built around two types that pack a lot of capability into a
+straightforward API:</p>
+<ul>
+<li>
+<p><a href="https://square.github.io/okio/2.x/okio/jvm/okio/-byte-string/index.html"><strong>ByteString</strong></a> is an immutable sequence of bytes. For character data, <code>String</code>
+   is fundamental. <code>ByteString</code> is String&rsquo;s long-lost brother, making it easy to
+   treat binary data as a value. This class is ergonomic: it knows how to encode
+   and decode itself as hex, base64, and UTF-8.</p>
+</li>
+<li>
+<p><a href="https://square.github.io/okio/2.x/okio/jvm/okio/-buffer/index.html"><strong>Buffer</strong></a> is a mutable sequence of bytes. Like <code>ArrayList</code>, you don&rsquo;t need
+   to size your buffer in advance. You read and write buffers as a queue: write
+   data to the end and read it from the front. There&rsquo;s no obligation to manage
+   positions, limits, or capacities.</p>
+</li>
+</ul>
+<p>Internally, <code>ByteString</code> and <code>Buffer</code> do some clever things to save CPU and
+memory. If you encode a UTF-8 string as a <code>ByteString</code>, it caches a reference to
+that string so that if you decode it later, there&rsquo;s no work to do.</p>
+<p><code>Buffer</code> is implemented as a linked list of segments. When you move data from
+one buffer to another, it <em>reassigns ownership</em> of the segments rather than
+copying the data across. This approach is particularly helpful for multithreaded
+programs: a thread that talks to the network can exchange data with a worker
+thread without any copying or ceremony.</p>
+<h2 id="sources-and-sinks">Sources and Sinks<a class="headerlink" href="#sources-and-sinks" title="Permanent link">&para;</a></h2>
+<p>An elegant part of the <code>java.io</code> design is how streams can be layered for
+transformations like encryption and compression. Okio includes its own stream
+types called <a href="https://square.github.io/okio/2.x/okio/jvm/okio/-source/index.html"><code>Source</code></a> and <a href="https://square.github.io/okio/2.x/okio/jvm/okio/-sink/index.html"><code>Sink</code></a> that work like <code>InputStream</code> and
+<code>OutputStream</code>, but with some key differences:</p>
+<ul>
+<li>
+<p><strong>Timeouts.</strong> The streams provide access to the timeouts of the underlying
+   I/O mechanism. Unlike the <code>java.io</code> socket streams, both <code>read()</code> and
+   <code>write()</code> calls honor timeouts.</p>
+</li>
+<li>
+<p><strong>Easy to implement.</strong> <code>Source</code> declares three methods: <code>read()</code>, <code>close()</code>,
+   and <code>timeout()</code>. There are no hazards like <code>available()</code> or single-byte reads
+   that cause correctness and performance surprises.</p>
+</li>
+<li>
+<p><strong>Easy to use.</strong> Although <em>implementations</em> of <code>Source</code> and <code>Sink</code> have only
+   three methods to write, <em>callers</em> are given a rich API with the
+   <a href="https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-source/index.html"><code>BufferedSource</code></a> and <a href="https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-sink/index.html"><code>BufferedSink</code></a> interfaces. These interfaces give you
+   everything you need in one place.</p>
+</li>
+<li>
+<p><strong>No artificial distinction between byte streams and char streams.</strong> It&rsquo;s all
+   data. Read and write it as bytes, UTF-8 strings, big-endian 32-bit integers,
+   little-endian shorts; whatever you want. No more <code>InputStreamReader</code>!</p>
+</li>
+<li>
+<p><strong>Easy to test.</strong> The <code>Buffer</code> class implements both <code>BufferedSource</code> and
+   <code>BufferedSink</code> so your test code is simple and clear.</p>
+</li>
+</ul>
+<p>Sources and sinks interoperate with <code>InputStream</code> and <code>OutputStream</code>. You can
+view any <code>Source</code> as an <code>InputStream</code>, and you can view any <code>InputStream</code> as a
+<code>Source</code>. Similarly for <code>Sink</code> and <code>OutputStream</code>.</p>
+<h2 id="presentations">Presentations<a class="headerlink" href="#presentations" title="Permanent link">&para;</a></h2>
+<p><a href="https://www.youtube.com/watch?v=WvyScM_S88c">A Few “Ok” Libraries</a> (<a href="https://speakerdeck.com/jakewharton/a-few-ok-libraries-droidcon-mtl-2015">slides</a>): An introduction to Okio
+and three libraries written with it.</p>
+<p><a href="https://www.youtube.com/watch?v=T_p22jMZSrk">Decoding the Secrets of Binary Data</a> (<a href="https://speakerdeck.com/swankjesse/decoding-the-secrets-of-binary-data-droidcon-nyc-2016">slides</a>): How data encoding
+works and how Okio does it.</p>
+<p><a href="https://www.youtube.com/watch?v=Q8B4eDirgk0">Ok Multiplatform!</a> (<a href="https://speakerdeck.com/swankjesse/ok-multiplatform">slides</a>): How we changed
+Okio’s implementation language from Java to Kotlin.</p>
+<h2 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">&para;</a></h2>
+<p>We&rsquo;ve written some recipes that demonstrate how to solve common problems with
+Okio. Read through them to learn about how everything works together.
+Cut-and-paste these examples freely; that&rsquo;s what they&rsquo;re for.</p>
+<h3 id="read-a-text-file-line-by-line"><a href="https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/ReadFileLineByLine.java">Read a text file line-by-line</a><a class="headerlink" href="#read-a-text-file-line-by-line" title="Permanent link">&para;</a></h3>
+<p>Use <code>Okio.source(File)</code> to open a source stream to read a file. The returned
+<code>Source</code> interface is very small and has limited uses. Instead we wrap the
+source with a buffer. This has two benefits:</p>
+<ul>
+<li>
+<p><strong>It makes the API more powerful.</strong> Instead of the basic methods offered by
+   <code>Source</code>, <code>BufferedSource</code> has dozens of methods to address most common
+   problems concisely.</p>
+</li>
+<li>
+<p><strong>It makes your program run faster.</strong> Buffering allows Okio to get more done
+   with fewer I/O operations.</p>
+</li>
+</ul>
+<p>Each <code>Source</code> that is opened needs to be closed. The code that opens the stream
+is responsible for making sure it is closed. Here we use Java&rsquo;s <code>try</code> blocks to
+close our sources automatically.</p>
+<div class="codehilite"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">readLines</span><span class="o">(</span><span class="n">File</span> <span class="n">file</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="k">try</span> <span class="o">(</span><span class="n">Source</span> <span class="n">fileSource</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">source</span><span class="o">(</span><span class="n">file</span><span class="o">);</span>
+       <span class="n">BufferedSource</span> <span class="n">bufferedSource</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">fileSource</span><span class="o">))</span> <span class="o">{</span>
+
+    <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">String</span> <span class="n">line</span> <span class="o">=</span> <span class="n">bufferedSource</span><span class="o">.</span><span class="na">readUtf8Line</span><span class="o">();</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">line</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">break</span><span class="o">;</span>
+
+      <span class="k">if</span> <span class="o">(</span><span class="n">line</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="s">&quot;square&quot;</span><span class="o">))</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">line</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>The <code>readUtf8Line()</code> API reads all of the data until the next line delimiter –
+either <code>\n</code>, <code>\r\n</code>, or the end of the file. It returns that data as a string,
+omitting the delimiter at the end. When it encounters empty lines the method
+will return an empty string. If there isn’t any more data to read it will
+return null.</p>
+<p>The above program can be written more compactly by inlining the <code>fileSource</code>
+variable and by using a fancy <code>for</code> loop instead of a <code>while</code>:</p>
+<div class="codehilite"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">readLines</span><span class="o">(</span><span class="n">File</span> <span class="n">file</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="k">try</span> <span class="o">(</span><span class="n">BufferedSource</span> <span class="n">source</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">Okio</span><span class="o">.</span><span class="na">source</span><span class="o">(</span><span class="n">file</span><span class="o">)))</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">line</span><span class="o">;</span> <span class="o">(</span><span class="n">line</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="na">readUtf8Line</span><span class="o">())</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span> <span class="o">)</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">line</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="s">&quot;square&quot;</span><span class="o">))</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">line</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>The <code>readUtf8Line()</code> method is suitable for parsing most files. For certain
+use-cases you may also consider <code>readUtf8LineStrict()</code>. It is similar but it
+requires that each line is terminated by <code>\n</code> or <code>\r\n</code>. If it encounters the
+end of the file before that it will throw an <code>EOFException</code>. The strict variant
+also permits a byte limit to defend against malformed input.</p>
+<div class="codehilite"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">readLines</span><span class="o">(</span><span class="n">File</span> <span class="n">file</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="k">try</span> <span class="o">(</span><span class="n">BufferedSource</span> <span class="n">source</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">Okio</span><span class="o">.</span><span class="na">source</span><span class="o">(</span><span class="n">file</span><span class="o">)))</span> <span class="o">{</span>
+    <span class="k">while</span> <span class="o">(!</span><span class="n">source</span><span class="o">.</span><span class="na">exhausted</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">String</span> <span class="n">line</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="na">readUtf8LineStrict</span><span class="o">(</span><span class="mi">1024L</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">line</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="s">&quot;square&quot;</span><span class="o">))</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">line</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<h3 id="write-a-text-file"><a href="https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/WriteFile.java">Write a text file</a><a class="headerlink" href="#write-a-text-file" title="Permanent link">&para;</a></h3>
+<p>Above we used a <code>Source</code> and a <code>BufferedSource</code> to read a file. To write, we use
+a <code>Sink</code> and a <code>BufferedSink</code>. The advantages of buffering are the same: a more
+capable API and better performance.</p>
+<div class="codehilite"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">writeEnv</span><span class="o">(</span><span class="n">File</span> <span class="n">file</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="k">try</span> <span class="o">(</span><span class="n">Sink</span> <span class="n">fileSink</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">sink</span><span class="o">(</span><span class="n">file</span><span class="o">);</span>
+       <span class="n">BufferedSink</span> <span class="n">bufferedSink</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">fileSink</span><span class="o">))</span> <span class="o">{</span>
+
+    <span class="k">for</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">entry</span> <span class="o">:</span> <span class="n">System</span><span class="o">.</span><span class="na">getenv</span><span class="o">().</span><span class="na">entrySet</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">bufferedSink</span><span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">());</span>
+      <span class="n">bufferedSink</span><span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="s">&quot;=&quot;</span><span class="o">);</span>
+      <span class="n">bufferedSink</span><span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="n">entry</span><span class="o">.</span><span class="na">getValue</span><span class="o">());</span>
+      <span class="n">bufferedSink</span><span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="s">&quot;\n&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>There isn’t an API to write a line of input; instead we manually insert our own
+newline character. Most programs should hardcode <code>"\n"</code> as the newline
+character. In rare situations you may use <code>System.lineSeparator()</code> instead of
+<code>"\n"</code>: it returns <code>"\r\n"</code> on Windows and <code>"\n"</code> everywhere else.</p>
+<p>We can write the above program more compactly by inlining the <code>fileSink</code>
+variable and by taking advantage of method chaining:</p>
+<div class="codehilite"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">writeEnv</span><span class="o">(</span><span class="n">File</span> <span class="n">file</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="k">try</span> <span class="o">(</span><span class="n">BufferedSink</span> <span class="n">sink</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">Okio</span><span class="o">.</span><span class="na">sink</span><span class="o">(</span><span class="n">file</span><span class="o">)))</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">entry</span> <span class="o">:</span> <span class="n">System</span><span class="o">.</span><span class="na">getenv</span><span class="o">().</span><span class="na">entrySet</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">sink</span><span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">())</span>
+          <span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="s">&quot;=&quot;</span><span class="o">)</span>
+          <span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="n">entry</span><span class="o">.</span><span class="na">getValue</span><span class="o">())</span>
+          <span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="s">&quot;\n&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>In the above code we make four calls to <code>writeUtf8()</code>. Making four calls is
+more efficient than the code below because the VM doesn’t have to create and
+garbage collect a temporary string.</p>
+<div class="codehilite"><pre><span></span><span class="n">sink</span><span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;=&quot;</span> <span class="o">+</span> <span class="n">entry</span><span class="o">.</span><span class="na">getValue</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;\n&quot;</span><span class="o">);</span> <span class="c1">// Slower!</span>
+</pre></div>
+
+<h3 id="utf-8"><a href="https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/ExploreCharsets.java">UTF-8</a><a class="headerlink" href="#utf-8" title="Permanent link">&para;</a></h3>
+<p>In the above APIs you can see that Okio really likes UTF-8. Early computer
+systems suffered many incompatible character encodings: ISO-8859-1, ShiftJIS,
+ASCII, EBCDIC, etc. Writing software to support multiple character sets was
+awful and we didn’t even have emoji! Today we&rsquo;re lucky that the world has
+standardized on UTF-8 everywhere, with some rare uses of other charsets in
+legacy systems.</p>
+<p>If you need another character set, <code>readString()</code> and <code>writeString()</code> are there
+for you. These methods require that you specify a character set. Otherwise you
+may accidentally create data that is only readable by the local computer. Most
+programs should use the UTF-8 methods only.</p>
+<p>When encoding strings you need to be mindful of the different ways that strings
+are represented and encoded. When a glyph has an accent or another adornment
+it may be represented as a single complex code point (<code>é</code>) or as a simple code
+point (<code>e</code>) followed by its modifiers (<code>´</code>). When the entire glyph is a single
+code point that’s called <a href="https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC">NFC</a>; when it’s multiple it’s <a href="https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD">NFD</a>.</p>
+<p>Though we use UTF-8 whenever we read or write strings in I/O, when they are in
+memory Java Strings use an obsolete character encoding called UTF-16. It is a
+bad encoding because it uses a 16-bit <code>char</code> for most characters, but some don’t
+fit. In particular, most emoji use two Java chars. This is problematic because
+<code>String.length()</code> returns a surprising result: the number of UTF-16 chars and
+not the natural number of glyphs.</p>
+<table>
+<thead>
+<tr>
+<th align="right"></th>
+<th align="left">Café 🍩</th>
+<th align="left">Café 🍩</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">Form</td>
+<td align="left"><a href="https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC">NFC</a></td>
+<td align="left"><a href="https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD">NFD</a></td>
+</tr>
+<tr>
+<td align="right">Code Points</td>
+<td align="left"><code>c  a  f  é    ␣   🍩</code></td>
+<td align="left"><code>c  a  f  e  ´    ␣   🍩</code></td>
+</tr>
+<tr>
+<td align="right">UTF-8 bytes</td>
+<td align="left"><code>43 61 66 c3a9 20 f09f8da9</code></td>
+<td align="left"><code>43 61 66 65 cc81 20 f09f8da9</code></td>
+</tr>
+<tr>
+<td align="right">String.codePointCount</td>
+<td align="left">6</td>
+<td align="left">7</td>
+</tr>
+<tr>
+<td align="right">String.length</td>
+<td align="left">7</td>
+<td align="left">8</td>
+</tr>
+<tr>
+<td align="right">Utf8.size</td>
+<td align="left">10</td>
+<td align="left">11</td>
+</tr>
+</tbody>
+</table>
+<p>For the most part Okio lets you ignore these problems and focus on your data.
+But when you need them, there are convenient APIs for dealing with low-level
+UTF-8 strings.</p>
+<p>Use <code>Utf8.size()</code> to count the number of bytes required to encode a string as
+UTF-8 without actually encoding it. This is handy in length-prefixed encodings
+like protocol buffers.</p>
+<p>Use <code>BufferedSource.readUtf8CodePoint()</code> to read a single variable-length code
+point, and <code>BufferedSink.writeUtf8CodePoint()</code> to write one.</p>
+<h3 id="golden-values"><a href="https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/GoldenValue.java">Golden Values</a><a class="headerlink" href="#golden-values" title="Permanent link">&para;</a></h3>
+<p>Okio likes testing. The library itself is heavily tested, and it has features
+that are often helpful when testing application code. One pattern we’ve found to
+be quite useful is “golden value” testing. The goal of such tests is to confirm
+that data encoded with earlier versions of a program can safely be decoded by
+the current program.</p>
+<p>We’ll illustrate this by encoding a value using Java Serialization. Though we
+must disclaim that Java Serialization is an awful encoding system and most
+programs should prefer other formats like JSON or protobuf! In any case, here’s
+a method that takes an object, serializes it, and returns the result as a
+<code>ByteString</code>:</p>
+<div class="codehilite"><pre><span></span><span class="kd">private</span> <span class="n">ByteString</span> <span class="nf">serialize</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="n">Buffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Buffer</span><span class="o">();</span>
+  <span class="k">try</span> <span class="o">(</span><span class="n">ObjectOutputStream</span> <span class="n">objectOut</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectOutputStream</span><span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">outputStream</span><span class="o">()))</span> <span class="o">{</span>
+    <span class="n">objectOut</span><span class="o">.</span><span class="na">writeObject</span><span class="o">(</span><span class="n">o</span><span class="o">);</span>
+  <span class="o">}</span>
+  <span class="k">return</span> <span class="n">buffer</span><span class="o">.</span><span class="na">readByteString</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>There’s a lot going on here.</p>
+<ol>
+<li>
+<p>We create a buffer as a holding space for our serialized data. It’s a convenient
+   replacement for <code>ByteArrayOutputStream</code>.</p>
+</li>
+<li>
+<p>We ask the buffer for its output stream. Writes to a buffer or its output stream
+   always append data to the end of the buffer.</p>
+</li>
+<li>
+<p>We create an <code>ObjectOutputStream</code> (the encoding API for Java serialization) and
+   write our object. The try block takes care of closing the stream for us. Note
+   that closing a buffer has no effect.</p>
+</li>
+<li>
+<p>Finally we read a byte string from the buffer. The <code>readByteString()</code> method
+   allows us to specify how many bytes to read; here we don’t specify a count in
+   order to read the entire thing. Reads from a buffer always consume data from
+   the front of the buffer.</p>
+</li>
+</ol>
+<p>With our <code>serialize()</code> method handy we are ready to compute and print a golden
+value.</p>
+<div class="codehilite"><pre><span></span><span class="n">Point</span> <span class="n">point</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mf">8.0</span><span class="o">,</span> <span class="mf">15.0</span><span class="o">);</span>
+<span class="n">ByteString</span> <span class="n">pointBytes</span> <span class="o">=</span> <span class="n">serialize</span><span class="o">(</span><span class="n">point</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">pointBytes</span><span class="o">.</span><span class="na">base64</span><span class="o">());</span>
+</pre></div>
+
+<p>We print the <code>ByteString</code> as <a href="https://tools.ietf.org/html/rfc4648#section-4">base64</a> because it’s a compact format
+that’s suitable for embedding in a test case. The program prints this:</p>
+<div class="codehilite"><pre><span></span>rO0ABXNyAB5va2lvLnNhbXBsZXMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA
+</pre></div>
+
+<p>That’s our golden value! We can embed it in our test case using base64 again
+to convert it back into a <code>ByteString</code>:</p>
+<div class="codehilite"><pre><span></span><span class="n">ByteString</span> <span class="n">goldenBytes</span> <span class="o">=</span> <span class="n">ByteString</span><span class="o">.</span><span class="na">decodeBase64</span><span class="o">(</span><span class="s">&quot;rO0ABXNyAB5va2lvLnNhbXBsZ&quot;</span>
+    <span class="o">+</span> <span class="s">&quot;XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA&quot;</span>
+    <span class="o">+</span> <span class="s">&quot;AAAAAAA&quot;</span><span class="o">);</span>
+</pre></div>
+
+<p>The next step is to deserialize the <code>ByteString</code> back into our value class. This
+method reverses the <code>serialize()</code> method above: we append a byte string to a
+buffer then consume it using an <code>ObjectInputStream</code>:</p>
+<div class="codehilite"><pre><span></span><span class="kd">private</span> <span class="n">Object</span> <span class="nf">deserialize</span><span class="o">(</span><span class="n">ByteString</span> <span class="n">byteString</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">,</span> <span class="n">ClassNotFoundException</span> <span class="o">{</span>
+  <span class="n">Buffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Buffer</span><span class="o">();</span>
+  <span class="n">buffer</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">byteString</span><span class="o">);</span>
+  <span class="k">try</span> <span class="o">(</span><span class="n">ObjectInputStream</span> <span class="n">objectIn</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectInputStream</span><span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">inputStream</span><span class="o">()))</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">objectIn</span><span class="o">.</span><span class="na">readObject</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>Now we can test the decoder against the golden value:</p>
+<div class="codehilite"><pre><span></span><span class="n">ByteString</span> <span class="n">goldenBytes</span> <span class="o">=</span> <span class="n">ByteString</span><span class="o">.</span><span class="na">decodeBase64</span><span class="o">(</span><span class="s">&quot;rO0ABXNyAB5va2lvLnNhbXBsZ&quot;</span>
+    <span class="o">+</span> <span class="s">&quot;XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA&quot;</span>
+    <span class="o">+</span> <span class="s">&quot;AAAAAAA&quot;</span><span class="o">);</span>
+<span class="n">Point</span> <span class="n">decoded</span> <span class="o">=</span> <span class="o">(</span><span class="n">Point</span><span class="o">)</span> <span class="n">deserialize</span><span class="o">(</span><span class="n">goldenBytes</span><span class="o">);</span>
+<span class="n">assertEquals</span><span class="o">(</span><span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mf">8.0</span><span class="o">,</span> <span class="mf">15.0</span><span class="o">),</span> <span class="n">decoded</span><span class="o">);</span>
+</pre></div>
+
+<p>With this test we can change the serialization of the <code>Point</code> class without
+breaking compatibility.</p>
+<h3 id="write-a-binary-file"><a href="https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/BitmapEncoder.java">Write a binary file</a><a class="headerlink" href="#write-a-binary-file" title="Permanent link">&para;</a></h3>
+<p>Encoding a binary file is not unlike encoding a text file. Okio uses the same
+<code>BufferedSink</code> and <code>BufferedSource</code> bytes for both. This is handy for binary
+formats that include both byte and character data.</p>
+<p>Writing binary data is more hazardous than text because if you make a mistake it
+is often quite difficult to diagnose. Avoid such mistakes by being careful
+around these traps:</p>
+<ul>
+<li>
+<p><strong>The width of each field.</strong> This is the number of bytes used. Okio doesn&rsquo;t
+   include a mechanism to emit partial bytes. If you need that, you’ll need to
+   do your own bit shifting and masking before writing.</p>
+</li>
+<li>
+<p><strong>The endianness of each field.</strong> All fields that have more than one byte
+   have <em>endianness</em>: whether the bytes are ordered most-significant to least
+   (big endian) or least-significant to most (little endian). Okio uses the <code>Le</code>
+   suffix for little-endian methods; methods without a suffix are big-endian.</p>
+</li>
+<li>
+<p><strong>Signed vs. Unsigned.</strong> Java doesn’t have unsigned primitive types (except
+   for <code>char</code>!) so coping with this is often something that happens at the
+   application layer. To make this a little easier Okio accepts <code>int</code> types for
+   <code>writeByte()</code> and <code>writeShort()</code>. You can pass an “unsigned” byte like 255
+   and Okio will do the right thing.</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">Method</th>
+<th align="right">Width</th>
+<th align="left">Endianness</th>
+<th align="right">Value</th>
+<th align="left">Encoded Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">writeByte</td>
+<td align="right">1</td>
+<td align="left"></td>
+<td align="right">3</td>
+<td align="left"><code>03</code></td>
+</tr>
+<tr>
+<td align="left">writeShort</td>
+<td align="right">2</td>
+<td align="left">big</td>
+<td align="right">3</td>
+<td align="left"><code>00 03</code></td>
+</tr>
+<tr>
+<td align="left">writeInt</td>
+<td align="right">4</td>
+<td align="left">big</td>
+<td align="right">3</td>
+<td align="left"><code>00 00 00 03</code></td>
+</tr>
+<tr>
+<td align="left">writeLong</td>
+<td align="right">8</td>
+<td align="left">big</td>
+<td align="right">3</td>
+<td align="left"><code>00 00 00 00 00 00 00 03</code></td>
+</tr>
+<tr>
+<td align="left">writeShortLe</td>
+<td align="right">2</td>
+<td align="left">little</td>
+<td align="right">3</td>
+<td align="left"><code>03 00</code></td>
+</tr>
+<tr>
+<td align="left">writeIntLe</td>
+<td align="right">4</td>
+<td align="left">little</td>
+<td align="right">3</td>
+<td align="left"><code>03 00 00 00</code></td>
+</tr>
+<tr>
+<td align="left">writeLongLe</td>
+<td align="right">8</td>
+<td align="left">little</td>
+<td align="right">3</td>
+<td align="left"><code>03 00 00 00 00 00 00 00</code></td>
+</tr>
+<tr>
+<td align="left">writeByte</td>
+<td align="right">1</td>
+<td align="left"></td>
+<td align="right">Byte.MAX_VALUE</td>
+<td align="left"><code>7f</code></td>
+</tr>
+<tr>
+<td align="left">writeShort</td>
+<td align="right">2</td>
+<td align="left">big</td>
+<td align="right">Short.MAX_VALUE</td>
+<td align="left"><code>7f ff</code></td>
+</tr>
+<tr>
+<td align="left">writeInt</td>
+<td align="right">4</td>
+<td align="left">big</td>
+<td align="right">Int.MAX_VALUE</td>
+<td align="left"><code>7f ff ff ff</code></td>
+</tr>
+<tr>
+<td align="left">writeLong</td>
+<td align="right">8</td>
+<td align="left">big</td>
+<td align="right">Long.MAX_VALUE</td>
+<td align="left"><code>7f ff ff ff ff ff ff ff</code></td>
+</tr>
+<tr>
+<td align="left">writeShortLe</td>
+<td align="right">2</td>
+<td align="left">little</td>
+<td align="right">Short.MAX_VALUE</td>
+<td align="left"><code>ff 7f</code></td>
+</tr>
+<tr>
+<td align="left">writeIntLe</td>
+<td align="right">4</td>
+<td align="left">little</td>
+<td align="right">Int.MAX_VALUE</td>
+<td align="left"><code>ff ff ff 7f</code></td>
+</tr>
+<tr>
+<td align="left">writeLongLe</td>
+<td align="right">8</td>
+<td align="left">little</td>
+<td align="right">Long.MAX_VALUE</td>
+<td align="left"><code>ff ff ff ff ff ff ff 7f</code></td>
+</tr>
+</tbody>
+</table>
+<p>This code encodes a bitmap following the <a href="https://en.wikipedia.org/wiki/BMP_file_format">BMP file format</a>.</p>
+<div class="codehilite"><pre><span></span><span class="kt">void</span> <span class="nf">encode</span><span class="o">(</span><span class="n">Bitmap</span> <span class="n">bitmap</span><span class="o">,</span> <span class="n">BufferedSink</span> <span class="n">sink</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+  <span class="kt">int</span> <span class="n">height</span> <span class="o">=</span> <span class="n">bitmap</span><span class="o">.</span><span class="na">height</span><span class="o">();</span>
+  <span class="kt">int</span> <span class="n">width</span> <span class="o">=</span> <span class="n">bitmap</span><span class="o">.</span><span class="na">width</span><span class="o">();</span>
+
+  <span class="kt">int</span> <span class="n">bytesPerPixel</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
+  <span class="kt">int</span> <span class="n">rowByteCountWithoutPadding</span> <span class="o">=</span> <span class="o">(</span><span class="n">bytesPerPixel</span> <span class="o">*</span> <span class="n">width</span><span class="o">);</span>
+  <span class="kt">int</span> <span class="n">rowByteCount</span> <span class="o">=</span> <span class="o">((</span><span class="n">rowByteCountWithoutPadding</span> <span class="o">+</span> <span class="mi">3</span><span class="o">)</span> <span class="o">/</span> <span class="mi">4</span><span class="o">)</span> <span class="o">*</span> <span class="mi">4</span><span class="o">;</span>
+  <span class="kt">int</span> <span class="n">pixelDataSize</span> <span class="o">=</span> <span class="n">rowByteCount</span> <span class="o">*</span> <span class="n">height</span><span class="o">;</span>
+  <span class="kt">int</span> <span class="n">bmpHeaderSize</span> <span class="o">=</span> <span class="mi">14</span><span class="o">;</span>
+  <span class="kt">int</span> <span class="n">dibHeaderSize</span> <span class="o">=</span> <span class="mi">40</span><span class="o">;</span>
+
+  <span class="c1">// BMP Header</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeUtf8</span><span class="o">(</span><span class="s">&quot;BM&quot;</span><span class="o">);</span> <span class="c1">// ID.</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="n">bmpHeaderSize</span> <span class="o">+</span> <span class="n">dibHeaderSize</span> <span class="o">+</span> <span class="n">pixelDataSize</span><span class="o">);</span> <span class="c1">// File size.</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeShortLe</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span> <span class="c1">// Unused.</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeShortLe</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span> <span class="c1">// Unused.</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="n">bmpHeaderSize</span> <span class="o">+</span> <span class="n">dibHeaderSize</span><span class="o">);</span> <span class="c1">// Offset of pixel data.</span>
+
+  <span class="c1">// DIB Header</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="n">dibHeaderSize</span><span class="o">);</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="n">width</span><span class="o">);</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="n">height</span><span class="o">);</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeShortLe</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>  <span class="c1">// Color plane count.</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeShortLe</span><span class="o">(</span><span class="n">bytesPerPixel</span> <span class="o">*</span> <span class="n">Byte</span><span class="o">.</span><span class="na">SIZE</span><span class="o">);</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>    <span class="c1">// No compression.</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="mi">16</span><span class="o">);</span>   <span class="c1">// Size of bitmap data including padding.</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="mi">2835</span><span class="o">);</span> <span class="c1">// Horizontal print resolution in pixels/meter. (72 dpi).</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="mi">2835</span><span class="o">);</span> <span class="c1">// Vertical print resolution in pixels/meter. (72 dpi).</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>    <span class="c1">// Palette color count.</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">writeIntLe</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>    <span class="c1">// 0 important colors.</span>
+
+  <span class="c1">// Pixel data.</span>
+  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">y</span><span class="o">--)</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">width</span><span class="o">;</span> <span class="n">x</span><span class="o">++)</span> <span class="o">{</span>
+      <span class="n">sink</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">bitmap</span><span class="o">.</span><span class="na">blue</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">y</span><span class="o">));</span>
+      <span class="n">sink</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">bitmap</span><span class="o">.</span><span class="na">green</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">y</span><span class="o">));</span>
+      <span class="n">sink</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">bitmap</span><span class="o">.</span><span class="na">red</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">y</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="c1">// Padding for 4-byte alignment.</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">p</span> <span class="o">=</span> <span class="n">rowByteCountWithoutPadding</span><span class="o">;</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="n">rowByteCount</span><span class="o">;</span> <span class="n">p</span><span class="o">++)</span> <span class="o">{</span>
+      <span class="n">sink</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>The trickiest part of this program is the format’s required padding. The BMP
+format expects each row to begin on a 4-byte boundary so it is necessary to add
+zeros to maintain the alignment.</p>
+<p>Encoding other binary formats is usually quite similar. Some tips:</p>
+<ul>
+<li>Write tests with golden values! Confirming that your program emits the
+   expected result can make debugging easier.</li>
+<li>Use <code>Utf8.size()</code> to compute the number of bytes of an encoded string. This
+   is essential for length-prefixed formats.</li>
+<li>Use <code>Float.floatToIntBits()</code> and <code>Double.doubleToLongBits()</code> to encode
+   floating point values.</li>
+</ul>
+<h3 id="communicate-on-a-socket"><a href="https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/SocksProxyServer.java">Communicate on a Socket</a><a class="headerlink" href="#communicate-on-a-socket" title="Permanent link">&para;</a></h3>
+<p>Sending and receiving data over the network is a bit like writing and reading
+files. We use <code>BufferedSink</code> to encode output and <code>BufferedSource</code> to decode
+input. Like files, network protocols can be text, binary, or a mix of both. But
+there are also some substantial differences between the network and the
+filesystem.</p>
+<p>With a file you’re either reading or writing but with the network you can do
+both! Some protocols handle this by taking turns: write a request, read a
+response, repeat. You can implement this kind of protocol with a single thread.
+In other protocols you may read and write simultaneously. Typically you’ll want
+one dedicated thread for reading. For writing you can use either a dedicated
+thread or use <code>synchronized</code> so that multiple threads can share a sink. Okio’s
+streams are not safe for concurrent use.</p>
+<p>Sinks buffer outbound data to minimize I/O operations. This is efficient but it
+means you must manually call <code>flush()</code> to transmit data. Typically
+message-oriented protocols flush after each message. Note that Okio will
+automatically flush when the buffered data exceeds some threshold. This is
+intended to save memory and you shouldn’t rely on it for interactive protocols.</p>
+<p>Okio builds on <code>java.io.Socket</code> for connectivity. Create your socket as a server
+or as a client, then use <code>Okio.source(Socket)</code> to read and <code>Okio.sink(Socket)</code>
+to write. These APIs also work with <code>SSLSocket</code>. You should use SSL unless you
+have a very good reason not to!</p>
+<p>Cancel a socket from any thread by calling <code>Socket.close()</code>; this will cause its
+sources and sinks to immediately fail with an <code>IOException</code>. You can also
+configure timeouts for all socket operations. You don’t need a reference to the
+socket to adjust timeouts: <code>Source</code> and <code>Sink</code> expose timeouts directly. This
+API works even if the streams are decorated.</p>
+<p>As a complete example of networking with Okio we wrote a <a href="https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/SocksProxyServer.java">basic SOCKS
+proxy</a> server. Some highlights:</p>
+<div class="codehilite"><pre><span></span><span class="n">Socket</span> <span class="n">fromSocket</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">BufferedSource</span> <span class="n">fromSource</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">Okio</span><span class="o">.</span><span class="na">source</span><span class="o">(</span><span class="n">fromSocket</span><span class="o">));</span>
+<span class="n">BufferedSink</span> <span class="n">fromSink</span> <span class="o">=</span> <span class="n">Okio</span><span class="o">.</span><span class="na">buffer</span><span class="o">(</span><span class="n">Okio</span><span class="o">.</span><span class="na">sink</span><span class="o">(</span><span class="n">fromSocket</span><span class="o">));</span>
+</pre></div>
+
+<p>Creating sources and sinks for sockets is the same as creating them for files.
+Once you create a <code>Source</code> or <code>Sink</code> for a socket you must not use its
+<code>InputStream</code> or <code>OutputStream</code>, respectively.</p>
+<div class="codehilite"><pre><span></span><span class="n">Buffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Buffer</span><span class="o">();</span>
+<span class="k">for</span> <span class="o">(</span><span class="kt">long</span> <span class="n">byteCount</span><span class="o">;</span> <span class="o">(</span><span class="n">byteCount</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="mi">8192L</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span> <span class="o">)</span> <span class="o">{</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="n">byteCount</span><span class="o">);</span>
+  <span class="n">sink</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>The above loop copies data from the source to the sink, flushing after each
+read. If we didn’t need the flushing we could replace this loop with a single
+call to <code>BufferedSink.writeAll(Source)</code>.</p>
+<p>The <code>8192</code> argument to <code>read()</code> is the maximum number of bytes to read before
+returning. We could have passed any value here, but we like 8 KiB because that’s
+the largest value Okio can do in a single system call. Most of the time
+application code doesn’t need to deal with such limits!</p>
+<div class="codehilite"><pre><span></span><span class="kt">int</span> <span class="n">addressType</span> <span class="o">=</span> <span class="n">fromSource</span><span class="o">.</span><span class="na">readByte</span><span class="o">()</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="o">;</span>
+<span class="kt">int</span> <span class="n">port</span> <span class="o">=</span> <span class="n">fromSource</span><span class="o">.</span><span class="na">readShort</span><span class="o">()</span> <span class="o">&amp;</span> <span class="mh">0xffff</span><span class="o">;</span>
+</pre></div>
+
+<p>Okio uses signed types like <code>byte</code> and <code>short</code>, but often protocols want
+unsigned values. The bitwise <code>&amp;</code> operator is Java’s preferred idiom to convert
+a signed value into an unsigned value. Here’s a cheat sheet for bytes, shorts,
+and ints:</p>
+<table>
+<thead>
+<tr>
+<th align="left">Type</th>
+<th align="center">Signed Range</th>
+<th align="left">Unsigned Range</th>
+<th align="left">Signed to Unsigned</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">byte</td>
+<td align="center">-128..127</td>
+<td align="left">0..255</td>
+<td align="left"><code>int u = s &amp; 0xff;</code></td>
+</tr>
+<tr>
+<td align="left">short</td>
+<td align="center">-32,768..32,767</td>
+<td align="left">0..65,535</td>
+<td align="left"><code>int u = s &amp; 0xffff;</code></td>
+</tr>
+<tr>
+<td align="left">int</td>
+<td align="center">-2,147,483,648..2,147,483,647</td>
+<td align="left">0..4,294,967,295</td>
+<td align="left"><code>long u = s &amp; 0xffffffffL;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Java has no primitive type that can represent unsigned longs.</p>
+<h3 id="hashing"><a href="https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/Hashing.java">Hashing</a><a class="headerlink" href="#hashing" title="Permanent link">&para;</a></h3>
+<p>We’re bombarded by hashing in our lives as Java programmers. Early on we&rsquo;re introduced to the
+<code>hashCode()</code> method, something we know we need to override otherwise unforeseen bad things happen.
+Later we’re shown <code>LinkedHashMap</code> and its friends. These build on that <code>hashCode()</code> method to
+organize data for fast retrieval.</p>
+<p>Elsewhere we have cryptographic hash functions. These get used all over the place. HTTPS
+certificates, Git commits, BitTorrent integrity checking, and Blockchain blocks all use
+cryptographic hashes. Good use of hashes can improve the performance, privacy, security, and
+simplicity of an application.</p>
+<p>Each cryptographic hash function accepts a variable-length stream of input bytes and produces a
+fixed-length byte string value called the “hash”. Hash functions have these important qualities:</p>
+<ul>
+<li>Deterministic: each input always produces the same output.</li>
+<li>Uniform: each output byte string is equally likely. It is very difficult to find or create pairs
+   of different inputs that yield the same output. This is called a “collision”.</li>
+<li>Non-reversible: knowing an output doesn&rsquo;t help you to find the input. Note that if you know some
+   possible inputs you can hash them to see if their hashes match.</li>
+<li>Well-known: the hash is implemented everywhere and rigorously understood.</li>
+</ul>
+<p>Good hash functions are very cheap to compute (dozens of microseconds) and expensive to reverse
+(quintillions of millenia). Steady advances in computing and mathematics have caused once-great hash
+functions to become inexpensive to reverse. When choosing a hash function, beware that not all are
+created equal! Okio supports these well-known cryptographic hash functions:</p>
+<ul>
+<li><strong>MD5</strong>: a 128-bit (16 byte) cryptographic hash. It is both insecure and obsolete because it is
+   inexpensive to reverse! This hash is offered because it is popular and convenient for use in
+   legacy systems that are not security-sensitive.</li>
+<li><strong>SHA-1</strong>: a 160-bit (20 byte) cryptographic hash. It was recently demonstrated that it is
+   feasible to create SHA-1 collisions. Consider upgrading from SHA-1 to SHA-256.</li>
+<li><strong>SHA-256</strong>: a 256-bit (32 byte) cryptographic hash. SHA-256 is widely understood and expensive
+   to reverse. This is the hash most systems should use.</li>
+<li><strong>SHA-512</strong>: a 512-bit (64 byte) cryptographic hash. It is expensive to reverse.</li>
+</ul>
+<p>Each hash creates a <code>ByteString</code> of the specified length. Use <code>hex()</code> to get the conventional
+human-readable form. Or leave it as a <code>ByteString</code> because that’s a convenient model type!</p>
+<p>Okio can produce cryptographic hashes from byte strings:</p>
+<div class="codehilite"><pre><span></span>ByteString byteString = readByteString(new File(&quot;README.md&quot;));
+System.out.println(&quot;   md5: &quot; + byteString.md5().hex());
+System.out.println(&quot;  sha1: &quot; + byteString.sha1().hex());
+System.out.println(&quot;sha256: &quot; + byteString.sha256().hex());
+System.out.println(&quot;sha512: &quot; + byteString.sha512().hex());
+</pre></div>
+
+<p>From buffers:</p>
+<div class="codehilite"><pre><span></span>Buffer buffer = readBuffer(new File(&quot;README.md&quot;));
+System.out.println(&quot;   md5: &quot; + buffer.md5().hex());
+System.out.println(&quot;  sha1: &quot; + buffer.sha1().hex());
+System.out.println(&quot;sha256: &quot; + buffer.sha256().hex());
+System.out.println(&quot;sha512: &quot; + buffer.sha512().hex());
+</pre></div>
+
+<p>While streaming from a source:</p>
+<div class="codehilite"><pre><span></span>try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
+     BufferedSource source = Okio.buffer(Okio.source(file))) {
+  source.readAll(hashingSink);
+  System.out.println(&quot;sha256: &quot; + hashingSink.hash().hex());
+}
+</pre></div>
+
+<p>While streaming to a sink:</p>
+<div class="codehilite"><pre><span></span>try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
+     BufferedSink sink = Okio.buffer(hashingSink);
+     Source source = Okio.source(file)) {
+  sink.writeAll(source);
+  sink.close(); // Emit anything buffered.
+  System.out.println(&quot;sha256: &quot; + hashingSink.hash().hex());
+}
+</pre></div>
+
+<p>Okio also supports HMAC (Hash Message Authentication Code) which combines a secret and a hash.
+Applications use HMAC for data integrity and authentication.</p>
+<div class="codehilite"><pre><span></span>ByteString secret = ByteString.decodeHex(&quot;7065616e7574627574746572&quot;);
+System.out.println(&quot;hmacSha256: &quot; + byteString.hmacSha256(secret).hex());
+</pre></div>
+
+<p>As with hashing, you can generate an HMAC from a <code>ByteString</code>, <code>Buffer</code>, <code>HashingSource</code>, and
+<code>HashingSink</code>. Note that Okio doesn’t implement HMAC for MD5. Okio uses Java’s
+<code>java.security.MessageDigest</code> for cryptographic hashes and <code>javax.crypto.Mac</code> for HMAC.</p>
+<h2 id="download">Download<a class="headerlink" href="#download" title="Permanent link">&para;</a></h2>
+<p>Download <a href="https://search.maven.org/remote_content?g=com.squareup.okio&amp;a=okio&amp;v=LATEST">the latest JAR</a> or grab via Maven:
+<div class="codehilite"><pre><span></span><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>com.squareup.okio<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>okio<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>2.2.2<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+or Gradle:
+<div class="codehilite"><pre><span></span><span class="n">compile</span> <span class="s1">&#39;com.squareup.okio:okio:2.2.2&#39;</span>
+</pre></div></p>
+<p>Snapshots of the development version are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/">Sonatype&rsquo;s <code>snapshots</code> repository</a>.</p>
+<h2 id="r8-proguard">R8 / ProGuard<a class="headerlink" href="#r8-proguard" title="Permanent link">&para;</a></h2>
+<p>If you are using R8 or ProGuard add the options from <a href="https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro">this file</a>.</p>
+<h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span>Copyright 2013 Square, Inc.
+
+Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</pre></div>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+        
+          <a href="2.x/okio/okio/" title="2.x API" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                2.x API
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2019 Square, Inc.
+          </div>
+        
+        powered by
+        <a href="https://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="assets/javascripts/application.245445c6.js"></script>
+      
+      <script>app.initialize({version:"1.0.4",url:{base:"."}})</script>
+      
+    
+  </body>
+</html>
