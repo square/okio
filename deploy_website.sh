@@ -34,8 +34,7 @@ mkdocs gh-deploy
 
 # Restore Javadocs from 1.x
 git checkout gh-pages
-# TODO(jwilson): get a SHA with these docs.
-# git cherry-pick bb229b9dcc9a21a73edbf8d936bea88f52e0a3ff
+git cherry-pick bb229b9dcc9a21a73edbf8d936bea88f52e0a3ff
 git push
 
 # Delete our temp folder
