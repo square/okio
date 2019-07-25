@@ -15,6 +15,19 @@
  */
 package okio
 
+/**
+ * A collection of bytes in memory.
+ *
+ * **Moving data from one buffer to another is fast.** Instead of copying bytes from one place in
+ * memory to another, this class just changes ownership of the underlying byte arrays.
+ *
+ * **This buffer grows with your data.** Just like ArrayList, each buffer starts small. It consumes
+ * only the memory it needs to.
+ *
+ * **This buffer pools its byte arrays.** When you allocate a byte array in Java, the runtime must
+ * zero-fill the requested array before returning it to you. Even if you're going to write over that
+ * space anyway. This class avoids zero-fill and GC churn by pooling byte arrays.
+ */
 expect class Buffer() : BufferedSource, BufferedSink {
   internal var head: Segment?
 
@@ -27,6 +40,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
 
   override fun emit(): Buffer
 
+  /** Copy `byteCount` bytes from this, starting at `offset`, to `out`.  */
   fun copyTo(
     out: Buffer,
     offset: Long = 0L,
@@ -48,7 +62,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    */
   fun completeSegmentByteCount(): Long
 
-  /** Returns the byte at `pos`.  */
+  /** Returns the byte at `pos`. */
   operator fun get(pos: Long): Byte
 
   fun clear()
