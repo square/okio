@@ -55,19 +55,6 @@ import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-/**
- * An immutable sequence of bytes.
- *
- * Byte strings compare lexicographically as a sequence of **unsigned** bytes. That is, the byte
- * string `ff` sorts after `00`. This is counter to the sort order of the corresponding bytes,
- * where `-1` sorts before `0`.
- *
- * **Full disclosure:** this class provides untrusted input and output streams with raw access to
- * the underlying byte array. A hostile stream implementation could keep a reference to the mutable
- * byte string, violating the immutable guarantee of this class. For this reason a byte string's
- * immutability guarantee cannot be relied upon for security in applets and other environments that
- * run both trusted and untrusted code in the same process.
- */
 actual open class ByteString
 // Trusted internal constructor doesn't clone data.
 internal actual constructor(
@@ -76,16 +63,11 @@ internal actual constructor(
   @Transient internal actual var hashCode: Int = 0 // Lazily computed; 0 if unknown.
   @Transient internal actual var utf8: String? = null // Lazily computed.
 
-  /** Constructs a new `String` by decoding the bytes as `UTF-8`.  */
   actual open fun utf8(): String = commonUtf8()
 
   /** Constructs a new `String` by decoding the bytes using `charset`.  */
   open fun string(charset: Charset) = String(data, charset)
 
-  /**
-   * Returns this byte string encoded as [Base64](http://www.ietf.org/rfc/rfc2045.txt). In violation
-   * of the RFC, the returned string does not wrap lines at 76 columns.
-   */
   actual open fun base64() = commonBase64()
 
   /** Returns the 128-bit MD5 hash of this byte string.  */
@@ -122,48 +104,31 @@ internal actual constructor(
     }
   }
 
-  /** Returns this byte string encoded as [URL-safe Base64](http://www.ietf.org/rfc/rfc4648.txt). */
   actual open fun base64Url() = commonBase64Url()
 
-  /** Returns this byte string encoded in hexadecimal.  */
   actual open fun hex(): String = commonHex()
 
-  /**
-   * Returns a byte string equal to this byte string, but with the bytes 'A' through 'Z' replaced
-   * with the corresponding byte in 'a' through 'z'. Returns this byte string if it contains no
-   * bytes in 'A' through 'Z'.
-   */
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()
 
-  /**
-   * Returns a byte string equal to this byte string, but with the bytes 'a' through 'z' replaced
-   * with the corresponding byte in 'A' through 'Z'. Returns this byte string if it contains no
-   * bytes in 'a' through 'z'.
-   */
   actual open fun toAsciiUppercase(): ByteString = commonToAsciiUppercase()
 
   @JvmOverloads
   actual open fun substring(beginIndex: Int, endIndex: Int): ByteString =
       commonSubstring(beginIndex, endIndex)
 
-  /** Returns the byte at `pos`.  */
   internal actual open fun internalGet(pos: Int) = commonGetByte(pos)
 
-  /** Returns the byte at `index`.  */
   @JvmName("getByte")
   actual operator fun get(index: Int): Byte = internalGet(index)
 
-  /** Returns the number of bytes in this ByteString. */
   actual val size
     @JvmName("size") get() = getSize()
 
   // Hack to work around Kotlin's limitation for using JvmName on open/override vals/funs
   internal actual open fun getSize() = commonGetSize()
 
-  /** Returns a byte array containing a copy of the bytes in this `ByteString`. */
   actual open fun toByteArray() = commonToByteArray()
 
-  /** Returns the bytes of this string without a defensive copy. Do not mutate!  */
   internal actual open fun internalArray() = commonInternalArray()
 
   /** Returns a `ByteBuffer` view of the bytes in this `ByteString`. */
@@ -177,10 +142,6 @@ internal actual constructor(
 
   internal actual open fun write(buffer: Buffer) = commonWrite(buffer)
 
-  /**
-   * Returns true if the bytes of this in `[offset..offset+byteCount)` equal the bytes of `other` in
-   * `[otherOffset..otherOffset+byteCount)`. Returns false if either range is out of bounds.
-   */
   actual open fun rangeEquals(
     offset: Int,
     other: ByteString,
@@ -188,10 +149,6 @@ internal actual constructor(
     byteCount: Int
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
 
-  /**
-   * Returns true if the bytes of this in `[offset..offset+byteCount)` equal the bytes of `other` in
-   * `[otherOffset..otherOffset+byteCount)`. Returns false if either range is out of bounds.
-   */
   actual open fun rangeEquals(
     offset: Int,
     other: ByteArray,
@@ -225,10 +182,6 @@ internal actual constructor(
 
   actual override fun compareTo(other: ByteString) = commonCompareTo(other)
 
-  /**
-   * Returns a human-readable string that describes the contents of this byte string. Typically this
-   * is a string like `[text=Hello]` or `[hex=0000ffff]`.
-   */
   actual override fun toString() = commonToString()
 
   @Throws(IOException::class)
@@ -263,11 +216,9 @@ internal actual constructor(
   actual companion object {
     private const val serialVersionUID = 1L
 
-    /** A singleton empty `ByteString`.  */
     @JvmField
     actual val EMPTY: ByteString = ByteString(byteArrayOf())
 
-    /** Returns a new byte string containing a clone of the bytes of `data`. */
     @JvmStatic
     actual fun of(vararg data: Byte) = commonOf(data)
 
@@ -285,7 +236,6 @@ internal actual constructor(
       return ByteString(copy)
     }
 
-    /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
     @JvmStatic
     actual fun String.encodeUtf8(): ByteString = commonEncodeUtf8()
 
@@ -294,14 +244,9 @@ internal actual constructor(
     @JvmName("encodeString")
     fun String.encode(charset: Charset = Charsets.UTF_8) = ByteString(toByteArray(charset))
 
-    /**
-     * Decodes the Base64-encoded bytes and returns their value as a byte string. Returns null if
-     * this is not a Base64-encoded sequence of bytes.
-     */
     @JvmStatic
     actual fun String.decodeBase64() = commonDecodeBase64()
 
-    /** Decodes the hex-encoded bytes and returns their value a byte string.  */
     @JvmStatic
     actual fun String.decodeHex() = commonDecodeHex()
 

@@ -15,7 +15,6 @@
  */
 package okio
 
-import okio.internal.HEX_DIGIT_BYTES
 import okio.internal.commonClear
 import okio.internal.commonCompleteSegmentByteCount
 import okio.internal.commonCopyTo
@@ -66,19 +65,6 @@ import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-/**
- * A collection of bytes in memory.
- *
- * **Moving data from one buffer to another is fast.** Instead of copying bytes from one place in
- * memory to another, this class just changes ownership of the underlying byte arrays.
- *
- * **This buffer grows with your data.** Just like ArrayList, each buffer starts small. It consumes
- * only the memory it needs to.
- *
- * **This buffer pools its byte arrays.** When you allocate a byte array in Java, the runtime must
- * zero-fill the requested array before returning it to you. Even if you're going to write over that
- * space anyway. This class avoids zero-fill and GC churn by pooling byte arrays.
- */
 actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @JvmField internal actual var head: Segment? = null
 
@@ -180,17 +166,12 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return this
   }
 
-  /** Copy `byteCount` bytes from this, starting at `offset`, to `out`.  */
   actual fun copyTo(
     out: Buffer,
     offset: Long,
     byteCount: Long
   ): Buffer = commonCopyTo(out, offset, byteCount)
 
-  /**
-   * Overload of [copyTo] with byteCount = size - offset, work around for
-   *  https://youtrack.jetbrains.com/issue/KT-30847
-   */
   actual fun copyTo(
     out: Buffer,
     offset: Long
@@ -255,16 +236,11 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     }
   }
 
-  /**
-   * Returns the number of bytes in segments that are not writable. This is the number of bytes that
-   * can be flushed immediately to an underlying sink without harming throughput.
-   */
   actual fun completeSegmentByteCount(): Long = commonCompleteSegmentByteCount()
 
   @Throws(EOFException::class)
   override fun readByte(): Byte = commonReadByte()
 
-  /** Returns the byte at `pos`.  */
   @JvmName("getByte")
   actual operator fun get(pos: Long): Byte = commonGet(pos)
 
@@ -593,10 +569,8 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return result
   }
 
-  /** Returns an immutable copy of this buffer as a byte string.  */
   actual fun snapshot(): ByteString = commonSnapshot()
 
-  /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
   actual fun snapshot(byteCount: Int): ByteString = commonSnapshot(byteCount)
 
   @JvmOverloads fun readUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor {
