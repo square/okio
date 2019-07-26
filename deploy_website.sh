@@ -34,7 +34,7 @@ mkdocs gh-deploy
 
 # Restore Javadocs from 1.x
 git checkout gh-pages
-git cherry-pick bb229b9dcc9a21a73edbf8d936bea88f52e0a3ff
+git cherry-pick b3205fa199a19d6fbf13ee5c8e0c3d6d2b15b05f
 git push
 
 # Delete our temp folder
