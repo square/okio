@@ -18,6 +18,7 @@ package okio
 
 import okio.internal.commonAsUtf8ToByteArray
 import okio.internal.commonToUtf8String
+import kotlin.reflect.KClass
 
 internal actual fun ByteArray.toUtf8String(): String = commonToUtf8String()
 
@@ -32,3 +33,13 @@ internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R = bloc
 actual open class IOException actual constructor(message: String?) : Exception(message)
 
 actual open class EOFException actual constructor(message: String?) : IOException(message)
+
+actual annotation class Throws(actual vararg val exceptionClasses: KClass<out Throwable>)
+
+actual interface Closeable {
+  actual fun close()
+}
+
+actual interface Flushable {
+  actual fun flush()
+}

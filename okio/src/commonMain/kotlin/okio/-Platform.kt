@@ -16,6 +16,8 @@
 
 package okio
 
+import kotlin.reflect.KClass
+
 internal expect fun ByteArray.toUtf8String(): String
 
 internal expect fun String.asUtf8ToByteArray(): ByteArray
@@ -28,3 +30,15 @@ internal expect inline fun <R> synchronized(lock: Any, block: () -> R): R
 expect open class IOException(message: String? = null) : Exception
 
 expect open class EOFException(message: String? = null) : IOException
+
+expect annotation class Throws(vararg val exceptionClasses: KClass<out Throwable>)
+
+expect interface Closeable {
+  @Throws(IOException::class)
+  fun close()
+}
+
+expect interface Flushable {
+  @Throws(IOException::class)
+  fun flush()
+}

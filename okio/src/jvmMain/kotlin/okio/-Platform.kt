@@ -31,3 +31,9 @@ internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R {
 actual typealias IOException = java.io.IOException
 
 actual typealias EOFException = java.io.EOFException
+
+actual typealias Throws = kotlin.jvm.Throws
+
+actual typealias Closeable = java.io.Closeable
+
+actual typealias Flushable = java.io.Flushable

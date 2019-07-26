@@ -35,3 +35,13 @@ internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R = bloc
 actual open class IOException actual constructor(message: String?) : Exception(message)
 
 actual open class EOFException actual constructor(message: String?) : IOException(message)
+
+actual typealias Throws = kotlin.native.Throws
+
+actual interface Closeable {
+  actual fun close()
+}
+
+actual interface Flushable {
+  actual fun flush()
+}
