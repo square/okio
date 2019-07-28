@@ -16,6 +16,7 @@
 package okio
 
 import kotlin.random.Random
+import kotlin.test.assertEquals
 
 fun Char.repeat(count: Int): String {
   return toString().repeat(count)
@@ -31,6 +32,17 @@ fun segmentSizes(buffer: Buffer): List<Int> {
     segment = segment.next!!
   }
   return sizes
+}
+
+fun assertArrayEquals(a: ByteArray, b: ByteArray) {
+  assertEquals(a.contentToString(), b.contentToString())
+}
+
+fun randomBytes(length: Int): ByteString {
+  val random = Random(0)
+  val randomBytes = ByteArray(length)
+  random.nextBytes(randomBytes)
+  return ByteString.of(*randomBytes)
 }
 
 fun bufferWithRandomSegmentLayout(dice: Random, data: ByteArray): Buffer {

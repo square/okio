@@ -17,6 +17,7 @@ package okio
 
 import okio.internal.commonClear
 import okio.internal.commonCompleteSegmentByteCount
+import okio.internal.commonCopy
 import okio.internal.commonCopyTo
 import okio.internal.commonEquals
 import okio.internal.commonGet
@@ -184,7 +185,7 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun writeShort(s: Int): Buffer = commonWriteShort(s)
 
-  actual override fun writeShortLe(s: Int): Buffer = writeShort(s.reverseBytes())
+  actual override fun writeShortLe(s: Int): Buffer = writeShort(s.toShort().reverseBytes().toInt())
 
   actual override fun writeInt(i: Int): Buffer = commonWriteInt(i)
 
@@ -246,6 +247,9 @@ actual class Buffer : BufferedSource, BufferedSink {
    * is a string like `[text=Hello]` or `[hex=0000ffff]`.
    */
   override fun toString() = snapshot().toString()
+
+  /** Returns a deep copy of this buffer. */
+  actual fun copy(): Buffer = commonCopy()
 
   /** Returns an immutable copy of this buffer as a byte string.  */
   actual fun snapshot(): ByteString = commonSnapshot()

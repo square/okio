@@ -17,6 +17,7 @@ package okio
 
 import okio.internal.commonClear
 import okio.internal.commonCompleteSegmentByteCount
+import okio.internal.commonCopy
 import okio.internal.commonCopyTo
 import okio.internal.commonEquals
 import okio.internal.commonGet
@@ -555,22 +556,11 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    */
   override fun toString() = snapshot().toString()
 
-  /** Returns a deep copy of this buffer.  */
-  public override fun clone(): Buffer {
-    val result = Buffer()
-    if (size == 0L) return result
+  /** Returns a deep copy of this buffer. */
+  actual fun copy(): Buffer = commonCopy()
 
-    result.head = head!!.sharedCopy()
-    result.head!!.prev = result.head
-    result.head!!.next = result.head!!.prev
-    var s = head!!.next
-    while (s !== head) {
-      result.head!!.prev!!.push(s!!.sharedCopy())
-      s = s.next
-    }
-    result.size = size
-    return result
-  }
+  /** Returns a deep copy of this buffer. */
+  public override fun clone(): Buffer = copy()
 
   actual fun snapshot(): ByteString = commonSnapshot()
 

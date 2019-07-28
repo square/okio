@@ -13,10 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package okio
 
-actual fun Source.buffer(): BufferedSource = RealBufferedSource(this)
+internal interface BufferedSinkFactory {
 
-actual fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
+  fun create(data: Buffer): BufferedSink
 
-actual fun blackholeSink(): Sink = BlackholeSink()
+  companion object {
+    val BUFFER: BufferedSinkFactory = object : BufferedSinkFactory {
+      override fun create(data: Buffer): BufferedSink {
+        return data
+      }
+    }
+
+    val REAL_BUFFERED_SINK: BufferedSinkFactory = object : BufferedSinkFactory {
+      override fun create(data: Buffer): BufferedSink {
+        return (data as Sink).buffer()
+      }
+    }
+  }
+}
