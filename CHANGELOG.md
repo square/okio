@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+### Version 2.3.0
+
+_2019-07-29_
+
+**This release changes our build from Kotlin-JVM to Kotlin-multiplatform (which includes JVM).**
+Both native and JavaScript platforms are unstable preview releases and subject to
+backwards-incompatible changes in forthcoming releases.
+
+To try Okio in a multiplatform project use this Maven coordinate:
+
+    ```kotlin
+    api('com.squareup.okio:okio-multiplatform:2.3.0')
+    ```
+
+You’ll also need to [enable Gradle metadata][gradle_metadata] in your project's settings. The
+artifact name for JVM projects has not changed.
+
+ * New: Upgrade to Kotlin 1.3.40.
+ * Fix: Use Gradle `api` instead of `implementation` for the kotlin-stdlib dependency.
+ * Fix: Don't block unless strictly necessary in `BufferedSource.peek()`.
+
 ## Version 1.17.4
 
 _2019-04-29_
@@ -463,3 +484,4 @@ _2014-04-08_
 
  [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
  [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
+ [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
