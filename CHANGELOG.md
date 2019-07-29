@@ -11,9 +11,9 @@ backwards-incompatible changes in forthcoming releases.
 
 To try Okio in a multiplatform project use this Maven coordinate:
 
-    ```kotlin
-    api('com.squareup.okio:okio-multiplatform:2.3.0')
-    ```
+```kotlin
+api('com.squareup.okio:okio-multiplatform:2.3.0')
+```
 
 You’ll also need to [enable Gradle metadata][gradle_metadata] in your project's settings. The
 artifact name for JVM projects has not changed.
