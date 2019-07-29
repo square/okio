@@ -12,20 +12,11 @@ kotlin {
     }
     nodejs()
   }
-  iosX64() {
-    binaries {
-      framework()
-    }
-  }
-  iosArm64() {
-    binaries {
-      framework()
-    }
-  }
+  iosX64()
+  iosArm64()
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
   linuxX64()
   macosX64()
-  mingwX64('winX64')
   sourceSets {
     commonMain {
       dependencies {
@@ -68,10 +59,10 @@ kotlin {
       dependsOn commonTest
     }
 
-    configure([iosX64Main, iosArm64Main, linuxX64Main, macosX64Main, winX64Main]) {
+    configure([iosX64Main, iosArm64Main, linuxX64Main, macosX64Main]) {
       dependsOn nativeMain
     }
-    configure([iosX64Test, iosArm64Test, linuxX64Test, macosX64Test, winX64Test]) {
+    configure([iosX64Test, iosArm64Test, linuxX64Test, macosX64Test]) {
       dependsOn nativeTest
     }
   }
