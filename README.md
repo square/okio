@@ -636,28 +636,23 @@ As with hashing, you can generate an HMAC from a `ByteString`, `Buffer`, `Hashin
 `java.security.MessageDigest` for cryptographic hashes and `javax.crypto.Mac` for HMAC.
 
 
-Download
+Releases
 --------
 
-Download [the latest JAR][2] or grab via Maven:
-```xml
-<dependency>
-    <groupId>com.squareup.okio</groupId>
-    <artifactId>okio</artifactId>
-    <version>2.2.2</version>
-</dependency>
-```
-or Gradle:
-```groovy
-compile 'com.squareup.okio:okio:2.2.2'
+Our [change log][changelog] has release history.
+
+```kotlin
+implementation("com.squareup.okio:okio:2.3.0")
 ```
 
-Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+Snapshot builds are [available][snap].
+
 
 R8 / ProGuard
 --------
 
 If you are using R8 or ProGuard add the options from [this file](https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro).
+
 
 License
 --------
@@ -677,13 +672,13 @@ License
     limitations under the License.
     
  [1]: https://github.com/square/okhttp
- [2]: https://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=LATEST
  [3]: https://square.github.io/okio/2.x/okio/jvm/okio/-byte-string/index.html
  [4]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffer/index.html
  [5]: https://square.github.io/okio/2.x/okio/jvm/okio/-source/index.html
  [6]: https://square.github.io/okio/2.x/okio/jvm/okio/-sink/index.html
  [7]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-source/index.html
  [8]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-sink/index.html
+ [changelog]: http://square.github.io/okio/changelog/
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
  [javadoc]: https://square.github.io/okio/2.x/okio/jvm/okio/index.html
  [nfd]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD

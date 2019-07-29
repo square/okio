@@ -19,7 +19,7 @@ Releasing
     sed -i "" \
       "s/\"com.squareup.okio:\([^\:]*\):[^\"]*\"/\"com.squareup.okio:\1:$RELEASE_VERSION\"/g" \
       `find . -name "README.md"`
-    ./gradlew clean uploadArchives
+    ./gradlew clean publish
     ```
 
 4. Visit [Sonatype Nexus](https://oss.sonatype.org/) to promote the artifact. Or drop it if there is a problem!
