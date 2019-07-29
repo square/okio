@@ -7,7 +7,9 @@ kotlin {
   js() {
     configure([compilations.main, compilations.test]) {
       tasks.getByName(compileKotlinTaskName).kotlinOptions {
-        moduleKind = "commonjs"
+        moduleKind = "umd"
+        sourceMap = true
+        metaInfo = true
       }
     }
     nodejs()
