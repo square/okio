@@ -30,7 +30,6 @@ import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import java.security.MessageDigest
-import java.util.Arrays
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 

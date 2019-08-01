@@ -319,15 +319,15 @@ class CommonBufferTest {
    */
   @Test fun readAllWritesAllSegmentsAtOnce() {
     val write1 = Buffer().writeUtf8(
-      'a'.repeat(Segment.SIZE)
-          + 'b'.repeat(Segment.SIZE)
-          + 'c'.repeat(Segment.SIZE)
+      'a'.repeat(Segment.SIZE) +
+        'b'.repeat(Segment.SIZE) +
+        'c'.repeat(Segment.SIZE)
     )
 
     val source = Buffer().writeUtf8(
-      'a'.repeat(Segment.SIZE)
-          + 'b'.repeat(Segment.SIZE)
-          + 'c'.repeat(Segment.SIZE)
+      'a'.repeat(Segment.SIZE) +
+        'b'.repeat(Segment.SIZE) +
+        'c'.repeat(Segment.SIZE)
     )
 
     val mockSink = MockSink()
