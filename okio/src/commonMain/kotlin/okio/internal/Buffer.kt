@@ -579,7 +579,6 @@ internal inline fun Buffer.commonWrite(
   return this
 }
 
-
 internal inline fun Buffer.commonReadByteArray() = readByteArray(size)
 
 internal inline fun Buffer.commonReadByteArray(byteCount: Long): ByteArray {
@@ -772,7 +771,6 @@ internal inline fun Buffer.commonReadAll(sink: Sink): Long {
   return byteCount
 }
 
-
 internal inline fun Buffer.commonReadUtf8(byteCount: Long): String {
   require(byteCount >= 0 && byteCount <= Int.MAX_VALUE) { "byteCount: $byteCount" }
   if (size < byteCount) throw EOFException()
@@ -784,7 +782,6 @@ internal inline fun Buffer.commonReadUtf8(byteCount: Long): String {
 
     return readByteArray(byteCount).commonToUtf8String()
   }
-
 
   val result = s.data.commonToUtf8String(s.pos, s.pos + byteCount.toInt())
   s.pos += byteCount.toInt()

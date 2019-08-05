@@ -127,9 +127,9 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   @JvmOverloads
   fun indexOf(other: ByteArray, fromIndex: Int = 0): Int
 
-  fun lastIndexOf(other: ByteString, fromIndex: Int = size) : Int
+  fun lastIndexOf(other: ByteString, fromIndex: Int = size): Int
 
-  fun lastIndexOf(other: ByteArray, fromIndex: Int = size) : Int
+  fun lastIndexOf(other: ByteArray, fromIndex: Int = size): Int
 
   override fun equals(other: Any?): Boolean
 

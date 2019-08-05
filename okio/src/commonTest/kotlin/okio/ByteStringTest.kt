@@ -301,7 +301,6 @@ abstract class AbstractByteStringTest(
       fail()
     } catch (expected: IllegalArgumentException) {
     }
-
   }
 
   @Test fun encodeBase64() {

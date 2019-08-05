@@ -9,7 +9,7 @@ buildscript {
       'junit': '4.12',
       'assertj': '1.7.0',
       'shadowPlugin': '4.0.4',
-      'ktlintPlugin': '5.1.0',
+      'ktlintPlugin': '8.2.0',
   ]
 
   ext.deps = [
@@ -41,7 +41,7 @@ buildscript {
       'japicmp': 'me.champeau.gradle:japicmp-gradle-plugin:0.2.8',
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
-      'ktlint': "gradle.plugin.org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintPlugin}",
+      'ktlint': "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
