@@ -9,7 +9,6 @@ buildscript {
       'junit': '4.12',
       'assertj': '1.7.0',
       'shadowPlugin': '4.0.4',
-      'nodePlugin': '1.3.1',
       'ktlintPlugin': '8.2.0',
   ]
 
@@ -42,7 +41,6 @@ buildscript {
       'japicmp': 'me.champeau.gradle:japicmp-gradle-plugin:0.2.8',
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
-      'node': "com.moowork.gradle:gradle-node-plugin:${versions.nodePlugin}",
       'ktlint': "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
@@ -57,7 +55,6 @@ buildscript {
     classpath deps.dokka
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
-    classpath deps.node
     classpath deps.ktlint
   }
 
