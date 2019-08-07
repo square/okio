@@ -1,9 +1,12 @@
 package okio
 
 import okio.ByteString.Companion.decodeHex
+import okio.TestUtil.SEGMENT_SIZE
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 class Utf8TestKt {
   @Test fun onByteCharacters() {
@@ -11,6 +14,200 @@ class Utf8TestKt {
     assertEncoded("20", ' '.toInt())
     assertEncoded("7e", '~'.toInt())
     assertEncoded("7f", 0x7f) // Largest 1-byte character.
+  }
+
+  @Test fun twoByteCharacters() {
+    assertEncoded("c280", 0x0080) // Smallest 2-byte character.
+    assertEncoded("c3bf", 0x00ff)
+    assertEncoded("c480", 0x0100)
+    assertEncoded("dfbf", 0x07ff) // Largest 2-byte character.
+  }
+
+  @Test fun threeByteCharacters() {
+    assertEncoded("e0a080", 0x0800) // Smallest 3-byte character.
+    assertEncoded("e0bfbf", 0x0fff)
+    assertEncoded("e18080", 0x1000)
+    assertEncoded("e1bfbf", 0x1fff)
+    assertEncoded("ed8080", 0xd000)
+    assertEncoded("ed9fbf", 0xd7ff) // Largest character lower than the min surrogate.
+    assertEncoded("ee8080", 0xe000) // Smallest character greater than the max surrogate.
+    assertEncoded("eebfbf", 0xefff)
+    assertEncoded("ef8080", 0xf000)
+    assertEncoded("efbfbf", 0xffff) // Largest 3-byte character.
+  }
+
+  @Test fun fourByteCharacters() {
+    assertEncoded("f0908080", 0x010000) // Smallest surrogate pair.
+    assertEncoded("f48fbfbf", 0x10ffff) // Largest code point expressible by UTF-16.
+  }
+
+  @Test fun danglingHighSurrogate() {
+    assertStringEncoded("3f", "\ud800") // "?"
+  }
+
+  @Test fun lowSurrogateWithoutHighSurrogate() {
+    assertStringEncoded("3f", "\udc00") // "?"
+  }
+
+  @Test fun highSurrogateFollowedByNonSurrogate() {
+    assertStringEncoded("3f61", "\ud800\u0061") // "?a": Following character is too low.
+    assertStringEncoded("3fee8080", "\ud800\ue000") // "?\ue000": Following character is too high.
+  }
+
+  @Test fun doubleLowSurrogate() {
+    assertStringEncoded("3f3f", "\udc00\udc00") // "??"
+  }
+
+  @Test fun doubleHighSurrogate() {
+    assertStringEncoded("3f3f", "\ud800\ud800") // "??"
+  }
+
+  @Test fun highSurrogateLowSurrogate() {
+    assertStringEncoded("3f3f", "\udc00\ud800") // "??"
+  }
+
+  @Test fun multipleSegmentString() {
+    val a = TestUtil.repeat('a', SEGMENT_SIZE + SEGMENT_SIZE + 1)
+    val encoded = Buffer().writeUtf8(a)
+    val expected = Buffer().write(a.toByteArray(Charsets.UTF_8))
+    assertEquals(expected, encoded)
+  }
+
+  @Test fun stringSpansSegments() {
+    val buffer = Buffer()
+    val a = TestUtil.repeat('a', SEGMENT_SIZE - 1)
+    val b = "bb"
+    val c = TestUtil.repeat('c', SEGMENT_SIZE - 1)
+    buffer.writeUtf8(a)
+    buffer.writeUtf8(b)
+    buffer.writeUtf8(c)
+    assertEquals(a + b + c, buffer.readUtf8())
+  }
+
+  @Test fun readEmptyBufferThrowsEofException() {
+    val buffer = Buffer()
+    try {
+      buffer.readUtf8CodePoint()
+      fail()
+    } catch (expected: EOFException) {
+    }
+  }
+
+  @Test fun readLeadingContinuationByteReturnsReplacementCharacter() {
+    val buffer = Buffer()
+    buffer.writeByte(0xbf)
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertTrue(buffer.exhausted())
+  }
+
+  @Test fun readMissingContinuationBytesThrowsEofException() {
+    val buffer = Buffer()
+    buffer.writeByte(0xdf)
+    try {
+      buffer.readUtf8CodePoint()
+      fail()
+    } catch (expected: EOFException) {
+    }
+    assertFalse(buffer.exhausted()) // Prefix byte wasn't consumed.
+  }
+
+  @Test fun readTooLargeCodepointReturnsReplacementCharacter() {
+    // 5-byte and 6-byte code points are not supported.
+    val buffer = Buffer()
+    buffer.write("f888808080".decodeHex())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertTrue(buffer.exhausted())
+  }
+
+  @Test fun readNonContinuationBytesReturnsReplacementCharacter() {
+    // Use a non-continuation byte where a continuation byte is expected.
+    val buffer = Buffer()
+    buffer.write("df20".decodeHex())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertEquals(0x20, buffer.readUtf8CodePoint().toLong()) // Non-continuation character not consumed.
+    assertTrue(buffer.exhausted())
+  }
+
+  @Test fun readCodePointBeyondUnicodeMaximum() {
+    // A 4-byte encoding with data above the U+10ffff Unicode maximum.
+    val buffer = Buffer()
+    buffer.write("f4908080".decodeHex())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertTrue(buffer.exhausted())
+  }
+
+  @Test fun readSurrogateCodePoint() {
+    val buffer = Buffer()
+    buffer.write("eda080".decodeHex())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertTrue(buffer.exhausted())
+    buffer.write("edbfbf".decodeHex())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertTrue(buffer.exhausted())
+  }
+
+  @Test fun readOverlongCodePoint() {
+    // Use 2 bytes to encode data that only needs 1 byte.
+    val buffer = Buffer()
+    buffer.write("c080".decodeHex())
+    assertEquals(REPLACEMENT_CODE_POINT.toLong(), buffer.readUtf8CodePoint().toLong())
+    assertTrue(buffer.exhausted())
+  }
+
+  @Test fun writeSurrogateCodePoint() {
+    assertStringEncoded("ed9fbf", "\ud7ff") // Below lowest surrogate is okay.
+    assertStringEncoded("3f", "\ud800") // Lowest surrogate gets '?'.
+    assertStringEncoded("3f", "\udfff") // Highest surrogate gets '?'.
+    assertStringEncoded("ee8080", "\ue000") // Above highest surrogate is okay.
+  }
+
+  @Test fun writeCodePointBeyondUnicodeMaximum() {
+    val buffer = Buffer()
+    try {
+      buffer.writeUtf8CodePoint(0x110000)
+      fail()
+    } catch (expected: IllegalArgumentException) {
+      assertEquals("Unexpected code point: 0x110000", expected.message)
+    }
+
+  }
+
+  @Test fun size() {
+    assertEquals(0, "".utf8Size())
+    assertEquals(3, "abc".utf8Size())
+    assertEquals(16, "təˈranəˌsôr".utf8Size())
+  }
+
+  @Test fun sizeWithBounds() {
+    assertEquals(0, "".utf8Size(0, 0))
+    assertEquals(0, "abc".utf8Size(0, 0))
+    assertEquals(1, "abc".utf8Size(1, 2))
+    assertEquals(2, "abc".utf8Size(0, 2))
+    assertEquals(3, "abc".utf8Size(0, 3))
+    assertEquals(16, "təˈranəˌsôr".utf8Size(0, 11))
+    assertEquals(5, "təˈranəˌsôr".utf8Size(3, 7))
+  }
+
+  @Test fun sizeBoundsCheck() {
+    try {
+      "abc".utf8Size(-1, 2)
+      fail()
+    } catch (expected: IllegalArgumentException) {
+    }
+    try {
+      "abc".utf8Size(2, 1)
+      fail()
+    } catch (expected: IllegalArgumentException) {
+    }
+    try {
+      "abc".utf8Size(1, 4)
+      fail()
+    } catch (expected: IllegalArgumentException) {
+    }
   }
 
   private fun assertEncoded(hex: String, vararg codePoints: Int) {
