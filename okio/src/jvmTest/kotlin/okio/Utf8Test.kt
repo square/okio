@@ -8,7 +8,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class Utf8TestKt {
+class Utf8Test {
   @Test fun onByteCharacters() {
     assertEncoded("00", 0x00) // Smallest 1-byte character.
     assertEncoded("20", ' '.toInt())
