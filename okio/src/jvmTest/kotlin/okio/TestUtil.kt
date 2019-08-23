@@ -103,11 +103,7 @@ object TestUtil {
   }
 
   @JvmStatic
-  fun repeat(c: Char, count: Int): String {
-    val array = CharArray(count)
-    Arrays.fill(array, c)
-    return String(array)
-  }
+  fun repeat(c: Char, count: Int) = c.toString().repeat(count)
 
   @JvmStatic
   fun assertEquivalent(b1: ByteString, b2: ByteString) {
