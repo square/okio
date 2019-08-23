@@ -93,7 +93,7 @@ class BufferCursorKotlinTest {
     assertTrue(buffer.head == null || buffer.head!!.shared)
 
     val expected = Buffer()
-    expected.writeUtf8(TestUtil.repeat('x', buffer.size.toInt()))
+    expected.writeUtf8("x".repeat(buffer.size.toInt()))
 
     buffer.readAndWriteUnsafe().use { cursor ->
       while (cursor.next() != -1) {

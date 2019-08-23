@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static kotlin.text.StringsKt.repeat;
 import static okio.TestUtil.SEGMENT_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -98,19 +99,19 @@ public final class ReadUtf8LineTest {
   @Test public void readUtf8LineStrictWithLimits() throws IOException {
     int[] lens = {1, SEGMENT_SIZE - 2, SEGMENT_SIZE - 1, SEGMENT_SIZE, SEGMENT_SIZE * 10};
     for (int len : lens) {
-      data.writeUtf8(TestUtil.repeat('a', len)).writeUtf8("\n");
+      data.writeUtf8(repeat("a", len)).writeUtf8("\n");
       assertEquals(len, source.readUtf8LineStrict(len).length());
       source.readUtf8();
 
-      data.writeUtf8(TestUtil.repeat('a', len)).writeUtf8("\n").writeUtf8(TestUtil.repeat('a', len));
+      data.writeUtf8(repeat("a", len)).writeUtf8("\n").writeUtf8(repeat("a", len));
       assertEquals(len, source.readUtf8LineStrict(len).length());
       source.readUtf8();
 
-      data.writeUtf8(TestUtil.repeat('a', len)).writeUtf8("\r\n");
+      data.writeUtf8(repeat("a", len)).writeUtf8("\r\n");
       assertEquals(len, source.readUtf8LineStrict(len).length());
       source.readUtf8();
 
-      data.writeUtf8(TestUtil.repeat('a', len)).writeUtf8("\r\n").writeUtf8(TestUtil.repeat('a', len));
+      data.writeUtf8(repeat("a", len)).writeUtf8("\r\n").writeUtf8(repeat("a", len));
       assertEquals(len, source.readUtf8LineStrict(len).length());
       source.readUtf8();
     }

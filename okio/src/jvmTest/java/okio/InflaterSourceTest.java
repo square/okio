@@ -21,9 +21,9 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import org.junit.Test;
 
+import static kotlin.text.StringsKt.repeat;
 import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.randomBytes;
-import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -63,7 +63,7 @@ public final class InflaterSourceTest {
         + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8B"
         + "tFeWvE=\n");
-    String original = repeat('a', 1024 * 1024);
+    String original = repeat("a", 1024 * 1024);
     Buffer inflated = inflate(deflated);
     assertEquals(original, inflated.readUtf8());
   }
@@ -77,7 +77,7 @@ public final class InflaterSourceTest {
 
   @Test public void inflateIntoNonemptySink() throws Exception {
     for (int i = 0; i < SEGMENT_SIZE; i++) {
-      Buffer inflated = new Buffer().writeUtf8(repeat('a', i));
+      Buffer inflated = new Buffer().writeUtf8(repeat("a", i));
       Buffer deflated = decodeBase64(
           "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=");
       InflaterSource source = new InflaterSource(deflated, new Inflater());

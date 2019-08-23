@@ -17,6 +17,7 @@ package okio;
 
 import org.junit.Test;
 
+import static kotlin.text.StringsKt.repeat;
 import static okio.HashingTest.HMAC_KEY;
 import static okio.HashingTest.HMAC_SHA1_abc;
 import static okio.HashingTest.HMAC_SHA256_abc;
@@ -118,7 +119,7 @@ public final class HashingSinkTest {
     source.writeUtf8("z");
     source.write(r32k);
     source.skip(1);
-    source.writeUtf8(TestUtil.repeat('z', SEGMENT_SIZE * 2 - 1));
+    source.writeUtf8(repeat("z", SEGMENT_SIZE * 2 - 1));
     HashingSink hashingSink = HashingSink.sha256(sink);
     hashingSink.write(source, r32k.size());
     assertEquals(SHA256_r32k, hashingSink.hash());
