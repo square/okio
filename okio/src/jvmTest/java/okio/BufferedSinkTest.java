@@ -165,6 +165,18 @@ public final class BufferedSinkTest {
     assertEquals("[hex=2143658701efcdab005cb1b0bebafeca]", data.toString());
   }
 
+  @Test public void writeByteString() throws IOException {
+    sink.write(ByteString.encodeUtf8("təˈranəˌsôr"));
+    sink.flush();
+    assertEquals(ByteString.decodeHex("74c999cb8872616ec999cb8c73c3b472"), data.readByteString());
+  }
+
+  @Test public void writeByteStringOffset() throws IOException {
+    sink.write(ByteString.encodeUtf8("təˈranəˌsôr"), 5, 5);
+    sink.flush();
+    assertEquals(ByteString.decodeHex("72616ec999"), data.readByteString());
+  }
+
   @Test public void writeStringUtf8() throws IOException {
     sink.writeUtf8("təˈranəˌsôr");
     sink.flush();

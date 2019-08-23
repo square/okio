@@ -34,6 +34,9 @@ actual interface BufferedSink : Sink, WritableByteChannel {
   actual fun write(byteString: ByteString): BufferedSink
 
   @Throws(IOException::class)
+  actual fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink
+
+  @Throws(IOException::class)
   actual fun write(source: ByteArray): BufferedSink
 
   @Throws(IOException::class)

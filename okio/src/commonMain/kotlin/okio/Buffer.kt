@@ -71,6 +71,8 @@ expect class Buffer() : BufferedSource, BufferedSink {
 
   override fun write(byteString: ByteString): Buffer
 
+  override fun write(byteString: ByteString, offset: Int, byteCount: Int): Buffer
+
   override fun writeUtf8(string: String): Buffer
 
   override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer

@@ -156,6 +156,9 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun write(byteString: ByteString): Buffer = commonWrite(byteString)
 
+  actual override fun write(byteString: ByteString, offset: Int, byteCount: Int) =
+    commonWrite(byteString, offset, byteCount)
+
   internal actual fun writableSegment(minimumCapacity: Int): Segment =
     commonWritableSegment(minimumCapacity)
 

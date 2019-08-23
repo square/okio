@@ -45,6 +45,12 @@ internal class RealBufferedSink(
     return emitCompleteSegments()
   }
 
+  override fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink {
+    check(!closed) { "closed" }
+    buffer.write(byteString, offset, byteCount)
+    return emitCompleteSegments()
+  }
+
   override fun writeUtf8(string: String): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeUtf8(string)
