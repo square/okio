@@ -17,6 +17,7 @@ package okio;
 
 import org.junit.Test;
 
+import static kotlin.text.StringsKt.repeat;
 import static okio.HashingTest.HMAC_KEY;
 import static okio.HashingTest.HMAC_SHA1_abc;
 import static okio.HashingTest.HMAC_SHA256_abc;
@@ -120,7 +121,7 @@ public final class HashingSourceTest {
   @Test public void readIntoSuffixOfBuffer() throws Exception {
     HashingSource hashingSource = HashingSource.sha256(source);
     source.write(r32k);
-    sink.writeUtf8(TestUtil.repeat('z', SEGMENT_SIZE * 2 - 1));
+    sink.writeUtf8(repeat("z", SEGMENT_SIZE * 2 - 1));
     assertEquals(r32k.size(), hashingSource.read(sink, Long.MAX_VALUE));
     assertEquals(SHA256_r32k, hashingSource.hash());
   }

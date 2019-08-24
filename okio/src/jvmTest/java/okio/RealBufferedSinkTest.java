@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.junit.Test;
 
+import static kotlin.text.StringsKt.repeat;
 import static okio.TestUtil.SEGMENT_SIZE;
-import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -44,7 +44,7 @@ public final class RealBufferedSinkTest {
   @Test public void bufferedSinkEmitsTailWhenItIsComplete() throws IOException {
     Buffer sink = new Buffer();
     BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8(repeat('a', SEGMENT_SIZE - 1));
+    bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE - 1));
     assertEquals(0, sink.size());
     bufferedSink.writeByte(0);
     assertEquals(SEGMENT_SIZE, sink.size());
@@ -54,7 +54,7 @@ public final class RealBufferedSinkTest {
   @Test public void bufferedSinkEmitMultipleSegments() throws IOException {
     Buffer sink = new Buffer();
     BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8(repeat('a', SEGMENT_SIZE * 4 - 1));
+    bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 4 - 1));
     assertEquals(SEGMENT_SIZE * 3, sink.size());
     assertEquals(SEGMENT_SIZE - 1, bufferedSink.getBuffer().size());
   }
@@ -95,14 +95,14 @@ public final class RealBufferedSinkTest {
   @Test public void completeSegmentsEmitted() throws Exception {
     Buffer sink = new Buffer();
     BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8(repeat('a', SEGMENT_SIZE * 3));
+    bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 3));
     assertEquals(SEGMENT_SIZE * 3, sink.size());
   }
 
   @Test public void incompleteSegmentsNotEmitted() throws Exception {
     Buffer sink = new Buffer();
     BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8(repeat('a', SEGMENT_SIZE * 3 - 1));
+    bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 3 - 1));
     assertEquals(SEGMENT_SIZE * 2, sink.size());
   }
 
@@ -224,14 +224,14 @@ public final class RealBufferedSinkTest {
  }
 
   @Test public void writeAllWritesOneSegmentAtATime() throws IOException {
-    Buffer write1 = new Buffer().writeUtf8(TestUtil.repeat('a', SEGMENT_SIZE));
-    Buffer write2 = new Buffer().writeUtf8(TestUtil.repeat('b', SEGMENT_SIZE));
-    Buffer write3 = new Buffer().writeUtf8(TestUtil.repeat('c', SEGMENT_SIZE));
+    Buffer write1 = new Buffer().writeUtf8(repeat("a", SEGMENT_SIZE));
+    Buffer write2 = new Buffer().writeUtf8(repeat("b", SEGMENT_SIZE));
+    Buffer write3 = new Buffer().writeUtf8(repeat("c", SEGMENT_SIZE));
 
     Buffer source = new Buffer().writeUtf8(""
-        + TestUtil.repeat('a', SEGMENT_SIZE)
-        + TestUtil.repeat('b', SEGMENT_SIZE)
-        + TestUtil.repeat('c', SEGMENT_SIZE));
+        + repeat("a", SEGMENT_SIZE)
+        + repeat("b", SEGMENT_SIZE)
+        + repeat("c", SEGMENT_SIZE));
 
     MockSink mockSink = new MockSink();
     BufferedSink bufferedSink = Okio.buffer(mockSink);

@@ -22,9 +22,9 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 import org.junit.Test;
 
+import static kotlin.text.StringsKt.repeat;
 import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.randomBytes;
-import static okio.TestUtil.repeat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -54,7 +54,7 @@ public final class DeflaterSinkTest {
   }
 
   @Test public void deflateWellCompressed() throws IOException {
-    String original = repeat('a', 1024 * 1024);
+    String original = repeat("a", 1024 * 1024);
     Buffer data = new Buffer();
     data.writeUtf8(original);
     Buffer sink = new Buffer();
@@ -83,9 +83,9 @@ public final class DeflaterSinkTest {
     deflater.setLevel(Deflater.NO_COMPRESSION);
     DeflaterSink deflaterSink = new DeflaterSink(buffer, deflater);
     int byteCount = SEGMENT_SIZE * 4;
-    deflaterSink.write(new Buffer().writeUtf8(repeat('a', byteCount)), byteCount);
+    deflaterSink.write(new Buffer().writeUtf8(repeat("a", byteCount)), byteCount);
     deflaterSink.close();
-    assertEquals(repeat('a', byteCount), inflate(buffer).readUtf8(byteCount));
+    assertEquals(repeat("a", byteCount), inflate(buffer).readUtf8(byteCount));
   }
 
   @Test public void deflateIntoNonemptySink() throws Exception {
@@ -94,7 +94,7 @@ public final class DeflaterSinkTest {
     // Exercise all possible offsets for the outgoing segment.
     for (int i = 0; i < SEGMENT_SIZE; i++) {
       Buffer data = new Buffer().writeUtf8(original);
-      Buffer sink = new Buffer().writeUtf8(repeat('a', i));
+      Buffer sink = new Buffer().writeUtf8(repeat("a", i));
 
       DeflaterSink deflaterSink = new DeflaterSink(sink, new Deflater());
       deflaterSink.write(data, data.size());
@@ -118,7 +118,7 @@ public final class DeflaterSinkTest {
     Deflater deflater = new Deflater();
     deflater.setLevel(Deflater.NO_COMPRESSION);
     DeflaterSink deflaterSink = new DeflaterSink(mockSink, deflater);
-    deflaterSink.write(new Buffer().writeUtf8(repeat('a', SEGMENT_SIZE)), SEGMENT_SIZE);
+    deflaterSink.write(new Buffer().writeUtf8(repeat("a", SEGMENT_SIZE)), SEGMENT_SIZE);
     try {
       deflaterSink.close();
       fail();

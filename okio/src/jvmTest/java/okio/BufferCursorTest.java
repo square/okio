@@ -24,6 +24,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import static kotlin.text.StringsKt.repeat;
 import static okio.Buffer.UnsafeCursor;
 import static okio.TestUtil.SEGMENT_SIZE;
 import static okio.TestUtil.deepCopy;
@@ -243,7 +244,7 @@ public final class BufferCursorTest {
     long originalSize = buffer.size();
 
     Buffer expected = deepCopy(buffer);
-    expected.writeUtf8(TestUtil.repeat('x', 1_000_000));
+    expected.writeUtf8(repeat("x", 1_000_000));
 
     try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
       cursor.resizeBuffer(originalSize + 1_000_000);
@@ -315,7 +316,7 @@ public final class BufferCursorTest {
     long originalSize = buffer.size();
 
     Buffer toShrink = new Buffer();
-    toShrink.writeUtf8(TestUtil.repeat('x', 1_000_000));
+    toShrink.writeUtf8(repeat("x", 1_000_000));
     deepCopy(buffer).copyTo(toShrink, 0, originalSize);
 
     UnsafeCursor cursor = new UnsafeCursor();
@@ -327,7 +328,7 @@ public final class BufferCursorTest {
     }
 
     Buffer expected = new Buffer();
-    expected.writeUtf8(TestUtil.repeat('x', (int) originalSize));
+    expected.writeUtf8(repeat("x", (int) originalSize));
     assertEquals(expected, toShrink);
   }
 

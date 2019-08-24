@@ -19,6 +19,7 @@ import java.io.EOFException;
 import kotlin.text.Charsets;
 import org.junit.Test;
 
+import static kotlin.text.StringsKt.repeat;
 import static okio.TestUtil.REPLACEMENT_CODE_POINT;
 import static okio.TestUtil.SEGMENT_SIZE;
 import static org.junit.Assert.assertEquals;
@@ -85,7 +86,7 @@ public final class Utf8Test {
   }
 
   @Test public void multipleSegmentString() throws Exception {
-    String a = TestUtil.repeat('a', SEGMENT_SIZE + SEGMENT_SIZE + 1);
+    String a = repeat("a", SEGMENT_SIZE + SEGMENT_SIZE + 1);
     Buffer encoded = new Buffer().writeUtf8(a);
     Buffer expected = new Buffer().write(a.getBytes(Charsets.UTF_8));
     assertEquals(expected, encoded);
@@ -93,9 +94,9 @@ public final class Utf8Test {
 
   @Test public void stringSpansSegments() throws Exception {
     Buffer buffer = new Buffer();
-    String a = TestUtil.repeat('a', SEGMENT_SIZE - 1);
+    String a = repeat("a", SEGMENT_SIZE - 1);
     String b = "bb";
-    String c = TestUtil.repeat('c', SEGMENT_SIZE - 1);
+    String c = repeat("c", SEGMENT_SIZE - 1);
     buffer.writeUtf8(a);
     buffer.writeUtf8(b);
     buffer.writeUtf8(c);
