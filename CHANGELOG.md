@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+### Version 2.4.0
+
+_2019-08-26_
+
+ * New: Upgrade to Kotlin 1.3.50.
+
+
 ### Version 2.3.0
 
 _2019-07-29_
