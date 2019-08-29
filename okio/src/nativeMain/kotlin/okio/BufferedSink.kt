@@ -20,6 +20,8 @@ actual interface BufferedSink : Sink {
 
   actual fun write(byteString: ByteString): BufferedSink
 
+  actual fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink
+
   actual fun write(source: ByteArray): BufferedSink
 
   actual fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink

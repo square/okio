@@ -140,7 +140,8 @@ internal actual constructor(
     out.write(data)
   }
 
-  internal actual open fun write(buffer: Buffer) = commonWrite(buffer)
+  internal actual open fun write(buffer: Buffer, offset: Int, byteCount: Int) =
+    commonWrite(buffer, offset, byteCount)
 
   actual open fun rangeEquals(
     offset: Int,

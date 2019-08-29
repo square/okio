@@ -147,8 +147,8 @@ internal inline fun SegmentedByteString.commonToByteArray(): ByteArray {
   return result
 }
 
-internal inline fun SegmentedByteString.commonWrite(buffer: Buffer) {
-  forEachSegment { data, offset, byteCount ->
+internal inline fun SegmentedByteString.commonWrite(buffer: Buffer, offset: Int, byteCount: Int) {
+  forEachSegment(offset, offset + byteCount) { data, offset, byteCount ->
     val segment = Segment(data, offset, offset + byteCount, true, false)
     if (buffer.head == null) {
       segment.prev = segment

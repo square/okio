@@ -417,8 +417,12 @@ internal inline fun Buffer.commonSkip(byteCount: Long) {
   }
 }
 
-internal inline fun Buffer.commonWrite(byteString: ByteString): Buffer {
-  byteString.write(this)
+internal inline fun Buffer.commonWrite(
+  byteString: ByteString,
+  offset: Int = 0,
+  byteCount: Int = byteString.size
+): Buffer {
+  byteString.write(this, offset, byteCount)
   return this
 }
 

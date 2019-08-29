@@ -25,6 +25,8 @@ expect interface BufferedSink : Sink {
 
   fun write(byteString: ByteString): BufferedSink
 
+  fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink
+
   /** Like [OutputStream.write], this writes a complete byte array to this sink. */
   fun write(source: ByteArray): BufferedSink
 

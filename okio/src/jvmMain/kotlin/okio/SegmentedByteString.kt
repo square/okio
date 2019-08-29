@@ -114,7 +114,8 @@ internal actual class SegmentedByteString internal actual constructor(
     }
   }
 
-  override fun write(buffer: Buffer): Unit = commonWrite(buffer)
+  override fun write(buffer: Buffer, offset: Int, byteCount: Int): Unit =
+    commonWrite(buffer, offset, byteCount)
 
   override fun rangeEquals(
     offset: Int,

@@ -283,8 +283,8 @@ internal inline fun String.commonDecodeHex(): ByteString {
 }
 
 /** Writes the contents of this byte string to `buffer`.  */
-internal fun ByteString.commonWrite(buffer: Buffer) {
-  buffer.write(data, 0, data.size)
+internal fun ByteString.commonWrite(buffer: Buffer, offset: Int, byteCount: Int) {
+  buffer.write(data, offset, byteCount)
 }
 
 private fun decodeHexDigit(c: Char): Int {

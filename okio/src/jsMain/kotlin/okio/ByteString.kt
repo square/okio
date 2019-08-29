@@ -111,7 +111,8 @@ internal actual constructor(
   /** Returns the bytes of this string without a defensive copy. Do not mutate!  */
   internal actual open fun internalArray() = commonInternalArray()
 
-  internal actual open fun write(buffer: Buffer) = commonWrite(buffer)
+  internal actual open fun write(buffer: Buffer, offset: Int, byteCount: Int) =
+    commonWrite(buffer, offset, byteCount)
 
   /**
    * Returns true if the bytes of this in `[offset..offset+byteCount)` equal the bytes of `other` in
