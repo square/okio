@@ -31,22 +31,6 @@ import java.nio.file.StandardOpenOption.APPEND
 class OkioKotlinTest {
   @get:Rule val temp = TemporaryFolder()
 
-  @Test fun sourceBuffer() {
-    val source = Buffer().writeUtf8("a")
-    val buffered = (source as Source).buffer()
-    assertThat(buffered.readUtf8()).isEqualTo("a")
-    assertThat(source.size).isEqualTo(0L)
-  }
-
-  @Test fun sinkBuffer() {
-    val sink = Buffer()
-    val buffered = (sink as Sink).buffer()
-    buffered.writeUtf8("a")
-    assertThat(sink.size).isEqualTo(0L)
-    buffered.flush()
-    assertThat(sink.size).isEqualTo(1L)
-  }
-
   @Test fun outputStreamSink() {
     val baos = ByteArrayOutputStream()
     val sink = baos.sink()
@@ -117,10 +101,6 @@ class OkioKotlinTest {
     val file = File(folder, "new.txt")
     file.toPath().source(StandardOpenOption.CREATE_NEW)
     // This still throws NoSuchFileException...
-  }
-
-  @Test fun blackhole() {
-    blackholeSink().write(Buffer().writeUtf8("a"), 1L)
   }
 
   @Test fun socketSink() {

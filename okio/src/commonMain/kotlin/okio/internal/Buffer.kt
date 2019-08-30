@@ -665,7 +665,7 @@ internal inline fun Buffer.commonReadDecimalLong(): Long {
       } else {
         if (seen == 0) {
           throw NumberFormatException(
-            "Expected leading [0-9] or '-' character but was ${b.toHexString()}")
+            "Expected leading [0-9] or '-' character but was 0x${b.toHexString()}")
         }
         // Set a flag to stop iteration. We still need to run through segment updating below.
         done = true
@@ -714,7 +714,7 @@ internal inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
       } else {
         if (seen == 0) {
           throw NumberFormatException(
-            "Expected leading [0-9a-fA-F] character but was ${b.toHexString()}")
+            "Expected leading [0-9a-fA-F] character but was 0x${b.toHexString()}")
         }
         // Set a flag to stop iteration. We still need to run through segment updating below.
         done = true
@@ -866,7 +866,7 @@ internal inline fun Buffer.commonReadUtf8CodePoint(): Int {
   }
 
   if (size < byteCount) {
-    throw EOFException("size < $byteCount: $size (to read code point prefixed ${b0.toHexString()})")
+    throw EOFException("size < $byteCount: $size (to read code point prefixed 0x${b0.toHexString()})")
   }
 
   // Read the continuation bytes. If we encounter a non-continuation byte, the sequence consumed
@@ -1035,7 +1035,7 @@ internal inline fun Buffer.commonWriteUtf8CodePoint(codePoint: Int): Buffer {
       size += 4L
     }
     else -> {
-      throw IllegalArgumentException("Unexpected code point: ${codePoint.toHexString()}")
+      throw IllegalArgumentException("Unexpected code point: 0x${codePoint.toHexString()}")
     }
   }
 
@@ -1406,6 +1406,27 @@ internal inline fun Buffer.commonHashCode(): Int {
     }
     s = s.next!!
   } while (s !== head)
+  return result
+}
+
+internal inline fun Buffer.commonCopy(): Buffer {
+  val result = Buffer()
+  if (size == 0L) return result
+
+  val head = head!!
+  val headCopy = head.sharedCopy()
+
+  result.head = headCopy
+  headCopy.prev = result.head
+  headCopy.next = headCopy.prev
+
+  var s = head.next
+  while (s !== head) {
+    headCopy.prev!!.push(s!!.sharedCopy())
+    s = s.next
+  }
+
+  result.size = size
   return result
 }
 

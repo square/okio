@@ -111,13 +111,6 @@ private class InputStreamSource(
 @JvmName("blackhole")
 actual fun blackholeSink(): Sink = BlackholeSink()
 
-private class BlackholeSink : Sink {
-  override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
-  override fun flush() {}
-  override fun timeout() = Timeout.NONE
-  override fun close() {}
-}
-
 /**
  * Returns a sink that writes to `socket`. Prefer this over [sink]
  * because this method honors timeouts. When the socket

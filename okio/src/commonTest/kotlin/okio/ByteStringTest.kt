@@ -29,45 +29,12 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class CommonByteStringTest {
-  class ByteString : AbstractByteStringTest(ByteStringFactory.BYTE_STRING)
-  class SegmentedByteString : AbstractByteStringTest(ByteStringFactory.SEGMENTED_BYTE_STRING)
-  class OneBytePerSegment : AbstractByteStringTest(ByteStringFactory.ONE_BYTE_PER_SEGMENT)
-  class OkioEncoder : AbstractByteStringTest(ByteStringFactory.OKIO_ENCODER)
-}
+class ByteStringTest : AbstractByteStringTest(ByteStringFactory.BYTE_STRING)
+class SegmentedByteStringTest : AbstractByteStringTest(ByteStringFactory.SEGMENTED_BYTE_STRING)
+class ByteStringOneBytePerSegmentTest : AbstractByteStringTest(ByteStringFactory.ONE_BYTE_PER_SEGMENT)
+class OkioEncoderTest : AbstractByteStringTest(ByteStringFactory.OKIO_ENCODER)
 
-interface ByteStringFactory {
-  fun decodeHex(hex: String): ByteString
-
-  fun encodeUtf8(s: String): ByteString
-
-  companion object {
-    val BYTE_STRING: ByteStringFactory = object : ByteStringFactory {
-      override fun decodeHex(hex: String) = hex.decodeHex()
-      override fun encodeUtf8(s: String) = s.encodeUtf8()
-    }
-
-    val SEGMENTED_BYTE_STRING: ByteStringFactory = object : ByteStringFactory {
-      override fun decodeHex(hex: String) = Buffer().apply { write(hex.decodeHex()) }.snapshot()
-      override fun encodeUtf8(s: String) = Buffer().apply { writeUtf8(s) }.snapshot()
-    }
-
-    val ONE_BYTE_PER_SEGMENT: ByteStringFactory = object : ByteStringFactory {
-      override fun decodeHex(hex: String) = makeSegments(hex.decodeHex())
-      override fun encodeUtf8(s: String) = makeSegments(s.encodeUtf8())
-    }
-
-    // For Kotlin/JVM, the native Java UTF-8 encoder is used. This forces
-    // testing of the Okio encoder used for Kotlin/JS and Kotlin/Native to be
-    // tested on JVM as well.
-    val OKIO_ENCODER: ByteStringFactory = object : ByteStringFactory {
-      override fun decodeHex(hex: String) = hex.decodeHex()
-      override fun encodeUtf8(s: String) = ByteString.of(*s.commonAsUtf8ToByteArray())
-    }
-  }
-}
-
-abstract class AbstractByteStringTest(
+abstract class AbstractByteStringTest internal constructor(
   private val factory: ByteStringFactory
 ) {
   @Test fun get() {

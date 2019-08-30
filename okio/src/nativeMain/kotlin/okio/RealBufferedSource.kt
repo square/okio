@@ -45,22 +45,12 @@ import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonTimeout
 import okio.internal.commonToString
-import java.io.IOException
-import java.io.InputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
 
 internal actual class RealBufferedSource actual constructor(
-  @JvmField actual val source: Source
+  actual val source: Source
 ) : BufferedSource {
-  @JvmField val bufferField = Buffer()
-  @JvmField actual var closed: Boolean = false
-
-  @Suppress("OVERRIDE_BY_INLINE") // Prevent internal code from calling the getter.
-  override val buffer: Buffer
-    inline get() = bufferField
-
-  override fun buffer() = bufferField
+  actual var closed: Boolean = false
+  override val buffer: Buffer = Buffer()
 
   override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
   override fun exhausted(): Boolean = commonExhausted()
@@ -77,30 +67,10 @@ internal actual class RealBufferedSource actual constructor(
   override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int =
     commonRead(sink, offset, byteCount)
 
-  override fun read(sink: ByteBuffer): Int {
-    if (buffer.size == 0L) {
-      val read = source.read(buffer, Segment.SIZE.toLong())
-      if (read == -1L) return -1
-    }
-
-    return buffer.read(sink)
-  }
-
   override fun readFully(sink: Buffer, byteCount: Long): Unit = commonReadFully(sink, byteCount)
   override fun readAll(sink: Sink): Long = commonReadAll(sink)
   override fun readUtf8(): String = commonReadUtf8()
   override fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
-
-  override fun readString(charset: Charset): String {
-    buffer.writeAll(source)
-    return buffer.readString(charset)
-  }
-
-  override fun readString(byteCount: Long, charset: Charset): String {
-    require(byteCount)
-    return buffer.readString(byteCount, charset)
-  }
-
   override fun readUtf8Line(): String? = commonReadUtf8Line()
   override fun readUtf8LineStrict() = readUtf8LineStrict(Long.MAX_VALUE)
   override fun readUtf8LineStrict(limit: Long): String = commonReadUtf8LineStrict(limit)
@@ -138,43 +108,6 @@ internal actual class RealBufferedSource actual constructor(
   ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
   override fun peek(): BufferedSource = commonPeek()
-
-  override fun inputStream(): InputStream {
-    return object : InputStream() {
-      override fun read(): Int {
-        if (closed) throw IOException("closed")
-        if (buffer.size == 0L) {
-          val count = source.read(buffer, Segment.SIZE.toLong())
-          if (count == -1L) return -1
-        }
-        return buffer.readByte() and 0xff
-      }
-
-      override fun read(data: ByteArray, offset: Int, byteCount: Int): Int {
-        if (closed) throw IOException("closed")
-        checkOffsetAndCount(data.size.toLong(), offset.toLong(), byteCount.toLong())
-
-        if (buffer.size == 0L) {
-          val count = source.read(buffer, Segment.SIZE.toLong())
-          if (count == -1L) return -1
-        }
-
-        return buffer.read(data, offset, byteCount)
-      }
-
-      override fun available(): Int {
-        if (closed) throw IOException("closed")
-        return minOf(buffer.size, Integer.MAX_VALUE).toInt()
-      }
-
-      override fun close() = this@RealBufferedSource.close()
-
-      override fun toString() = "${this@RealBufferedSource}.inputStream()"
-    }
-  }
-
-  override fun isOpen() = !closed
-
   override fun close(): Unit = commonClose()
   override fun timeout(): Timeout = commonTimeout()
   override fun toString(): String = commonToString()

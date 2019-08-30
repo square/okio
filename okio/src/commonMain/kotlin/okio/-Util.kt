@@ -91,36 +91,62 @@ internal fun arrayRangeEquals(
 }
 
 internal fun Byte.toHexString(): String {
-  val result = CharArray(4)
-  result[0] = '0'
-  result[1] = 'x'
-  result[2] = HEX_DIGIT_CHARS[this shr 4 and 0xf]
-  result[3] = HEX_DIGIT_CHARS[this       and 0xf] // ktlint-disable no-multi-spaces
+  val result = CharArray(2)
+  result[0] = HEX_DIGIT_CHARS[this shr 4 and 0xf]
+  result[1] = HEX_DIGIT_CHARS[this       and 0xf] // ktlint-disable no-multi-spaces
   return String(result)
 }
 
 internal fun Int.toHexString(): String {
-  val result = CharArray(10)
-  result[2] = HEX_DIGIT_CHARS[this shr 28 and 0xf]
-  result[3] = HEX_DIGIT_CHARS[this shr 24 and 0xf]
-  result[4] = HEX_DIGIT_CHARS[this shr 20 and 0xf]
-  result[5] = HEX_DIGIT_CHARS[this shr 16 and 0xf]
-  result[6] = HEX_DIGIT_CHARS[this shr 12 and 0xf]
-  result[7] = HEX_DIGIT_CHARS[this shr 8  and 0xf] // ktlint-disable no-multi-spaces
-  result[8] = HEX_DIGIT_CHARS[this shr 4  and 0xf] // ktlint-disable no-multi-spaces
-  result[9] = HEX_DIGIT_CHARS[this        and 0xf] // ktlint-disable no-multi-spaces
+  if (this == 0) return "0" // Required as code below does not handle 0
+
+  val result = CharArray(8)
+  result[0] = HEX_DIGIT_CHARS[this shr 28 and 0xf]
+  result[1] = HEX_DIGIT_CHARS[this shr 24 and 0xf]
+  result[2] = HEX_DIGIT_CHARS[this shr 20 and 0xf]
+  result[3] = HEX_DIGIT_CHARS[this shr 16 and 0xf]
+  result[4] = HEX_DIGIT_CHARS[this shr 12 and 0xf]
+  result[5] = HEX_DIGIT_CHARS[this shr 8  and 0xf] // ktlint-disable no-multi-spaces
+  result[6] = HEX_DIGIT_CHARS[this shr 4  and 0xf] // ktlint-disable no-multi-spaces
+  result[7] = HEX_DIGIT_CHARS[this        and 0xf] // ktlint-disable no-multi-spaces
 
   // Find the first non-zero index
-  var i = 2
-  while (i < 10) {
+  var i = 0
+  while (i < result.size) {
     if (result[i] != '0') break
     i++
   }
 
-  // shift and insert "0x"
-  i -= 2
-  result[i] = '0'
-  result[i + 1] = 'x'
+  return String(result, i, result.size - i)
+}
 
-  return String(result, i, 10 - i)
+internal fun Long.toHexString(): String {
+  if (this == 0L) return "0" // Required as code below does not handle 0
+
+  val result = CharArray(16)
+  result[ 0] = HEX_DIGIT_CHARS[(this shr 60 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 1] = HEX_DIGIT_CHARS[(this shr 56 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 2] = HEX_DIGIT_CHARS[(this shr 52 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 3] = HEX_DIGIT_CHARS[(this shr 48 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 4] = HEX_DIGIT_CHARS[(this shr 44 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 5] = HEX_DIGIT_CHARS[(this shr 40 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 6] = HEX_DIGIT_CHARS[(this shr 36 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 7] = HEX_DIGIT_CHARS[(this shr 32 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 8] = HEX_DIGIT_CHARS[(this shr 28 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[ 9] = HEX_DIGIT_CHARS[(this shr 24 and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[10] = HEX_DIGIT_CHARS[(this shr 20 and 0xf).toInt()]
+  result[11] = HEX_DIGIT_CHARS[(this shr 16 and 0xf).toInt()]
+  result[12] = HEX_DIGIT_CHARS[(this shr 12 and 0xf).toInt()]
+  result[13] = HEX_DIGIT_CHARS[(this shr 8  and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[14] = HEX_DIGIT_CHARS[(this shr 4  and 0xf).toInt()] // ktlint-disable no-multi-spaces
+  result[15] = HEX_DIGIT_CHARS[(this        and 0xf).toInt()] // ktlint-disable no-multi-spaces
+
+  // Find the first non-zero index
+  var i = 0
+  while (i < result.size) {
+    if (result[i] != '0') break
+    i++
+  }
+
+  return String(result, i, result.size - i)
 }

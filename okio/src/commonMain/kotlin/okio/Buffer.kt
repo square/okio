@@ -109,6 +109,9 @@ expect class Buffer() : BufferedSource, BufferedSink {
 
   override fun writeHexadecimalUnsignedLong(v: Long): Buffer
 
+  /** Returns a deep copy of this buffer.  */
+  fun copy(): Buffer
+
   /** Returns an immutable copy of this buffer as a byte string.  */
   fun snapshot(): ByteString
 

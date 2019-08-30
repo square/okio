@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package okio
 
-actual fun Source.buffer(): BufferedSource = RealBufferedSource(this)
-
-actual fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
-
-actual fun blackholeSink(): Sink = BlackholeSink()
+internal expect class RealBufferedSource(
+  source: Source
+) : BufferedSource {
+  val source: Source
+  var closed: Boolean
+}
