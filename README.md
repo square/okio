@@ -685,7 +685,7 @@ License
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
  [base64]: https://tools.ietf.org/html/rfc4648#section-4
  [bmp]: https://en.wikipedia.org/wiki/BMP_file_format
- [socks]: https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/SocksProxyServer.java
+ [socks]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
  [ok_libraries_talk]: https://www.youtube.com/watch?v=WvyScM_S88c
  [ok_libraries_slides]: https://speakerdeck.com/jakewharton/a-few-ok-libraries-droidcon-mtl-2015
  [okio]: https://square.github.io/okio/
