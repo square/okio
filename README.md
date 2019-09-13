@@ -87,7 +87,7 @@ We've written some recipes that demonstrate how to solve common problems with
 Okio. Read through them to learn about how everything works together.
 Cut-and-paste these examples freely; that's what they're for.
 
-### [Read a text file line-by-line](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/ReadFileLineByLine.java)
+### [Read a text file line-by-line][ReadFileLineByLine]
 
 Use `Okio.source(File)` to open a source stream to read a file. The returned
 `Source` interface is very small and has limited uses. Instead we wrap the
@@ -162,7 +162,7 @@ public void readLines(File file) throws IOException {
 }
 ```
 
-### [Write a text file](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/WriteFile.java)
+### [Write a text file][WriteFile]
 
 Above we used a `Source` and a `BufferedSource` to read a file. To write, we use
 a `Sink` and a `BufferedSink`. The advantages of buffering are the same: a more
@@ -213,7 +213,7 @@ garbage collect a temporary string.
 sink.writeUtf8(entry.getKey() + "=" + entry.getValue() + "\n"); // Slower!
 ```
 
-### [UTF-8](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/ExploreCharsets.java)
+### [UTF-8][ExploreCharsets]
 
 In the above APIs you can see that Okio really likes UTF-8. Early computer
 systems suffered many incompatible character encodings: ISO-8859-1, ShiftJIS,
@@ -260,7 +260,7 @@ like protocol buffers.
 Use `BufferedSource.readUtf8CodePoint()` to read a single variable-length code
 point, and `BufferedSink.writeUtf8CodePoint()` to write one.
 
-### [Golden Values](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/GoldenValue.java)
+### [Golden Values][GoldenValue]
 
 Okio likes testing. The library itself is heavily tested, and it has features
 that are often helpful when testing application code. One pattern we’ve found to
@@ -354,7 +354,7 @@ With this test we can change the serialization of the `Point` class without
 breaking compatibility.
 
 
-### [Write a binary file](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/BitmapEncoder.java)
+### [Write a binary file][BitmapEncoder]
 
 Encoding a binary file is not unlike encoding a text file. Okio uses the same
 `BufferedSink` and `BufferedSource` bytes for both. This is handy for binary
@@ -460,7 +460,7 @@ Encoding other binary formats is usually quite similar. Some tips:
    floating point values.
 
 
-### [Communicate on a Socket](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/SocksProxyServer.java)
+### [Communicate on a Socket][SocksProxyServer]
 
 Sending and receiving data over the network is a bit like writing and reading
 files. We use `BufferedSink` to encode output and `BufferedSource` to decode
@@ -494,7 +494,7 @@ socket to adjust timeouts: `Source` and `Sink` expose timeouts directly. This
 API works even if the streams are decorated.
 
 As a complete example of networking with Okio we wrote a [basic SOCKS
-proxy][socks] server. Some highlights:
+proxy][SocksProxyServer] server. Some highlights:
 
 ```java
 Socket fromSocket = ...
@@ -542,7 +542,7 @@ and ints:
 Java has no primitive type that can represent unsigned longs.
 
 
-### [Hashing](https://github.com/square/okio/blob/master/samples/src/main/java/okio/samples/Hashing.java)
+### [Hashing][Hashing]
 
 We’re bombarded by hashing in our lives as Java programmers. Early on we're introduced to the
 `hashCode()` method, something we know we need to override otherwise unforeseen bad things happen.
@@ -651,7 +651,7 @@ Snapshot builds are [available][snap].
 R8 / ProGuard
 --------
 
-If you are using R8 or ProGuard add the options from [this file](https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro).
+If you are using R8 or ProGuard add the options from [this file][proguard].
 
 
 License
@@ -672,20 +672,19 @@ License
     limitations under the License.
     
  [1]: https://github.com/square/okhttp
- [3]: https://square.github.io/okio/2.x/okio/jvm/okio/-byte-string/index.html
- [4]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffer/index.html
- [5]: https://square.github.io/okio/2.x/okio/jvm/okio/-source/index.html
- [6]: https://square.github.io/okio/2.x/okio/jvm/okio/-sink/index.html
- [7]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-source/index.html
- [8]: https://square.github.io/okio/2.x/okio/jvm/okio/-buffered-sink/index.html
+ [3]: https://square.github.io/okio/2.x/okio/okio/-byte-string/index.html
+ [4]: https://square.github.io/okio/2.x/okio/okio/-buffer/index.html
+ [5]: https://square.github.io/okio/2.x/okio/okio/-source/index.html
+ [6]: https://square.github.io/okio/2.x/okio/okio/-sink/index.html
+ [7]: https://square.github.io/okio/2.x/okio/okio/-buffered-source/index.html
+ [8]: https://square.github.io/okio/2.x/okio/okio/-buffered-sink/index.html
  [changelog]: http://square.github.io/okio/changelog/
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
- [javadoc]: https://square.github.io/okio/2.x/okio/jvm/okio/index.html
+ [javadoc]: https://square.github.io/okio/2.x/okio/okio/index.html
  [nfd]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
  [base64]: https://tools.ietf.org/html/rfc4648#section-4
  [bmp]: https://en.wikipedia.org/wiki/BMP_file_format
- [socks]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
  [ok_libraries_talk]: https://www.youtube.com/watch?v=WvyScM_S88c
  [ok_libraries_slides]: https://speakerdeck.com/jakewharton/a-few-ok-libraries-droidcon-mtl-2015
  [okio]: https://square.github.io/okio/
@@ -693,3 +692,11 @@ License
  [encoding_slides]: https://speakerdeck.com/swankjesse/decoding-the-secrets-of-binary-data-droidcon-nyc-2016
  [ok_multiplatform_talk]: https://www.youtube.com/watch?v=Q8B4eDirgk0
  [ok_multiplatform_slides]: https://speakerdeck.com/swankjesse/ok-multiplatform
+ [ReadFileLineByLine]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ReadFileLineByLine.java
+ [WriteFile]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/WriteFile.java
+ [ExploreCharsets]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ExploreCharsets.java
+ [GoldenValue]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/GoldenValue.java
+ [BitmapEncoder]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/BitmapEncoder.java
+ [SocksProxyServer]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
+ [Hashing]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/Hashing.java
+ [proguard]: https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro
