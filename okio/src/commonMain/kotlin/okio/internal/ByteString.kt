@@ -224,8 +224,9 @@ internal inline fun ByteString.commonEquals(other: Any?): Boolean {
 internal inline fun ByteString.commonHashCode(): Int {
   val result = hashCode
   if (result != 0) return result
-  hashCode = data.contentHashCode()
-  return hashCode
+  return data.contentHashCode().also {
+    hashCode = it
+  }
 }
 
 @Suppress("NOTHING_TO_INLINE")
