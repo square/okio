@@ -55,8 +55,16 @@ actual open class ByteString
 internal actual constructor(
   internal actual val data: ByteArray
 ) : Comparable<ByteString> {
-  internal actual var hashCode: Int = 0 // Lazily computed; 0 if unknown.
-  internal actual var utf8: String? = null // Lazily computed.
+  @Suppress("SetterBackingFieldAssignment")
+  internal actual var hashCode: Int = 0 // 0 if unknown.
+    set(value) {
+      // Do nothing to avoid IllegalImmutabilityException.
+    }
+  @Suppress("SetterBackingFieldAssignment")
+  internal actual var utf8: String? = null
+    set(value) {
+      // Do nothing to avoid IllegalImmutabilityException.
+    }
 
   /** Constructs a new `String` by decoding the bytes as `UTF-8`.  */
   actual open fun utf8(): String = commonUtf8()
