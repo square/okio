@@ -76,8 +76,8 @@ open class AsyncTimeout : Timeout() {
   protected open fun timedOut() {}
 
   /**
-   * Returns a new sink that delegates to `sink`, using this to implement timeouts. This works
-   * best if [.timedOut] is overridden to interrupt `sink`'s current operation.
+   * Returns a new sink that delegates to [sink], using this to implement timeouts. This works
+   * best if [timedOut] is overridden to interrupt [sink]'s current operation.
    */
   fun sink(sink: Sink): Sink {
     return object : Sink {
@@ -100,44 +100,17 @@ open class AsyncTimeout : Timeout() {
           }
 
           // Emit one write. Only this section is subject to the timeout.
-          var throwOnTimeout = false
-          enter()
-          try {
-            sink.write(source, toWrite)
-            remaining -= toWrite
-            throwOnTimeout = true
-          } catch (e: IOException) {
-            throw exit(e)
-          } finally {
-            exit(throwOnTimeout)
-          }
+          withTimeout { sink.write(source, toWrite) }
+          remaining -= toWrite
         }
       }
 
       override fun flush() {
-        var throwOnTimeout = false
-        enter()
-        try {
-          sink.flush()
-          throwOnTimeout = true
-        } catch (e: IOException) {
-          throw exit(e)
-        } finally {
-          exit(throwOnTimeout)
-        }
+        withTimeout { sink.flush() }
       }
 
       override fun close() {
-        var throwOnTimeout = false
-        enter()
-        try {
-          sink.close()
-          throwOnTimeout = true
-        } catch (e: IOException) {
-          throw exit(e)
-        } finally {
-          exit(throwOnTimeout)
-        }
+        withTimeout { sink.close() }
       }
 
       override fun timeout() = this@AsyncTimeout
@@ -147,36 +120,17 @@ open class AsyncTimeout : Timeout() {
   }
 
   /**
-   * Returns a new source that delegates to `source`, using this to implement timeouts. This works
-   * best if [AsyncTimeout.timedOut] is overridden to interrupt `sink`'s current operation.
+   * Returns a new source that delegates to [source], using this to implement timeouts. This works
+   * best if [timedOut] is overridden to interrupt [source]'s current operation.
    */
   fun source(source: Source): Source {
     return object : Source {
       override fun read(sink: Buffer, byteCount: Long): Long {
-        var throwOnTimeout = false
-        enter()
-        try {
-          val result = source.read(sink, byteCount)
-          throwOnTimeout = true
-          return result
-        } catch (e: IOException) {
-          throw exit(e)
-        } finally {
-          exit(throwOnTimeout)
-        }
+        return withTimeout { source.read(sink, byteCount) }
       }
 
       override fun close() {
-        var throwOnTimeout = false
-        enter()
-        try {
-          source.close()
-          throwOnTimeout = true
-        } catch (e: IOException) {
-          throw exit(e)
-        } finally {
-          exit(throwOnTimeout)
-        }
+        withTimeout { source.close() }
       }
 
       override fun timeout() = this@AsyncTimeout
@@ -186,7 +140,7 @@ open class AsyncTimeout : Timeout() {
   }
 
   /**
-   * Throws an IOException if `throwOnTimeout` is `true` and a timeout occurred. See
+   * Throws an IOException if [throwOnTimeout] is `true` and a timeout occurred. See
    * [newTimeoutException] for the type of exception thrown.
    */
   internal fun exit(throwOnTimeout: Boolean) {
@@ -195,7 +149,7 @@ open class AsyncTimeout : Timeout() {
   }
 
   /**
-   * Returns either `cause` or an IOException that's caused by `cause` if a timeout
+   * Returns either [cause] or an IOException that's caused by [cause] if a timeout
    * occurred. See [newTimeoutException] for the type of exception
    * returned.
    */
@@ -204,8 +158,26 @@ open class AsyncTimeout : Timeout() {
   }
 
   /**
+   * Surrounds [block] with calls to [enter] and [exit], throwing an exception from
+   * [newTimeoutException] if a timeout occurred.
+   */
+  internal inline fun <T> withTimeout(block: () -> T): T {
+    var throwOnTimeout = false
+    enter()
+    try {
+      val result = block()
+      throwOnTimeout = true
+      return result
+    } catch (e: IOException) {
+      throw exit(e)
+    } finally {
+      exit(throwOnTimeout)
+    }
+  }
+
+  /**
    * Returns an [IOException] to represent a timeout. By default this method returns
-   * [InterruptedIOException]. If `cause` is non-null it is set as the cause of the
+   * [InterruptedIOException]. If [cause] is non-null it is set as the cause of the
    * returned exception.
    */
   protected open fun newTimeoutException(cause: IOException?): IOException {
@@ -327,7 +299,7 @@ open class AsyncTimeout : Timeout() {
     /**
      * Removes and returns the node at the head of the list, waiting for it to time out if
      * necessary. This returns [head] if there was no node at the head of the list when starting,
-     * and there continues to be no node after waiting `IDLE_TIMEOUT_NANOS`. It returns null if a
+     * and there continues to be no node after waiting [IDLE_TIMEOUT_NANOS]. It returns null if a
      * new node was inserted while waiting. Otherwise this returns the node being waited on that has
      * been removed.
      */
