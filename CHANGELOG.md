@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+### Version 2.4.1
+
+_2019-10-04_
+
+ * Fix: Don't cache hash code and UTF-8 string in `ByteString` on Kotlin/Native.
+
 ### Version 2.4.0
 
 _2019-08-26_
