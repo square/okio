@@ -5,7 +5,7 @@ Change Log
 
 _2019-10-04_
 
- * Fix: Don't cache hash code and UTF-8 string in `ByteString` on Kotlin/Native.
+ * Fix: Don't cache hash code and UTF-8 string in `ByteString` on Kotlin/Native which prevented freezing.
 
 ### Version 2.4.0
 
