@@ -143,6 +143,7 @@ open class AsyncTimeout : Timeout() {
    * Throws an IOException if [throwOnTimeout] is `true` and a timeout occurred. See
    * [newTimeoutException] for the type of exception thrown.
    */
+  @PublishedApi
   internal fun exit(throwOnTimeout: Boolean) {
     val timedOut = exit()
     if (timedOut && throwOnTimeout) throw newTimeoutException(null)
@@ -153,6 +154,7 @@ open class AsyncTimeout : Timeout() {
    * occurred. See [newTimeoutException] for the type of exception
    * returned.
    */
+  @PublishedApi
   internal fun exit(cause: IOException): IOException {
     return if (!exit()) cause else newTimeoutException(cause)
   }
@@ -161,7 +163,7 @@ open class AsyncTimeout : Timeout() {
    * Surrounds [block] with calls to [enter] and [exit], throwing an exception from
    * [newTimeoutException] if a timeout occurred.
    */
-  internal inline fun <T> withTimeout(block: () -> T): T {
+  inline fun <T> withTimeout(block: () -> T): T {
     var throwOnTimeout = false
     enter()
     try {
