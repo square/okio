@@ -93,11 +93,11 @@ class CommonBufferTest {
     assertEquals(0, SegmentPool.byteCount)
 
     // Recycle MAX_SIZE segments. They're all in the pool.
-    buffer.readByteString(SegmentPool.MAX_SIZE)
+    buffer.skip(SegmentPool.MAX_SIZE)
     assertEquals(SegmentPool.MAX_SIZE, SegmentPool.byteCount)
 
     // Recycle MAX_SIZE more segments. The pool is full so they get garbage collected.
-    buffer.readByteString(SegmentPool.MAX_SIZE)
+    buffer.skip(SegmentPool.MAX_SIZE)
     assertEquals(SegmentPool.MAX_SIZE, SegmentPool.byteCount)
 
     // Take MAX_SIZE segments to drain the pool.

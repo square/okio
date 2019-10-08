@@ -32,10 +32,14 @@ import okio.Source
 import okio.and
 import okio.asUtf8ToByteArray
 import okio.checkOffsetAndCount
-import okio.toHexString
 import okio.minOf
+import okio.toHexString
 
 internal val HEX_DIGIT_BYTES = "0123456789abcdef".asUtf8ToByteArray()
+
+// Threshold determined empirically via ReadByteStringBenchmark
+/** Create SegmentedByteString when size is greater than this many bytes.  */
+internal const val SEGMENTING_THRESHOLD = 4096
 
 /**
  * Returns true if the range within this buffer starting at `segmentPos` in `segment` is equal to
@@ -745,9 +749,18 @@ internal inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
   return value
 }
 
-internal inline fun Buffer.commonReadByteString(): ByteString = ByteString(readByteArray())
+internal inline fun Buffer.commonReadByteString(): ByteString = readByteString(size)
 
-internal inline fun Buffer.commonReadByteString(byteCount: Long) = ByteString(readByteArray(byteCount))
+internal inline fun Buffer.commonReadByteString(byteCount: Long): ByteString {
+  require(byteCount >= 0 && byteCount <= Int.MAX_VALUE) { "byteCount: $byteCount" }
+  if (size < byteCount) throw EOFException()
+
+  if (byteCount >= SEGMENTING_THRESHOLD) {
+    return snapshot(byteCount.toInt()).also { skip(byteCount) }
+  } else {
+    return ByteString(readByteArray(byteCount))
+  }
+}
 
 internal inline fun Buffer.commonSelect(options: Options): Int {
   val index = selectPrefix(options)
