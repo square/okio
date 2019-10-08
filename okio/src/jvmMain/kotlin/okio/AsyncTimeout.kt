@@ -140,26 +140,6 @@ open class AsyncTimeout : Timeout() {
   }
 
   /**
-   * Throws an IOException if [throwOnTimeout] is `true` and a timeout occurred. See
-   * [newTimeoutException] for the type of exception thrown.
-   */
-  @PublishedApi
-  internal fun exit(throwOnTimeout: Boolean) {
-    val timedOut = exit()
-    if (timedOut && throwOnTimeout) throw newTimeoutException(null)
-  }
-
-  /**
-   * Returns either [cause] or an IOException that's caused by [cause] if a timeout
-   * occurred. See [newTimeoutException] for the type of exception
-   * returned.
-   */
-  @PublishedApi
-  internal fun exit(cause: IOException): IOException {
-    return if (!exit()) cause else newTimeoutException(cause)
-  }
-
-  /**
    * Surrounds [block] with calls to [enter] and [exit], throwing an exception from
    * [newTimeoutException] if a timeout occurred.
    */
@@ -171,9 +151,10 @@ open class AsyncTimeout : Timeout() {
       throwOnTimeout = true
       return result
     } catch (e: IOException) {
-      throw exit(e)
+      throw if (!exit()) e else newTimeoutException(e)
     } finally {
-      exit(throwOnTimeout)
+      val timedOut = exit()
+      if (timedOut && throwOnTimeout) throw newTimeoutException(null)
     }
   }
 
@@ -182,7 +163,7 @@ open class AsyncTimeout : Timeout() {
    * [InterruptedIOException]. If [cause] is non-null it is set as the cause of the
    * returned exception.
    */
-  protected open fun newTimeoutException(cause: IOException?): IOException {
+  open fun newTimeoutException(cause: IOException?): IOException {
     val e = InterruptedIOException("timeout")
     if (cause != null) {
       e.initCause(cause)
