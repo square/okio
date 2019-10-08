@@ -645,7 +645,20 @@ Our [change log][changelog] has release history.
 implementation("com.squareup.okio:okio:2.4.1")
 ```
 
-Snapshot builds are [available][snap].
+<details>
+   <summary>Snapshot builds are also available</summary>
+      
+```kotlin
+repositories {
+   maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
+}
+      
+dependencies {
+   implementation("com.squareup.okio:okio:x.y.z-SNAPSHOT")
+}
+```   
+  
+</details>
 
 
 R8 / ProGuard
@@ -679,7 +692,6 @@ License
  [7]: https://square.github.io/okio/2.x/okio/okio/-buffered-source/index.html
  [8]: https://square.github.io/okio/2.x/okio/okio/-buffered-sink/index.html
  [changelog]: http://square.github.io/okio/changelog/
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/
  [javadoc]: https://square.github.io/okio/2.x/okio/okio/index.html
  [nfd]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFD
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
