@@ -356,13 +356,8 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return toCopy
   }
 
-  /**
-   * Discards all bytes in this buffer. Calling this method when you're done with a buffer will
-   * return its segments to the pool.
-   */
   actual fun clear() = commonClear()
 
-  /** Discards `byteCount` bytes from the head of this buffer.  */
   @Throws(EOFException::class)
   actual override fun skip(byteCount: Long) = commonSkip(byteCount)
 
@@ -556,7 +551,6 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
    */
   override fun toString() = snapshot().toString()
 
-  /** Returns a deep copy of this buffer. */
   actual fun copy(): Buffer = commonCopy()
 
   /** Returns a deep copy of this buffer. */

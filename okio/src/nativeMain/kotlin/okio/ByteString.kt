@@ -43,15 +43,7 @@ import okio.internal.commonToString
 import okio.internal.commonUtf8
 import okio.internal.commonWrite
 
-/**
- * An immutable sequence of bytes.
- *
- * Byte strings compare lexicographically as a sequence of **unsigned** bytes. That is, the byte
- * string `ff` sorts after `00`. This is counter to the sort order of the corresponding bytes,
- * where `-1` sorts before `0`.
- */
 actual open class ByteString
-// Trusted internal constructor doesn't clone data.
 internal actual constructor(
   internal actual val data: ByteArray
 ) : Comparable<ByteString> {
@@ -66,64 +58,37 @@ internal actual constructor(
       // Do nothing to avoid IllegalImmutabilityException.
     }
 
-  /** Constructs a new `String` by decoding the bytes as `UTF-8`.  */
   actual open fun utf8(): String = commonUtf8()
 
-  /**
-   * Returns this byte string encoded as [Base64](http://www.ietf.org/rfc/rfc2045.txt). In violation
-   * of the RFC, the returned string does not wrap lines at 76 columns.
-   */
   actual open fun base64(): String = commonBase64()
 
-  /** Returns this byte string encoded as [URL-safe Base64](http://www.ietf.org/rfc/rfc4648.txt). */
   actual open fun base64Url(): String = commonBase64Url()
 
-  /** Returns this byte string encoded in hexadecimal.  */
   actual open fun hex(): String = commonHex()
 
-  /**
-   * Returns a byte string equal to this byte string, but with the bytes 'A' through 'Z' replaced
-   * with the corresponding byte in 'a' through 'z'. Returns this byte string if it contains no
-   * bytes in 'A' through 'Z'.
-   */
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()
 
-  /**
-   * Returns a byte string equal to this byte string, but with the bytes 'a' through 'z' replaced
-   * with the corresponding byte in 'A' through 'Z'. Returns this byte string if it contains no
-   * bytes in 'a' through 'z'.
-   */
   actual open fun toAsciiUppercase(): ByteString = commonToAsciiUppercase()
 
   actual open fun substring(beginIndex: Int, endIndex: Int): ByteString =
     commonSubstring(beginIndex, endIndex)
 
-  /** Returns the byte at `pos`.  */
   internal actual open fun internalGet(pos: Int) = commonGetByte(pos)
 
-  /** Returns the byte at `index`.  */
   actual operator fun get(index: Int): Byte = internalGet(index)
 
-  /** Returns the number of bytes in this ByteString. */
   actual val size
     get() = getSize()
 
-  // Hack to work around Kotlin's limitation for using JvmName on open/override vals/funs
   internal actual open fun getSize() = commonGetSize()
 
-  /** Returns a byte array containing a copy of the bytes in this `ByteString`. */
   actual open fun toByteArray() = commonToByteArray()
 
-  /** Returns the bytes of this string without a defensive copy. Do not mutate!  */
   internal actual open fun internalArray() = commonInternalArray()
 
   internal actual open fun write(buffer: Buffer, offset: Int, byteCount: Int) =
     commonWrite(buffer, offset, byteCount)
 
-  /**
-   * Returns true if the bytes of this in `[offset..offset+byteCount)` equal the bytes of `other` in
-   * `[otherOffset..otherOffset+byteCount)`. Returns false if either range is out of bounds.
-   */
   actual open fun rangeEquals(
     offset: Int,
     other: ByteString,
@@ -131,10 +96,6 @@ internal actual constructor(
     byteCount: Int
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
 
-  /**
-   * Returns true if the bytes of this in `[offset..offset+byteCount)` equal the bytes of `other` in
-   * `[otherOffset..otherOffset+byteCount)`. Returns false if either range is out of bounds.
-   */
   actual open fun rangeEquals(
     offset: Int,
     other: ByteArray,
@@ -171,25 +132,17 @@ internal actual constructor(
   actual override fun toString() = commonToString()
 
   actual companion object {
-    /** A singleton empty `ByteString`.  */
     actual val EMPTY: ByteString = ByteString(byteArrayOf())
 
-    /** Returns a new byte string containing a clone of the bytes of `data`. */
     actual fun of(vararg data: Byte) = commonOf(data)
 
     actual fun ByteArray.toByteString(offset: Int, byteCount: Int): ByteString =
       commonToByteString(offset, byteCount)
 
-    /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
     actual fun String.encodeUtf8(): ByteString = commonEncodeUtf8()
 
-    /**
-     * Decodes the Base64-encoded bytes and returns their value as a byte string. Returns null if
-     * this is not a Base64-encoded sequence of bytes.
-     */
     actual fun String.decodeBase64(): ByteString? = commonDecodeBase64()
 
-    /** Decodes the hex-encoded bytes and returns their value a byte string.  */
     actual fun String.decodeHex() = commonDecodeHex()
   }
 }
