@@ -83,10 +83,6 @@ actual class Buffer : BufferedSource, BufferedSink {
     byteCount: Long
   ): Buffer = commonCopyTo(out, offset, byteCount)
 
-  /**
-   * Overload of [copyTo] with byteCount = size - offset, work around for
-   *  https://youtrack.jetbrains.com/issue/KT-30847
-   */
   actual fun copyTo(
     out: Buffer,
     offset: Long
@@ -94,10 +90,6 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual operator fun get(pos: Long): Byte = commonGet(pos)
 
-  /**
-   * Returns the number of bytes in segments that are not writable. This is the number of bytes that
-   * can be flushed immediately to an underlying sink without harming throughput.
-   */
   actual fun completeSegmentByteCount(): Long = commonCompleteSegmentByteCount()
 
   override fun readByte(): Byte = commonReadByte()
@@ -248,12 +240,9 @@ actual class Buffer : BufferedSource, BufferedSink {
    */
   override fun toString() = snapshot().toString()
 
-  /** Returns a deep copy of this buffer. */
   actual fun copy(): Buffer = commonCopy()
 
-  /** Returns an immutable copy of this buffer as a byte string.  */
   actual fun snapshot(): ByteString = commonSnapshot()
 
-  /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
   actual fun snapshot(byteCount: Int): ByteString = commonSnapshot(byteCount)
 }

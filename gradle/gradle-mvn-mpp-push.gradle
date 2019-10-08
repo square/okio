@@ -5,47 +5,38 @@ apply plugin: 'org.jetbrains.dokka'
 dokka {
   outputDirectory = "$rootDir/docs/2.x"
   outputFormat = 'gfm'
-  reportUndocumented = false
-  skipDeprecated = true
-  jdkVersion = 8
-  impliedPlatforms = ["Common"] // This will force platform tags for all non-common sources e.g. "JVM"
-  kotlinTasks {
-    // dokka fails to retrieve sources from MPP-tasks so they must be set empty to avoid exception
-    // use sourceRoot instead (see below)
-    []
-  }
-  packageOptions {
-    prefix = "com.squareup.okio"
-    suppress = true
-  }
-  packageOptions {
-    prefix = "okio.internal"
-    suppress = true
-  }
-  sourceRoot {
-    // assuming there is only a single source dir...
-    path = kotlin.sourceSets.commonMain.kotlin.srcDirs[0]
-    platforms = ["Common"]
-  }
-  if (kotlin.sourceSets.getNames().contains("jvmMain")) {
-    sourceRoot {
-      // assuming there is only a single source dir...
-      path = kotlin.sourceSets.jvmMain.kotlin.srcDirs[0]
-      platforms = ["JVM"]
+
+  multiplatform {
+    global {
+      reportUndocumented = false
+      skipDeprecated = true
+      jdkVersion = 8
+      perPackageOption {
+        prefix = "com.squareup.okio"
+        suppress = true
+      }
+      perPackageOption {
+        prefix = "okio.internal"
+        suppress = true
+      }
     }
-  }
-  if (kotlin.sourceSets.getNames().contains("jsMain")) {
-    sourceRoot {
-      // assuming there is only a single source dir...
-      path = kotlin.sourceSets.jsMain.kotlin.srcDirs[0]
-      platforms = ["js"]
+    jvm {
+      sourceRoot {
+        // assuming there is only a single source dir...
+        path = kotlin.sourceSets.jvmMain.kotlin.srcDirs[0]
+      }
     }
-  }
-  if (kotlin.sourceSets.getNames().contains("nativeMain")) {
-    sourceRoot {
-      // assuming there is only a single source dir...
-      path = kotlin.sourceSets.nativeMain.kotlin.srcDirs[0]
-      platforms = ["native"]
+    js {
+      sourceRoot {
+        // assuming there is only a single source dir...
+        path = kotlin.sourceSets.jsMain.kotlin.srcDirs[0]
+      }
+    }
+    'native' {
+      sourceRoot {
+        // assuming there is only a single source dir...
+        path = kotlin.sourceSets.nativeMain.kotlin.srcDirs[0]
+      }
     }
   }
 }

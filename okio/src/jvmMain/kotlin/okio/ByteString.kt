@@ -56,7 +56,6 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 actual open class ByteString
-// Trusted internal constructor doesn't clone data.
 internal actual constructor(
   internal actual val data: ByteArray
 ) : Serializable, Comparable<ByteString> {
@@ -124,7 +123,6 @@ internal actual constructor(
   actual val size
     @JvmName("size") get() = getSize()
 
-  // Hack to work around Kotlin's limitation for using JvmName on open/override vals/funs
   internal actual open fun getSize() = commonGetSize()
 
   actual open fun toByteArray() = commonToByteArray()

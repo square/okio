@@ -65,8 +65,13 @@ expect class Buffer() : BufferedSource, BufferedSink {
   /** Returns the byte at `pos`. */
   operator fun get(pos: Long): Byte
 
+  /**
+   * Discards all bytes in this buffer. Calling this method when you're done with a buffer will
+   * return its segments to the pool.
+   */
   fun clear()
 
+  /** Discards `byteCount` bytes from the head of this buffer.  */
   override fun skip(byteCount: Long)
 
   override fun write(byteString: ByteString): Buffer
