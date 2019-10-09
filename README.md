@@ -650,7 +650,9 @@ implementation("com.squareup.okio:okio:2.4.1")
       
 ```kotlin
 repositories {
-   maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
+    maven {
+        url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+    }
 }
       
 dependencies {
