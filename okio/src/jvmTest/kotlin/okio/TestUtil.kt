@@ -20,7 +20,6 @@ import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
-import java.util.Arrays
 import java.util.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -46,12 +45,12 @@ object TestUtil {
 
   @JvmStatic
   fun assertByteArraysEquals(a: ByteArray, b: ByteArray) {
-    assertEquals(Arrays.toString(a), Arrays.toString(b))
+    assertEquals(a.contentToString(), b.contentToString())
   }
 
   @JvmStatic
   fun assertByteArrayEquals(expectedUtf8: String, b: ByteArray) {
-    assertEquals(expectedUtf8, String(b, Charsets.UTF_8))
+    assertEquals(expectedUtf8, b.toString(Charsets.UTF_8))
   }
 
   @JvmStatic
