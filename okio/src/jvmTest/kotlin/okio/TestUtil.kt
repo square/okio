@@ -46,12 +46,12 @@ object TestUtil {
 
   @JvmStatic
   fun assertByteArraysEquals(a: ByteArray, b: ByteArray) {
-    assertEquals(Arrays.toString(a), Arrays.toString(b))
+    assertEquals(a.contentToString(), b.contentToString())
   }
 
   @JvmStatic
   fun assertByteArrayEquals(expectedUtf8: String, b: ByteArray) {
-    assertEquals(expectedUtf8, String(b, Charsets.UTF_8))
+    assertEquals(expectedUtf8, b.toString(Charsets.UTF_8))
   }
 
   @JvmStatic
