@@ -13,25 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/** Essential APIs for working with Okio. */
+@file:JvmMultifileClass
+@file:JvmName("Okio")
+
 package okio
+
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * Returns a new source that buffers reads from `source`. The returned source will perform bulk
  * reads into its in-memory buffer. Use this wherever you read a source to get an ergonomic and
  * efficient access to data.
  */
-expect fun Source.buffer(): BufferedSource
+fun Source.buffer(): BufferedSource = RealBufferedSource(this)
 
 /**
  * Returns a new sink that buffers writes to `sink`. The returned sink will batch writes to `sink`.
  * Use this wherever you write to a sink to get an ergonomic and efficient access to data.
  */
-expect fun Sink.buffer(): BufferedSink
+fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
 
 /** Returns a sink that writes nowhere. */
-expect fun blackholeSink(): Sink // expect/actual required for Java interop
+@JvmName("blackhole")
+fun blackholeSink(): Sink = BlackholeSink()
 
-internal class BlackholeSink : Sink {
+private class BlackholeSink : Sink {
   override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
   override fun flush() {}
   override fun timeout() = Timeout.NONE
