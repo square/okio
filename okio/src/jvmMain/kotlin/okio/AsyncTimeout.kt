@@ -86,18 +86,7 @@ open class AsyncTimeout : Timeout() {
 
         var remaining = byteCount
         while (remaining > 0L) {
-          // Count how many bytes to write. This loop guarantees we split on a segment boundary.
-          var toWrite = 0L
-          var s = source.head!!
-          while (toWrite < TIMEOUT_WRITE_SIZE) {
-            val segmentSize = s.limit - s.pos
-            toWrite += segmentSize.toLong()
-            if (toWrite >= remaining) {
-              toWrite = remaining
-              break
-            }
-            s = s.next!!
-          }
+          val toWrite = source.calculateWriteSize(remaining)
 
           // Emit one write. Only this section is subject to the timeout.
           withTimeout { sink.write(source, toWrite) }
@@ -137,6 +126,67 @@ open class AsyncTimeout : Timeout() {
 
       override fun toString() = "AsyncTimeout.source($source)"
     }
+  }
+
+  fun store(store: Store): Store {
+    return object : Store {
+      override val timeout: Timeout = this@AsyncTimeout
+
+      override fun read(pos: Long, sink: Buffer, byteCount: Long): Long {
+        return withTimeout { store.read(pos, sink, byteCount) }
+      }
+
+      override fun write(pos: Long, source: Buffer, byteCount: Long) {
+        checkOffsetAndCount(source.size, 0, byteCount)
+
+        var position = pos
+        var remaining = byteCount
+        while (remaining > 0L) {
+          val toWrite = source.calculateWriteSize(remaining)
+
+          // Emit one write. Only this section is subject to the timeout.
+          withTimeout { store.write(position, source, toWrite) }
+          remaining -= toWrite
+          position += toWrite
+        }
+      }
+
+      override fun size(): Long {
+        return withTimeout { store.size() }
+      }
+
+      override fun truncate(size: Long) {
+        withTimeout { store.truncate(size) }
+      }
+
+      override fun flush() {
+        withTimeout { store.flush() }
+      }
+
+      override fun close() {
+        withTimeout { store.close() }
+      }
+
+      override fun toString(): String {
+        return "AsyncTimeout.store($store)"
+      }
+    }
+  }
+
+  private fun Buffer.calculateWriteSize(byteCount: Long): Long {
+    // Count how many bytes to write. This loop guarantees we split on a segment boundary.
+    var toWrite = 0L
+    var s = head!!
+    while (toWrite < TIMEOUT_WRITE_SIZE) {
+      val segmentSize = s.limit - s.pos
+      toWrite += segmentSize.toLong()
+      if (toWrite >= byteCount) {
+        toWrite = byteCount
+        break
+      }
+      s = s.next!!
+    }
+    return toWrite
   }
 
   /**

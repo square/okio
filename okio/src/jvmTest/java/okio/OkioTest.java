@@ -18,7 +18,9 @@ package okio;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.Rule;
@@ -80,6 +82,39 @@ public final class OkioTest {
     BufferedSource source = Okio.buffer(Okio.source(path));
     assertEquals("Hello, java.nio file!", source.readUtf8());
     source.close();
+  }
+
+  @Test public void storePath() throws Exception {
+    Path path = temporaryFolder.newFile().toPath();
+    Store store = Okio.store(path);
+    assertEquals(0, store.size());
+
+    testStore(store);
+  }
+
+  private void testStore(Store store) throws IOException {
+    BufferedSink sink = Okio.buffer(Okio.sink(store, 0));
+    sink.writeUtf8("Hello, Store!");
+    sink.close();
+    assertEquals(13, store.size());
+
+    store.truncate(12);
+
+    BufferedSource source = Okio.buffer(Okio.source(store, 7));
+    assertEquals("Store", source.readUtf8());
+    source.close();
+
+    source = Okio.buffer(Okio.source(store, 0));
+    assertEquals("Hello, Store", source.readUtf8());
+    source.close();
+
+    store.truncate(5);
+
+    source = Okio.buffer(Okio.source(store, 0));
+    assertEquals("Hello", source.readUtf8());
+    source.close();
+
+    store.close();
   }
 
   @Test public void sinkFromOutputStream() throws Exception {

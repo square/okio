@@ -33,7 +33,7 @@ import java.io.InterruptedIOException
  *    immediately available, only wait until we can allocate at least this many bytes. Use this to
  *    set the ideal byte count during sustained throughput.
  *  * `maxByteCount`: Maximum number of bytes to allocate on any call. This is also the number of
- *    bytes that will be returned before any waiting.
+ *    bytes that will be returned before throttling is enforced.
  */
 class Throttler internal constructor(
   /**
@@ -55,7 +55,7 @@ class Throttler internal constructor(
     waitByteCount: Long = this.waitByteCount,
     maxByteCount: Long = this.maxByteCount
   ) {
-    synchronized(this) {
+    kotlin.synchronized(this) {
       require(bytesPerSecond >= 0)
       require(waitByteCount > 0)
       require(maxByteCount >= waitByteCount)
@@ -74,7 +74,7 @@ class Throttler internal constructor(
   internal fun take(byteCount: Long): Long {
     require(byteCount > 0)
 
-    synchronized(this) {
+    kotlin.synchronized(this) {
       while (true) {
         val now = System.nanoTime()
         val byteCountOrWaitNanos = byteCountOrWaitNanos(now, byteCount)
@@ -82,7 +82,16 @@ class Throttler internal constructor(
         waitNanos(-byteCountOrWaitNanos)
       }
     }
-    throw AssertionError() // Unreachable, but synchronized() doesn't know that.
+  }
+
+  internal inline fun <R> throttled(requestedByteCount: Long, block: (allowedByteCount: Long) -> R): R {
+    try {
+      val allowedByteCount = take(requestedByteCount)
+      return block(allowedByteCount)
+    } catch (e: InterruptedException) {
+      Thread.currentThread().interrupt()
+      throw InterruptedIOException("interrupted")
+    }
   }
 
   /**
@@ -135,13 +144,7 @@ class Throttler internal constructor(
   fun source(source: Source): Source {
     return object : ForwardingSource(source) {
       override fun read(sink: Buffer, byteCount: Long): Long {
-        try {
-          val toRead = take(byteCount)
-          return super.read(sink, toRead)
-        } catch (e: InterruptedException) {
-          Thread.currentThread().interrupt()
-          throw InterruptedIOException("interrupted")
-        }
+        return throttled(byteCount) { toRead -> super.read(sink, toRead) }
       }
     }
   }
@@ -151,16 +154,33 @@ class Throttler internal constructor(
     return object : ForwardingSink(sink) {
       @Throws(IOException::class)
       override fun write(source: Buffer, byteCount: Long) {
-        try {
-          var remaining = byteCount
-          while (remaining > 0L) {
-            val toWrite = take(remaining)
+        var remaining = byteCount
+        while (remaining > 0L) {
+          throttled(remaining) { toWrite ->
             super.write(source, toWrite)
             remaining -= toWrite
           }
-        } catch (e: InterruptedException) {
-          Thread.currentThread().interrupt()
-          throw InterruptedIOException("interrupted")
+        }
+      }
+    }
+  }
+
+  /** Create a Store which honors this Throttler.  */
+  fun store(store: Store): Store {
+    return object : Store by store {
+      override fun read(pos: Long, sink: Buffer, byteCount: Long): Long {
+        return throttled(byteCount) { toRead -> store.read(pos, sink, toRead) }
+      }
+
+      override fun write(pos: Long, source: Buffer, byteCount: Long) {
+        var position = pos
+        var remaining = byteCount
+        while (remaining > 0L) {
+          throttled(remaining) { toWrite ->
+            store.write(position, source, toWrite)
+            remaining -= toWrite
+            position += toWrite
+          }
         }
       }
     }

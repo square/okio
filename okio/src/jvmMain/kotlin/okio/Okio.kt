@@ -26,17 +26,50 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.io.RandomAccessFile
 import java.net.Socket
 import java.net.SocketTimeoutException
+import java.nio.channels.Channel
+import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.logging.Level
 import java.util.logging.Logger
 
 actual fun Source.buffer(): BufferedSource = RealBufferedSource(this)
 
 actual fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
+
+fun Store.source(pos: Long): Source {
+  return object : Source {
+    private var position = pos
+    override fun read(sink: Buffer, byteCount: Long): Long {
+      val read = read(position, sink, byteCount)
+      if (read == -1L) return -1L
+      position += read
+      return read
+    }
+
+    override fun timeout(): Timeout = timeout
+    override fun close() {}
+  }
+}
+
+fun Store.sink(pos: Long): Sink {
+  return object : Sink {
+    private var position = pos
+    override fun write(source: Buffer, byteCount: Long) {
+      write(position, source, byteCount)
+      position += byteCount
+    }
+
+    override fun flush() = this@sink.flush()
+    override fun timeout(): Timeout = timeout
+    override fun close() = flush() // TODO: should close flush?
+  }
+}
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -108,6 +141,12 @@ private class InputStreamSource(
   override fun toString() = "source($input)"
 }
 
+fun FileChannel.store(): Store {
+  val timeout = ChannelAsyncTimeout(this)
+  val store = FileChannelStore(this, timeout)
+  return timeout.store(store)
+}
+
 @JvmName("blackhole")
 actual fun blackholeSink(): Sink = BlackholeSink()
 
@@ -176,6 +215,8 @@ fun File.appendingSink(): Sink = FileOutputStream(this, true).sink()
 @Throws(FileNotFoundException::class)
 fun File.source(): Source = inputStream().source()
 
+fun RandomAccessFile.store(): Store = channel.store()
+
 /** Returns a source that reads from `path`. */
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
@@ -187,6 +228,31 @@ fun Path.sink(vararg options: OpenOption): Sink =
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
 fun Path.source(vararg options: OpenOption): Source =
     Files.newInputStream(this, *options).source()
+
+@Throws(IOException::class)
+@IgnoreJRERequirement // Can only be invoked on Java 7+.
+fun Path.store(vararg options: OpenOption): Store {
+  val openOptions = if (options.isNotEmpty()) options.toSet()
+  else setOf( // mimics the behavior of newOutputStream and newInputStream
+    StandardOpenOption.CREATE,
+    StandardOpenOption.TRUNCATE_EXISTING,
+    StandardOpenOption.READ,
+    StandardOpenOption.WRITE
+  )
+  return FileChannel.open(this, openOptions).store()
+}
+
+private class ChannelAsyncTimeout(private val channel: Channel) : AsyncTimeout() {
+  private val logger = Logger.getLogger("okio.Okio")
+
+  override fun timedOut() {
+    try {
+      channel.close()
+    } catch (e: Exception) {
+      logger.log(Level.WARNING, "Failed to close timed out channel $channel", e)
+    }
+  }
+}
 
 /**
  * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.
