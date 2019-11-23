@@ -6,7 +6,7 @@ osx_image: xcode11.2
 language: java
 
 jdk:
-  - openjdk8
+  - oraclejdk8
 
 dist: trusty
 
