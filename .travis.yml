@@ -8,6 +8,8 @@ language: java
 jdk:
   - openjdk8
 
+dist: trusty
+
 script:
   - ./gradlew clean build
 
