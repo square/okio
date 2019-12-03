@@ -20,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.Rule;
@@ -86,31 +85,31 @@ public final class OkioTest {
 
   @Test public void storePath() throws Exception {
     Path path = temporaryFolder.newFile().toPath();
-    Store store = Okio.store(path);
+    Store store = Okio.asStore(path);
     assertEquals(0, store.size());
 
     testStore(store);
   }
 
   private void testStore(Store store) throws IOException {
-    BufferedSink sink = Okio.buffer(Okio.sink(store, 0));
+    BufferedSink sink = Okio.buffer(Okio.asSink(store, 0));
     sink.writeUtf8("Hello, Store!");
     sink.close();
     assertEquals(13, store.size());
 
     store.truncate(12);
 
-    BufferedSource source = Okio.buffer(Okio.source(store, 7));
+    BufferedSource source = Okio.buffer(Okio.asSource(store, 7));
     assertEquals("Store", source.readUtf8());
     source.close();
 
-    source = Okio.buffer(Okio.source(store, 0));
+    source = Okio.buffer(Okio.asSource(store, 0));
     assertEquals("Hello, Store", source.readUtf8());
     source.close();
 
     store.truncate(5);
 
-    source = Okio.buffer(Okio.source(store, 0));
+    source = Okio.buffer(Okio.asSource(store, 0));
     assertEquals("Hello", source.readUtf8());
     source.close();
 

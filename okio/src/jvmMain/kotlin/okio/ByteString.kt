@@ -58,7 +58,7 @@ import javax.crypto.spec.SecretKeySpec
 actual open class ByteString
 internal actual constructor(
   internal actual val data: ByteArray
-) : Serializable, Comparable<ByteString> {
+) : Input, Serializable, Comparable<ByteString> {
   @Transient internal actual var hashCode: Int = 0 // Lazily computed; 0 if unknown.
   @Transient internal actual var utf8: String? = null // Lazily computed.
 
@@ -141,6 +141,14 @@ internal actual constructor(
   internal actual open fun write(buffer: Buffer, offset: Int, byteCount: Int) =
     commonWrite(buffer, offset, byteCount)
 
+  override fun read(sink: Buffer, offset: Long, byteCount: Long): Long {
+    require(offset <= size.toLong() && byteCount >= 0 && byteCount <= Int.MAX_VALUE) {
+      "size=$size offset=$offset byteCount=$byteCount"
+    }
+    write(sink, offset.toInt(), byteCount.toInt())
+    return byteCount
+  }
+
   actual open fun rangeEquals(
     offset: Int,
     other: ByteString,
@@ -174,6 +182,9 @@ internal actual constructor(
 
   @JvmOverloads
   actual open fun lastIndexOf(other: ByteArray, fromIndex: Int) = commonLastIndexOf(other, fromIndex)
+
+  override val timeout: Timeout get() = Timeout.NONE
+  override fun close() {}
 
   actual override fun equals(other: Any?) = commonEquals(other)
 

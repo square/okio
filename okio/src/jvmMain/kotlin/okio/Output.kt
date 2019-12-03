@@ -15,13 +15,20 @@
  */
 package okio
 
+import java.io.Closeable
+import java.io.Flushable
 import java.io.IOException
 
-interface Store : Input, Output {
+interface Output : Closeable, Flushable {
 
   @Throws(IOException::class)
-  fun size(): Long // TODO val?
+  fun write(source: Buffer, offset: Long, byteCount: Long)
 
   @Throws(IOException::class)
-  fun truncate(size: Long)
+  override fun flush()
+
+  val timeout: Timeout
+
+  @Throws(IOException::class)
+  override fun close()
 }

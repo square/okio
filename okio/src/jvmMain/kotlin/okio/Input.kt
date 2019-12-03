@@ -15,13 +15,16 @@
  */
 package okio
 
+import java.io.Closeable
 import java.io.IOException
 
-interface Store : Input, Output {
+interface Input : Closeable {
 
   @Throws(IOException::class)
-  fun size(): Long // TODO val?
+  fun read(sink: Buffer, offset: Long, byteCount: Long): Long
+
+  val timeout: Timeout
 
   @Throws(IOException::class)
-  fun truncate(size: Long)
+  override fun close()
 }

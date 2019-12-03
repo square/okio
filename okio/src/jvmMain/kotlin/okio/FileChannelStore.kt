@@ -24,12 +24,12 @@ internal class FileChannelStore(
 ) : Store {
 
   @Throws(IOException::class)
-  override fun read(pos: Long, sink: Buffer, byteCount: Long): Long {
+  override fun read(sink: Buffer, offset: Long, byteCount: Long): Long {
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }
     if (byteCount == 0L) return 0
-    if (pos == channel.size()) return -1
+    if (offset == channel.size()) return -1
 
-    var position = pos
+    var position = offset
     var remaining = byteCount
     while (remaining > 0) {
       timeout.throwIfReached()
@@ -42,11 +42,11 @@ internal class FileChannelStore(
   }
 
   @Throws(IOException::class)
-  override fun write(pos: Long, source: Buffer, byteCount: Long) {
+  override fun write(source: Buffer, offset: Long, byteCount: Long) {
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }
     if (byteCount == 0L) return
 
-    var position = pos
+    var position = offset
     var remaining = byteCount
     while (byteCount > 0) {
       timeout.throwIfReached()

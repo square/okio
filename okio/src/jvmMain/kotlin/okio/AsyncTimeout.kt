@@ -132,20 +132,20 @@ open class AsyncTimeout : Timeout() {
     return object : Store {
       override val timeout: Timeout = this@AsyncTimeout
 
-      override fun read(pos: Long, sink: Buffer, byteCount: Long): Long {
-        return withTimeout { store.read(pos, sink, byteCount) }
+      override fun read(sink: Buffer, offset: Long, byteCount: Long): Long {
+        return withTimeout { store.read(sink, offset, byteCount) }
       }
 
-      override fun write(pos: Long, source: Buffer, byteCount: Long) {
+      override fun write(source: Buffer, offset: Long, byteCount: Long) {
         checkOffsetAndCount(source.size, 0, byteCount)
 
-        var position = pos
+        var position = offset
         var remaining = byteCount
         while (remaining > 0L) {
           val toWrite = source.calculateWriteSize(remaining)
 
           // Emit one write. Only this section is subject to the timeout.
-          withTimeout { store.write(position, source, toWrite) }
+          withTimeout { store.write(source, position, toWrite) }
           remaining -= toWrite
           position += toWrite
         }

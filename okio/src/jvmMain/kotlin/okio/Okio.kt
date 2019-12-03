@@ -42,11 +42,11 @@ actual fun Source.buffer(): BufferedSource = RealBufferedSource(this)
 
 actual fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
 
-fun Store.source(pos: Long): Source {
+fun Input.asSource(pos: Long): Source {
   return object : Source {
     private var position = pos
     override fun read(sink: Buffer, byteCount: Long): Long {
-      val read = read(position, sink, byteCount)
+      val read = read(sink, position, byteCount)
       if (read == -1L) return -1L
       position += read
       return read
@@ -57,15 +57,15 @@ fun Store.source(pos: Long): Source {
   }
 }
 
-fun Store.sink(pos: Long): Sink {
+fun Output.asSink(pos: Long): Sink {
   return object : Sink {
     private var position = pos
     override fun write(source: Buffer, byteCount: Long) {
-      write(position, source, byteCount)
+      write(source, position, byteCount)
       position += byteCount
     }
 
-    override fun flush() = this@sink.flush()
+    override fun flush() = this@asSink.flush()
     override fun timeout(): Timeout = timeout
     override fun close() = flush() // TODO: should close flush?
   }
@@ -141,7 +141,7 @@ private class InputStreamSource(
   override fun toString() = "source($input)"
 }
 
-fun FileChannel.store(): Store {
+fun FileChannel.asStore(): Store {
   val timeout = ChannelAsyncTimeout(this)
   val store = FileChannelStore(this, timeout)
   return timeout.store(store)
@@ -215,7 +215,7 @@ fun File.appendingSink(): Sink = FileOutputStream(this, true).sink()
 @Throws(FileNotFoundException::class)
 fun File.source(): Source = inputStream().source()
 
-fun RandomAccessFile.store(): Store = channel.store()
+fun RandomAccessFile.asStore(): Store = channel.asStore()
 
 /** Returns a source that reads from `path`. */
 @Throws(IOException::class)
@@ -231,7 +231,7 @@ fun Path.source(vararg options: OpenOption): Source =
 
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
-fun Path.store(vararg options: OpenOption): Store {
+fun Path.asStore(vararg options: OpenOption): Store {
   val openOptions = if (options.isNotEmpty()) options.toSet()
   else setOf( // mimics the behavior of newOutputStream and newInputStream
     StandardOpenOption.CREATE,
@@ -239,7 +239,7 @@ fun Path.store(vararg options: OpenOption): Store {
     StandardOpenOption.READ,
     StandardOpenOption.WRITE
   )
-  return FileChannel.open(this, openOptions).store()
+  return FileChannel.open(this, openOptions).asStore()
 }
 
 private class ChannelAsyncTimeout(private val channel: Channel) : AsyncTimeout() {

@@ -165,19 +165,45 @@ class Throttler internal constructor(
     }
   }
 
-  /** Create a Store which honors this Throttler.  */
-  fun store(store: Store): Store {
-    return object : Store by store {
-      override fun read(pos: Long, sink: Buffer, byteCount: Long): Long {
-        return throttled(byteCount) { toRead -> store.read(pos, sink, toRead) }
+  /** Create a Input which honors this Throttler.  */
+  fun input(input: Input): Input {
+    return object : Input by input {
+      override fun read(sink: Buffer, offset: Long, byteCount: Long): Long {
+        return throttled(byteCount) { toRead -> input.read(sink, offset, toRead) }
       }
+    }
+  }
 
-      override fun write(pos: Long, source: Buffer, byteCount: Long) {
-        var position = pos
+  /** Create a Output which honors this Throttler.  */
+  fun output(output: Output): Output {
+    return object : Output by output {
+      override fun write(source: Buffer, offset: Long, byteCount: Long) {
+        var position = offset
         var remaining = byteCount
         while (remaining > 0L) {
           throttled(remaining) { toWrite ->
-            store.write(position, source, toWrite)
+            output.write(source, position, toWrite)
+            remaining -= toWrite
+            position += toWrite
+          }
+        }
+      }
+    }
+  }
+
+  /** Create a Store which honors this Throttler.  */
+  fun store(store: Store): Store {
+    return object : Store by store {
+      override fun read(sink: Buffer, offset: Long, byteCount: Long): Long {
+        return throttled(byteCount) { toRead -> store.read(sink, offset, toRead) }
+      }
+
+      override fun write(source: Buffer, offset: Long, byteCount: Long) {
+        var position = offset
+        var remaining = byteCount
+        while (remaining > 0L) {
+          throttled(remaining) { toWrite ->
+            store.write(source, position, toWrite)
             remaining -= toWrite
             position += toWrite
           }
