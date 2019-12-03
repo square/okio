@@ -151,19 +151,22 @@ open class AsyncTimeout : Timeout() {
       throwOnTimeout = true
       return result
     } catch (e: IOException) {
-      throw if (!exit()) e else newTimeoutException(e)
+      throw if (!exit()) e else `access$newTimeoutException`(e)
     } finally {
       val timedOut = exit()
-      if (timedOut && throwOnTimeout) throw newTimeoutException(null)
+      if (timedOut && throwOnTimeout) throw `access$newTimeoutException`(null)
     }
   }
+
+  @PublishedApi // Binary compatible trampoline function
+  internal fun `access$newTimeoutException`(cause: IOException?) = newTimeoutException(cause)
 
   /**
    * Returns an [IOException] to represent a timeout. By default this method returns
    * [InterruptedIOException]. If [cause] is non-null it is set as the cause of the
    * returned exception.
    */
-  open fun newTimeoutException(cause: IOException?): IOException {
+  protected open fun newTimeoutException(cause: IOException?): IOException {
     val e = InterruptedIOException("timeout")
     if (cause != null) {
       e.initCause(cause)
