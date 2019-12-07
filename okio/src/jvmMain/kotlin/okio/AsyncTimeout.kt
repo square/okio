@@ -140,28 +140,10 @@ open class AsyncTimeout : Timeout() {
   }
 
   /**
-   * Throws an IOException if [throwOnTimeout] is `true` and a timeout occurred. See
-   * [newTimeoutException] for the type of exception thrown.
-   */
-  internal fun exit(throwOnTimeout: Boolean) {
-    val timedOut = exit()
-    if (timedOut && throwOnTimeout) throw newTimeoutException(null)
-  }
-
-  /**
-   * Returns either [cause] or an IOException that's caused by [cause] if a timeout
-   * occurred. See [newTimeoutException] for the type of exception
-   * returned.
-   */
-  internal fun exit(cause: IOException): IOException {
-    return if (!exit()) cause else newTimeoutException(cause)
-  }
-
-  /**
    * Surrounds [block] with calls to [enter] and [exit], throwing an exception from
    * [newTimeoutException] if a timeout occurred.
    */
-  internal inline fun <T> withTimeout(block: () -> T): T {
+  inline fun <T> withTimeout(block: () -> T): T {
     var throwOnTimeout = false
     enter()
     try {
@@ -169,11 +151,15 @@ open class AsyncTimeout : Timeout() {
       throwOnTimeout = true
       return result
     } catch (e: IOException) {
-      throw exit(e)
+      throw if (!exit()) e else `access$newTimeoutException`(e)
     } finally {
-      exit(throwOnTimeout)
+      val timedOut = exit()
+      if (timedOut && throwOnTimeout) throw `access$newTimeoutException`(null)
     }
   }
+
+  @PublishedApi // Binary compatible trampoline function
+  internal fun `access$newTimeoutException`(cause: IOException?) = newTimeoutException(cause)
 
   /**
    * Returns an [IOException] to represent a timeout. By default this method returns
