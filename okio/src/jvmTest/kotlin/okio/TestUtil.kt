@@ -23,7 +23,6 @@ import java.io.Serializable
 import java.util.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 object TestUtil {
@@ -34,21 +33,11 @@ object TestUtil {
   @JvmStatic fun segmentPoolByteCount() = SegmentPool.byteCount
 
   @JvmStatic
-  fun segmentSizes(buffer: Buffer): List<Int> {
-    val result = mutableListOf<Int>()
-    buffer.readUnsafe().use { cursor ->
-      while (cursor.next() > 0) {
-        result.add(cursor.end - cursor.start)
-      }
-    }
-    return result
-  }
+  fun segmentSizes(buffer: Buffer): List<Int> = okio.segmentSizes(buffer)
 
   @JvmStatic
-  fun assertNoEmptySegment(buffer: Buffer) {
-    // This assertion uses the implementation detail that Buffer.read(ByteArray) returns 0 if there's an empty Segment.
-    assertNotEquals(0, buffer.read(byteArrayOf(0)),
-      "Expected Buffer to not contain an empty Segment; but Buffer.read(ByteArray) returned 0")
+  fun assertNoEmptySegments(buffer: Buffer) {
+    assertTrue(segmentSizes(buffer).all { it != 0 }, "Expected all segments to be non-empty")
   }
 
   @JvmStatic
