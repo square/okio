@@ -28,6 +28,7 @@ import org.junit.rules.TemporaryFolder;
 import static kotlin.text.Charsets.UTF_8;
 import static kotlin.text.StringsKt.repeat;
 import static okio.TestUtil.SEGMENT_SIZE;
+import static okio.TestUtil.assertNoEmptySegment;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -118,6 +119,18 @@ public final class OkioTest {
 
     // Source and sink are empty.
     assertEquals(-1, source.read(sink, 1));
+  }
+
+  @Test public void sourceFromInputStreamWithSegmentSize() throws Exception {
+    InputStream in = new ByteArrayInputStream(new byte[SEGMENT_SIZE]);
+    Source source = Okio.source(in);
+    Buffer sink = new Buffer();
+
+    assertEquals(SEGMENT_SIZE, source.read(sink, SEGMENT_SIZE));
+    assertEquals(-1, source.read(sink, SEGMENT_SIZE));
+
+    assertEquals(SEGMENT_SIZE, sink.read(new byte[TestUtil.SEGMENT_SIZE]));
+    assertNoEmptySegment(sink);
   }
 
   @Test public void sourceFromInputStreamBounds() throws Exception {
