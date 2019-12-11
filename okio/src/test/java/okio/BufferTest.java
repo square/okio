@@ -25,6 +25,7 @@ import java.util.Random;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
+import static okio.TestUtil.assertNoEmptySegments;
 import static okio.TestUtil.bufferWithRandomSegmentLayout;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
@@ -290,6 +291,12 @@ public final class BufferTest {
     buffer.readFrom(in, 10);
     String out = buffer.readUtf8();
     assertEquals("hello, wor", out);
+  }
+
+  @Test public void readFromDoesNotLeaveEmptyTailSegment() throws IOException {
+    Buffer buffer = new Buffer();
+    buffer.readFrom(new ByteArrayInputStream(new byte[Segment.SIZE]));
+    assertNoEmptySegments(buffer);
   }
 
   @Test public void moveAllRequestedBytesWithRead() throws Exception {

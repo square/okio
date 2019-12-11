@@ -24,10 +24,17 @@ import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 final class TestUtil {
   private TestUtil() {
+  }
+
+  static void assertNoEmptySegments(Buffer buffer) {
+    for (Integer segmentSize : buffer.segmentSizes()) {
+      assertNotEquals("Expected all segments to be non-empty", 0, segmentSize.intValue());
+    }
   }
 
   static void assertByteArraysEquals(byte[] a, byte[] b) {

@@ -257,6 +257,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
       int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
       if (bytesRead == -1) {
+        if (tail.pos == tail.limit) {
+          // We allocated a tail segment, but didn't end up needing it. Recycle!
+          head = tail.pop();
+          SegmentPool.recycle(tail);
+        }
         if (forever) return;
         throw new EOFException();
       }
