@@ -91,7 +91,14 @@ private class InputStreamSource(
       val tail = sink.writableSegment(1)
       val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
       val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
-      if (bytesRead == -1) return -1
+      if (bytesRead == -1) {
+        if (tail.pos == tail.limit) {
+          // We allocated a tail segment, but didn't end up needing it. Recycle!
+          sink.head = tail.pop()
+          SegmentPool.recycle(tail)
+        }
+        return -1
+      }
       tail.limit += bytesRead
       sink.size += bytesRead
       return bytesRead.toLong()
