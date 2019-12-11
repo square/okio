@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+## Version 2.4.2
+
+_2019-12-11_
+
+ * Fix: Don't crash when an `InputStream` source is exhausted exactly at a buffer segment boundary.
+   We had a bug where a sequence of reads could violate a buffer's invariants, and this could result
+   in a crash when subsequent reads encountered an unexpected empty segment.
+
+
+## Version 1.17.5
+
+_2019-12-11_
+
+ * Fix: Don't crash when an `InputStream` source is exhausted exactly at a buffer segment boundary.
+   We had a bug where a sequence of reads could violate a buffer's invariants, and this could result
+   in a crash when subsequent reads encountered an unexpected empty segment.
+
+
 ### Version 2.4.1
 
 _2019-10-04_
