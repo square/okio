@@ -30,6 +30,7 @@ import static kotlin.text.Charsets.UTF_8;
 import static kotlin.text.StringsKt.repeat;
 import static okio.TestUtil.SEGMENT_POOL_MAX_SIZE;
 import static okio.TestUtil.SEGMENT_SIZE;
+import static okio.TestUtil.assertNoEmptySegments;
 import static okio.TestUtil.bufferWithRandomSegmentLayout;
 import static okio.TestUtil.segmentPoolByteCount;
 import static okio.TestUtil.segmentSizes;
@@ -278,6 +279,12 @@ public final class BufferTest {
     buffer.readFrom(in, 10);
     String out = buffer.readUtf8();
     assertEquals("hello, wor", out);
+  }
+
+  @Test public void readFromDoesNotLeaveEmptyTailSegment() throws IOException {
+    Buffer buffer = new Buffer();
+    buffer.readFrom(new ByteArrayInputStream(new byte[SEGMENT_SIZE]));
+    assertNoEmptySegments(buffer);
   }
 
   @Test public void moveAllRequestedBytesWithRead() throws Exception {

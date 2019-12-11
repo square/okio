@@ -228,6 +228,11 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
       val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
       val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
       if (bytesRead == -1) {
+        if (tail.pos == tail.limit) {
+          // We allocated a tail segment, but didn't end up needing it. Recycle!
+          head = tail.pop()
+          SegmentPool.recycle(tail)
+        }
         if (forever) return
         throw EOFException()
       }

@@ -33,14 +33,11 @@ object TestUtil {
   @JvmStatic fun segmentPoolByteCount() = SegmentPool.byteCount
 
   @JvmStatic
-  fun segmentSizes(buffer: Buffer): List<Int> {
-    val result = mutableListOf<Int>()
-    buffer.readUnsafe().use { cursor ->
-      while (cursor.next() > 0) {
-        result.add(cursor.end - cursor.start)
-      }
-    }
-    return result
+  fun segmentSizes(buffer: Buffer): List<Int> = okio.segmentSizes(buffer)
+
+  @JvmStatic
+  fun assertNoEmptySegments(buffer: Buffer) {
+    assertTrue(segmentSizes(buffer).all { it != 0 }, "Expected all segments to be non-empty")
   }
 
   @JvmStatic
