@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static okio.TestUtil.assertNoEmptySegments;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -117,6 +118,17 @@ public final class OkioTest {
 
     // Source and sink are empty.
     assertEquals(-1, source.read(sink, 1));
+  }
+
+  @Test public void sourceFromInputStreamWithSegmentSize() throws Exception {
+    InputStream in = new ByteArrayInputStream(new byte[Segment.SIZE]);
+    Source source = Okio.source(in);
+    Buffer sink = new Buffer();
+
+    assertEquals(Segment.SIZE, source.read(sink, Segment.SIZE));
+    assertEquals(-1, source.read(sink, Segment.SIZE));
+
+    assertNoEmptySegments(sink);
   }
 
   @Test public void sourceFromInputStreamBounds() throws Exception {

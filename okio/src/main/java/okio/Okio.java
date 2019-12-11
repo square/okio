@@ -138,7 +138,14 @@ public final class Okio {
           Segment tail = sink.writableSegment(1);
           int maxToCopy = (int) Math.min(byteCount, Segment.SIZE - tail.limit);
           int bytesRead = in.read(tail.data, tail.limit, maxToCopy);
-          if (bytesRead == -1) return -1;
+          if (bytesRead == -1) {
+            if (tail.pos == tail.limit) {
+              // We allocated a tail segment, but didn't end up needing it. Recycle!
+              sink.head = tail.pop();
+              SegmentPool.recycle(tail);
+            }
+            return -1;
+          }
           tail.limit += bytesRead;
           sink.size += bytesRead;
           return bytesRead;
