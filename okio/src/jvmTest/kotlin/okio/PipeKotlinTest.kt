@@ -615,7 +615,7 @@ class PipeKotlinTest {
     val elapsed = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis() - start)
 
     assertEquals(expected.toDouble(), elapsed.toDouble(),
-      TimeUnit.MILLISECONDS.toNanos(100).toDouble())
+      TimeUnit.MILLISECONDS.toNanos(200).toDouble())
   }
 
   /** Writes on this sink never complete. They can only time out. */
