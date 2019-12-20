@@ -4,7 +4,7 @@ kotlin {
   jvm {
     withJava()
   }
-  js() {
+  js {
     configure([compilations.main, compilations.test]) {
       tasks.getByName(compileKotlinTaskName).kotlinOptions {
         moduleKind = "umd"
@@ -12,7 +12,13 @@ kotlin {
         metaInfo = true
       }
     }
-    nodejs()
+    nodejs {
+      testTask {
+        useMocha {
+          timeout = "30s"
+        }
+      }
+    }
   }
   iosX64()
   iosArm64()
