@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## Version 2.4.3
+
+_2019-12-20_
+
+ * New Upgrade to Kotlin 1.3.61.
+
+
 ## Version 2.4.2
 
 _2019-12-11_
