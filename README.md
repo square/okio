@@ -656,7 +656,7 @@ repositories {
 }
       
 dependencies {
-   implementation("com.squareup.okio:okio:2.4.3")
+   implementation("com.squareup.okio:okio:2.5.0-SNAPSHOT")
 }
 ```   
   
