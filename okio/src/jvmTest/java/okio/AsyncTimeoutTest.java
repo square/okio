@@ -16,7 +16,6 @@
 package okio;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -198,7 +197,7 @@ public final class AsyncTimeoutTest {
     try {
       timeoutSink.write(data, 1);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
     }
   }
 
@@ -218,7 +217,7 @@ public final class AsyncTimeoutTest {
     try {
       timeoutSink.flush();
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
     }
   }
 
@@ -238,7 +237,7 @@ public final class AsyncTimeoutTest {
     try {
       timeoutSink.close();
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
     }
   }
 
@@ -259,7 +258,7 @@ public final class AsyncTimeoutTest {
     try {
       timeoutSource.read(new Buffer(), 0);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
     }
   }
 
@@ -279,7 +278,7 @@ public final class AsyncTimeoutTest {
     try {
       timeoutSource.close();
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
     }
   }
 
