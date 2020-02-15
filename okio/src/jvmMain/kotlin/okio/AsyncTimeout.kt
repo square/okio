@@ -16,7 +16,6 @@
 package okio
 
 import java.io.IOException
-import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -163,11 +162,10 @@ open class AsyncTimeout : Timeout() {
 
   /**
    * Returns an [IOException] to represent a timeout. By default this method returns
-   * [InterruptedIOException]. If [cause] is non-null it is set as the cause of the
-   * returned exception.
+   * [TimeoutException]. If [cause] is non-null it is set as the cause of the returned exception.
    */
   protected open fun newTimeoutException(cause: IOException?): IOException {
-    val e = InterruptedIOException("timeout")
+    val e = TimeoutException("timeout")
     if (cause != null) {
       e.initCause(cause)
     }

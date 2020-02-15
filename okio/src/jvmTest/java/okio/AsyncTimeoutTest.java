@@ -301,7 +301,7 @@ public final class AsyncTimeoutTest {
     try {
       timeoutSink.write(data, 1);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
       assertEquals("timeout", expected.getMessage());
       assertEquals("exception and timeout", expected.getCause().getMessage());
     }
