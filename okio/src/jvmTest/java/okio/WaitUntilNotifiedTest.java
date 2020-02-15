@@ -50,33 +50,33 @@ public final class WaitUntilNotifiedTest {
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void timeout() {
+  @Test public synchronized void timeout() throws InterruptedIOException {
     Timeout timeout = new Timeout();
     timeout.timeout(1000, TimeUnit.MILLISECONDS);
     double start = now();
     try {
       timeout.waitUntilNotified(this);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
       assertEquals("timeout", expected.getMessage());
     }
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void deadline() {
+  @Test public synchronized void deadline() throws InterruptedIOException {
     Timeout timeout = new Timeout();
     timeout.deadline(1000, TimeUnit.MILLISECONDS);
     double start = now();
     try {
       timeout.waitUntilNotified(this);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
       assertEquals("timeout", expected.getMessage());
     }
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void deadlineBeforeTimeout() {
+  @Test public synchronized void deadlineBeforeTimeout() throws InterruptedIOException {
     Timeout timeout = new Timeout();
     timeout.timeout(5000, TimeUnit.MILLISECONDS);
     timeout.deadline(1000, TimeUnit.MILLISECONDS);
@@ -84,13 +84,13 @@ public final class WaitUntilNotifiedTest {
     try {
       timeout.waitUntilNotified(this);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
       assertEquals("timeout", expected.getMessage());
     }
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void timeoutBeforeDeadline() {
+  @Test public synchronized void timeoutBeforeDeadline() throws InterruptedIOException {
     Timeout timeout = new Timeout();
     timeout.timeout(1000, TimeUnit.MILLISECONDS);
     timeout.deadline(5000, TimeUnit.MILLISECONDS);
@@ -98,20 +98,20 @@ public final class WaitUntilNotifiedTest {
     try {
       timeout.waitUntilNotified(this);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
       assertEquals("timeout", expected.getMessage());
     }
     assertElapsed(1000.0, start);
   }
 
-  @Test public synchronized void deadlineAlreadyReached() {
+  @Test public synchronized void deadlineAlreadyReached() throws InterruptedIOException {
     Timeout timeout = new Timeout();
     timeout.deadlineNanoTime(System.nanoTime());
     double start = now();
     try {
       timeout.waitUntilNotified(this);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
       assertEquals("timeout", expected.getMessage());
     }
     assertElapsed(0.0, start);

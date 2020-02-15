@@ -16,7 +16,6 @@
 package okio;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -109,7 +108,7 @@ public final class PipeTest {
     try {
       pipe.sink().write(new Buffer().writeUtf8("def"), 3L);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
       assertEquals("timeout", expected.getMessage());
     }
     assertElapsed(1000.0, start);
@@ -127,7 +126,7 @@ public final class PipeTest {
     try {
       pipe.source().read(readBuffer, 6L);
       fail();
-    } catch (InterruptedIOException expected) {
+    } catch (TimeoutException expected) {
       assertEquals("timeout", expected.getMessage());
     }
     assertElapsed(1000.0, start);
