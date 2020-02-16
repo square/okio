@@ -22,7 +22,6 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.NSMutableData
-import platform.Foundation.appendBytes
 import platform.Foundation.create
 import platform.darwin.NSInteger
 import platform.posix.memcpy
