@@ -24,6 +24,7 @@ import platform.Foundation.NSData
 import platform.Foundation.NSMutableData
 import platform.Foundation.create
 import platform.darwin.NSInteger
+import platform.darwin.NSUInteger
 import platform.posix.memcpy
 
 fun Buffer.write(
@@ -54,13 +55,12 @@ fun Buffer.write(
   size += byteCount.toLong()
 }
 
-fun Buffer.readNSData(byteCount: NSInteger = size): NSData {
-  require(byteCount >= 0 && byteCount <= Int.MAX_VALUE) { "byteCount: $byteCount" }
-  if (size < byteCount) throw EOFException()
+fun Buffer.readNSData(byteCount: NSUInteger = size.toULong()): NSData {
+  require(byteCount >= 0u && byteCount <= NSUInteger.MAX_VALUE) { "byteCount: $byteCount" }
+  if (size.toULong() < byteCount) throw EOFException()
 
-  val length = byteCount.toULong()
-  val result = NSMutableData.create(length = length)
-    ?: throw IOException("Failed to create NSMutableData of length $length")
+  val result = NSMutableData.create(length = byteCount)
+    ?: throw IOException("Failed to create NSMutableData of length $byteCount")
   readFully(result)
   return result
 }
