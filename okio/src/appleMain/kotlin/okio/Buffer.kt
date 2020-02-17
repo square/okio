@@ -61,7 +61,7 @@ fun Buffer.readNSData(byteCount: NSUInteger = size.toULong()): NSData {
   if (size.toULong() < byteCount) throw EOFException()
 
   val result = NSMutableData.create(length = byteCount)
-    ?: throw IOException("Failed to create NSMutableData of length $byteCount")
+    ?: throw OutOfMemoryError("Failed to create NSMutableData of length $byteCount")
   readFully(result)
   return result
 }
