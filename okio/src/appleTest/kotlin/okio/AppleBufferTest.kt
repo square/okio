@@ -36,12 +36,12 @@ class AppleBufferTest {
     buffer.write(cdef)
     assertEquals(6, buffer.size)
 
-    assertEquals(abcd, buffer.readNSData(4u))
+    assertEquals(abcd, buffer.readNSData(4uL))
     assertEquals(2, buffer.size)
-    assertEquals(ef, buffer.readNSData(2u))
+    assertEquals(ef, buffer.readNSData(2uL))
     assertEquals(0, buffer.size)
     assertFailsWith<EOFException> {
-      buffer.readNSData(1u)
+      buffer.readNSData(1uL)
     }
   }
 

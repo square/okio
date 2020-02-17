@@ -15,6 +15,7 @@
  */
 package okio
 
+import kotlin.math.min
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.plus
@@ -56,7 +57,7 @@ fun Buffer.write(
 }
 
 fun Buffer.readNSData(byteCount: NSUInteger = size.toULong()): NSData {
-  require(byteCount >= 0u && byteCount <= NSUInteger.MAX_VALUE) { "byteCount: $byteCount" }
+  require(byteCount >= 0uL && byteCount <= NSUInteger.MAX_VALUE) { "byteCount: $byteCount" }
   if (size.toULong() < byteCount) throw EOFException()
 
   val result = NSMutableData.create(length = byteCount)
@@ -65,20 +66,25 @@ fun Buffer.readNSData(byteCount: NSUInteger = size.toULong()): NSData {
   return result
 }
 
-fun Buffer.read(sink: NSMutableData, offset: Int = 0, byteCount: Int = size.toInt()): Int {
-  checkOffsetAndCount(sink.length.toLong(), offset.toLong(), byteCount.toLong())
+fun Buffer.read(
+  sink: NSMutableData,
+  offset: NSUInteger = 0uL,
+  byteCount: NSUInteger = size.toULong()
+): NSUInteger {
+  checkOffsetAndCount(sink.length, offset, byteCount)
 
-  val s = head ?: return -1
-  val toCopy = minOf(byteCount, s.limit - s.pos)
+  val offset = offset.toLong()
+  val s = head ?: return (-1).toULong()
+  val toCopy = min(byteCount, (s.limit - s.pos).toULong())
   s.data.usePinned { pinned ->
     memcpy(
       __dst = (sink.bytes as CPointer<ByteVarOf<*>>) + offset,
       __src = pinned.addressOf(s.pos),
-      __n = toCopy.toULong()
+      __n = toCopy
     )
   }
 
-  s.pos += toCopy
+  s.pos += toCopy.toInt()
   size -= toCopy.toLong()
 
   if (s.pos == s.limit) {
@@ -89,12 +95,18 @@ fun Buffer.read(sink: NSMutableData, offset: Int = 0, byteCount: Int = size.toIn
   return toCopy
 }
 
+internal fun checkOffsetAndCount(size: ULong, offset: ULong, byteCount: ULong) {
+  if (offset or byteCount < 0uL || offset > size || size - offset < byteCount) {
+    throw ArrayIndexOutOfBoundsException("size=$size offset=$offset byteCount=$byteCount")
+  }
+}
+
 fun Buffer.readFully(sink: NSMutableData) {
-  val size = sink.length.toInt()
-  var offset = 0
+  val size = sink.length
+  var offset = 0uL
   while (offset < size) {
     val read = read(sink, offset, size - offset)
-    if (read == -1) throw EOFException()
+    if (read == (-1).toULong()) throw EOFException()
     offset += read
   }
 }
