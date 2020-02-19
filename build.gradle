@@ -56,6 +56,8 @@ buildscript {
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
     classpath deps.ktlint
+    // https://github.com/melix/japicmp-gradle-plugin/issues/36
+    classpath 'com.google.guava:guava:28.2-jre'
   }
 
   repositories {
