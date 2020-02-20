@@ -15,6 +15,7 @@
  */
 
 /** Essential APIs for working with Okio. */
+@file:JvmMultifileClass
 @file:JvmName("Okio")
 
 package okio
@@ -33,10 +34,6 @@ import java.nio.file.OpenOption
 import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Logger
-
-actual fun Source.buffer(): BufferedSource = RealBufferedSource(this)
-
-actual fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -114,9 +111,6 @@ private class InputStreamSource(
 
   override fun toString() = "source($input)"
 }
-
-@JvmName("blackhole")
-actual fun blackholeSink(): Sink = BlackholeSink()
 
 /**
  * Returns a sink that writes to `socket`. Prefer this over [sink]
