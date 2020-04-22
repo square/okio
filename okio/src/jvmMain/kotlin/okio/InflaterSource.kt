@@ -19,7 +19,6 @@
 
 package okio
 
-import java.io.EOFException
 import java.io.IOException
 import java.util.zip.DataFormatException
 import java.util.zip.Inflater
@@ -46,36 +45,58 @@ internal constructor(private val source: BufferedSource, private val inflater: I
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {
+    while (true) {
+      val bytesInflated = readOrInflate(sink, byteCount)
+      if (bytesInflated > 0) return bytesInflated
+      if (inflater.finished() || inflater.needsDictionary()) return -1L
+      if (source.exhausted()) throw EOFException("source exhausted prematurely")
+    }
+  }
+
+  /**
+   * Consume deflated bytes from the underlying source, and write any inflated bytes to [sink].
+   * Returns the number of inflated bytes written to [sink]. This may return 0L, though it will
+   * always consume 1 or more bytes from the underlying source if it is not exhausted.
+   *
+   * Use this instead of [read] when it is useful to consume the deflated stream even when doing so
+   * doesn't yield inflated bytes.
+   */
+  @Throws(IOException::class)
+  fun readOrInflate(sink: Buffer, byteCount: Long): Long {
     require(byteCount >= 0) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
-    if (byteCount == 0L) return 0
+    if (byteCount == 0L) return 0L
 
-    while (true) {
-      val sourceExhausted = refill()
+    try {
+      // Prepare the destination that we'll write into.
+      val tail = sink.writableSegment(1)
+      val toRead = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
+
+      // Prepare the source that we'll read from.
+      refill()
 
       // Decompress the inflater's compressed data into the sink.
-      try {
-        val tail = sink.writableSegment(1)
-        val toRead = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
-        val bytesInflated = inflater.inflate(tail.data, tail.limit, toRead)
-        if (bytesInflated > 0) {
-          tail.limit += bytesInflated
-          sink.size += bytesInflated
-          return bytesInflated.toLong()
-        }
-        if (inflater.finished() || inflater.needsDictionary()) {
-          releaseInflatedBytes()
-          if (tail.pos == tail.limit) {
-            // We allocated a tail segment, but didn't end up needing it. Recycle!
-            sink.head = tail.pop()
-            SegmentPool.recycle(tail)
-          }
-          return -1L
-        }
-        if (sourceExhausted) throw EOFException("source exhausted prematurely")
-      } catch (e: DataFormatException) {
-        throw IOException(e)
+      val bytesInflated = inflater.inflate(tail.data, tail.limit, toRead)
+
+      // Release consumed bytes from the source.
+      releaseBytesAfterInflate()
+
+      // Track produced bytes in the destination.
+      if (bytesInflated > 0) {
+        tail.limit += bytesInflated
+        sink.size += bytesInflated
+        return bytesInflated.toLong()
       }
+
+      // We allocated a tail segment but didn't end up needing it. Recycle!
+      if (tail.pos == tail.limit) {
+        sink.head = tail.pop()
+        SegmentPool.recycle(tail)
+      }
+
+      return 0L
+    } catch (e: DataFormatException) {
+      throw IOException(e)
     }
   }
 
@@ -87,10 +108,7 @@ internal constructor(private val source: BufferedSource, private val inflater: I
   fun refill(): Boolean {
     if (!inflater.needsInput()) return false
 
-    releaseInflatedBytes()
-    check(inflater.remaining == 0) { "?" } // TODO: possible?
-
-    // If there are compressed bytes in the source, assign them to the inflater.
+    // If there are no further bytes in the source, we cannot refill.
     if (source.exhausted()) return true
 
     // Assign buffer bytes to the inflater.
@@ -101,7 +119,7 @@ internal constructor(private val source: BufferedSource, private val inflater: I
   }
 
   /** When the inflater has processed compressed data, remove it from the buffer.  */
-  private fun releaseInflatedBytes() {
+  private fun releaseBytesAfterInflate() {
     if (bufferBytesHeldByInflater == 0) return
     val toRelease = bufferBytesHeldByInflater - inflater.remaining
     bufferBytesHeldByInflater -= toRelease
