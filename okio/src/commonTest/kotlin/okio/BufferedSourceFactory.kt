@@ -16,7 +16,7 @@
 
 package okio
 
-internal interface BufferedSourceFactory {
+interface BufferedSourceFactory {
   class Pipe(
     var sink: BufferedSink,
     var source: BufferedSource
@@ -137,5 +137,14 @@ internal interface BufferedSourceFactory {
         )
       }
     }
+
+    val PARAMETERIZED_TEST_VALUES = mutableListOf<Array<Any>>(
+      arrayOf(BUFFER),
+      arrayOf(REAL_BUFFERED_SOURCE),
+      arrayOf(ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE),
+      arrayOf(ONE_BYTE_AT_A_TIME_BUFFER),
+      arrayOf(PEEK_BUFFER),
+      arrayOf(PEEK_BUFFERED_SOURCE)
+    )
   }
 }
