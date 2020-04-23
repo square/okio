@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 2.6.0
+
+_2020-04-22_
+
+ * New: `InflaterSource.readOrInflate()` is like `InflaterSource.read()`, except it will return 0 if
+   consuming deflated bytes from the underlying stream did not produce new inflated bytes.
+
+
 ## Version 2.5.0
 
 _2020-03-20_
