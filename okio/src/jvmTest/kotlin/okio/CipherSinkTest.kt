@@ -7,7 +7,7 @@ class CipherSinkTest {
 
   @Test
   fun encrypt() {
-    val random = Random(1588326457426L)
+    val random = Random(8912860393601532863)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
     val data = random.nextBytes(32)
@@ -22,7 +22,7 @@ class CipherSinkTest {
 
   @Test
   fun encryptEmpty() {
-    val random = Random(1588326457426L)
+    val random = Random(3014415396541767201)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
     val data = ByteArray(0)
@@ -37,7 +37,7 @@ class CipherSinkTest {
 
   @Test
   fun encryptLarge() {
-    val random = Random(1588326457426L)
+    val random = Random(4800508322764694019)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
     val data = random.nextBytes(Segment.SIZE * 16 + Segment.SIZE / 2)
@@ -52,7 +52,7 @@ class CipherSinkTest {
 
   @Test
   fun encryptSingleByteWrite() {
-    val random = Random(1588326457426L)
+    val random = Random(4374178522096702290)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
     val data = random.nextBytes(32)
@@ -67,7 +67,7 @@ class CipherSinkTest {
 
   @Test
   fun decrypt() {
-    val random = Random(1588326610176L)
+    val random = Random(488375923060579687)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
     val expectedData = random.nextBytes(32)
@@ -82,7 +82,7 @@ class CipherSinkTest {
 
   @Test
   fun decryptEmpty() {
-    val random = Random(1588326610176L)
+    val random = Random(-9063010151894844496)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
     val expectedData = ByteArray(0)
@@ -97,7 +97,7 @@ class CipherSinkTest {
 
   @Test
   fun decryptLarge() {
-    val random = Random(1588326610176L)
+    val random = Random(993064087526004362)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
     val expectedData = random.nextBytes(Segment.SIZE * 16 + Segment.SIZE / 2)
@@ -112,7 +112,7 @@ class CipherSinkTest {
 
   @Test
   fun decryptSingleByteWrite() {
-    val random = Random(1588326610176L)
+    val random = Random(2621474675920878975)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
     val expectedData = random.nextBytes(32)
