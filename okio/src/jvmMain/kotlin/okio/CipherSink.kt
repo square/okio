@@ -61,6 +61,20 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
   override fun close() {
     if (closed) return
 
+    var thrown = doFinal()
+
+    try {
+      sink.close()
+    } catch (e: Throwable) {
+      if (thrown == null) thrown = e
+    }
+
+    closed = true
+
+    if (thrown != null) throw thrown
+  }
+
+  private fun doFinal(): Throwable? {
     var thrown: Throwable? = null
 
     val buffer = sink.buffer
@@ -80,15 +94,7 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
       SegmentPool.recycle(s)
     }
 
-    try {
-      sink.close()
-    } catch (e: Throwable) {
-      if (thrown == null) thrown = e
-    }
-
-    closed = true
-
-    if (thrown != null) throw thrown
+    return thrown
   }
 }
 
