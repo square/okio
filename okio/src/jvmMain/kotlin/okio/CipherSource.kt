@@ -50,7 +50,7 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
     buffer.size += ciphered
 
     if (s.pos == s.limit) {
-      buffer.head = head.pop()
+      buffer.head = s.pop()
       SegmentPool.recycle(s)
     }
   }
