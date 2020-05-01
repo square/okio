@@ -6,7 +6,14 @@ import javax.crypto.Cipher
 class CipherSink internal constructor(private val sink: BufferedSink, private val cipher: Cipher) : Sink {
   constructor(sink: Sink, cipher: Cipher) : this(sink.buffer(), cipher)
 
+  private val blockSize = cipher.blockSize
   private var closed = false
+
+  init {
+    // Require block cipher, and check for unsupported (too large) block size (should never happen with standard algorithms)
+    require(blockSize > 0) { "Block cipher required $cipher" }
+    require(blockSize <= Segment.SIZE) { "Cipher block size $blockSize too large $cipher" }
+  }
 
   @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) {
@@ -15,37 +22,34 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
 
     var remaining = byteCount
     while (remaining > 0) {
-      val head = source.head!!
-      var toCipher = minOf(remaining, head.limit - head.pos).toInt()
-      var outputSize = cipher.getOutputSize(toCipher)
-      // TODO: Consider using fixed block size (imposed and verified in constructor)
-      while (outputSize > Segment.SIZE) {
-        toCipher /= 2
-        outputSize = cipher.getOutputSize(toCipher)
-      }
-
-      val buffer = sink.buffer
-      val s = buffer.writableSegment(outputSize)
-      val ciphered = cipher.update(head.data, head.pos, toCipher, s.data, s.limit)
-
-      s.limit += ciphered
-      buffer.size += ciphered
-
-      if (s.pos == s.limit) {
-        buffer.head = s.pop()
-        SegmentPool.recycle(s)
-      }
-
-      source.size -= toCipher
-      head.pos += toCipher
-
-      if (head.pos == head.limit) {
-        source.head = head.pop()
-        SegmentPool.recycle(head)
-      }
-
-      remaining -= toCipher
+      val size = update(source, remaining)
+      remaining -= size
     }
+  }
+
+  private fun update(source: Buffer, remaining: Long): Int {
+    val head = source.head!!
+    val size = minOf(remaining, head.limit - head.pos).toInt()
+    val buffer = sink.buffer
+    val s = buffer.writableSegment(size) // For block cipher, output size cannot exceed input size in update
+    val ciphered = cipher.update(head.data, head.pos, size, s.data, s.limit)
+
+    s.limit += ciphered
+    buffer.size += ciphered
+
+    if (s.pos == s.limit) {
+      buffer.head = s.pop()
+      SegmentPool.recycle(s)
+    }
+
+    source.size -= size
+    head.pos += size
+
+    if (head.pos == head.limit) {
+      source.head = head.pop()
+      SegmentPool.recycle(head)
+    }
+    return size
   }
 
   override fun flush() {}
@@ -59,10 +63,9 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
 
     var thrown: Throwable? = null
 
-    val outputSize = cipher.getOutputSize(0)
-    if (outputSize != 0) {
+    if (blockSize != 0) {
       val buffer = sink.buffer
-      val s = buffer.writableSegment(outputSize)
+      val s = buffer.writableSegment(blockSize)
 
       try {
         val ciphered = cipher.doFinal(s.data, s.limit)

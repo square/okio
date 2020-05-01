@@ -6,9 +6,16 @@ import javax.crypto.Cipher
 class CipherSource internal constructor(private val source: BufferedSource, private val cipher: Cipher) : Source {
   constructor(source: Source, cipher: Cipher) : this(source.buffer(), cipher)
 
+  private val blockSize = cipher.blockSize
   private val buffer = Buffer()
   private var final = false
   private var closed = false
+
+  init {
+    // Require block cipher, and check for unsupported (too large) block size (should never happen with standard algorithms)
+    require(blockSize > 0) { "Block cipher required $cipher" }
+    require(blockSize <= Segment.SIZE) { "Cipher block size $blockSize too large $cipher" }
+  }
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {
@@ -33,8 +40,7 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
   private fun update() {
     val head = source.buffer.head!!
     val size = head.limit - head.pos
-    val toCipher = cipher.getOutputSize(size)
-    val s = buffer.writableSegment(toCipher)
+    val s = buffer.writableSegment(size) // For block cipher, output size cannot exceed input size in update
     val ciphered =
       cipher.update(head.data, head.pos, head.limit, s.data, s.pos)
 
@@ -50,8 +56,7 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
   }
 
   private fun doFinal() {
-    val toCipher = cipher.getOutputSize(0)
-    val s = buffer.writableSegment(toCipher)
+    val s = buffer.writableSegment(blockSize)
     val ciphered = cipher.doFinal(s.data, s.pos)
 
     s.limit += ciphered
