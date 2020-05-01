@@ -20,34 +20,40 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
     while (buffer.size == 0L) {
       if (source.exhausted()) {
         final = true
-        return readFinal(sink, byteCount)
-      }
-
-      val head = source.buffer.head!!
-      val size = head.limit - head.pos
-      val toCipher = cipher.getOutputSize(size)
-      val s = buffer.writableSegment(toCipher)
-      val ciphered =
-        cipher.update(head.data, head.pos, head.limit, s.data, s.pos)
-
-      source.skip(size.toLong())
-
-      s.limit += ciphered
-      buffer.size += ciphered
-
-      if (s.pos == s.limit) {
-        buffer.head = head.pop()
-        SegmentPool.recycle(s)
+        doFinal()
+        break
+      } else {
+        update()
       }
     }
 
     return buffer.read(sink, byteCount)
   }
 
-  private fun readFinal(sink: Buffer, byteCount: Long): Long {
+  private fun update() {
+    val head = source.buffer.head!!
+    val size = head.limit - head.pos
+    val toCipher = cipher.getOutputSize(size)
+    val s = buffer.writableSegment(toCipher)
+    val ciphered =
+      cipher.update(head.data, head.pos, head.limit, s.data, s.pos)
+
+    source.skip(size.toLong())
+
+    s.limit += ciphered
+    buffer.size += ciphered
+
+    if (s.pos == s.limit) {
+      buffer.head = head.pop()
+      SegmentPool.recycle(s)
+    }
+  }
+
+  private fun doFinal() {
     val toCipher = cipher.getOutputSize(0)
     val s = buffer.writableSegment(toCipher)
     val ciphered = cipher.doFinal(s.data, s.pos)
+
     s.limit += ciphered
     buffer.size += ciphered
 
@@ -55,8 +61,6 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
       buffer.head = s.pop()
       SegmentPool.recycle(s)
     }
-
-    return buffer.read(sink, byteCount)
   }
 
   override fun timeout(): Timeout =
