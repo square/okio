@@ -27,6 +27,7 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
       val buffer = sink.buffer
       val s = buffer.writableSegment(outputSize)
       val ciphered = cipher.update(head.data, head.pos, toCipher, s.data, s.limit)
+
       s.limit += ciphered
       buffer.size += ciphered
 
@@ -37,6 +38,7 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
 
       source.size -= toCipher
       head.pos += toCipher
+
       if (head.pos == head.limit) {
         source.head = head.pop()
         SegmentPool.recycle(head)

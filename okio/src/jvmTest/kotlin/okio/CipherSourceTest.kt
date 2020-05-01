@@ -3,7 +3,7 @@ package okio
 import org.junit.Test
 import kotlin.random.Random
 
-class CipherSinkTest {
+class CipherSourceTest {
 
   @Test
   fun encryptWithClose() {
@@ -12,9 +12,8 @@ class CipherSinkTest {
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
 
-    val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.encrypt).buffer().use { it.write(data) }
-    val actualEncryptedData = buffer.readByteArray()
+    val buffer = Buffer().apply { write(data) }
+    val actualEncryptedData = buffer.cipherSource(cipherFactory.encrypt).buffer().use { it.readByteArray() }
 
     val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
     assertArrayEquals(expectedEncryptedData, actualEncryptedData)
@@ -28,9 +27,8 @@ class CipherSinkTest {
     val expectedData = random.nextBytes(32)
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
-    val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.decrypt).buffer().use { it.write(encryptedData) }
-    val actualData = buffer.readByteArray()
+    val buffer = Buffer().apply { write(encryptedData) }
+    val actualData = buffer.cipherSource(cipherFactory.decrypt).buffer().use { it.readByteArray() }
 
     assertArrayEquals(expectedData, actualData)
   }
