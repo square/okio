@@ -63,23 +63,21 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
 
     var thrown: Throwable? = null
 
-    if (blockSize != 0) {
-      val buffer = sink.buffer
-      val s = buffer.writableSegment(blockSize)
+    val buffer = sink.buffer
+    val s = buffer.writableSegment(blockSize)
 
-      try {
-        val ciphered = cipher.doFinal(s.data, s.limit)
+    try {
+      val ciphered = cipher.doFinal(s.data, s.limit)
 
-        s.limit += ciphered
-        buffer.size += ciphered
-      } catch (e: Throwable) {
-        thrown = e
-      }
+      s.limit += ciphered
+      buffer.size += ciphered
+    } catch (e: Throwable) {
+      thrown = e
+    }
 
-      if (s.pos == s.limit) {
-        buffer.head = s.pop()
-        SegmentPool.recycle(s)
-      }
+    if (s.pos == s.limit) {
+      buffer.head = s.pop()
+      SegmentPool.recycle(s)
     }
 
     try {

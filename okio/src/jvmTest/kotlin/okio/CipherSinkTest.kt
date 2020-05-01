@@ -28,7 +28,7 @@ class CipherSinkTest {
     val data = ByteArray(0)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.encrypt).buffer()
+    buffer.cipherSink(cipherFactory.encrypt).buffer().use {  }
     val actualEncryptedData = buffer.readByteArray()
 
     val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
