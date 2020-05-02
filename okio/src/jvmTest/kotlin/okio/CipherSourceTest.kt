@@ -1,8 +1,6 @@
 package okio
 
 import org.junit.Test
-import java.security.KeyPairGenerator
-import java.security.SecureRandom
 import kotlin.random.Random
 
 class CipherSourceTest {
@@ -12,26 +10,6 @@ class CipherSourceTest {
     val random = Random(787679144228763091)
     val key = random.nextBytes(16)
     val cipherFactory = CipherFactory(key)
-    val data = random.nextBytes(32)
-
-    val buffer = Buffer().apply { write(data) }
-    val actualEncryptedData =
-      buffer.cipherSource(cipherFactory.encrypt).buffer().use { it.readByteArray() }
-
-    val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
-    assertArrayEquals(expectedEncryptedData, actualEncryptedData)
-  }
-
-  @Test
-  fun encryptRsa() {
-    val random = Random(787679144228763091)
-    val secureRandom = SecureRandom(random.nextBytes(16))
-    val keyPairGenerator = KeyPairGenerator.getInstance("RSA").apply {
-      initialize(1024, secureRandom)
-    }
-    val keyPair = keyPairGenerator.generateKeyPair()
-    val publicKey = keyPair.public
-    val cipherFactory = CipherFactory(publicKey, "RSA/ECB/PKCS1Padding")
     val data = random.nextBytes(32)
 
     val buffer = Buffer().apply { write(data) }

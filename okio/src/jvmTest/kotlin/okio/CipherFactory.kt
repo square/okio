@@ -1,20 +1,13 @@
 package okio
 
-import java.security.Key
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
 class CipherFactory(
-  private val key: Key,
+  private val key: ByteArray,
+  private val keyAlgorithm: String = "AES",
   private val transformation: String = "AES/ECB/PKCS5Padding"
 ) {
-
-  constructor(
-    key: ByteArray,
-    keyAlgorithm: String = "AES",
-    transformation: String = "AES/ECB/PKCS5Padding"
-  ) : this(SecretKeySpec(key, keyAlgorithm), transformation)
-
   val encrypt: Cipher
     get() = create(Cipher.ENCRYPT_MODE)
 
@@ -23,6 +16,6 @@ class CipherFactory(
 
   private fun create(mode: Int): Cipher =
     Cipher.getInstance(transformation).apply {
-      init(mode, key)
+      init(mode, SecretKeySpec(key, keyAlgorithm))
     }
 }
