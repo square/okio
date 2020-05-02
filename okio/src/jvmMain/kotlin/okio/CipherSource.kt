@@ -24,6 +24,12 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
     if (byteCount == 0L) return 0
     if (final) return buffer.read(sink, byteCount)
 
+    refill()
+
+    return buffer.read(sink, byteCount)
+  }
+
+  private fun refill() {
     while (buffer.size == 0L) {
       if (source.exhausted()) {
         final = true
@@ -33,14 +39,15 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
         update()
       }
     }
-
-    return buffer.read(sink, byteCount)
   }
 
   private fun update() {
     val head = source.buffer.head!!
     val size = head.limit - head.pos
-    val s = buffer.writableSegment(size) // For block cipher, output size cannot exceed input size in update
+
+    // For block cipher, output size cannot exceed input size in update
+    val s = buffer.writableSegment(size)
+
     val ciphered =
       cipher.update(head.data, head.pos, head.limit, s.data, s.pos)
 
@@ -56,7 +63,12 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
   }
 
   private fun doFinal() {
-    val s = buffer.writableSegment(blockSize)
+    val outputSize = cipher.getOutputSize(0)
+    if (outputSize == 0) return
+
+    // For block cipher, output size cannot block size in doFinal
+    val s = buffer.writableSegment(outputSize)
+
     val ciphered = cipher.doFinal(s.data, s.pos)
 
     s.limit += ciphered

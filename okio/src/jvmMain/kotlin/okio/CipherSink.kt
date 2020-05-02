@@ -31,7 +31,10 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
     val head = source.head!!
     val size = minOf(remaining, head.limit - head.pos).toInt()
     val buffer = sink.buffer
-    val s = buffer.writableSegment(size) // For block cipher, output size cannot exceed input size in update
+
+    // For block cipher, output size cannot exceed input size in update
+    val s = buffer.writableSegment(size)
+
     val ciphered = cipher.update(head.data, head.pos, size, s.data, s.limit)
 
     s.limit += ciphered
@@ -75,10 +78,14 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
   }
 
   private fun doFinal(): Throwable? {
-    var thrown: Throwable? = null
+    val outputSize = cipher.getOutputSize(0)
+    if (outputSize == 0) return null
 
+    var thrown: Throwable? = null
     val buffer = sink.buffer
-    val s = buffer.writableSegment(blockSize)
+
+    // For block cipher, output size cannot block size in doFinal
+    val s = buffer.writableSegment(outputSize)
 
     try {
       val ciphered = cipher.doFinal(s.data, s.limit)
