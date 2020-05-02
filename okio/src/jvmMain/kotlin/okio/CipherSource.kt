@@ -22,6 +22,9 @@ package okio
 import java.io.IOException
 import javax.crypto.Cipher
 
+/**
+ * A sink that uses a [Cipher] to process data written to another source.
+ */
 class CipherSource internal constructor(private val source: BufferedSource, private val cipher: Cipher) : Source {
   constructor(source: Source, cipher: Cipher) : this(source.buffer(), cipher)
 
@@ -109,5 +112,10 @@ class CipherSource internal constructor(private val source: BufferedSource, priv
   }
 }
 
+/**
+ * Returns a [CipherSource] that processes this [Source] using [cipher] while reading.
+ *
+ * @see InflaterSource
+ */
 inline fun Source.cipherSource(cipher: Cipher): CipherSource =
   CipherSource(this, cipher)
