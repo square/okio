@@ -1,15 +1,23 @@
 package okio
 
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import kotlin.random.Random
 
-class CipherSourceTest {
+@RunWith(Parameterized::class)
+class CipherSourceTest(private val cipherAlgorithm: CipherAlgorithm) {
+  companion object {
+    @get:Parameterized.Parameters(name = "{0}")
+    @get:JvmStatic
+    val parameters: List<CipherAlgorithm>
+      get() = CipherAlgorithm.getBlockCipherAlgorithms()
+  }
 
   @Test
   fun encrypt() {
     val random = Random(787679144228763091)
-    val key = random.nextBytes(16)
-    val cipherFactory = CipherFactory(key)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
     val data = random.nextBytes(32)
 
     val buffer = Buffer().apply { write(data) }
@@ -23,8 +31,7 @@ class CipherSourceTest {
   @Test
   fun encryptEmpty() {
     val random = Random(1057830944394705953)
-    val key = random.nextBytes(16)
-    val cipherFactory = CipherFactory(key)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
     val data = ByteArray(0)
 
     val buffer = Buffer()
@@ -38,8 +45,7 @@ class CipherSourceTest {
   @Test
   fun encryptLarge() {
     val random = Random(8185922876836480815)
-    val key = random.nextBytes(16)
-    val cipherFactory = CipherFactory(key)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
     val data = random.nextBytes(Segment.SIZE * 16 + Segment.SIZE / 2)
 
     val buffer = Buffer().apply { write(data) }
@@ -53,8 +59,7 @@ class CipherSourceTest {
   @Test
   fun encryptSingleByteSource() {
     val random = Random(6085265142433950622)
-    val key = random.nextBytes(16)
-    val cipherFactory = CipherFactory(key)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
     val data = random.nextBytes(32)
 
     val buffer = Buffer().apply { write(data) }
@@ -68,8 +73,7 @@ class CipherSourceTest {
   @Test
   fun decrypt() {
     val random = Random(8067587635762239433)
-    val key = random.nextBytes(16)
-    val cipherFactory = CipherFactory(key)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
     val expectedData = random.nextBytes(32)
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
@@ -83,8 +87,7 @@ class CipherSourceTest {
   @Test
   fun decryptEmpty() {
     val random = Random(8722996896871347396)
-    val key = random.nextBytes(16)
-    val cipherFactory = CipherFactory(key)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
     val expectedData = ByteArray(0)
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
@@ -98,8 +101,7 @@ class CipherSourceTest {
   @Test
   fun decryptLarge() {
     val random = Random(4007116131070653181)
-    val key = random.nextBytes(16)
-    val cipherFactory = CipherFactory(key)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
     val expectedData = random.nextBytes(Segment.SIZE * 16 + Segment.SIZE / 2)
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
@@ -113,8 +115,7 @@ class CipherSourceTest {
   @Test
   fun decryptSingleByteSource() {
     val random = Random(1555017938547616655)
-    val key = random.nextBytes(16)
-    val cipherFactory = CipherFactory(key)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
     val expectedData = random.nextBytes(32)
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
