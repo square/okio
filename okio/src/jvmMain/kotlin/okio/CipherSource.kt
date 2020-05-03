@@ -22,7 +22,7 @@ package okio
 import java.io.IOException
 import javax.crypto.Cipher
 
-private class CipherSource internal constructor(
+private class CipherSource(
   private val source: BufferedSource,
   private val cipher: Cipher
 ) : Source {

@@ -22,7 +22,7 @@ package okio
 import java.io.IOException
 import javax.crypto.Cipher
 
-private class CipherSink internal constructor(
+private class CipherSink(
   private val sink: BufferedSink,
   private val cipher: Cipher
 ) : Sink {
