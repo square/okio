@@ -106,7 +106,7 @@ private class CipherSink internal constructor(
     var thrown: Throwable? = null
     val buffer = sink.buffer
 
-    // For block cipher, output size cannot block size in doFinal
+    // For block cipher, output size cannot exceed block size in doFinal
     val s = buffer.writableSegment(outputSize)
 
     try {

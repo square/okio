@@ -88,7 +88,7 @@ private class CipherSource internal constructor(
     val outputSize = cipher.getOutputSize(0)
     if (outputSize == 0) return
 
-    // For block cipher, output size cannot block size in doFinal
+    // For block cipher, output size cannot exceed block size in doFinal
     val s = buffer.writableSegment(outputSize)
 
     val ciphered = cipher.doFinal(s.data, s.pos)
