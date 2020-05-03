@@ -13,7 +13,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val parameters: List<CipherAlgorithm>
       get() = CipherAlgorithm.getBlockCipherAlgorithms()
   }
-  
+
   @Test
   fun encrypt() {
     val random = Random(8912860393601532863)
