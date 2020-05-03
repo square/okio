@@ -71,7 +71,7 @@ private class CipherSource internal constructor(
     val s = buffer.writableSegment(size)
 
     val ciphered =
-      cipher.update(head.data, head.pos, head.limit, s.data, s.pos)
+      cipher.update(head.data, head.pos, size, s.data, s.pos)
 
     source.skip(size.toLong())
 

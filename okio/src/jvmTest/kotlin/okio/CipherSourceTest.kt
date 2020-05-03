@@ -127,22 +127,10 @@ class CipherSourceTest(private val cipherAlgorithm: CipherAlgorithm) {
   }
 }
 
-private fun BufferedSource.emitSingleBytes(): Source =
+private fun Source.emitSingleBytes(): Source =
   SingleByteSource(this)
 
-private class SingleByteSource(private val source: BufferedSource) : Source {
+private class SingleByteSource(source: Source) : ForwardingSource(source) {
   override fun read(sink: Buffer, byteCount: Long): Long =
-    if (source.exhausted()) {
-      -1
-    } else {
-      sink.writeByte(source.readByte().toInt())
-      1
-    }
-
-  override fun timeout(): Timeout =
-    source.timeout()
-
-  override fun close() {
-    source.close()
-  }
+    delegate.read(sink, 1L)
 }
