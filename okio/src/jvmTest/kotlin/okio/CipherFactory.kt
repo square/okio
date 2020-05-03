@@ -42,6 +42,9 @@ data class CipherAlgorithm(
     }
   }
 
+  override fun toString(): String =
+    transformation
+
   companion object {
     fun getBlockCipherAlgorithms() = listOf(
       CipherAlgorithm("AES/CBC/NoPadding", 16, 16),

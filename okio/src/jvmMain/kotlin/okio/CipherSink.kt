@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-@file:JvmName("-CipherSinkExtensions")
-@file:Suppress("NOTHING_TO_INLINE") // Aliases to public API.
+@file:JvmMultifileClass
+@file:JvmName("Okio")
 
 package okio
 
 import java.io.IOException
 import javax.crypto.Cipher
 
-/**
- * A sources that uses a [Cipher] to process data read from another source.
- */
-class CipherSink internal constructor(private val sink: BufferedSink, private val cipher: Cipher) : Sink {
+private class CipherSink internal constructor(
+  private val sink: BufferedSink,
+  private val cipher: Cipher
+) : Sink {
   constructor(sink: Sink, cipher: Cipher) : this(sink.buffer(), cipher)
 
   private val blockSize = cipher.blockSize
@@ -128,9 +128,8 @@ class CipherSink internal constructor(private val sink: BufferedSink, private va
 }
 
 /**
- * Returns a [CipherSink] that processes data to this [Sink] using [cipher] while writing.
- *
- * @see CipherSink
+ * Returns a [Sink] that processes data using this [Cipher] while writing to
+ * [sink].
  */
-inline fun Sink.cipherSink(cipher: Cipher): CipherSink =
-  CipherSink(this, cipher)
+fun Cipher.sink(sink: Sink): Sink =
+  CipherSink(sink, this)

@@ -21,7 +21,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val data = random.nextBytes(32)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.encrypt).buffer().use { it.write(data) }
+    cipherFactory.encrypt.sink(buffer).buffer().use { it.write(data) }
     val actualEncryptedData = buffer.readByteArray()
 
     val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
@@ -35,7 +35,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val data = ByteArray(0)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.encrypt).buffer().use { }
+    cipherFactory.encrypt.sink(buffer).buffer().close()
     val actualEncryptedData = buffer.readByteArray()
 
     val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
@@ -49,7 +49,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val data = random.nextBytes(Segment.SIZE * 16 + Segment.SIZE / 2)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.encrypt).buffer().use { it.write(data) }
+    cipherFactory.encrypt.sink(buffer).buffer().use { it.write(data) }
     val actualEncryptedData = buffer.readByteArray()
 
     val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
@@ -63,7 +63,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val data = random.nextBytes(32)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.encrypt).buffer().use { data.forEach { byte -> it.writeByte(byte.toInt()) } }
+    cipherFactory.encrypt.sink(buffer).buffer().use { data.forEach { byte -> it.writeByte(byte.toInt()) } }
     val actualEncryptedData = buffer.readByteArray()
 
     val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
@@ -78,7 +78,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.decrypt).buffer().use { it.write(encryptedData) }
+    cipherFactory.decrypt.sink(buffer).buffer().use { it.write(encryptedData) }
     val actualData = buffer.readByteArray()
 
     assertArrayEquals(expectedData, actualData)
@@ -92,7 +92,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.decrypt).buffer().use { it.write(encryptedData) }
+    cipherFactory.decrypt.sink(buffer).buffer().use { it.write(encryptedData) }
     val actualData = buffer.readByteArray()
 
     assertArrayEquals(expectedData, actualData)
@@ -106,7 +106,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.decrypt).buffer().use { it.write(encryptedData) }
+    cipherFactory.decrypt.sink(buffer).buffer().use { it.write(encryptedData) }
     val actualData = buffer.readByteArray()
 
     assertArrayEquals(expectedData, actualData)
@@ -120,7 +120,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
 
     val buffer = Buffer()
-    buffer.cipherSink(cipherFactory.decrypt).buffer()
+    cipherFactory.decrypt.sink(buffer).buffer()
       .use { encryptedData.forEach { byte -> it.writeByte(byte.toInt()) } }
     val actualData = buffer.readByteArray()
 
