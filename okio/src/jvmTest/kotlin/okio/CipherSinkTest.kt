@@ -71,6 +71,22 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
   }
 
   @Test
+  fun encryptPaddingRequired() { // Only relevant for algorithms which handle padding
+    val random = Random(7515202505362968404)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
+    val blockSize = cipherFactory.blockSize
+    val dataSize = blockSize * 4 + if (cipherAlgorithm.padding) blockSize / 2 else 0
+    val data = random.nextBytes(dataSize)
+
+    val buffer = Buffer()
+    cipherFactory.encrypt.sink(buffer).buffer().use { it.write(data) }
+    val actualEncryptedData = buffer.readByteArray()
+
+    val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
+    assertArrayEquals(expectedEncryptedData, actualEncryptedData)
+  }
+
+  @Test
   fun decrypt() {
     val random = Random(488375923060579687)
     val cipherFactory = cipherAlgorithm.createCipherFactory(random)
@@ -122,6 +138,22 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val buffer = Buffer()
     cipherFactory.decrypt.sink(buffer).buffer()
       .use { encryptedData.forEach { byte -> it.writeByte(byte.toInt()) } }
+    val actualData = buffer.readByteArray()
+
+    assertArrayEquals(expectedData, actualData)
+  }
+
+  @Test
+  fun decryptPaddingRequired() { // Only relevant for algorithms which handle padding
+    val random = Random(7689061926945836562)
+    val cipherFactory = cipherAlgorithm.createCipherFactory(random)
+    val blockSize = cipherFactory.blockSize
+    val dataSize = blockSize * 4 + if (cipherAlgorithm.padding) blockSize / 2 else 0
+    val expectedData = random.nextBytes(dataSize)
+    val encryptedData = cipherFactory.encrypt.doFinal(expectedData)
+
+    val buffer = Buffer()
+    cipherFactory.decrypt.sink(buffer).buffer().use { it.write(encryptedData) }
     val actualData = buffer.readByteArray()
 
     assertArrayEquals(expectedData, actualData)

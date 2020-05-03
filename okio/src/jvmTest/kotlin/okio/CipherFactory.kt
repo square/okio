@@ -9,20 +9,25 @@ class CipherFactory(
   private val transformation: String,
   private val init: Cipher.(mode: Int) -> Unit
 ) {
+  val blockSize
+    get() = cipher.blockSize
+
   val encrypt: Cipher
     get() = create(Cipher.ENCRYPT_MODE)
 
   val decrypt: Cipher
     get() = create(Cipher.DECRYPT_MODE)
 
+  private val cipher: Cipher
+    get() = Cipher.getInstance(transformation)
+
   private fun create(mode: Int): Cipher =
-    Cipher.getInstance(transformation).apply {
-      init(mode)
-    }
+    cipher.apply { init(mode) }
 }
 
 data class CipherAlgorithm(
   val transformation: String,
+  val padding: Boolean,
   val keyLength: Int,
   val ivLength: Int? = null
 ) {
@@ -47,18 +52,18 @@ data class CipherAlgorithm(
 
   companion object {
     fun getBlockCipherAlgorithms() = listOf(
-      CipherAlgorithm("AES/CBC/NoPadding", 16, 16),
-      CipherAlgorithm("AES/CBC/PKCS5Padding", 16, 16),
-      CipherAlgorithm("AES/ECB/NoPadding", 16),
-      CipherAlgorithm("AES/ECB/PKCS5Padding", 16),
-      CipherAlgorithm("DES/CBC/NoPadding", 8, 8),
-      CipherAlgorithm("DES/CBC/PKCS5Padding", 8, 8),
-      CipherAlgorithm("DES/ECB/NoPadding", 8),
-      CipherAlgorithm("DES/ECB/PKCS5Padding", 8),
-      CipherAlgorithm("DESede/CBC/NoPadding", 24, 8),
-      CipherAlgorithm("DESede/CBC/PKCS5Padding", 24, 8),
-      CipherAlgorithm("DESede/ECB/NoPadding", 24),
-      CipherAlgorithm("DESede/ECB/PKCS5Padding", 24)
+      CipherAlgorithm("AES/CBC/NoPadding", false, 16, 16),
+      CipherAlgorithm("AES/CBC/PKCS5Padding", true, 16, 16),
+      CipherAlgorithm("AES/ECB/NoPadding", false, 16),
+      CipherAlgorithm("AES/ECB/PKCS5Padding", true, 16),
+      CipherAlgorithm("DES/CBC/NoPadding", false, 8, 8),
+      CipherAlgorithm("DES/CBC/PKCS5Padding", true, 8, 8),
+      CipherAlgorithm("DES/ECB/NoPadding", false, 8),
+      CipherAlgorithm("DES/ECB/PKCS5Padding", true, 8),
+      CipherAlgorithm("DESede/CBC/NoPadding", false, 24, 8),
+      CipherAlgorithm("DESede/CBC/PKCS5Padding", true, 24, 8),
+      CipherAlgorithm("DESede/ECB/NoPadding", false, 24),
+      CipherAlgorithm("DESede/ECB/PKCS5Padding", true, 24)
     )
   }
 }
