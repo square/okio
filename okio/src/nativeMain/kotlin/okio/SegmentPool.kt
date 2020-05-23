@@ -15,19 +15,13 @@
  */
 package okio
 
-/**
- * A collection of unused segments, necessary to avoid GC churn and zero-fill.
- * This pool is a thread-safe static singleton.
- */
-internal expect object SegmentPool {
-  val MAX_SIZE: Long
+internal actual object SegmentPool {
+  actual val MAX_SIZE: Long = 0L
 
-  /** For testing only. Returns a snapshot of the number of bytes currently in the pool. */
-  val byteCount: Long
+  actual val byteCount: Long = 0L
 
-  /** Return a segment for the caller's use. */
-  fun take(): Segment
+  actual fun take(): Segment = Segment()
 
-  /** Recycle a segment that the caller no longer needs. */
-  fun recycle(segment: Segment)
+  actual fun recycle(segment: Segment) {
+  }
 }
