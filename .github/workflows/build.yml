@@ -38,6 +38,13 @@ jobs:
         run: |
           ./gradlew -Dkjs=false -Dknative=false build
 
+      - name: Upload Japicmp report
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: japicmp-report
+          path: okio/jvm/japicmp/build/reports/japi.txt
+
   multiplatform:
     runs-on: macOS-latest
 
