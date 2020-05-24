@@ -1,4 +1,10 @@
 buildscript {
+  // If false - JS targets will not be configured in multiplatform projects.
+  ext.kmpJsEnabled = Boolean.parseBoolean(System.getProperty('kjs', 'true'))
+
+  // If false - Native targets will not be configured in multiplatform projects.
+  ext.kmpNativeEnabled = Boolean.parseBoolean(System.getProperty('knative', 'true'))
+
   ext.versions = [
       'kotlin': '1.3.70',
       'jmhPlugin': '0.4.8',
