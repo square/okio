@@ -18,9 +18,10 @@ package okio
 import okio.ByteString.Companion.encodeUtf8
 import okio.TestUtil.assertEquivalent
 import okio.TestUtil.bufferWithSegments
+import okio.TestUtil.takeAllPoolSegments
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 /** Tests behavior optimized by sharing segments between buffers and byte strings.  */
@@ -74,13 +75,11 @@ class SegmentSharingTest {
     val snapshot = buffer.snapshot()
     assertEquals(xs + ys + zs, snapshot.utf8())
 
-    // While locking the pool, confirm that clearing the buffer doesn't release its segments.
-    synchronized(SegmentPool) {
-      SegmentPool.next = null
-      SegmentPool.byteCount = 0L
-      buffer.clear()
-      assertNull(SegmentPool.next)
-    }
+    // Confirm that clearing the buffer doesn't release its segments.
+    val bufferHead = buffer.head
+    takeAllPoolSegments() // Make room for new segments.
+    buffer.clear()
+    assertTrue(bufferHead !in takeAllPoolSegments())
   }
 
   /**
@@ -92,14 +91,15 @@ class SegmentSharingTest {
     val clone = buffer.clone()
 
     // While locking the pool, confirm that clearing the buffer doesn't release its segments.
-    synchronized(SegmentPool) {
-      SegmentPool.next = null
-      SegmentPool.byteCount = 0L
-      buffer.clear()
-      assertNull(SegmentPool.next)
-      clone.clear()
-      assertNull(SegmentPool.next)
-    }
+    val bufferHead = buffer.head!!
+    takeAllPoolSegments() // Make room for new segments.
+    buffer.clear()
+    assertTrue(bufferHead !in takeAllPoolSegments())
+
+    val cloneHead = clone.head!!
+    takeAllPoolSegments() // Make room for new segments.
+    clone.clear()
+    assertTrue(cloneHead !in takeAllPoolSegments())
   }
 
   @Test fun snapshotJavaSerialization() {

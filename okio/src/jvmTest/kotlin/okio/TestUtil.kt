@@ -27,9 +27,10 @@ import kotlin.test.assertTrue
 
 object TestUtil {
   // Necessary to make an internal member visible to Java.
-  const val SEGMENT_POOL_MAX_SIZE = SegmentPool.MAX_SIZE
+  @JvmField val SEGMENT_POOL_MAX_SIZE = SegmentPool.MAX_SIZE
   const val SEGMENT_SIZE = Segment.SIZE
   const val REPLACEMENT_CODE_POINT: Int = okio.REPLACEMENT_CODE_POINT
+
   @JvmStatic fun segmentPoolByteCount() = SegmentPool.byteCount
 
   @JvmStatic
@@ -245,6 +246,16 @@ object TestUtil {
       buffer.size++
     }
     return buffer.snapshot()
+  }
+
+  /** Remove all segments from the pool and return them as a list. */
+  @JvmStatic
+  internal fun takeAllPoolSegments(): List<Segment> {
+    val result = mutableListOf<Segment>()
+    while (SegmentPool.byteCount > 0) {
+      result += SegmentPool.take()
+    }
+    return result
   }
 
   /** Returns a copy of `buffer` with no segments with `original`.  */
