@@ -4,27 +4,31 @@ kotlin {
   jvm {
     withJava()
   }
-  js {
-    configure([compilations.main, compilations.test]) {
-      tasks.getByName(compileKotlinTaskName).kotlinOptions {
-        moduleKind = "umd"
-        sourceMap = true
-        metaInfo = true
+  if (kmpJsEnabled) {
+    js {
+      configure([compilations.main, compilations.test]) {
+        tasks.getByName(compileKotlinTaskName).kotlinOptions {
+          moduleKind = "umd"
+          sourceMap = true
+          metaInfo = true
+        }
       }
-    }
-    nodejs {
-      testTask {
-        useMocha {
-          timeout = "30s"
+      nodejs {
+        testTask {
+          useMocha {
+            timeout = "30s"
+          }
         }
       }
     }
   }
-  iosX64()
-  iosArm64()
-  // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
-  linuxX64()
-  macosX64()
+  if (kmpNativeEnabled) {
+    iosX64()
+    iosArm64()
+    // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
+    linuxX64()
+    macosX64()
+  }
   sourceSets {
     commonMain {
       dependencies {

@@ -1,0 +1,96 @@
+name: build
+
+on: [push, pull_request]
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+
+jobs:
+  jvm:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version:
+          - 1.8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15-ea
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Configure JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java-version }}
+
+      - name: Test
+        run: |
+          ./gradlew -Dkjs=false -Dknative=false build
+
+      - name: Upload Japicmp report
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: japicmp-report
+          path: okio/jvm/japicmp/build/reports/japi.txt
+
+  multiplatform:
+    runs-on: macOS-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Configure JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+
+      - name: Test
+        run: |
+          ./gradlew build
+
+  publish:
+    runs-on: macOS-latest
+    if: github.ref == 'refs/heads/master'
+    needs: [jvm, multiplatform]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+
+      - name: Upload Artifacts
+        run: |
+          ./gradlew clean publish
+        env:
+          ORG_GRADLE_PROJECT_SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          ORG_GRADLE_PROJECT_SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+
+      # TODO(egorand): Publish website
+      #
+      # - name: Prep mkdocs
+      #   run: .buildscript/prepare_mkdocs.sh
+      #
+      # - name: Deploy docs
+      #   uses: mhausenblas/mkdocs-deploy-gh-pages@master
+      #   env:
+      #     PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
