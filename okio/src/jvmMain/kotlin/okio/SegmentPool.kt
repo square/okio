@@ -59,18 +59,17 @@ internal actual object SegmentPool {
 
   @JvmStatic
   actual fun take(): Segment {
-    val first = firstRef.getAndSet(LOCK)
-    when {
-      first === LOCK -> {
-        // We didn't acquire the lock. Don't take a pooled segment.
-        return Segment()
-      }
-      first == null -> {
+    for (i in 0 until 10) {
+      val first = firstRef.getAndSet(LOCK)
+
+      // Another take() is in progress. Try again.
+      if (first === LOCK) continue
+
+      if (first == null) {
         // We acquired the lock but the pool was empty. Unlock and return a new segment.
         firstRef.set(null)
         return Segment()
-      }
-      else -> {
+      } else {
         // We acquired the lock and the pool was not empty. Pop the first element and return it.
         firstRef.set(first.next)
         first.next = null
@@ -78,6 +77,9 @@ internal actual object SegmentPool {
         return first
       }
     }
+
+    // We didn't win a race after 10 attempts. Give up and allocate a segment.
+    return Segment()
   }
 
   @JvmStatic
@@ -86,19 +88,26 @@ internal actual object SegmentPool {
     if (segment.shared) return // This segment cannot be recycled.
     if (atomicByteCount.get() >= MAX_SIZE) return // Pool is full.
 
-    val first = firstRef.get()
-    if (first === LOCK) return // A take() is currently in progress.
-
-    segment.next = first
     segment.limit = 0
     segment.pos = 0
 
-    if (firstRef.compareAndSet(first, segment)) {
-      // We successfully recycled this segment. Adjust the pool size.
-      atomicByteCount.addAndGet(Segment.SIZE.toLong())
-    } else {
-      // We raced another operation. Don't recycle this segment.
-      segment.next = null
+    for (i in 0 until 10) {
+      val first = firstRef.get()
+
+      // A take() is in progress. Try again.
+      if (first === LOCK) continue
+
+      // Attempt to push the segment.
+      segment.next = first
+      if (firstRef.compareAndSet(first, segment)) {
+        atomicByteCount.addAndGet(Segment.SIZE.toLong())
+        return
+      }
+
+      // Try again if we raced another operation and lost.
     }
+
+    // We didn't win a race after 10 attempts. Give up and don't recycle this segment.
+    segment.next = null
   }
 }
