@@ -48,8 +48,17 @@ internal actual object SegmentPool {
   /** A sentinel segment to indicate that the linked list is currently being modified. */
   private val LOCK = Segment(ByteArray(0), pos = 0, limit = 0, shared = false, owner = false)
 
-  /** Singly-linked list of segments. */
-  private var firstRef = AtomicReference<Segment?>()
+  /**
+   * 16 hash buckets, each containing a singly-linked list of segments. We use multiple hash buckets
+   * so different threads don't race each other. We use thread IDs as hash keys because they're
+   * handy, and because it may increase locality.
+   *
+   * We don't use [ThreadLocal] because we don't know how many threads the host process has and we
+   * don't want to leak memory for the duration of a thread's life.
+   */
+  private var hashBuckets: Array<AtomicReference<Segment?>> = Array(16) {
+    AtomicReference<Segment?>()
+  }
 
   /** Total bytes in this pool. */
   private var atomicByteCount = AtomicLong()
@@ -59,6 +68,8 @@ internal actual object SegmentPool {
 
   @JvmStatic
   actual fun take(): Segment {
+    val firstRef = firstRef()
+
     val first = firstRef.getAndSet(LOCK)
     when {
       first === LOCK -> {
@@ -86,6 +97,8 @@ internal actual object SegmentPool {
     if (segment.shared) return // This segment cannot be recycled.
     if (atomicByteCount.get() >= MAX_SIZE) return // Pool is full.
 
+    val firstRef = firstRef()
+
     val first = firstRef.get()
     if (first === LOCK) return // A take() is currently in progress.
 
@@ -100,5 +113,10 @@ internal actual object SegmentPool {
       // We raced another operation. Don't recycle this segment.
       segment.next = null
     }
+  }
+
+  private fun firstRef(): AtomicReference<Segment?> {
+    val hashBucket = (Thread.currentThread().id and 0b1111).toInt() // Get a value in [0..16).
+    return hashBuckets[hashBucket]
   }
 }
