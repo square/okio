@@ -53,6 +53,9 @@ internal class Segment {
   /** Previous segment in a circularly-linked list.  */
   @JvmField var prev: Segment? = null
 
+  /** If the segment is free **/
+  @JvmField var freeSegmentCount: Long = 0L
+
   constructor() {
     this.data = ByteArray(SIZE)
     this.owner = true
