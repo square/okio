@@ -20,10 +20,13 @@ package okio
  * This pool is a thread-safe static singleton.
  */
 internal expect object SegmentPool {
-  val MAX_SIZE: Long
+  val MAX_SIZE: Int
 
-  /** For testing only. Returns a snapshot of the number of bytes currently in the pool. */
-  val byteCount: Long
+  /**
+   * For testing only. Returns a snapshot of the number of bytes currently in the pool. If the pool
+   * is segmented such as by thread, this returns the byte count accessible to the calling thread.
+   */
+  val byteCount: Int
 
   /** Return a segment for the caller's use. */
   fun take(): Segment
