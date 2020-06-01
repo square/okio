@@ -41,8 +41,9 @@ internal class Segment {
   /** 
    * The first byte of available data ready to be written to.
    *
-   * If the segment is free and linked in the segment pool, the field contains total byte count of this and next segments.
-  */
+   * If the segment is free and linked in the segment pool, the field contains total
+   * byte count of this and next segments.
+   */
   @JvmField var limit: Int = 0
 
   /** True if other segments or byte strings use the same byte array. */
