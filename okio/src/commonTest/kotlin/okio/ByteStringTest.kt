@@ -457,4 +457,72 @@ abstract class AbstractByteStringTest internal constructor(
     sortedByteStrings.sort()
     assertEquals(originalByteStrings, sortedByteStrings)
   }
+
+  @Test fun toIndex() {
+    assertEquals(0, factory.decodeHex("").toIndex(1))
+    assertEquals(0, factory.decodeHex("00").toIndex(1))
+    assertEquals(0, factory.decodeHex("ff").toIndex(1))
+    assertEquals(0, factory.decodeHex("ffffffff").toIndex(1))
+    assertEquals(0, factory.decodeHex("ffffffffffff").toIndex(1))
+
+    assertEquals(0, factory.decodeHex("").toIndex(100))
+    assertEquals(0, factory.decodeHex("00").toIndex(100))
+    assertEquals(10, factory.decodeHex("1a").toIndex(100))
+    assertEquals(25, factory.decodeHex("40").toIndex(100))
+    assertEquals(50, factory.decodeHex("80").toIndex(100))
+    assertEquals(75, factory.decodeHex("c0").toIndex(100))
+    assertEquals(99, factory.decodeHex("ff").toIndex(100))
+    assertEquals(99, factory.decodeHex("ffff").toIndex(100))
+    assertEquals(99, factory.decodeHex("ffffff").toIndex(100))
+    assertEquals(99, factory.decodeHex("ffffffff").toIndex(100))
+
+    assertEquals(0, factory.decodeHex("").toIndex(Int.MAX_VALUE))
+    assertEquals(0x7f7fffff, factory.decodeHex("ff").toIndex(Int.MAX_VALUE))
+    assertEquals(0x7fff7fff, factory.decodeHex("ffff").toIndex(Int.MAX_VALUE))
+    assertEquals(0x7fffff7f, factory.decodeHex("ffffff").toIndex(Int.MAX_VALUE))
+    assertEquals(0x7ffffffe, factory.decodeHex("ffffffff").toIndex(Int.MAX_VALUE))
+  }
+
+  /**
+   * Our math is incorrect for values that round differently depending on data beyond the first 4
+   * bytes. For example, "aaaaaaaaab".toIndex(3) is 1, but if we did arbitrary-precision math the
+   * result would be 2.
+   */
+  @Test fun toIndexHonorsFirstFourBytesOnly() {
+    assertEquals(2, factory.decodeHex("aaaaab").toIndex(3))
+    assertEquals(2, factory.decodeHex("aaaaaaab").toIndex(3))
+
+    // Note: wrong due to truncation!
+    assertEquals(1, factory.decodeHex("aaaaaaaaab").toIndex(3))
+    assertEquals(1, factory.decodeHex("aaaaaaaaaaab").toIndex(3))
+    assertEquals(1, factory.decodeHex("aaaaaaaaaaaaab").toIndex(3))
+  }
+
+  @Test fun toFraction() {
+    assertEquals(0.0, factory.decodeHex("").toFraction())
+    assertEquals(0.0, factory.decodeHex("00").toFraction())
+    assertEquals(0.0, factory.decodeHex("00").toFraction())
+    assertEquals(0.1015625, factory.decodeHex("1a").toFraction())
+    assertEquals(0.25, factory.decodeHex("40").toFraction())
+    assertEquals(0.5, factory.decodeHex("80").toFraction())
+    assertEquals(0.75, factory.decodeHex("c0").toFraction())
+    assertEquals(0.7929493631236255, factory.decodeHex("cafebabe").toFraction())
+    assertEquals(0.99609375, factory.decodeHex("ff").toFraction())
+    assertEquals(0.9999847412109375, factory.decodeHex("ffff").toFraction())
+    assertEquals(0.9999999403953552, factory.decodeHex("ffffff").toFraction())
+    assertEquals(0.9999999997671694, factory.decodeHex("ffffffff").toFraction())
+    assertEquals(0.9999999999999964, factory.decodeHex("ffffffffffff").toFraction())
+    assertEquals(0.9999999999999999, factory.decodeHex("ffffffffffffff").toFraction())
+    assertEquals(0.9999999999999999, factory.decodeHex("ffffffffffffffff").toFraction())
+  }
+
+  /** Only 5 bits of the 7th byte are used. We use 53 bits in total for IEEE 754 doubles. */
+  @Test fun toFractionLast5BitsOf7thByte() {
+    assertEquals(0.0000000000000000, factory.decodeHex("00000000000007").toFraction())
+    assertEquals(1.1102230246251565E-16, factory.decodeHex("00000000000008").toFraction())
+    assertEquals(1.1102230246251565E-16, factory.decodeHex("0000000000000f").toFraction())
+    assertEquals(2.220446049250313E-16, factory.decodeHex("00000000000010").toFraction())
+    assertEquals(0.9999999999999998, factory.decodeHex("fffffffffffff0").toFraction())
+    assertEquals(0.9999999999999999, factory.decodeHex("fffffffffffff8").toFraction())
+  }
 }

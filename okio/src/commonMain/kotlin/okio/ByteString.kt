@@ -138,6 +138,98 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   override fun compareTo(other: ByteString): Int
 
   /**
+   * Projects this value to the range `[0..size)` using linear interpolation. This is equivalent to
+   * a sorted partitioning of all possible byte strings across [size] equally-sized buckets and
+   * returning the index of the bucket that this byte string fits in.
+   *
+   * For example, the byte string `8000` is the median of all 2-element byte strings, and calling
+   * `toIndex(100)` on it returns 50. Some other examples:
+   *
+   * | Byte String (hex)  | `toIndex(100)` | `toIndex(256)` | `toIndex(Int.MAX_VALUE)` |
+   * | :----------------- | -------------: | -------------: | -----------------------: |
+   * | (empty)            |              0 |              0 |                        0 |
+   * | 00                 |              0 |              0 |                        0 |
+   * | 0000               |              0 |              0 |                        0 |
+   * | 000000             |              0 |              0 |                        0 |
+   * | 0000000001         |              0 |              0 |                        0 |
+   * | 00000001           |              0 |              0 |                        0 |
+   * | 00000002           |              0 |              0 |                        0 |
+   * | 00000003           |              0 |              0 |                        1 |
+   * | 01                 |              0 |              1 |                  8388607 |
+   * | 02                 |              0 |              2 |                 16777215 |
+   * | 03                 |              1 |              3 |                 25165823 |
+   * | 80                 |             50 |            128 |               1073741823 |
+   * | 8000               |             50 |            128 |               1073741823 |
+   * | 80000000           |             50 |            128 |               1073741823 |
+   * | 81                 |             50 |            129 |               1082130431 |
+   * | 81ffffff           |             50 |            129 |               1090519038 |
+   * | 82                 |             50 |            130 |               1090519039 |
+   * | 83                 |             51 |            131 |               1098907647 |
+   * | ff                 |             99 |            255 |               2139095039 |
+   * | ffff               |             99 |            255 |               2147450879 |
+   * | ffffffff           |             99 |            255 |               2147483646 |
+   * | ffffffffffff       |             99 |            255 |               2147483646 |
+   *
+   * This interprets the bytes in this byte string as **unsigned**. This behavior is consistent with
+   * [compareTo]. The returned value is also consistent with [compareTo] though the dynamic range
+   * is compressed. For two byte strings `a` and `b`, if `a < b`, then
+   * `a.toIndex(n) <= b.toIndex(n)` for all sizes `n`.
+   *
+   * This examines at most the first 4 bytes of this byte string. Data beyond the first 4 bytes is
+   * not used to compute the result.
+   *
+   * @param size a positive integer.
+   * @return a value that is greater than or equal to `0` and less than [size].
+   */
+  fun toIndex(size: Int): Int
+
+  /**
+   * Projects this value to the range `[0.0..1.0)` using linear interpolation. This is equivalent to
+   * sorting all possible byte strings and returning the fraction that precede this byte string.
+   *
+   * For example, the byte string `8000` is the median of all 2-element byte strings, and calling
+   * `toFraction()` on it returns 0.5. Some other examples:
+   *
+   * | Byte String (hex)  | `toFraction()`     |
+   * | :----------------- | :----------------- |
+   * | (empty)            | 0.0                |
+   * | 00                 | 0.0                |
+   * | 0000               | 0.0                |
+   * | 000000             | 0.0                |
+   * | 00000000000001     | 0.0                |
+   * | 00000000000007     | 0.0                |
+   * | 00000000000008     | 0.0000000000000001 |
+   * | 0000000001         | 0.0000000000009094 |
+   * | 00000001           | 0.0000000002328306 |
+   * | 01                 | 0.00390625         |
+   * | 02                 | 0.0078125          |
+   * | 03                 | 0.01171875         |
+   * | 80                 | 0.5                |
+   * | 8000               | 0.5                |
+   * | 80000000000000     | 0.5                |
+   * | 81                 | 0.50390625         |
+   * | 81ffffff           | 0.5078124997671694 |
+   * | 82                 | 0.5078125          |
+   * | 83                 | 0.51171875         |
+   * | ff                 | 0.99609375         |
+   * | ffff               | 0.9999847412109375 |
+   * | ffffffff           | 0.9999999997671694 |
+   * | ffffffffffff       | 0.9999999999999964 |
+   * | ffffffffffffff     | 0.9999999999999999 |
+   *
+   * This interprets the bytes in this byte string as **unsigned**. This behavior is consistent with
+   * [compareTo]. The returned value is also consistent with [compareTo] though the dynamic range
+   * is compressed. For two byte strings `a` and `b`, if `a < b`, then
+   * `a.toFraction() <= b.toFraction()`.
+   *
+   * This examines at most the first 7 bytes of this byte string. Data beyond the first 7 bytes is
+   * not used to compute the result.
+   *
+   * @return a value that is greater than or equal to `0.0` and less than `1.0`.
+   */
+  fun toFraction(): Double
+
+  /**
    * Returns a human-readable string that describes the contents of this byte string. Typically this
    * is a string like `[text=Hello]` or `[hex=0000ffff]`.
    */
