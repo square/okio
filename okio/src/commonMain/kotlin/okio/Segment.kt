@@ -38,7 +38,7 @@ internal class Segment {
   /** The next byte of application data byte to read in this segment. */
   @JvmField var pos: Int = 0
 
-  /** 
+  /**
    * The first byte of available data ready to be written to.
    *
    * If the segment is free and linked in the segment pool, the field contains total
