@@ -235,7 +235,7 @@ expect interface BufferedSource : Source {
    */
   fun skip(byteCount: Long)
 
-  /** Removes all bytes bytes from this and returns them as a byte string. */
+  /** Removes all bytes from this and returns them as a byte string. */
   fun readByteString(): ByteString
 
   /** Removes `byteCount` bytes from this and returns them as a byte string. */
