@@ -19,6 +19,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
@@ -606,6 +607,161 @@ class PipeKotlinTest {
 
     pipe.fold(foldedSink)
     assertEquals("world", foldedSinkBuffer.readUtf8(5))
+    assertTrue(foldedSinkClosed)
+  }
+
+  @Test fun cancelPreventsSinkWrite() {
+    val pipe = Pipe(8)
+    pipe.cancel()
+
+    val pipeSink = pipe.sink.buffer()
+    pipeSink.writeUtf8("hello world")
+
+    try {
+      pipeSink.emit()
+      fail()
+    } catch (e: IOException) {
+      assertEquals("canceled", e.message)
+    }
+  }
+
+  @Test fun cancelPreventsSinkFlush() {
+    val pipe = Pipe(8)
+    pipe.cancel()
+
+    try {
+      pipe.sink.flush()
+      fail()
+    } catch (e: IOException) {
+      assertEquals("canceled", e.message)
+    }
+  }
+
+  @Test fun sinkCloseAfterCancelDoesNotThrow() {
+    val pipe = Pipe(8)
+    pipe.cancel()
+    pipe.sink.close()
+  }
+
+  @Test fun cancelInterruptsSinkWrite() {
+    val pipe = Pipe(8)
+
+    executorService.schedule({
+      pipe.cancel()
+    }, smallerTimeoutNanos, TimeUnit.NANOSECONDS)
+
+    val pipeSink = pipe.sink.buffer()
+    pipeSink.writeUtf8("hello world")
+
+    assertDuration(smallerTimeoutNanos) {
+      try {
+        pipeSink.emit()
+        fail()
+      } catch (e: IOException) {
+        assertEquals("canceled", e.message)
+      }
+    }
+  }
+
+  @Test fun cancelPreventsSourceRead() {
+    val pipe = Pipe(8)
+    pipe.cancel()
+
+    val pipeSource = pipe.source.buffer()
+
+    try {
+      pipeSource.require(1)
+      fail()
+    } catch (e: IOException) {
+      assertEquals("canceled", e.message)
+    }
+  }
+
+  @Test fun sourceCloseAfterCancelDoesNotThrow() {
+    val pipe = Pipe(8)
+    pipe.cancel()
+    pipe.source.close()
+  }
+
+  @Test fun cancelInterruptsSourceRead() {
+    val pipe = Pipe(8)
+
+    executorService.schedule({
+      pipe.cancel()
+    }, smallerTimeoutNanos, TimeUnit.NANOSECONDS)
+
+    val pipeSource = pipe.source.buffer()
+
+    assertDuration(smallerTimeoutNanos) {
+      try {
+        pipeSource.require(1)
+        fail()
+      } catch (e: IOException) {
+        assertEquals("canceled", e.message)
+      }
+    }
+  }
+
+  @Test fun cancelPreventsSinkFold() {
+    val pipe = Pipe(8)
+    pipe.cancel()
+
+    var foldedSinkClosed = false
+    val foldedSink = object : ForwardingSink(Buffer()) {
+      override fun close() {
+        foldedSinkClosed = true
+        super.close()
+      }
+    }
+
+    try {
+      pipe.fold(foldedSink)
+      fail()
+    } catch (e: IOException) {
+      assertEquals("canceled", e.message)
+    }
+
+    // But the fold is still performed so close() closes everything.
+    assertFalse(foldedSinkClosed)
+    pipe.sink.close()
+    assertTrue(foldedSinkClosed)
+  }
+
+  @Test fun cancelInterruptsSinkFold() {
+    val pipe = Pipe(128)
+    val pipeSink = pipe.sink.buffer()
+    pipeSink.writeUtf8("hello")
+    pipeSink.emit()
+
+    var foldedSinkClosed = false
+    val foldedSink = object : ForwardingSink(Buffer()) {
+      override fun write(source: Buffer, byteCount: Long) {
+        assertEquals("hello", source.readUtf8(byteCount))
+
+        // Write bytes to the original pipe so the pipe write doesn't complete!
+        pipeSink.writeUtf8("more bytes")
+        pipeSink.emit()
+
+        // Cancel while the pipe is writing.
+        pipe.cancel()
+      }
+
+      override fun close() {
+        foldedSinkClosed = true
+        super.close()
+      }
+    }
+
+    try {
+      pipe.fold(foldedSink)
+      fail()
+    } catch (e: IOException) {
+      assertEquals("canceled", e.message)
+    }
+
+    // But the fold is still performed so close() closes everything.
+    assertFalse(foldedSinkClosed)
+    pipe.sink.close()
     assertTrue(foldedSinkClosed)
   }
 

@@ -15,8 +15,6 @@
  */
 package okio
 
-import java.io.IOException
-
 /**
  * A source and a sink that are attached. The sink's output is the source's input. Typically each
  * is accessed by its own thread: a producer thread writes data to the sink and a consumer thread
@@ -32,9 +30,12 @@ import java.io.IOException
  * When the sink is closed, source reads will continue to complete normally until the buffer has
  * been exhausted. At that point reads will return -1, indicating the end of the stream. But if the
  * source is closed first, writes to the sink will immediately fail with an [IOException].
+ *
+ * A pipe may be canceled to immediately fail writes to the sink and reads from the source.
  */
 class Pipe(internal val maxBufferSize: Long) {
   internal val buffer = Buffer()
+  internal var canceled = false
   internal var sinkClosed = false
   internal var sourceClosed = false
   internal var foldedSink: Sink? = null
@@ -52,6 +53,7 @@ class Pipe(internal val maxBufferSize: Long) {
       var delegate: Sink? = null
       synchronized(buffer) {
         check(!sinkClosed) { "closed" }
+        if (canceled) throw IOException("canceled")
 
         while (byteCount > 0) {
           foldedSink?.let {
@@ -64,6 +66,7 @@ class Pipe(internal val maxBufferSize: Long) {
           val bufferSpaceAvailable = maxBufferSize - buffer.size
           if (bufferSpaceAvailable == 0L) {
             timeout.waitUntilNotified(buffer) // Wait until the source drains the buffer.
+            if (canceled) throw IOException("canceled")
             continue
           }
 
@@ -81,6 +84,7 @@ class Pipe(internal val maxBufferSize: Long) {
       var delegate: Sink? = null
       synchronized(buffer) {
         check(!sinkClosed) { "closed" }
+        if (canceled) throw IOException("canceled")
 
         foldedSink?.let {
           delegate = it
@@ -123,10 +127,12 @@ class Pipe(internal val maxBufferSize: Long) {
     override fun read(sink: Buffer, byteCount: Long): Long {
       synchronized(buffer) {
         check(!sourceClosed) { "closed" }
+        if (canceled) throw IOException("canceled")
 
         while (buffer.size == 0L) {
           if (sinkClosed) return -1L
           timeout.waitUntilNotified(buffer) // Wait until the sink fills the buffer.
+          if (canceled) throw IOException("canceled")
         }
 
         val result = buffer.read(sink, byteCount)
@@ -162,6 +168,11 @@ class Pipe(internal val maxBufferSize: Long) {
       lateinit var sinkBuffer: Buffer
       synchronized(buffer) {
         check(foldedSink == null) { "sink already folded" }
+
+        if (canceled) {
+          foldedSink = sink
+          throw IOException("canceled")
+        }
 
         if (buffer.exhausted()) {
           sourceClosed = true
@@ -212,4 +223,25 @@ class Pipe(internal val maxBufferSize: Long) {
       replaceWith = ReplaceWith(expression = "source"),
       level = DeprecationLevel.ERROR)
   fun source() = source
+
+  /**
+   * Fail any in-flight and future operations. After canceling:
+   *
+   *  * Any attempt to write or flush [sink] will fail immediately with an [IOException].
+   *  * Any attempt to read [source] will fail immediately with an [IOException].
+   *  * Any attempt to [fold] will fail immediately with an [IOException].
+   *
+   * Closing the source and the sink will complete normally even after a pipe has been canceled. If
+   * this sink has been folded, closing it will close the folded sink. This operation may block.
+   *
+   * This operation may be called by any thread at any time. It is safe to call concurrently while
+   * operating on the source or the sink.
+   */
+  fun cancel() {
+    synchronized(buffer) {
+      canceled = true
+      buffer.clear()
+      (buffer as Object).notifyAll() // Notify the source and sink that they're canceled.
+    }
+  }
 }
