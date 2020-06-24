@@ -85,24 +85,24 @@ jobs:
           ORG_GRADLE_PROJECT_SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
 
+  publish-website:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs: [jvm, multiplatform]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+
       - name: Prepare docs
         run: .buildscript/prepare_mkdocs.sh
 
       - name: Deploy docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@v1.12
+        uses: mhausenblas/mkdocs-deploy-gh-pages@1.12
         env:
           PERSONAL_TOKEN: ${{ secrets.GH_CLIPPY_TOKEN }}
-
-      - name: Checkout gh-pages
-        uses: actions/checkout@v2
-        with:
-          ref: 'gh-pages'
-
-      - name: Restore Javadocs from 1.x
-        run: git cherry-pick b3205fa199a19d6fbf13ee5c8e0c3d6d2b15b05f
-
-      - name: Push gh-pages
-        uses: ad-m/github-push-action@v0.5.0
-        with:
-          branch: gh-pages
-          github_token: ${{ secrets.GH_CLIPPY_TOKEN }}
