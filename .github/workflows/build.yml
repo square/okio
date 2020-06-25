@@ -99,10 +99,24 @@ jobs:
         with:
           java-version: 14
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
       - name: Prepare docs
         run: .buildscript/prepare_mkdocs.sh
 
+      - name: Build mkdocs
+        run: |
+          pip3 install mkdocs-macros-plugin
+          mkdocs build
+
       - name: Deploy docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@1.12
-        env:
-          PERSONAL_TOKEN: ${{ secrets.GH_CLIPPY_TOKEN }}
+        if: success()
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GH_CLIPPY_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: site
+          SINGLE_COMMIT: true
