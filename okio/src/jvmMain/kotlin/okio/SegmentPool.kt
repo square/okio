@@ -16,10 +16,8 @@
 package okio
 
 import okio.SegmentPool.LOCK
-import okio.SegmentPool.MAX_SIZE
 import okio.SegmentPool.recycle
 import okio.SegmentPool.take
-import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -36,29 +34,47 @@ import java.util.concurrent.atomic.AtomicReference
  * Under significant contention this pool will have fewer hits and the VM will do more GC and zero
  * filling of arrays.
  *
- * Note that the [MAX_SIZE] may be exceeded if multiple calls to [recycle] race. Exceeding the
- * target pool size by a few segments doesn't harm performance, and imperfect enforcement is less
- * code.
+ * This tracks the number of bytes in each linked list in its [Segment.limit] property. Each element
+ * has a limit that's one segment size greater than its successor element.
  */
 internal actual object SegmentPool {
   /** The maximum number of bytes to pool.  */
   // TODO: Is 64 KiB a good maximum size? Do we ever have that many idle segments?
-  actual val MAX_SIZE = 64 * 1024L // 64 KiB.
+  actual val MAX_SIZE = 64 * 1024 // 64 KiB.
 
   /** A sentinel segment to indicate that the linked list is currently being modified. */
   private val LOCK = Segment(ByteArray(0), pos = 0, limit = 0, shared = false, owner = false)
 
-  /** Singly-linked list of segments. */
-  private var firstRef = AtomicReference<Segment?>()
+  /**
+   * The number of hash buckets. This number needs to balance keeping the pool small and contention
+   * low. We use the number of processors rounded up to the nearest power of two. For example a
+   * machine with 6 cores will have 8 hash buckets.
+   */
+  private val HASH_BUCKET_COUNT =
+    Integer.highestOneBit(Runtime.getRuntime().availableProcessors() * 2 - 1)
 
-  /** Total bytes in this pool. */
-  private var atomicByteCount = AtomicLong()
+  /**
+   * Hash buckets each containing a singly-linked list of segments. We use multiple hash buckets so
+   * different threads don't race each other. We use thread IDs as hash keys because they're handy,
+   * and because it may increase locality.
+   *
+   * We don't use [ThreadLocal] because we don't know how many threads the host process has and we
+   * don't want to leak memory for the duration of a thread's life.
+   */
+  private val hashBuckets: Array<AtomicReference<Segment?>> = Array(HASH_BUCKET_COUNT) {
+    AtomicReference<Segment?>()
+  }
 
-  actual val byteCount: Long
-    get() = atomicByteCount.get()
+  actual val byteCount: Int
+    get() {
+      val first = firstRef().get() ?: return 0
+      return first.limit
+    }
 
   @JvmStatic
   actual fun take(): Segment {
+    val firstRef = firstRef()
+
     val first = firstRef.getAndSet(LOCK)
     when {
       first === LOCK -> {
@@ -74,7 +90,7 @@ internal actual object SegmentPool {
         // We acquired the lock and the pool was not empty. Pop the first element and return it.
         firstRef.set(first.next)
         first.next = null
-        atomicByteCount.addAndGet(-Segment.SIZE.toLong())
+        first.limit = 0
         return first
       }
     }
@@ -84,21 +100,25 @@ internal actual object SegmentPool {
   actual fun recycle(segment: Segment) {
     require(segment.next == null && segment.prev == null)
     if (segment.shared) return // This segment cannot be recycled.
-    if (atomicByteCount.get() >= MAX_SIZE) return // Pool is full.
+
+    val firstRef = firstRef()
 
     val first = firstRef.get()
     if (first === LOCK) return // A take() is currently in progress.
+    val firstLimit = first?.limit ?: 0
+    if (firstLimit >= MAX_SIZE) return // Pool is full.
 
     segment.next = first
-    segment.limit = 0
     segment.pos = 0
+    segment.limit = firstLimit + Segment.SIZE
 
-    if (firstRef.compareAndSet(first, segment)) {
-      // We successfully recycled this segment. Adjust the pool size.
-      atomicByteCount.addAndGet(Segment.SIZE.toLong())
-    } else {
-      // We raced another operation. Don't recycle this segment.
-      segment.next = null
-    }
+    if (!firstRef.compareAndSet(first, segment)) segment.next = null
+    // If we raced another operation: Don't recycle this segment.
+  }
+
+  private fun firstRef(): AtomicReference<Segment?> {
+    // Get a value in [0..HASH_BUCKET_COUNT).
+    val hashBucket = (Thread.currentThread().id and (HASH_BUCKET_COUNT - 1L)).toInt()
+    return hashBuckets[hashBucket]
   }
 }

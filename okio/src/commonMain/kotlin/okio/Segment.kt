@@ -35,22 +35,27 @@ import kotlin.jvm.JvmField
 internal class Segment {
   @JvmField val data: ByteArray
 
-  /** The next byte of application data byte to read in this segment.  */
+  /** The next byte of application data byte to read in this segment. */
   @JvmField var pos: Int = 0
 
-  /** The first byte of available data ready to be written to.  */
+  /**
+   * The first byte of available data ready to be written to.
+   *
+   * If the segment is free and linked in the segment pool, the field contains total
+   * byte count of this and next segments.
+   */
   @JvmField var limit: Int = 0
 
-  /** True if other segments or byte strings use the same byte array.  */
+  /** True if other segments or byte strings use the same byte array. */
   @JvmField var shared: Boolean = false
 
-  /** True if this segment owns the byte array and can append to it, extending `limit`.  */
+  /** True if this segment owns the byte array and can append to it, extending `limit`. */
   @JvmField var owner: Boolean = false
 
-  /** Next segment in a linked or circularly-linked list.  */
+  /** Next segment in a linked or circularly-linked list. */
   @JvmField var next: Segment? = null
 
-  /** Previous segment in a circularly-linked list.  */
+  /** Previous segment in a circularly-linked list. */
   @JvmField var prev: Segment? = null
 
   constructor() {

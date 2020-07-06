@@ -16,9 +16,9 @@
 package okio
 
 internal actual object SegmentPool {
-  actual val MAX_SIZE: Long = 0L
+  actual val MAX_SIZE: Int = 0
 
-  actual val byteCount: Long = 0L
+  actual val byteCount: Int = 0
 
   actual fun take(): Segment = Segment()
 
