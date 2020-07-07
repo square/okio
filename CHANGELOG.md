@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+## Version 2.7.0
+
+_2020-07-07_
+
+ * New: `Pipe.cancel()` causes in-progress and future reads and writes on the pipe to immediately
+   fail with an `IOException`. The streams may still be canceled normally.
+   
+ * New: Enlarge Okio's internal segment pool from a fixed 64 KiB total to 64 KiB per processor. For
+   example, on an Intel i9 8-core/16-thread machine the segment pool now uses up to 1 MiB of memory.  
+ 
+ * New: Migrate from `synchronized` to lock-free when accessing the segment pool. Combined with the
+   change above we saw throughput increase 3x on a synthetic benchmark designed to create
+   contention.
+
+
 ## Version 2.6.0
 
 _2020-04-22_
