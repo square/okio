@@ -18,15 +18,14 @@
 @file:JvmName("-Base64")
 package okio
 
-import okio.ByteString.Companion.encodeUtf8
 import kotlin.jvm.JvmName
 
 /** @author Alexander Y. Kleymenov */
 
-internal val BASE64 =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".encodeUtf8().data
-internal val BASE64_URL_SAFE =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".encodeUtf8().data
+internal const val BASE64 =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+internal const val BASE64_URL_SAFE =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
 internal fun String.decodeBase64ToArray(): ByteArray? {
   // Ignore trailing '=' padding and whitespace from the input.
@@ -112,9 +111,9 @@ internal fun String.decodeBase64ToArray(): ByteArray? {
   return out.copyOf(outCount)
 }
 
-internal fun ByteArray.encodeBase64(map: ByteArray = BASE64): String {
+internal fun ByteArray.encodeBase64(map: String = BASE64): String {
   val length = (size + 2) / 3 * 4
-  val out = ByteArray(length)
+  val out = CharArray(length)
   var index = 0
   val end = size - size % 3
   var i = 0
@@ -132,8 +131,8 @@ internal fun ByteArray.encodeBase64(map: ByteArray = BASE64): String {
       val b0 = this[i].toInt()
       out[index++] = map[b0 and 0xff shr 2]
       out[index++] = map[b0 and 0x03 shl 4]
-      out[index++] = '='.toByte()
-      out[index] = '='.toByte()
+      out[index++] = '='
+      out[index] = '='
     }
     2 -> {
       val b0 = this[i++].toInt()
@@ -141,8 +140,8 @@ internal fun ByteArray.encodeBase64(map: ByteArray = BASE64): String {
       out[index++] = map[(b0 and 0xff shr 2)]
       out[index++] = map[(b0 and 0x03 shl 4) or (b1 and 0xff shr 4)]
       out[index++] = map[(b1 and 0x0f shl 2)]
-      out[index] = '='.toByte()
+      out[index] = '='
     }
   }
-  return out.toUtf8String()
+  return out.concatToString()
 }
