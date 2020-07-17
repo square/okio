@@ -1,8 +1,8 @@
-package okio.internal
+package okio
 
 import java.security.MessageDigest
 
-internal actual fun newMessageDigest(
+actual fun newMessageDigest(
   algorithm: OkioMessageDigestAlgorithm
 ): OkioMessageDigest = object : OkioMessageDigest {
 

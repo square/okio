@@ -1,7 +1,7 @@
-package okio.internal
+package okio
 
 // TODO refactor to typealias after this is resolved https://youtrack.jetbrains.com/issue/KT-37316
-internal interface OkioMessageDigest {
+interface OkioMessageDigest {
 
   /**
    * Update the digest using [input]
@@ -14,4 +14,4 @@ internal interface OkioMessageDigest {
   fun digest(): ByteArray
 }
 
-internal expect fun newMessageDigest(algorithm: OkioMessageDigestAlgorithm): OkioMessageDigest
+expect fun newMessageDigest(algorithm: OkioMessageDigestAlgorithm): OkioMessageDigest
