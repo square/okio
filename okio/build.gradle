@@ -41,6 +41,12 @@ kotlin {
         implementation deps.kotlin.test.annotations
       }
     }
+    nonJvmMain {
+      dependsOn commonMain
+    }
+    nonJvmTest {
+      dependsOn commonTest
+    }
     jvmMain {
       dependencies {
         api deps.kotlin.stdLib.jdk6
@@ -55,26 +61,28 @@ kotlin {
       }
     }
     jsMain {
+      dependsOn nonJvmMain
       dependencies {
         api deps.kotlin.stdLib.js
       }
     }
     jsTest {
+      dependsOn nonJvmTest
       dependencies {
         implementation deps.kotlin.test.js
       }
     }
     nativeMain {
-      dependsOn commonMain
+      dependsOn nonJvmMain
     }
     nativeTest {
-      dependsOn commonTest
+      dependsOn nonJvmTest
     }
     appleMain {
-      dependsOn commonMain
+      dependsOn nonJvmMain
     }
     appleTest {
-      dependsOn commonTest
+      dependsOn nonJvmTest
     }
 
     configure([iosX64Main, iosArm64Main, linuxX64Main, macosX64Main]) {
