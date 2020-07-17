@@ -12,13 +12,6 @@ internal interface OkioMessageDigest {
    * Complete the hash calculaion and return the hash as a [ByteArray]
    */
   fun digest(): ByteArray
-
-  companion object {
-    fun getInstance(algorithm: OkioMessageDigestAlgorithm): OkioMessageDigest = when (algorithm) {
-      OkioMessageDigestAlgorithm.SHA_1 -> Sha1MessageDigest()
-      else -> TODO()
-    }
-  }
 }
 
-internal expect class Sha1MessageDigest constructor(): OkioMessageDigest
+internal expect fun newMessageDigest(algorithm: OkioMessageDigestAlgorithm): OkioMessageDigest
