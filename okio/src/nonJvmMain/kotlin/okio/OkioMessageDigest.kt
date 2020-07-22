@@ -1,12 +1,13 @@
 package okio
 
 actual fun newMessageDigest(
-  algorithm: OkioMessageDigestAlgorithm
+  algorithm: String
 ): OkioMessageDigest = when (algorithm) {
-  OkioMessageDigestAlgorithm.SHA_1 -> Sha1MessageDigest()
-  OkioMessageDigestAlgorithm.SHA_256 -> Sha256MessageDigest()
-  OkioMessageDigestAlgorithm.SHA_512 -> Sha512MessageDigest()
-  OkioMessageDigestAlgorithm.MD5 -> MD5MessageDigest()
+  "SHA-1" -> Sha1MessageDigest()
+  "SHA-256" -> Sha256MessageDigest()
+  "SHA-512" -> Sha512MessageDigest()
+  "MD5" -> MD5MessageDigest()
+  else -> throw IllegalArgumentException("$algorithm is not a hashing algorithm")
 }
 
 private class Sha1MessageDigest : OkioMessageDigest {

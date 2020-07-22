@@ -27,6 +27,7 @@ import okio.checkOffsetAndCount
 import okio.decodeBase64ToArray
 import okio.encodeBase64
 import okio.isIsoControl
+import okio.newMessageDigest
 import okio.processUtf8CodePoints
 import okio.shr
 import okio.toUtf8String
@@ -287,6 +288,10 @@ internal inline fun String.commonDecodeHex(): ByteString {
 internal fun ByteString.commonWrite(buffer: Buffer, offset: Int, byteCount: Int) {
   buffer.write(data, offset, byteCount)
 }
+
+internal fun ByteString.commonDigest(algorithm: String) = ByteString(
+  newMessageDigest(algorithm).apply { update(data) }.digest()
+)
 
 private fun decodeHexDigit(c: Char): Int {
   return when (c) {

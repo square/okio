@@ -3,10 +3,10 @@ package okio
 import java.security.MessageDigest
 
 actual fun newMessageDigest(
-  algorithm: OkioMessageDigestAlgorithm
+  algorithm: String
 ): OkioMessageDigest = object : OkioMessageDigest {
 
-  private val digest: MessageDigest = MessageDigest.getInstance(algorithm.value)
+  private val digest: MessageDigest = MessageDigest.getInstance(algorithm)
 
   override fun update(input: ByteArray) = digest.update(input)
 

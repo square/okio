@@ -14,4 +14,4 @@ interface OkioMessageDigest {
   fun digest(): ByteArray
 }
 
-expect fun newMessageDigest(algorithm: OkioMessageDigestAlgorithm): OkioMessageDigest
+expect fun newMessageDigest(algorithm: String): OkioMessageDigest
