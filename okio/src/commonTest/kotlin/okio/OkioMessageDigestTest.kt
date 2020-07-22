@@ -9,7 +9,7 @@ class OkioMessageDigestTest {
 
   // region SHA-1
 
-  @Test fun `SHA-1 hash of empty value produces correct hash`() {
+  @Test fun sha1EmptyValueHashIsCorrect() {
     // arrange act
     val result = ByteString.EMPTY.sha1()
 
@@ -17,7 +17,7 @@ class OkioMessageDigestTest {
     assertEquals("da39a3ee5e6b4b0d3255bfef95601890afd80709".decodeHex(), result)
   }
 
-  @Test fun `SHA-1 hash of simple value gives correct hash`() {
+  @Test fun sha1SimpleValueHashIsCorrect() {
     // arrange
     val value = ByteString.of(*"Kevin".commonAsUtf8ToByteArray())
 
@@ -28,7 +28,7 @@ class OkioMessageDigestTest {
     assertEquals("e043899daa0c7add37bc99792b2c045d6abbc6dc".decodeHex(), result)
   }
 
-  @Test fun `SHA-1 hash of exact chunk size value gives correct hash`() {
+  @Test fun sha1ChunkSizeValueHashIsCorrect() {
     // arrange
     val bytes = ByteArray(64) { 'i'.toByte() }
     val value = ByteString.of(*bytes)
@@ -40,7 +40,7 @@ class OkioMessageDigestTest {
     assertEquals("79c64455d4565a82bc3f4ec5d9a5e8443c2e77b3".decodeHex(), result)
   }
 
-  @Test fun `SHA-1 hash of value larger than chunk size gives correct hash`() {
+  @Test fun sha1ValueLargerThanChunkHashIsCorrect() {
     // arrange
     val bytes = ByteArray(65) { 'i'.toByte() }
     val value = ByteString.of(*bytes)
@@ -52,7 +52,7 @@ class OkioMessageDigestTest {
     assertEquals("6658b01c97fd6db0bdb010b2e154164285e5bd71".decodeHex(), result)
   }
 
-  @Test fun `SHA-1 hash of non-trivial value gives correct digest`() {
+  @Test fun sha1ComplexValueHashIsCorrect() {
     // arrange
     val value = ByteString.of(
       *"The quick brown fox jumps over the lazy dog".commonAsUtf8ToByteArray()

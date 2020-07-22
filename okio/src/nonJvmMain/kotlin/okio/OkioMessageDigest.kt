@@ -1,6 +1,6 @@
 package okio
 
-actual fun newMessageDigest(
+internal actual fun newMessageDigest(
   algorithm: String
 ): OkioMessageDigest = when (algorithm) {
   "SHA-1" -> Sha1MessageDigest()

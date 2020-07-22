@@ -2,7 +2,7 @@ package okio
 
 import java.security.MessageDigest
 
-actual fun newMessageDigest(
+internal actual fun newMessageDigest(
   algorithm: String
 ): OkioMessageDigest = object : OkioMessageDigest {
 
