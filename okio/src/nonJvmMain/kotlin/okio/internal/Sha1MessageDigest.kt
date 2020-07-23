@@ -30,12 +30,12 @@ internal class Sha1MessageDigest : OkioMessageDigest {
   override fun digest(): ByteArray {
     val finalMessageLength = messageLength + unprocessed.size
 
-    val finalMessage = listOf(
-      *unprocessed.toTypedArray(),
+    val finalMessage = byteArrayOf(
+      *unprocessed,
       0x80.toByte(),
-      *Array(((56 - (finalMessageLength + 1) % 64) % 64)) { 0.toByte() },
-      *(finalMessageLength * 8L).toTypedByteArray()
-    ).toByteArray()
+      *ByteArray(((56 - (finalMessageLength + 1) % 64) % 64)),
+      *(finalMessageLength * 8L).toByteArray()
+    )
 
     finalMessage.chunked(64).forEach { currentDigest = it.processChunk(currentDigest) }
 
@@ -47,7 +47,7 @@ private data class Digest(
   val second: UInt,
   val third: UInt,
   val fourth: UInt,
-  val fifth: UInt // lease significant
+  val fifth: UInt // least significant
 )
 
 private fun ByteArray.processChunk(currentDigest: Digest): Digest {
@@ -137,7 +137,7 @@ private fun ByteArray.toUInt(): UInt {
   return accumulator
 }
 
-private fun Long.toTypedByteArray(): Array<out Byte> = Array(8) { index ->
+private fun Long.toByteArray(): ByteArray = ByteArray(8) { index ->
   ((this shr ((7 - index) * 8)) and 0xffL).toByte()
 }
 
