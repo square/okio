@@ -88,7 +88,10 @@ internal actual constructor(
   actual open fun substring(beginIndex: Int, endIndex: Int): ByteString =
     commonSubstring(beginIndex, endIndex)
 
-  internal actual open fun internalGet(pos: Int) = commonGetByte(pos)
+  internal actual open fun internalGet(pos: Int): Byte {
+    if (pos >= size || pos < 0) throw ArrayIndexOutOfBoundsException("size=$size pos=$pos")
+    return commonGetByte(pos)
+  }
 
   actual operator fun get(index: Int): Byte = internalGet(index)
 
