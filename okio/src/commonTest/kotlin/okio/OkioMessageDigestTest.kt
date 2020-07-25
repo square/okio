@@ -69,6 +69,62 @@ class OkioMessageDigestTest {
 
   // region SHA-256
 
+  @Test fun sha256EmptyValueHashIsCorrect() {
+    // arrange act
+    val result = ByteString.EMPTY.sha256()
+
+    // assert
+    assertEquals("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".decodeHex(), result)
+  }
+
+  @Test fun sha256SimpleValueHashIsCorrect() {
+    // arrange
+    val value = ByteString.of(*"Kevin".commonAsUtf8ToByteArray())
+
+    // act
+    val result = value.sha256()
+
+    // assert
+    assertEquals("0e4dd66217fc8d2e298b78c8cd9392870dcd065d0ff675d0edff5bcd227837e9".decodeHex(), result)
+  }
+
+  @Test fun sha256ChunkSizeValueHashIsCorrect() {
+    // arrange
+    val bytes = ByteArray(64) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+
+    // act
+    val result = value.sha256()
+
+    // assert
+    assertEquals("a343b617ce1070a37251a5e66b409947ec3d3ff7d89b9de482d7df84402778d2".decodeHex(), result)
+  }
+
+  @Test fun sha256ValueLargerThanChunkHashIsCorrect() {
+    // arrange
+    val bytes = ByteArray(65) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+
+    // act
+    val result = value.sha256()
+
+    // assert
+    assertEquals("7db92d77e8b1d5ac593cd614244109b70618fe2a6a7eba541a5347ff383237d0".decodeHex(), result)
+  }
+
+  @Test fun sha256ComplexValueHashIsCorrect() {
+    // arrange
+    val value = ByteString.of(
+      *"The quick brown fox jumps over the lazy dog".commonAsUtf8ToByteArray()
+    )
+
+    // act
+    val result = value.sha256()
+
+    // assert
+    assertEquals("d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592".decodeHex(), result)
+  }
+
   // endregion
 
   // region SHA-512
