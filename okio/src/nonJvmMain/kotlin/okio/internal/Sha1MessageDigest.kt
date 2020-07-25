@@ -1,13 +1,12 @@
 package okio.internal
 
 import okio.OkioMessageDigest
-import kotlin.math.min
 
 internal class Sha1MessageDigest : OkioMessageDigest {
 
   private var unprocessed: ByteArray = byteArrayOf()
   private var messageLength = 0
-  private var currentDigest = Digest(
+  private var currentDigest = Sha1Digest(
     0x67452301.toUInt(),
     0xEFCDAB89.toUInt(),
     0x98BADCFE.toUInt(),
@@ -42,7 +41,7 @@ internal class Sha1MessageDigest : OkioMessageDigest {
     return currentDigest.toByteArray()
   }
 }
-private data class Digest(
+private data class Sha1Digest(
   val first: UInt, // most significant
   val second: UInt,
   val third: UInt,
@@ -50,7 +49,7 @@ private data class Digest(
   val fifth: UInt // least significant
 )
 
-private fun ByteArray.processChunk(currentDigest: Digest): Digest {
+private fun ByteArray.processChunk(currentDigest: Sha1Digest): Sha1Digest {
   require(size == 64)
 
   val words = UIntArray(80)
@@ -73,7 +72,7 @@ private fun ByteArray.processChunk(currentDigest: Digest): Digest {
       else -> error("Index is wonky, this should never happen")
     }
 
-    val updatedDigest = Digest(
+    val updatedDigest = Sha1Digest(
       first = ((a leftRotate 5) + f + e + k + words[i]) and UInt.MAX_VALUE,
       second = a,
       third = b leftRotate 30,
@@ -88,7 +87,7 @@ private fun ByteArray.processChunk(currentDigest: Digest): Digest {
     e = updatedDigest.fifth
   }
 
-  return Digest(
+  return Sha1Digest(
     first = (currentDigest.first + a) and UInt.MAX_VALUE,
     second = (currentDigest.second + b) and UInt.MAX_VALUE,
     third = (currentDigest.third + c) and UInt.MAX_VALUE,
@@ -97,7 +96,7 @@ private fun ByteArray.processChunk(currentDigest: Digest): Digest {
   )
 }
 
-private fun Digest.toByteArray(): ByteArray = ByteArray(20) { index ->
+private fun Sha1Digest.toByteArray(): ByteArray = ByteArray(20) { index ->
   when (index) {
     in 0..3 -> first.getByte(index)
     in 4..7 -> second.getByte(index - 4)
@@ -106,44 +105,4 @@ private fun Digest.toByteArray(): ByteArray = ByteArray(20) { index ->
     in 16..19 -> fifth.getByte(index - 16)
     else -> error("$index is out of bounds")
   }
-}
-
-private fun UInt.getByte(index: Int): Byte {
-  require(index < 4)
-  return ((this shr ((3 - index) * 8)) and 0xff.toUInt()).toByte()
-}
-
-private fun ByteArray.chunked(chunkSize: Int): List<ByteArray> {
-  val result = mutableListOf<ByteArray>()
-
-  val lastIndex = if (size % chunkSize == 0) this.size else (size / chunkSize) + size
-  for (startIndex in 0 until lastIndex step chunkSize) {
-    if (startIndex > size) break
-    val endIndex = min(startIndex + chunkSize - 1, size - 1)
-    result.add(sliceArray(startIndex..endIndex))
-  }
-
-  return result
-}
-
-private fun ByteArray.toUInt(): UInt {
-  require(size == 4)
-  var accumulator: UInt = 0.toUInt()
-
-  forEachIndexed { index, byte ->
-    accumulator = accumulator or ((byte.toUInt() and 0xff.toUInt()) shl ((3 - index) * 8))
-  }
-
-  return accumulator
-}
-
-private fun Long.toByteArray(): ByteArray = ByteArray(8) { index ->
-  ((this shr ((7 - index) * 8)) and 0xffL).toByte()
-}
-
-/**
- * Left rotate an unsigned 32 bit integer by [bitCount] bits
- */
-private infix fun UInt.leftRotate(bitCount: Int): UInt {
-  return ((this shl bitCount) or (this shr (UInt.SIZE_BITS - bitCount))) and UInt.MAX_VALUE
 }
