@@ -79,13 +79,13 @@ class OkioMessageDigestTest {
 
   @Test fun sha256SimpleValueHashIsCorrect() {
     // arrange
-    val value = ByteString.of(*"Kevin".commonAsUtf8ToByteArray())
+    val value = ByteString.of(*"hello world".commonAsUtf8ToByteArray())
 
     // act
     val result = value.sha256()
 
     // assert
-    assertEquals("0e4dd66217fc8d2e298b78c8cd9392870dcd065d0ff675d0edff5bcd227837e9".decodeHex(), result)
+    assertEquals("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9".decodeHex(), result)
   }
 
   @Test fun sha256ChunkSizeValueHashIsCorrect() {

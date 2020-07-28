@@ -49,11 +49,11 @@ internal class Sha1MessageDigest : AbstractMessageDigest() {
     }
 
     return HashDigest(
-      (currentDigest[0] + a) and UInt.MAX_VALUE,
-      (currentDigest[1] + b) and UInt.MAX_VALUE,
-      (currentDigest[2] + c) and UInt.MAX_VALUE,
-      (currentDigest[3] + d) and UInt.MAX_VALUE,
-      (currentDigest[4] + e) and UInt.MAX_VALUE
+      (currentDigest[0] + a),
+      (currentDigest[1] + b),
+      (currentDigest[2] + c),
+      (currentDigest[3] + d),
+      (currentDigest[4] + e)
     )
   }
 }

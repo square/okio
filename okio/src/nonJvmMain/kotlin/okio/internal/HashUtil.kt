@@ -26,6 +26,13 @@ internal infix fun UInt.leftRotate(bitCount: Int): UInt {
   return ((this shl bitCount) or (this shr (UInt.SIZE_BITS - bitCount))) and UInt.MAX_VALUE
 }
 
+/**
+ * Right rotate an unsigned 32 bit integer by [bitCount] bits
+ */
+internal infix fun UInt.rightRotate(bitCount: Int): UInt {
+  return (((this shr bitCount) or (this shl (UInt.SIZE_BITS - bitCount))) and UInt.MAX_VALUE)
+}
+
 internal fun ByteArray.toUInt(): UInt {
   require(size == 4)
   var accumulator: UInt = 0.toUInt()
