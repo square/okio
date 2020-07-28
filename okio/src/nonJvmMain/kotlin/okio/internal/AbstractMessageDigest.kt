@@ -30,7 +30,7 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
       *(finalMessageLength * 8L).toByteArray()
     )
 
-    finalMessage.chunked(64).forEach {  chunk ->
+    finalMessage.chunked(64).forEach { chunk ->
       currentDigest = processChunk(chunk, currentDigest)
     }
 
