@@ -33,6 +33,10 @@ internal infix fun UInt.rightRotate(bitCount: Int): UInt {
   return (((this shr bitCount) or (this shl (UInt.SIZE_BITS - bitCount))) and UInt.MAX_VALUE)
 }
 
+internal infix fun ULong.rightRotate(bitCount: Int): ULong {
+  return (((this shr bitCount) or (this shl (ULong.SIZE_BITS - bitCount))) and ULong.MAX_VALUE)
+}
+
 internal fun ByteArray.toUInt(): UInt {
   require(size == 4)
   var accumulator: UInt = 0.toUInt()
@@ -44,7 +48,23 @@ internal fun ByteArray.toUInt(): UInt {
   return accumulator
 }
 
+internal fun ByteArray.toULong(): ULong {
+  require(size == 8)
+  var accumulator = 0.toULong()
+
+  forEachIndexed { index, byte ->
+    accumulator = accumulator or ((byte.toULong() and 0xff.toULong()) shl ((7 - index) * 8))
+  }
+
+  return accumulator
+}
+
 internal fun UInt.getByte(index: Int): Byte {
   require(index < 4)
   return ((this shr ((3 - index) * 8)) and 0xff.toUInt()).toByte()
+}
+
+internal fun ULong.getByte(index: Int): Byte {
+  require(index < 8)
+  return ((this shr ((7 - index) * 8)) and 0xff.toULong()).toByte()
 }

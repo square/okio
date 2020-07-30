@@ -4,7 +4,7 @@ import okio.OkioMessageDigest
 
 internal abstract class AbstractMessageDigest : OkioMessageDigest {
 
-  private var messageLength: Int = 0
+  private var messageLength: Long = 0
   private var unprocessed: ByteArray = byteArrayOf()
   protected abstract var currentDigest: HashDigest
 
@@ -26,7 +26,7 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
     val finalMessage = byteArrayOf(
       *unprocessed,
       0x80.toByte(),
-      *ByteArray(((56 - (finalMessageLength + 1) % 64) % 64)),
+      *ByteArray(((56 - (finalMessageLength + 1) % 64) % 64).toInt()),
       *(finalMessageLength * 8L).toByteArray()
     )
 

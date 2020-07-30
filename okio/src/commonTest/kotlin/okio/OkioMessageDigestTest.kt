@@ -129,6 +129,62 @@ class OkioMessageDigestTest {
 
   // region SHA-512
 
+  @Test fun sha512EmptyValueHashIsCorrect() {
+    // arrange act
+    val result = ByteString.EMPTY.sha512()
+
+    // assert
+    assertEquals("cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e".decodeHex(), result)
+  }
+
+  @Test fun sha512SimpleValueHashIsCorrect() {
+    // arrange
+    val value = ByteString.of(*"hello world".commonAsUtf8ToByteArray())
+
+    // act
+    val result = value.sha512()
+
+    // assert
+    assertEquals("309ecc489c12d6eb4cc40f50c902f2b4d0ed77ee511a7c7a9bcd3ca86d4cd86f989dd35bc5ff499670da34255b45b0cfd830e81f605dcf7dc5542e93ae9cd76f".decodeHex(), result)
+  }
+
+  @Test fun sha512ChunkSizeValueHashIsCorrect() {
+    // arrange
+    val bytes = ByteArray(128) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+
+    // act
+    val result = value.sha512()
+
+    // assert
+    assertEquals("76b9c0fd4f62bee4541f092d0fd2869fe6f06ca6725be4611c84e27a8641d61adef6020be49c1116284346a8962bed7d5b3df03618cb9273fa5de0b9104a51e8".decodeHex(), result)
+  }
+
+  @Test fun sha512ValueLargerThanChunkHashIsCorrect() {
+    // arrange
+    val bytes = ByteArray(129) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+
+    // act
+    val result = value.sha512()
+
+    // assert
+    assertEquals("34a15944d86a67fd7b4083502fb5f08b6ae35edd4b4a56d6ae46b45c950a515f79824a933958988dacb42ed71dc30e0d1398d0d9fcf1799d35a3c39aeccbd19f".decodeHex(), result)
+  }
+
+  @Test fun sha512ComplexValueHashIsCorrect() {
+    // arrange
+    val value = ByteString.of(
+      *"The quick brown fox jumps over the lazy dog".commonAsUtf8ToByteArray()
+    )
+
+    // act
+    val result = value.sha512()
+
+    // assert
+    assertEquals("07e547d9586f6a73f73fbac0435ed76951218fb7d0c8d788a309d785436bbb642e93a252a954f23912547d1e8a3b5ed6e1bfd7097821233fa0538f3db854fee6".decodeHex(), result)
+  }
+
   // endregion
 
   // region MD5
