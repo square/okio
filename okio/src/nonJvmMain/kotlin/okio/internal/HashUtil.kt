@@ -42,7 +42,7 @@ internal fun ByteArray.toUInt(): UInt {
   var accumulator: UInt = 0.toUInt()
 
   forEachIndexed { index, byte ->
-    accumulator = accumulator or ((byte.toUInt() and 0xff.toUInt()) shl ((3 - index) * 8))
+    accumulator = accumulator or ((byte.toUInt() and 0xffu) shl ((3 - index) * 8))
   }
 
   return accumulator
@@ -53,7 +53,7 @@ internal fun ByteArray.toULong(): ULong {
   var accumulator = 0.toULong()
 
   forEachIndexed { index, byte ->
-    accumulator = accumulator or ((byte.toULong() and 0xff.toULong()) shl ((7 - index) * 8))
+    accumulator = accumulator or ((byte.toULong() and 0xffUL) shl ((7 - index) * 8))
   }
 
   return accumulator
@@ -61,10 +61,10 @@ internal fun ByteArray.toULong(): ULong {
 
 internal fun UInt.getByte(index: Int): Byte {
   require(index < 4)
-  return ((this shr ((3 - index) * 8)) and 0xff.toUInt()).toByte()
+  return ((this shr ((3 - index) * 8)) and 0xffu).toByte()
 }
 
 internal fun ULong.getByte(index: Int): Byte {
   require(index < 8)
-  return ((this shr ((7 - index) * 8)) and 0xff.toULong()).toByte()
+  return ((this shr ((7 - index) * 8)) and 0xffUL).toByte()
 }

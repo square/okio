@@ -3,11 +3,11 @@ package okio.internal
 internal class Sha1MessageDigest : AbstractMessageDigest() {
 
   override var currentDigest = HashDigest(
-    0x67452301.toUInt(),
-    0xEFCDAB89.toUInt(),
-    0x98BADCFE.toUInt(),
-    0x10325476.toUInt(),
-    0xC3D2E1F0.toUInt()
+    0x67452301u,
+    0xEFCDAB89u,
+    0x98BADCFEu,
+    0x10325476u,
+    0xC3D2E1F0u
   )
 
   override fun processChunk(chunk: ByteArray, currentDigest: HashDigest): HashDigest {
