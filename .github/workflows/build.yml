@@ -64,6 +64,25 @@ jobs:
         run: |
           ./gradlew build
 
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Configure JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+
+      - name: Test
+        run: |
+          ./gradlew build
+
   publish:
     runs-on: macOS-latest
     if: github.ref == 'refs/heads/master'
