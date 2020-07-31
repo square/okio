@@ -98,5 +98,9 @@ kotlin {
   }
 }
 
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
+}
+
 apply from: 'jvm/jvm.gradle'
 apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"
