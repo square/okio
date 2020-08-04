@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2018 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package okio.internal
 
 import okio.OkioMessageDigest
@@ -31,7 +47,7 @@ private val k = uintArrayOf(
 internal class MD5MessageDigest : OkioMessageDigest {
 
   private var messageLength = 0L
-  private var unprocessed = byteArrayOf()
+  private var unprocessed = Bytes.EMPTY
   private var currentDigest = HashDigest(
     0x67452301u,
     0xefcdab89u,
@@ -40,7 +56,7 @@ internal class MD5MessageDigest : OkioMessageDigest {
   )
 
   override fun update(input: ByteArray) {
-    for (chunk in (unprocessed + input).chunked(64)) {
+    for (chunk in (unprocessed + input.toBytes()).chunked(64)) {
       when (chunk.size) {
         64 -> {
           currentDigest = processChunk(chunk, currentDigest)
@@ -55,11 +71,11 @@ internal class MD5MessageDigest : OkioMessageDigest {
     val finalMessageLength = messageLength + unprocessed.size
 
     val finalMessage = byteArrayOf(
-      *unprocessed,
+      *unprocessed.toByteArray(),
       0x80.toByte(),
       *ByteArray(((56 - (finalMessageLength + 1) % 64) % 64).toInt()),
       *(finalMessageLength * 8L).toLittleEndianByteArray()
-    )
+    ).toBytes()
 
     finalMessage.chunked(64).forEach { chunk ->
       currentDigest = processChunk(chunk, currentDigest)
@@ -70,7 +86,7 @@ internal class MD5MessageDigest : OkioMessageDigest {
     return currentDigest.toLittleEndianByteArray()
   }
 
-  private fun processChunk(chunk: ByteArray, currentDigest: HashDigest): HashDigest {
+  private fun processChunk(chunk: Bytes, currentDigest: HashDigest): HashDigest {
     require(chunk.size == 64)
 
     val words = UIntArray(16)

@@ -1,6 +1,20 @@
-package okio.internal
+/*
+ * Copyright (C) 2018 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import kotlin.math.min
+package okio.internal
 
 internal fun Long.toBigEndianByteArray(): ByteArray = ByteArray(8) { index ->
   ((this shr ((7 - index) * 8)) and 0xffL).toByte()
@@ -8,19 +22,6 @@ internal fun Long.toBigEndianByteArray(): ByteArray = ByteArray(8) { index ->
 
 internal fun Long.toLittleEndianByteArray(): ByteArray = ByteArray(8) { index ->
   ((this shr (index * 8)) and 0xffL).toByte()
-}
-
-internal fun ByteArray.chunked(chunkSize: Int): List<ByteArray> {
-  val result = mutableListOf<ByteArray>()
-
-  val lastIndex = if (size % chunkSize == 0) this.size else (size / chunkSize) + size
-  for (startIndex in 0 until lastIndex step chunkSize) {
-    if (startIndex > size) break
-    val endIndex = min(startIndex + chunkSize - 1, size - 1)
-    result.add(sliceArray(startIndex..endIndex))
-  }
-
-  return result
 }
 
 /**
@@ -39,39 +40,6 @@ internal infix fun UInt.rightRotate(bitCount: Int): UInt {
 
 internal infix fun ULong.rightRotate(bitCount: Int): ULong {
   return (((this shr bitCount) or (this shl (ULong.SIZE_BITS - bitCount))) and ULong.MAX_VALUE)
-}
-
-internal fun ByteArray.toBigEndianUInt(): UInt {
-  require(size == 4)
-  var accumulator: UInt = 0.toUInt()
-
-  forEachIndexed { index, byte ->
-    accumulator = accumulator or ((byte.toUInt() and 0xffu) shl ((3 - index) * 8))
-  }
-
-  return accumulator
-}
-
-internal fun ByteArray.toLittleEndianUInt(): UInt {
-  require(size == 4)
-  var accumulator: UInt = 0.toUInt()
-
-  forEachIndexed { index, byte ->
-    accumulator = accumulator or ((byte.toUInt() and 0xffu) shl (index * 8))
-  }
-
-  return accumulator
-}
-
-internal fun ByteArray.toULong(): ULong {
-  require(size == 8)
-  var accumulator = 0.toULong()
-
-  forEachIndexed { index, byte ->
-    accumulator = accumulator or ((byte.toULong() and 0xffUL) shl ((7 - index) * 8))
-  }
-
-  return accumulator
 }
 
 internal fun UInt.getByte(index: Int): Byte {

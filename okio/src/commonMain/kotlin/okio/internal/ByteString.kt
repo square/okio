@@ -290,7 +290,9 @@ internal fun ByteString.commonWrite(buffer: Buffer, offset: Int, byteCount: Int)
 }
 
 internal fun ByteString.commonDigest(algorithm: String) = ByteString(
-  newMessageDigest(algorithm).apply { update(data) }.digest()
+  newMessageDigest(algorithm).apply {
+    update(data)
+  }.digest()
 )
 
 private fun decodeHexDigit(c: Char): Int {

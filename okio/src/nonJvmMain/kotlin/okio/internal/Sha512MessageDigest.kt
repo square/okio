@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2018 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package okio.internal
 
 import okio.OkioMessageDigest
@@ -24,7 +40,7 @@ private val k = ulongArrayOf(
 internal class Sha512MessageDigest : OkioMessageDigest {
 
   private var messageLength: Long = 0
-  private var unprocessed = byteArrayOf()
+  private var unprocessed = Bytes.EMPTY
   private var currentDigest = ULongHashDigest(
     0x6a09e667f3bcc908UL,
     0xbb67ae8584caa73bUL,
@@ -37,7 +53,7 @@ internal class Sha512MessageDigest : OkioMessageDigest {
   )
 
   override fun update(input: ByteArray) {
-    for (chunk in (unprocessed + input).chunked(128)) {
+    for (chunk in (unprocessed + input.toBytes()).chunked(128)) {
       when (chunk.size) {
         128 -> {
           currentDigest = processChunk(chunk, currentDigest)
@@ -52,12 +68,12 @@ internal class Sha512MessageDigest : OkioMessageDigest {
     val finalMessageLength = messageLength + unprocessed.size
 
     val finalMessage = byteArrayOf(
-      *unprocessed,
+      *unprocessed.toByteArray(),
       0x80.toByte(),
       *ByteArray(((112 - (finalMessageLength + 1) % 128) % 128).toInt()),
       *0L.toBigEndianByteArray(), // append 64 0 bits because SHA-512 requires message length to be a 128 bit int
       *(finalMessageLength * 8L).toBigEndianByteArray()
-    )
+    ).toBytes()
 
     finalMessage.chunked(128).forEach { chunk ->
       currentDigest = processChunk(chunk, currentDigest)
@@ -66,7 +82,7 @@ internal class Sha512MessageDigest : OkioMessageDigest {
     return currentDigest.toByteArray()
   }
 
-  private fun processChunk(chunk: ByteArray, currentDigest: ULongHashDigest): ULongHashDigest {
+  private fun processChunk(chunk: Bytes, currentDigest: ULongHashDigest): ULongHashDigest {
     require(chunk.size == 128)
 
     val w = ULongArray(80)
