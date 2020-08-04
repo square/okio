@@ -27,14 +27,14 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
       *unprocessed,
       0x80.toByte(),
       *ByteArray(((56 - (finalMessageLength + 1) % 64) % 64).toInt()),
-      *(finalMessageLength * 8L).toByteArray()
+      *(finalMessageLength * 8L).toBigEndianByteArray()
     )
 
     finalMessage.chunked(64).forEach { chunk ->
       currentDigest = processChunk(chunk, currentDigest)
     }
 
-    return currentDigest.toByteArray()
+    return currentDigest.toBigEndianByteArray()
   }
 
   protected abstract fun processChunk(chunk: ByteArray, currentDigest: HashDigest): HashDigest

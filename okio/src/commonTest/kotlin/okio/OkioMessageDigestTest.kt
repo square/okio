@@ -189,5 +189,61 @@ class OkioMessageDigestTest {
 
   // region MD5
 
+  @Test fun md5EmptyValueHashIsCorrect() {
+    // arrange act
+    val result = ByteString.EMPTY.md5()
+
+    // assert
+    assertEquals("d41d8cd98f00b204e9800998ecf8427e".decodeHex(), result)
+  }
+
+  @Test fun md5SimpleValueHashIsCorrect() {
+    // arrange
+    val value = ByteString.of(*"hello world".commonAsUtf8ToByteArray())
+
+    // act
+    val result = value.md5()
+
+    // assert
+    assertEquals("5eb63bbbe01eeed093cb22bb8f5acdc3".decodeHex(), result)
+  }
+
+  @Test fun md5ChunkSizeValueHashIsCorrect() {
+    // arrange
+    val bytes = ByteArray(64) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+
+    // act
+    val result = value.md5()
+
+    // assert
+    assertEquals("2acbc1a0af1f7d30a2d6d9ecc8e39066".decodeHex(), result)
+  }
+
+  @Test fun md5ValueLargerThanChunkHashIsCorrect() {
+    // arrange
+    val bytes = ByteArray(65) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+
+    // act
+    val result = value.md5()
+
+    // assert
+    assertEquals("0d0a270d6b527f7b876925f07bccb762".decodeHex(), result)
+  }
+
+  @Test fun md5ComplexValueHashIsCorrect() {
+    // arrange
+    val value = ByteString.of(
+      *"The quick brown fox jumps over the lazy dog".commonAsUtf8ToByteArray()
+    )
+
+    // act
+    val result = value.md5()
+
+    // assert
+    assertEquals("9e107d9d372bb6826bd81d3542a419d6".decodeHex(), result)
+  }
+
   // endregion
 }

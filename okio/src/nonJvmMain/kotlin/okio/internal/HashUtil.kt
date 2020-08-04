@@ -2,8 +2,12 @@ package okio.internal
 
 import kotlin.math.min
 
-internal fun Long.toByteArray(): ByteArray = ByteArray(8) { index ->
+internal fun Long.toBigEndianByteArray(): ByteArray = ByteArray(8) { index ->
   ((this shr ((7 - index) * 8)) and 0xffL).toByte()
+}
+
+internal fun Long.toLittleEndianByteArray(): ByteArray = ByteArray(8) { index ->
+  ((this shr (index * 8)) and 0xffL).toByte()
 }
 
 internal fun ByteArray.chunked(chunkSize: Int): List<ByteArray> {
@@ -37,12 +41,23 @@ internal infix fun ULong.rightRotate(bitCount: Int): ULong {
   return (((this shr bitCount) or (this shl (ULong.SIZE_BITS - bitCount))) and ULong.MAX_VALUE)
 }
 
-internal fun ByteArray.toUInt(): UInt {
+internal fun ByteArray.toBigEndianUInt(): UInt {
   require(size == 4)
   var accumulator: UInt = 0.toUInt()
 
   forEachIndexed { index, byte ->
     accumulator = accumulator or ((byte.toUInt() and 0xffu) shl ((3 - index) * 8))
+  }
+
+  return accumulator
+}
+
+internal fun ByteArray.toLittleEndianUInt(): UInt {
+  require(size == 4)
+  var accumulator: UInt = 0.toUInt()
+
+  forEachIndexed { index, byte ->
+    accumulator = accumulator or ((byte.toUInt() and 0xffu) shl (index * 8))
   }
 
   return accumulator

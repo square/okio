@@ -55,8 +55,8 @@ internal class Sha512MessageDigest : OkioMessageDigest {
       *unprocessed,
       0x80.toByte(),
       *ByteArray(((112 - (finalMessageLength + 1) % 128) % 128).toInt()),
-      *0L.toByteArray(), // append 64 0 bits because SHA-512 requires message length to be a 128 bit int
-      *(finalMessageLength * 8L).toByteArray()
+      *0L.toBigEndianByteArray(), // append 64 0 bits because SHA-512 requires message length to be a 128 bit int
+      *(finalMessageLength * 8L).toBigEndianByteArray()
     )
 
     finalMessage.chunked(128).forEach { chunk ->

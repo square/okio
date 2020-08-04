@@ -37,7 +37,7 @@ internal class Sha256MessageDigest : AbstractMessageDigest() {
 
     val w = UIntArray(64)
     chunk.chunked(4).forEachIndexed { index, bytes ->
-      w[index] = bytes.toUInt()
+      w[index] = bytes.toBigEndianUInt()
     }
 
     for (i in 16 until 64) {

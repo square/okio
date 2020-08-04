@@ -15,7 +15,7 @@ internal class Sha1MessageDigest : AbstractMessageDigest() {
 
     val words = UIntArray(80)
     chunk.chunked(4).forEachIndexed { index, bytes ->
-      words[index] = bytes.toUInt()
+      words[index] = bytes.toBigEndianUInt()
     }
 
     for (i in 16 until 80) {
