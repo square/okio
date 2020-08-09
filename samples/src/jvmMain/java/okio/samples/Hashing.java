@@ -28,7 +28,7 @@ import okio.Source;
 
 public final class Hashing {
   public void run() throws Exception {
-    File file = new File("README.md");
+    File file = new File("../README.md");
 
     System.out.println("ByteString");
     ByteString byteString = readByteString(file);

@@ -1,4 +1,7 @@
 apply plugin: 'org.jetbrains.kotlin.multiplatform'
+apply plugin: 'application'
+
+mainClassName = System.getProperty("mainClass")
 
 kotlin {
   jvm {

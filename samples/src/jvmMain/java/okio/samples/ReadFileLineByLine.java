@@ -23,7 +23,7 @@ import okio.Source;
 
 public final class ReadFileLineByLine {
   public void run() throws Exception {
-    readLines(new File("README.md"));
+    readLines(new File("../README.md"));
   }
 
   public void readLines(File file) throws IOException {
