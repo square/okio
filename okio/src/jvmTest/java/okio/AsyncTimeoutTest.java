@@ -23,6 +23,7 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static okio.TestUtil.bufferWithRandomSegmentLayout;
@@ -330,6 +331,7 @@ public final class AsyncTimeoutTest {
    * unexpected timeout because although the sink was making steady forward
    * progress, doing it all as a single write caused a timeout.
    */
+  @Ignore("Flaky")
   @Test public void sinkSplitsLargeWrites() throws Exception {
     byte[] data = new byte[512 * 1024];
     Random dice = new Random(0);
