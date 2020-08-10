@@ -70,7 +70,7 @@ internal class Sha512MessageDigest : OkioMessageDigest {
     val finalMessage = byteArrayOf(
       *unprocessed.toByteArray(),
       0x80.toByte(),
-      *ByteArray(((112 - (finalMessageLength + 1) % 128) % 128).toInt()),
+      *ByteArray((112 - (finalMessageLength + 1) absMod 128).toInt()),
       *0L.toBigEndianByteArray(), // append 64 0 bits because SHA-512 requires message length to be a 128 bit int
       *(finalMessageLength * 8L).toBigEndianByteArray()
     ).toBytes()

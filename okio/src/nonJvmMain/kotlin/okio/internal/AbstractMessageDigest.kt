@@ -42,7 +42,7 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
     val finalMessage = byteArrayOf(
       *unprocessed.toByteArray(),
       0x80.toByte(),
-      *ByteArray(((56 - (finalMessageLength + 1) % 64) % 64).toInt()),
+      *ByteArray((56 - (finalMessageLength + 1) absMod 64).toInt()),
       *(finalMessageLength * 8L).toBigEndianByteArray()
     ).toBytes()
 

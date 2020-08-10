@@ -36,6 +36,13 @@ class OkioMessageDigestTest {
     assertEquals("e043899daa0c7add37bc99792b2c045d6abbc6dc".decodeHex(), result)
   }
 
+  @Test fun sha1PaddingSizeValueisCorrect() {
+    val bytes = ByteArray(56) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+    val result = value.sha1()
+    assertEquals("86ef7804dacb2161841bc60a26f21d71cf3f349f".decodeHex(), result)
+  }
+
   @Test fun sha1ChunkSizeValueHashIsCorrect() {
     val bytes = ByteArray(64) { 'i'.toByte() }
     val value = ByteString.of(*bytes)
@@ -71,6 +78,13 @@ class OkioMessageDigestTest {
     val value = ByteString.of(*"hello world".commonAsUtf8ToByteArray())
     val result = value.sha256()
     assertEquals("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9".decodeHex(), result)
+  }
+
+  @Test fun sha256PaddingSizeValueHashIsCorrect() {
+    val bytes = ByteArray(56) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+    val result = value.sha256()
+    assertEquals("aae87235d5b4c89c3b7161d9de513019aa385b8bc2fea4afbff63dd8c1d77ffd".decodeHex(), result)
   }
 
   @Test fun sha256ChunkSizeValueHashIsCorrect() {
@@ -110,6 +124,13 @@ class OkioMessageDigestTest {
     assertEquals("309ecc489c12d6eb4cc40f50c902f2b4d0ed77ee511a7c7a9bcd3ca86d4cd86f989dd35bc5ff499670da34255b45b0cfd830e81f605dcf7dc5542e93ae9cd76f".decodeHex(), result)
   }
 
+  @Test fun sha512PaddingSizeValueHashIsCorrect() {
+    val bytes = ByteArray(112) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+    val result = value.sha512()
+    assertEquals("6d5c7c2f505a1767f717a6f9c3787270093c5c331b514413395f9ecb1f9b1fa62514f64e862ba08c3c5a60dde89fdfd9c18e42529399c758c957b78ed9c33221".decodeHex(), result)
+  }
+
   @Test fun sha512ChunkSizeValueHashIsCorrect() {
     val bytes = ByteArray(128) { 'i'.toByte() }
     val value = ByteString.of(*bytes)
@@ -145,6 +166,13 @@ class OkioMessageDigestTest {
     val value = ByteString.of(*"hello world".commonAsUtf8ToByteArray())
     val result = value.md5()
     assertEquals("5eb63bbbe01eeed093cb22bb8f5acdc3".decodeHex(), result)
+  }
+
+  @Test fun md5PaddingSizeValueIsCorrect() {
+    val bytes = ByteArray(56) { 'i'.toByte() }
+    val value = ByteString.of(*bytes)
+    val result = value.md5()
+    assertEquals("b394f36654b7e1a72745e79450c12834".decodeHex(), result)
   }
 
   @Test fun md5ChunkSizeValueHashIsCorrect() {

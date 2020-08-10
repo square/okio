@@ -20,7 +20,7 @@ import kotlin.math.min
 
 /**
  * A convenience wrapper around [ByteArray] to allow for
- * zero allocation operations.
+ * zero copy operations.
  */
 internal interface Bytes {
 
@@ -116,7 +116,7 @@ internal fun Bytes.toULong(): ULong {
 internal fun Bytes.chunked(chunkSize: Int): List<Bytes> {
   val result = mutableListOf<Bytes>()
 
-  val lastIndex = if (size % chunkSize == 0) this.size else (size / chunkSize) + size
+  val lastIndex = if (size % chunkSize == 0) size else (size / chunkSize) + size
   for (startIndex in 0 until lastIndex step chunkSize) {
     if (startIndex > size) break
     val endIndex = min(startIndex + chunkSize - 1, size - 1)

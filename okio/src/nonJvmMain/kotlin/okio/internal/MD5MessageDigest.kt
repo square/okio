@@ -73,15 +73,13 @@ internal class MD5MessageDigest : OkioMessageDigest {
     val finalMessage = byteArrayOf(
       *unprocessed.toByteArray(),
       0x80.toByte(),
-      *ByteArray(((56 - (finalMessageLength + 1) % 64) % 64).toInt()),
+      *ByteArray((56 - (finalMessageLength + 1) absMod 64).toInt()),
       *(finalMessageLength * 8L).toLittleEndianByteArray()
     ).toBytes()
 
     finalMessage.chunked(64).forEach { chunk ->
       currentDigest = processChunk(chunk, currentDigest)
     }
-
-    println(currentDigest)
 
     return currentDigest.toLittleEndianByteArray()
   }

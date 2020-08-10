@@ -16,6 +16,11 @@
 
 package okio.internal
 
+internal infix fun Long.absMod(divisor: Long): Long {
+  val value = this % divisor
+  return if (value < 0) divisor + value else value
+}
+
 internal fun Long.toBigEndianByteArray(): ByteArray = ByteArray(8) { index ->
   ((this shr ((7 - index) * 8)) and 0xffL).toByte()
 }
