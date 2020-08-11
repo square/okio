@@ -87,7 +87,7 @@ We've written some recipes that demonstrate how to solve common problems with
 Okio. Read through them to learn about how everything works together.
 Cut-and-paste these examples freely; that's what they're for.
 
-### [Read a text file line-by-line][ReadFileLineByLine]
+### Read a text file line-by-line ([Java][ReadFileLineByLine]/[Kotlin][ReadFileLineByLineKt])
 
 Use `Okio.source(File)` to open a source stream to read a file. The returned
 `Source` interface is very small and has limited uses. Instead we wrap the
@@ -122,6 +122,26 @@ public void readLines(File file) throws IOException {
 }
 ```
 
+Below is the same example written in Kotlin. Note that static `Okio` methods become extension 
+functions (`Okio.source(file)` => `file.source()`), and `use` is used to automatically close the
+streams:
+
+```kotlin
+@Throws(IOException::class)
+fun readLines(file: File) {
+  file.source().use { fileSource ->
+    fileSource.buffer().use { bufferedFileSource ->
+      while (true) {
+        val line = bufferedFileSource.readUtf8Line() ?: break
+        if ("square" in line) {
+          println(line)
+        }
+      }
+    }
+  }
+}
+``` 
+
 The `readUtf8Line()` API reads all of the data until the next line delimiter –
 either `\n`, `\r\n`, or the end of the file. It returns that data as a string,
 omitting the delimiter at the end. When it encounters empty lines the method
@@ -143,6 +163,21 @@ public void readLines(File file) throws IOException {
 }
 ```
 
+In Kotlin, we can wrap invocations of `source.readUtf8Line()` into the `generateSequence` builder to 
+create a sequence of lines that will end once null is returned. Plus, transforming streams is easy 
+thanks to the extension functions:
+
+```kotlin
+@Throws(IOException::class)
+fun readLines(file: File) {
+  file.source().buffer().use { source ->
+    generateSequence { source.readUtf8Line() }
+      .filter { line -> "square" in line }
+      .forEach(::println)
+  }
+}
+``` 
+
 The `readUtf8Line()` method is suitable for parsing most files. For certain
 use-cases you may also consider `readUtf8LineStrict()`. It is similar but it
 requires that each line is terminated by `\n` or `\r\n`. If it encounters the
@@ -156,6 +191,22 @@ public void readLines(File file) throws IOException {
       String line = source.readUtf8LineStrict(1024L);
       if (line.contains("square")) {
         System.out.println(line);
+      }
+    }
+  }
+}
+```
+
+Here's a similar example written in Kotlin:
+
+```kotlin
+@Throws(IOException::class)
+fun readLines(file: File) {
+  file.source().buffer().use { source ->
+    while (!source.exhausted()) {
+      val line = source.readUtf8LineStrict(1024)
+      if ("square" in line) {
+        println(line)
       }
     }
   }
@@ -707,6 +758,7 @@ License
  [ok_multiplatform_talk]: https://www.youtube.com/watch?v=Q8B4eDirgk0
  [ok_multiplatform_slides]: https://speakerdeck.com/swankjesse/ok-multiplatform
  [ReadFileLineByLine]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ReadFileLineByLine.java
+ [ReadFileLineByLineKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/ReadFileLineByLine.kt
  [WriteFile]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/WriteFile.java
  [ExploreCharsets]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ExploreCharsets.java
  [GoldenValue]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/GoldenValue.java
