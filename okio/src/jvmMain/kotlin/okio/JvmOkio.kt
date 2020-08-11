@@ -136,9 +136,9 @@ fun Socket.source(): Source {
   return timeout.source(source)
 }
 
-private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
-  private val logger = Logger.getLogger("okio.Okio")
+private val logger = Logger.getLogger("okio.Okio")
 
+private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
   override fun newTimeoutException(cause: IOException?): IOException {
     val ioe = SocketTimeoutException("timeout")
     if (cause != null) {
