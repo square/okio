@@ -288,7 +288,7 @@ Though we use UTF-8 whenever we read or write strings in I/O, when they are in
 memory Java Strings use an obsolete character encoding called UTF-16. It is a
 bad encoding because it uses a 16-bit `char` for most characters, but some don’t
 fit. In particular, most emoji use two Java chars. This is problematic because
-`String.length()` returns a surprising result: the number of UTF-16 chars and
+`String.length()` returns a surprising result: the number of UTF-16 chars is
 not the natural number of glyphs.
 
 |                       | Café 🍩                     | Café 🍩                        |
