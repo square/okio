@@ -213,7 +213,7 @@ fun readLines(file: File) {
 }
 ```
 
-### [Write a text file][WriteFile]
+### Write a text file ([Java][WriteFile]/[Kotlin][WriteFileKt])
 
 Above we used a `Source` and a `BufferedSource` to read a file. To write, we use
 a `Sink` and a `BufferedSink`. The advantages of buffering are the same: a more
@@ -243,7 +243,7 @@ character. In rare situations you may use `System.lineSeparator()` instead of
 We can write the above program more compactly by inlining the `fileSink`
 variable and by taking advantage of method chaining:
 
-```java
+```Java tab=
 public void writeEnv(File file) throws IOException {
   try (BufferedSink sink = Okio.buffer(Okio.sink(file))) {
     for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
@@ -251,6 +251,20 @@ public void writeEnv(File file) throws IOException {
           .writeUtf8("=")
           .writeUtf8(entry.getValue())
           .writeUtf8("\n");
+    }
+  }
+}
+```
+
+```Kotlin tab=
+@Throws(IOException::class)
+fun writeEnv(file: File) {
+  file.sink().buffer().use { sink ->
+    for ((key, value) in System.getenv()) {
+      sink.writeUtf8(key)
+      sink.writeUtf8("=")
+      sink.writeUtf8(value)
+      sink.writeUtf8("\n")
     }
   }
 }
@@ -760,6 +774,7 @@ License
  [ReadFileLineByLine]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ReadFileLineByLine.java
  [ReadFileLineByLineKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/ReadFileLineByLine.kt
  [WriteFile]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/WriteFile.java
+ [WriteFileKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/WriteFile.kt
  [ExploreCharsets]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ExploreCharsets.java
  [GoldenValue]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/GoldenValue.java
  [BitmapEncoder]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/BitmapEncoder.java
