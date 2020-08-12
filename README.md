@@ -617,7 +617,7 @@ Encoding other binary formats is usually quite similar. Some tips:
    floating point values.
 
 
-### [Communicate on a Socket][SocksProxyServer]
+### Communicate on a Socket ([Java][SocksProxyServer]/[Kotlin][SocksProxyServerKt])
 
 Sending and receiving data over the network is a bit like writing and reading
 files. We use `BufferedSink` to encode output and `BufferedSource` to decode
@@ -653,21 +653,36 @@ API works even if the streams are decorated.
 As a complete example of networking with Okio we wrote a [basic SOCKS
 proxy][SocksProxyServer] server. Some highlights:
 
-```java
+```Java tab=
 Socket fromSocket = ...
 BufferedSource fromSource = Okio.buffer(Okio.source(fromSocket));
 BufferedSink fromSink = Okio.buffer(Okio.sink(fromSocket));
+```
+
+```Kotlin tab=
+val fromSocket: Socket = ...
+val fromSource = fromSocket.source().buffer()
+val fromSink = fromSocket.sink().buffer()
 ```
 
 Creating sources and sinks for sockets is the same as creating them for files.
 Once you create a `Source` or `Sink` for a socket you must not use its
 `InputStream` or `OutputStream`, respectively.
 
-```java
+```Java tab=
 Buffer buffer = new Buffer();
 for (long byteCount; (byteCount = source.read(buffer, 8192L)) != -1; ) {
   sink.write(buffer, byteCount);
   sink.flush();
+}
+```
+
+```Kotlin tab=
+val buffer = Buffer()
+var byteCount: Long
+while (source.read(buffer, 8192L).also { byteCount = it } != -1L) {
+  sink.write(buffer, byteCount)
+  sink.flush()
 }
 ```
 
@@ -680,9 +695,14 @@ returning. We could have passed any value here, but we like 8 KiB because thatâ€
 the largest value Okio can do in a single system call. Most of the time
 application code doesnâ€™t need to deal with such limits!
 
-```java
+```Java tab=
 int addressType = fromSource.readByte() & 0xff;
 int port = fromSource.readShort() & 0xffff;
+```
+
+```Kotlin tab=
+val addressType = fromSource.readByte().toInt() and 0xff
+val port = fromSource.readShort().toInt() and 0xffff
 ```
 
 Okio uses signed types like `byte` and `short`, but often protocols want
@@ -874,5 +894,6 @@ License
  [BitmapEncoder]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/BitmapEncoder.java
  [BitmapEncoderKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/BitmapEncoder.kt
  [SocksProxyServer]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
+ [SocksProxyServerKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/SocksProxyServer.kt
  [Hashing]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/Hashing.java
  [proguard]: https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro
