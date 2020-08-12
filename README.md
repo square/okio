@@ -278,7 +278,7 @@ garbage collect a temporary string.
 sink.writeUtf8(entry.getKey() + "=" + entry.getValue() + "\n"); // Slower!
 ```
 
-### [UTF-8][ExploreCharsets]
+### UTF-8 ([Java][ExploreCharsets]/[Kotlin][ExploreCharsetsKt])
 
 In the above APIs you can see that Okio really likes UTF-8. Early computer
 systems suffered many incompatible character encodings: ISO-8859-1, ShiftJIS,
@@ -776,6 +776,7 @@ License
  [WriteFile]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/WriteFile.java
  [WriteFileKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/WriteFile.kt
  [ExploreCharsets]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ExploreCharsets.java
+ [ExploreCharsetsKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/ExploreCharsets.kt
  [GoldenValue]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/GoldenValue.java
  [BitmapEncoder]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/BitmapEncoder.java
  [SocksProxyServer]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
