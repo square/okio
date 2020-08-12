@@ -325,7 +325,7 @@ like protocol buffers.
 Use `BufferedSource.readUtf8CodePoint()` to read a single variable-length code
 point, and `BufferedSink.writeUtf8CodePoint()` to write one.
 
-### [Golden Values][GoldenValue]
+### Golden Values ([Java][GoldenValue]/[Kotlin][GoldenValueKt])
 
 Okio likes testing. The library itself is heavily tested, and it has features
 that are often helpful when testing application code. One pattern we’ve found to
@@ -339,13 +339,24 @@ programs should prefer other formats like JSON or protobuf! In any case, here’
 a method that takes an object, serializes it, and returns the result as a
 `ByteString`:
 
-```java
+```Java tab=
 private ByteString serialize(Object o) throws IOException {
   Buffer buffer = new Buffer();
   try (ObjectOutputStream objectOut = new ObjectOutputStream(buffer.outputStream())) {
     objectOut.writeObject(o);
   }
   return buffer.readByteString();
+}
+```
+
+```Kotlin tab=
+@Throws(IOException::class)
+private fun serialize(o: Any?): ByteString {
+  val buffer = Buffer()
+  ObjectOutputStream(buffer.outputStream()).use { objectOut ->
+    objectOut.writeObject(o)
+  }
+  return buffer.readByteString()
 }
 ```
 
@@ -369,33 +380,48 @@ There’s a lot going on here.
 With our `serialize()` method handy we are ready to compute and print a golden
 value.
 
-```java
+```Java tab=
 Point point = new Point(8.0, 15.0);
 ByteString pointBytes = serialize(point);
 System.out.println(pointBytes.base64());
 ```
 
+```Kotlin tab=
+val point = Point(8.0, 15.0)
+val pointBytes = serialize(point)
+println(pointBytes.base64())
+```
+
 We print the `ByteString` as [base64][base64] because it’s a compact format
 that’s suitable for embedding in a test case. The program prints this:
 
-```
+```Java tab=
 rO0ABXNyAB5va2lvLnNhbXBsZXMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA
+```
+
+```Kotlin tab=
+rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA
 ```
 
 That’s our golden value! We can embed it in our test case using base64 again
 to convert it back into a `ByteString`:
 
-```java
+```Java tab=
 ByteString goldenBytes = ByteString.decodeBase64("rO0ABXNyAB5va2lvLnNhbXBsZ"
     + "XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA"
     + "AAAAAAA");
+```
+
+```Kotlin tab=
+val goldenBytes = ("rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAA" +
+  "kQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA").decodeBase64()
 ```
 
 The next step is to deserialize the `ByteString` back into our value class. This
 method reverses the `serialize()` method above: we append a byte string to a
 buffer then consume it using an `ObjectInputStream`:
 
-```java
+```Java tab=
 private Object deserialize(ByteString byteString) throws IOException, ClassNotFoundException {
   Buffer buffer = new Buffer();
   buffer.write(byteString);
@@ -405,14 +431,32 @@ private Object deserialize(ByteString byteString) throws IOException, ClassNotFo
 }
 ```
 
+```Kotlin tab=
+@Throws(IOException::class, ClassNotFoundException::class)
+private fun deserialize(byteString: ByteString): Any? {
+  val buffer = Buffer()
+  buffer.write(byteString)
+  ObjectInputStream(buffer.inputStream()).use { objectIn ->
+    return objectIn.readObject()
+  }
+}
+```
+
 Now we can test the decoder against the golden value:
 
-```java
+```Java tab=
 ByteString goldenBytes = ByteString.decodeBase64("rO0ABXNyAB5va2lvLnNhbXBsZ"
     + "XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA"
     + "AAAAAAA");
 Point decoded = (Point) deserialize(goldenBytes);
 assertEquals(new Point(8.0, 15.0), decoded);
+```
+
+```Kotlin tab=
+val goldenBytes = ("rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAA" +
+  "kQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA").decodeBase64()!!
+val decoded = deserialize(goldenBytes) as Point
+assertEquals(point, decoded)
 ```
 
 With this test we can change the serialization of the `Point` class without
@@ -778,6 +822,7 @@ License
  [ExploreCharsets]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ExploreCharsets.java
  [ExploreCharsetsKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/ExploreCharsets.kt
  [GoldenValue]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/GoldenValue.java
+ [GoldenValueKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/GoldenValue.kt
  [BitmapEncoder]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/BitmapEncoder.java
  [SocksProxyServer]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
  [Hashing]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/Hashing.java
