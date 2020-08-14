@@ -463,7 +463,7 @@ With this test we can change the serialization of the `Point` class without
 breaking compatibility.
 
 
-### [Write a binary file][BitmapEncoder]
+### Write a binary file ([Java][BitmapEncoder]/[Kotlin][BitmapEncoderKt])
 
 Encoding a binary file is not unlike encoding a text file. Okio uses the same
 `BufferedSink` and `BufferedSource` bytes for both. This is handy for binary
@@ -507,7 +507,7 @@ around these traps:
 
 This code encodes a bitmap following the [BMP file format][bmp].
 
-```java
+```Java tab=
 void encode(Bitmap bitmap, BufferedSink sink) throws IOException {
   int height = bitmap.height();
   int width = bitmap.width();
@@ -550,6 +550,54 @@ void encode(Bitmap bitmap, BufferedSink sink) throws IOException {
     // Padding for 4-byte alignment.
     for (int p = rowByteCountWithoutPadding; p < rowByteCount; p++) {
       sink.writeByte(0);
+    }
+  }
+}
+```
+
+```Kotlin tab=
+@Throws(IOException::class)
+fun encode(bitmap: Bitmap, sink: BufferedSink) {
+  val height = bitmap.height
+  val width = bitmap.width
+  val bytesPerPixel = 3
+  val rowByteCountWithoutPadding = bytesPerPixel * width
+  val rowByteCount = (rowByteCountWithoutPadding + 3) / 4 * 4
+  val pixelDataSize = rowByteCount * height
+  val bmpHeaderSize = 14
+  val dibHeaderSize = 40
+
+  // BMP Header
+  sink.writeUtf8("BM") // ID.
+  sink.writeIntLe(bmpHeaderSize + dibHeaderSize + pixelDataSize) // File size.
+  sink.writeShortLe(0) // Unused.
+  sink.writeShortLe(0) // Unused.
+  sink.writeIntLe(bmpHeaderSize + dibHeaderSize) // Offset of pixel data.
+
+  // DIB Header
+  sink.writeIntLe(dibHeaderSize)
+  sink.writeIntLe(width)
+  sink.writeIntLe(height)
+  sink.writeShortLe(1) // Color plane count.
+  sink.writeShortLe(bytesPerPixel * Byte.SIZE_BITS)
+  sink.writeIntLe(0) // No compression.
+  sink.writeIntLe(16) // Size of bitmap data including padding.
+  sink.writeIntLe(2835) // Horizontal print resolution in pixels/meter. (72 dpi).
+  sink.writeIntLe(2835) // Vertical print resolution in pixels/meter. (72 dpi).
+  sink.writeIntLe(0) // Palette color count.
+  sink.writeIntLe(0) // 0 important colors.
+
+  // Pixel data.
+  for (y in height - 1 downTo 0) {
+    for (x in 0 until width) {
+      sink.writeByte(bitmap.blue(x, y))
+      sink.writeByte(bitmap.green(x, y))
+      sink.writeByte(bitmap.red(x, y))
+    }
+
+    // Padding for 4-byte alignment.
+    for (p in rowByteCountWithoutPadding until rowByteCount) {
+      sink.writeByte(0)
     }
   }
 }
@@ -824,6 +872,7 @@ License
  [GoldenValue]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/GoldenValue.java
  [GoldenValueKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/GoldenValue.kt
  [BitmapEncoder]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/BitmapEncoder.java
+ [BitmapEncoderKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/BitmapEncoder.kt
  [SocksProxyServer]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
  [Hashing]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/Hashing.java
  [proguard]: https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro
