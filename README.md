@@ -719,7 +719,7 @@ and ints:
 Java has no primitive type that can represent unsigned longs.
 
 
-### [Hashing][Hashing]
+### Hashing ([Java][Hashing]/[Kotlin][HashingKt])
 
 We’re bombarded by hashing in our lives as Java programmers. Early on we're introduced to the
 `hashCode()` method, something we know we need to override otherwise unforeseen bad things happen.
@@ -760,7 +760,7 @@ human-readable form. Or leave it as a `ByteString` because that’s a convenient
 
 Okio can produce cryptographic hashes from byte strings:
 
-```
+```Java tab=
 ByteString byteString = readByteString(new File("README.md"));
 System.out.println("   md5: " + byteString.md5().hex());
 System.out.println("  sha1: " + byteString.sha1().hex());
@@ -768,9 +768,17 @@ System.out.println("sha256: " + byteString.sha256().hex());
 System.out.println("sha512: " + byteString.sha512().hex());
 ```
 
+```Kotlin tab=
+val byteString = readByteString(File("README.md"))
+println("       md5: " + byteString.md5().hex())
+println("      sha1: " + byteString.sha1().hex())
+println("    sha256: " + byteString.sha256().hex())
+println("    sha512: " + byteString.sha512().hex())
+```
+
 From buffers:
 
-```
+```Java tab=
 Buffer buffer = readBuffer(new File("README.md"));
 System.out.println("   md5: " + buffer.md5().hex());
 System.out.println("  sha1: " + buffer.sha1().hex());
@@ -778,9 +786,17 @@ System.out.println("sha256: " + buffer.sha256().hex());
 System.out.println("sha512: " + buffer.sha512().hex());
 ```
 
+```Kotlin tab=
+val buffer = readBuffer(File("README.md"))
+println("       md5: " + buffer.md5().hex())
+println("      sha1: " + buffer.sha1().hex())
+println("    sha256: " + buffer.sha256().hex())
+println("    sha512: " + buffer.sha512().hex())
+```
+
 While streaming from a source:
 
-```
+```Java tab=
 try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
      BufferedSource source = Okio.buffer(Okio.source(file))) {
   source.readAll(hashingSink);
@@ -788,9 +804,18 @@ try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
 }
 ```
 
+```Kotlin tab=
+sha256(blackholeSink()).use { hashingSink ->
+  file.source().buffer().use { source ->
+    source.readAll(hashingSink)
+    println("    sha256: " + hashingSink.hash.hex())
+  }
+}
+```
+
 While streaming to a sink:
 
-```
+```Java tab=
 try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
      BufferedSink sink = Okio.buffer(hashingSink);
      Source source = Okio.source(file)) {
@@ -800,12 +825,29 @@ try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
 }
 ```
 
+```Kotlin tab=
+sha256(blackholeSink()).use { hashingSink ->
+  hashingSink.buffer().use { sink ->
+    file.source().use { source ->
+      sink.writeAll(source)
+      sink.close() // Emit anything buffered.
+      println("    sha256: " + hashingSink.hash.hex())
+    }
+  }
+}
+```
+
 Okio also supports HMAC (Hash Message Authentication Code) which combines a secret and a hash.
 Applications use HMAC for data integrity and authentication.
 
-```
+```Java tab=
 ByteString secret = ByteString.decodeHex("7065616e7574627574746572");
 System.out.println("hmacSha256: " + byteString.hmacSha256(secret).hex());
+```
+
+```Kotlin tab=
+val secret = "7065616e7574627574746572".decodeHex()
+println("hmacSha256: " + byteString.hmacSha256(secret).hex())
 ```
 
 As with hashing, you can generate an HMAC from a `ByteString`, `Buffer`, `HashingSource`, and
@@ -896,4 +938,5 @@ License
  [SocksProxyServer]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
  [SocksProxyServerKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/SocksProxyServer.kt
  [Hashing]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/Hashing.java
+ [HashingKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/Hashing.kt
  [proguard]: https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro
