@@ -214,7 +214,7 @@ public final class Utf8Test {
     try {
       Utf8.size(null, 0, 0);
       fail();
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
     try {
       Utf8.size("abc", -1, 2);

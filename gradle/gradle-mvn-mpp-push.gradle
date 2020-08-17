@@ -2,12 +2,11 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'org.jetbrains.dokka'
 
-dokka {
+dokkaGfm {
   outputDirectory = "$rootDir/docs/2.x"
-  outputFormat = 'gfm'
 
-  multiplatform {
-    global {
+  dokkaSourceSets {
+    configureEach {
       reportUndocumented = false
       skipDeprecated = true
       jdkVersion = 8
@@ -20,23 +19,11 @@ dokka {
         suppress = true
       }
     }
-    jvm {
-      sourceRoot {
-        // assuming there is only a single source dir...
-        path = kotlin.sourceSets.jvmMain.kotlin.srcDirs[0]
-      }
+    create("jvmMain") {
     }
-    js {
-      sourceRoot {
-        // assuming there is only a single source dir...
-        path = kotlin.sourceSets.jsMain.kotlin.srcDirs[0]
-      }
+    create("jsMain") {
     }
-    'native' {
-      sourceRoot {
-        // assuming there is only a single source dir...
-        path = kotlin.sourceSets.nativeMain.kotlin.srcDirs[0]
-      }
+    create("nativeMain") {
     }
   }
 }
@@ -67,9 +54,9 @@ task emptySourcesJar(type: Jar) {
   classifier = 'sources'
 }
 
-task javadocsJar(type: Jar, dependsOn: dokka) {
+task javadocsJar(type: Jar, dependsOn: dokkaGfm) {
   classifier = 'javadoc'
-  from dokka.outputDirectory
+  from dokkaGfm.outputDirectory
 }
 
 signing {
