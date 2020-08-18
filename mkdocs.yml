@@ -4,6 +4,7 @@ repo_url: https://github.com/square/okio
 site_description: "A modern I/O library for Android, Kotlin, and Java."
 site_author: Square, Inc.
 remote_branch: gh-pages
+edit_uri: ""
 
 copyright: 'Copyright &copy; 2019 Square, Inc.'
 
@@ -14,6 +15,15 @@ theme:
   palette:
     primary: 'deep purple'
     accent: 'white'
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/squareeng
+    - icon: fontawesome/brands/stack-overflow
+      link: https://stackoverflow.com/questions/tagged/okio?sort=active
 
 extra_css:
   - 'css/app.css'
@@ -33,6 +43,7 @@ markdown_extensions:
   - pymdownx.magiclink
   - pymdownx.smartsymbols
   - pymdownx.superfences
+  - pymdownx.tabbed
   - pymdownx.tilde
   - tables
 
