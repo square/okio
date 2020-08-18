@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## Version 2.8.0
+
+_2020-08-17_
+
+ * New: Upgrade to Kotlin 1.4.0.
+
+
 ## Version 2.7.0
 
 _2020-07-07_
