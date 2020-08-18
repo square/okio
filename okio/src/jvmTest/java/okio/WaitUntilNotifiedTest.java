@@ -56,7 +56,6 @@ public final class WaitUntilNotifiedTest {
     double start = now();
     try {
       timeout.waitUntilNotified(this);
-      fail();
     } catch (InterruptedIOException expected) {
       assertEquals("timeout", expected.getMessage());
     }
@@ -69,7 +68,6 @@ public final class WaitUntilNotifiedTest {
     double start = now();
     try {
       timeout.waitUntilNotified(this);
-      fail();
     } catch (InterruptedIOException expected) {
       assertEquals("timeout", expected.getMessage());
     }
@@ -83,7 +81,6 @@ public final class WaitUntilNotifiedTest {
     double start = now();
     try {
       timeout.waitUntilNotified(this);
-      fail();
     } catch (InterruptedIOException expected) {
       assertEquals("timeout", expected.getMessage());
     }
@@ -97,7 +94,6 @@ public final class WaitUntilNotifiedTest {
     double start = now();
     try {
       timeout.waitUntilNotified(this);
-      fail();
     } catch (InterruptedIOException expected) {
       assertEquals("timeout", expected.getMessage());
     }
@@ -110,7 +106,6 @@ public final class WaitUntilNotifiedTest {
     double start = now();
     try {
       timeout.waitUntilNotified(this);
-      fail();
     } catch (InterruptedIOException expected) {
       assertEquals("timeout", expected.getMessage());
     }
@@ -123,7 +118,6 @@ public final class WaitUntilNotifiedTest {
     Thread.currentThread().interrupt();
     try {
       timeout.waitUntilNotified(this);
-      fail();
     } catch (InterruptedIOException expected) {
       assertEquals("interrupted", expected.getMessage());
       assertTrue(Thread.interrupted());
