@@ -116,7 +116,7 @@ jobs:
       - name: Configure JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 14
+          java-version: 1.8
 
       - name: Upload Artifacts
         run: |
