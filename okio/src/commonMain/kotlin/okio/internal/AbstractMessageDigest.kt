@@ -16,6 +16,8 @@
 
 package okio.internal
 
+import okio.Buffer
+
 internal abstract class AbstractMessageDigest : OkioMessageDigest {
 
   private var messageLength: Long = 0
@@ -37,12 +39,13 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
   override fun digest(): ByteArray {
     val finalMessageLength = messageLength + unprocessed.size
 
-    val finalMessage = byteArrayOf(
-      *unprocessed.toByteArray(),
-      0x80.toByte(),
-      *ByteArray((56 - (finalMessageLength + 1) absMod 64).toInt()),
-      *(finalMessageLength * 8L).toBigEndianByteArray()
-    ).toBytes()
+    val finalMessage =  Buffer()
+      .write(unprocessed.toByteArray())
+      .writeByte(0x80)
+      .write(ByteArray((56 - (finalMessageLength + 1) absMod 64).toInt()))
+      .writeLong(finalMessageLength * 8L)
+      .readByteArray()
+      .toBytes()
 
     finalMessage.chunked(64).forEach { chunk ->
       currentDigest = processChunk(chunk, currentDigest)

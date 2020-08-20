@@ -16,6 +16,8 @@
 
 package okio.internal
 
+import okio.Buffer
+
 private val k = ulongArrayOf(
   0x428a2f98d728ae22UL, 0x7137449123ef65cdUL, 0xb5c0fbcfec4d3b2fUL, 0xe9b5dba58189dbbcUL, 0x3956c25bf348b538UL,
   0x59f111f1b605d019UL, 0x923f82a4af194f9bUL, 0xab1c5ed5da6d8118UL, 0xd807aa98a3030242UL, 0x12835b0145706fbeUL,
@@ -65,13 +67,14 @@ internal class Sha512MessageDigest : OkioMessageDigest {
   override fun digest(): ByteArray {
     val finalMessageLength = messageLength + unprocessed.size
 
-    val finalMessage = byteArrayOf(
-      *unprocessed.toByteArray(),
-      0x80.toByte(),
-      *ByteArray((112 - (finalMessageLength + 1) absMod 128).toInt()),
-      *0L.toBigEndianByteArray(), // append 64 0 bits because SHA-512 requires message length to be a 128 bit int
-      *(finalMessageLength * 8L).toBigEndianByteArray()
-    ).toBytes()
+    val finalMessage =  Buffer()
+      .write(unprocessed.toByteArray())
+      .writeByte(0x80)
+      .write(ByteArray((112- (finalMessageLength + 1) absMod 128).toInt()))
+      .writeLong(0L)
+      .writeLong(finalMessageLength * 8L)
+      .readByteArray()
+      .toBytes()
 
     finalMessage.chunked(128).forEach { chunk ->
       currentDigest = processChunk(chunk, currentDigest)

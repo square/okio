@@ -16,6 +16,8 @@
 
 package okio.internal
 
+import okio.Buffer
+
 private val s = intArrayOf(
   7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
   5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
@@ -68,12 +70,13 @@ internal class MD5MessageDigest : OkioMessageDigest {
   override fun digest(): ByteArray {
     val finalMessageLength = messageLength + unprocessed.size
 
-    val finalMessage = byteArrayOf(
-      *unprocessed.toByteArray(),
-      0x80.toByte(),
-      *ByteArray((56 - (finalMessageLength + 1) absMod 64).toInt()),
-      *(finalMessageLength * 8L).toLittleEndianByteArray()
-    ).toBytes()
+    val finalMessage =  Buffer()
+      .write(unprocessed.toByteArray())
+      .writeByte(0x80)
+      .write(ByteArray((56 - (finalMessageLength + 1) absMod 64).toInt()))
+      .writeLongLe(finalMessageLength * 8L)
+      .readByteArray()
+      .toBytes()
 
     finalMessage.chunked(64).forEach { chunk ->
       currentDigest = processChunk(chunk, currentDigest)
@@ -109,7 +112,7 @@ internal class MD5MessageDigest : OkioMessageDigest {
           c xor (b or d.inv()),
           (7 * i) % 16
         )
-        else -> error("Index is wonky, this should never happen")
+        else -> error("unexpected")
       }
 
       f = f + a + k[i] + words[g]

@@ -46,7 +46,7 @@ internal class Sha1MessageDigest : AbstractMessageDigest() {
         in 20..39 -> (b xor c xor d) to 0x6ED9EBA1.toUInt()
         in 40..59 -> ((b and c) or (b and d) or (c and d)) to 0x8F1BBCDC.toUInt()
         in 60..79 -> (b xor c xor d) to 0xCA62C1D6.toUInt()
-        else -> error("Index is wonky, this should never happen")
+        else -> error("unexpected")
       }
 
       val updatedDigest = HashDigest(
