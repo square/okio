@@ -18,9 +18,13 @@ package okio.internal
 
 interface OkioMessageDigest {
 
-  fun update(input: ByteArray)
+  fun update(input: ByteArray, offset: Int, limit: Int)
 
   fun digest(): ByteArray
+
+  fun update(input: ByteArray) {
+    update(input, 0, input.size)
+  }
 }
 
 fun newMessageDigest(algorithm: String): OkioMessageDigest = when (algorithm) {

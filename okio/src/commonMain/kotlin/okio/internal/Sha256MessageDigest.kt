@@ -37,7 +37,7 @@ private val k = uintArrayOf(
 
 internal class Sha256MessageDigest : AbstractMessageDigest() {
 
-  override var currentDigest = HashDigest(
+  override val hashValues = uintArrayOf(
     0x6a09e667u,
     0xbb67ae85u,
     0x3c6ef372u,
@@ -48,7 +48,11 @@ internal class Sha256MessageDigest : AbstractMessageDigest() {
     0x5be0cd19u
   )
 
-  override fun processChunk(chunk: Bytes, currentDigest: HashDigest): HashDigest {
+  override fun processChunk(
+    array: ByteArray,
+    offset: Int
+  ) {
+    val chunk = array.toBytes().slice(offset until offset + 64)
     require(chunk.size == 64)
 
     val w = UIntArray(64)
@@ -62,7 +66,14 @@ internal class Sha256MessageDigest : AbstractMessageDigest() {
       w[i] = w[i - 16] + s0 + w[i - 7] + s1
     }
 
-    var (a, b, c, d, e, f, g, h) = currentDigest
+    var a = hashValues[0]
+    var b = hashValues[1]
+    var c = hashValues[2]
+    var d = hashValues[3]
+    var e = hashValues[4]
+    var f = hashValues[5]
+    var g = hashValues[6]
+    var h = hashValues[7]
     for (i in 0 until 64) {
       val s0 = (a rightRotate 2) xor (a rightRotate 13) xor (a rightRotate 22)
       val s1 = (e rightRotate 6) xor (e rightRotate 11) xor (e rightRotate 25)
@@ -83,15 +94,13 @@ internal class Sha256MessageDigest : AbstractMessageDigest() {
       a = t1 + t2
     }
 
-    return HashDigest(
-      (currentDigest[0] + a),
-      (currentDigest[1] + b),
-      (currentDigest[2] + c),
-      (currentDigest[3] + d),
-      (currentDigest[4] + e),
-      (currentDigest[5] + f),
-      (currentDigest[6] + g),
-      (currentDigest[7] + h)
-    )
+    hashValues[0] = hashValues[0] + a
+    hashValues[1] = hashValues[1] + b
+    hashValues[2] = hashValues[2] + c
+    hashValues[3] = hashValues[3] + d
+    hashValues[4] = hashValues[4] + e
+    hashValues[5] = hashValues[5] + f
+    hashValues[6] = hashValues[6] + g
+    hashValues[7] = hashValues[7] + h
   }
 }

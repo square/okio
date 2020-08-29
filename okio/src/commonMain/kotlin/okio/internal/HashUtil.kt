@@ -56,3 +56,11 @@ internal fun ULong.getByte(index: Int): Byte {
   require(index < 8)
   return ((this shr ((7 - index) * 8)) and 0xffUL).toByte()
 }
+
+fun UIntArray.toBigEndianByteArray(): ByteArray {
+  return ByteArray(size * 4) { index ->
+    val byteIndex = index % 4
+    val hashValuesIndex = index / 4
+    this[hashValuesIndex].getByte(byteIndex)
+  }
+}

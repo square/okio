@@ -55,8 +55,13 @@ internal class MD5MessageDigest : OkioMessageDigest {
     0x10325476u
   )
 
-  override fun update(input: ByteArray) {
-    for (chunk in (unprocessed + input.toBytes()).chunked(64)) {
+  override fun update(
+    input: ByteArray,
+    offset: Int,
+    limit: Int
+  ) {
+    val input = input.toBytes().slice(offset until offset + limit)
+    for (chunk in (unprocessed + input).chunked(64)) {
       when (chunk.size) {
         64 -> {
           currentDigest = processChunk(chunk, currentDigest)

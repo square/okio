@@ -52,8 +52,13 @@ internal class Sha512MessageDigest : OkioMessageDigest {
     0x5be0cd19137e2179UL
   )
 
-  override fun update(input: ByteArray) {
-    for (chunk in (unprocessed + input.toBytes()).chunked(128)) {
+  override fun update(
+    input: ByteArray,
+    offset: Int,
+    limit: Int
+  ) {
+    val input = input.toBytes().slice(offset until limit)
+    for (chunk in (unprocessed + input).chunked(128)) {
       when (chunk.size) {
         128 -> {
           currentDigest = processChunk(chunk, currentDigest)

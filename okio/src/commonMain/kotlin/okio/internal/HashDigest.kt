@@ -18,13 +18,6 @@ package okio.internal
 
 internal class HashDigest(private vararg val hashValues: UInt) {
 
-  fun toBigEndianByteArray() = ByteArray(hashValues.size * 4) { index ->
-    val byteIndex = index % 4
-    val hashValuesIndex = index / 4
-
-    hashValues[hashValuesIndex].getByte(byteIndex)
-  }
-
   fun toLittleEndianByteArray(): ByteArray {
     val size = hashValues.size * 4
 

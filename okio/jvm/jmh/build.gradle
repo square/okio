@@ -19,7 +19,7 @@ jmhJar {
 
 jmh {
   jvmArgs = ['-Djmh.separateClasspathJAR=true']
-  include = ['com\\.squareup\\.okio\\.benchmarks\\.JvmMessageDigestBenchmark.*']
+  include = ['com\\.squareup\\.okio\\.benchmarks\\.MessageDigestBenchmark.*']
   duplicateClassesStrategy = 'warn'
 }
 
