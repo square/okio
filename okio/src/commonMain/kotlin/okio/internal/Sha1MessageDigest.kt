@@ -18,6 +18,7 @@ package okio.internal
 
 @ExperimentalUnsignedTypes
 internal class Sha1MessageDigest : AbstractMessageDigest() {
+
   private val words = UIntArray(80)
 
   override val hashValues = uintArrayOf(
@@ -32,11 +33,12 @@ internal class Sha1MessageDigest : AbstractMessageDigest() {
     var w = 0
     var offset = offset
     while (w < 16) {
-      val accumulator = ((array[offset++].toUInt() and 0xffu) shl 24) or
-        ((array[offset++].toUInt() and 0xffu) shl 16) or
-        ((array[offset++].toUInt() and 0xffu) shl 8) or
-        ((array[offset++].toUInt() and 0xffu))
-      words[w++] = accumulator
+      words[w++] = bytesToBigEndianUInt(
+        array[offset++],
+        array[offset++],
+        array[offset++],
+        array[offset++]
+      )
     }
 
     while (w < 80) {
@@ -69,7 +71,7 @@ internal class Sha1MessageDigest : AbstractMessageDigest() {
         }
       }
 
-      val a2 = ((a leftRotate 5) + f + e + k + words[i]) and UInt.MAX_VALUE
+      val a2 = ((a leftRotate 5) + f + e + k + words[i])
       val b2 = a
       val c2 = b leftRotate 30
       val d2 = c

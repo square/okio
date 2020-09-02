@@ -37,6 +37,8 @@ private val k = uintArrayOf(
 
 internal class Sha256MessageDigest : AbstractMessageDigest() {
 
+  private val words = UIntArray(64)
+
   override val hashValues = uintArrayOf(
     0x6a09e667u,
     0xbb67ae85u,
@@ -48,32 +50,26 @@ internal class Sha256MessageDigest : AbstractMessageDigest() {
     0x5be0cd19u
   )
 
-  override fun processChunk(
-    array: ByteArray,
-    offset: Int
-  ) {
-    val chunk = array.toBytes().slice(offset until offset + 64)
-    require(chunk.size == 64)
+  override fun processChunk(array: ByteArray, offset: Int) {
+    var offset = offset
 
-    val w = UIntArray(64)
-    chunk.chunked(4).forEachIndexed { index, bytes ->
-      w[index] = bytes.toBigEndianUInt()
+    for (i in 0 until 16) {
+      words[i] = bytesToBigEndianUInt(
+        array[offset++],
+        array[offset++],
+        array[offset++],
+        array[offset++]
+      )
     }
 
     for (i in 16 until 64) {
-      val s0 = (w[i - 15] rightRotate 7) xor (w[i - 15] rightRotate 18) xor (w[i - 15] shr 3)
-      val s1 = (w[i - 2] rightRotate 17) xor (w[i - 2] rightRotate 19) xor (w[i - 2] shr 10)
-      w[i] = w[i - 16] + s0 + w[i - 7] + s1
+      val s0 = (words[i - 15] rightRotate 7) xor (words[i - 15] rightRotate 18) xor (words[i - 15] shr 3)
+      val s1 = (words[i - 2] rightRotate 17) xor (words[i - 2] rightRotate 19) xor (words[i - 2] shr 10)
+      words[i] = words[i - 16] + s0 + words[i - 7] + s1
     }
 
-    var a = hashValues[0]
-    var b = hashValues[1]
-    var c = hashValues[2]
-    var d = hashValues[3]
-    var e = hashValues[4]
-    var f = hashValues[5]
-    var g = hashValues[6]
-    var h = hashValues[7]
+    var (a, b, c, d, e, f, g, h) = hashValues
+
     for (i in 0 until 64) {
       val s0 = (a rightRotate 2) xor (a rightRotate 13) xor (a rightRotate 22)
       val s1 = (e rightRotate 6) xor (e rightRotate 11) xor (e rightRotate 25)
@@ -81,7 +77,7 @@ internal class Sha256MessageDigest : AbstractMessageDigest() {
       val ch = (e and f) xor (e.inv() and g)
       val maj = (a and b) xor (a and c) xor (b and c)
 
-      val t1 = h + s1 + ch + k[i] + w[i]
+      val t1 = h + s1 + ch + k[i] + words[i]
       val t2 = s0 + maj
 
       h = g

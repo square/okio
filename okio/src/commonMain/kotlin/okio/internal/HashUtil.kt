@@ -57,10 +57,19 @@ internal fun ULong.getByte(index: Int): Byte {
   return ((this shr ((7 - index) * 8)) and 0xffUL).toByte()
 }
 
-fun UIntArray.toBigEndianByteArray(): ByteArray {
+internal fun UIntArray.toBigEndianByteArray(): ByteArray {
   return ByteArray(size * 4) { index ->
     val byteIndex = index % 4
     val hashValuesIndex = index / 4
     this[hashValuesIndex].getByte(byteIndex)
   }
 }
+
+internal fun bytesToBigEndianUInt(b0: Byte, b1: Byte, b2: Byte, b3: Byte) = ((b0.toUInt() and 0xffu) shl 24) or
+  ((b1.toUInt() and 0xffu) shl 16) or
+  ((b2.toUInt() and 0xffu) shl 8) or
+  (b3.toUInt() and 0xffu)
+
+internal operator fun UIntArray.component6() = this[5]
+internal operator fun UIntArray.component7() = this[6]
+internal operator fun UIntArray.component8() = this[7]
