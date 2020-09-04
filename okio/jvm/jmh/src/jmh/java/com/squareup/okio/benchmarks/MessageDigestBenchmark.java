@@ -24,8 +24,7 @@ public class MessageDigestBenchmark {
     @Param({"100", "1048576"})
     public int messageSize;
 
-    @Param({"SHA-1", "SHA-256"})
-    //@Param({"SHA-1", "SHA-256", "SHA-512", "MD5"})
+    @Param({"SHA-1", "SHA-256", "SHA-512", "MD5"})
     public String algorithm;
 
     private byte[] message;

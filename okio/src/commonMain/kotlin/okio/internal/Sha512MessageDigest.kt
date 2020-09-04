@@ -37,11 +37,10 @@ private val k = ulongArrayOf(
   0x431d67c49c100d4cUL, 0x4cc5d4becb3e42b6UL, 0x597f299cfc657e2aUL, 0x5fcb6fab3ad6faecUL, 0x6c44198c4a475817UL
 )
 
-internal class Sha512MessageDigest : OkioMessageDigest {
+internal class Sha512MessageDigest : AbstractMessageDigest<ULongArray>(chunkSize = 128){
 
-  private var messageLength: Long = 0
-  private var unprocessed = Bytes.EMPTY
-  private var currentDigest = ULongHashDigest(
+  private val words = ULongArray(80)
+  override val hashValues = ulongArrayOf(
     0x6a09e667f3bcc908UL,
     0xbb67ae8584caa73bUL,
     0x3c6ef372fe94f82bUL,
@@ -52,57 +51,30 @@ internal class Sha512MessageDigest : OkioMessageDigest {
     0x5be0cd19137e2179UL
   )
 
-  override fun update(
-    input: ByteArray,
-    offset: Int,
-    limit: Int
-  ) {
-    val input = input.toBytes().slice(offset until limit)
-    for (chunk in (unprocessed + input).chunked(128)) {
-      when (chunk.size) {
-        128 -> {
-          currentDigest = processChunk(chunk, currentDigest)
-          messageLength += 128
-        }
-        else -> unprocessed = chunk
-      }
-    }
-  }
+  override fun processChunk(array: ByteArray, offset: Int) {
+    var offset = offset
 
-  override fun digest(): ByteArray {
-    val finalMessageLength = messageLength + unprocessed.size
-
-    val finalMessage =  Buffer()
-      .write(unprocessed.toByteArray())
-      .writeByte(0x80)
-      .write(ByteArray((112- (finalMessageLength + 1) absMod 128).toInt()))
-      .writeLong(0L)
-      .writeLong(finalMessageLength * 8L)
-      .readByteArray()
-      .toBytes()
-
-    finalMessage.chunked(128).forEach { chunk ->
-      currentDigest = processChunk(chunk, currentDigest)
-    }
-
-    return currentDigest.toByteArray()
-  }
-
-  private fun processChunk(chunk: Bytes, currentDigest: ULongHashDigest): ULongHashDigest {
-    require(chunk.size == 128)
-
-    val w = ULongArray(80)
-    chunk.chunked(8).forEachIndexed { index, bytes ->
-      w[index] = bytes.toULong()
+    for (i in 0 until 16) {
+      words[i] = bytesToBigEndianULong(
+        array[offset++],
+        array[offset++],
+        array[offset++],
+        array[offset++],
+        array[offset++],
+        array[offset++],
+        array[offset++],
+        array[offset++],
+      )
     }
 
     for (i in 16 until 80) {
-      val s0 = (w[i - 15] rightRotate 1) xor (w[i - 15] rightRotate 8) xor (w[i - 15] shr 7)
-      val s1 = (w[i - 2] rightRotate 19) xor (w[i - 2] rightRotate 61) xor (w[i - 2] shr 6)
-      w[i] = w[i - 16] + s0 + w[i - 7] + s1
+      val s0 = (words[i - 15] rightRotate 1) xor (words[i - 15] rightRotate 8) xor (words[i - 15] shr 7)
+      val s1 = (words[i - 2] rightRotate 19) xor (words[i - 2] rightRotate 61) xor (words[i - 2] shr 6)
+      words[i] = words[i - 16] + s0 + words[i - 7] + s1
     }
 
-    var (a, b, c, d, e, f, g, h) = currentDigest
+    var (a, b, c, d, e, f, g, h) = hashValues
+
     for (i in 0 until 80) {
       val s0 = (a rightRotate 28) xor (a rightRotate 34) xor (a rightRotate 39)
       val s1 = (e rightRotate 14) xor (e rightRotate 18) xor (e rightRotate 41)
@@ -110,7 +82,7 @@ internal class Sha512MessageDigest : OkioMessageDigest {
       val ch = (e and f) xor (e.inv() and g)
       val maj = (a and b) xor (a and c) xor (b and c)
 
-      val t1 = h + s1 + ch + k[i] + w[i]
+      val t1 = h + s1 + ch + k[i] + words[i]
       val t2 = s0 + maj
 
       h = g
@@ -123,36 +95,15 @@ internal class Sha512MessageDigest : OkioMessageDigest {
       a = t1 + t2
     }
 
-    return ULongHashDigest(
-      (currentDigest[0] + a),
-      (currentDigest[1] + b),
-      (currentDigest[2] + c),
-      (currentDigest[3] + d),
-      (currentDigest[4] + e),
-      (currentDigest[5] + f),
-      (currentDigest[6] + g),
-      (currentDigest[7] + h)
-    )
-  }
-}
-
-private class ULongHashDigest(vararg val hashValues: ULong) {
-
-  fun toByteArray() = ByteArray(hashValues.size * 8) { index ->
-    val byteIndex = index % 8
-    val hashValuesIndex = index / 8
-
-    hashValues[hashValuesIndex].getByte(byteIndex)
+    hashValues[0] = hashValues[0] + a
+    hashValues[1] = hashValues[1] + b
+    hashValues[2] = hashValues[2] + c
+    hashValues[3] = hashValues[3] + d
+    hashValues[4] = hashValues[4] + e
+    hashValues[5] = hashValues[5] + f
+    hashValues[6] = hashValues[6] + g
+    hashValues[7] = hashValues[7] + h
   }
 
-  operator fun get(index: Int): ULong = hashValues[index]
-
-  operator fun component1(): ULong = hashValues[0]
-  operator fun component2(): ULong = hashValues[1]
-  operator fun component3(): ULong = hashValues[2]
-  operator fun component4(): ULong = hashValues[3]
-  operator fun component5(): ULong = hashValues[4]
-  operator fun component6(): ULong = hashValues[5]
-  operator fun component7(): ULong = hashValues[6]
-  operator fun component8(): ULong = hashValues[7]
+  override fun hasValuesToByteArray() = hashValues.toBigEndianByteArray()
 }
