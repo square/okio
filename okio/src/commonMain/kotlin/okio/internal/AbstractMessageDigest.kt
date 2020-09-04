@@ -18,12 +18,13 @@ package okio.internal
 
 import okio.Buffer
 
-internal abstract class AbstractMessageDigest : OkioMessageDigest {
+internal abstract class AbstractMessageDigest<T>(private val chunkSize: Int) : OkioMessageDigest {
 
   private var messageLength: Long = 0
-  private val unprocessed = ByteArray(64)
+  private val unprocessed = ByteArray(chunkSize)
+  private val paddingModSize: Int = chunkSize - ((chunkSize / 64) * 8)
   private var unprocessedLimit = 0
-  protected abstract val hashValues: UIntArray
+  protected abstract val hashValues: T
 
   override fun update(input: ByteArray, offset: Int, limit: Int) {
     require(offset <= limit)
@@ -32,7 +33,7 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
 
     if (unprocessedLimit > 0) {
       val remainingInInput = limit - offset
-      val remainingInUnprocessed = 64 - unprocessedLimit
+      val remainingInUnprocessed = chunkSize - unprocessedLimit
 
       if (remainingInInput < remainingInUnprocessed) {
         input.copyInto(unprocessed, unprocessedLimit, offset, offset + remainingInInput)
@@ -41,7 +42,7 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
       } else {
         input.copyInto(unprocessed, unprocessedLimit, offset, offset + remainingInUnprocessed)
         processChunk(unprocessed, 0)
-        messageLength += 64
+        messageLength += chunkSize
         unprocessedLimit = 0
         offset += remainingInUnprocessed
       }
@@ -50,15 +51,15 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
     while (true) {
       val remainingInInput = limit - offset
 
-      if (remainingInInput < 64) {
+      if (remainingInInput < chunkSize) {
         input.copyInto(unprocessed, 0, offset, offset + remainingInInput)
         unprocessedLimit = remainingInInput
         return
       }
 
       processChunk(input, offset)
-      messageLength += 64
-      offset += 64
+      messageLength += chunkSize
+      offset += chunkSize
     }
   }
 
@@ -68,21 +69,21 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
     val finalMessage = Buffer()
       .write(unprocessed, 0, unprocessedLimit)
       .writeByte(0x80)
-      .write(ByteArray((56 - (finalMessageLength + 1) absMod 64).toInt()))
+      .write(ByteArray((paddingModSize - (finalMessageLength + 1) absMod chunkSize).toInt()))
+      .also { if (chunkSize > 64) it.writeLong(0) }
       .writeLong(finalMessageLength * 8L)
       .readByteArray()
 
     var offset = 0
     while (offset < finalMessage.size) {
       processChunk(finalMessage, offset)
-      offset += 64
+      offset += chunkSize
     }
 
-    return hashValues.toBigEndianByteArray()
+    return hasValuesToByteArray()
   }
 
-  protected abstract fun processChunk(
-    array: ByteArray,
-    offset: Int
-  )
+  protected abstract fun hasValuesToByteArray(): ByteArray
+
+  protected abstract fun processChunk(array: ByteArray, offset: Int)
 }

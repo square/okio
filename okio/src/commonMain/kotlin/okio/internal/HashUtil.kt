@@ -16,7 +16,7 @@
 
 package okio.internal
 
-internal infix fun Long.absMod(divisor: Long): Long {
+internal infix fun Long.absMod(divisor: Int): Long {
   val value = this % divisor
   return if (value < 0) divisor + value else value
 }

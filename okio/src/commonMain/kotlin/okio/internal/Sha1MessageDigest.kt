@@ -17,7 +17,7 @@
 package okio.internal
 
 @ExperimentalUnsignedTypes
-internal class Sha1MessageDigest : AbstractMessageDigest() {
+internal class Sha1MessageDigest : AbstractMessageDigest<UIntArray>(chunkSize = 64) {
 
   private val words = UIntArray(80)
 
@@ -90,4 +90,6 @@ internal class Sha1MessageDigest : AbstractMessageDigest() {
     hashValues[3] = hashValues[3] + d
     hashValues[4] = hashValues[4] + e
   }
+
+  override fun hasValuesToByteArray() = hashValues.toBigEndianByteArray()
 }

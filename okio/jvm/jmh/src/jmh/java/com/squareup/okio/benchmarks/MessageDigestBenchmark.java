@@ -11,8 +11,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
 @Fork(1)
-@Warmup(iterations = 2, time = 1)
-@Measurement(iterations = 3, time = 1)
+@Warmup(iterations = 5, time = 1)
+@Measurement(iterations = 5, time = 1)
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -24,7 +24,7 @@ public class MessageDigestBenchmark {
     @Param({"100", "1048576"})
     public int messageSize;
 
-    @Param({"SHA-256"})
+    @Param({"SHA-1", "SHA-256"})
     //@Param({"SHA-1", "SHA-256", "SHA-512", "MD5"})
     public String algorithm;
 

@@ -35,7 +35,7 @@ private val k = uintArrayOf(
   0x90befffau, 0xa4506cebu, 0xbef9a3f7u, 0xc67178f2u
 )
 
-internal class Sha256MessageDigest : AbstractMessageDigest() {
+internal class Sha256MessageDigest : AbstractMessageDigest<UIntArray>(chunkSize = 64) {
 
   private val words = UIntArray(64)
 
@@ -99,4 +99,6 @@ internal class Sha256MessageDigest : AbstractMessageDigest() {
     hashValues[6] = hashValues[6] + g
     hashValues[7] = hashValues[7] + h
   }
+
+  override fun hasValuesToByteArray() = hashValues.toBigEndianByteArray()
 }
