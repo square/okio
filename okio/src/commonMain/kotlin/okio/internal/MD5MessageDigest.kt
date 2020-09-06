@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Square, Inc.
+ * Copyright (C) 2020 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package okio.internal
 
 private val s = intArrayOf(
@@ -23,6 +22,7 @@ private val s = intArrayOf(
   6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
 )
 
+@ExperimentalUnsignedTypes
 private val k = uintArrayOf(
   0xd76aa478u, 0xe8c7b756u, 0x242070dbu, 0xc1bdceeeu,
   0xf57c0fafu, 0x4787c62au, 0xa8304613u, 0xfd469501u,
@@ -42,8 +42,8 @@ private val k = uintArrayOf(
   0xf7537e82u, 0xbd3af235u, 0x2ad7d2bbu, 0xeb86d391u
 )
 
+@ExperimentalUnsignedTypes
 internal class MD5MessageDigest : OkioMessageDigest {
-
   private var messageLength = 0L
   private var unprocessed = Bytes.EMPTY
   private var currentDigest = HashDigest(
@@ -53,8 +53,13 @@ internal class MD5MessageDigest : OkioMessageDigest {
     0x10325476u
   )
 
-  override fun update(input: ByteArray) {
-    for (chunk in (unprocessed + input.toBytes()).chunked(64)) {
+  override fun update(
+    input: ByteArray,
+    offset: Int,
+    byteCount: Int
+  ) {
+    val bytes = unprocessed + input.toBytes().slice(offset until offset + byteCount)
+    for (chunk in bytes.chunked(64)) {
       when (chunk.size) {
         64 -> {
           currentDigest = processChunk(chunk, currentDigest)

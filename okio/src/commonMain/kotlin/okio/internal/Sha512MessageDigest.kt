@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Square, Inc.
+ * Copyright (C) 2020 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package okio.internal
 
+@ExperimentalUnsignedTypes
 private val k = ulongArrayOf(
   0x428a2f98d728ae22UL, 0x7137449123ef65cdUL, 0xb5c0fbcfec4d3b2fUL, 0xe9b5dba58189dbbcUL, 0x3956c25bf348b538UL,
   0x59f111f1b605d019UL, 0x923f82a4af194f9bUL, 0xab1c5ed5da6d8118UL, 0xd807aa98a3030242UL, 0x12835b0145706fbeUL,
@@ -35,6 +35,7 @@ private val k = ulongArrayOf(
   0x431d67c49c100d4cUL, 0x4cc5d4becb3e42b6UL, 0x597f299cfc657e2aUL, 0x5fcb6fab3ad6faecUL, 0x6c44198c4a475817UL
 )
 
+@ExperimentalUnsignedTypes
 internal class Sha512MessageDigest : OkioMessageDigest {
 
   private var messageLength: Long = 0
@@ -50,8 +51,13 @@ internal class Sha512MessageDigest : OkioMessageDigest {
     0x5be0cd19137e2179UL
   )
 
-  override fun update(input: ByteArray) {
-    for (chunk in (unprocessed + input.toBytes()).chunked(128)) {
+  override fun update(
+    input: ByteArray,
+    offset: Int,
+    byteCount: Int
+  ) {
+    val bytes = unprocessed + input.toBytes().slice(offset until offset + byteCount)
+    for (chunk in bytes.chunked(128)) {
       when (chunk.size) {
         128 -> {
           currentDigest = processChunk(chunk, currentDigest)
@@ -128,6 +134,7 @@ internal class Sha512MessageDigest : OkioMessageDigest {
   }
 }
 
+@ExperimentalUnsignedTypes
 private class ULongHashDigest(vararg val hashValues: ULong) {
 
   fun toByteArray() = ByteArray(hashValues.size * 8) { index ->
