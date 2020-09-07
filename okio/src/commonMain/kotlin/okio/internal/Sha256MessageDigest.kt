@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Square, Inc.
+ * Copyright (C) 2020 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package okio.internal
 
+@ExperimentalUnsignedTypes
 private val k = uintArrayOf(
   0x428a2f98u, 0x71374491u, 0xb5c0fbcfu, 0xe9b5dba5u,
   0x3956c25bu, 0x59f111f1u, 0x923f82a4u, 0xab1c5ed5u,
@@ -35,6 +36,7 @@ private val k = uintArrayOf(
   0x90befffau, 0xa4506cebu, 0xbef9a3f7u, 0xc67178f2u
 )
 
+@ExperimentalUnsignedTypes
 internal class Sha256MessageDigest : AbstractMessageDigest() {
 
   override var currentDigest = HashDigest(

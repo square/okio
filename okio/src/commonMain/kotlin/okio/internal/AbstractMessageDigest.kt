@@ -22,8 +22,13 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
   private var unprocessed = Bytes.EMPTY
   protected abstract var currentDigest: HashDigest
 
-  override fun update(input: ByteArray) {
-    for (chunk in (unprocessed + input.toBytes()).chunked(64)) {
+  override fun update(
+    input: ByteArray,
+    offset: Int,
+    byteCount: Int
+  ) {
+    val bytes = unprocessed + input.toBytes().slice(offset until offset + byteCount)
+    for (chunk in bytes.chunked(64)) {
       when (chunk.size) {
         64 -> {
           currentDigest = processChunk(chunk, currentDigest)

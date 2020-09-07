@@ -36,6 +36,10 @@ internal infix fun UInt.leftRotate(bitCount: Int): UInt {
   return ((this shl bitCount) or (this shr (UInt.SIZE_BITS - bitCount))) and UInt.MAX_VALUE
 }
 
+internal inline infix fun Int.leftRotate(bitCount: Int): Int {
+  return (this shl bitCount) or (this ushr (32 - bitCount))
+}
+
 /**
  * Right rotate an unsigned 32 bit integer by [bitCount] bits
  */
