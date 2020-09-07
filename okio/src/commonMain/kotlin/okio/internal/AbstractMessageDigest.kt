@@ -28,6 +28,7 @@ internal abstract class AbstractMessageDigest : OkioMessageDigest {
     byteCount: Int
   ) {
     val bytes = unprocessed + input.toBytes().slice(offset until offset + byteCount)
+    unprocessed = Bytes.EMPTY
     for (chunk in bytes.chunked(64)) {
       when (chunk.size) {
         64 -> {

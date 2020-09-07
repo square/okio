@@ -57,6 +57,7 @@ internal class Sha512MessageDigest : OkioMessageDigest {
     byteCount: Int
   ) {
     val bytes = unprocessed + input.toBytes().slice(offset until offset + byteCount)
+    unprocessed = Bytes.EMPTY
     for (chunk in bytes.chunked(128)) {
       when (chunk.size) {
         128 -> {
