@@ -24,37 +24,27 @@ private val s = intArrayOf(
   6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
 )
 
-@ExperimentalUnsignedTypes
 private val k = intArrayOf(
-  0xd76aa478u.toInt(), 0xe8c7b756u.toInt(), 0x242070dbu.toInt(), 0xc1bdceeeu.toInt(),
-  0xf57c0fafu.toInt(), 0x4787c62au.toInt(), 0xa8304613u.toInt(), 0xfd469501u.toInt(),
-  0x698098d8u.toInt(), 0x8b44f7afu.toInt(), 0xffff5bb1u.toInt(), 0x895cd7beu.toInt(),
-  0x6b901122u.toInt(), 0xfd987193u.toInt(), 0xa679438eu.toInt(), 0x49b40821u.toInt(),
-  0xf61e2562u.toInt(), 0xc040b340u.toInt(), 0x265e5a51u.toInt(), 0xe9b6c7aau.toInt(),
-  0xd62f105du.toInt(), 0x02441453u.toInt(), 0xd8a1e681u.toInt(), 0xe7d3fbc8u.toInt(),
-  0x21e1cde6u.toInt(), 0xc33707d6u.toInt(), 0xf4d50d87u.toInt(), 0x455a14edu.toInt(),
-  0xa9e3e905u.toInt(), 0xfcefa3f8u.toInt(), 0x676f02d9u.toInt(), 0x8d2a4c8au.toInt(),
-  0xfffa3942u.toInt(), 0x8771f681u.toInt(), 0x6d9d6122u.toInt(), 0xfde5380cu.toInt(),
-  0xa4beea44u.toInt(), 0x4bdecfa9u.toInt(), 0xf6bb4b60u.toInt(), 0xbebfbc70u.toInt(),
-  0x289b7ec6u.toInt(), 0xeaa127fau.toInt(), 0xd4ef3085u.toInt(), 0x04881d05u.toInt(),
-  0xd9d4d039u.toInt(), 0xe6db99e5u.toInt(), 0x1fa27cf8u.toInt(), 0xc4ac5665u.toInt(),
-  0xf4292244u.toInt(), 0x432aff97u.toInt(), 0xab9423a7u.toInt(), 0xfc93a039u.toInt(),
-  0x655b59c3u.toInt(), 0x8f0ccc92u.toInt(), 0xffeff47du.toInt(), 0x85845dd1u.toInt(),
-  0x6fa87e4fu.toInt(), 0xfe2ce6e0u.toInt(), 0xa3014314u.toInt(), 0x4e0811a1u.toInt(),
-  0xf7537e82u.toInt(), 0xbd3af235u.toInt(), 0x2ad7d2bbu.toInt(), 0xeb86d391u.toInt()
+  -680876936, -389564586, 606105819, -1044525330, -176418897, 1200080426, -1473231341, -45705983,
+  1770035416, -1958414417, -42063, -1990404162, 1804603682, -40341101, -1502002290, 1236535329,
+  -165796510, -1069501632, 643717713, -373897302, -701558691, 38016083, -660478335, -405537848,
+  568446438, -1019803690, -187363961, 1163531501, -1444681467, -51403784, 1735328473, -1926607734,
+  -378558, -2022574463, 1839030562, -35309556, -1530992060, 1272893353, -155497632, -1094730640,
+  681279174, -358537222, -722521979, 76029189, -640364487, -421815835, 530742520, -995338651,
+  -198630844, 1126891415, -1416354905, -57434055, 1700485571, -1894986606, -1051523, -2054922799,
+  1873313359, -30611744, -1560198380, 1309151649, -145523070, -1120210379, 718787259, -343485551
 )
 
-@ExperimentalUnsignedTypes
 internal class MD5MessageDigest : OkioMessageDigest {
   private var messageLength = 0L
   private val unprocessed = ByteArray(64)
   private var unprocessedLimit = 0
   private val words = IntArray(16)
 
-  private var h0: Int = 0x67452301u.toInt()
-  private var h1: Int = 0xefcdab89u.toInt()
-  private var h2: Int = 0x98badcfeu.toInt()
-  private var h3: Int = 0x10325476u.toInt()
+  private var h0: Int = 1732584193
+  private var h1: Int = -271733879
+  private var h2: Int = -1732584194
+  private var h3: Int = 271733878
 
   override fun update(
     input: ByteArray,
