@@ -15,6 +15,8 @@
  */
 package okio.internal
 
+import okio.leftRotate
+
 @ExperimentalUnsignedTypes
 internal class Sha1MessageDigest : OkioMessageDigest {
   private var messageLength = 0L
