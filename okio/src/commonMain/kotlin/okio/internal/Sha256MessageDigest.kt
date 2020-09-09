@@ -18,41 +18,32 @@ package okio.internal
 
 import okio.and
 
-@ExperimentalUnsignedTypes
 private val k = intArrayOf(
-  0x428a2f98u.toInt(), 0x71374491u.toInt(), 0xb5c0fbcfu.toInt(), 0xe9b5dba5u.toInt(),
-  0x3956c25bu.toInt(), 0x59f111f1u.toInt(), 0x923f82a4u.toInt(), 0xab1c5ed5u.toInt(),
-  0xd807aa98u.toInt(), 0x12835b01u.toInt(), 0x243185beu.toInt(), 0x550c7dc3u.toInt(),
-  0x72be5d74u.toInt(), 0x80deb1feu.toInt(), 0x9bdc06a7u.toInt(), 0xc19bf174u.toInt(),
-  0xe49b69c1u.toInt(), 0xefbe4786u.toInt(), 0x0fc19dc6u.toInt(), 0x240ca1ccu.toInt(),
-  0x2de92c6fu.toInt(), 0x4a7484aau.toInt(), 0x5cb0a9dcu.toInt(), 0x76f988dau.toInt(),
-  0x983e5152u.toInt(), 0xa831c66du.toInt(), 0xb00327c8u.toInt(), 0xbf597fc7u.toInt(),
-  0xc6e00bf3u.toInt(), 0xd5a79147u.toInt(), 0x06ca6351u.toInt(), 0x14292967u.toInt(),
-  0x27b70a85u.toInt(), 0x2e1b2138u.toInt(), 0x4d2c6dfcu.toInt(), 0x53380d13u.toInt(),
-  0x650a7354u.toInt(), 0x766a0abbu.toInt(), 0x81c2c92eu.toInt(), 0x92722c85u.toInt(),
-  0xa2bfe8a1u.toInt(), 0xa81a664bu.toInt(), 0xc24b8b70u.toInt(), 0xc76c51a3u.toInt(),
-  0xd192e819u.toInt(), 0xd6990624u.toInt(), 0xf40e3585u.toInt(), 0x106aa070u.toInt(),
-  0x19a4c116u.toInt(), 0x1e376c08u.toInt(), 0x2748774cu.toInt(), 0x34b0bcb5u.toInt(),
-  0x391c0cb3u.toInt(), 0x4ed8aa4au.toInt(), 0x5b9cca4fu.toInt(), 0x682e6ff3u.toInt(),
-  0x748f82eeu.toInt(), 0x78a5636fu.toInt(), 0x84c87814u.toInt(), 0x8cc70208u.toInt(),
-  0x90befffau.toInt(), 0xa4506cebu.toInt(), 0xbef9a3f7u.toInt(), 0xc67178f2u.toInt()
+  1116352408, 1899447441, -1245643825, -373957723, 961987163, 1508970993, -1841331548, -1424204075,
+  -670586216, 310598401, 607225278, 1426881987, 1925078388, -2132889090, -1680079193, -1046744716,
+  -459576895, -272742522, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986,
+  -1740746414, -1473132947, -1341970488, -1084653625, -958395405, -710438585, 113926993, 338241895,
+  666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, -2117940946, -1838011259,
+  -1564481375, -1474664885, -1035236496, -949202525, -778901479, -694614492, -200395387, 275423344,
+  430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779,
+  1955562222, 2024104815, -2067236844, -1933114872, -1866530822, -1538233109, -1090935817,
+  -965641998
 )
 
-@ExperimentalUnsignedTypes
 internal class Sha256MessageDigest : OkioMessageDigest {
   private var messageLength = 0L
   private val unprocessed = ByteArray(64)
   private var unprocessedLimit = 0
   private val words = IntArray(64)
 
-  private var h0 = 0x6a09e667u.toInt()
-  private var h1 = 0xbb67ae85u.toInt()
-  private var h2 = 0x3c6ef372u.toInt()
-  private var h3 = 0xa54ff53au.toInt()
-  private var h4 = 0x510e527fu.toInt()
-  private var h5 = 0x9b05688cu.toInt()
-  private var h6 = 0x1f83d9abu.toInt()
-  private var h7 = 0x5be0cd19u.toInt()
+  private var h0 = 1779033703
+  private var h1 = -1150833019
+  private var h2 = 1013904242
+  private var h3 = -1521486534
+  private var h4 = 1359893119
+  private var h5 = -1694144372
+  private var h6 = 528734635
+  private var h7 = 1541459225
 
   override fun update(
     input: ByteArray,

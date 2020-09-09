@@ -17,18 +17,17 @@ package okio.internal
 
 import okio.leftRotate
 
-@ExperimentalUnsignedTypes
 internal class Sha1MessageDigest : OkioMessageDigest {
   private var messageLength = 0L
   private val unprocessed = ByteArray(64)
   private var unprocessedLimit = 0
   private val words = IntArray(80)
 
-  private var h0: Int = 0x67452301
-  private var h1: Int = 0xEFCDAB89u.toInt()
-  private var h2: Int = 0x98BADCFEu.toInt()
-  private var h3: Int = 0x10325476
-  private var h4: Int = 0xC3D2E1F0u.toInt()
+  private var h0 = 1732584193
+  private var h1 = -271733879
+  private var h2 = -1732584194
+  private var h3 = 271733878
+  private var h4 = -1009589776
 
   override fun update(
     input: ByteArray,
@@ -99,22 +98,22 @@ internal class Sha1MessageDigest : OkioMessageDigest {
       val a2 = when {
         i < 20 -> {
           val f = d xor (b and (c xor d))
-          val k = 0x5A827999
+          val k = 1518500249
           (a leftRotate 5) + f + e + k + words[i]
         }
         i < 40 -> {
           val f = b xor c xor d
-          val k = 0x6ED9EBA1
+          val k = 1859775393
           (a leftRotate 5) + f + e + k + words[i]
         }
         i < 60 -> {
           val f = (b and c) or (b and d) or (c and d)
-          val k = 0x8F1BBCDCu.toInt()
+          val k = -1894007588
           (a leftRotate 5) + f + e + k + words[i]
         }
         else -> {
           val f = b xor c xor d
-          val k = 0xCA62C1D6u.toInt()
+          val k = -899497514
           (a leftRotate 5) + f + e + k + words[i]
         }
       }
