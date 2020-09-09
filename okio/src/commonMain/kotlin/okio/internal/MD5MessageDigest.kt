@@ -15,6 +15,8 @@
  */
 package okio.internal
 
+import okio.leftRotate
+
 private val s = intArrayOf(
   7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
   5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
