@@ -15,16 +15,17 @@
  */
 package okio.internal
 
-interface OkioMessageDigest {
+/** A cryptographic hash function. */
+interface HashFunction {
   fun update(input: ByteArray, offset: Int, byteCount: Int)
 
   fun digest(): ByteArray
 }
 
-fun newMessageDigest(algorithm: String): OkioMessageDigest = when (algorithm) {
-  "SHA-1" -> Sha1MessageDigest()
-  "SHA-256" -> Sha256MessageDigest()
-  "SHA-512" -> Sha512MessageDigest()
-  "MD5" -> MD5MessageDigest()
-  else -> error("Invalid algorithm $algorithm")
+fun newHashFunction(name: String): HashFunction = when (name) {
+  "SHA-1" -> Sha1()
+  "SHA-256" -> Sha256()
+  "SHA-512" -> Sha512()
+  "MD5" -> Md5()
+  else -> error("Invalid algorithm $name")
 }

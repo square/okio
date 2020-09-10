@@ -17,7 +17,7 @@ package okio.internal
 
 import okio.leftRotate
 
-internal class Sha1MessageDigest : OkioMessageDigest {
+internal class Sha1 : HashFunction {
   private var messageLength = 0L
   private val unprocessed = ByteArray(64)
   private var unprocessedLimit = 0
