@@ -15,18 +15,18 @@
  */
 package okio
 
-import okio.internal.OkioMessageDigest
+import okio.internal.HashFunction
 import okio.internal.commonAsUtf8ToByteArray
-import okio.internal.newMessageDigest
+import okio.internal.newHashFunction
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class OkioMessageDigestTest {
+class HashFunctionTest {
 
   // region SHA-1
 
   @Test fun sha1EmptyValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-1").apply {
+    val result = newHashFunction("SHA-1").apply {
       update(byteArrayOf())
     }.digest()
 
@@ -35,7 +35,7 @@ class OkioMessageDigestTest {
 
   @Test fun sha1SimpleValueHashIsCorrect() {
     val value = "Kevin".commonAsUtf8ToByteArray()
-    val result = newMessageDigest("SHA-1").apply {
+    val result = newHashFunction("SHA-1").apply {
       update(value)
     }.digest()
 
@@ -43,7 +43,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha1PaddingSizeValueisCorrect() {
-    val result = newMessageDigest("SHA-1").apply {
+    val result = newHashFunction("SHA-1").apply {
       update(ByteArray(56) { 'i'.toByte() })
     }.digest()
 
@@ -51,7 +51,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha1ChunkSizeValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-1").apply {
+    val result = newHashFunction("SHA-1").apply {
       update(ByteArray(64) { 'i'.toByte() })
     }.digest()
 
@@ -59,7 +59,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha1ValueLargerThanChunkHashIsCorrect() {
-    val result = newMessageDigest("SHA-1").apply {
+    val result = newHashFunction("SHA-1").apply {
       update(ByteArray(65) { 'i'.toByte() })
     }.digest()
 
@@ -68,7 +68,7 @@ class OkioMessageDigestTest {
 
   @Test fun sha1ComplexValueHashIsCorrect() {
     val value = "The quick brown fox jumps over the lazy dog".commonAsUtf8ToByteArray()
-    val result = newMessageDigest("SHA-1").apply {
+    val result = newHashFunction("SHA-1").apply {
       update(value)
     }.digest()
 
@@ -80,7 +80,7 @@ class OkioMessageDigestTest {
   // region SHA-256
 
   @Test fun sha256EmptyValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-256").apply {
+    val result = newHashFunction("SHA-256").apply {
       update(byteArrayOf())
     }.digest()
 
@@ -89,7 +89,7 @@ class OkioMessageDigestTest {
 
   @Test fun sha256SimpleValueHashIsCorrect() {
     val value = "hello world".commonAsUtf8ToByteArray()
-    val result = newMessageDigest("SHA-256").apply {
+    val result = newHashFunction("SHA-256").apply {
       update(value)
     }.digest()
 
@@ -97,7 +97,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha256PaddingSizeValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-256").apply {
+    val result = newHashFunction("SHA-256").apply {
       update(ByteArray(56) { 'i'.toByte() })
     }.digest()
 
@@ -105,7 +105,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha256ChunkSizeValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-256").apply {
+    val result = newHashFunction("SHA-256").apply {
       update(ByteArray(64) { 'i'.toByte() })
     }.digest()
 
@@ -113,7 +113,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha256ValueLargerThanChunkHashIsCorrect() {
-    val result = newMessageDigest("SHA-256").apply {
+    val result = newHashFunction("SHA-256").apply {
       update(ByteArray(65) { 'i'.toByte() })
     }.digest()
 
@@ -122,7 +122,7 @@ class OkioMessageDigestTest {
 
   @Test fun sha256ComplexValueHashIsCorrect() {
     val value = "The quick brown fox jumps over the lazy dog".commonAsUtf8ToByteArray()
-    val result = newMessageDigest("SHA-256").apply {
+    val result = newHashFunction("SHA-256").apply {
       update(value)
     }.digest()
 
@@ -134,14 +134,14 @@ class OkioMessageDigestTest {
   // region SHA-512
 
   @Test fun sha512EmptyValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-512").apply {
+    val result = newHashFunction("SHA-512").apply {
       update(byteArrayOf())
     }.digest()
     assertEquals("cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e", ByteString(result).hex())
   }
 
   @Test fun sha512SimpleValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-512").apply {
+    val result = newHashFunction("SHA-512").apply {
       update("hello world".commonAsUtf8ToByteArray())
     }.digest()
 
@@ -149,7 +149,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha512PaddingSizeValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-512").apply {
+    val result = newHashFunction("SHA-512").apply {
       update(ByteArray(112) { 'i'.toByte() })
     }.digest()
 
@@ -157,7 +157,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha512ChunkSizeValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-512").apply {
+    val result = newHashFunction("SHA-512").apply {
       update(ByteArray(128) { 'i'.toByte() })
     }.digest()
 
@@ -165,7 +165,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha512ValueLargerThanChunkHashIsCorrect() {
-    val result = newMessageDigest("SHA-512").apply {
+    val result = newHashFunction("SHA-512").apply {
       update(ByteArray(129) { 'i'.toByte() })
     }.digest()
 
@@ -173,7 +173,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun sha512ComplexValueHashIsCorrect() {
-    val result = newMessageDigest("SHA-512").apply {
+    val result = newHashFunction("SHA-512").apply {
       update("The quick brown fox jumps over the lazy dog".commonAsUtf8ToByteArray())
     }.digest()
 
@@ -185,7 +185,7 @@ class OkioMessageDigestTest {
   // region MD5
 
   @Test fun md5EmptyValueHashIsCorrect() {
-    val result = newMessageDigest("MD5").apply {
+    val result = newHashFunction("MD5").apply {
       update(byteArrayOf())
     }.digest()
 
@@ -193,7 +193,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun md5SimpleValueHashIsCorrect() {
-    val result = newMessageDigest("MD5").apply {
+    val result = newHashFunction("MD5").apply {
       update("hello world".commonAsUtf8ToByteArray())
     }.digest()
 
@@ -201,7 +201,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun md5PaddingSizeValueIsCorrect() {
-    val result = newMessageDigest("MD5").apply {
+    val result = newHashFunction("MD5").apply {
       update(ByteArray(56) { 'i'.toByte() })
     }.digest()
 
@@ -209,7 +209,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun md5ChunkSizeValueHashIsCorrect() {
-    val result = newMessageDigest("MD5").apply {
+    val result = newHashFunction("MD5").apply {
       update(ByteArray(64) { 'i'.toByte() })
     }.digest()
 
@@ -217,7 +217,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun md5ValueLargerThanChunkHashIsCorrect() {
-    val result = newMessageDigest("MD5").apply {
+    val result = newHashFunction("MD5").apply {
       update(ByteArray(65) { 'i'.toByte() })
     }.digest()
 
@@ -225,7 +225,7 @@ class OkioMessageDigestTest {
   }
 
   @Test fun md5ComplexValueHashIsCorrect() {
-    val result = newMessageDigest("MD5").apply {
+    val result = newHashFunction("MD5").apply {
       update("The quick brown fox jumps over the lazy dog".commonAsUtf8ToByteArray())
     }.digest()
 
@@ -234,7 +234,7 @@ class OkioMessageDigestTest {
 
   // endregion
 
-  private fun OkioMessageDigest.update(byteArray: ByteArray) {
+  private fun HashFunction.update(byteArray: ByteArray) {
     return update(byteArray, 0, byteArray.size)
   }
 }

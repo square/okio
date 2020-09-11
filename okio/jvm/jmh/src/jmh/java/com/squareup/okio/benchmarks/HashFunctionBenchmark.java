@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
-import okio.internal.OkioMessageDigest;
-import okio.internal.OkioMessageDigestKt;
+import okio.internal.HashFunction;
+import okio.internal.HashFunctionKt;
 import org.openjdk.jmh.Main;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -40,10 +40,10 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-public class MessageDigestBenchmark {
+public class HashFunctionBenchmark {
 
-  MessageDigest jvmMessageDigest;
-  OkioMessageDigest okioMessageDigest;
+  MessageDigest jvm;
+  HashFunction okio;
 
   @Param({ "100", "1048576" })
   public int messageSize;
@@ -54,22 +54,22 @@ public class MessageDigestBenchmark {
   private byte[] message;
 
   @Setup public void setup() throws NoSuchAlgorithmException {
-    jvmMessageDigest = MessageDigest.getInstance(algorithm);
-    okioMessageDigest = OkioMessageDigestKt.newMessageDigest(algorithm);
+    jvm = MessageDigest.getInstance(algorithm);
+    okio = HashFunctionKt.newHashFunction(algorithm);
     message = new byte[messageSize];
   }
 
   @Benchmark public void jvm() {
-    jvmMessageDigest.update(message);
-    jvmMessageDigest.digest();
+    jvm.update(message, 0, messageSize);
+    jvm.digest();
   }
 
   @Benchmark public void okio() {
-    okioMessageDigest.update(message, 0, messageSize);
-    okioMessageDigest.digest();
+    okio.update(message, 0, messageSize);
+    okio.digest();
   }
 
   public static void main(String[] args) throws IOException {
-    Main.main(new String[] { MessageDigestBenchmark.class.getName() });
+    Main.main(new String[] { HashFunctionBenchmark.class.getName() });
   }
 }
