@@ -41,6 +41,9 @@ kotlin {
         implementation deps.kotlin.test.annotations
       }
     }
+    nonJvmMain {
+      dependsOn commonMain
+    }
     jvmMain {
       dependencies {
         api deps.kotlin.stdLib.jdk6
@@ -55,6 +58,7 @@ kotlin {
       }
     }
     jsMain {
+      dependsOn nonJvmMain
       dependencies {
         api deps.kotlin.stdLib.js
       }
@@ -65,13 +69,13 @@ kotlin {
       }
     }
     nativeMain {
-      dependsOn commonMain
+      dependsOn nonJvmMain
     }
     nativeTest {
       dependsOn commonTest
     }
     appleMain {
-      dependsOn commonMain
+      dependsOn nonJvmMain
     }
     appleTest {
       dependsOn commonTest
