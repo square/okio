@@ -21,6 +21,7 @@ import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
 import okio.internal.commonDecodeBase64
 import okio.internal.commonDecodeHex
+import okio.internal.commonDigest
 import okio.internal.commonEncodeUtf8
 import okio.internal.commonEndsWith
 import okio.internal.commonEquals
@@ -67,19 +68,13 @@ internal actual constructor(
 
   actual open fun hex(): String = commonHex()
 
-  actual open fun md5() = digest("MD5")
+  actual open fun md5() = commonDigest("MD5")
 
-  actual open fun sha1() = digest("SHA-1")
+  actual open fun sha1() = commonDigest("SHA-1")
 
-  actual open fun sha256() = digest("SHA-256")
+  actual open fun sha256() = commonDigest("SHA-256")
 
-  actual open fun sha512() = digest("SHA-512")
-
-  internal actual open fun digest(algorithm: String) = ByteString(
-    newHashFunction(algorithm).apply {
-      update(data, 0, data.size)
-    }.digest()
-  )
+  actual open fun sha512() = commonDigest("SHA-512")
 
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()
 

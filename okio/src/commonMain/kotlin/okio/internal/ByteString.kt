@@ -65,6 +65,12 @@ internal inline fun ByteString.commonHex(): String {
   return String(result)
 }
 
+internal fun ByteString.commonDigest(algorithm: String) = ByteString(
+  newHashFunction(algorithm).apply {
+    update(data, 0, size)
+  }.digest()
+)
+
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonToAsciiLowercase(): ByteString {
   // Search for an uppercase character. If we don't find one, return this.
