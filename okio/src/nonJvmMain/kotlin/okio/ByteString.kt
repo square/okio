@@ -68,13 +68,15 @@ internal actual constructor(
 
   actual open fun hex(): String = commonHex()
 
-  actual open fun md5() = commonDigest("MD5")
+  actual open fun md5() = digest("MD5")
 
-  actual open fun sha1() = commonDigest("SHA-1")
+  actual open fun sha1() = digest("SHA-1")
 
-  actual open fun sha256() = commonDigest("SHA-256")
+  actual open fun sha256() = digest("SHA-256")
 
-  actual open fun sha512() = commonDigest("SHA-512")
+  actual open fun sha512() = digest("SHA-512")
+
+  internal actual open fun digest(algorithm: String) = commonDigest(algorithm)
 
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()
 
