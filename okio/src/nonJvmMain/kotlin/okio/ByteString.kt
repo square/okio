@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package okio
 
 import okio.internal.commonBase64
@@ -46,8 +47,16 @@ actual open class ByteString
 internal actual constructor(
   internal actual val data: ByteArray
 ) : Comparable<ByteString> {
-  internal actual var hashCode: Int = 0 // Lazily computed; 0 if unknown.
-  internal actual var utf8: String? = null // Lazily computed.
+  @Suppress("SetterBackingFieldAssignment")
+  internal actual var hashCode: Int = 0 // 0 if unknown.
+    set(value) {
+      // Do nothing to avoid IllegalImmutabilityException.
+    }
+  @Suppress("SetterBackingFieldAssignment")
+  internal actual var utf8: String? = null
+    set(value) {
+      // Do nothing to avoid IllegalImmutabilityException.
+    }
 
   actual open fun utf8(): String = commonUtf8()
 
@@ -62,7 +71,7 @@ internal actual constructor(
   actual open fun toAsciiUppercase(): ByteString = commonToAsciiUppercase()
 
   actual open fun substring(beginIndex: Int, endIndex: Int): ByteString =
-      commonSubstring(beginIndex, endIndex)
+    commonSubstring(beginIndex, endIndex)
 
   internal actual open fun internalGet(pos: Int): Byte {
     if (pos >= size || pos < 0) throw ArrayIndexOutOfBoundsException("size=$size pos=$pos")
@@ -140,3 +149,4 @@ internal actual constructor(
     actual fun String.decodeHex() = commonDecodeHex()
   }
 }
+
