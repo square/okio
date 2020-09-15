@@ -43,7 +43,7 @@ import org.openjdk.jmh.annotations.Warmup;
 public class HashFunctionBenchmark {
 
   MessageDigest jvm;
-  HashFunction okio;
+//  HashFunction okio;
 
   @Param({ "100", "1048576" })
   public int messageSize;
@@ -55,7 +55,7 @@ public class HashFunctionBenchmark {
 
   @Setup public void setup() throws NoSuchAlgorithmException {
     jvm = MessageDigest.getInstance(algorithm);
-    okio = HashFunctionKt.newHashFunction(algorithm);
+//    okio = HashFunctionKt.newHashFunction(algorithm);
     message = new byte[messageSize];
   }
 
@@ -64,10 +64,10 @@ public class HashFunctionBenchmark {
     jvm.digest();
   }
 
-  @Benchmark public void okio() {
-    okio.update(message, 0, messageSize);
-    okio.digest();
-  }
+//  @Benchmark public void okio() {
+//    okio.update(message, 0, messageSize);
+//    okio.digest();
+//  }
 
   public static void main(String[] args) throws IOException {
     Main.main(new String[] { HashFunctionBenchmark.class.getName() });

@@ -57,6 +57,20 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   /** Returns this byte string encoded in hexadecimal.  */
   fun hex(): String
 
+  /** Returns the 128-bit MD5 hash of this byte string.  */
+  fun md5(): ByteString
+
+  /** Returns the 160-bit SHA-1 hash of this byte string.  */
+  fun sha1(): ByteString
+
+  /** Returns the 256-bit SHA-256 hash of this byte string.  */
+  fun sha256(): ByteString
+
+  /** Returns the 512-bit SHA-512 hash of this byte string.  */
+  fun sha512(): ByteString
+
+  internal fun digest(algorithm: String): ByteString
+
   /**
    * Returns a byte string equal to this byte string, but with the bytes 'A' through 'Z' replaced
    * with the corresponding byte in 'a' through 'z'. Returns this byte string if it contains no

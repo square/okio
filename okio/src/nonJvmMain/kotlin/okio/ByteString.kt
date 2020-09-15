@@ -42,6 +42,7 @@ import okio.internal.commonToByteString
 import okio.internal.commonToString
 import okio.internal.commonUtf8
 import okio.internal.commonWrite
+import okio.internal.newHashFunction
 
 actual open class ByteString
 internal actual constructor(
@@ -65,6 +66,20 @@ internal actual constructor(
   actual open fun base64Url(): String = commonBase64Url()
 
   actual open fun hex(): String = commonHex()
+
+  actual open fun md5() = digest("MD5")
+
+  actual open fun sha1() = digest("SHA-1")
+
+  actual open fun sha256() = digest("SHA-256")
+
+  actual open fun sha512() = digest("SHA-512")
+
+  internal actual open fun digest(algorithm: String) = ByteString(
+    newHashFunction(algorithm).apply {
+      update(data, 0, data.size)
+    }.digest()
+  )
 
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()
 

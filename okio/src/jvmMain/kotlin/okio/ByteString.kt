@@ -41,6 +41,7 @@ import okio.internal.commonToByteString
 import okio.internal.commonToString
 import okio.internal.commonUtf8
 import okio.internal.commonWrite
+import okio.internal.newHashFunction
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
@@ -69,20 +70,19 @@ internal actual constructor(
 
   actual open fun base64() = commonBase64()
 
-  /** Returns the 128-bit MD5 hash of this byte string.  */
-  open fun md5() = digest("MD5")
+  actual open fun md5() = digest("MD5")
 
-  /** Returns the 160-bit SHA-1 hash of this byte string.  */
-  open fun sha1() = digest("SHA-1")
+  actual open fun sha1() = digest("SHA-1")
 
-  /** Returns the 256-bit SHA-256 hash of this byte string.  */
-  open fun sha256() = digest("SHA-256")
+  actual open fun sha256() = digest("SHA-256")
 
-  /** Returns the 512-bit SHA-512 hash of this byte string.  */
-  open fun sha512() = digest("SHA-512")
+  actual open fun sha512() = digest("SHA-512")
 
-  internal open fun digest(algorithm: String) =
-      ByteString(MessageDigest.getInstance(algorithm).digest(data))
+  internal actual open fun digest(algorithm: String) = ByteString(
+    MessageDigest.getInstance(algorithm).apply {
+      update(data, 0, data.size)
+    }.digest()
+  )
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
   open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
