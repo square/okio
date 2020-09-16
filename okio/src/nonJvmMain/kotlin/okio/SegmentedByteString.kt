@@ -20,6 +20,7 @@ import okio.internal.commonGetSize
 import okio.internal.commonHashCode
 import okio.internal.commonInternalGet
 import okio.internal.commonRangeEquals
+import okio.internal.commonSegmentDigest
 import okio.internal.commonSubstring
 import okio.internal.commonToByteArray
 import okio.internal.commonWrite
@@ -72,6 +73,8 @@ internal actual class SegmentedByteString internal actual constructor(
     fromIndex
   )
 
+  override fun digest(algorithm: String) = commonSegmentDigest(algorithm)
+
   /** Returns a copy as a non-segmented byte string.  */
   private fun toByteString() = ByteString(toByteArray())
 
@@ -83,3 +86,4 @@ internal actual class SegmentedByteString internal actual constructor(
 
   override fun toString() = toByteString().toString()
 }
+

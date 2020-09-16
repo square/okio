@@ -20,6 +20,7 @@ import okio.BASE64_URL_SAFE
 import okio.Buffer
 import okio.ByteString
 import okio.REPLACEMENT_CODE_POINT
+import okio.SegmentedByteString
 import okio.and
 import okio.arrayRangeEquals
 import okio.asUtf8ToByteArray
@@ -68,6 +69,14 @@ internal inline fun ByteString.commonHex(): String {
 internal fun ByteString.commonDigest(algorithm: String) = ByteString(
   newHashFunction(algorithm).apply {
     update(data, 0, size)
+  }.digest()
+)
+
+internal fun SegmentedByteString.commonSegmentDigest(algorithm: String) = ByteString(
+  newHashFunction(algorithm).apply {
+    forEachSegment { data, offset, byteCount ->
+      update(data, offset, byteCount)
+    }
   }.digest()
 )
 
