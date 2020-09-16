@@ -86,4 +86,3 @@ internal actual class SegmentedByteString internal actual constructor(
 
   override fun toString() = toByteString().toString()
 }
-

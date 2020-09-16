@@ -42,7 +42,6 @@ import okio.internal.commonToByteString
 import okio.internal.commonToString
 import okio.internal.commonUtf8
 import okio.internal.commonWrite
-import okio.internal.newHashFunction
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
@@ -53,7 +52,6 @@ import java.io.Serializable
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
-import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 

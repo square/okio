@@ -43,7 +43,6 @@ import okio.internal.commonToByteString
 import okio.internal.commonToString
 import okio.internal.commonUtf8
 import okio.internal.commonWrite
-import okio.internal.newHashFunction
 
 actual open class ByteString
 internal actual constructor(
@@ -161,4 +160,3 @@ internal actual constructor(
     actual fun String.decodeHex() = commonDecodeHex()
   }
 }
-
