@@ -30,6 +30,7 @@ import okio.isIsoControl
 import okio.processUtf8CodePoints
 import okio.shr
 import okio.toUtf8String
+import kotlin.math.min
 
 // TODO Kotlin's expect classes can't have default implementations, so platform implementations
 // have to call these functions. Remove all this nonsense when expect class allow actual code.
@@ -246,6 +247,37 @@ internal inline fun ByteString.commonCompareTo(other: ByteString): Int {
   }
   if (sizeA == sizeB) return 0
   return if (sizeA < sizeB) -1 else 1
+}
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun ByteString.commonToIndex(size: Int): Int {
+  require(size > 0)
+  var numerator = 0L
+  var denominator = 1L
+  for (i in 0 until min(4, this.size)) {
+    numerator = (numerator shl 8) + (get(i) and 0xff)
+    denominator = (denominator shl 8)
+  }
+  return (size * numerator / denominator).toInt()
+}
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun ByteString.commonToFraction(): Double {
+  var numerator = 0L
+  var denominator = 1L
+  for (i in 0 until min(7, size)) {
+    numerator = (numerator shl 8) + (get(i) and 0xff)
+    denominator = (denominator shl 8)
+  }
+
+  // Double wants 53 bits of precision but we have 56. Discard 3 bits of precision. Without this
+  // it's possible that this method returns 1.0 for byte strings like "ffffffffffffff".
+  if (size >= 7) {
+    numerator = numerator shr 3
+    denominator = denominator shr 3
+  }
+
+  return numerator.toDouble() / denominator
 }
 
 @Suppress("NOTHING_TO_INLINE")

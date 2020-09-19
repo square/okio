@@ -38,6 +38,8 @@ import okio.internal.commonToAsciiLowercase
 import okio.internal.commonToAsciiUppercase
 import okio.internal.commonToByteArray
 import okio.internal.commonToByteString
+import okio.internal.commonToFraction
+import okio.internal.commonToIndex
 import okio.internal.commonToString
 import okio.internal.commonUtf8
 import okio.internal.commonWrite
@@ -118,6 +120,10 @@ internal actual constructor(
   actual override fun hashCode() = commonHashCode()
 
   actual override fun compareTo(other: ByteString) = commonCompareTo(other)
+
+  actual fun toIndex(size: Int) = commonToIndex(size)
+
+  actual fun toFraction() = commonToFraction()
 
   /**
    * Returns a human-readable string that describes the contents of this byte string. Typically this
