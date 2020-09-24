@@ -115,6 +115,9 @@ private class CipherSource(
 /**
  * Returns a [Source] that processes data using this [Cipher] while reading
  * from [source].
+ * 
+ * @throws IllegalArgumentException
+ *  If this isn't a block cipher.
  */
 fun Cipher.source(source: Source): Source =
   CipherSource(source, this)

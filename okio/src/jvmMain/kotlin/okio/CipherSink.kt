@@ -130,6 +130,9 @@ private class CipherSink(
 /**
  * Returns a [Sink] that processes data using this [Cipher] while writing to
  * [sink].
+ *
+ * @throws IllegalArgumentException
+ *  If this isn't a block cipher.
  */
 fun Cipher.sink(sink: Sink): Sink =
   CipherSink(sink, this)
