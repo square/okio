@@ -1,3 +1,14 @@
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath deps.bnd
+  }
+}
+
 apply plugin: 'java-library'
 apply plugin: 'ru.vyarus.animalsniffer'
 
@@ -5,9 +16,39 @@ kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
   target.project.sourceCompatibility = JavaVersion.VERSION_1_7
   target.project.targetCompatibility = JavaVersion.VERSION_1_7
 
-  tasks['jar'].configure {
+  // task to generate a OSGi compatible JAR file
+  tasks.register('bundle', aQute.bnd.gradle.Bundle) {
+    from sourceSets.main.output
+    destinationDir = file("$buildDir/bundle")
+    bnd = '''
+    Export-Package: okio
+    Automatic-Module-Name: okio
+    Bundle-SymbolicName: com.squareup.okio
+    '''
+  }
+  
+  // extract only the MANIFEST.MF file from the OSGi compatible JAR file
+  tasks.register('bundleManifest', Copy) {
+     dependsOn bundle
+     // filter for the manifest
+     from zipTree(bundle.outputs.files.singleFile).matching {
+        include 'META-INF/MANIFEST.MF'
+     }
+     // flatten
+     eachFile {
+       path = name
+     }
+     includeEmptyDirs = false
+     // output directory for the manifest
+     into "$buildDir/bundle" 
+  }
+
+  // configure the kotlin JVM jar task
+  tasks['jvmJar'].configure {
+    dependsOn bundleManifest
+    // merge the manifest from the BND plugin
     manifest {
-      attributes('Automatic-Module-Name': 'okio')
+      from("$buildDir/bundle/MANIFEST.MF")
     }
   }
 

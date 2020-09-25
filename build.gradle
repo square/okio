@@ -16,6 +16,7 @@ buildscript {
       'assertj': '1.7.0',
       'shadowPlugin': '5.2.0',
       'ktlintPlugin': '8.2.0',
+      'bndPlugin': '5.1.2'
   ]
 
   ext.deps = [
@@ -48,6 +49,7 @@ buildscript {
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
       'ktlint': "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintPlugin}",
+      'bnd': "biz.aQute.bnd:biz.aQute.bnd.gradle:${versions.bndPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
