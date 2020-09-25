@@ -6,7 +6,7 @@ kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
   target.project.targetCompatibility = JavaVersion.VERSION_1_7
 
   // task to generate a OSGi compatible JAR file
-  tasks.register('bundle', project.bndBundleTaskClass) {
+  tasks.register('bundle', rootProject.bndBundleTaskClass) {
     from sourceSets.main.output
     destinationDir = file("$buildDir/bundle")
     bnd = '''
