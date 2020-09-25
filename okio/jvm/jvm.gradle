@@ -1,14 +1,3 @@
-buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-  dependencies {
-    classpath deps.bnd
-  }
-}
-
 apply plugin: 'java-library'
 apply plugin: 'ru.vyarus.animalsniffer'
 
@@ -17,7 +6,7 @@ kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
   target.project.targetCompatibility = JavaVersion.VERSION_1_7
 
   // task to generate a OSGi compatible JAR file
-  tasks.register('bundle', aQute.bnd.gradle.Bundle) {
+  tasks.register('bundle', project.bndBundleTaskClass) {
     from sourceSets.main.output
     destinationDir = file("$buildDir/bundle")
     bnd = '''

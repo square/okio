@@ -64,6 +64,7 @@ buildscript {
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
     classpath deps.ktlint
+    classpath deps.bnd
     // https://github.com/melix/japicmp-gradle-plugin/issues/36
     classpath 'com.google.guava:guava:28.2-jre'
   }
@@ -88,4 +89,6 @@ subprojects {
   }
 
   apply plugin: "org.jlleitschuh.gradle.ktlint"
+  // when scripts are applied the buildscript classes are not accessible directly therefore we save the class here to make it accessible
+  ext.bndBundleTaskClass = aQute.bnd.gradle.Bundle
 }
