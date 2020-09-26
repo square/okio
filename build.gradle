@@ -77,7 +77,7 @@ buildscript {
 }
 
 // when scripts are applied the buildscript classes are not accessible directly therefore we save the class here to make it accessible
-ext.bndBundleTaskClass = aQute.bnd.gradle.Bundle
+ext.bndBundleTaskConventionClass = aQute.bnd.gradle.BundleTaskConvention
 
 allprojects {
   group = GROUP

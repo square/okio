@@ -4,40 +4,20 @@ apply plugin: 'ru.vyarus.animalsniffer'
 kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
   target.project.sourceCompatibility = JavaVersion.VERSION_1_7
   target.project.targetCompatibility = JavaVersion.VERSION_1_7
-
-  // task to generate a OSGi compatible JAR file
-  tasks.register('bundle', rootProject.bndBundleTaskClass) {
-    from sourceSets.main.output
-    destinationDir = file("$buildDir/bundle")
-    bnd = '''
+  
+  // configure the kotlin JVM jar task
+  tasks['jvmJar'].configure { t ->
+    // the bnd task conention modifies this jar task accordingly
+    def bndConvention = bndBundleTaskConventionClass.newInstance(t);
+    // modify these lines for MANIFEST.MF properties or for specific bnd instructions
+    bndConvention.bnd = '''
     Export-Package: okio
     Automatic-Module-Name: okio
     Bundle-SymbolicName: com.squareup.okio
     '''
-  }
-  
-  // extract only the MANIFEST.MF file from the OSGi compatible JAR file
-  tasks.register('bundleManifest', Copy) {
-     dependsOn bundle
-     // filter for the manifest
-     from zipTree(bundle.outputs.files.singleFile).matching {
-        include 'META-INF/MANIFEST.MF'
-     }
-     // flatten
-     eachFile {
-       path = name
-     }
-     includeEmptyDirs = false
-     // output directory for the manifest
-     into "$buildDir/bundle" 
-  }
-
-  // configure the kotlin JVM jar task
-  tasks['jvmJar'].configure {
-    dependsOn bundleManifest
-    // merge the manifest from the BND plugin
-    manifest {
-      from("$buildDir/bundle/MANIFEST.MF")
+    // call the convention when the task has finished to modify the jar to contain OSGi metadata
+    t.doLast {
+      bndConvention.buildBundle()
     }
   }
 
