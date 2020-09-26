@@ -5,9 +5,8 @@ kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
   target.project.sourceCompatibility = JavaVersion.VERSION_1_7
   target.project.targetCompatibility = JavaVersion.VERSION_1_7
   
-  // configure the kotlin JVM jar task
   tasks['jvmJar'].configure { t ->
-    // the bnd task conention modifies this jar task accordingly
+    // the bnd task convention modifies this jar task accordingly
     def bndConvention = bndBundleTaskConventionClass.newInstance(t);
     // modify these lines for MANIFEST.MF properties or for specific bnd instructions
     bndConvention.bnd = '''
