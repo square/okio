@@ -16,6 +16,7 @@ buildscript {
       'assertj': '1.7.0',
       'shadowPlugin': '5.2.0',
       'ktlintPlugin': '8.2.0',
+      'bndPlugin': '5.1.2'
   ]
 
   ext.deps = [
@@ -48,6 +49,7 @@ buildscript {
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
       'ktlint': "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintPlugin}",
+      'bnd': "biz.aQute.bnd:biz.aQute.bnd.gradle:${versions.bndPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
           'assertj': "org.assertj:assertj-core:${versions.assertj}",
@@ -62,6 +64,7 @@ buildscript {
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
     classpath deps.ktlint
+    classpath deps.bnd
     // https://github.com/melix/japicmp-gradle-plugin/issues/36
     classpath 'com.google.guava:guava:28.2-jre'
   }
@@ -72,6 +75,9 @@ buildscript {
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
   }
 }
+
+// when scripts are applied the buildscript classes are not accessible directly therefore we save the class here to make it accessible
+ext.bndBundleTaskConventionClass = aQute.bnd.gradle.BundleTaskConvention
 
 allprojects {
   group = GROUP
