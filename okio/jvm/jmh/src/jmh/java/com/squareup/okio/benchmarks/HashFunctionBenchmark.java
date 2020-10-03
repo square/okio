@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
-import okio.internal.HashFunction;
-import okio.internal.HashFunctionKt;
 import org.openjdk.jmh.Main;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -43,7 +41,6 @@ import org.openjdk.jmh.annotations.Warmup;
 public class HashFunctionBenchmark {
 
   MessageDigest jvm;
-  HashFunction okio;
 
   @Param({ "100", "1048576" })
   public int messageSize;
@@ -55,18 +52,12 @@ public class HashFunctionBenchmark {
 
   @Setup public void setup() throws NoSuchAlgorithmException {
     jvm = MessageDigest.getInstance(algorithm);
-    okio = HashFunctionKt.newHashFunction(algorithm);
     message = new byte[messageSize];
   }
 
   @Benchmark public void jvm() {
     jvm.update(message, 0, messageSize);
     jvm.digest();
-  }
-
-  @Benchmark public void okio() {
-    okio.update(message, 0, messageSize);
-    okio.digest();
   }
 
   public static void main(String[] args) throws IOException {
