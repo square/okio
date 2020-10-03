@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package okio
 
 import okio.internal.commonBase64
@@ -20,6 +21,7 @@ import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
 import okio.internal.commonDecodeBase64
 import okio.internal.commonDecodeHex
+import okio.internal.commonDigest
 import okio.internal.commonEncodeUtf8
 import okio.internal.commonEndsWith
 import okio.internal.commonEquals
@@ -46,8 +48,16 @@ actual open class ByteString
 internal actual constructor(
   internal actual val data: ByteArray
 ) : Comparable<ByteString> {
-  internal actual var hashCode: Int = 0 // Lazily computed; 0 if unknown.
-  internal actual var utf8: String? = null // Lazily computed.
+  @Suppress("SetterBackingFieldAssignment")
+  internal actual var hashCode: Int = 0 // 0 if unknown.
+    set(value) {
+      // Do nothing to avoid IllegalImmutabilityException.
+    }
+  @Suppress("SetterBackingFieldAssignment")
+  internal actual var utf8: String? = null
+    set(value) {
+      // Do nothing to avoid IllegalImmutabilityException.
+    }
 
   actual open fun utf8(): String = commonUtf8()
 
@@ -57,12 +67,22 @@ internal actual constructor(
 
   actual open fun hex(): String = commonHex()
 
+  actual fun md5() = digest("MD5")
+
+  actual fun sha1() = digest("SHA-1")
+
+  actual fun sha256() = digest("SHA-256")
+
+  actual fun sha512() = digest("SHA-512")
+
+  internal actual open fun digest(algorithm: String) = commonDigest(algorithm)
+
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()
 
   actual open fun toAsciiUppercase(): ByteString = commonToAsciiUppercase()
 
   actual open fun substring(beginIndex: Int, endIndex: Int): ByteString =
-      commonSubstring(beginIndex, endIndex)
+    commonSubstring(beginIndex, endIndex)
 
   internal actual open fun internalGet(pos: Int): Byte {
     if (pos >= size || pos < 0) throw ArrayIndexOutOfBoundsException("size=$size pos=$pos")

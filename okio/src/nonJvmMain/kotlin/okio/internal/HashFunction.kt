@@ -15,11 +15,10 @@
  */
 package okio.internal
 
-/** A cryptographic hash function. */
-internal interface HashFunction {
-  fun update(input: ByteArray, offset: Int, byteCount: Int)
-
-  fun digest(): ByteArray
+internal actual fun newHashFunction(algorithm: String): HashFunction = when (algorithm) {
+  "SHA-1" -> Sha1()
+  "SHA-256" -> Sha256()
+  "SHA-512" -> Sha512()
+  "MD5" -> Md5()
+  else -> error("Invalid algorithm $algorithm")
 }
-
-internal expect fun newHashFunction(algorithm: String): HashFunction
