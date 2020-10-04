@@ -69,8 +69,6 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   /** Returns the 512-bit SHA-512 hash of this byte string.  */
   fun sha512(): ByteString
 
-  internal fun digest(algorithm: String): ByteString
-
   /**
    * Returns a byte string equal to this byte string, but with the bytes 'A' through 'Z' replaced
    * with the corresponding byte in 'a' through 'z'. Returns this byte string if it contains no

@@ -20,7 +20,6 @@ import okio.internal.commonGetSize
 import okio.internal.commonHashCode
 import okio.internal.commonInternalGet
 import okio.internal.commonRangeEquals
-import okio.internal.commonSegmentDigest
 import okio.internal.commonSubstring
 import okio.internal.commonToByteArray
 import okio.internal.commonWrite
@@ -30,6 +29,7 @@ import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
+import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -48,7 +48,15 @@ internal actual class SegmentedByteString internal actual constructor(
 
   override fun toAsciiUppercase() = toByteString().toAsciiUppercase()
 
-  override fun digest(algorithm: String) = commonSegmentDigest(algorithm)
+  override fun digest(algorithm: String): ByteString {
+    val digestBytes = MessageDigest.getInstance(algorithm).run {
+      forEachSegment { data, offset, byteCount ->
+        update(data, offset, byteCount)
+      }
+      digest()
+    }
+    return ByteString(digestBytes)
+  }
 
   override fun hmac(algorithm: String, key: ByteString): ByteString {
     try {

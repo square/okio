@@ -20,7 +20,6 @@ import okio.BASE64_URL_SAFE
 import okio.Buffer
 import okio.ByteString
 import okio.REPLACEMENT_CODE_POINT
-import okio.SegmentedByteString
 import okio.and
 import okio.arrayRangeEquals
 import okio.asUtf8ToByteArray
@@ -64,24 +63,6 @@ internal inline fun ByteString.commonHex(): String {
     result[c++] = HEX_DIGIT_CHARS[b       and 0xf] // ktlint-disable no-multi-spaces
   }
   return String(result)
-}
-
-internal fun ByteString.commonDigest(algorithm: String): ByteString {
-  val digestBytes = newHashFunction(algorithm).run {
-    update(data, 0, size)
-    digest()
-  }
-  return ByteString(digestBytes)
-}
-
-internal fun SegmentedByteString.commonSegmentDigest(algorithm: String): ByteString {
-  val digestBytes = newHashFunction(algorithm).run {
-    forEachSegment { data, offset, byteCount ->
-      update(data, offset, byteCount)
-    }
-    digest()
-  }
-  return ByteString(digestBytes)
 }
 
 @Suppress("NOTHING_TO_INLINE")
