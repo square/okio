@@ -158,7 +158,7 @@ internal inline fun SegmentedByteString.commonWrite(buffer: Buffer, offset: Int,
       buffer.head!!.prev!!.push(segment)
     }
   }
-  buffer.size += size
+  buffer.size += byteCount
 }
 
 internal inline fun SegmentedByteString.commonRangeEquals(
