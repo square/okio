@@ -914,6 +914,53 @@ As with hashing, you can generate an HMAC from a `ByteString`, `Buffer`, `Hashin
 `HashingSink`. Note that Okio doesn’t implement HMAC for MD5. Okio uses Java’s
 `java.security.MessageDigest` for cryptographic hashes and `javax.crypto.Mac` for HMAC.
 
+### Encryption/Decryption
+
+Use `Okio.sink(Cipher, Sink)` or `Okio.source(Cipher, Source)` to
+encrypt or decrypt a stream using a block cipher.
+
+Callers are responsible for the initialization of the encryption or
+decryption cipher with the chosen algorithm, the key, and
+algorithm-specific additional parameters like the initialization vector.
+The following example shows a typical usage with AES encryption, in
+which `key` and `iv` parameters should both be 16 bytes long.
+
+```java
+void encryptAes(ByteString bytes, File file, byte[] key, byte[] iv) throws GeneralSecurityException, IOException {
+    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+    cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+    try (BufferedSink sink = Okio.buffer(Okio.sink(cipher, Okio.buffer(Okio.sink(file))))) {
+        sink.write(bytes);
+    }
+}
+
+ByteString decryptAesToByteString(File file, byte[] key, byte[] iv) throws GeneralSecurityException, IOException {
+    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+    cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+    try (BufferedSource source = Okio.buffer(Okio.source(cipher, Okio.buffer(Okio.source(file))))) {
+        return source.readByteString();
+    }
+}
+```
+
+In Kotlin, these encryption/decryption methods are provided as
+extensions on the `Cipher` class.
+
+```kotlin
+fun encryptAes(bytes: ByteString, file: File, key: ByteArray, iv: ByteArray) {
+  val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding").apply {
+    init(Cipher.ENCRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
+  }
+  cipher.sink(file.sink().buffer()).buffer().use { it.write(bytes) }
+}
+
+fun decryptAesToByteString(file: File, key: ByteArray, iv: ByteArray): ByteString {
+  val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding").apply {
+    init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
+  }
+  return cipher.source(file.source().buffer()).buffer().use(BufferedSource::readByteString)
+}
+```
 
 Releases
 --------
