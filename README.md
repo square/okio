@@ -759,7 +759,7 @@ which `key` and `iv` parameters should both be 16 bytes long.
 void encryptAes(ByteString bytes, File file, byte[] key, byte[] iv) throws GeneralSecurityException, IOException {
     Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
-    try (BufferedSink sink = Okio.buffer(Okio.sink(cipher, Okio.sink(file)))) {
+    try (BufferedSink sink = Okio.buffer(Okio.sink(cipher, Okio.buffer(Okio.sink(file))))) {
         sink.write(bytes);
     }
 }
@@ -767,7 +767,7 @@ void encryptAes(ByteString bytes, File file, byte[] key, byte[] iv) throws Gener
 ByteString decryptAesToByteString(File file, byte[] key, byte[] iv) throws GeneralSecurityException, IOException {
     Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
-    try (BufferedSource source = Okio.buffer(Okio.source(cipher, Okio.source(file)))) {
+    try (BufferedSource source = Okio.buffer(Okio.source(cipher, Okio.buffer(Okio.source(file))))) {
         return source.readByteString();
     }
 }
@@ -781,14 +781,14 @@ fun encryptAes(bytes: ByteString, file: File, key: ByteArray, iv: ByteArray) {
   val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding").apply {
     init(Cipher.ENCRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
   }
-  cipher.sink(file.sink()).buffer().use { it.write(bytes) }
+  cipher.sink(file.sink().buffer()).buffer().use { it.write(bytes) }
 }
 
 fun decryptAesToByteString(file: File, key: ByteArray, iv: ByteArray): ByteString {
   val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding").apply {
     init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
   }
-  return cipher.source(file.source()).buffer().use(BufferedSource::readByteString)
+  return cipher.source(file.source().buffer()).buffer().use(BufferedSource::readByteString)
 }
 ```
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Square, Inc.
+ * Copyright (C) 2020 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ private class CipherSink(
   private val sink: BufferedSink,
   private val cipher: Cipher
 ) : Sink {
-  constructor(sink: Sink, cipher: Cipher) : this(sink.buffer(), cipher)
 
   private val blockSize = cipher.blockSize
   private var closed = false
@@ -63,10 +62,12 @@ private class CipherSink(
     buffer.size += ciphered
 
     if (s.pos == s.limit) {
+      // We allocated a tail segment, but didn't end up needing it. Recycle!
       buffer.head = s.pop()
       SegmentPool.recycle(s)
     }
 
+    // Mark those bytes as read.
     source.size -= size
     head.pos += size
 
@@ -77,14 +78,16 @@ private class CipherSink(
     return size
   }
 
-  override fun flush() {}
+  override fun flush() =
+    sink.flush()
 
-  override fun timeout(): Timeout =
+  override fun timeout() =
     sink.timeout()
 
   @Throws(IOException::class)
   override fun close() {
     if (closed) return
+    closed = true
 
     var thrown = doFinal()
 
@@ -93,8 +96,6 @@ private class CipherSink(
     } catch (e: Throwable) {
       if (thrown == null) thrown = e
     }
-
-    closed = true
 
     if (thrown != null) throw thrown
   }
@@ -134,5 +135,5 @@ private class CipherSink(
  * @throws IllegalArgumentException
  *  If this isn't a block cipher.
  */
-fun Cipher.sink(sink: Sink): Sink =
+fun Cipher.sink(sink: BufferedSink): Sink =
   CipherSink(sink, this)

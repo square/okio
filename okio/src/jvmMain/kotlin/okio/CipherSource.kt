@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Square, Inc.
+ * Copyright (C) 2020 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ private class CipherSource(
   private val source: BufferedSource,
   private val cipher: Cipher
 ) : Source {
-  constructor(source: Source, cipher: Cipher) : this(source.buffer(), cipher)
 
   private val blockSize = cipher.blockSize
   private val buffer = Buffer()
@@ -79,6 +78,7 @@ private class CipherSource(
     buffer.size += ciphered
 
     if (s.pos == s.limit) {
+      // We allocated a tail segment, but didn't end up needing it. Recycle!
       buffer.head = s.pop()
       SegmentPool.recycle(s)
     }
@@ -97,12 +97,13 @@ private class CipherSource(
     buffer.size += ciphered
 
     if (s.pos == s.limit) {
+      // We allocated a tail segment, but didn't end up needing it. Recycle!
       buffer.head = s.pop()
       SegmentPool.recycle(s)
     }
   }
 
-  override fun timeout(): Timeout =
+  override fun timeout() =
     source.timeout()
 
   @Throws(IOException::class)
@@ -119,5 +120,5 @@ private class CipherSource(
  * @throws IllegalArgumentException
  *  If this isn't a block cipher.
  */
-fun Cipher.source(source: Source): Source =
+fun Cipher.source(source: BufferedSource): Source =
   CipherSource(source, this)

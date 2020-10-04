@@ -64,7 +64,7 @@ class CipherSourceTest(private val cipherAlgorithm: CipherAlgorithm) {
 
     val buffer = Buffer().apply { write(data) }
     val actualEncryptedData =
-      cipherFactory.encrypt.source(buffer.emitSingleBytes()).buffer().use { it.readByteArray() }
+      cipherFactory.encrypt.source(buffer.emitSingleBytes().buffer()).buffer().use { it.readByteArray() }
 
     val expectedEncryptedData = cipherFactory.encrypt.doFinal(data)
     assertArrayEquals(expectedEncryptedData, actualEncryptedData)
@@ -137,7 +137,7 @@ class CipherSourceTest(private val cipherAlgorithm: CipherAlgorithm) {
 
     val buffer = Buffer().apply { write(encryptedData) }
     val actualData =
-      cipherFactory.decrypt.source(buffer.emitSingleBytes()).buffer().use { it.readByteArray() }
+      cipherFactory.decrypt.source(buffer.emitSingleBytes().buffer()).buffer().use { it.readByteArray() }
 
     assertArrayEquals(expectedData, actualData)
   }
