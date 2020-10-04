@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Square, Inc.
+ * Copyright (C) 2020 Square, Inc. and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:JvmMultifileClass
-@file:JvmName("Okio")
-
 package okio
 
 import java.io.IOException
 import javax.crypto.Cipher
 
-private class CipherSource(
+class CipherSource(
   private val source: BufferedSource,
-  private val cipher: Cipher
+  val cipher: Cipher
 ) : Source {
-
   private val blockSize = cipher.blockSize
   private val buffer = Buffer()
   private var final = false
   private var closed = false
 
   init {
-    // Require block cipher, and check for unsupported (too large) block size (should never happen with standard algorithms)
+    // Require block cipher, and check for unsupported (too large) block size (should never happen
+    // with standard algorithms)
     require(blockSize > 0) { "Block cipher required $cipher" }
     require(blockSize <= Segment.SIZE) { "Cipher block size $blockSize too large $cipher" }
   }
@@ -66,7 +62,7 @@ private class CipherSource(
     val head = source.buffer.head!!
     val size = head.limit - head.pos
 
-    // For block cipher, output size cannot exceed input size in update
+    // For block cipher, output size cannot exceed input size in update.
     val s = buffer.writableSegment(size)
 
     val ciphered =
@@ -77,8 +73,8 @@ private class CipherSource(
     s.limit += ciphered
     buffer.size += ciphered
 
+    // We allocated a tail segment, but didn't end up needing it. Recycle!
     if (s.pos == s.limit) {
-      // We allocated a tail segment, but didn't end up needing it. Recycle!
       buffer.head = s.pop()
       SegmentPool.recycle(s)
     }
@@ -88,7 +84,7 @@ private class CipherSource(
     val outputSize = cipher.getOutputSize(0)
     if (outputSize == 0) return
 
-    // For block cipher, output size cannot exceed block size in doFinal
+    // For block cipher, output size cannot exceed block size in doFinal.
     val s = buffer.writableSegment(outputSize)
 
     val ciphered = cipher.doFinal(s.data, s.pos)
@@ -96,15 +92,14 @@ private class CipherSource(
     s.limit += ciphered
     buffer.size += ciphered
 
+    // We allocated a tail segment, but didn't end up needing it. Recycle!
     if (s.pos == s.limit) {
-      // We allocated a tail segment, but didn't end up needing it. Recycle!
       buffer.head = s.pop()
       SegmentPool.recycle(s)
     }
   }
 
-  override fun timeout() =
-    source.timeout()
+  override fun timeout() = source.timeout()
 
   @Throws(IOException::class)
   override fun close() {
@@ -112,13 +107,3 @@ private class CipherSource(
     source.close()
   }
 }
-
-/**
- * Returns a [Source] that processes data using this [Cipher] while reading
- * from [source].
- *
- * @throws IllegalArgumentException
- *  If this isn't a block cipher.
- */
-fun Cipher.source(source: BufferedSource): Source =
-  CipherSource(source, this)
