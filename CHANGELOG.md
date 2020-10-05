@@ -1,6 +1,26 @@
 Change Log
 ==========
 
+## Version 2.9.0
+
+_2020-10-04_
+
+ * Fix: Don't corrupt the `Buffer` when writing a slice of a segmented `ByteString`. We had a severe
+   bug where `ByteString` instances created with `snapshot()` and `readByteString()` incorrectly
+   adjusted the buffer's size by their full length, not the length of the slice. This would have
+   caused buffer reads to crash! We do not believe data was silently corrupted.
+ * New: `CipherSink` and `CipherSource`. Use these with `javax.crypto.Cipher` to encrypt and decrypt
+   streams of data. This is a low-level encryption API; most applications should use higher-level
+   APIs like TLS when available.
+ * New: Promote hash functions `md5`, `sha1()`, `sha512()`, and `sha256()` to common Kotlin. These
+   are currently only available on `ByteString`, multiplatform support for `HashingSource`,
+   `HashingSink`, and `Buffer` should come in a follow-up release. We wrote and optimized our own
+   implementations of these hash functions in Kotlin. On JVM and Android platforms Okio still uses
+   the platform's built-in hash functions.
+ * New: Support OSGi metadata.
+ * Upgrade: [Kotlin 1.4.10][kotlin_1_4_10].
+
+
 ## Version 2.8.0
 
 _2020-08-17_
@@ -557,6 +577,7 @@ _2014-04-08_
  * Imported from OkHttp.
 
 
+ [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
+ [kotlin_1_4_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.10 
  [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
  [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
- [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
