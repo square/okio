@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Square, Inc.
+ * Copyright (C) 2020 Square, Inc. and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:JvmMultifileClass
-@file:JvmName("Okio")
-
 package okio
 
 import java.io.IOException
 import javax.crypto.Cipher
 
-private class CipherSink(
+class CipherSink(
   private val sink: BufferedSink,
-  private val cipher: Cipher
+  val cipher: Cipher
 ) : Sink {
-
   private val blockSize = cipher.blockSize
   private var closed = false
 
   init {
-    // Require block cipher, and check for unsupported (too large) block size (should never happen with standard algorithms)
+    // Require block cipher, and check for unsupported (too large) block size (should never happen
+    // with standard algorithms)
     require(blockSize > 0) { "Block cipher required $cipher" }
     require(blockSize <= Segment.SIZE) { "Cipher block size $blockSize too large $cipher" }
   }
@@ -53,7 +49,7 @@ private class CipherSink(
     val size = minOf(remaining, head.limit - head.pos).toInt()
     val buffer = sink.buffer
 
-    // For block cipher, output size cannot exceed input size in update
+    // For block cipher, output size cannot exceed input size in update.
     val s = buffer.writableSegment(size)
 
     val ciphered = cipher.update(head.data, head.pos, size, s.data, s.limit)
@@ -61,8 +57,8 @@ private class CipherSink(
     s.limit += ciphered
     buffer.size += ciphered
 
+    // We allocated a tail segment, but didn't end up needing it. Recycle!
     if (s.pos == s.limit) {
-      // We allocated a tail segment, but didn't end up needing it. Recycle!
       buffer.head = s.pop()
       SegmentPool.recycle(s)
     }
@@ -70,19 +66,17 @@ private class CipherSink(
     // Mark those bytes as read.
     source.size -= size
     head.pos += size
-
     if (head.pos == head.limit) {
       source.head = head.pop()
       SegmentPool.recycle(head)
     }
+
     return size
   }
 
-  override fun flush() =
-    sink.flush()
+  override fun flush() = sink.flush()
 
-  override fun timeout() =
-    sink.timeout()
+  override fun timeout() = sink.timeout()
 
   @Throws(IOException::class)
   override fun close() {
@@ -127,13 +121,3 @@ private class CipherSink(
     return thrown
   }
 }
-
-/**
- * Returns a [Sink] that processes data using this [Cipher] while writing to
- * [sink].
- *
- * @throws IllegalArgumentException
- *  If this isn't a block cipher.
- */
-fun Cipher.sink(sink: BufferedSink): Sink =
-  CipherSink(sink, this)

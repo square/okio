@@ -34,6 +34,7 @@ import java.nio.file.OpenOption
 import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Logger
+import javax.crypto.Cipher
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -188,6 +189,20 @@ fun Path.sink(vararg options: OpenOption): Sink =
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
 fun Path.source(vararg options: OpenOption): Source =
     Files.newInputStream(this, *options).source()
+
+/**
+ * Returns a sink that uses [cipher] to encrypt or decrypt [this].
+ *
+ * @throws IllegalArgumentException if [cipher] isn't a block cipher.
+ */
+fun Sink.cipherSink(cipher: Cipher): CipherSink = CipherSink(this.buffer(), cipher)
+
+/**
+ * Returns a source that uses [cipher] to encrypt or decrypt [this].
+ *
+ * @throws IllegalArgumentException if [cipher] isn't a block cipher.
+ */
+fun Source.cipherSource(cipher: Cipher): CipherSource = CipherSource(this.buffer(), cipher)
 
 /**
  * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.
