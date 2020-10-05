@@ -16,12 +16,16 @@
 
 package okio
 
+import okio.internal.HashFunction
+import okio.internal.Md5
+import okio.internal.Sha1
+import okio.internal.Sha256
+import okio.internal.Sha512
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
 import okio.internal.commonDecodeBase64
 import okio.internal.commonDecodeHex
-import okio.internal.commonDigest
 import okio.internal.commonEncodeUtf8
 import okio.internal.commonEndsWith
 import okio.internal.commonEquals
@@ -67,15 +71,19 @@ internal actual constructor(
 
   actual open fun hex(): String = commonHex()
 
-  actual fun md5() = digest("MD5")
+  actual fun md5() = digest(Md5())
 
-  actual fun sha1() = digest("SHA-1")
+  actual fun sha1() = digest(Sha1())
 
-  actual fun sha256() = digest("SHA-256")
+  actual fun sha256() = digest(Sha256())
 
-  actual fun sha512() = digest("SHA-512")
+  actual fun sha512() = digest(Sha512())
 
-  internal actual open fun digest(algorithm: String) = commonDigest(algorithm)
+  internal open fun digest(hashFunction: HashFunction): ByteString {
+    hashFunction.update(data, 0, size)
+    val digestBytes = hashFunction.digest()
+    return ByteString(digestBytes)
+  }
 
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()
 

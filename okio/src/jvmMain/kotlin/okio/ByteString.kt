@@ -20,7 +20,6 @@ import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
 import okio.internal.commonDecodeBase64
 import okio.internal.commonDecodeHex
-import okio.internal.commonDigest
 import okio.internal.commonEncodeUtf8
 import okio.internal.commonEndsWith
 import okio.internal.commonEquals
@@ -52,6 +51,7 @@ import java.io.Serializable
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
+import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -77,7 +77,13 @@ internal actual constructor(
 
   actual fun sha512() = digest("SHA-512")
 
-  internal actual open fun digest(algorithm: String) = commonDigest(algorithm)
+  internal open fun digest(algorithm: String): ByteString {
+    val digestBytes = MessageDigest.getInstance(algorithm).run {
+      update(data, 0, size)
+      digest()
+    }
+    return ByteString(digestBytes)
+  }
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
   open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)

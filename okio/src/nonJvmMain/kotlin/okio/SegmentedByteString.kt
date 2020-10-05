@@ -15,15 +15,16 @@
  */
 package okio
 
+import okio.internal.HashFunction
 import okio.internal.commonEquals
 import okio.internal.commonGetSize
 import okio.internal.commonHashCode
 import okio.internal.commonInternalGet
 import okio.internal.commonRangeEquals
-import okio.internal.commonSegmentDigest
 import okio.internal.commonSubstring
 import okio.internal.commonToByteArray
 import okio.internal.commonWrite
+import okio.internal.forEachSegment
 
 internal actual class SegmentedByteString internal actual constructor(
   internal actual val segments: Array<ByteArray>,
@@ -73,7 +74,13 @@ internal actual class SegmentedByteString internal actual constructor(
     fromIndex
   )
 
-  override fun digest(algorithm: String) = commonSegmentDigest(algorithm)
+  override fun digest(hashFunction: HashFunction): ByteString {
+    forEachSegment { data, offset, byteCount ->
+      hashFunction.update(data, offset, byteCount)
+    }
+    val digestBytes = hashFunction.digest()
+    return ByteString(digestBytes)
+  }
 
   /** Returns a copy as a non-segmented byte string.  */
   private fun toByteString() = ByteString(toByteArray())

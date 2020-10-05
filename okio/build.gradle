@@ -42,6 +42,7 @@ kotlin {
       }
     }
     nonJvmMain {
+      kotlin.srcDirs += 'src/hashFunctions/kotlin'
       dependsOn commonMain
     }
     jvmMain {
@@ -51,6 +52,7 @@ kotlin {
       }
     }
     jvmTest {
+      kotlin.srcDirs += 'src/hashFunctions/kotlin'
       dependencies {
         implementation deps.test.junit
         implementation deps.test.assertj

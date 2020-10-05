@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package okio.internal
 
-import java.security.MessageDigest
+/** A cryptographic hash function. */
+internal interface HashFunction {
+  fun update(input: ByteArray, offset: Int, byteCount: Int)
 
-// TODO refactor to typealias after this is resolved https://youtrack.jetbrains.com/issue/KT-37316
-internal actual fun newHashFunction(algorithm: String) = object : HashFunction {
-
-  private val digest = MessageDigest.getInstance(algorithm)
-
-  override fun update(input: ByteArray, offset: Int, byteCount: Int) = digest.update(
-    input,
-    offset,
-    byteCount
-  )
-
-  override fun digest() = digest.digest()
+  fun digest(): ByteArray
 }
