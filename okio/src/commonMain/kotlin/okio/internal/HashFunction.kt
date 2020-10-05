@@ -16,9 +16,8 @@
 package okio.internal
 
 /** A cryptographic hash function. */
-internal interface HashFunction {
+internal expect interface HashFunction {
   fun update(input: ByteArray, offset: Int, byteCount: Int)
-
   fun digest(): ByteArray
 }
 

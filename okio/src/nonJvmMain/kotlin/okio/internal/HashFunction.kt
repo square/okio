@@ -15,6 +15,11 @@
  */
 package okio.internal
 
+internal actual interface HashFunction {
+  actual fun update(input: ByteArray, offset: Int, byteCount: Int)
+  actual fun digest(): ByteArray
+}
+
 internal actual fun newHashFunction(algorithm: String): HashFunction = when (algorithm) {
   "SHA-1" -> Sha1()
   "SHA-256" -> Sha256()

@@ -18,16 +18,8 @@ package okio.internal
 
 import java.security.MessageDigest
 
-// TODO refactor to typealias after this is resolved https://youtrack.jetbrains.com/issue/KT-37316
-internal actual fun newHashFunction(algorithm: String) = object : HashFunction {
+@Suppress("ACTUAL_WITHOUT_EXPECT") // TODO https://youtrack.jetbrains.com/issue/KT-37316
+internal actual typealias HashFunction = MessageDigest
 
-  private val digest = MessageDigest.getInstance(algorithm)
-
-  override fun update(input: ByteArray, offset: Int, byteCount: Int) = digest.update(
-    input,
-    offset,
-    byteCount
-  )
-
-  override fun digest() = digest.digest()
-}
+@Suppress("NOTHING_TO_INLINE") // Alias to built-in function.
+internal actual inline fun newHashFunction(algorithm: String) = MessageDigest.getInstance(algorithm)
