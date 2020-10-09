@@ -32,9 +32,11 @@ import java.net.SocketTimeoutException
 import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.Path
+import java.security.MessageDigest
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.crypto.Cipher
+import javax.crypto.Mac
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -203,6 +205,26 @@ fun Sink.cipherSink(cipher: Cipher): CipherSink = CipherSink(this.buffer(), ciph
  * @throws IllegalArgumentException if [cipher] isn't a block cipher.
  */
 fun Source.cipherSource(cipher: Cipher): CipherSource = CipherSource(this.buffer(), cipher)
+
+/**
+ * Returns a sink that uses [mac] to hash [this].
+ */
+fun Sink.macSink(mac: Mac): HashingSink = HashingSink(this, mac)
+
+/**
+ * Returns a source that uses [mac] to hash [this].
+ */
+fun Source.macSource(mac: Mac): HashingSource = HashingSource(this, mac)
+
+/**
+ * Returns a sink that uses [digest] to hash [this].
+ */
+fun Sink.digestSink(digest: MessageDigest): HashingSink = HashingSink(this, digest)
+
+/**
+ * Returns a source that uses [digest] to hash [this].
+ */
+fun Source.digestSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
 
 /**
  * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.

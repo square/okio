@@ -42,9 +42,19 @@ class HashingSource : ForwardingSource {
   private val messageDigest: MessageDigest?
   private val mac: Mac?
 
+  internal constructor(source: Source, digest: MessageDigest) : super(source) {
+    this.messageDigest = digest
+    this.mac = null
+  }
+
   internal constructor(source: Source, algorithm: String) : super(source) {
     messageDigest = MessageDigest.getInstance(algorithm)
     mac = null
+  }
+
+  internal constructor(source: Source, mac: Mac) : super(source) {
+    this.mac = mac
+    this.messageDigest = null
   }
 
   internal constructor(source: Source, key: ByteString, algorithm: String) : super(source) {

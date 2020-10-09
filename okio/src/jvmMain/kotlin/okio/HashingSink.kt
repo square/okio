@@ -41,9 +41,19 @@ class HashingSink : ForwardingSink {
   private val messageDigest: MessageDigest?
   private val mac: Mac?
 
+  internal constructor(sink: Sink, digest: MessageDigest) : super(sink) {
+    this.messageDigest = digest
+    this.mac = null
+  }
+
   internal constructor(sink: Sink, algorithm: String) : super(sink) {
     this.messageDigest = MessageDigest.getInstance(algorithm)
     this.mac = null
+  }
+
+  internal constructor(sink: Sink, mac: Mac) : super(sink) {
+    this.mac = mac
+    this.messageDigest = null
   }
 
   internal constructor(sink: Sink, key: ByteString, algorithm: String) : super(sink) {
