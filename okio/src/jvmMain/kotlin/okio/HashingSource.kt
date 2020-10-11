@@ -47,26 +47,23 @@ class HashingSource : ForwardingSource {
     this.mac = null
   }
 
-  internal constructor(source: Source, algorithm: String) : super(source) {
-    messageDigest = MessageDigest.getInstance(algorithm)
-    mac = null
-  }
+  internal constructor(source: Source, algorithm: String) : this(source, MessageDigest.getInstance(algorithm))
 
   internal constructor(source: Source, mac: Mac) : super(source) {
     this.mac = mac
     this.messageDigest = null
   }
 
-  internal constructor(source: Source, key: ByteString, algorithm: String) : super(source) {
+  internal constructor(source: Source, key: ByteString, algorithm: String) : this(
+    source,
     try {
-      mac = Mac.getInstance(algorithm).apply {
+      Mac.getInstance(algorithm).apply {
         init(SecretKeySpec(key.toByteArray(), algorithm))
       }
-      messageDigest = null
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
     }
-  }
+  )
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {

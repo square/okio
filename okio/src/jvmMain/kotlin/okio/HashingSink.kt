@@ -46,26 +46,23 @@ class HashingSink : ForwardingSink {
     this.mac = null
   }
 
-  internal constructor(sink: Sink, algorithm: String) : super(sink) {
-    this.messageDigest = MessageDigest.getInstance(algorithm)
-    this.mac = null
-  }
+  internal constructor(sink: Sink, algorithm: String) : this(sink, MessageDigest.getInstance(algorithm))
 
   internal constructor(sink: Sink, mac: Mac) : super(sink) {
     this.mac = mac
     this.messageDigest = null
   }
 
-  internal constructor(sink: Sink, key: ByteString, algorithm: String) : super(sink) {
+  internal constructor(sink: Sink, key: ByteString, algorithm: String) : this(
+    sink,
     try {
-      this.mac = Mac.getInstance(algorithm).apply {
+      Mac.getInstance(algorithm).apply {
         init(SecretKeySpec(key.toByteArray(), algorithm))
       }
-      this.messageDigest = null
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
     }
-  }
+  )
 
   @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) {

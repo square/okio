@@ -209,22 +209,22 @@ fun Source.cipherSource(cipher: Cipher): CipherSource = CipherSource(this.buffer
 /**
  * Returns a sink that uses [mac] to hash [this].
  */
-fun Sink.macSink(mac: Mac): HashingSink = HashingSink(this, mac)
+fun Sink.hashingSink(mac: Mac): HashingSink = HashingSink(this, mac)
 
 /**
  * Returns a source that uses [mac] to hash [this].
  */
-fun Source.macSource(mac: Mac): HashingSource = HashingSource(this, mac)
+fun Source.hashingSource(mac: Mac): HashingSource = HashingSource(this, mac)
 
 /**
  * Returns a sink that uses [digest] to hash [this].
  */
-fun Sink.digestSink(digest: MessageDigest): HashingSink = HashingSink(this, digest)
+fun Sink.hashingSink(digest: MessageDigest): HashingSink = HashingSink(this, digest)
 
 /**
  * Returns a source that uses [digest] to hash [this].
  */
-fun Source.digestSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
+fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
 
 /**
  * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.
