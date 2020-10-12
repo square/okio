@@ -103,48 +103,46 @@ source with a buffer. This has two benefits:
 Each `Source` that is opened needs to be closed. The code that opens the stream
 is responsible for making sure it is closed. 
 
-=== "Java"
+### Java
     
-    Here we use Java's `try` blocks to close our sources automatically.
-    
-    ```java
-    public void readLines(File file) throws IOException {
-      try (Source fileSource = Okio.source(file);
-           BufferedSource bufferedSource = Okio.buffer(fileSource)) {
-    
-        while (true) {
-          String line = bufferedSource.readUtf8Line();
-          if (line == null) break;
-    
-          if (line.contains("square")) {
-            System.out.println(line);
-          }
-        }
-    
+Here we use Java's `try` blocks to close our sources automatically.
+  
+```java
+public void readLines(File file) throws IOException {
+  try (Source fileSource = Okio.source(file);
+       BufferedSource bufferedSource = Okio.buffer(fileSource)) {
+    while (true) {
+      String line = bufferedSource.readUtf8Line();
+      if (line == null) break;
+
+      if (line.contains("square")) {
+        System.out.println(line);
       }
     }
-    ```
+  }
+}
+```
     
-=== "Kotlin"
+### Kotlin
     
-    Note that static `Okio` methods become extension functions (`Okio.source(file)` => 
-    `file.source()`), and `use` is used to automatically close the streams:
+Note that static `Okio` methods become extension functions (`Okio.source(file)` => 
+`file.source()`), and `use` is used to automatically close the streams:
     
-    ```kotlin
-    @Throws(IOException::class)
-    fun readLines(file: File) {
-      file.source().use { fileSource ->
-        fileSource.buffer().use { bufferedFileSource ->
-          while (true) {
-            val line = bufferedFileSource.readUtf8Line() ?: break
-            if ("square" in line) {
-              println(line)
-            }
-          }
+```kotlin
+@Throws(IOException::class)
+fun readLines(file: File) {
+  file.source().use { fileSource ->
+    fileSource.buffer().use { bufferedFileSource ->
+      while (true) {
+        val line = bufferedFileSource.readUtf8Line() ?: break
+        if ("square" in line) {
+          println(line)
         }
       }
     }
-    ``` 
+  }
+}
+```
 
 The `readUtf8Line()` API reads all of the data until the next line delimiter –
 either `\n`, `\r\n`, or the end of the file. It returns that data as a string,
@@ -227,14 +225,12 @@ capable API and better performance.
 public void writeEnv(File file) throws IOException {
   try (Sink fileSink = Okio.sink(file);
        BufferedSink bufferedSink = Okio.buffer(fileSink)) {
-
     for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
       bufferedSink.writeUtf8(entry.getKey());
       bufferedSink.writeUtf8("=");
       bufferedSink.writeUtf8(entry.getValue());
       bufferedSink.writeUtf8("\n");
     }
-
   }
 }
 ```
@@ -247,36 +243,36 @@ character. In rare situations you may use `System.lineSeparator()` instead of
 We can write the above program more compactly by inlining the `fileSink`
 variable and by taking advantage of method chaining:
 
-=== "Java"
+### Java
     
-    ```Java
-    public void writeEnv(File file) throws IOException {
-      try (BufferedSink sink = Okio.buffer(Okio.sink(file))) {
-        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
-          sink.writeUtf8(entry.getKey())
-              .writeUtf8("=")
-              .writeUtf8(entry.getValue())
-              .writeUtf8("\n");
-        }
-      }
+```java
+public void writeEnv(File file) throws IOException {
+  try (BufferedSink sink = Okio.buffer(Okio.sink(file))) {
+    for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+      sink.writeUtf8(entry.getKey())
+          .writeUtf8("=")
+          .writeUtf8(entry.getValue())
+          .writeUtf8("\n");
     }
-    ```
+  }
+}
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    @Throws(IOException::class)
-    fun writeEnv(file: File) {
-      file.sink().buffer().use { sink ->
-        for ((key, value) in System.getenv()) {
-          sink.writeUtf8(key)
-          sink.writeUtf8("=")
-          sink.writeUtf8(value)
-          sink.writeUtf8("\n")
-        }
-      }
+```kotlin
+@Throws(IOException::class)
+fun writeEnv(file: File) {
+  file.sink().buffer().use { sink ->
+    for ((key, value) in System.getenv()) {
+      sink.writeUtf8(key)
+      sink.writeUtf8("=")
+      sink.writeUtf8(value)
+      sink.writeUtf8("\n")
     }
-    ```
+  }
+}
+```
 
 In the above code we make four calls to `writeUtf8()`. Making four calls is
 more efficient than the code below because the VM doesn’t have to create and
@@ -347,30 +343,30 @@ programs should prefer other formats like JSON or protobuf! In any case, here’
 a method that takes an object, serializes it, and returns the result as a
 `ByteString`:
 
-=== "Java"
+### Java
     
-    ```Java
-    private ByteString serialize(Object o) throws IOException {
-      Buffer buffer = new Buffer();
-      try (ObjectOutputStream objectOut = new ObjectOutputStream(buffer.outputStream())) {
-        objectOut.writeObject(o);
-      }
-      return buffer.readByteString();
-    }
-    ```
+```java
+private ByteString serialize(Object o) throws IOException {
+  Buffer buffer = new Buffer();
+  try (ObjectOutputStream objectOut = new ObjectOutputStream(buffer.outputStream())) {
+    objectOut.writeObject(o);
+  }
+  return buffer.readByteString();
+}
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    @Throws(IOException::class)
-    private fun serialize(o: Any?): ByteString {
-      val buffer = Buffer()
-      ObjectOutputStream(buffer.outputStream()).use { objectOut ->
-        objectOut.writeObject(o)
-      }
-      return buffer.readByteString()
-    }
-    ```
+```kotlin
+@Throws(IOException::class)
+private fun serialize(o: Any?): ByteString {
+  val buffer = Buffer()
+  ObjectOutputStream(buffer.outputStream()).use { objectOut ->
+    objectOut.writeObject(o)
+  }
+  return buffer.readByteString()
+}
+```
 
 There’s a lot going on here.
 
@@ -392,21 +388,21 @@ There’s a lot going on here.
 With our `serialize()` method handy we are ready to compute and print a golden
 value.
 
-=== "Java"
+### Java
     
-    ```Java
-    Point point = new Point(8.0, 15.0);
-    ByteString pointBytes = serialize(point);
-    System.out.println(pointBytes.base64());
-    ```
+```java
+Point point = new Point(8.0, 15.0);
+ByteString pointBytes = serialize(point);
+System.out.println(pointBytes.base64());
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val point = Point(8.0, 15.0)
-    val pointBytes = serialize(point)
-    println(pointBytes.base64())
-    ```
+```kotlin
+val point = Point(8.0, 15.0)
+val pointBytes = serialize(point)
+println(pointBytes.base64())
+```
 
 We print the `ByteString` as [base64][base64] because it’s a compact format
 that’s suitable for embedding in a test case. The program prints this:
@@ -418,70 +414,70 @@ rO0ABXNyAB5va2lvLnNhbXBsZXMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBA
 That’s our golden value! We can embed it in our test case using base64 again
 to convert it back into a `ByteString`:
 
-=== "Java"
+### Java
     
-    ```Java
-    ByteString goldenBytes = ByteString.decodeBase64("rO0ABXNyAB5va2lvLnNhbXBsZ"
-        + "XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA"
-        + "AAAAAAA");
-    ```
+```java
+ByteString goldenBytes = ByteString.decodeBase64("rO0ABXNyAB5va2lvLnNhbXBsZ"
+    + "XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA"
+    + "AAAAAAA");
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val goldenBytes = ("rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAA" +
-      "kQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA").decodeBase64()
-    ```
+```kotlin
+val goldenBytes = ("rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAA" +
+  "kQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA").decodeBase64()
+```
 
 The next step is to deserialize the `ByteString` back into our value class. This
 method reverses the `serialize()` method above: we append a byte string to a
 buffer then consume it using an `ObjectInputStream`:
 
-=== "Java"
+### Java
     
-    ```Java
-    private Object deserialize(ByteString byteString) throws IOException, ClassNotFoundException {
-      Buffer buffer = new Buffer();
-      buffer.write(byteString);
-      try (ObjectInputStream objectIn = new ObjectInputStream(buffer.inputStream())) {
-        return objectIn.readObject();
-      }
-    }
-    ```
+```java
+private Object deserialize(ByteString byteString) throws IOException, ClassNotFoundException {
+  Buffer buffer = new Buffer();
+  buffer.write(byteString);
+  try (ObjectInputStream objectIn = new ObjectInputStream(buffer.inputStream())) {
+    return objectIn.readObject();
+  }
+}
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    @Throws(IOException::class, ClassNotFoundException::class)
-    private fun deserialize(byteString: ByteString): Any? {
-      val buffer = Buffer()
-      buffer.write(byteString)
-      ObjectInputStream(buffer.inputStream()).use { objectIn ->
-        return objectIn.readObject()
-      }
-    }
-    ```
+```kotlin
+@Throws(IOException::class, ClassNotFoundException::class)
+private fun deserialize(byteString: ByteString): Any? {
+  val buffer = Buffer()
+  buffer.write(byteString)
+  ObjectInputStream(buffer.inputStream()).use { objectIn ->
+    return objectIn.readObject()
+  }
+}
+```
 
 Now we can test the decoder against the golden value:
 
-=== "Java"
+### Java
     
-    ```Java
-    ByteString goldenBytes = ByteString.decodeBase64("rO0ABXNyAB5va2lvLnNhbXBsZ"
-        + "XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA"
-        + "AAAAAAA");
-    Point decoded = (Point) deserialize(goldenBytes);
-    assertEquals(new Point(8.0, 15.0), decoded);
-    ```
+```java
+ByteString goldenBytes = ByteString.decodeBase64("rO0ABXNyAB5va2lvLnNhbXBsZ"
+    + "XMuR29sZGVuVmFsdWUkUG9pbnTdUW8rMji1IwIAAkQAAXhEAAF5eHBAIAAAAAAAAEAuA"
+    + "AAAAAAA");
+Point decoded = (Point) deserialize(goldenBytes);
+assertEquals(new Point(8.0, 15.0), decoded);
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val goldenBytes = ("rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAA" +
-      "kQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA").decodeBase64()!!
-    val decoded = deserialize(goldenBytes) as Point
-    assertEquals(point, decoded)
-    ```
+```kotlin
+val goldenBytes = ("rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAA" +
+  "kQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA").decodeBase64()!!
+val decoded = deserialize(goldenBytes) as Point
+assertEquals(point, decoded)
+```
 
 With this test we can change the serialization of the `Point` class without
 breaking compatibility.
@@ -531,105 +527,105 @@ around these traps:
 
 This code encodes a bitmap following the [BMP file format][bmp].
 
-=== "Java"
+### Java
     
-    ```Java
-    void encode(Bitmap bitmap, BufferedSink sink) throws IOException {
-      int height = bitmap.height();
-      int width = bitmap.width();
-    
-      int bytesPerPixel = 3;
-      int rowByteCountWithoutPadding = (bytesPerPixel * width);
-      int rowByteCount = ((rowByteCountWithoutPadding + 3) / 4) * 4;
-      int pixelDataSize = rowByteCount * height;
-      int bmpHeaderSize = 14;
-      int dibHeaderSize = 40;
-    
-      // BMP Header
-      sink.writeUtf8("BM"); // ID.
-      sink.writeIntLe(bmpHeaderSize + dibHeaderSize + pixelDataSize); // File size.
-      sink.writeShortLe(0); // Unused.
-      sink.writeShortLe(0); // Unused.
-      sink.writeIntLe(bmpHeaderSize + dibHeaderSize); // Offset of pixel data.
-    
-      // DIB Header
-      sink.writeIntLe(dibHeaderSize);
-      sink.writeIntLe(width);
-      sink.writeIntLe(height);
-      sink.writeShortLe(1);  // Color plane count.
-      sink.writeShortLe(bytesPerPixel * Byte.SIZE);
-      sink.writeIntLe(0);    // No compression.
-      sink.writeIntLe(16);   // Size of bitmap data including padding.
-      sink.writeIntLe(2835); // Horizontal print resolution in pixels/meter. (72 dpi).
-      sink.writeIntLe(2835); // Vertical print resolution in pixels/meter. (72 dpi).
-      sink.writeIntLe(0);    // Palette color count.
-      sink.writeIntLe(0);    // 0 important colors.
-    
-      // Pixel data.
-      for (int y = height - 1; y >= 0; y--) {
-        for (int x = 0; x < width; x++) {
-          sink.writeByte(bitmap.blue(x, y));
-          sink.writeByte(bitmap.green(x, y));
-          sink.writeByte(bitmap.red(x, y));
-        }
-    
-        // Padding for 4-byte alignment.
-        for (int p = rowByteCountWithoutPadding; p < rowByteCount; p++) {
-          sink.writeByte(0);
-        }
-      }
+```java
+void encode(Bitmap bitmap, BufferedSink sink) throws IOException {
+  int height = bitmap.height();
+  int width = bitmap.width();
+
+  int bytesPerPixel = 3;
+  int rowByteCountWithoutPadding = (bytesPerPixel * width);
+  int rowByteCount = ((rowByteCountWithoutPadding + 3) / 4) * 4;
+  int pixelDataSize = rowByteCount * height;
+  int bmpHeaderSize = 14;
+  int dibHeaderSize = 40;
+
+  // BMP Header
+  sink.writeUtf8("BM"); // ID.
+  sink.writeIntLe(bmpHeaderSize + dibHeaderSize + pixelDataSize); // File size.
+  sink.writeShortLe(0); // Unused.
+  sink.writeShortLe(0); // Unused.
+  sink.writeIntLe(bmpHeaderSize + dibHeaderSize); // Offset of pixel data.
+
+  // DIB Header
+  sink.writeIntLe(dibHeaderSize);
+  sink.writeIntLe(width);
+  sink.writeIntLe(height);
+  sink.writeShortLe(1);  // Color plane count.
+  sink.writeShortLe(bytesPerPixel * Byte.SIZE);
+  sink.writeIntLe(0);    // No compression.
+  sink.writeIntLe(16);   // Size of bitmap data including padding.
+  sink.writeIntLe(2835); // Horizontal print resolution in pixels/meter. (72 dpi).
+  sink.writeIntLe(2835); // Vertical print resolution in pixels/meter. (72 dpi).
+  sink.writeIntLe(0);    // Palette color count.
+  sink.writeIntLe(0);    // 0 important colors.
+
+  // Pixel data.
+  for (int y = height - 1; y >= 0; y--) {
+    for (int x = 0; x < width; x++) {
+      sink.writeByte(bitmap.blue(x, y));
+      sink.writeByte(bitmap.green(x, y));
+      sink.writeByte(bitmap.red(x, y));
     }
-    ```
-    
-=== "Kotlin"
-    
-    ```Kotlin
-    @Throws(IOException::class)
-    fun encode(bitmap: Bitmap, sink: BufferedSink) {
-      val height = bitmap.height
-      val width = bitmap.width
-      val bytesPerPixel = 3
-      val rowByteCountWithoutPadding = bytesPerPixel * width
-      val rowByteCount = (rowByteCountWithoutPadding + 3) / 4 * 4
-      val pixelDataSize = rowByteCount * height
-      val bmpHeaderSize = 14
-      val dibHeaderSize = 40
-    
-      // BMP Header
-      sink.writeUtf8("BM") // ID.
-      sink.writeIntLe(bmpHeaderSize + dibHeaderSize + pixelDataSize) // File size.
-      sink.writeShortLe(0) // Unused.
-      sink.writeShortLe(0) // Unused.
-      sink.writeIntLe(bmpHeaderSize + dibHeaderSize) // Offset of pixel data.
-    
-      // DIB Header
-      sink.writeIntLe(dibHeaderSize)
-      sink.writeIntLe(width)
-      sink.writeIntLe(height)
-      sink.writeShortLe(1) // Color plane count.
-      sink.writeShortLe(bytesPerPixel * Byte.SIZE_BITS)
-      sink.writeIntLe(0) // No compression.
-      sink.writeIntLe(16) // Size of bitmap data including padding.
-      sink.writeIntLe(2835) // Horizontal print resolution in pixels/meter. (72 dpi).
-      sink.writeIntLe(2835) // Vertical print resolution in pixels/meter. (72 dpi).
-      sink.writeIntLe(0) // Palette color count.
-      sink.writeIntLe(0) // 0 important colors.
-    
-      // Pixel data.
-      for (y in height - 1 downTo 0) {
-        for (x in 0 until width) {
-          sink.writeByte(bitmap.blue(x, y))
-          sink.writeByte(bitmap.green(x, y))
-          sink.writeByte(bitmap.red(x, y))
-        }
-    
-        // Padding for 4-byte alignment.
-        for (p in rowByteCountWithoutPadding until rowByteCount) {
-          sink.writeByte(0)
-        }
-      }
+
+    // Padding for 4-byte alignment.
+    for (int p = rowByteCountWithoutPadding; p < rowByteCount; p++) {
+      sink.writeByte(0);
     }
-    ```
+  }
+}
+```
+    
+### Kotlin
+    
+```kotlin
+@Throws(IOException::class)
+fun encode(bitmap: Bitmap, sink: BufferedSink) {
+  val height = bitmap.height
+  val width = bitmap.width
+  val bytesPerPixel = 3
+  val rowByteCountWithoutPadding = bytesPerPixel * width
+  val rowByteCount = (rowByteCountWithoutPadding + 3) / 4 * 4
+  val pixelDataSize = rowByteCount * height
+  val bmpHeaderSize = 14
+  val dibHeaderSize = 40
+
+  // BMP Header
+  sink.writeUtf8("BM") // ID.
+  sink.writeIntLe(bmpHeaderSize + dibHeaderSize + pixelDataSize) // File size.
+  sink.writeShortLe(0) // Unused.
+  sink.writeShortLe(0) // Unused.
+  sink.writeIntLe(bmpHeaderSize + dibHeaderSize) // Offset of pixel data.
+
+  // DIB Header
+  sink.writeIntLe(dibHeaderSize)
+  sink.writeIntLe(width)
+  sink.writeIntLe(height)
+  sink.writeShortLe(1) // Color plane count.
+  sink.writeShortLe(bytesPerPixel * Byte.SIZE_BITS)
+  sink.writeIntLe(0) // No compression.
+  sink.writeIntLe(16) // Size of bitmap data including padding.
+  sink.writeIntLe(2835) // Horizontal print resolution in pixels/meter. (72 dpi).
+  sink.writeIntLe(2835) // Vertical print resolution in pixels/meter. (72 dpi).
+  sink.writeIntLe(0) // Palette color count.
+  sink.writeIntLe(0) // 0 important colors.
+
+  // Pixel data.
+  for (y in height - 1 downTo 0) {
+    for (x in 0 until width) {
+      sink.writeByte(bitmap.blue(x, y))
+      sink.writeByte(bitmap.green(x, y))
+      sink.writeByte(bitmap.red(x, y))
+    }
+
+    // Padding for 4-byte alignment.
+    for (p in rowByteCountWithoutPadding until rowByteCount) {
+      sink.writeByte(0)
+    }
+  }
+}
+```
 
 The trickiest part of this program is the format’s required padding. The BMP
 format expects each row to begin on a 4-byte boundary so it is necessary to add
@@ -681,46 +677,46 @@ API works even if the streams are decorated.
 As a complete example of networking with Okio we wrote a [basic SOCKS
 proxy][SocksProxyServer] server. Some highlights:
 
-=== "Java"
+### Java
     
-    ```Java
-    Socket fromSocket = ...
-    BufferedSource fromSource = Okio.buffer(Okio.source(fromSocket));
-    BufferedSink fromSink = Okio.buffer(Okio.sink(fromSocket));
-    ```
+```java
+Socket fromSocket = ...
+BufferedSource fromSource = Okio.buffer(Okio.source(fromSocket));
+BufferedSink fromSink = Okio.buffer(Okio.sink(fromSocket));
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val fromSocket: Socket = ...
-    val fromSource = fromSocket.source().buffer()
-    val fromSink = fromSocket.sink().buffer()
-    ```
+```kotlin
+val fromSocket: Socket = ...
+val fromSource = fromSocket.source().buffer()
+val fromSink = fromSocket.sink().buffer()
+```
 
 Creating sources and sinks for sockets is the same as creating them for files.
 Once you create a `Source` or `Sink` for a socket you must not use its
 `InputStream` or `OutputStream`, respectively.
 
-=== "Java"
+### Java
     
-    ```Java
-    Buffer buffer = new Buffer();
-    for (long byteCount; (byteCount = source.read(buffer, 8192L)) != -1; ) {
-      sink.write(buffer, byteCount);
-      sink.flush();
-    }
-    ```
+```java
+Buffer buffer = new Buffer();
+for (long byteCount; (byteCount = source.read(buffer, 8192L)) != -1; ) {
+  sink.write(buffer, byteCount);
+  sink.flush();
+}
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val buffer = Buffer()
-    var byteCount: Long
-    while (source.read(buffer, 8192L).also { byteCount = it } != -1L) {
-      sink.write(buffer, byteCount)
-      sink.flush()
-    }
-    ```
+```kotlin
+val buffer = Buffer()
+var byteCount: Long
+while (source.read(buffer, 8192L).also { byteCount = it } != -1L) {
+  sink.write(buffer, byteCount)
+  sink.flush()
+}
+```
 
 The above loop copies data from the source to the sink, flushing after each
 read. If we didn’t need the flushing we could replace this loop with a single
@@ -731,19 +727,19 @@ returning. We could have passed any value here, but we like 8 KiB because that�
 the largest value Okio can do in a single system call. Most of the time
 application code doesn’t need to deal with such limits!
 
-=== "Java"
+### Java
     
-    ```Java
-    int addressType = fromSource.readByte() & 0xff;
-    int port = fromSource.readShort() & 0xffff;
-    ```
+```java
+int addressType = fromSource.readByte() & 0xff;
+int port = fromSource.readShort() & 0xffff;
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val addressType = fromSource.readByte().toInt() and 0xff
-    val port = fromSource.readShort().toInt() and 0xffff
-    ```
+```kotlin
+val addressType = fromSource.readByte().toInt() and 0xff
+val port = fromSource.readShort().toInt() and 0xffff
+```
 
 Okio uses signed types like `byte` and `short`, but often protocols want
 unsigned values. The bitwise `&` operator is Java’s preferred idiom to convert
@@ -800,115 +796,115 @@ human-readable form. Or leave it as a `ByteString` because that’s a convenient
 
 Okio can produce cryptographic hashes from byte strings:
 
-=== "Java"
+### Java
     
-    ```Java
-    ByteString byteString = readByteString(new File("README.md"));
-    System.out.println("   md5: " + byteString.md5().hex());
-    System.out.println("  sha1: " + byteString.sha1().hex());
-    System.out.println("sha256: " + byteString.sha256().hex());
-    System.out.println("sha512: " + byteString.sha512().hex());
-    ```
+```java
+ByteString byteString = readByteString(new File("README.md"));
+System.out.println("   md5: " + byteString.md5().hex());
+System.out.println("  sha1: " + byteString.sha1().hex());
+System.out.println("sha256: " + byteString.sha256().hex());
+System.out.println("sha512: " + byteString.sha512().hex());
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val byteString = readByteString(File("README.md"))
-    println("       md5: " + byteString.md5().hex())
-    println("      sha1: " + byteString.sha1().hex())
-    println("    sha256: " + byteString.sha256().hex())
-    println("    sha512: " + byteString.sha512().hex())
-    ```
+```kotlin
+val byteString = readByteString(File("README.md"))
+println("       md5: " + byteString.md5().hex())
+println("      sha1: " + byteString.sha1().hex())
+println("    sha256: " + byteString.sha256().hex())
+println("    sha512: " + byteString.sha512().hex())
+```
 
 From buffers:
 
-=== "Java"
+### Java
     
-    ```Java
-    Buffer buffer = readBuffer(new File("README.md"));
-    System.out.println("   md5: " + buffer.md5().hex());
-    System.out.println("  sha1: " + buffer.sha1().hex());
-    System.out.println("sha256: " + buffer.sha256().hex());
-    System.out.println("sha512: " + buffer.sha512().hex());
-    ```
+```java
+Buffer buffer = readBuffer(new File("README.md"));
+System.out.println("   md5: " + buffer.md5().hex());
+System.out.println("  sha1: " + buffer.sha1().hex());
+System.out.println("sha256: " + buffer.sha256().hex());
+System.out.println("sha512: " + buffer.sha512().hex());
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val buffer = readBuffer(File("README.md"))
-    println("       md5: " + buffer.md5().hex())
-    println("      sha1: " + buffer.sha1().hex())
-    println("    sha256: " + buffer.sha256().hex())
-    println("    sha512: " + buffer.sha512().hex())
-    ```
+```kotlin
+val buffer = readBuffer(File("README.md"))
+println("       md5: " + buffer.md5().hex())
+println("      sha1: " + buffer.sha1().hex())
+println("    sha256: " + buffer.sha256().hex())
+println("    sha512: " + buffer.sha512().hex())
+```
 
 While streaming from a source:
 
-=== "Java"
+### Java
     
-    ```Java
-    try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
-         BufferedSource source = Okio.buffer(Okio.source(file))) {
-      source.readAll(hashingSink);
-      System.out.println("sha256: " + hashingSink.hash().hex());
-    }
-    ```
+```java
+try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
+     BufferedSource source = Okio.buffer(Okio.source(file))) {
+  source.readAll(hashingSink);
+  System.out.println("sha256: " + hashingSink.hash().hex());
+}
+```
     
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    sha256(blackholeSink()).use { hashingSink ->
-      file.source().buffer().use { source ->
-        source.readAll(hashingSink)
-        println("    sha256: " + hashingSink.hash.hex())
-      }
-    }
-    ```
+```kotlin
+sha256(blackholeSink()).use { hashingSink ->
+  file.source().buffer().use { source ->
+    source.readAll(hashingSink)
+    println("    sha256: " + hashingSink.hash.hex())
+  }
+}
+```
 
 While streaming to a sink:
 
-=== "Java"
+### Java
     
-    ```Java
-    try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
-         BufferedSink sink = Okio.buffer(hashingSink);
-         Source source = Okio.source(file)) {
-      sink.writeAll(source);
-      sink.close(); // Emit anything buffered.
-      System.out.println("sha256: " + hashingSink.hash().hex());
+```java
+try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
+     BufferedSink sink = Okio.buffer(hashingSink);
+     Source source = Okio.source(file)) {
+  sink.writeAll(source);
+  sink.close(); // Emit anything buffered.
+  System.out.println("sha256: " + hashingSink.hash().hex());
+}
+```
+    
+### Kotlin
+    
+```kotlin
+sha256(blackholeSink()).use { hashingSink ->
+  hashingSink.buffer().use { sink ->
+    file.source().use { source ->
+      sink.writeAll(source)
+      sink.close() // Emit anything buffered.
+      println("    sha256: " + hashingSink.hash.hex())
     }
-    ```
-    
-=== "Kotlin"
-    
-    ```Kotlin
-    sha256(blackholeSink()).use { hashingSink ->
-      hashingSink.buffer().use { sink ->
-        file.source().use { source ->
-          sink.writeAll(source)
-          sink.close() // Emit anything buffered.
-          println("    sha256: " + hashingSink.hash.hex())
-        }
-      }
-    }
-    ```
+  }
+}
+```
 
 Okio also supports HMAC (Hash Message Authentication Code) which combines a secret and a hash.
 Applications use HMAC for data integrity and authentication.
 
-=== "Java"
+### Java
     
-    ```Java
-    ByteString secret = ByteString.decodeHex("7065616e7574627574746572");
-    System.out.println("hmacSha256: " + byteString.hmacSha256(secret).hex());
-    ```
+```java
+ByteString secret = ByteString.decodeHex("7065616e7574627574746572");
+System.out.println("hmacSha256: " + byteString.hmacSha256(secret).hex());
+```
 
-=== "Kotlin"
+### Kotlin
     
-    ```Kotlin
-    val secret = "7065616e7574627574746572".decodeHex()
-    println("hmacSha256: " + byteString.hmacSha256(secret).hex())
-    ```
+```kotlin
+val secret = "7065616e7574627574746572".decodeHex()
+println("hmacSha256: " + byteString.hmacSha256(secret).hex())
+```
 
 As with hashing, you can generate an HMAC from a `ByteString`, `Buffer`, `HashingSource`, and
 `HashingSink`. Note that Okio doesn’t implement HMAC for MD5. Okio uses Java’s
