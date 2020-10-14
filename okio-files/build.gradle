@@ -1,0 +1,33 @@
+apply plugin: 'org.jetbrains.kotlin.multiplatform'
+
+kotlin {
+  jvm {
+    withJava()
+  }
+  sourceSets {
+    commonMain {
+      dependencies {
+        api deps.kotlin.stdLib.common
+        api project(":okio")
+      }
+    }
+    commonTest {
+      dependencies {
+        implementation deps.kotlin.test.common
+        implementation deps.kotlin.test.annotations
+      }
+    }
+    jvmMain {
+      dependencies {
+        api deps.kotlin.stdLib.jdk6
+      }
+    }
+    jvmTest {
+      dependencies {
+        implementation deps.test.junit
+        implementation deps.test.assertj
+        implementation deps.kotlin.test.jdk
+      }
+    }
+  }
+}
