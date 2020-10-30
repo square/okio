@@ -93,7 +93,7 @@ actual open class Timeout {
    */
   @Throws(IOException::class)
   open fun throwIfReached() {
-    if (Thread.isInterrupted()) {
+    if (Thread.currentThread().isInterrupted) {
       //if the current thread has been interrupted
       throw InterruptedIOException("interrupted")
     }
