@@ -15,19 +15,12 @@
  */
 package okio
 
-abstract class Filesystem {
-  /**
-   * The current process's working directory. This is the result of the `getcwd` command on POSIX
-   * and the `user.dir` System property in Java. This is an absolute path that all relative paths
-   * are resolved against when using this filesystem.
-   */
-  abstract val cwd: Path
+import okio.Path.Companion.toPath
 
-  companion object {
-    /**
-     * The current process's host filesystem. Use this instance directly, or dependency inject a
-     * [Filesystem] to make code testable.
-     */
-    val SYSTEM: Filesystem = PLATFORM_FILESYSTEM
-  }
+object JvmSystemFilesystem : Filesystem() {
+  override val cwd: Path
+    get() {
+      val userDir = System.getProperty("user.dir") ?: error("user.dir system property missing?!")
+      return userDir.toPath()
+    }
 }
