@@ -22,6 +22,19 @@ import kotlin.test.assertNull
 
 class PathTest {
   @Test
+  fun `path names`() {
+    assertEquals("", "".toPath().name)
+    assertEquals("", "/".toPath().name)
+    assertEquals("..", "..".toPath().name)
+    assertEquals("..", "../..".toPath().name)
+    assertEquals(".gitignore", ".gitignore".toPath().name)
+    assertEquals("Main.kt", "src/main/kotlin/Main.kt".toPath().name)
+    assertEquals("foo.txt", "/home/jesse/foo.txt".toPath().name)
+    assertEquals("jesse", "/home/jesse".toPath().name)
+    assertEquals("passwd", "../../etc/passwd".toPath().name)
+  }
+
+  @Test
   fun `basic paths`() {
     assertEquals("gradlew", "./gradlew".toPath().toString())
     assertEquals(".gitignore", "./.gitignore".toPath().toString())
@@ -139,6 +152,8 @@ class PathTest {
 
   @Test
   fun `string to relative path with traversal`() {
+    assertEquals("..", "..".toPath().toString())
+    assertEquals("..", "../".toPath().toString())
     assertEquals("", "a/..".toPath().toString())
     assertEquals("", "a/../".toPath().toString())
     assertEquals("..", "a/../..".toPath().toString())
