@@ -20,8 +20,13 @@ abstract class Filesystem {
    * The current process's working directory. This is the result of the `getcwd` command on POSIX
    * and the `user.dir` System property in Java. This is an absolute path that all relative paths
    * are resolved against when using this filesystem.
+   *
+   * @throws IOException if the current process doesn't have access to the current working
+   *     directory, if it's been deleted since the current process started, or there is another
+   *     failure accessing the current working directory.
    */
-  abstract val cwd: Path
+  @Throws(IOException::class)
+  abstract fun cwd(): Path
 
   companion object {
     /**

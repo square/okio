@@ -124,7 +124,8 @@ class Path private constructor(
 
     fun String.toPath(): Path = Buffer().writeUtf8(this).toPath()
 
-    private fun Buffer.toPath(): Path {
+    /** Consume the buffer and return it as a path. */
+    internal fun Buffer.toPath(): Path {
       val absolute = !exhausted() && get(0) == '/'.toByte()
       if (absolute) {
         readByte()

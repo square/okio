@@ -4,6 +4,9 @@ kotlin {
   jvm {
     withJava()
   }
+  if (kmpNativeEnabled) {
+    macosX64()
+  }
   sourceSets {
     commonMain {
       dependencies {
@@ -28,6 +31,11 @@ kotlin {
         implementation deps.test.assertj
         implementation deps.kotlin.test.jdk
       }
+    }
+    macosX64Main {
+      dependsOn commonMain
+    }
+    configure([macosX64Main]) {
     }
   }
 }

@@ -18,9 +18,9 @@ package okio
 import okio.Path.Companion.toPath
 
 object JvmSystemFilesystem : Filesystem() {
-  override val cwd: Path
-    get() {
-      val userDir = System.getProperty("user.dir") ?: error("user.dir system property missing?!")
-      return userDir.toPath()
-    }
+  override fun cwd(): Path {
+    val userDir = System.getProperty("user.dir")
+      ?: throw IOException("user.dir system property missing?!")
+    return userDir.toPath()
+  }
 }
