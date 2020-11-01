@@ -41,22 +41,26 @@ import okio.ByteString.Companion.encodeUtf8
  * The only path that ends with `/` is the filesystem root, `/`. The empty path `""` is a relative
  * path that resolves to whichever path it is resolved against.
  *
+ * The [name] is the last segment in a path. It is typically a file or directory name, like
+ * `README.md` or `Desktop`. It will be the empty string if this path is the file system or the
+ * empty path. It will be `..` if this is a relative path consisting exclusively of `..` segments.
+ *
  * Sample Paths
  * ------------
  *
- * | Path                   | Type       | Parent              |
- * | :--------------------- | :--------- | :------------------ |
- * | `/Users/jessewilson`   | Absolute   | `/Users`            |
- * | `/Users`               | Absolute   | `/`                 |
- * | `/`                    | Absolute   | null                |
- * | `src/main/java`        | Relative   | `src/main`          |
- * | `src/main`             | Relative   | `src`               |
- * | `src`                  | Relative   | (empty)             |
- * | (empty)                | Relative   | null                |
- * | `../../src/main/java`  | Relative   | ` ../../src/main`   |
- * | `../../src/main`       | Relative   | ` ../../src`        |
- * | `../../src`            | Relative   | ` ../..`            |
- * | `../..`                | Relative   | null                |
+ * | Path                   | Type       | Parent              | Name          |
+ * | :--------------------- | :--------- | :------------------ | :------------ |
+ * | `/Users/jessewilson`   | Absolute   | `/Users`            | `jessewilson` |
+ * | `/Users`               | Absolute   | `/`                 | `Users`       |
+ * | `/`                    | Absolute   | null                | (empty)       |
+ * | `src/main/java`        | Relative   | `src/main`          | `java`        |
+ * | `src/main`             | Relative   | `src`               | `main`        |
+ * | `src`                  | Relative   | (empty)             | `src`         |
+ * | (empty)                | Relative   | null                | (empty)       |
+ * | `../../src/main/java`  | Relative   | `../../src/main`    | `java`        |
+ * | `../../src/main`       | Relative   | `../../src`         | `main`        |
+ * | `../../src`            | Relative   | `../..`             | `src`         |
+ * | `../..`                | Relative   | null                | `..`          |
  */
 class Path private constructor(
   private val bytes: ByteString
@@ -66,6 +70,18 @@ class Path private constructor(
 
   val isRelative: Boolean
     get() = !isAbsolute
+
+  val nameBytes: ByteString
+    get() {
+      val lastSlash = bytes.lastIndexOf(SLASH)
+      return when {
+        lastSlash != -1 -> bytes.substring(lastSlash + 1)
+        else -> bytes
+      }
+    }
+
+  val name: String
+    get() = nameBytes.utf8()
 
   /**
    * Returns the path immediately enclosing this path. This returns null if this is either the
