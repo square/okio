@@ -23,4 +23,8 @@ object JvmSystemFilesystem : Filesystem() {
       ?: throw IOException("user.dir system property missing?!")
     return userDir.toPath()
   }
+
+  override fun list(dir: Path): List<Path>? {
+    return dir.file.list()?.map { dir / it }
+  }
 }

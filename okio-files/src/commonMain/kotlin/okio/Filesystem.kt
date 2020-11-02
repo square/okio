@@ -17,9 +17,9 @@ package okio
 
 abstract class Filesystem {
   /**
-   * The current process's working directory. This is the result of the `getcwd` command on POSIX
-   * and the `user.dir` System property in Java. This is an absolute path that all relative paths
-   * are resolved against when using this filesystem.
+   * Returns the current process's working directory. This is the result of the `getcwd` command on
+   * POSIX and the `user.dir` System property in Java. This is an absolute path that all relative
+   * paths are resolved against when using this filesystem.
    *
    * @throws IOException if the current process doesn't have access to the current working
    *     directory, if it's been deleted since the current process started, or there is another
@@ -27,6 +27,16 @@ abstract class Filesystem {
    */
   @Throws(IOException::class)
   abstract fun cwd(): Path
+
+  /**
+   * Returns the children of the directory identified by [dir], or null if [dir] is a not a
+   * directory.
+   *
+   * @throws IOException if [dir] cannot be read, such as if the current process doesn't have
+   *     access to [dir], or if there's a loop of symbolic links, or if any name is too long.
+   */
+  @Throws(IOException::class)
+  abstract fun list(dir: Path): List<Path>?
 
   companion object {
     /**
