@@ -25,7 +25,6 @@ object JvmSystemFilesystem : Filesystem() {
   }
 
   override fun list(dir: Path): List<Path>? {
-    val files = dir.file.list() ?: return null
-    return files.map { dir / it }
+    return dir.file.list()?.map { dir / it }
   }
 }
