@@ -68,7 +68,7 @@ internal object PosixSystemFilesystem : Filesystem() {
 
     if (opendir == null) {
       when (errno) {
-        EACCES -> throw IOException("EACCES: cannot ls $dir")
+        EACCES -> throw IOException("EACCES: cannot list $dir")
         ELOOP -> throw IOException("ELOOP: symbolic link loop resolving $dir")
         ENAMETOOLONG -> throw IOException("ENAMETOOLONG: path name too long in $dir")
         ENOENT -> return null // A component in dir doesn't exist.
