@@ -58,7 +58,7 @@ internal object PosixSystemFilesystem : Filesystem() {
     }
   }
 
-  override fun list(dir: Path): List<Path>? {
+  override fun list(dir: Path): List<Path> {
     var dirToString = dir.toString()
 
     // We use "" for cwd; this expects ".".
@@ -71,8 +71,8 @@ internal object PosixSystemFilesystem : Filesystem() {
         EACCES -> throw IOException("EACCES: cannot list $dir")
         ELOOP -> throw IOException("ELOOP: symbolic link loop resolving $dir")
         ENAMETOOLONG -> throw IOException("ENAMETOOLONG: path name too long in $dir")
-        ENOENT -> return null // A component in dir doesn't exist.
-        ENOTDIR -> return null // `dir` is not a directory.
+        ENOENT -> throw IOException("ENOENT: no such directory $dir")
+        ENOTDIR -> throw IOException("ENOTDIR: not a directory $dir")
         else -> throw IOException("unexpected errno $errno")
       }
     }

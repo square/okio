@@ -24,7 +24,8 @@ object JvmSystemFilesystem : Filesystem() {
     return userDir.toPath()
   }
 
-  override fun list(dir: Path): List<Path>? {
-    return dir.file.list()?.map { dir / it }
+  override fun list(dir: Path): List<Path> {
+    val entries = dir.file.list() ?: throw IOException("failed to list $dir")
+    return entries.map { dir / it }
   }
 }

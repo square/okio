@@ -29,14 +29,14 @@ abstract class Filesystem {
   abstract fun cwd(): Path
 
   /**
-   * Returns the children of the directory identified by [dir], or null if [dir] is a not a
-   * directory.
+   * Returns the children of the directory identified by [dir].
    *
-   * @throws IOException if [dir] cannot be read, such as if the current process doesn't have
-   *     access to [dir], or if there's a loop of symbolic links, or if any name is too long.
+   * @throws IOException if [dir] does not exist, is not a directory, or cannot be read. A directory
+   *     cannot be read if the current process doesn't have access to [dir], or if there's a loop of
+   *     symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun list(dir: Path): List<Path>?
+  abstract fun list(dir: Path): List<Path>
 
   companion object {
     /**
