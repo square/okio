@@ -13,24 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.files
+package okio
 
-import okio.Filesystem
-import kotlin.test.Test
-import kotlin.test.assertNotNull
+import java.io.File
 
-class FileSystemTest {
-  @Test
-  fun `cwd works`() {
-    val cwd = Filesystem.SYSTEM.cwd()
-    println("cwd: $cwd")
-    assertNotNull(cwd)
-  }
-
-  @Test
-  fun `list works`() {
-    val entries = Filesystem.SYSTEM.list(Filesystem.SYSTEM.cwd())
-    println("cwd entries: $entries")
-    assertNotNull(entries)
-  }
-}
+internal val Path.file: File
+  get() = File(toString())

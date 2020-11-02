@@ -20,14 +20,23 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 
 internal fun Buffer.writeNullTerminated(bytes: CPointer<ByteVarOf<Byte>>): Buffer = apply {
-  val result = Buffer()
   var pos = 0
   while (true) {
     val byte = bytes[pos++].toInt()
     if (byte == 0) {
       break
     } else {
-      result.writeByte(byte)
+      writeByte(byte)
     }
+  }
+}
+
+internal fun Buffer.write(
+  bytes: CPointer<ByteVarOf<Byte>>,
+  offset: Int = 0,
+  byteCount: Int
+): Buffer = apply {
+  for (i in offset until offset + byteCount) {
+    writeByte(bytes[i].toInt())
   }
 }

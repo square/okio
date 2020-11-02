@@ -23,4 +23,9 @@ object JvmSystemFilesystem : Filesystem() {
       ?: throw IOException("user.dir system property missing?!")
     return userDir.toPath()
   }
+
+  override fun list(dir: Path): List<Path>? {
+    val files = dir.file.list() ?: return null
+    return files.map { dir / it }
+  }
 }
