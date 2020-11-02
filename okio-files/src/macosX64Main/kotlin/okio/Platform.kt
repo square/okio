@@ -13,16 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.files
+package okio
 
-import okio.Filesystem
-import org.assertj.core.api.Assertions.assertThat
-import java.io.File
-import kotlin.test.Test
-
-class JvmSystemFilesystemTest {
-  @Test
-  fun `cwd consistent with java io File`() {
-    assertThat(Filesystem.SYSTEM.cwd().toString()).isEqualTo(File("").absoluteFile.toString())
-  }
-}
+internal actual val PLATFORM_FILESYSTEM: Filesystem = PosixSystemFilesystem

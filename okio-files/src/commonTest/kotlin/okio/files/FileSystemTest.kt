@@ -16,13 +16,12 @@
 package okio.files
 
 import okio.Filesystem
-import org.assertj.core.api.Assertions.assertThat
-import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 
-class JvmSystemFilesystemTest {
+class FileSystemTest {
   @Test
-  fun `cwd consistent with java io File`() {
-    assertThat(Filesystem.SYSTEM.cwd().toString()).isEqualTo(File("").absoluteFile.toString())
+  fun `cwd is not null`() {
+    assertNotNull(Filesystem.SYSTEM.cwd())
   }
 }
