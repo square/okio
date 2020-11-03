@@ -1217,7 +1217,7 @@ internal inline fun Buffer.commonWrite(source: Buffer, byteCount: Long) {
 
 internal inline fun Buffer.commonRead(sink: Buffer, byteCount: Long): Long {
   var byteCount = byteCount
-  require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+  require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   if (size == 0L) return -1L
   if (byteCount > size) byteCount = size
   sink.write(this, byteCount)

@@ -84,8 +84,8 @@ private class InputStreamSource(
 ) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {
-    if (byteCount == 0L) return 0
-    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+    if (byteCount == 0L) return 0L
+    require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     try {
       timeout.throwIfReached()
       val tail = sink.writableSegment(1)

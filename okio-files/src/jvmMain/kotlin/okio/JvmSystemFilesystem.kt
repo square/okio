@@ -28,4 +28,8 @@ object JvmSystemFilesystem : Filesystem() {
     val entries = dir.file.list() ?: throw IOException("failed to list $dir")
     return entries.map { dir / it }
   }
+
+  override fun source(file: Path): Source {
+    return file.file.source()
+  }
 }

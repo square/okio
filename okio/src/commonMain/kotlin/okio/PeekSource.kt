@@ -36,7 +36,7 @@ internal class PeekSource(
   private var pos = 0L
 
   override fun read(sink: Buffer, byteCount: Long): Long {
-    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+    require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
     // Source becomes invalid if there is an expected Segment and it and the expected position
     // do not match the current head and head position of the upstream buffer

@@ -15,26 +15,27 @@
  */
 package okio.files
 
+import okio.Buffer
 import okio.Filesystem
 import okio.IOException
 import okio.Path.Companion.toPath
 import kotlin.test.Test
-import kotlin.test.assertNotNull
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
+/** This test assumes that okio-files/ is the current working directory when executed. */
 class FileSystemTest {
   @Test
   fun `cwd works`() {
     val cwd = Filesystem.SYSTEM.cwd()
-    println("cwd: $cwd")
-    assertNotNull(cwd)
+    assertTrue(cwd.toString()) { cwd.toString().endsWith("okio/okio-files") }
   }
 
   @Test
   fun `list works`() {
     val entries = Filesystem.SYSTEM.list(Filesystem.SYSTEM.cwd())
-    println("cwd entries: $entries")
-    assertNotNull(entries)
+    assertTrue(entries.toString()) { "README.md" in entries.map { it.name } }
   }
 
   @Test
@@ -44,5 +45,27 @@ class FileSystemTest {
       fail()
     } catch (expected: IOException) {
     }
+  }
+
+  @Test
+  fun `file source no such directory`() {
+    try {
+      Filesystem.SYSTEM.source("/tmp/unlikely-directory/ce70dc67c24823e695e616145ce38403".toPath())
+      fail()
+    } catch (expected: IOException) {
+    }
+  }
+
+  @Test
+  fun `file source`() {
+    val source = Filesystem.SYSTEM.source("gradle.properties".toPath())
+    val buffer = Buffer()
+    assertEquals(47L, source.read(buffer, 100L))
+    assertEquals(-1L, source.read(buffer, 100L))
+    assertEquals("""
+        |POM_ARTIFACT_ID=okio-files
+        |POM_NAME=Okio Files
+        |""".trimMargin(), buffer.readUtf8())
+    source.close()
   }
 }

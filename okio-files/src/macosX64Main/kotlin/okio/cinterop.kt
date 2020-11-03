@@ -15,9 +15,14 @@
  */
 package okio
 
+import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.get
+import kotlinx.cinterop.nativeHeap
+import platform.posix.free
+import platform.posix.strerror_r
 
 internal fun Buffer.writeNullTerminated(bytes: CPointer<ByteVarOf<Byte>>): Buffer = apply {
   var pos = 0
@@ -38,5 +43,16 @@ internal fun Buffer.write(
 ): Buffer = apply {
   for (i in offset until offset + byteCount) {
     writeByte(bytes[i].toInt())
+  }
+}
+
+internal fun errnoString(errno: Int): String {
+  val bufferLength = 64
+  val nativeBuffer = nativeHeap.allocArray<ByteVar>(bufferLength)
+  try {
+    strerror_r(errno, nativeBuffer, bufferLength.toULong())
+    return Buffer().writeNullTerminated(nativeBuffer).readUtf8()
+  } finally {
+    free(nativeBuffer)
   }
 }
