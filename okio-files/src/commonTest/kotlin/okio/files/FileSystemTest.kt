@@ -16,8 +16,11 @@
 package okio.files
 
 import okio.Filesystem
+import okio.IOException
+import okio.Path.Companion.toPath
 import kotlin.test.Test
 import kotlin.test.assertNotNull
+import kotlin.test.fail
 
 class FileSystemTest {
   @Test
@@ -32,5 +35,14 @@ class FileSystemTest {
     val entries = Filesystem.SYSTEM.list(Filesystem.SYSTEM.cwd())
     println("cwd entries: $entries")
     assertNotNull(entries)
+  }
+
+  @Test
+  fun `list no such directory`() {
+    try {
+      Filesystem.SYSTEM.list("/tmp/unlikely-directory/ce70dc67c24823e695e616145ce38403".toPath())
+      fail()
+    } catch (expected: IOException) {
+    }
   }
 }
