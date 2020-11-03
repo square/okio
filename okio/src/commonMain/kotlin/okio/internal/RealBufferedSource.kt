@@ -32,7 +32,7 @@ import okio.buffer
 import okio.checkOffsetAndCount
 
 internal inline fun RealBufferedSource.commonRead(sink: Buffer, byteCount: Long): Long {
-  require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+  require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   check(!closed) { "closed" }
 
   if (buffer.size == 0L) {
@@ -54,7 +54,7 @@ internal inline fun RealBufferedSource.commonRequire(byteCount: Long) {
 }
 
 internal inline fun RealBufferedSource.commonRequest(byteCount: Long): Boolean {
-  require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+  require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   check(!closed) { "closed" }
   while (buffer.size < byteCount) {
     if (source.read(buffer, Segment.SIZE.toLong()) == -1L) return false

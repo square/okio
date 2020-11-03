@@ -20,16 +20,12 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import platform.posix.DIR
-import platform.posix.EACCES
-import platform.posix.ELOOP
-import platform.posix.ENAMETOOLONG
-import platform.posix.ENOENT
-import platform.posix.ENOMEM
-import platform.posix.ENOTDIR
+import platform.posix.FILE
 import platform.posix.PATH_MAX
 import platform.posix.closedir
 import platform.posix.dirent
 import platform.posix.errno
+import platform.posix.fopen
 import platform.posix.free
 import platform.posix.getcwd
 import platform.posix.opendir
@@ -42,16 +38,9 @@ internal object PosixSystemFilesystem : Filesystem() {
 
   override fun cwd(): Path {
     val pathMax = PATH_MAX
-    val bytes: CPointer<ByteVarOf<Byte>>? = getcwd(null, pathMax.toULong())
+    val bytes: CPointer<ByteVarOf<Byte>> = getcwd(null, pathMax.toULong())
+      ?: throw IOException(errnoString(errno))
     try {
-      if (bytes == null) {
-        when (errno) {
-          ENOENT -> throw IOException("ENOENT: the current working directory no longer exists")
-          EACCES -> throw IOException("EACCES: cannot access the current working directory")
-          ENOMEM -> throw OutOfMemoryError()
-          else -> throw IOException("unexpected errno $errno")
-        }
-      }
       return Buffer().writeNullTerminated(bytes).toPath()
     } finally {
       free(bytes)
@@ -64,18 +53,8 @@ internal object PosixSystemFilesystem : Filesystem() {
     // We use "" for cwd; this expects ".".
     if (dirToString.isEmpty()) dirToString = "."
 
-    val opendir: CPointer<DIR>? = opendir(dirToString)
-
-    if (opendir == null) {
-      when (errno) {
-        EACCES -> throw IOException("EACCES: cannot list $dir")
-        ELOOP -> throw IOException("ELOOP: symbolic link loop resolving $dir")
-        ENAMETOOLONG -> throw IOException("ENAMETOOLONG: path name too long in $dir")
-        ENOENT -> throw IOException("ENOENT: no such directory $dir")
-        ENOTDIR -> throw IOException("ENOTDIR: not a directory $dir")
-        else -> throw IOException("unexpected errno $errno")
-      }
-    }
+    val opendir: CPointer<DIR> = opendir(dirToString)
+      ?: throw IOException(errnoString(errno))
 
     try {
       val result = mutableListOf<Path>()
@@ -96,13 +75,17 @@ internal object PosixSystemFilesystem : Filesystem() {
         result += childPath
       }
 
-      if (errno != 0) {
-        throw IOException("failed to ls $opendir: $errno")
-      }
+      if (errno != 0) throw IOException(errnoString(errno))
 
       return result
     } finally {
       closedir(opendir) // Ignore errno from closedir.
     }
+  }
+
+  override fun source(file: Path): Source {
+    val openFile: CPointer<FILE> = fopen(file.toString(), "r")
+      ?: throw IOException(errnoString(errno))
+    return FileSource(openFile)
   }
 }

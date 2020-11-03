@@ -215,7 +215,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   /** Read `byteCount` bytes from `input` into this.  */
   @Throws(IOException::class)
   fun readFrom(input: InputStream, byteCount: Long): Buffer {
-    require(byteCount >= 0) { "byteCount < 0: $byteCount" }
+    require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     readFrom(input, byteCount, false)
     return this
   }

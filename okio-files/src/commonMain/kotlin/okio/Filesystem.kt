@@ -38,6 +38,16 @@ abstract class Filesystem {
   @Throws(IOException::class)
   abstract fun list(dir: Path): List<Path>
 
+  /**
+   * Returns a source that reads the bytes of [file] from beginning to end.
+   *
+   * @throws IOException if [file] does not exist, is not a file, or cannot be read. A file cannot
+   *     be read if the current process doesn't have access to [file], or if there's a loop of
+   *     symbolic links, or if any name is too long.
+   */
+  @Throws(IOException::class)
+  abstract fun source(file: Path): Source
+
   companion object {
     /**
      * The current process's host filesystem. Use this instance directly, or dependency inject a
