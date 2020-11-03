@@ -99,14 +99,27 @@ class Path private constructor(
       }
     }
 
-  /** Returns a path that resolves [child] relative to this path. */
+  /**
+   * Returns a path that resolves [child] relative to this path. If [child] starts with `/` it is
+   * an absolute path and this function is equivalent to `child.toPath()`.
+   */
   operator fun div(child: String): Path {
+    return div(child.toPath())
+  }
+
+  /**
+   * Returns a path that resolves [child] relative to this path. If [child] starts with `/` it is
+   * an absolute path and this function is equivalent to `child.toPath()`.
+   */
+  operator fun div(child: Path): Path {
     val buffer = Buffer()
-    buffer.write(bytes)
-    if (buffer.size > 0) {
-      buffer.write(SLASH)
+    if (child.isRelative) {
+      buffer.write(bytes)
+      if (buffer.size > 0) {
+        buffer.write(SLASH)
+      }
     }
-    buffer.writeUtf8(child)
+    buffer.write(child.bytes)
     return buffer.toPath()
   }
 

@@ -18,11 +18,13 @@ package okio.files
 import okio.Buffer
 import okio.Filesystem
 import okio.IOException
+import okio.Path
 import okio.Path.Companion.toPath
+import okio.buffer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 class FileSystemTest {
@@ -40,19 +42,15 @@ class FileSystemTest {
 
   @Test
   fun `list no such directory`() {
-    try {
+    assertFailsWith<IOException> {
       Filesystem.SYSTEM.list("/tmp/unlikely-directory/ce70dc67c24823e695e616145ce38403".toPath())
-      fail()
-    } catch (expected: IOException) {
     }
   }
 
   @Test
   fun `file source no such directory`() {
-    try {
+    assertFailsWith<IOException> {
       Filesystem.SYSTEM.source("/tmp/unlikely-directory/ce70dc67c24823e695e616145ce38403".toPath())
-      fail()
-    } catch (expected: IOException) {
     }
   }
 
@@ -67,5 +65,49 @@ class FileSystemTest {
         |POM_NAME=Okio Files
         |""".trimMargin(), buffer.readUtf8())
     source.close()
+  }
+
+  @Test
+  fun `file sink`() {
+    val path = "/tmp/FileSystemTest-file_sink.txt".toPath()
+    val sink = Filesystem.SYSTEM.sink(path)
+    val buffer = Buffer().writeUtf8("hello, world!")
+    sink.write(buffer, buffer.size)
+    sink.close()
+    assertTrue(path in Filesystem.SYSTEM.list("/tmp".toPath()))
+    assertEquals(0, buffer.size)
+    assertEquals("hello, world!", path.readUtf8())
+  }
+
+  @Test
+  fun `file sink flush`() {
+    val path = "/tmp/FileSystemTest-file_sink.txt".toPath()
+    val sink = Filesystem.SYSTEM.sink(path)
+
+    val buffer = Buffer().writeUtf8("hello,")
+    sink.write(buffer, buffer.size)
+    sink.flush()
+    assertEquals("hello,", path.readUtf8())
+
+    buffer.writeUtf8(" world!")
+    sink.write(buffer, buffer.size)
+    sink.close()
+    assertEquals("hello, world!", path.readUtf8())
+  }
+
+  @Test
+  fun `file sink no such directory`() {
+    assertFailsWith<IOException> {
+      Filesystem.SYSTEM.sink("/tmp/ce70dc67c24823e695e616145ce38403/unlikely-file".toPath())
+    }
+  }
+
+  private fun Path.readUtf8(): String {
+    val source = Filesystem.SYSTEM.source(this).buffer()
+    try {
+      return source.readUtf8()
+    } finally {
+      source.close()
+    }
   }
 }
