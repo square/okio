@@ -32,6 +32,5 @@ done
 set -x
 
 # Copy in special files that GitHub wants in the project root.
-cat README.md | grep -v 'project website' > docs/index.md
 cp CHANGELOG.md docs/changelog.md
 cp CONTRIBUTING.md docs/contributing.md
