@@ -21,7 +21,7 @@ import okio.ByteString.Companion.decodeHex
 import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.fail
+import kotlin.test.assertFailsWith
 
 class BufferSinkTest : AbstractBufferedSinkTest(BufferedSinkFactory.BUFFER)
 class RealBufferedSinkTest : AbstractBufferedSinkTest(BufferedSinkFactory.REAL_BUFFERED_SINK)
@@ -188,10 +188,8 @@ abstract class AbstractBufferedSinkTest internal constructor(
   @Test fun writeSourcePropagatesEof() {
     val source: Source = Buffer().writeUtf8("abcd")
 
-    try {
+    assertFailsWith<EOFException> {
       sink.write(source, 8)
-      fail()
-    } catch (expected: EOFException) {
     }
 
     // Ensure that whatever was available was correctly written.

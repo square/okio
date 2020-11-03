@@ -23,6 +23,7 @@ import okio.internal.commonAsUtf8ToByteArray
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertSame
@@ -251,22 +252,16 @@ abstract class AbstractByteStringTest internal constructor(
   @Test fun substringWithInvalidBounds() {
     val byteString = factory.encodeUtf8("Hello, World!")
 
-    try {
+    assertFailsWith<IllegalArgumentException> {
       byteString.substring(-1)
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
 
-    try {
+    assertFailsWith<IllegalArgumentException> {
       byteString.substring(0, 14)
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
 
-    try {
+    assertFailsWith<IllegalArgumentException> {
       byteString.substring(8, 7)
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
   }
 
@@ -332,18 +327,14 @@ abstract class AbstractByteStringTest internal constructor(
   }
 
   @Test fun decodeHexOddNumberOfChars() {
-    try {
+    assertFailsWith<IllegalArgumentException> {
       "aaa".decodeHex()
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
   }
 
   @Test fun decodeHexInvalidChar() {
-    try {
+    assertFailsWith<IllegalArgumentException> {
       "a\u0000".decodeHex()
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
   }
 

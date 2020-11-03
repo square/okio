@@ -20,6 +20,7 @@ import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -52,10 +53,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   @Test fun readByteTooShortThrows() {
-    try {
+    assertFailsWith<EOFException> {
       source.readByte()
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 
@@ -88,10 +87,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeShort(Short.MAX_VALUE.toInt())
     sink.emit()
     source.readByte()
-    try {
+    assertFailsWith<EOFException> {
       source.readShort()
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 
@@ -99,10 +96,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeShortLe(Short.MAX_VALUE.toInt())
     sink.emit()
     source.readByte()
-    try {
+    assertFailsWith<EOFException> {
       source.readShortLe()
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 
@@ -157,10 +152,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeInt(Int.MAX_VALUE)
     sink.emit()
     source.readByte()
-    try {
+    assertFailsWith<EOFException> {
       source.readInt()
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 
@@ -168,10 +161,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeIntLe(Int.MAX_VALUE)
     sink.emit()
     source.readByte()
-    try {
+    assertFailsWith<EOFException> {
       source.readIntLe()
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 
@@ -253,10 +244,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeLong(Long.MAX_VALUE)
     sink.emit()
     source.readByte()
-    try {
+    assertFailsWith<EOFException> {
       source.readLong()
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 
@@ -264,10 +253,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeLongLe(Long.MAX_VALUE)
     sink.emit()
     source.readByte()
-    try {
+    assertFailsWith<EOFException> {
       source.readLongLe()
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 
@@ -321,10 +308,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeUtf8("Hi")
     sink.emit()
     val sink = Buffer()
-    try {
+    assertFailsWith<EOFException> {
       source.readFully(sink, 5)
-      fail()
-    } catch (ignored: EOFException) {
     }
 
     // Verify we read all that we could from the source.
@@ -349,10 +334,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.emit()
 
     val array = ByteArray(6)
-    try {
+    assertFailsWith<EOFException> {
       source.readFully(array)
-      fail()
-    } catch (ignored: EOFException) {
     }
 
     // Verify we read all that we could from the source.
@@ -436,10 +419,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
   @Test fun readByteArrayTooShortThrows() {
     sink.writeUtf8("abc")
     sink.emit()
-    try {
+    assertFailsWith<EOFException> {
       source.readByteArray(4)
-      fail()
-    } catch (expected: EOFException) {
     }
 
     assertEquals("abc", source.readUtf8()) // The read shouldn't consume any data.
@@ -461,10 +442,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
   @Test fun readByteStringTooShortThrows() {
     sink.writeUtf8("abc")
     sink.emit()
-    try {
+    assertFailsWith<EOFException> {
       source.readByteString(4)
-      fail()
-    } catch (expected: EOFException) {
     }
 
     assertEquals("abc", source.readUtf8()) // The read shouldn't consume any data.
@@ -498,10 +477,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
   @Test fun readUtf8TooShortThrows() {
     sink.writeUtf8("abc")
     sink.emit()
-    try {
+    assertFailsWith<EOFException> {
       source.readUtf8(4L)
-      fail()
-    } catch (expected: EOFException) {
     }
 
     assertEquals("abc", source.readUtf8()) // The read shouldn't consume any data.
@@ -524,10 +501,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeUtf8("a")
     sink.emit()
 
-    try {
+    assertFailsWith<EOFException> {
       source.skip(2)
-      fail()
-    } catch (ignored: EOFException) {
     }
   }
 
@@ -840,10 +815,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeUtf8("a").writeUtf8("b".repeat(Segment.SIZE)).writeUtf8("c")
     sink.emit()
     source.require((Segment.SIZE + 2).toLong())
-    try {
+    assertFailsWith<EOFException> {
       source.require((Segment.SIZE + 3).toLong())
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 

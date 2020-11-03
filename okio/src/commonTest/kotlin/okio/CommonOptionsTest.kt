@@ -18,6 +18,7 @@ package okio
 import okio.ByteString.Companion.encodeUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
 class CommonOptionsTest {
@@ -182,15 +183,11 @@ class CommonOptionsTest {
   }
 
   @Test fun emptyStringInOptionsTrie() {
-    try {
+    assertFailsWith<IllegalArgumentException> {
       utf8Options("")
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
-    try {
+    assertFailsWith<IllegalArgumentException> {
       utf8Options("abc", "")
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
   }
 

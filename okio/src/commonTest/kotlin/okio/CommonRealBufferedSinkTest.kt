@@ -18,6 +18,7 @@ package okio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
 /**
@@ -95,10 +96,8 @@ class CommonRealBufferedSinkTest {
     mockSink.scheduleThrow(0, IOException())
     val bufferedSink = mockSink.buffer()
     bufferedSink.writeByte('a'.toInt())
-    try {
+    assertFailsWith<IOException> {
       bufferedSink.close()
-      fail()
-    } catch (expected: IOException) {
     }
 
     mockSink.assertLog("write([text=a], 1)", "close()")
@@ -109,10 +108,8 @@ class CommonRealBufferedSinkTest {
     mockSink.scheduleThrow(1, IOException())
     val bufferedSink = mockSink.buffer()
     bufferedSink.writeByte('a'.toInt())
-    try {
+    assertFailsWith<IOException> {
       bufferedSink.close()
-      fail()
-    } catch (expected: IOException) {
     }
 
     mockSink.assertLog("write([text=a], 1)", "close()")
@@ -141,34 +138,24 @@ class CommonRealBufferedSinkTest {
     bufferedSink.close()
 
     // Test a sample set of methods.
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSink.writeByte('a'.toInt())
-      fail()
-    } catch (expected: IllegalStateException) {
     }
 
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSink.write(ByteArray(10))
-      fail()
-    } catch (expected: IllegalStateException) {
     }
 
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSink.emitCompleteSegments()
-      fail()
-    } catch (expected: IllegalStateException) {
     }
 
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSink.emit()
-      fail()
-    } catch (expected: IllegalStateException) {
     }
 
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSink.flush()
-      fail()
-    } catch (expected: IllegalStateException) {
     }
   }
 

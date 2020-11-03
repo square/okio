@@ -17,7 +17,7 @@ package okio
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import kotlin.test.fail
+import kotlin.test.assertFailsWith
 
 class BufferKotlinTest {
   @Test fun get() {
@@ -25,15 +25,11 @@ class BufferKotlinTest {
     assertThat(actual[0]).isEqualTo('a'.toByte())
     assertThat(actual[1]).isEqualTo('b'.toByte())
     assertThat(actual[2]).isEqualTo('c'.toByte())
-    try {
+    assertFailsWith<IndexOutOfBoundsException> {
       actual[-1]
-      fail()
-    } catch (expected: IndexOutOfBoundsException) {
     }
-    try {
+    assertFailsWith<IndexOutOfBoundsException> {
       actual[3]
-      fail()
-    } catch (expected: IndexOutOfBoundsException) {
     }
   }
 

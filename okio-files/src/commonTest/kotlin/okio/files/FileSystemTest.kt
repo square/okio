@@ -21,8 +21,8 @@ import okio.IOException
 import okio.Path.Companion.toPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 class FileSystemTest {
@@ -40,19 +40,15 @@ class FileSystemTest {
 
   @Test
   fun `list no such directory`() {
-    try {
+    assertFailsWith<IOException> {
       Filesystem.SYSTEM.list("/tmp/unlikely-directory/ce70dc67c24823e695e616145ce38403".toPath())
-      fail()
-    } catch (expected: IOException) {
     }
   }
 
   @Test
   fun `file source no such directory`() {
-    try {
+    assertFailsWith<IOException> {
       Filesystem.SYSTEM.source("/tmp/unlikely-directory/ce70dc67c24823e695e616145ce38403".toPath())
-      fail()
-    } catch (expected: IOException) {
     }
   }
 

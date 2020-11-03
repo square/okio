@@ -18,7 +18,7 @@ package okio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.fail
+import kotlin.test.assertFailsWith
 
 /**
  * Tests solely for the behavior of RealBufferedSource's implementation. For generic
@@ -67,10 +67,8 @@ class CommonRealBufferedSourceTest {
 
     val bufferedSource = (source as Source).buffer()
 
-    try {
+    assertFailsWith<EOFException> {
       bufferedSource.require(2)
-      fail()
-    } catch (expected: EOFException) {
     }
   }
 
@@ -114,28 +112,20 @@ class CommonRealBufferedSourceTest {
     bufferedSource.close()
 
     // Test a sample set of methods.
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSource.indexOf(1.toByte())
-      fail()
-    } catch (expected: IllegalStateException) {
     }
 
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSource.skip(1)
-      fail()
-    } catch (expected: IllegalStateException) {
     }
 
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSource.readByte()
-      fail()
-    } catch (expected: IllegalStateException) {
     }
 
-    try {
+    assertFailsWith<IllegalStateException> {
       bufferedSource.readByteString(10)
-      fail()
-    } catch (expected: IllegalStateException) {
     }
   }
 
