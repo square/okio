@@ -21,8 +21,8 @@ import okio.TestUtil.bufferWithSegments
 import okio.TestUtil.takeAllPoolSegments
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 /** Tests behavior optimized by sharing segments between buffers and byte strings.  */
 class SegmentSharingTest {
@@ -46,16 +46,12 @@ class SegmentSharingTest {
     assertEquals('y', byteString[xs.length + ys.length - 1].toChar())
     assertEquals('z', byteString[xs.length + ys.length].toChar())
     assertEquals('z', byteString[xs.length + ys.length + zs.length - 1].toChar())
-    try {
+    assertFailsWith<IndexOutOfBoundsException> {
       byteString[-1]
-      fail()
-    } catch (expected: IndexOutOfBoundsException) {
     }
 
-    try {
+    assertFailsWith<IndexOutOfBoundsException> {
       byteString[xs.length + ys.length + zs.length]
-      fail()
-    } catch (expected: IndexOutOfBoundsException) {
     }
   }
 

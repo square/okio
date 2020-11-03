@@ -20,7 +20,7 @@ import okio.ByteString.Companion.decodeHex
 import okio.internal.commonAsUtf8ToByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.fail
+import kotlin.test.assertFailsWith
 
 class Utf8KotlinTest {
   @Test fun oneByteCharacters() {
@@ -142,22 +142,16 @@ class Utf8KotlinTest {
   }
 
   @Test fun sizeBoundsCheck() {
-    try {
+    assertFailsWith<IllegalArgumentException> {
       "abc".utf8Size(-1, 2)
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
 
-    try {
+    assertFailsWith<IllegalArgumentException> {
       "abc".utf8Size(2, 1)
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
 
-    try {
+    assertFailsWith<IllegalArgumentException> {
       "abc".utf8Size(1, 4)
-      fail()
-    } catch (expected: IllegalArgumentException) {
     }
   }
 
