@@ -32,4 +32,8 @@ object JvmSystemFilesystem : Filesystem() {
   override fun source(file: Path): Source {
     return file.file.source()
   }
+
+  override fun sink(file: Path): Sink {
+    return file.file.sink()
+  }
 }

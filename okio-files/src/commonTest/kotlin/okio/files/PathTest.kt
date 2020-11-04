@@ -93,12 +93,20 @@ class PathTest {
   }
 
   @Test
-  fun `relative path traveral with dots`() {
+  fun `relative path traversal with dots`() {
     val cwd = "".toPath()
     assertEquals("..".toPath(), cwd / "..")
     assertEquals("../..".toPath(), cwd / ".." / "..")
     assertEquals("../../etc".toPath(), cwd / ".." / ".." / "etc")
     assertEquals("../../etc/passwd".toPath(), cwd / ".." / ".." / "etc" / "passwd")
+  }
+
+  @Test
+  fun `path traversal base ignored if child is an absolute path`() {
+    assertEquals("/home".toPath(), "".toPath() / "/home")
+    assertEquals("/home".toPath(), "relative".toPath() / "/home")
+    assertEquals("/home".toPath(), "/base".toPath() / "/home")
+    assertEquals("/home".toPath(), "/".toPath() / "/home")
   }
 
   @Test

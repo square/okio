@@ -64,7 +64,7 @@ internal object PosixSystemFilesystem : Filesystem() {
       while (true) {
         val dirent: CPointer<dirent> = readdir(opendir) ?: break
         val childPath = buffer.write(
-          bytes = dirent[0].d_name,
+          source = dirent[0].d_name,
           byteCount = dirent[0].d_namlen.toInt()
         ).toPath()
 
@@ -72,7 +72,7 @@ internal object PosixSystemFilesystem : Filesystem() {
           continue // exclude '.' and '..' from the results.
         }
 
-        result += childPath
+        result += dir / childPath
       }
 
       if (errno != 0) throw IOException(errnoString(errno))
@@ -87,5 +87,11 @@ internal object PosixSystemFilesystem : Filesystem() {
     val openFile: CPointer<FILE> = fopen(file.toString(), "r")
       ?: throw IOException(errnoString(errno))
     return FileSource(openFile)
+  }
+
+  override fun sink(file: Path): Sink {
+    val openFile: CPointer<FILE> = fopen(file.toString(), "w")
+      ?: throw IOException(errnoString(errno))
+    return FileSink(openFile)
   }
 }

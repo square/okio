@@ -21,6 +21,7 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.get
 import kotlinx.cinterop.nativeHeap
+import kotlinx.cinterop.set
 import platform.posix.free
 import platform.posix.strerror_r
 
@@ -37,12 +38,22 @@ internal fun Buffer.writeNullTerminated(bytes: CPointer<ByteVarOf<Byte>>): Buffe
 }
 
 internal fun Buffer.write(
-  bytes: CPointer<ByteVarOf<Byte>>,
+  source: CPointer<ByteVarOf<Byte>>,
   offset: Int = 0,
   byteCount: Int
 ): Buffer = apply {
   for (i in offset until offset + byteCount) {
-    writeByte(bytes[i].toInt())
+    writeByte(source[i].toInt())
+  }
+}
+
+internal fun Buffer.read(
+  sink: CPointer<ByteVarOf<Byte>>,
+  offset: Int = 0,
+  byteCount: Int
+): Buffer = apply {
+  for (i in offset until offset + byteCount) {
+    sink[i] = readByte()
   }
 }
 

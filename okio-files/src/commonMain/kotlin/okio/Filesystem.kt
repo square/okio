@@ -42,11 +42,22 @@ abstract class Filesystem {
    * Returns a source that reads the bytes of [file] from beginning to end.
    *
    * @throws IOException if [file] does not exist, is not a file, or cannot be read. A file cannot
-   *     be read if the current process doesn't have access to [file], or if there's a loop of
-   *     symbolic links, or if any name is too long.
+   *     be read if the current process doesn't have access to [file], if there's a loop of symbolic
+   *     links, or if any name is too long.
    */
   @Throws(IOException::class)
   abstract fun source(file: Path): Source
+
+  /**
+   * Returns a sink that writes bytes to [file] from beginning to end. If [file] already exists it
+   * will be replaced with the new data.
+   *
+   * @throws IOException if [file] cannot be written. A file cannot be written if its enclosing
+   *     directory does not exist, if the current process doesn't have access to [file], if there's
+   *     a loop of symbolic links, or if any name is too long.
+   */
+  @Throws(IOException::class)
+  abstract fun sink(file: Path): Sink
 
   companion object {
     /**
