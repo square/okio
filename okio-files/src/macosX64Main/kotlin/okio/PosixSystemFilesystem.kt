@@ -50,9 +50,6 @@ internal object PosixSystemFilesystem : Filesystem() {
   override fun list(dir: Path): List<Path> {
     var dirToString = dir.toString()
 
-    // We use "" for cwd; this expects ".".
-    if (dirToString.isEmpty()) dirToString = "."
-
     val opendir: CPointer<DIR> = opendir(dirToString)
       ?: throw IOException(errnoString(errno))
 

@@ -15,7 +15,6 @@
  */
 package okio
 
-import okio.ByteString.Companion.EMPTY
 import okio.ByteString.Companion.encodeUtf8
 
 /**
@@ -34,16 +33,18 @@ import okio.ByteString.Companion.encodeUtf8
  * characters. Segments satisfy these rules:
  *
  *  * Segments are always non-empty.
- *  * Segments may not be `.`.
- *  * Segments with the value `..` only occur in relative paths, where these must precede all other
- *    segments.
+ *  * If the segment is `.`, the full path is also `.`.
+ *  * If the segment is `..`, the path is relative. All `..` segments precede all other segments.
  *
- * The only path that ends with `/` is the filesystem root, `/`. The empty path `""` is a relative
+ * The only path that ends with `/` is the filesystem root, `/`. The dot path `.` is a relative
  * path that resolves to whichever path it is resolved against.
  *
  * The [name] is the last segment in a path. It is typically a file or directory name, like
- * `README.md` or `Desktop`. It will be the empty string if this path is the file system or the
- * empty path. It will be `..` if this is a relative path consisting exclusively of `..` segments.
+ * `README.md` or `Desktop`. The name may be another special value:
+ *
+ *  * The empty string is the name of the file system root path (full path `/`).
+ *  * `.` is the name of the identity relative path (full path `.`).
+ *  * `..` is the name of a path consisting of only `..` segments (such as `../../..`).
  *
  * Sample Paths
  * ------------
@@ -55,8 +56,8 @@ import okio.ByteString.Companion.encodeUtf8
  * | `/`                    | Absolute   | null                | (empty)       |
  * | `src/main/java`        | Relative   | `src/main`          | `java`        |
  * | `src/main`             | Relative   | `src`               | `main`        |
- * | `src`                  | Relative   | (empty)             | `src`         |
- * | (empty)                | Relative   | null                | (empty)       |
+ * | `src`                  | Relative   | `.`                 | `src`         |
+ * | `.`                    | Relative   | null                | `.`           |
  * | `../../src/main/java`  | Relative   | `../../src/main`    | `java`        |
  * | `../../src/main`       | Relative   | `../../src`         | `main`        |
  * | `../../src`            | Relative   | `../..`             | `src`         |
@@ -85,15 +86,15 @@ class Path private constructor(
 
   /**
    * Returns the path immediately enclosing this path. This returns null if this is either the
-   * filesystem root (`/`), the empty path, or a traversal up from the empty path.
+   * filesystem root (`/`), the identity relative path (`.`), or a series of relative paths (`..`).
    */
   val parent: Path?
     get() {
-      if (bytes == EMPTY || bytes == SLASH || bytes.endsWith(SLASH_DOT_DOT) || bytes == DOT_DOT) {
+      if (bytes == DOT || bytes == SLASH || bytes.endsWith(SLASH_DOT_DOT) || bytes == DOT_DOT) {
         return null // Terminal path.
       }
       return when (val lastSlash = bytes.lastIndexOf(SLASH)) {
-        -1 -> Path(EMPTY) // Parent is the current working directory.
+        -1 -> Path(DOT) // Parent is the current working directory.
         0 -> Path(bytes.substring(endIndex = 1)) // Parent is the filesystem root '/'.
         else -> Path(bytes.substring(endIndex = lastSlash))
       }
@@ -174,6 +175,9 @@ class Path private constructor(
       for (i in 0 until canonicalParts.size) {
         if (i > 0) result.write(SLASH)
         result.write(canonicalParts[i])
+      }
+      if (result.size == 0L) {
+        result.write(DOT)
       }
 
       return Path(result.readByteString())
