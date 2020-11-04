@@ -92,6 +92,14 @@ expect class Buffer() : BufferedSource, BufferedSink {
    */
   internal fun writableSegment(minimumCapacity: Int): Segment
 
+  fun md5(): ByteString
+
+  fun sha1(): ByteString
+
+  fun sha256(): ByteString
+
+  fun sha512(): ByteString
+
   override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
 
   override fun write(source: Source, byteCount: Long): Buffer

@@ -16,6 +16,11 @@
 package okio
 
 import okio.internal.commonClear
+import okio.internal.HashFunction
+import okio.internal.Md5
+import okio.internal.Sha1
+import okio.internal.Sha256
+import okio.internal.Sha512
 import okio.internal.commonCompleteSegmentByteCount
 import okio.internal.commonCopy
 import okio.internal.commonCopyTo
@@ -243,4 +248,30 @@ actual class Buffer : BufferedSource, BufferedSink {
   actual fun snapshot(): ByteString = commonSnapshot()
 
   actual fun snapshot(byteCount: Int): ByteString = commonSnapshot(byteCount)
+
+  private fun digest(hash: HashFunction): ByteString {
+    forEachSegment { segment ->
+      hash.update(segment.data, segment.pos, segment.limit - segment.pos)
+    }
+
+    return ByteString(hash.digest())
+  }
+
+  actual fun md5() = digest(Md5())
+
+  actual fun sha1() = digest(Sha1())
+
+  actual fun sha256() = digest(Sha256())
+
+  actual fun sha512() = digest(Sha512())
+
+  private fun forEachSegment(action: (Segment) -> Unit) {
+    head?.let { head ->
+      var segment: Segment? = head
+      do {
+        segment?.let(action)
+        segment = segment?.next
+      } while (segment !== head)
+    }
+  }
 }
