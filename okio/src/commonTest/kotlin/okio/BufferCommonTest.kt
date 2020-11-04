@@ -77,4 +77,14 @@ class BufferCommonTest {
     buffer.writeUtf8("a".repeat(Segment.SIZE * 4 - 10))
     assertEquals((Segment.SIZE * 3).toLong(), buffer.completeSegmentByteCount())
   }
+
+  @Test fun testHash() {
+    val buffer = Buffer().apply { write("Kevin".encodeUtf8()) }
+    with(buffer) {
+      assertEquals("e043899daa0c7add37bc99792b2c045d6abbc6dc", sha1().hex())
+      assertEquals("f1cd318e412b5f7226e5f377a9544ff7", md5().hex())
+      assertEquals("0e4dd66217fc8d2e298b78c8cd9392870dcd065d0ff675d0edff5bcd227837e9", sha256().hex())
+      assertEquals("483676b93c4417198b465083d196ec6a9fab8d004515874b8ff47e041f5f56303cc08179625030b8b5b721c09149a18f0f59e64e7ae099518cea78d3d83167e1", sha512().hex())
+    }
+  }
 }

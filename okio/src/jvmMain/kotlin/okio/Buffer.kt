@@ -495,16 +495,16 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun timeout() = Timeout.NONE
 
   /** Returns the 128-bit MD5 hash of this buffer.  */
-  fun md5() = digest("MD5")
+  actual fun md5() = digest("MD5")
 
   /** Returns the 160-bit SHA-1 hash of this buffer.  */
-  fun sha1() = digest("SHA-1")
+  actual fun sha1() = digest("SHA-1")
 
   /** Returns the 256-bit SHA-256 hash of this buffer.  */
-  fun sha256() = digest("SHA-256")
+  actual fun sha256() = digest("SHA-256")
 
   /** Returns the 512-bit SHA-512 hash of this buffer.  */
-  fun sha512() = digest("SHA-512")
+  actual fun sha512() = digest("SHA-512")
 
   private fun digest(algorithm: String): ByteString {
     val messageDigest = MessageDigest.getInstance(algorithm)
