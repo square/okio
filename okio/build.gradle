@@ -43,7 +43,6 @@ kotlin {
     }
     nonJvmMain {
       kotlin.srcDirs += 'src/hashFunctions/kotlin'
-      dependsOn commonMain
     }
     jvmMain {
       dependencies {

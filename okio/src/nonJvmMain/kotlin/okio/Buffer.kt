@@ -70,7 +70,7 @@ actual class Buffer : BufferedSource, BufferedSink {
   override fun exhausted(): Boolean = size == 0L
 
   override fun require(byteCount: Long) {
-    if (size < byteCount) throw EOFException()
+    if (size < byteCount) throw EOFException(null)
   }
 
   override fun request(byteCount: Long): Boolean = size >= byteCount
@@ -222,11 +222,9 @@ actual class Buffer : BufferedSource, BufferedSink {
     byteCount: Int
   ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
-  override fun flush() {
-  }
+  override fun flush() = Unit
 
-  override fun close() {
-  }
+  override fun close() = Unit
 
   override fun timeout(): Timeout = Timeout.NONE
 
