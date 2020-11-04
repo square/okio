@@ -23,7 +23,7 @@ import kotlin.test.assertNull
 class PathTest {
   @Test
   fun `path names`() {
-    assertEquals("", "".toPath().name)
+    assertEquals(".", ".".toPath().name)
     assertEquals("", "/".toPath().name)
     assertEquals("..", "..".toPath().name)
     assertEquals("..", "../..".toPath().name)
@@ -54,8 +54,8 @@ class PathTest {
   fun `parent of relative path`() {
     assertEquals("src/main", "src/main/java".toPath().parent?.toString())
     assertEquals("src", "src/main".toPath().parent?.toString())
-    assertEquals("", "src".toPath().parent?.toString())
-    assertNull("".toPath().parent)
+    assertEquals(".", "src".toPath().parent?.toString())
+    assertNull(".".toPath().parent)
   }
 
   @Test
@@ -85,7 +85,7 @@ class PathTest {
 
   @Test
   fun `relative path traversal with div operator`() {
-    val cwd = "".toPath()
+    val cwd = ".".toPath()
     assertEquals("home".toPath(), cwd / "home")
     assertEquals("home/jesse".toPath(), cwd / "home" / "jesse")
     assertEquals("home".toPath(), cwd / "home" / "jesse" / "..")
@@ -94,7 +94,7 @@ class PathTest {
 
   @Test
   fun `relative path traversal with dots`() {
-    val cwd = "".toPath()
+    val cwd = ".".toPath()
     assertEquals("..".toPath(), cwd / "..")
     assertEquals("../..".toPath(), cwd / ".." / "..")
     assertEquals("../../etc".toPath(), cwd / ".." / ".." / "etc")
@@ -150,7 +150,8 @@ class PathTest {
 
   @Test
   fun `string to relative path`() {
-    assertEquals("", "".toPath().toString())
+    assertEquals(".", "".toPath().toString())
+    assertEquals(".", ".".toPath().toString())
     assertEquals("a", "a/".toPath().toString())
     assertEquals("a/b", "a/b".toPath().toString())
     assertEquals("a/b", "a/b/".toPath().toString())
@@ -162,8 +163,8 @@ class PathTest {
   fun `string to relative path with traversal`() {
     assertEquals("..", "..".toPath().toString())
     assertEquals("..", "../".toPath().toString())
-    assertEquals("", "a/..".toPath().toString())
-    assertEquals("", "a/../".toPath().toString())
+    assertEquals(".", "a/..".toPath().toString())
+    assertEquals(".", "a/../".toPath().toString())
     assertEquals("..", "a/../..".toPath().toString())
     assertEquals("..", "a/../../".toPath().toString())
     assertEquals("../..", "a/../../..".toPath().toString())
@@ -183,10 +184,10 @@ class PathTest {
 
   @Test
   fun `string to relative path with dots`() {
-    assertEquals("", ".".toPath().toString())
-    assertEquals("", "./".toPath().toString())
-    assertEquals("", "././".toPath().toString())
-    assertEquals("", "././a/..".toPath().toString())
+    assertEquals(".", ".".toPath().toString())
+    assertEquals(".", "./".toPath().toString())
+    assertEquals(".", "././".toPath().toString())
+    assertEquals(".", "././a/..".toPath().toString())
     assertEquals("a", "a/./".toPath().toString())
     assertEquals("a/b", "a/./b".toPath().toString())
     assertEquals("a/b", "a/b/./".toPath().toString())
