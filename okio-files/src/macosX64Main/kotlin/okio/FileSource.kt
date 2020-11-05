@@ -15,23 +15,22 @@
  */
 package okio
 
-import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.nativeHeap
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.usePinned
+import okio.Buffer.UnsafeCursor
 import platform.posix.FILE
 import platform.posix.errno
 import platform.posix.fclose
 import platform.posix.feof
 import platform.posix.ferror
 import platform.posix.fread
-import platform.posix.free
 
 /** Reads the bytes of a file as a source. */
 internal class FileSource(
   private val file: CPointer<FILE>
 ) : Source {
-  private var nativeBuffer = nativeHeap.allocArray<ByteVar>(segmentSize)
+  private val unsafeCursor = UnsafeCursor()
   private var closed = false
 
   override fun read(
@@ -40,11 +39,25 @@ internal class FileSource(
   ): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
+    val sinkInitialSize = sink.size
 
-    val attemptCount = minOf(byteCount, segmentSize)
-    val bytesRead = fread(nativeBuffer, 1, attemptCount.toULong(), file).toLong()
+    // Request a writable segment in `sink`. We request at least 1024 bytes, unless the request is
+    // for smaller than that, in which case we request only that many bytes.
+    val cursor = sink.readAndWriteUnsafe(unsafeCursor)
+    val addedCapacityCount = cursor.expandBuffer(minByteCount = minOf(byteCount, 1024L).toInt())
 
-    sink.write(nativeBuffer, offset = 0, byteCount = bytesRead.toInt())
+    // Now that we have a writable segment, figure out how many bytes to read. This is the smaller
+    // of the user's requested byte count, and the segment's writable capacity.
+    val attemptCount = minOf(byteCount, addedCapacityCount)
+
+    // Copy bytes from the file to the segment.
+    val bytesRead = cursor.data!!.usePinned { pinned ->
+      fread(pinned.addressOf(cursor.start), 1, attemptCount.toULong(), file).toLong()
+    }
+
+    // Remove new capacity that was added but not used.
+    cursor.resizeBuffer(sinkInitialSize + bytesRead)
+    cursor.close()
 
     return when {
       bytesRead == attemptCount -> bytesRead
@@ -59,11 +72,6 @@ internal class FileSource(
   override fun close() {
     if (closed) return
     closed = true
-    free(nativeBuffer)
     fclose(file)
-  }
-
-  companion object {
-    private const val segmentSize = 8192L
   }
 }
