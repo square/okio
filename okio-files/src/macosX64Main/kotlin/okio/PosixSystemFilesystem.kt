@@ -19,6 +19,7 @@ import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
+import platform.posix.AT_FDCWD
 import platform.posix.DIR
 import platform.posix.FILE
 import platform.posix.PATH_MAX
@@ -28,6 +29,7 @@ import platform.posix.errno
 import platform.posix.fopen
 import platform.posix.free
 import platform.posix.getcwd
+import platform.posix.mkdirat
 import platform.posix.opendir
 import platform.posix.readdir
 import platform.posix.set_posix_errno
@@ -90,5 +92,12 @@ internal object PosixSystemFilesystem : Filesystem() {
     val openFile: CPointer<FILE> = fopen(file.toString(), "w")
       ?: throw IOException(errnoString(errno))
     return FileSink(openFile)
+  }
+
+  override fun mkdir(dir: Path) {
+    val result = mkdirat(AT_FDCWD, dir.toString(), 0b111111111 /* octal 777 */)
+    if (result != 0) {
+      throw IOException(errnoString(errno))
+    }
   }
 }

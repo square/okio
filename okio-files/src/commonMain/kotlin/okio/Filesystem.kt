@@ -59,6 +59,16 @@ abstract class Filesystem {
   @Throws(IOException::class)
   abstract fun sink(file: Path): Sink
 
+  /**
+   * Creates a directory at the path identified by [dir].
+   *
+   * @throws IOException if [dir]'s parent does not exist, is not a directory, or cannot be written.
+   *     A directory cannot be created if the current process doesn't have access, if there's a
+   *     loop of symbolic links, or if any name is too long.
+   */
+  @Throws(IOException::class)
+  abstract fun mkdir(dir: Path)
+
   companion object {
     /**
      * The current process's host filesystem. Use this instance directly, or dependency inject a
