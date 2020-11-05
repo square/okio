@@ -15,22 +15,21 @@
  */
 package okio
 
-import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.nativeHeap
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.usePinned
+import okio.Buffer.UnsafeCursor
 import platform.posix.FILE
 import platform.posix.errno
 import platform.posix.fclose
 import platform.posix.fflush
-import platform.posix.free
 import platform.posix.fwrite
 
 /** Writes bytes to a file as a sink. */
 internal class FileSink(
   private val file: CPointer<FILE>
 ) : Sink {
-  private var nativeBuffer = nativeHeap.allocArray<ByteVar>(segmentSize)
+  private val unsafeCursor = UnsafeCursor()
   private var closed = false
 
   override fun write(
@@ -38,17 +37,30 @@ internal class FileSink(
     byteCount: Long
   ) {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
+    require(source.size >= byteCount) { "source.size=${source.size} < byteCount=$byteCount" }
     check(!closed) { "closed" }
 
     var byteCount = byteCount
     while (byteCount > 0) {
-      val attemptCount = minOf(byteCount, segmentSize).toInt()
-      source.read(nativeBuffer, offset = 0, byteCount = attemptCount)
-      val bytesWritten = fwrite(nativeBuffer, 1, attemptCount.toULong(), file).toInt()
+      // Get the first segment, which we will read a contiguous range of bytes from.
+      val cursor = source.readUnsafe(unsafeCursor)
+      val segmentReadableByteCount = cursor.next()
+      val attemptCount = minOf(byteCount, segmentReadableByteCount.toLong()).toInt()
+
+      // Copy bytes from that segment into the file.
+      val bytesWritten = cursor.data!!.usePinned { pinned ->
+        fwrite(pinned.addressOf(cursor.start), 1, attemptCount.toULong(), file).toInt()
+      }
+
+      // Consume the bytes from the segment.
+      cursor.close()
+      source.skip(bytesWritten.toLong())
+      byteCount -= bytesWritten
+
+      // If the write was shorter than expected, some I/O failed.
       if (bytesWritten < attemptCount) {
         throw IOException(errnoString(errno))
       }
-      byteCount -= bytesWritten
     }
   }
 
@@ -63,13 +75,8 @@ internal class FileSink(
   override fun close() {
     if (closed) return
     closed = true
-    free(nativeBuffer)
     if (fclose(file) != 0) {
       throw IOException(errnoString(errno))
     }
-  }
-
-  companion object {
-    private const val segmentSize = 8192L
   }
 }
