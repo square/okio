@@ -16,11 +16,13 @@
 package okio.files
 
 import okio.Buffer
+import okio.ByteString.Companion.toByteString
 import okio.Filesystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.buffer
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -99,6 +101,22 @@ class FileSystemTest {
   fun `file sink no such directory`() {
     assertFailsWith<IOException> {
       Filesystem.SYSTEM.sink("/tmp/ce70dc67c24823e695e616145ce38403/unlikely-file".toPath())
+    }
+  }
+
+  @Test
+  fun `mkdir works`() {
+    val directoryName = Random.nextBytes(16).toByteString().hex()
+    val path = "/tmp/FileSystemTest-$directoryName".toPath()
+    Filesystem.SYSTEM.mkdir(path)
+    assertTrue(path in Filesystem.SYSTEM.list("/tmp".toPath()))
+  }
+
+  @Test
+  fun `mkdir parent directory does not exist`() {
+    val path = "/tmp/ce70dc67c24823e695e616145ce38403-unlikely-file/created".toPath()
+    assertFailsWith<IOException> {
+      Filesystem.SYSTEM.mkdir(path)
     }
   }
 

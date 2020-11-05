@@ -36,4 +36,8 @@ object JvmSystemFilesystem : Filesystem() {
   override fun sink(file: Path): Sink {
     return file.file.sink()
   }
+
+  override fun mkdir(dir: Path) {
+    if (!dir.file.mkdir()) throw IOException("failed to mkdir $dir")
+  }
 }
