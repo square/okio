@@ -19,7 +19,9 @@
 
 package okio.internal
 
+import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
+import okio.Buffer.UnsafeCursor
 import okio.ByteString
 import okio.EOFException
 import okio.Options
@@ -1485,4 +1487,185 @@ internal inline fun Buffer.commonSnapshot(byteCount: Int): ByteString {
   }
   @Suppress("UNCHECKED_CAST")
   return SegmentedByteString(segments as Array<ByteArray>, directory)
+}
+
+internal fun Buffer.commonReadUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor {
+  check(unsafeCursor.buffer == null) { "already attached to a buffer" }
+
+  unsafeCursor.buffer = this
+  unsafeCursor.readWrite = false
+  return unsafeCursor
+}
+
+internal fun Buffer.commonReadAndWriteUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor {
+  check(unsafeCursor.buffer == null) { "already attached to a buffer" }
+
+  unsafeCursor.buffer = this
+  unsafeCursor.readWrite = true
+  return unsafeCursor
+}
+
+internal inline fun UnsafeCursor.commonNext(): Int {
+  check(offset != buffer!!.size) { "no more bytes" }
+  return if (offset == -1L) seek(0L) else seek(offset + (end - start))
+}
+
+internal inline fun UnsafeCursor.commonSeek(offset: Long): Int {
+  val buffer = checkNotNull(buffer) { "not attached to a buffer" }
+  if (offset < -1 || offset > buffer.size) {
+    throw ArrayIndexOutOfBoundsException("offset=$offset > size=${buffer.size}")
+  }
+
+  if (offset == -1L || offset == buffer.size) {
+    this.segment = null
+    this.offset = offset
+    this.data = null
+    this.start = -1
+    this.end = -1
+    return -1
+  }
+
+  // Navigate to the segment that contains `offset`. Start from our current segment if possible.
+  var min = 0L
+  var max = buffer.size
+  var head = buffer.head
+  var tail = buffer.head
+  if (this.segment != null) {
+    val segmentOffset = this.offset - (this.start - this.segment!!.pos)
+    if (segmentOffset > offset) {
+      // Set the cursor segment to be the 'end'
+      max = segmentOffset
+      tail = this.segment
+    } else {
+      // Set the cursor segment to be the 'beginning'
+      min = segmentOffset
+      head = this.segment
+    }
+  }
+
+  var next: Segment?
+  var nextOffset: Long
+  if (max - offset > offset - min) {
+    // Start at the 'beginning' and search forwards
+    next = head
+    nextOffset = min
+    while (offset >= nextOffset + (next!!.limit - next.pos)) {
+      nextOffset += (next.limit - next.pos).toLong()
+      next = next.next
+    }
+  } else {
+    // Start at the 'end' and search backwards
+    next = tail
+    nextOffset = max
+    while (nextOffset > offset) {
+      next = next!!.prev
+      nextOffset -= (next!!.limit - next.pos).toLong()
+    }
+  }
+
+  // If we're going to write and our segment is shared, swap it for a read-write one.
+  if (readWrite && next!!.shared) {
+    val unsharedNext = next.unsharedCopy()
+    if (buffer.head === next) {
+      buffer.head = unsharedNext
+    }
+    next = next.push(unsharedNext)
+    next.prev!!.pop()
+  }
+
+  // Update this cursor to the requested offset within the found segment.
+  this.segment = next
+  this.offset = offset
+  this.data = next!!.data
+  this.start = next.pos + (offset - nextOffset).toInt()
+  this.end = next.limit
+  return end - start
+}
+
+internal inline fun UnsafeCursor.commonResizeBuffer(newSize: Long): Long {
+  val buffer = checkNotNull(buffer) { "not attached to a buffer" }
+  check(readWrite) { "resizeBuffer() only permitted for read/write buffers" }
+
+  val oldSize = buffer.size
+  if (newSize <= oldSize) {
+    require(newSize >= 0L) { "newSize < 0: $newSize" }
+    // Shrink the buffer by either shrinking segments or removing them.
+    var bytesToSubtract = oldSize - newSize
+    while (bytesToSubtract > 0L) {
+      val tail = buffer.head!!.prev
+      val tailSize = tail!!.limit - tail.pos
+      if (tailSize <= bytesToSubtract) {
+        buffer.head = tail.pop()
+        okio.SegmentPool.recycle(tail)
+        bytesToSubtract -= tailSize.toLong()
+      } else {
+        tail.limit -= bytesToSubtract.toInt()
+        break
+      }
+    }
+    // Seek to the end.
+    this.segment = null
+    this.offset = newSize
+    this.data = null
+    this.start = -1
+    this.end = -1
+  } else if (newSize > oldSize) {
+    // Enlarge the buffer by either enlarging segments or adding them.
+    var needsToSeek = true
+    var bytesToAdd = newSize - oldSize
+    while (bytesToAdd > 0L) {
+      val tail = buffer.writableSegment(1)
+      val segmentBytesToAdd = minOf(bytesToAdd, Segment.SIZE - tail.limit).toInt()
+      tail.limit += segmentBytesToAdd
+      bytesToAdd -= segmentBytesToAdd.toLong()
+
+      // If this is the first segment we're adding, seek to it.
+      if (needsToSeek) {
+        this.segment = tail
+        this.offset = oldSize
+        this.data = tail.data
+        this.start = tail.limit - segmentBytesToAdd
+        this.end = tail.limit
+        needsToSeek = false
+      }
+    }
+  }
+
+  buffer.size = newSize
+
+  return oldSize
+}
+
+internal inline fun UnsafeCursor.commonExpandBuffer(minByteCount: Int): Long {
+  require(minByteCount > 0) { "minByteCount <= 0: $minByteCount" }
+  require(minByteCount <= Segment.SIZE) { "minByteCount > Segment.SIZE: $minByteCount" }
+  val buffer = checkNotNull(buffer) { "not attached to a buffer" }
+  check(readWrite) { "expandBuffer() only permitted for read/write buffers" }
+
+  val oldSize = buffer.size
+  val tail = buffer.writableSegment(minByteCount)
+  val result = Segment.SIZE - tail.limit
+  tail.limit = Segment.SIZE
+  buffer.size = oldSize + result
+
+  // Seek to the old size.
+  this.segment = tail
+  this.offset = oldSize
+  this.data = tail.data
+  this.start = Segment.SIZE - result
+  this.end = Segment.SIZE
+
+  return result.toLong()
+}
+
+internal inline fun UnsafeCursor.commonClose() {
+  // TODO(jwilson): use edit counts or other information to track unexpected changes?
+  check(buffer != null) { "not attached to a buffer" }
+
+  buffer = null
+  segment = null
+  offset = -1L
+  data = null
+  start = -1
+  end = -1
 }

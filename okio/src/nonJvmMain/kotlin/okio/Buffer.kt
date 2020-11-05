@@ -15,38 +15,45 @@
  */
 package okio
 
-import okio.internal.commonClear
 import okio.internal.HashFunction
 import okio.internal.Md5
 import okio.internal.Sha1
 import okio.internal.Sha256
 import okio.internal.Sha512
+import okio.internal.commonClear
+import okio.internal.commonClose
 import okio.internal.commonCompleteSegmentByteCount
 import okio.internal.commonCopy
 import okio.internal.commonCopyTo
 import okio.internal.commonEquals
+import okio.internal.commonExpandBuffer
 import okio.internal.commonGet
 import okio.internal.commonHashCode
 import okio.internal.commonIndexOf
 import okio.internal.commonIndexOfElement
+import okio.internal.commonNext
 import okio.internal.commonRangeEquals
 import okio.internal.commonRead
 import okio.internal.commonReadAll
+import okio.internal.commonReadAndWriteUnsafe
 import okio.internal.commonReadByte
 import okio.internal.commonReadByteArray
 import okio.internal.commonReadByteString
 import okio.internal.commonReadDecimalLong
 import okio.internal.commonReadFully
 import okio.internal.commonReadHexadecimalUnsignedLong
-import okio.internal.commonSkip
 import okio.internal.commonReadInt
 import okio.internal.commonReadLong
 import okio.internal.commonReadShort
+import okio.internal.commonReadUnsafe
 import okio.internal.commonReadUtf8
 import okio.internal.commonReadUtf8CodePoint
 import okio.internal.commonReadUtf8Line
 import okio.internal.commonReadUtf8LineStrict
+import okio.internal.commonResizeBuffer
+import okio.internal.commonSeek
 import okio.internal.commonSelect
+import okio.internal.commonSkip
 import okio.internal.commonSnapshot
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
@@ -272,6 +279,34 @@ actual class Buffer : BufferedSource, BufferedSink {
         segment?.let(action)
         segment = segment?.next
       } while (segment !== head)
+    }
+  }
+
+  actual fun readUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor = commonReadUnsafe(unsafeCursor)
+
+  actual fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor =
+    commonReadAndWriteUnsafe(unsafeCursor)
+
+  actual class UnsafeCursor {
+    actual var buffer: Buffer? = null
+    actual var readWrite: Boolean = false
+
+    internal actual var segment: Segment? = null
+    actual var offset = -1L
+    actual var data: ByteArray? = null
+    actual var start = -1
+    actual var end = -1
+
+    actual fun next(): Int = commonNext()
+
+    actual fun seek(offset: Long): Int = commonSeek(offset)
+
+    actual fun resizeBuffer(newSize: Long): Long = commonResizeBuffer(newSize)
+
+    actual fun expandBuffer(minByteCount: Int): Long = commonExpandBuffer(minByteCount)
+
+    actual fun close() {
+      commonClose()
     }
   }
 }
