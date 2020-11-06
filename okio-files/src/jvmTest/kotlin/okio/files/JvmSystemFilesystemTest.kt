@@ -22,7 +22,8 @@ import kotlin.test.Test
 
 class JvmSystemFilesystemTest {
   @Test
-  fun `cwd consistent with java io File`() {
-    assertThat(Filesystem.SYSTEM.cwd().toString()).isEqualTo(File("").absoluteFile.toString())
+  fun `base directory consistent with java io File`() {
+    assertThat(Filesystem.SYSTEM.baseDirectory().toString())
+      .isEqualTo(File("").absoluteFile.toString())
   }
 }

@@ -26,7 +26,7 @@ abstract class Filesystem {
    *     failure accessing the current working directory.
    */
   @Throws(IOException::class)
-  abstract fun cwd(): Path
+  abstract fun baseDirectory(): Path
 
   /**
    * Returns the children of the directory identified by [dir].
@@ -67,7 +67,24 @@ abstract class Filesystem {
    *     loop of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun mkdir(dir: Path)
+  abstract fun createDirectory(dir: Path)
+
+  /**
+   * Moves [source] to [target] in-place if the underlying file system supports it. If [target]
+   * exists, it is first removed. If `source == target`, this operation does nothing. This may be
+   * used to move a file or a directory.
+   *
+   * If the file cannot be moved atomically, no move is performed and this method throws an
+   * [IOException]. Typically atomic moves are not possible if the paths are on different
+   * logical devices (filesystems).
+   *
+   * @throws IOException if the move cannot be performed, or cannot be performed atomically. Moves
+   *     fail if the source doesn't exist, if the target is not writable, if the target already
+   *     exists and cannot be replaced, or if the move would cause physical or quota limits to be
+   *     exceeded. This list of potential problems is not exhaustive.
+   */
+  @Throws(IOException::class)
+  abstract fun atomicMove(source: Path, target: Path)
 
   companion object {
     /**
