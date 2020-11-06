@@ -48,7 +48,7 @@ object JvmSystemFilesystem : Filesystem() {
     try {
       Files.move(source.toNioPath(), target.toNioPath(), ATOMIC_MOVE, REPLACE_EXISTING)
     } catch (e: UnsupportedOperationException) {
-      throw IOException("atomic_move not supported")
+      throw IOException("atomic move not supported")
     }
   }
 }
