@@ -41,7 +41,7 @@ object JvmSystemFilesystem : Filesystem() {
   }
 
   override fun createDirectory(dir: Path) {
-    if (!dir.toFile().mkdir()) throw IOException("failed to mkdir $dir")
+    if (!dir.toFile().mkdir()) throw IOException("failed to create directory $dir")
   }
 
   override fun atomicMove(source: Path, target: Path) {
