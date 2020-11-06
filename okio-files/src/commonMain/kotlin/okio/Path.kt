@@ -27,7 +27,7 @@ import okio.ByteString.Companion.encodeUtf8
  *   directory.
  * * **Relative paths** are not prefixed with `/`. On their own, relative paths do not identify a
  *   location on a filesystem; they must be resolved against an absolute path first. When a relative
- *   path is used to access a [Filesystem], it is resolved against [Filesystem.cwd].
+ *   path is used to access a [Filesystem], it is resolved against [Filesystem.baseDirectory].
  *
  * After the optional leading `/`, the rest of the path is a sequence of segments separated by `/`
  * characters. Segments satisfy these rules:

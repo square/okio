@@ -32,13 +32,14 @@ import platform.posix.getcwd
 import platform.posix.mkdirat
 import platform.posix.opendir
 import platform.posix.readdir
+import platform.posix.rename
 import platform.posix.set_posix_errno
 
 internal object PosixSystemFilesystem : Filesystem() {
   private val SELF_DIRECTORY_ENTRY = ".".toPath()
   private val PARENT_DIRECTORY_ENTRY = "..".toPath()
 
-  override fun cwd(): Path {
+  override fun baseDirectory(): Path {
     val pathMax = PATH_MAX
     val bytes: CPointer<ByteVarOf<Byte>> = getcwd(null, pathMax.toULong())
       ?: throw IOException(errnoString(errno))
@@ -50,9 +51,7 @@ internal object PosixSystemFilesystem : Filesystem() {
   }
 
   override fun list(dir: Path): List<Path> {
-    var dirToString = dir.toString()
-
-    val opendir: CPointer<DIR> = opendir(dirToString)
+    val opendir: CPointer<DIR> = opendir(dir.toString())
       ?: throw IOException(errnoString(errno))
 
     try {
@@ -94,8 +93,18 @@ internal object PosixSystemFilesystem : Filesystem() {
     return FileSink(openFile)
   }
 
-  override fun mkdir(dir: Path) {
+  override fun createDirectory(dir: Path) {
     val result = mkdirat(AT_FDCWD, dir.toString(), 0b111111111 /* octal 777 */)
+    if (result != 0) {
+      throw IOException(errnoString(errno))
+    }
+  }
+
+  override fun atomicMove(
+    source: Path,
+    target: Path
+  ) {
+    val result = rename(source.toString(), target.toString())
     if (result != 0) {
       throw IOException(errnoString(errno))
     }

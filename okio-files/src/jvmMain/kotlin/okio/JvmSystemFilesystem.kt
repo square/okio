@@ -16,28 +16,39 @@
 package okio
 
 import okio.Path.Companion.toPath
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 object JvmSystemFilesystem : Filesystem() {
-  override fun cwd(): Path {
+  override fun baseDirectory(): Path {
     val userDir = System.getProperty("user.dir")
       ?: throw IOException("user.dir system property missing?!")
     return userDir.toPath()
   }
 
   override fun list(dir: Path): List<Path> {
-    val entries = dir.file.list() ?: throw IOException("failed to list $dir")
+    val entries = dir.toFile().list() ?: throw IOException("failed to list $dir")
     return entries.map { dir / it }
   }
 
   override fun source(file: Path): Source {
-    return file.file.source()
+    return file.toFile().source()
   }
 
   override fun sink(file: Path): Sink {
-    return file.file.sink()
+    return file.toFile().sink()
   }
 
-  override fun mkdir(dir: Path) {
-    if (!dir.file.mkdir()) throw IOException("failed to mkdir $dir")
+  override fun createDirectory(dir: Path) {
+    if (!dir.toFile().mkdir()) throw IOException("failed to create directory $dir")
+  }
+
+  override fun atomicMove(source: Path, target: Path) {
+    try {
+      Files.move(source.toNioPath(), target.toNioPath(), ATOMIC_MOVE, REPLACE_EXISTING)
+    } catch (e: UnsupportedOperationException) {
+      throw IOException("atomic move not supported")
+    }
   }
 }

@@ -16,6 +16,9 @@
 package okio
 
 import java.io.File
+import java.nio.file.Paths
+import java.nio.file.Path as NioPath
 
-internal val Path.file: File
-  get() = File(toString())
+internal fun Path.toFile(): File = File(toString())
+
+internal fun Path.toNioPath(): NioPath = Paths.get(toString())
