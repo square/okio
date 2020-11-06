@@ -19,6 +19,8 @@ import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 
+class TimeoutException(message: String) : InterruptedIOException(message)
+
 actual open class Timeout {
   /**
    * True if `deadlineNanoTime` is defined. There is no equivalent to null or 0 for
@@ -87,9 +89,9 @@ actual open class Timeout {
   }
 
   /**
-   * Throws an [InterruptedIOException] if the deadline has been reached or if the current thread
-   * has been interrupted. This method doesn't detect timeouts; that should be implemented to
-   * asynchronously abort an in-progress operation.
+   * Throws a [TimeoutException] if the deadline has been reached or an [InterruptedIOException] if
+   * the current thread has been interrupted. This method doesn't detect timeouts; that should be
+   * implemented to asynchronously abort an in-progress operation.
    */
   @Throws(IOException::class)
   open fun throwIfReached() {
@@ -99,14 +101,14 @@ actual open class Timeout {
     }
 
     if (hasDeadline && deadlineNanoTime - System.nanoTime() <= 0) {
-      throw InterruptedIOException("deadline reached")
+      throw TimeoutException("deadline reached")
     }
   }
 
   /**
-   * Waits on `monitor` until it is notified. Throws [InterruptedIOException] if either the thread
-   * is interrupted or if this timeout elapses before `monitor` is notified. The caller must be
-   * synchronized on `monitor`.
+   * Waits on `monitor` until it is notified. Throws [InterruptedIOException] if the thread is
+   * interrupted or [TimeoutException] if this timeout elapses before `monitor` is notified. The
+   * caller must be synchronized on `monitor`.
    *
    * Here's a sample class that uses `waitUntilNotified()` to await a specific state. Note that the
    * call is made within a loop to avoid unnecessary waiting and to mitigate spurious notifications.
@@ -170,7 +172,7 @@ actual open class Timeout {
 
       // Throw if the timeout elapsed before the monitor was notified.
       if (elapsedNanos >= waitNanos) {
-        throw InterruptedIOException("timeout")
+        throw TimeoutException("timeout")
       }
     } catch (e: InterruptedException) {
       Thread.currentThread().interrupt() // Retain interrupted status.
