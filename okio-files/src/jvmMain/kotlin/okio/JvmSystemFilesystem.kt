@@ -44,11 +44,26 @@ object JvmSystemFilesystem : Filesystem() {
     if (!dir.toFile().mkdir()) throw IOException("failed to create directory $dir")
   }
 
-  override fun atomicMove(source: Path, target: Path) {
+  override fun atomicMove(
+    source: Path,
+    target: Path
+  ) {
     try {
       Files.move(source.toNioPath(), target.toNioPath(), ATOMIC_MOVE, REPLACE_EXISTING)
     } catch (e: UnsupportedOperationException) {
       throw IOException("atomic move not supported")
     }
+  }
+
+  override fun copy(
+    source: Path,
+    target: Path
+  ) {
+    commonCopy(source, target)
+  }
+
+  override fun delete(path: Path) {
+    val deleted = path.toFile().delete()
+    if (!deleted) throw IOException("failed to delete $path")
   }
 }

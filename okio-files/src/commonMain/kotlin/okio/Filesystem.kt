@@ -18,8 +18,8 @@ package okio
 abstract class Filesystem {
   /**
    * Returns the current process's working directory. This is the result of the `getcwd` command on
-   * POSIX and the `user.dir` System property in Java. This is an absolute path that all relative
-   * paths are resolved against when using this filesystem.
+   * POSIX and the `user.dir` System property in Java. This is used as the base directory when
+   * relative paths are used with this filesystem.
    *
    * @throws IOException if the current process doesn't have access to the current working
    *     directory, if it's been deleted since the current process started, or there is another
@@ -85,6 +85,29 @@ abstract class Filesystem {
    */
   @Throws(IOException::class)
   abstract fun atomicMove(source: Path, target: Path)
+
+  /**
+   * Copies all of the bytes from the file at [source] to the file at [target]. This does not copy
+   * file metadata like last modified time, permissions, or extended attributes.
+   *
+   * This function is not atomic; a failure may leave [target] in an inconsistent state. For
+   * example, [target] may be empty or contain only a prefix of [source].
+   *
+   * @throws IOException if [source] cannot be read or if [target] cannot be written.
+   */
+  @Throws(IOException::class)
+  abstract fun copy(source: Path, target: Path)
+
+  /**
+   * Deletes the file or directory at [path].
+   *
+   * @throws IOException if there is nothing at [path] to delete, or if there is a file or directory
+   *     but it could not be deleted. Deletes fail if the current process doesn't have access, if
+   *     the filesystem is readonly, or if [path] is a non-empty directory.  This list of potential
+   *     problems is not exhaustive.
+   */
+  @Throws(IOException::class)
+  abstract fun delete(path: Path)
 
   companion object {
     /**
