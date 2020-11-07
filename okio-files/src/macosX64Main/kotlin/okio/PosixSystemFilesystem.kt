@@ -32,6 +32,7 @@ import platform.posix.getcwd
 import platform.posix.mkdirat
 import platform.posix.opendir
 import platform.posix.readdir
+import platform.posix.remove
 import platform.posix.rename
 import platform.posix.set_posix_errno
 
@@ -105,6 +106,20 @@ internal object PosixSystemFilesystem : Filesystem() {
     target: Path
   ) {
     val result = rename(source.toString(), target.toString())
+    if (result != 0) {
+      throw IOException(errnoString(errno))
+    }
+  }
+
+  override fun copy(
+    source: Path,
+    target: Path
+  ) {
+    commonCopy(source, target)
+  }
+
+  override fun delete(path: Path) {
+    val result = remove(path.toString())
     if (result != 0) {
       throw IOException(errnoString(errno))
     }

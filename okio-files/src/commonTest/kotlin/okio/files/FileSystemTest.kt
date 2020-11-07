@@ -26,6 +26,7 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
@@ -189,6 +190,71 @@ class FileSystemTest {
     target.writeUtf8("hello, world!")
     assertFailsWith<IOException> {
       Filesystem.SYSTEM.atomicMove(source, target)
+    }
+  }
+
+  @Test
+  fun `copy file`() {
+    val source = "/tmp/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    source.writeUtf8("hello, world!")
+    val target = "/tmp/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    Filesystem.SYSTEM.copy(source, target)
+    assertTrue(target in Filesystem.SYSTEM.list("/tmp".toPath()))
+    assertEquals("hello, world!", target.readUtf8())
+  }
+
+  @Test
+  fun `copy source does not exist`() {
+    val source = "/tmp/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val target = "/tmp/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    assertFailsWith<IOException> {
+      Filesystem.SYSTEM.copy(source, target)
+    }
+    assertFalse(target in Filesystem.SYSTEM.list("/tmp".toPath()))
+  }
+
+  @Test
+  fun `copy target is clobbered`() {
+    val source = "/tmp/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    source.writeUtf8("hello, world!")
+    val target = "/tmp/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    target.writeUtf8("this file will be clobbered!")
+    Filesystem.SYSTEM.copy(source, target)
+    assertTrue(target in Filesystem.SYSTEM.list("/tmp".toPath()))
+    assertEquals("hello, world!", target.readUtf8())
+  }
+
+  @Test
+  fun `delete file`() {
+    val path = "/tmp/FileSystemTest-delete-${randomToken()}".toPath()
+    path.writeUtf8("delete me")
+    Filesystem.SYSTEM.delete(path)
+    assertTrue(path !in Filesystem.SYSTEM.list("/tmp".toPath()))
+  }
+
+  @Test
+  fun `delete empty directory`() {
+    val path = "/tmp/FileSystemTest-delete-${randomToken()}".toPath()
+    Filesystem.SYSTEM.createDirectory(path)
+    Filesystem.SYSTEM.delete(path)
+    assertTrue(path !in Filesystem.SYSTEM.list("/tmp".toPath()))
+  }
+
+  @Test
+  fun `delete fails on no such file`() {
+    val path = "/tmp/FileSystemTest-delete-${randomToken()}".toPath()
+    assertFailsWith<IOException> {
+      Filesystem.SYSTEM.delete(path)
+    }
+  }
+
+  @Test
+  fun `delete fails on nonempty directory`() {
+    val path = "/tmp/FileSystemTest-delete-${randomToken()}".toPath()
+    Filesystem.SYSTEM.createDirectory(path)
+    (path / "file.txt").writeUtf8("inside directory")
+    assertFailsWith<IOException> {
+      Filesystem.SYSTEM.delete(path)
     }
   }
 
