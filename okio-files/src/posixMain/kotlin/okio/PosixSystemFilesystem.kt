@@ -19,7 +19,6 @@ import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
-import platform.posix.AT_FDCWD
 import platform.posix.DIR
 import platform.posix.FILE
 import platform.posix.PATH_MAX
@@ -29,7 +28,7 @@ import platform.posix.errno
 import platform.posix.fopen
 import platform.posix.free
 import platform.posix.getcwd
-import platform.posix.mkdirat
+import platform.posix.mkdir
 import platform.posix.opendir
 import platform.posix.readdir
 import platform.posix.remove
@@ -62,9 +61,8 @@ internal object PosixSystemFilesystem : Filesystem() {
       set_posix_errno(0) // If readdir() returns null it's either the end or an error.
       while (true) {
         val dirent: CPointer<dirent> = readdir(opendir) ?: break
-        val childPath = buffer.write(
-          source = dirent[0].d_name,
-          byteCount = dirent[0].d_namlen.toInt()
+        val childPath = buffer.writeNullTerminated(
+          bytes = dirent[0].d_name
         ).toPath()
 
         if (childPath == SELF_DIRECTORY_ENTRY || childPath == PARENT_DIRECTORY_ENTRY) {
@@ -95,7 +93,7 @@ internal object PosixSystemFilesystem : Filesystem() {
   }
 
   override fun createDirectory(dir: Path) {
-    val result = mkdirat(AT_FDCWD, dir.toString(), 0b111111111 /* octal 777 */)
+    val result = mkdir(dir.toString(), 0b111111111 /* octal 777 */)
     if (result != 0) {
       throw IOException(errnoString(errno))
     }

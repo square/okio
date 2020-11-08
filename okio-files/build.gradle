@@ -6,6 +6,7 @@ kotlin {
   }
   if (kmpNativeEnabled) {
     macosX64()
+    linuxX64()
   }
   sourceSets {
     commonMain {
@@ -32,10 +33,11 @@ kotlin {
         implementation deps.kotlin.test.jdk
       }
     }
-    macosX64Main {
+    posixMain {
       dependsOn commonMain
     }
-    configure([macosX64Main]) {
+    configure([macosX64Main, linuxX64Main]) {
+      dependsOn posixMain
     }
   }
 }
