@@ -57,10 +57,7 @@ class Pipe(internal val maxBufferSize: Long) {
 
         while (byteCount > 0) {
           timeout.waitUntil(buffer) {
-            maxBufferSize - buffer.size > 0L // The source has drained the buffer
-              || canceled
-              || sourceClosed
-              || foldedSink != null // fold was called
+            maxBufferSize - buffer.size > 0L || canceled || sourceClosed || foldedSink != null
           }
 
           foldedSink?.let {
