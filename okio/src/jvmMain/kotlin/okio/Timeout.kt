@@ -179,6 +179,56 @@ actual open class Timeout {
   }
 
   /**
+   * Same as [waitUntilNotified] but with builtin support for spurious notifications and/or bad timer resolution.
+   *
+   * waitUntil will wait until either the timeout is reached or [condition] returns true
+   *
+   * This is especially useful for Pipes with no-deadline Timeouts that could wait forever on windows hosts where
+   * the wait returns a few nanoseconds early very often
+   *
+   * @param monitor: the object to wait on
+   * @param condition: a function that returns true if [waitUntil] should stop waiting
+   * ```
+   */
+  @Throws(InterruptedIOException::class)
+  fun waitUntil(monitor: Any, condition: () -> Boolean) {
+    val hasDeadline = hasDeadline()
+    val timeoutNanos = timeoutNanos()
+
+    // Compute how long we'll wait.
+    val start = System.nanoTime()
+    val waitUntilNanos = if (hasDeadline) {
+      if (timeoutNanos != 0L) {
+        // take the deadline or the timeout, whichever comes first
+        minOf(deadlineNanoTime(), start + timeoutNanos)
+      } else {
+        deadlineNanoTime()
+      }
+    } else {
+      start + timeoutNanos
+    }
+
+    while (!condition()) {
+      try {
+        if (!hasDeadline && timeoutNanos == 0L) {
+          // There is no timeout: wait until notified
+          (monitor as Object).wait()
+        } else {
+          val waitNanos = waitUntilNanos - System.nanoTime()
+          if ( waitNanos < 0) {
+            throw InterruptedIOException("timeout")
+          }
+          val waitMillis = waitNanos / 1000000L
+          (monitor as Object).wait(waitMillis, (waitNanos - waitMillis * 1000000L).toInt())
+        }
+      } catch (e: InterruptedException) {
+        // spurious wake up
+      }
+    }
+  }
+
+
+  /**
    * Applies the minimum intersection between this timeout and `other`, run `block`, then finally
    * rollback this timeout's values.
    */
