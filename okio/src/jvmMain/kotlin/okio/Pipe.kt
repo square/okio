@@ -56,21 +56,23 @@ class Pipe(internal val maxBufferSize: Long) {
         if (canceled) throw IOException("canceled")
 
         while (byteCount > 0) {
+          timeout.waitUntil(buffer) {
+            maxBufferSize - buffer.size > 0L // The source has drained the buffer
+              || canceled
+              || sourceClosed
+              || foldedSink != null // fold was called
+          }
+
           foldedSink?.let {
             delegate = it
             return@synchronized
           }
 
+          if (canceled) throw IOException("canceled")
+
           if (sourceClosed) throw IOException("source is closed")
 
-          val bufferSpaceAvailable = maxBufferSize - buffer.size
-          if (bufferSpaceAvailable == 0L) {
-            timeout.waitUntilNotified(buffer) // Wait until the source drains the buffer.
-            if (canceled) throw IOException("canceled")
-            continue
-          }
-
-          val bytesToWrite = minOf(bufferSpaceAvailable, byteCount)
+          val bytesToWrite = minOf(maxBufferSize - buffer.size, byteCount)
           buffer.write(source, bytesToWrite)
           byteCount -= bytesToWrite
           (buffer as Object).notifyAll() // Notify the source that it can resume reading.
@@ -127,13 +129,14 @@ class Pipe(internal val maxBufferSize: Long) {
     override fun read(sink: Buffer, byteCount: Long): Long {
       synchronized(buffer) {
         check(!sourceClosed) { "closed" }
-        if (canceled) throw IOException("canceled")
 
-        while (buffer.size == 0L) {
-          if (sinkClosed) return -1L
-          timeout.waitUntilNotified(buffer) // Wait until the sink fills the buffer.
-          if (canceled) throw IOException("canceled")
+        // Wait until the sink fills the buffer.
+        timeout.waitUntil(buffer) {
+          buffer.size != 0L || canceled || sinkClosed
         }
+
+        if (buffer.size == 0L && sinkClosed) return -1L
+        if (canceled) throw IOException("canceled")
 
         val result = buffer.read(sink, byteCount)
         (buffer as Object).notifyAll() // Notify the sink that it can resume writing.
