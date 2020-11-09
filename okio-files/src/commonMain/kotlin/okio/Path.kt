@@ -138,7 +138,7 @@ class Path private constructor(
 
     fun String.toPath(): Path = Buffer().writeUtf8(this).toPath()
 
-    val directorySepartor = PLATFORM_SEPARATOR
+    val directorySeparator = PLATFORM_SEPARATOR
 
     /** Consume the buffer and return it as a path. */
     internal fun Buffer.toPath(): Path {

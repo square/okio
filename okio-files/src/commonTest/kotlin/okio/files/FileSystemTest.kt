@@ -37,7 +37,7 @@ class FileSystemTest {
   @Test
   fun baseDirectory() {
     val cwd = Filesystem.SYSTEM.baseDirectory()
-    assertTrue(cwd.toString()) { cwd.toString().endsWith("okio${Path.directorySepartor}okio-files") }
+    assertTrue(cwd.toString()) { cwd.toString().endsWith("okio${Path.directorySeparator}okio-files") }
   }
 
   @Test
