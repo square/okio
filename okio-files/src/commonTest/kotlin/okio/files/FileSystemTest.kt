@@ -65,7 +65,10 @@ class FileSystemTest {
     val buffer = Buffer()
     assertTrue(source.read(buffer, 100L) <= 49L) // either 47 on posix or 49 with \r\n line feeds on windows
     assertEquals(-1L, source.read(buffer, 100L))
-    assertTrue(buffer.readUtf8().contains("POM_ARTIFACT_ID=okio-files"))
+    assertEquals("""
+        |POM_ARTIFACT_ID=okio-files
+        |POM_NAME=Okio Files
+        |""".trimMargin(), buffer.readUtf8().replace("\r\n", "\n"))
     source.close()
   }
 
