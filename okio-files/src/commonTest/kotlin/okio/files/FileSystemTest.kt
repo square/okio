@@ -23,7 +23,12 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.buffer
 import kotlin.random.Random
-import kotlin.test.*
+import kotlin.test.Ignore
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 class FileSystemTest {
