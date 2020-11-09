@@ -109,6 +109,8 @@ abstract class Filesystem {
   @Throws(IOException::class)
   abstract fun delete(path: Path)
 
+  abstract val separator: String
+
   companion object {
     /**
      * The current process's host filesystem. Use this instance directly, or dependency inject a

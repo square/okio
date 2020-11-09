@@ -16,6 +16,7 @@
 package okio
 
 import okio.Path.Companion.toPath
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
@@ -61,6 +62,8 @@ object JvmSystemFilesystem : Filesystem() {
   ) {
     commonCopy(source, target)
   }
+
+  override val separator = File.separator
 
   override fun delete(path: Path) {
     val deleted = path.toFile().delete()
