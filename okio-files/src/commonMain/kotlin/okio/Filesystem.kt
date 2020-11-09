@@ -121,8 +121,8 @@ abstract class Filesystem {
      * [Filesystem] to make code testable.
      */
     val SYSTEM: Filesystem
-    get() {
-      return PLATFORM_FILESYSTEM
-    }
+      get() {
+        return PLATFORM_FILESYSTEM
+      }
   }
 }
