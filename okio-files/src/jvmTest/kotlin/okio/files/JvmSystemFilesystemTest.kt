@@ -18,7 +18,10 @@ package okio.files
 import okio.Filesystem
 import org.assertj.core.api.Assertions.assertThat
 import java.io.File
+import java.nio.file.Files
 import kotlin.test.Test
+
+actual fun tmpDirectory() = Files.createTempDirectory("tmp").toAbsolutePath().toString()
 
 class JvmSystemFilesystemTest {
   @Test

@@ -36,8 +36,14 @@ kotlin {
     posixMain {
       dependsOn commonMain
     }
+    posixTest {
+      dependsOn commonTest
+    }
     configure([macosX64Main, linuxX64Main]) {
       dependsOn posixMain
+    }
+    configure([macosX64Test, linuxX64Test]) {
+      dependsOn posixTest
     }
   }
 }
