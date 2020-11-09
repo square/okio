@@ -27,7 +27,7 @@ import kotlin.test.*
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 class FileSystemTest {
-  val tmpDirectory = Filesystem.SYSTEM.tmpDirectory()
+  private val tmpDirectory = Filesystem.SYSTEM.temporaryDirectory().toString()
 
   @Test
   fun baseDirectory() {

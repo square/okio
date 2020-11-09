@@ -65,7 +65,7 @@ object JvmSystemFilesystem : Filesystem() {
 
   override val separator = File.separator
 
-  override fun tmpDirectory() = Files.createTempDirectory("tmp").toAbsolutePath().toString()
+  override fun temporaryDirectory() = System.getProperty("java.io.tmpdir").toPath()
 
   override fun delete(path: Path) {
     val deleted = path.toFile().delete()

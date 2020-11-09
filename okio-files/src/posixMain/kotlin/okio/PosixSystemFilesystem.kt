@@ -17,6 +17,7 @@ package okio
 
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.toKString
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import platform.posix.DIR
@@ -34,6 +35,7 @@ import platform.posix.readdir
 import platform.posix.remove
 import platform.posix.rename
 import platform.posix.set_posix_errno
+import platform.posix.getenv
 
 internal object PosixSystemFilesystem : Filesystem() {
   private val SELF_DIRECTORY_ENTRY = ".".toPath()
@@ -52,7 +54,7 @@ internal object PosixSystemFilesystem : Filesystem() {
 
   override val separator = "/"
 
-  override fun tmpDirectory() = "/tmp"
+  override fun temporaryDirectory() = (getenv("TMPDIR")?.toKString() ?: "/tmp").toPath()
 
   override fun list(dir: Path): List<Path> {
     val opendir: CPointer<DIR> = opendir(dir.toString())
