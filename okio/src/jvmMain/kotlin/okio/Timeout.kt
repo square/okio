@@ -215,7 +215,7 @@ actual open class Timeout {
           (monitor as Object).wait()
         } else {
           val waitNanos = waitUntilNanos - System.nanoTime()
-          if ( waitNanos < 0) {
+          if (waitNanos < 0) {
             throw InterruptedIOException("timeout")
           }
           val waitMillis = waitNanos / 1000000L
@@ -226,7 +226,6 @@ actual open class Timeout {
       }
     }
   }
-
 
   /**
    * Applies the minimum intersection between this timeout and `other`, run `block`, then finally
