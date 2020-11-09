@@ -76,7 +76,7 @@ class FileSystemTest {
     val buffer = Buffer().writeUtf8("hello, world!")
     sink.write(buffer, buffer.size)
     sink.close()
-    assertTrue(path in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
+    assertTrue(path in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
     assertEquals(0, buffer.size)
     assertEquals("hello, world!", path.readUtf8())
   }
@@ -108,7 +108,7 @@ class FileSystemTest {
   fun createDirectory() {
     val path = "$tmpDirectory/FileSystemTest-${randomToken()}".toPath()
     Filesystem.SYSTEM.createDirectory(path)
-    assertTrue(path in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
+    assertTrue(path in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
   }
 
   @Test
@@ -157,8 +157,8 @@ class FileSystemTest {
     target.writeUtf8("this file will be clobbered!")
     Filesystem.SYSTEM.atomicMove(source, target)
     assertEquals("hello, world!", target.readUtf8())
-    assertTrue(source !in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
-    assertTrue(target in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
+    assertTrue(source !in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    assertTrue(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
   }
 
   @Test
@@ -198,7 +198,7 @@ class FileSystemTest {
     source.writeUtf8("hello, world!")
     val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
     Filesystem.SYSTEM.copy(source, target)
-    assertTrue(target in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
+    assertTrue(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
     assertEquals("hello, world!", target.readUtf8())
   }
 
@@ -209,7 +209,7 @@ class FileSystemTest {
     assertFailsWith<IOException> {
       Filesystem.SYSTEM.copy(source, target)
     }
-    assertFalse(target in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
+    assertFalse(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
   }
 
   @Test
@@ -219,7 +219,7 @@ class FileSystemTest {
     val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
     target.writeUtf8("this file will be clobbered!")
     Filesystem.SYSTEM.copy(source, target)
-    assertTrue(target in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
+    assertTrue(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
     assertEquals("hello, world!", target.readUtf8())
   }
 
@@ -228,7 +228,7 @@ class FileSystemTest {
     val path = "$tmpDirectory/FileSystemTest-delete-${randomToken()}".toPath()
     path.writeUtf8("delete me")
     Filesystem.SYSTEM.delete(path)
-    assertTrue(path !in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
+    assertTrue(path !in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
   }
 
   @Test
@@ -236,7 +236,7 @@ class FileSystemTest {
     val path = "$tmpDirectory/FileSystemTest-delete-${randomToken()}".toPath()
     Filesystem.SYSTEM.createDirectory(path)
     Filesystem.SYSTEM.delete(path)
-    assertTrue(path !in Filesystem.SYSTEM.list("$tmpDirectory".toPath()))
+    assertTrue(path !in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
   }
 
   @Test
