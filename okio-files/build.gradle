@@ -7,6 +7,7 @@ kotlin {
   if (kmpNativeEnabled) {
     macosX64()
     linuxX64()
+    mingwX64()
   }
   sourceSets {
     commonMain {
@@ -36,8 +37,14 @@ kotlin {
     posixMain {
       dependsOn commonMain
     }
-    configure([macosX64Main, linuxX64Main]) {
+    mingwX64Main {
       dependsOn posixMain
+    }
+    unixMain {
+      dependsOn posixMain
+    }
+    configure([macosX64Main, linuxX64Main]) {
+      dependsOn unixMain
     }
   }
 }

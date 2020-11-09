@@ -15,44 +15,27 @@
  */
 package okio
 
-import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.toKString
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import platform.posix.DIR
 import platform.posix.FILE
-import platform.posix.PATH_MAX
 import platform.posix.closedir
 import platform.posix.dirent
 import platform.posix.errno
 import platform.posix.fopen
-import platform.posix.free
-import platform.posix.getcwd
-import platform.posix.mkdir
 import platform.posix.opendir
 import platform.posix.readdir
-import platform.posix.remove
 import platform.posix.rename
 import platform.posix.set_posix_errno
-import platform.posix.getenv
 
 internal object PosixSystemFilesystem : Filesystem() {
   private val SELF_DIRECTORY_ENTRY = ".".toPath()
   private val PARENT_DIRECTORY_ENTRY = "..".toPath()
 
-  override fun baseDirectory(): Path {
-    val pathMax = PATH_MAX
-    val bytes: CPointer<ByteVarOf<Byte>> = getcwd(null, pathMax.toULong())
-      ?: throw IOException(errnoString(errno))
-    try {
-      return Buffer().writeNullTerminated(bytes).toPath()
-    } finally {
-      free(bytes)
-    }
-  }
+  override fun canonicalize(path: Path) = variantCanonicalize(path)
 
-  override fun temporaryDirectory() = (getenv("TMPDIR")?.toKString() ?: "/tmp").toPath()
+  override fun temporaryDirectory() = variantTemporaryDirectory()
 
   override fun list(dir: Path): List<Path> {
     val opendir: CPointer<DIR> = opendir(dir.toString())
@@ -97,7 +80,7 @@ internal object PosixSystemFilesystem : Filesystem() {
   }
 
   override fun createDirectory(dir: Path) {
-    val result = mkdir(dir.toString(), 0b111111111 /* octal 777 */)
+    val result = variantMkdir(dir)
     if (result != 0) {
       throw IOException(errnoString(errno))
     }
@@ -121,9 +104,6 @@ internal object PosixSystemFilesystem : Filesystem() {
   }
 
   override fun delete(path: Path) {
-    val result = remove(path.toString())
-    if (result != 0) {
-      throw IOException(errnoString(errno))
-    }
+    variantDelete(path)
   }
 }

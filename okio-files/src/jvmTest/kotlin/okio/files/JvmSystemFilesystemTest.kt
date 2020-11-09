@@ -16,6 +16,7 @@
 package okio.files
 
 import okio.Filesystem
+import okio.Path.Companion.toPath
 import org.assertj.core.api.Assertions.assertThat
 import java.io.File
 import kotlin.test.Test
@@ -23,7 +24,7 @@ import kotlin.test.Test
 class JvmSystemFilesystemTest {
   @Test
   fun `base directory consistent with java io File`() {
-    assertThat(Filesystem.SYSTEM.baseDirectory().toString())
-      .isEqualTo(File("").absoluteFile.toString())
+    assertThat(Filesystem.SYSTEM.canonicalize(".".toPath()).toString())
+      .isEqualTo(File("").canonicalFile.toString())
   }
 }

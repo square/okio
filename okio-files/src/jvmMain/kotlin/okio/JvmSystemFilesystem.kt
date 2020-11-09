@@ -21,10 +21,10 @@ import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 object JvmSystemFilesystem : Filesystem() {
-  override fun baseDirectory(): Path {
-    val userDir = System.getProperty("user.dir")
-      ?: throw IOException("user.dir system property missing?!")
-    return userDir.toPath()
+  override fun canonicalize(path: Path): Path {
+    val canonicalFile = path.toFile().canonicalFile
+    if (!canonicalFile.exists()) throw IOException("no such file")
+    return canonicalFile.toOkioPath()
   }
 
   override fun list(dir: Path): List<Path> {

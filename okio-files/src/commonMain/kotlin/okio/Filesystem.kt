@@ -17,16 +17,19 @@ package okio
 
 abstract class Filesystem {
   /**
-   * Returns the current process's working directory. This is the result of the `getcwd` command on
-   * POSIX and the `user.dir` System property in Java. This is used as the base directory when
-   * relative paths are used with this filesystem.
+   * Resolves [path] against the current working directory and symlinks in this filesystem. The
+   * returned path identifies the same file as [path], but with an absolute path that does not
+   * include any symbolic links.
    *
-   * @throws IOException if the current process doesn't have access to the current working
-   *     directory, if it's been deleted since the current process started, or there is another
-   *     failure accessing the current working directory.
+   * This is similar to `File.getCanonicalFile()` on the JVM and `realpath` on POSIX. Unlike
+   * `File.getCanonicalFile()`, this throws if the file doesn't exist.
+   *
+   * @throws IOException if [path] cannot be resolved. This will occur if the file doesn't exist,
+   *     if the current working directory doesn't exist or is inaccessible, or if another failure
+   *     occurs while resolving the path.
    */
   @Throws(IOException::class)
-  abstract fun baseDirectory(): Path
+  abstract fun canonicalize(path: Path): Path
 
   /**
    * Returns the children of the directory identified by [dir].
