@@ -15,6 +15,13 @@
  */
 package okio
 
-internal actual val PLATFORM_FILESYSTEM: Filesystem = PosixSystemFilesystem
-internal actual val DIRECTORY_SEPARATOR
-  get() = VARIANT_DIRECTORY_SEPARATOR
+import kotlinx.cinterop.ByteVarOf
+import kotlinx.cinterop.CPointer
+
+internal expect val VARIANT_DIRECTORY_SEPARATOR: String
+
+internal expect fun PosixSystemFilesystem.variantDelete(path: Path)
+
+internal expect fun PosixSystemFilesystem.variantMkdir(dir: Path): Int
+
+internal expect fun PosixSystemFilesystem.variantGetCwd(): CPointer<ByteVarOf<Byte>>?

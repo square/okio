@@ -18,4 +18,4 @@ package okio
 import java.io.File
 
 internal actual val PLATFORM_FILESYSTEM: Filesystem = JvmSystemFilesystem
-internal actual val PLATFORM_SEPARATOR = File.separator
+internal actual val DIRECTORY_SEPARATOR = File.separator
