@@ -16,7 +16,6 @@
 package okio
 
 import okio.Path.Companion.toPath
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
