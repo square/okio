@@ -86,7 +86,7 @@ kotlin {
     configure([iosX64Main, iosArm64Main, linuxX64Main, macosX64Main, mingwX64Main]) {
       dependsOn nativeMain
     }
-    configure([iosX64Test, iosArm64Test, linuxX64Test, macosX64Test, mingwX64Main]) {
+    configure([iosX64Test, iosArm64Test, linuxX64Test, macosX64Test, mingwX64Test]) {
       dependsOn nativeTest
     }
     configure([iosX64Main, iosArm64Main, macosX64Main]) {
