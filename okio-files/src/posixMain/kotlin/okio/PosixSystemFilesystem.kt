@@ -52,6 +52,8 @@ internal object PosixSystemFilesystem : Filesystem() {
 
   override val separator = "/"
 
+  override fun tmpDirectory() = "/tmp"
+
   override fun list(dir: Path): List<Path> {
     val opendir: CPointer<DIR> = opendir(dir.toString())
       ?: throw IOException(errnoString(errno))

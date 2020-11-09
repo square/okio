@@ -29,11 +29,9 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-expect fun tmpDirectory(): String
-
 /** This test assumes that okio-files/ is the current working directory when executed. */
 class FileSystemTest {
-  val tmpDirectory = tmpDirectory()
+  val tmpDirectory = Filesystem.SYSTEM.tmpDirectory()
 
   @Test
   fun baseDirectory() {
@@ -190,7 +188,7 @@ class FileSystemTest {
     val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
     target.writeUtf8("hello, world!")
     assertFailsWith<IOException> {
-      //Filesystem.SYSTEM.atomicMove(source, target)
+      Filesystem.SYSTEM.atomicMove(source, target)
     }
   }
 

@@ -21,8 +21,6 @@ import java.io.File
 import java.nio.file.Files
 import kotlin.test.Test
 
-actual fun tmpDirectory() = Files.createTempDirectory("tmp").toAbsolutePath().toString()
-
 class JvmSystemFilesystemTest {
   @Test
   fun `base directory consistent with java io File`() {
