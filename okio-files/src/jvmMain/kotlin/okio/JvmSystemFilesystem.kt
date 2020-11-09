@@ -63,8 +63,6 @@ object JvmSystemFilesystem : Filesystem() {
     commonCopy(source, target)
   }
 
-  override val separator = File.separator
-
   override fun temporaryDirectory() = System.getProperty("java.io.tmpdir").toPath()
 
   override fun delete(path: Path) {

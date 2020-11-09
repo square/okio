@@ -16,3 +16,4 @@
 package okio
 
 internal expect val PLATFORM_FILESYSTEM: Filesystem
+internal expect val PLATFORM_SEPARATOR: String

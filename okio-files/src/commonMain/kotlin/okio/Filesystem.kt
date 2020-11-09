@@ -109,8 +109,6 @@ abstract class Filesystem {
   @Throws(IOException::class)
   abstract fun delete(path: Path)
 
-  abstract val separator: String
-
   /**
    * Returns a writable temporary directory on the current file system.
    * This is the java.io.tmpdir system property on the JVM platform and the TMPDIR environment variable on the POSIX platform

@@ -52,8 +52,6 @@ internal object PosixSystemFilesystem : Filesystem() {
     }
   }
 
-  override val separator = "/"
-
   override fun temporaryDirectory() = (getenv("TMPDIR")?.toKString() ?: "/tmp").toPath()
 
   override fun list(dir: Path): List<Path> {
