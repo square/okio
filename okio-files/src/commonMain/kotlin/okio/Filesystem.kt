@@ -113,11 +113,6 @@ abstract class Filesystem {
 
   /**
    * Creates a temporary directory
-   *
-   * @throws IOException if there is nothing at [path] to delete, or if there is a file or directory
-   *     but it could not be deleted. Deletes fail if the current process doesn't have access, if
-   *     the filesystem is readonly, or if [path] is a non-empty directory.  This list of potential
-   *     problems is not exhaustive.
    */
   abstract fun tmpDirectory(): String
 
