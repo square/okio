@@ -113,7 +113,7 @@ abstract class Filesystem {
    * Returns a writable temporary directory on the current file system.
    * This is the java.io.tmpdir system property on the JVM platform and the TMPDIR environment variable on the POSIX platform
    */
-  abstract fun temporaryDirectory(): Path
+  internal abstract fun temporaryDirectory(): Path
 
   companion object {
     /**
