@@ -102,6 +102,8 @@ public final class PipeTest {
   }
 
   @Test public void sinkTimeout() throws Exception {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Pipe pipe = new Pipe(3);
     pipe.sink().timeout().timeout(1000, TimeUnit.MILLISECONDS);
     pipe.sink().write(new Buffer().writeUtf8("abc"), 3L);
@@ -120,6 +122,8 @@ public final class PipeTest {
   }
 
   @Test public void sourceTimeout() throws Exception {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Pipe pipe = new Pipe(3L);
     pipe.source().timeout().timeout(1000, TimeUnit.MILLISECONDS);
     double start = now();

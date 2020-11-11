@@ -16,3 +16,4 @@
 package okio
 
 internal actual val PLATFORM_FILESYSTEM: Filesystem = PosixSystemFilesystem
+internal actual val PLATFORM_SEPARATOR = "/"

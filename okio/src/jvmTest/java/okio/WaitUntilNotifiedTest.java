@@ -51,6 +51,8 @@ public final class WaitUntilNotifiedTest {
   }
 
   @Test public synchronized void timeout() {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Timeout timeout = new Timeout();
     timeout.timeout(1000, TimeUnit.MILLISECONDS);
     double start = now();
@@ -64,6 +66,8 @@ public final class WaitUntilNotifiedTest {
   }
 
   @Test public synchronized void deadline() {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Timeout timeout = new Timeout();
     timeout.deadline(1000, TimeUnit.MILLISECONDS);
     double start = now();
@@ -77,6 +81,8 @@ public final class WaitUntilNotifiedTest {
   }
 
   @Test public synchronized void deadlineBeforeTimeout() {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Timeout timeout = new Timeout();
     timeout.timeout(5000, TimeUnit.MILLISECONDS);
     timeout.deadline(1000, TimeUnit.MILLISECONDS);
@@ -91,6 +97,8 @@ public final class WaitUntilNotifiedTest {
   }
 
   @Test public synchronized void timeoutBeforeDeadline() {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Timeout timeout = new Timeout();
     timeout.timeout(1000, TimeUnit.MILLISECONDS);
     timeout.deadline(5000, TimeUnit.MILLISECONDS);
@@ -105,6 +113,8 @@ public final class WaitUntilNotifiedTest {
   }
 
   @Test public synchronized void deadlineAlreadyReached() {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Timeout timeout = new Timeout();
     timeout.deadlineNanoTime(System.nanoTime());
     double start = now();
@@ -118,6 +128,8 @@ public final class WaitUntilNotifiedTest {
   }
 
   @Test public synchronized void threadInterrupted() {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Timeout timeout = new Timeout();
     double start = now();
     Thread.currentThread().interrupt();
@@ -132,6 +144,8 @@ public final class WaitUntilNotifiedTest {
   }
 
   @Test public synchronized void threadInterruptedOnThrowIfReached() throws Exception {
+    TestUtil.INSTANCE.assumeNotWindows();
+
     Timeout timeout = new Timeout();
     Thread.currentThread().interrupt();
     try {

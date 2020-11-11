@@ -16,6 +16,7 @@
 package okio
 
 import okio.ByteString.Companion.encodeUtf8
+import org.junit.Assume
 import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
@@ -296,4 +297,6 @@ object TestUtil {
     /* ktlint-enable no-multi-spaces indent */
     return reversed.toShort()
   }
+
+  fun assumeNotWindows() = Assume.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"))
 }
