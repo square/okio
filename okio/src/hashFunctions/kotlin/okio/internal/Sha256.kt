@@ -182,6 +182,8 @@ internal class Sha256 : HashFunction {
     val g = h6
     val h = h7
 
+    reset()
+
     return byteArrayOf(
       (a shr 24).toByte(),
       (a shr 16).toByte(),
@@ -218,6 +220,22 @@ internal class Sha256 : HashFunction {
     )
   }
   /* ktlint-enable */
+
+  private fun reset() {
+    messageLength = 0L
+    unprocessed.fill(0)
+    unprocessedLimit = 0
+    words.fill(0)
+
+    h0 = 1779033703
+    h1 = -1150833019
+    h2 = 1013904242
+    h3 = -1521486534
+    h4 = 1359893119
+    h5 = -1694144372
+    h6 = 528734635
+    h7 = 1541459225
+  }
 
   companion object {
     private val k = intArrayOf(

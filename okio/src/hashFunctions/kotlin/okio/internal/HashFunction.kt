@@ -17,7 +17,11 @@ package okio.internal
 
 /** A cryptographic hash function. */
 internal interface HashFunction {
-  fun update(input: ByteArray, offset: Int, byteCount: Int)
+  fun update(
+    input: ByteArray,
+    offset: Int = 0,
+    byteCount: Int = input.size
+  )
 
   fun digest(): ByteArray
 }

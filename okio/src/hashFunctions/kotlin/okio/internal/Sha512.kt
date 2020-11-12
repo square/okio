@@ -177,6 +177,8 @@ internal class Sha512 : HashFunction {
     val g = h6
     val h = h7
 
+    reset()
+
     return byteArrayOf(
       (a shr 56).toByte(),
       (a shr 48).toByte(),
@@ -245,6 +247,22 @@ internal class Sha512 : HashFunction {
     )
   }
   /* ktlint-enable */
+
+  private fun reset() {
+    messageLength = 0L
+    unprocessed.fill(0)
+    unprocessedLimit = 0
+    words.fill(0)
+
+    h0 = 7640891576956012808L
+    h1 = -4942790177534073029L
+    h2 = 4354685564936845355L
+    h3 = -6534734903238641935L
+    h4 = 5840696475078001361L
+    h5 = -7276294671716946913L
+    h6 = 2270897969802886507L
+    h7 = 6620516959819538809L
+  }
 
   companion object {
     private val k = longArrayOf(
