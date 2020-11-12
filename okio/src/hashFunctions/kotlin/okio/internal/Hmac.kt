@@ -54,6 +54,7 @@ internal class Hmac(
     ): Hmac {
       val keySize = key.size
       val paddedKey = when {
+        keySize == 0 -> throw IllegalArgumentException("Empty key")
         keySize == blockLength -> key
         keySize < blockLength -> key.copyOf(blockLength)
         else -> hashFunction.apply { update(key) }.digest().copyOf(blockLength)
