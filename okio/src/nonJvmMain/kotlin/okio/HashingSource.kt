@@ -89,5 +89,4 @@ actual class HashingSource internal constructor(
     /** Returns a source that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
     actual fun hmacSha512(source: Source, key: ByteString) = HashingSource(source, Hmac.sha512(key))
   }
-
 }

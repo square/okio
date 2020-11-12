@@ -88,7 +88,7 @@ class HmacTest(val parameters: Parameters) {
   data class Parameters(
     val algorithm: Algorithm,
     val keySize: Int,
-    val dataSize: Int,
+    val dataSize: Int
   ) {
     val algorithmName
       get() = algorithm.algorithmName
