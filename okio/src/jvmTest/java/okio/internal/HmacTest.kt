@@ -24,10 +24,10 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random
 
 /**
- * Check the [HMac] implementation against the reference [Mac] JVM implementation/
+ * Check the [Hmac] implementation against the reference [Mac] JVM implementation/
  */
 @RunWith(Parameterized::class)
-internal class HMacTest(val parameters: Parameters) {
+internal class HmacTest(val parameters: Parameters) {
 
   companion object {
     @get:Parameterized.Parameters(name = "{0}")
@@ -93,12 +93,12 @@ internal class HMacTest(val parameters: Parameters) {
       get() = algorithm.algorithmName
 
     fun createMac(key: ByteArray) =
-      algorithm.HMacFactory(key)
+      algorithm.HmacFactory(key)
 
-    enum class Algorithm(val algorithmName: String, val HMacFactory: (key: ByteArray) -> HMac) {
-      SHA_1("HmacSha1", HMac.Companion::sha1),
-      SHA_256("HmacSha256", HMac.Companion::sha256),
-      SHA_512("HmacSha512", HMac.Companion::sha512),
+    enum class Algorithm(val algorithmName: String, val HmacFactory: (key: ByteArray) -> Hmac) {
+      SHA_1("HmacSha1", Hmac.Companion::sha1),
+      SHA_256("HmacSha256", Hmac.Companion::sha256),
+      SHA_512("HmacSha512", Hmac.Companion::sha512),
     }
   }
 }

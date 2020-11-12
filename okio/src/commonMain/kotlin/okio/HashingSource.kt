@@ -43,6 +43,17 @@ expect class HashingSource : Source {
   val hash: ByteString
 
   companion object {
+    /** Returns a source that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
+    fun md5(source: Source): HashingSource
+
+    /** Returns a source that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
+    fun sha1(source: Source): HashingSource
+
+    /** Returns a source that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
+    fun sha256(source: Source): HashingSource
+
+    /** Returns a source that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
+    fun sha512(source: Source): HashingSource
 
     /** Returns a source that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
     fun hmacSha1(source: Source, key: ByteString): HashingSource

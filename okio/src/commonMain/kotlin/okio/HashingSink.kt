@@ -42,6 +42,18 @@ expect class HashingSink : Sink {
   val hash: ByteString
 
   companion object {
+    /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
+    fun md5(sink: Sink): HashingSink
+
+    /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
+    fun sha1(sink: Sink): HashingSink
+
+    /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
+    fun sha256(sink: Sink): HashingSink
+
+    /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
+    fun sha512(sink: Sink): HashingSink
+
     /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
     fun hmacSha1(sink: Sink, key: ByteString): HashingSink
 

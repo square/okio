@@ -17,7 +17,7 @@ package okio.internal
 
 import kotlin.experimental.xor
 
-internal class HMac(
+internal class Hmac(
   private val hashFunction: HashFunction,
   private val outerKey: ByteArray
 ) {
@@ -51,7 +51,7 @@ internal class HMac(
       key: ByteArray,
       hashFunction: HashFunction,
       blockLength: Int
-    ): HMac {
+    ): Hmac {
       val keySize = key.size
       val paddedKey = when {
         keySize == blockLength -> key
@@ -64,7 +64,7 @@ internal class HMac(
 
       hashFunction.update(innerKey)
 
-      return HMac(
+      return Hmac(
         hashFunction,
         outerKey
       )

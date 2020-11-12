@@ -15,12 +15,30 @@
  */
 package okio
 
-import okio.internal.HMac
+import okio.internal.HashFunction
+import okio.internal.Hmac
+import okio.internal.Md5
+import okio.internal.Sha1
+import okio.internal.Sha256
+import okio.internal.Sha512
 
-actual class HashingSink private constructor(
-  private val sink: Sink,
-  private val mac: HMac
-) : Sink {
+actual class HashingSink : Sink {
+
+  private val sink: Sink
+  private val hashFunction: HashFunction?
+  private val hmac: Hmac?
+
+  internal constructor(sink: Sink, hashFunction: HashFunction) {
+    this.sink = sink
+    this.hashFunction = hashFunction
+    this.hmac = null
+  }
+
+  internal constructor(sink: Sink, hmac: Hmac) {
+    this.sink = sink
+    this.hmac = hmac
+    this.hashFunction = null
+  }
 
   override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
@@ -30,7 +48,12 @@ actual class HashingSink private constructor(
     var s = source.head!!
     while (hashedCount < byteCount) {
       val toHash = minOf(byteCount - hashedCount, s.limit - s.pos).toInt()
-      mac!!.update(s.data, s.pos, toHash)
+
+      if (hashFunction != null) {
+        hashFunction.update(s.data, s.pos, toHash)
+      } else {
+        hmac!!.update(s.data, s.pos, toHash)
+      }
       hashedCount += toHash
       s = s.next!!
     }
@@ -52,16 +75,32 @@ actual class HashingSink private constructor(
    * internal state is cleared. This starts a new hash with zero bytes accepted.
    */
   actual val hash: ByteString
-    get() = ByteString(mac.doFinal())
+    get() {
+      val result = if (hashFunction != null) hashFunction.digest() else hmac!!.doFinal()
+      return ByteString(result)
+    }
 
   actual companion object {
+
+    /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
+    actual fun md5(sink: Sink) = HashingSink(sink, Md5())
+
+    /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
+    actual fun sha1(sink: Sink) = HashingSink(sink, Sha1())
+
+    /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
+    actual fun sha256(sink: Sink) = HashingSink(sink, Sha256())
+
+    /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
+    actual fun sha512(sink: Sink) = HashingSink(sink, Sha512())
+
     /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    actual fun hmacSha1(sink: Sink, key: ByteString) = HashingSink(sink, HMac.sha1(key.toByteArray()))
+    actual fun hmacSha1(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha1(key.toByteArray()))
 
     /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    actual fun hmacSha256(sink: Sink, key: ByteString) = HashingSink(sink, HMac.sha256(key.toByteArray()))
+    actual fun hmacSha256(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha256(key.toByteArray()))
 
     /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    actual fun hmacSha512(sink: Sink, key: ByteString) = HashingSink(sink, HMac.sha512(key.toByteArray()))
+    actual fun hmacSha512(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha512(key.toByteArray()))
   }
 }

@@ -112,23 +112,28 @@ actual class HashingSource : ForwardingSource {
 
   @JvmName("-deprecated_hash")
   @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "hash"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to val",
+    replaceWith = ReplaceWith(expression = "hash"),
+    level = DeprecationLevel.ERROR
+  )
   fun hash() = hash
 
   actual companion object {
     /** Returns a source that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
-    @JvmStatic fun md5(source: Source) = HashingSource(source, "MD5")
+    @JvmStatic
+    actual fun md5(source: Source) = HashingSource(source, "MD5")
 
     /** Returns a source that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
-    @JvmStatic fun sha1(source: Source) = HashingSource(source, "SHA-1")
+    @JvmStatic
+    actual fun sha1(source: Source) = HashingSource(source, "SHA-1")
 
     /** Returns a source that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    @JvmStatic fun sha256(source: Source) = HashingSource(source, "SHA-256")
+    @JvmStatic
+    actual fun sha256(source: Source) = HashingSource(source, "SHA-256")
 
     /** Returns a source that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    @JvmStatic fun sha512(source: Source) = HashingSource(source, "SHA-512")
+    @JvmStatic
+    actual fun sha512(source: Source) = HashingSource(source, "SHA-512")
 
     /** Returns a source that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
     @JvmStatic

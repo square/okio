@@ -108,16 +108,20 @@ actual class HashingSink : ForwardingSink {
 
   actual companion object {
     /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
-    @JvmStatic fun md5(sink: Sink) = HashingSink(sink, "MD5")
+    @JvmStatic
+    actual fun md5(sink: Sink) = HashingSink(sink, "MD5")
 
     /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
-    @JvmStatic fun sha1(sink: Sink) = HashingSink(sink, "SHA-1")
+    @JvmStatic
+    actual fun sha1(sink: Sink) = HashingSink(sink, "SHA-1")
 
     /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    @JvmStatic fun sha256(sink: Sink) = HashingSink(sink, "SHA-256")
+    @JvmStatic
+    actual fun sha256(sink: Sink) = HashingSink(sink, "SHA-256")
 
     /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    @JvmStatic fun sha512(sink: Sink) = HashingSink(sink, "SHA-512")
+    @JvmStatic
+    actual fun sha512(sink: Sink) = HashingSink(sink, "SHA-512")
 
     /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
     @JvmStatic
