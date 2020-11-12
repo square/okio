@@ -114,7 +114,7 @@ class HashingSourceTest {
     val hashingSource = sha256(source)
     source.write(HashingTest.r32k)
     sink.writeUtf8("z".repeat(Segment.SIZE * 2 - 1))
-    assertEquals(HashingTest.r32k.size, hashingSource.read(sink, Long.MAX_VALUE))
+    assertEquals(HashingTest.r32k.size.toLong(), hashingSource.read(sink, Long.MAX_VALUE))
     assertEquals(HashingTest.SHA256_r32k, hashingSource.hash)
   }
 
