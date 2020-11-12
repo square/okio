@@ -25,7 +25,7 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random
 
 /**
- * Check the [Hmac] implementation against the reference [Mac] JVM implementation/
+ * Check the [Hmac] implementation against the reference [Mac] JVM implementation.
  */
 @RunWith(Parameterized::class)
 class HmacTest(val parameters: Parameters) {
