@@ -125,7 +125,7 @@ class HashingTest {
     val SHA256_def =
       "cb8379ac2098aa165029e3938a51da0bcecfc008fd6795f401178647f96c5b34".decodeHex()
     val SHA256_r32k =
-      "3a640aa4d129671cb36a4bfbed652d732bce6b7ea83ccdd080c485b8c9ef479d".decodeHex()
+      "dadec7297f49bdf219895bd9942454047d394e1f20f247fbdc591080b4e8731e".decodeHex()
     val SHA512_abc =
       "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f".decodeHex()
     val SHA512_empty =
