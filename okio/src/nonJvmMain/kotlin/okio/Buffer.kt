@@ -16,6 +16,7 @@
 package okio
 
 import okio.internal.HashFunction
+import okio.internal.Hmac
 import okio.internal.Md5
 import okio.internal.Sha1
 import okio.internal.Sha256
@@ -256,14 +257,6 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual fun snapshot(byteCount: Int): ByteString = commonSnapshot(byteCount)
 
-  private fun digest(hash: HashFunction): ByteString {
-    forEachSegment { segment ->
-      hash.update(segment.data, segment.pos, segment.limit - segment.pos)
-    }
-
-    return ByteString(hash.digest())
-  }
-
   actual fun md5() = digest(Md5())
 
   actual fun sha1() = digest(Sha1())
@@ -271,6 +264,14 @@ actual class Buffer : BufferedSource, BufferedSink {
   actual fun sha256() = digest(Sha256())
 
   actual fun sha512() = digest(Sha512())
+
+  private fun digest(hash: HashFunction): ByteString {
+    forEachSegment { segment ->
+      hash.update(segment.data, segment.pos, segment.limit - segment.pos)
+    }
+
+    return ByteString(hash.digest())
+  }
 
   private fun forEachSegment(action: (Segment) -> Unit) {
     head?.let { head ->
@@ -280,6 +281,27 @@ actual class Buffer : BufferedSource, BufferedSink {
         segment = segment?.next
       } while (segment !== head)
     }
+  }
+
+  /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
+  actual fun hmacSha1(key: ByteString) = hmac(Hmac.sha1(key.toByteArray()))
+
+  /** Returns the 256-bit SHA-256 HMAC of this buffer.  */
+  actual fun hmacSha256(key: ByteString) = hmac(Hmac.sha256(key.toByteArray()))
+
+  /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
+  actual fun hmacSha512(key: ByteString) = hmac(Hmac.sha512(key.toByteArray()))
+
+  private fun hmac(hmac: Hmac): ByteString {
+    head?.let { head ->
+      hmac.update(head.data, head.pos, head.limit - head.pos)
+      var s = head.next!!
+      while (s !== head) {
+        hmac.update(s.data, s.pos, s.limit - s.pos)
+        s = s.next!!
+      }
+    }
+    return ByteString(hmac.doFinal())
   }
 
   actual fun readUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor = commonReadUnsafe(unsafeCursor)

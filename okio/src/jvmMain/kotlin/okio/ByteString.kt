@@ -86,13 +86,13 @@ internal actual constructor(
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
-  open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
+  actual open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
 
   /** Returns the 256-bit SHA-256 HMAC of this byte string.  */
-  open fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
+  actual open fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
 
   /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
-  open fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
+  actual open fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
 
   internal open fun hmac(algorithm: String, key: ByteString): ByteString {
     try {

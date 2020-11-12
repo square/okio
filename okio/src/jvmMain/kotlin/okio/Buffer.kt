@@ -527,13 +527,13 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
-  fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
+  actual fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
 
   /** Returns the 256-bit SHA-256 HMAC of this buffer.  */
-  fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
+  actual fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
 
   /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
-  fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
+  actual fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
 
   private fun hmac(algorithm: String, key: ByteString): ByteString {
     try {

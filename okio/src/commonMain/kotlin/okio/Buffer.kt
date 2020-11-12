@@ -102,6 +102,15 @@ expect class Buffer() : BufferedSource, BufferedSink {
 
   fun sha512(): ByteString
 
+  /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
+  fun hmacSha1(key: ByteString): ByteString
+
+  /** Returns the 256-bit SHA-256 HMAC of this buffer.  */
+  fun hmacSha256(key: ByteString): ByteString
+
+  /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
+  fun hmacSha512(key: ByteString): ByteString
+
   override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
 
   override fun write(source: Source, byteCount: Long): Buffer
