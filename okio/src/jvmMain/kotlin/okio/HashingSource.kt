@@ -38,7 +38,7 @@ import javax.crypto.spec.SecretKeySpec
  * ByteString hash = hashingSource.hash();
  * ```
  */
-actual class HashingSource : ForwardingSource {
+actual class HashingSource : ForwardingSource, Source { // Need to explicitly declare source pending fix for https://youtrack.jetbrains.com/issue/KT-20641
   private val messageDigest: MessageDigest?
   private val mac: Mac?
 

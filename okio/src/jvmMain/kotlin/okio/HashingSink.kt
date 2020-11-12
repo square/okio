@@ -37,7 +37,7 @@ import javax.crypto.spec.SecretKeySpec
  * ByteString hash = hashingSink.hash();
  * ```
  */
-actual class HashingSink : ForwardingSink {
+actual class HashingSink : ForwardingSink, Sink { // Need to explicitly declare sink pending fix for https://youtrack.jetbrains.com/issue/KT-20641
   private val messageDigest: MessageDigest?
   private val mac: Mac?
 
