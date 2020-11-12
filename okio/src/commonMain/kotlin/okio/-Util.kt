@@ -76,6 +76,9 @@ internal inline infix fun Byte.and(other: Int): Int = toInt() and other
 @Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline infix fun Byte.and(other: Long): Long = toLong() and other
 
+@Suppress("NOTHING_TO_INLINE") // Pending `kotlin.experimental.xor` becoming stable
+internal inline infix fun Byte.xor(other: Byte): Byte = (toInt() xor other.toInt()).toByte()
+
 @Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline infix fun Int.and(other: Long): Long = toLong() and other
 
