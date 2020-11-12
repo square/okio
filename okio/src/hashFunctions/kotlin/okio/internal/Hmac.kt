@@ -17,7 +17,7 @@ package okio.internal
 
 import kotlin.experimental.xor
 
-internal class Hmac(
+internal class Hmac private constructor(
   private val hashFunction: HashFunction,
   private val outerKey: ByteArray
 ) : HashFunction {
