@@ -15,6 +15,7 @@
  */
 package okio.internal
 
+import okio.ByteString
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -93,9 +94,9 @@ internal class HmacTest(val parameters: Parameters) {
       get() = algorithm.algorithmName
 
     fun createMac(key: ByteArray) =
-      algorithm.HmacFactory(key)
+      algorithm.HmacFactory(ByteString(key))
 
-    enum class Algorithm(val algorithmName: String, val HmacFactory: (key: ByteArray) -> Hmac) {
+    enum class Algorithm(val algorithmName: String, val HmacFactory: (key: ByteString) -> Hmac) {
       SHA_1("HmacSha1", Hmac.Companion::sha1),
       SHA_256("HmacSha256", Hmac.Companion::sha256),
       SHA_512("HmacSha512", Hmac.Companion::sha512),

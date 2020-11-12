@@ -15,6 +15,7 @@
  */
 package okio.internal
 
+import okio.ByteString
 import kotlin.experimental.xor
 
 internal class Hmac private constructor(
@@ -38,26 +39,26 @@ internal class Hmac private constructor(
     private const val IPAD: Byte = 54
     private const val OPAD: Byte = 92
 
-    fun sha1(key: ByteArray) =
+    fun sha1(key: ByteString) =
       create(key, hashFunction = Sha1(), blockLength = 64)
 
-    fun sha256(key: ByteArray) =
+    fun sha256(key: ByteString) =
       create(key, hashFunction = Sha256(), blockLength = 64)
 
-    fun sha512(key: ByteArray) =
+    fun sha512(key: ByteString) =
       create(key, hashFunction = Sha512(), blockLength = 128)
 
     private fun create(
-      key: ByteArray,
+      key: ByteString,
       hashFunction: HashFunction,
       blockLength: Int
     ): Hmac {
       val keySize = key.size
       val paddedKey = when {
         keySize == 0 -> throw IllegalArgumentException("Empty key")
-        keySize == blockLength -> key
-        keySize < blockLength -> key.copyOf(blockLength)
-        else -> hashFunction.apply { update(key) }.digest().copyOf(blockLength)
+        keySize == blockLength -> key.data
+        keySize < blockLength -> key.data.copyOf(blockLength)
+        else -> hashFunction.apply { update(key.data) }.digest().copyOf(blockLength)
       }
 
       val innerKey = ByteArray(blockLength) { paddedKey[it] xor IPAD }

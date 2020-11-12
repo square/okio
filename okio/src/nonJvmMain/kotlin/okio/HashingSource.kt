@@ -81,13 +81,13 @@ actual class HashingSource internal constructor(
     actual fun sha512(source: Source) = HashingSource(source, Sha512())
 
     /** Returns a source that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    actual fun hmacSha1(source: Source, key: ByteString) = HashingSource(source, Hmac.sha1(key.toByteArray()))
+    actual fun hmacSha1(source: Source, key: ByteString) = HashingSource(source, Hmac.sha1(key))
 
     /** Returns a source that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    actual fun hmacSha256(source: Source, key: ByteString) = HashingSource(source, Hmac.sha256(key.toByteArray()))
+    actual fun hmacSha256(source: Source, key: ByteString) = HashingSource(source, Hmac.sha256(key))
 
     /** Returns a source that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    actual fun hmacSha512(source: Source, key: ByteString) = HashingSource(source, Hmac.sha512(key.toByteArray()))
+    actual fun hmacSha512(source: Source, key: ByteString) = HashingSource(source, Hmac.sha512(key))
   }
 
 }

@@ -77,12 +77,12 @@ actual class HashingSink internal constructor(
     actual fun sha512(sink: Sink) = HashingSink(sink, Sha512())
 
     /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    actual fun hmacSha1(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha1(key.toByteArray()))
+    actual fun hmacSha1(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha1(key))
 
     /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    actual fun hmacSha256(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha256(key.toByteArray()))
+    actual fun hmacSha256(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha256(key))
 
     /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    actual fun hmacSha512(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha512(key.toByteArray()))
+    actual fun hmacSha512(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha512(key))
   }
 }
