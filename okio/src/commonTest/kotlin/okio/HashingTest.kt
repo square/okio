@@ -95,32 +95,45 @@ class HashingTest {
 
   @Test fun bufferHashIsNotDestructive() {
     val buffer = Buffer()
+
     buffer.writeUtf8("abc")
     assertEquals(SHA256_abc, buffer.sha256())
     assertEquals("abc", buffer.readUtf8())
+
     buffer.writeUtf8("def")
     assertEquals(SHA256_def, buffer.sha256())
     assertEquals("def", buffer.readUtf8())
+
     buffer.write(r32k)
     assertEquals(SHA256_r32k, buffer.sha256())
     assertEquals(r32k, buffer.readByteString())
   }
 
   companion object {
-    val HMAC_KEY = "0102030405060708".decodeHex()
-    val MD5_abc = "900150983cd24fb0d6963f7d28e17f72".decodeHex()
-    val SHA1_abc = "a9993e364706816aba3e25717850c26c9cd0d89d".decodeHex()
-    val HMAC_SHA1_abc = "987af8649982ff7d9fbb1b8aa35099146997af51".decodeHex()
-    val SHA256_abc = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad".decodeHex()
-    val SHA256_empty = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".decodeHex()
-    val SHA256_def = "cb8379ac2098aa165029e3938a51da0bcecfc008fd6795f401178647f96c5b34".decodeHex()
-    val SHA256_r32k = "3a640aa4d129671cb36a4bfbed652d732bce6b7ea83ccdd080c485b8c9ef479d".decodeHex()
+    val HMAC_KEY =
+      "0102030405060708".decodeHex()
+    val MD5_abc =
+      "900150983cd24fb0d6963f7d28e17f72".decodeHex()
+    val SHA1_abc =
+      "a9993e364706816aba3e25717850c26c9cd0d89d".decodeHex()
+    val HMAC_SHA1_abc =
+      "987af8649982ff7d9fbb1b8aa35099146997af51".decodeHex()
+    val SHA256_abc =
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad".decodeHex()
+    val SHA256_empty =
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".decodeHex()
+    val SHA256_def =
+      "cb8379ac2098aa165029e3938a51da0bcecfc008fd6795f401178647f96c5b34".decodeHex()
+    val SHA256_r32k =
+      "3a640aa4d129671cb36a4bfbed652d732bce6b7ea83ccdd080c485b8c9ef479d".decodeHex()
     val SHA512_abc =
       "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f".decodeHex()
     val SHA512_empty =
       "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e".decodeHex()
-    val HMAC_SHA256_empty = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".decodeHex()
-    val HMAC_SHA256_abc = "446d1715583cf1c30dfffbec0df4ff1f9d39d493211ab4c97ed6f3f0eb579b47".decodeHex()
+    val HMAC_SHA256_empty =
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".decodeHex()
+    val HMAC_SHA256_abc =
+      "446d1715583cf1c30dfffbec0df4ff1f9d39d493211ab4c97ed6f3f0eb579b47".decodeHex()
     val HMAC_SHA512_empty =
       "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e".decodeHex()
     val HMAC_SHA512_abc =
