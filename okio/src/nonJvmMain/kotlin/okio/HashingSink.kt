@@ -22,23 +22,10 @@ import okio.internal.Sha1
 import okio.internal.Sha256
 import okio.internal.Sha512
 
-actual class HashingSink : Sink {
-
-  private val sink: Sink
-  private val hashFunction: HashFunction?
-  private val hmac: Hmac?
-
-  internal constructor(sink: Sink, hashFunction: HashFunction) {
-    this.sink = sink
-    this.hashFunction = hashFunction
-    this.hmac = null
-  }
-
-  internal constructor(sink: Sink, hmac: Hmac) {
-    this.sink = sink
-    this.hmac = hmac
-    this.hashFunction = null
-  }
+actual class HashingSink internal constructor(
+  private val sink: Sink,
+  private val hashFunction: HashFunction
+) : Sink {
 
   override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
@@ -48,12 +35,7 @@ actual class HashingSink : Sink {
     var s = source.head!!
     while (hashedCount < byteCount) {
       val toHash = minOf(byteCount - hashedCount, s.limit - s.pos).toInt()
-
-      if (hashFunction != null) {
-        hashFunction.update(s.data, s.pos, toHash)
-      } else {
-        hmac!!.update(s.data, s.pos, toHash)
-      }
+      hashFunction.update(s.data, s.pos, toHash)
       hashedCount += toHash
       s = s.next!!
     }
@@ -76,7 +58,7 @@ actual class HashingSink : Sink {
    */
   actual val hash: ByteString
     get() {
-      val result = if (hashFunction != null) hashFunction.digest() else hmac!!.doFinal()
+      val result = hashFunction.digest()
       return ByteString(result)
     }
 

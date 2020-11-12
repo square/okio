@@ -265,6 +265,15 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual fun sha512() = digest(Sha512())
 
+  /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
+  actual fun hmacSha1(key: ByteString) = digest(Hmac.sha1(key.toByteArray()))
+
+  /** Returns the 256-bit SHA-256 HMAC of this buffer.  */
+  actual fun hmacSha256(key: ByteString) = digest(Hmac.sha256(key.toByteArray()))
+
+  /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
+  actual fun hmacSha512(key: ByteString) = digest(Hmac.sha512(key.toByteArray()))
+
   private fun digest(hash: HashFunction): ByteString {
     forEachSegment { segment ->
       hash.update(segment.data, segment.pos, segment.limit - segment.pos)
@@ -281,27 +290,6 @@ actual class Buffer : BufferedSource, BufferedSink {
         segment = segment?.next
       } while (segment !== head)
     }
-  }
-
-  /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
-  actual fun hmacSha1(key: ByteString) = hmac(Hmac.sha1(key.toByteArray()))
-
-  /** Returns the 256-bit SHA-256 HMAC of this buffer.  */
-  actual fun hmacSha256(key: ByteString) = hmac(Hmac.sha256(key.toByteArray()))
-
-  /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
-  actual fun hmacSha512(key: ByteString) = hmac(Hmac.sha512(key.toByteArray()))
-
-  private fun hmac(hmac: Hmac): ByteString {
-    head?.let { head ->
-      hmac.update(head.data, head.pos, head.limit - head.pos)
-      var s = head.next!!
-      while (s !== head) {
-        hmac.update(s.data, s.pos, s.limit - s.pos)
-        s = s.next!!
-      }
-    }
-    return ByteString(hmac.doFinal())
   }
 
   actual fun readUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor = commonReadUnsafe(unsafeCursor)

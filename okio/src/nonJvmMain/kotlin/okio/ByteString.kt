@@ -80,25 +80,19 @@ internal actual constructor(
 
   actual fun sha512() = digest(Sha512())
 
+  /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
+  actual fun hmacSha1(key: ByteString) = digest(Hmac.sha1(key.toByteArray()))
+
+  /** Returns the 256-bit SHA-256 HMAC of this byte string.  */
+  actual fun hmacSha256(key: ByteString) = digest(Hmac.sha256(key.toByteArray()))
+
+  /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
+  actual fun hmacSha512(key: ByteString) = digest(Hmac.sha512(key.toByteArray()))
+
   internal open fun digest(hashFunction: HashFunction): ByteString {
     hashFunction.update(data, 0, size)
     val digestBytes = hashFunction.digest()
     return ByteString(digestBytes)
-  }
-
-  /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
-  actual fun hmacSha1(key: ByteString) = hmac(Hmac.sha1(key.toByteArray()))
-
-  /** Returns the 256-bit SHA-256 HMAC of this byte string.  */
-  actual fun hmacSha256(key: ByteString) = hmac(Hmac.sha256(key.toByteArray()))
-
-  /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
-  actual fun hmacSha512(key: ByteString) = hmac(Hmac.sha512(key.toByteArray()))
-
-  private fun hmac(hmac: Hmac): ByteString {
-    hmac.update(data)
-    val bytes = hmac.doFinal()
-    return ByteString(bytes)
   }
 
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()

@@ -69,7 +69,7 @@ internal class HmacTest(val parameters: Parameters) {
   @Test
   fun hmac() {
     mac.update(bytes)
-    val hmacValue = mac.doFinal()
+    val hmacValue = mac.digest()
 
     assertArrayEquals(expected, hmacValue)
   }
@@ -79,7 +79,7 @@ internal class HmacTest(val parameters: Parameters) {
     for (byte in bytes) {
       mac.update(byteArrayOf(byte))
     }
-    val hmacValue = mac.doFinal()
+    val hmacValue = mac.digest()
 
     assertArrayEquals(expected, hmacValue)
   }

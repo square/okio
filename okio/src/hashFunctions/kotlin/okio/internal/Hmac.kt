@@ -20,12 +20,12 @@ import kotlin.experimental.xor
 internal class Hmac(
   private val hashFunction: HashFunction,
   private val outerKey: ByteArray
-) {
-  fun update(input: ByteArray, offset: Int = 0, byteCount: Int = input.size) {
+) : HashFunction {
+  override fun update(input: ByteArray, offset: Int, byteCount: Int) {
     hashFunction.update(input, offset, byteCount)
   }
 
-  fun doFinal(): ByteArray {
+  override fun digest(): ByteArray {
     val digest = hashFunction.digest()
 
     hashFunction.update(outerKey)

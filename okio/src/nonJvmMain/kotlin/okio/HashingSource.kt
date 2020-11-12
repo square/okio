@@ -22,23 +22,10 @@ import okio.internal.Sha1
 import okio.internal.Sha256
 import okio.internal.Sha512
 
-actual class HashingSource : Source {
-
-  private val source: Source
-  private val hashFunction: HashFunction?
-  private val hmac: Hmac?
-
-  internal constructor(source: Source, hashFunction: HashFunction) {
-    this.source = source
-    this.hashFunction = hashFunction
-    this.hmac = null
-  }
-
-  internal constructor(source: Source, hmac: Hmac) {
-    this.source = source
-    this.hmac = hmac
-    this.hashFunction = null
-  }
+actual class HashingSource internal constructor(
+  private val source: Source,
+  private val hashFunction: HashFunction
+) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {
     val result = sink.read(sink, byteCount)
@@ -57,11 +44,7 @@ actual class HashingSource : Source {
       // Hash that segment and all the rest until the end.
       while (offset < sink.size) {
         val pos = (s.pos + start - offset).toInt()
-        if (hashFunction != null) {
-          hashFunction.update(s.data, pos, s.limit - pos)
-        } else {
-          hmac!!.update(s.data, pos, s.limit - pos)
-        }
+        hashFunction.update(s.data, pos, s.limit - pos)
         offset += s.limit - s.pos
         start = offset
         s = s.next!!
@@ -79,7 +62,7 @@ actual class HashingSource : Source {
 
   actual val hash: ByteString
     get() {
-      val result = if (hashFunction != null) hashFunction.digest() else hmac!!.doFinal()
+      val result = hashFunction.digest()
       return ByteString(result)
     }
 
