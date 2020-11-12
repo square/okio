@@ -28,7 +28,7 @@ actual class HashingSource internal constructor(
 ) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {
-    val result = sink.read(sink, byteCount)
+    val result = source.read(sink, byteCount)
 
     if (result != -1L) {
       var start = sink.size - result
