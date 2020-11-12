@@ -28,12 +28,12 @@ import kotlin.random.Random
  * Check the [Hmac] implementation against the reference [Mac] JVM implementation/
  */
 @RunWith(Parameterized::class)
-internal class HmacTest(val parameters: Parameters) {
+class HmacTest(val parameters: Parameters) {
 
   companion object {
     @get:Parameterized.Parameters(name = "{0}")
     @get:JvmStatic
-    internal val parameters: List<Parameters>
+    val parameters: List<Parameters>
       get() {
         val algorithms = enumValues<Parameters.Algorithm>()
         val keySizes = listOf(8, 32, 48, 64, 128, 256)
@@ -85,7 +85,7 @@ internal class HmacTest(val parameters: Parameters) {
     assertArrayEquals(expected, hmacValue)
   }
 
-  internal data class Parameters(
+  data class Parameters(
     val algorithm: Algorithm,
     val keySize: Int,
     val dataSize: Int,
@@ -93,10 +93,13 @@ internal class HmacTest(val parameters: Parameters) {
     val algorithmName
       get() = algorithm.algorithmName
 
-    fun createMac(key: ByteArray) =
+    internal fun createMac(key: ByteArray) =
       algorithm.HmacFactory(ByteString(key))
 
-    enum class Algorithm(val algorithmName: String, val HmacFactory: (key: ByteString) -> Hmac) {
+    enum class Algorithm(
+      val algorithmName: String,
+      internal val HmacFactory: (key: ByteString) -> Hmac
+    ) {
       SHA_1("HmacSha1", Hmac.Companion::sha1),
       SHA_256("HmacSha256", Hmac.Companion::sha256),
       SHA_512("HmacSha512", Hmac.Companion::sha512),
