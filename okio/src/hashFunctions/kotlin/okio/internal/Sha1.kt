@@ -162,6 +162,8 @@ internal class Sha1 : HashFunction {
     val d = h3
     val e = h4
 
+    reset()
+
     return byteArrayOf(
       (a shr 24).toByte(),
       (a shr 16).toByte(),
@@ -186,4 +188,17 @@ internal class Sha1 : HashFunction {
     )
   }
   /* ktlint-enable */
+
+  private fun reset() {
+    messageLength = 0L
+    unprocessed.fill(0)
+    unprocessedLimit = 0
+    words.fill(0)
+
+    h0 = 1732584193
+    h1 = -271733879
+    h2 = -1732584194
+    h3 = 271733878
+    h4 = -1009589776
+  }
 }

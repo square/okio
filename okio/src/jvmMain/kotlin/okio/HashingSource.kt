@@ -38,7 +38,7 @@ import javax.crypto.spec.SecretKeySpec
  * ByteString hash = hashingSource.hash();
  * ```
  */
-class HashingSource : ForwardingSource {
+actual class HashingSource : ForwardingSource, Source { // Need to explicitly declare source pending fix for https://youtrack.jetbrains.com/issue/KT-20641
   private val messageDigest: MessageDigest?
   private val mac: Mac?
 
@@ -104,7 +104,7 @@ class HashingSource : ForwardingSource {
    * internal state is cleared. This starts a new hash with zero bytes supplied.
    */
   @get:JvmName("hash")
-  val hash: ByteString
+  actual val hash: ByteString
     get() {
       val result = if (messageDigest != null) messageDigest.digest() else mac!!.doFinal()
       return ByteString(result)
@@ -112,34 +112,39 @@ class HashingSource : ForwardingSource {
 
   @JvmName("-deprecated_hash")
   @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "hash"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to val",
+    replaceWith = ReplaceWith(expression = "hash"),
+    level = DeprecationLevel.ERROR
+  )
   fun hash() = hash
 
-  companion object {
-    /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
-    @JvmStatic fun md5(source: Source) = HashingSource(source, "MD5")
-
-    /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
-    @JvmStatic fun sha1(source: Source) = HashingSource(source, "SHA-1")
-
-    /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    @JvmStatic fun sha256(source: Source) = HashingSource(source, "SHA-256")
-
-    /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    @JvmStatic fun sha512(source: Source) = HashingSource(source, "SHA-512")
-
-    /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    @JvmStatic fun hmacSha1(source: Source, key: ByteString) = HashingSource(source, key,
-        "HmacSHA1")
-
-    /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
+  actual companion object {
+    /** Returns a source that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
     @JvmStatic
-    fun hmacSha256(source: Source, key: ByteString) = HashingSource(source, key, "HmacSHA256")
+    actual fun md5(source: Source) = HashingSource(source, "MD5")
 
-    /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
+    /** Returns a source that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
     @JvmStatic
-    fun hmacSha512(source: Source, key: ByteString) = HashingSource(source, key, "HmacSHA512")
+    actual fun sha1(source: Source) = HashingSource(source, "SHA-1")
+
+    /** Returns a source that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
+    @JvmStatic
+    actual fun sha256(source: Source) = HashingSource(source, "SHA-256")
+
+    /** Returns a source that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
+    @JvmStatic
+    actual fun sha512(source: Source) = HashingSource(source, "SHA-512")
+
+    /** Returns a source that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
+    @JvmStatic
+    actual fun hmacSha1(source: Source, key: ByteString) = HashingSource(source, key, "HmacSHA1")
+
+    /** Returns a source that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
+    @JvmStatic
+    actual fun hmacSha256(source: Source, key: ByteString) = HashingSource(source, key, "HmacSHA256")
+
+    /** Returns a source that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
+    @JvmStatic
+    actual fun hmacSha512(source: Source, key: ByteString) = HashingSource(source, key, "HmacSHA512")
   }
 }

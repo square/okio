@@ -37,7 +37,7 @@ import javax.crypto.spec.SecretKeySpec
  * ByteString hash = hashingSink.hash();
  * ```
  */
-class HashingSink : ForwardingSink {
+actual class HashingSink : ForwardingSink, Sink { // Need to explicitly declare sink pending fix for https://youtrack.jetbrains.com/issue/KT-20641
   private val messageDigest: MessageDigest?
   private val mac: Mac?
 
@@ -93,7 +93,7 @@ class HashingSink : ForwardingSink {
    * internal state is cleared. This starts a new hash with zero bytes accepted.
    */
   @get:JvmName("hash")
-  val hash: ByteString
+  actual val hash: ByteString
     get() {
       val result = if (messageDigest != null) messageDigest.digest() else mac!!.doFinal()
       return ByteString(result)
@@ -106,26 +106,33 @@ class HashingSink : ForwardingSink {
       level = DeprecationLevel.ERROR)
   fun hash() = hash
 
-  companion object {
+  actual companion object {
     /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
-    @JvmStatic fun md5(sink: Sink) = HashingSink(sink, "MD5")
+    @JvmStatic
+    actual fun md5(sink: Sink) = HashingSink(sink, "MD5")
 
     /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
-    @JvmStatic fun sha1(sink: Sink) = HashingSink(sink, "SHA-1")
+    @JvmStatic
+    actual fun sha1(sink: Sink) = HashingSink(sink, "SHA-1")
 
     /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    @JvmStatic fun sha256(sink: Sink) = HashingSink(sink, "SHA-256")
+    @JvmStatic
+    actual fun sha256(sink: Sink) = HashingSink(sink, "SHA-256")
 
     /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    @JvmStatic fun sha512(sink: Sink) = HashingSink(sink, "SHA-512")
+    @JvmStatic
+    actual fun sha512(sink: Sink) = HashingSink(sink, "SHA-512")
 
     /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    @JvmStatic fun hmacSha1(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA1")
+    @JvmStatic
+    actual fun hmacSha1(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA1")
 
     /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    @JvmStatic fun hmacSha256(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA256")
+    @JvmStatic
+    actual fun hmacSha256(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA256")
 
     /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    @JvmStatic fun hmacSha512(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA512")
+    @JvmStatic
+    actual fun hmacSha512(sink: Sink, key: ByteString) = HashingSink(sink, key, "HmacSHA512")
   }
 }
