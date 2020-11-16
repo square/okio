@@ -17,12 +17,14 @@ package okio.files
 
 import okio.Buffer
 import okio.ByteString.Companion.toByteString
+import okio.FakeFilesystem
 import okio.Filesystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.buffer
 import kotlin.random.Random
+import kotlin.test.BeforeTest
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,71 +33,84 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
-class FileSystemTest {
-  private val tmpDirectory = Filesystem.SYSTEM.temporaryDirectory().toString()
+abstract class FileSystemTest(
+  val filesystem: Filesystem,
+  temporaryDirectory: Path
+) {
+  val base: Path = temporaryDirectory / "FileSystemTest-${randomToken()}"
+
+  @BeforeTest
+  fun setUp() {
+    filesystem.createDirectory(base)
+  }
 
   @Test
   fun `canonicalize dot returns current working directory`() {
-    val cwd = Filesystem.SYSTEM.canonicalize(".".toPath())
-    assertTrue(cwd.toString()) { cwd.toString().endsWith("okio${Path.directorySeparator}okio-files") }
+    if (filesystem is FakeFilesystem) return
+    val cwd = filesystem.canonicalize(".".toPath())
+    assertTrue(cwd.toString()) {
+      cwd.toString().endsWith("okio${Path.directorySeparator}okio-files")
+    }
   }
 
   @Test
   fun `canonicalize no such file`() {
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.canonicalize(randomToken().toPath())
+      filesystem.canonicalize(base / "no-such-file")
     }
   }
 
   @Test
   fun list() {
-    val entries = Filesystem.SYSTEM.list(Filesystem.SYSTEM.canonicalize(".".toPath()))
-    assertTrue(entries.toString()) { "README.md" in entries.map { it.name } }
+    val target = base / "list"
+    target.writeUtf8("hello, world!")
+    val entries = filesystem.list(base)
+    assertTrue(entries.toString()) { target in entries }
   }
 
   @Test
   fun `list no such directory`() {
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.list("$tmpDirectory/unlikely-directory/ce70dc67c24823e695e616145ce38403".toPath())
+      filesystem.list(base / "no-such-directory")
     }
   }
 
   @Test
   fun `file source no such directory`() {
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.source("$tmpDirectory/unlikely-directory/ce70dc67c24823e695e616145ce38403".toPath())
+      filesystem.source(base / "no-such-directory" / "file")
     }
   }
 
   @Test
   fun `file source`() {
-    val source = Filesystem.SYSTEM.source("gradle.properties".toPath())
+    val path = base / "file-source"
+    path.writeUtf8("hello, world!")
+
+    val source = filesystem.source(path)
     val buffer = Buffer()
-    assertTrue(source.read(buffer, 100L) <= 49L) // either 47 on posix or 49 with \r\n line feeds on windows
+    assertTrue(source.read(buffer, 100L) == 13L)
     assertEquals(-1L, source.read(buffer, 100L))
-    assertEquals("""
-        |POM_ARTIFACT_ID=okio-files
-        |POM_NAME=Okio Files
-        |""".trimMargin(), buffer.readUtf8().replace("\r\n", "\n"))
+    assertEquals("hello, world!", buffer.readUtf8())
     source.close()
   }
 
   @Test
   fun `file sink`() {
-    val path = "$tmpDirectory/FileSystemTest-file_sink.txt".toPath()
-    val sink = Filesystem.SYSTEM.sink(path)
+    val path = base / "file=sink"
+    val sink = filesystem.sink(path)
     val buffer = Buffer().writeUtf8("hello, world!")
     sink.write(buffer, buffer.size)
     sink.close()
-    assertTrue(path in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    assertTrue(path in filesystem.list(base))
     assertEquals(0, buffer.size)
     assertEquals("hello, world!", path.readUtf8())
   }
 
   @Test
   fun `file sink flush`() {
-    val path = "$tmpDirectory/FileSystemTest-file_sink.txt".toPath()
-    val sink = Filesystem.SYSTEM.sink(path)
+    val path = base / "file-sink"
+    val sink = filesystem.sink(path)
 
     val buffer = Buffer().writeUtf8("hello,")
     sink.write(buffer, buffer.size)
@@ -111,169 +126,170 @@ class FileSystemTest {
   @Test
   fun `file sink no such directory`() {
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.sink("$tmpDirectory/ce70dc67c24823e695e616145ce38403/unlikely-file".toPath())
+      filesystem.sink(base / "no-such-directory" / "file")
     }
   }
 
   @Test
   fun createDirectory() {
-    val path = "$tmpDirectory/FileSystemTest-${randomToken()}".toPath()
-    Filesystem.SYSTEM.createDirectory(path)
-    assertTrue(path in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    val path = base / "create-directory"
+    filesystem.createDirectory(path)
+    assertTrue(path in filesystem.list(base))
   }
 
   @Test
   fun `createDirectory parent directory does not exist`() {
-    val path = "$tmpDirectory/ce70dc67c24823e695e616145ce38403-unlikely-file/created".toPath()
+    val path = base / "no-such-directory" / "created"
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.createDirectory(path)
+      filesystem.createDirectory(path)
     }
   }
 
   @Test
   fun `atomicMove file`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
     source.writeUtf8("hello, world!")
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
-    Filesystem.SYSTEM.atomicMove(source, target)
+    val target = base / "target"
+    filesystem.atomicMove(source, target)
     assertEquals("hello, world!", target.readUtf8())
-    assertTrue(source !in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
-    assertTrue(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    assertTrue(source !in filesystem.list(base))
+    assertTrue(target in filesystem.list(base))
   }
 
   @Test
   fun `atomicMove directory`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
-    Filesystem.SYSTEM.createDirectory(source)
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
-    Filesystem.SYSTEM.atomicMove(source, target)
-    assertTrue(source !in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
-    assertTrue(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    val source = base / "source"
+    filesystem.createDirectory(source)
+    val target = base / "target"
+    filesystem.atomicMove(source, target)
+    assertTrue(source !in filesystem.list(base))
+    assertTrue(target in filesystem.list(base))
   }
 
   @Test
   fun `atomicMove source is target`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
     source.writeUtf8("hello, world!")
-    Filesystem.SYSTEM.atomicMove(source, source)
+    filesystem.atomicMove(source, source)
     assertEquals("hello, world!", source.readUtf8())
-    assertTrue(source in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    assertTrue(source in filesystem.list(base))
   }
 
   @Test
   @Ignore // TODO(jwilson): Windows has different behavior for this test. Fix and re-enable.
   fun `atomicMove clobber existing file`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
     source.writeUtf8("hello, world!")
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val target = base / "target"
     target.writeUtf8("this file will be clobbered!")
-    Filesystem.SYSTEM.atomicMove(source, target)
+    filesystem.atomicMove(source, target)
     assertEquals("hello, world!", target.readUtf8())
-    assertTrue(source !in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
-    assertTrue(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    assertTrue(source !in filesystem.list(base))
+    assertTrue(target in filesystem.list(base))
   }
 
   @Test
   fun `atomicMove source does not exist`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
+    val target = base / "target"
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.atomicMove(source, target)
+      filesystem.atomicMove(source, target)
     }
   }
 
   @Test
   fun `atomicMove source is file and target is directory`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
     source.writeUtf8("hello, world!")
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
-    Filesystem.SYSTEM.createDirectory(target)
+    val target = base / "target"
+    filesystem.createDirectory(target)
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.atomicMove(source, target)
+      filesystem.atomicMove(source, target)
     }
   }
 
   @Test
   @Ignore // somehow the behaviour is different on windows
   fun `atomicMove source is directory and target is file`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
-    Filesystem.SYSTEM.createDirectory(source)
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
+    filesystem.createDirectory(source)
+    val target = base / "target"
     target.writeUtf8("hello, world!")
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.atomicMove(source, target)
+      filesystem.atomicMove(source, target)
     }
   }
 
   @Test
   fun `copy file`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
     source.writeUtf8("hello, world!")
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
-    Filesystem.SYSTEM.copy(source, target)
-    assertTrue(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    val target = base / "target"
+    filesystem.copy(source, target)
+    assertTrue(target in filesystem.list(base))
+    assertEquals("hello, world!", source.readUtf8())
     assertEquals("hello, world!", target.readUtf8())
   }
 
   @Test
   fun `copy source does not exist`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
+    val target = base / "target"
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.copy(source, target)
+      filesystem.copy(source, target)
     }
-    assertFalse(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    assertFalse(target in filesystem.list(base))
   }
 
   @Test
   fun `copy target is clobbered`() {
-    val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val source = base / "source"
     source.writeUtf8("hello, world!")
-    val target = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
+    val target = base / "target"
     target.writeUtf8("this file will be clobbered!")
-    Filesystem.SYSTEM.copy(source, target)
-    assertTrue(target in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    filesystem.copy(source, target)
+    assertTrue(target in filesystem.list(base))
     assertEquals("hello, world!", target.readUtf8())
   }
 
   @Test
   fun `delete file`() {
-    val path = "$tmpDirectory/FileSystemTest-delete-${randomToken()}".toPath()
+    val path = base / "delete-file"
     path.writeUtf8("delete me")
-    Filesystem.SYSTEM.delete(path)
-    assertTrue(path !in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    filesystem.delete(path)
+    assertTrue(path !in filesystem.list(base))
   }
 
   @Test
   fun `delete empty directory`() {
-    val path = "$tmpDirectory/FileSystemTest-delete-${randomToken()}".toPath()
-    Filesystem.SYSTEM.createDirectory(path)
-    Filesystem.SYSTEM.delete(path)
-    assertTrue(path !in Filesystem.SYSTEM.list(tmpDirectory.toPath()))
+    val path = base / "delete-empty-directory"
+    filesystem.createDirectory(path)
+    filesystem.delete(path)
+    assertTrue(path !in filesystem.list(base))
   }
 
   @Test
   fun `delete fails on no such file`() {
-    val path = "$tmpDirectory/FileSystemTest-delete-${randomToken()}".toPath()
+    val path = base / "no-such-file"
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.delete(path)
+      filesystem.delete(path)
     }
   }
 
   @Test
   fun `delete fails on nonempty directory`() {
-    val path = "$tmpDirectory/FileSystemTest-delete-${randomToken()}".toPath()
-    Filesystem.SYSTEM.createDirectory(path)
+    val path = base / "non-empty-directory"
+    filesystem.createDirectory(path)
     (path / "file.txt").writeUtf8("inside directory")
     assertFailsWith<IOException> {
-      Filesystem.SYSTEM.delete(path)
+      filesystem.delete(path)
     }
   }
 
   private fun randomToken() = Random.nextBytes(16).toByteString().hex()
 
-  private fun Path.readUtf8(): String {
-    val source = Filesystem.SYSTEM.source(this).buffer()
+  fun Path.readUtf8(): String {
+    val source = filesystem.source(this).buffer()
     try {
       return source.readUtf8()
     } finally {
@@ -281,8 +297,8 @@ class FileSystemTest {
     }
   }
 
-  private fun Path.writeUtf8(string: String) {
-    val sink = Filesystem.SYSTEM.sink(this).buffer()
+  fun Path.writeUtf8(string: String) {
+    val sink = filesystem.sink(this).buffer()
     try {
       sink.writeUtf8(string)
     } finally {
