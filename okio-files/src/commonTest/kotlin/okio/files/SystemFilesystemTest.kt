@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio
+package okio.files
 
-internal expect val VARIANT_DIRECTORY_SEPARATOR: String
+import okio.Filesystem
 
-internal expect fun PosixSystemFilesystem.variantTemporaryDirectory(): Path
-
-internal expect fun PosixSystemFilesystem.variantDelete(path: Path)
-
-internal expect fun PosixSystemFilesystem.variantMkdir(dir: Path): Int
-
-internal expect fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path
+class SystemFilesystemTest : FileSystemTest(
+  filesystem = Filesystem.SYSTEM,
+  temporaryDirectory = Filesystem.SYSTEM.temporaryDirectory()
+)
