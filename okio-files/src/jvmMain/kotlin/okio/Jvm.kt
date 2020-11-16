@@ -15,10 +15,13 @@
  */
 package okio
 
+import okio.Path.Companion.toPath
 import java.io.File
 import java.nio.file.Paths
 import java.nio.file.Path as NioPath
 
 internal fun Path.toFile(): File = File(toString())
+
+internal fun File.toOkioPath(): Path = toString().toPath()
 
 internal fun Path.toNioPath(): NioPath = Paths.get(toString())

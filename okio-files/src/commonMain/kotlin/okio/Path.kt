@@ -26,8 +26,9 @@ import okio.ByteString.Companion.encodeUtf8
  * * **Absolute paths** are prefixed with `/` and identify a location independent of any working
  *   directory.
  * * **Relative paths** are not prefixed with `/`. On their own, relative paths do not identify a
- *   location on a filesystem; they must be resolved against an absolute path first. When a relative
- *   path is used to access a [Filesystem], it is resolved against [Filesystem.baseDirectory].
+ *   location on a filesystem; they are relative to the system's current working directory. Use
+ *   [Filesystem.canonicalize] to convert a relative path to its absolute path on a particular
+ *   filesystem.
  *
  * After the optional leading `/`, the rest of the path is a sequence of segments separated by `/`
  * characters. Segments satisfy these rules:
@@ -138,7 +139,7 @@ class Path private constructor(
 
     fun String.toPath(): Path = Buffer().writeUtf8(this).toPath()
 
-    val directorySeparator = PLATFORM_SEPARATOR
+    val directorySeparator = DIRECTORY_SEPARATOR
 
     /** Consume the buffer and return it as a path. */
     internal fun Buffer.toPath(): Path {

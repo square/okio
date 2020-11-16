@@ -35,14 +35,21 @@ class FileSystemTest {
   private val tmpDirectory = Filesystem.SYSTEM.temporaryDirectory().toString()
 
   @Test
-  fun baseDirectory() {
-    val cwd = Filesystem.SYSTEM.baseDirectory()
+  fun `canonicalize dot returns current working directory`() {
+    val cwd = Filesystem.SYSTEM.canonicalize(".".toPath())
     assertTrue(cwd.toString()) { cwd.toString().endsWith("okio${Path.directorySeparator}okio-files") }
   }
 
   @Test
+  fun `canonicalize no such file`() {
+    assertFailsWith<IOException> {
+      Filesystem.SYSTEM.canonicalize(randomToken().toPath())
+    }
+  }
+
+  @Test
   fun list() {
-    val entries = Filesystem.SYSTEM.list(Filesystem.SYSTEM.baseDirectory())
+    val entries = Filesystem.SYSTEM.list(Filesystem.SYSTEM.canonicalize(".".toPath()))
     assertTrue(entries.toString()) { "README.md" in entries.map { it.name } }
   }
 
@@ -154,6 +161,7 @@ class FileSystemTest {
   }
 
   @Test
+  @Ignore // TODO(jwilson): Windows has different behavior for this test. Fix and re-enable.
   fun `atomicMove clobber existing file`() {
     val source = "$tmpDirectory/FileSystemTest-atomicMove-${randomToken()}".toPath()
     source.writeUtf8("hello, world!")
