@@ -46,20 +46,16 @@ open class AsyncTimeout : Timeout() {
   private var timeoutAt = 0L
 
   fun enter() {
-    check(!inQueue) { "Unbalanced enter/exit" }
     val timeoutNanos = timeoutNanos()
     val hasDeadline = hasDeadline()
     if (timeoutNanos == 0L && !hasDeadline) {
       return // No timeout and no deadline? Don't bother with the queue.
     }
-    inQueue = true
     scheduleTimeout(this, timeoutNanos, hasDeadline)
   }
 
   /** Returns true if the timeout occurred.  */
   fun exit(): Boolean {
-    if (!inQueue) return false
-    inQueue = false
     return cancelScheduledTimeout(this)
   }
 
@@ -226,6 +222,9 @@ open class AsyncTimeout : Timeout() {
 
     private fun scheduleTimeout(node: AsyncTimeout, timeoutNanos: Long, hasDeadline: Boolean) {
       synchronized(AsyncTimeout::class.java) {
+        check(!node.inQueue) { "Unbalanced enter/exit" }
+        node.inQueue = true
+
         // Start the watchdog thread and create the head node when the first timeout is scheduled.
         if (head == null) {
           head = AsyncTimeout()
@@ -266,6 +265,9 @@ open class AsyncTimeout : Timeout() {
     /** Returns true if the timeout occurred. */
     private fun cancelScheduledTimeout(node: AsyncTimeout): Boolean {
       synchronized(AsyncTimeout::class.java) {
+        if (!node.inQueue) return false
+        node.inQueue = false
+
         // Remove the node from the linked list.
         var prev = head
         while (prev != null) {

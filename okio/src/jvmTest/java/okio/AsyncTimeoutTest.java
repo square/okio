@@ -15,29 +15,30 @@
  */
 package okio;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static okio.TestUtil.bufferWithRandomSegmentLayout;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * This test uses four timeouts of varying durations: 250ms, 500ms, 750ms and
  * 1000ms, named 'a', 'b', 'c' and 'd'.
  */
 public final class AsyncTimeoutTest {
-  private final List<Timeout> timedOut = new CopyOnWriteArrayList<>();
+  private final BlockingDeque<AsyncTimeout> timedOut = new LinkedBlockingDeque<>();
   private final AsyncTimeout a = new RecordingAsyncTimeout();
   private final AsyncTimeout b = new RecordingAsyncTimeout();
   private final AsyncTimeout c = new RecordingAsyncTimeout();
@@ -124,7 +125,6 @@ public final class AsyncTimeoutTest {
     assertTimedOut();
   }
 
-  /** Detecting double-enters is not guaranteed. */
   @Test public void doubleEnter() throws Exception {
     a.enter();
     try {
@@ -132,6 +132,23 @@ public final class AsyncTimeoutTest {
       fail();
     } catch (IllegalStateException expected) {
     }
+  }
+
+  @Test public void reEnter() throws Exception {
+    a.timeout(10, SECONDS);
+    a.enter();
+    assertFalse(a.exit());
+    a.enter();
+    assertFalse(a.exit());
+  }
+
+  @Test public void reEnterAfterTimeout() throws Exception {
+    a.timeout(1, MILLISECONDS);
+    a.enter();
+    assertSame(a, timedOut.take());
+    assertTrue(a.exit());
+    a.enter();
+    assertFalse(a.exit());
   }
 
   @Test public void deadlineOnly() throws Exception {
@@ -364,7 +381,7 @@ public final class AsyncTimeoutTest {
 
   /** Asserts which timeouts fired, and in which order. */
   private void assertTimedOut(Timeout... expected) {
-    assertEquals(Arrays.asList(expected), timedOut);
+    assertEquals(Arrays.asList(expected), new ArrayList<Timeout>(timedOut));
   }
 
   class RecordingAsyncTimeout extends AsyncTimeout {
