@@ -36,30 +36,28 @@ import java.util.concurrent.TimeUnit
  * [timedOut] is asynchronous, and may be called after [exit].
  */
 open class AsyncTimeout : Timeout() {
-  /** True if this node is currently in the queue.  */
-  private var inQueue = false
+  /** True if this node has been put in the queue.  */
+  // Guarded by AsyncTimeout.class
+  private var scheduled = false
 
   /** The next node in the linked list.  */
+  // Guarded by AsyncTimeout.class
   private var next: AsyncTimeout? = null
 
   /** If scheduled, this is the time that the watchdog should time this out.  */
   private var timeoutAt = 0L
 
   fun enter() {
-    check(!inQueue) { "Unbalanced enter/exit" }
     val timeoutNanos = timeoutNanos()
     val hasDeadline = hasDeadline()
     if (timeoutNanos == 0L && !hasDeadline) {
       return // No timeout and no deadline? Don't bother with the queue.
     }
-    inQueue = true
     scheduleTimeout(this, timeoutNanos, hasDeadline)
   }
 
   /** Returns true if the timeout occurred.  */
   fun exit(): Boolean {
-    if (!inQueue) return false
-    inQueue = false
     return cancelScheduledTimeout(this)
   }
 
@@ -222,10 +220,14 @@ open class AsyncTimeout : Timeout() {
      * node to time out, or null if the queue is empty. The head is null until the watchdog thread
      * is started and also after being idle for [AsyncTimeout.IDLE_TIMEOUT_MILLIS].
      */
+    // Guarded by AsyncTimeout.class
     private var head: AsyncTimeout? = null
 
     private fun scheduleTimeout(node: AsyncTimeout, timeoutNanos: Long, hasDeadline: Boolean) {
       synchronized(AsyncTimeout::class.java) {
+        check(!node.scheduled) { "Unbalanced enter/exit" }
+        node.scheduled = true
+
         // Start the watchdog thread and create the head node when the first timeout is scheduled.
         if (head == null) {
           head = AsyncTimeout()
@@ -266,6 +268,10 @@ open class AsyncTimeout : Timeout() {
     /** Returns true if the timeout occurred. */
     private fun cancelScheduledTimeout(node: AsyncTimeout): Boolean {
       synchronized(AsyncTimeout::class.java) {
+        if (!node.scheduled) return false
+        // Will become unscheduled, whether found or not
+        node.scheduled = false
+
         // Remove the node from the linked list.
         var prev = head
         while (prev != null) {

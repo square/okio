@@ -17,15 +17,29 @@ package okio;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.IntStream;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static java.util.concurrent.Executors.newCachedThreadPool;
+import static java.util.concurrent.Executors.newFixedThreadPool;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static okio.TestUtil.bufferWithRandomSegmentLayout;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -124,7 +138,6 @@ public final class AsyncTimeoutTest {
     assertTimedOut();
   }
 
-  /** Detecting double-enters is not guaranteed. */
   @Test public void doubleEnter() throws Exception {
     a.enter();
     try {
@@ -132,6 +145,90 @@ public final class AsyncTimeoutTest {
       fail();
     } catch (IllegalStateException expected) {
     }
+  }
+
+  @Test public void reEnter() throws Exception {
+    a.timeout(10, SECONDS);
+    a.enter();
+    assertFalse(a.exit());
+    a.enter();
+    assertFalse(a.exit());
+  }
+
+  @Test public void concurrentEnter() throws Exception {
+    final int concurrentTests = 8;
+    final int testIterations = 10000;
+    final int concurrentTestThreads = 2;
+    final ExecutorService executor = newFixedThreadPool(concurrentTests * (1 + concurrentTestThreads));
+    try {
+      final CyclicBarrier testBarrier = new CyclicBarrier(concurrentTests);
+      List<Future<?>> testFutures = new ArrayList<>();
+      for (int test = 0; test < concurrentTests; test++) {
+        testFutures.add(executor.submit(new Callable<Void>() {
+          @Override
+          public Void call()
+                  throws Exception
+          {
+            testBarrier.await(10, SECONDS);
+            for (int iteration = 0; iteration < testIterations; iteration++) {
+              if (iteration % 100 == 0) {
+                System.out.println("Running iteration " + iteration);
+              }
+              concurrentEnterIteration(executor, concurrentTestThreads);
+            }
+            return null;
+          }
+        }));
+      }
+      for (Future<?> testFuture : testFutures) {
+        // A timeout to obtain the future may mean the test dead locked
+        testFuture.get(30, SECONDS);
+      }
+    } finally {
+      executor.shutdownNow();
+    }
+  }
+
+  private void concurrentEnterIteration(ExecutorService executor, int concurrentTestThreads) throws Exception {
+    final AsyncTimeout a = new AsyncTimeout();
+    a.timeout(10, SECONDS);
+    final CyclicBarrier barrier = new CyclicBarrier(concurrentTestThreads);
+    List<Future<Void>> futures = new ArrayList<>();
+    for (int thread = 0; thread < concurrentTestThreads; thread++) {
+      futures.add(executor.submit(new Callable<Void>() {
+        @Override
+        public Void call()
+                throws Exception
+        {
+          barrier.await(10, SECONDS);
+          a.enter();
+          return null;
+        }
+      }));
+    }
+    boolean successfulTask = false;
+    for (Future<Void> future : futures) {
+      try {
+        future.get();
+        if (successfulTask) {
+          fail("Two or more futures returned successfully");
+        }
+        successfulTask = true;
+      }
+      catch (ExecutionException e) {
+        if ("java.lang.IllegalStateException: Unbalanced enter/exit".equals(e.getMessage()) ||
+                "java.lang.IllegalArgumentException: Already scheduled".equals(e.getMessage())) {
+          // expected
+        }
+        else {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    if (!successfulTask) {
+      fail("No futures returned successfully");
+    }
+    a.exit();
   }
 
   @Test public void deadlineOnly() throws Exception {
