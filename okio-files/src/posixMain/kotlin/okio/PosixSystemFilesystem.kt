@@ -35,8 +35,6 @@ internal object PosixSystemFilesystem : Filesystem() {
 
   override fun canonicalize(path: Path) = variantCanonicalize(path)
 
-  override fun temporaryDirectory() = variantTemporaryDirectory()
-
   override fun list(dir: Path): List<Path> {
     val opendir: CPointer<DIR> = opendir(dir.toString())
       ?: throw IOException(errnoString(errno))

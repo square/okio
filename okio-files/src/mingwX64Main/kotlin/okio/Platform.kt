@@ -15,12 +15,22 @@
  */
 package okio
 
+import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
-import java.io.File
-
-internal actual val PLATFORM_FILESYSTEM: Filesystem = JvmSystemFilesystem
+import platform.posix.getenv
 
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
-  get() = System.getProperty("java.io.tmpdir").toPath()
+  get() {
+    // Windows' built-in APIs check the TEMP, TMP, and USERPROFILE environment variables in order.
+    // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-gettemppatha?redirectedfrom=MSDN
+    val temp = getenv("TEMP")
+    if (temp != null) return temp.toKString().toPath()
 
-internal actual val DIRECTORY_SEPARATOR = File.separator
+    val tmp = getenv("TMP")
+    if (tmp != null) return tmp.toKString().toPath()
+
+    val userProfile = getenv("USERPROFILE")
+    if (userProfile != null) return userProfile.toKString().toPath()
+
+    return "\\Windows\\TEMP".toPath()
+  }
