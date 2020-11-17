@@ -15,7 +15,6 @@
  */
 package okio
 
-import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
 import platform.posix.EACCES
 import platform.posix.ENOENT
@@ -23,27 +22,11 @@ import platform.posix.PATH_MAX
 import platform.posix._fullpath
 import platform.posix.errno
 import platform.posix.free
-import platform.posix.getenv
 import platform.posix.mkdir
 import platform.posix.remove
 import platform.posix.rmdir
 
 internal actual val VARIANT_DIRECTORY_SEPARATOR = "\\"
-
-internal actual fun PosixSystemFilesystem.variantTemporaryDirectory(): Path {
-  // Windows' built-in APIs check the TEMP, TMP, and USERPROFILE environment variables in order.
-  // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-gettemppatha?redirectedfrom=MSDN
-  val temp = getenv("TEMP")
-  if (temp != null) return temp.toKString().toPath()
-
-  val tmp = getenv("TMP")
-  if (tmp != null) return tmp.toKString().toPath()
-
-  val userProfile = getenv("USERPROFILE")
-  if (userProfile != null) return userProfile.toKString().toPath()
-
-  return "\\Windows\\TEMP".toPath()
-}
 
 internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
   val pathString = path.toString()

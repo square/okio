@@ -130,10 +130,6 @@ class FakeFilesystem : Filesystem() {
     if (elements.remove(canonicalPath) == null) throw IOException("no such file")
   }
 
-  override fun temporaryDirectory(): Path {
-    return root
-  }
-
   internal object Directory
 
   /** Reads data from [buffer], removing itself from [openPathsMutable] when closed. */

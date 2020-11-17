@@ -19,5 +19,5 @@ import okio.Filesystem
 
 class SystemFilesystemTest : FileSystemTest(
   filesystem = Filesystem.SYSTEM,
-  temporaryDirectory = Filesystem.SYSTEM.temporaryDirectory()
+  temporaryDirectory = Filesystem.SYSTEM_TEMPORARY_DIRECTORY
 )

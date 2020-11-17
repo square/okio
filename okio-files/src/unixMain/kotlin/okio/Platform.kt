@@ -15,10 +15,14 @@
  */
 package okio
 
-internal expect val VARIANT_DIRECTORY_SEPARATOR: String
+import kotlinx.cinterop.toKString
+import okio.Path.Companion.toPath
+import platform.posix.getenv
 
-internal expect fun PosixSystemFilesystem.variantDelete(path: Path)
+internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
+  get() {
+    val tmpdir = getenv("TMPDIR")
+    if (tmpdir != null) return tmpdir.toKString().toPath()
 
-internal expect fun PosixSystemFilesystem.variantMkdir(dir: Path): Int
-
-internal expect fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path
+    return "/tmp".toPath()
+  }

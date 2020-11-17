@@ -112,20 +112,24 @@ abstract class Filesystem {
   @Throws(IOException::class)
   abstract fun delete(path: Path)
 
-  /**
-   * Returns a writable temporary directory on the current file system.
-   * This is the java.io.tmpdir system property on the JVM platform and the TMPDIR environment variable on the POSIX platform
-   */
-  internal abstract fun temporaryDirectory(): Path
-
   companion object {
     /**
      * The current process's host filesystem. Use this instance directly, or dependency inject a
      * [Filesystem] to make code testable.
      */
     val SYSTEM: Filesystem
-      get() {
-        return PLATFORM_FILESYSTEM
-      }
+      get() = PLATFORM_FILESYSTEM
+
+    /**
+     * Returns a writable temporary directory on [SYSTEM].
+     *
+     * This is platform-specific.
+     *
+     *  * **JVM and Android**: the path in the `java.io.tmpdir` system property
+     *  * **Linux, iOS, and macOS**: the path in the `TMPDIR` environment variable.
+     *  * **Windows**: the first non-null of `TEMP`, `TMP`, and `USERPROFILE` environment variables.
+     */
+    val SYSTEM_TEMPORARY_DIRECTORY: Path
+      get() = PLATFORM_TEMPORARY_DIRECTORY
   }
 }

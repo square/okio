@@ -15,23 +15,14 @@
  */
 package okio
 
-import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
 import platform.posix.errno
 import platform.posix.free
-import platform.posix.getenv
 import platform.posix.mkdir
 import platform.posix.realpath
 import platform.posix.remove
 
 internal actual val VARIANT_DIRECTORY_SEPARATOR = "/"
-
-internal actual fun PosixSystemFilesystem.variantTemporaryDirectory(): Path {
-  val tmpdir = getenv("TMPDIR")
-  if (tmpdir != null) return tmpdir.toKString().toPath()
-
-  return "/tmp".toPath()
-}
 
 internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
   val result = remove(path.toString())
