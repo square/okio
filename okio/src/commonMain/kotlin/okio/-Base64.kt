@@ -27,26 +27,23 @@ internal const val BASE64 =
 internal const val BASE64_URL_SAFE =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
-internal fun String.decodeBase64ToArray(): ByteArray? {
+fun Buffer.commonWriteBase64(string: String): Buffer {
   // Ignore trailing '=' padding and whitespace from the input.
-  var limit = length
+  var limit = string.length
   while (limit > 0) {
-    val c = this[limit - 1]
+    val c = string[limit - 1]
     if (c != '=' && c != '\n' && c != '\r' && c != ' ' && c != '\t') {
       break
     }
     limit--
   }
 
-  // If the input includes whitespace, this output array will be longer than necessary.
-  val out = ByteArray((limit * 6L / 8L).toInt())
-  var outCount = 0
   var inCount = 0
-
   var word = 0
-  for (pos in 0 until limit) {
-    val c = this[pos]
-
+  var pos = 0
+  var s = head
+  while (pos < limit) {
+    val c = string[pos++]
     val bits: Int
     if (c in 'A'..'Z') {
       // char ASCII value
@@ -70,7 +67,7 @@ internal fun String.decodeBase64ToArray(): ByteArray? {
     } else if (c == '\n' || c == '\r' || c == ' ' || c == '\t') {
       continue
     } else {
-      return null
+      throw IllegalArgumentException("Invalid Base64") // TODO: Dedicated exception? IOException?
     }
 
     // Append this char's 6 bits to the word.
@@ -79,9 +76,17 @@ internal fun String.decodeBase64ToArray(): ByteArray? {
     // For every 4 chars of input, we accumulate 24 bits of output. Emit 3 bytes.
     inCount++
     if (inCount % 4 == 0) {
-      out[outCount++] = (word shr 16).toByte()
-      out[outCount++] = (word shr 8).toByte()
-      out[outCount++] = word.toByte()
+      if (s == null || s.limit + 3 > Segment.SIZE) {
+        // For simplicity, don't try to write blocks across different segments, allocate new segment when current doesn't have enough capacity
+        s = writableSegment(3)
+      }
+      val data = s.data
+      var i = s.limit
+      data[i++] = (word shr 16).toByte()
+      data[i++] = (word shr 8).toByte()
+      data[i++] = word.toByte()
+      s.limit = i
+      size += 3
     }
   }
 
@@ -89,54 +94,91 @@ internal fun String.decodeBase64ToArray(): ByteArray? {
   when (lastWordChars) {
     1 -> {
       // We read 1 char followed by "===". But 6 bits is a truncated byte! Fail.
-      return null
+      throw IllegalArgumentException("Invalid Base64") // TODO: Dedicated exception? IOException?
     }
     2 -> {
       // We read 2 chars followed by "==". Emit 1 byte with 8 of those 12 bits.
+      if (s == null || s.limit + 1 > Segment.SIZE) {
+        s = writableSegment(1)
+      }
       word = word shl 12
-      out[outCount++] = (word shr 16).toByte()
+      s.data[s.limit++] = (word shr 16).toByte()
+      size += 1
     }
     3 -> {
       // We read 3 chars, followed by "=". Emit 2 bytes for 16 of those 18 bits.
+      if (s == null || s.limit + 2 > Segment.SIZE) {
+        s = writableSegment(2)
+      }
       word = word shl 6
-      out[outCount++] = (word shr 16).toByte()
-      out[outCount++] = (word shr 8).toByte()
+      val data = s.data
+      var i = s.limit
+      data[i++] = (word shr 16).toByte()
+      data[i++] = (word shr 8).toByte()
+      s.limit = i
+      size += 2
     }
   }
 
-  // If we sized our out array perfectly, we're done.
-  if (outCount == out.size) return out
-
-  // Copy the decoded bytes to a new, right-sized array.
-  return out.copyOf(outCount)
+  return this
 }
 
-internal fun ByteArray.encodeBase64(map: String = BASE64): String {
-  val length = (size + 2) / 3 * 4
+fun Buffer.commonReadBase64(): String =
+  readBase64(BASE64)
+
+fun Buffer.commonReadBase64Url(): String =
+  readBase64(BASE64_URL_SAFE)
+
+private fun Buffer.readBase64(map: String = BASE64): String {
+  val length = ((size + 2) / 3 * 4).toInt() // TODO: Prevent Int overflow / arithmetic overflow ?
   val out = CharArray(length)
   var index = 0
-  val end = size - size % 3
-  var i = 0
-  while (i < end) {
-    val b0 = this[i++].toInt()
-    val b1 = this[i++].toInt()
-    val b2 = this[i++].toInt()
-    out[index++] = map[(b0 and 0xff shr 2)]
-    out[index++] = map[(b0 and 0x03 shl 4) or (b1 and 0xff shr 4)]
-    out[index++] = map[(b1 and 0x0f shl 2) or (b2 and 0xff shr 6)]
-    out[index++] = map[(b2 and 0x3f)]
+  while (size >= 3) {
+    val s = head!!
+    val segmentSize = s.limit - s.pos
+    if (segmentSize > 3) {
+      // Read all complete blocks from head segment
+      val data = s.data
+      val end = s.limit - segmentSize % 3
+      var i = s.pos
+      while (i < end) {
+        val b0 = data[i++].toInt()
+        val b1 = data[i++].toInt()
+        val b2 = data[i++].toInt()
+        out[index++] = map[(b0 and 0xff shr 2)]
+        out[index++] = map[(b0 and 0x03 shl 4) or (b1 and 0xff shr 4)]
+        out[index++] = map[(b1 and 0x0f shl 2) or (b2 and 0xff shr 6)]
+        out[index++] = map[(b2 and 0x3f)]
+      }
+      size -= end - s.pos
+      if (end == s.limit) {
+        head = s.pop()
+        SegmentPool.recycle(s)
+      } else {
+        s.pos = end
+      }
+    } else {
+      // Read next block, which is spread over multiple segments
+      val b0 = readByte().toInt()
+      val b1 = readByte().toInt()
+      val b2 = readByte().toInt()
+      out[index++] = map[(b0 and 0xff shr 2)]
+      out[index++] = map[(b0 and 0x03 shl 4) or (b1 and 0xff shr 4)]
+      out[index++] = map[(b1 and 0x0f shl 2) or (b2 and 0xff shr 6)]
+      out[index++] = map[(b2 and 0x3f)]
+    }
   }
-  when (size - end) {
-    1 -> {
-      val b0 = this[i].toInt()
+  when (size) {
+    1L -> {
+      val b0 = readByte().toInt()
       out[index++] = map[b0 and 0xff shr 2]
       out[index++] = map[b0 and 0x03 shl 4]
       out[index++] = '='
       out[index] = '='
     }
-    2 -> {
-      val b0 = this[i++].toInt()
-      val b1 = this[i].toInt()
+    2L -> {
+      val b0 = readByte().toInt()
+      val b1 = readByte().toInt()
       out[index++] = map[(b0 and 0xff shr 2)]
       out[index++] = map[(b0 and 0x03 shl 4) or (b1 and 0xff shr 4)]
       out[index++] = map[(b1 and 0x0f shl 2)]

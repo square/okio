@@ -54,6 +54,8 @@ actual interface BufferedSink : Sink {
 
   actual fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
 
+  actual fun writeBase64(string: String): BufferedSink
+
   actual fun emit(): BufferedSink
 
   actual fun emitCompleteSegments(): BufferedSink

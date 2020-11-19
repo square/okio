@@ -16,7 +16,6 @@
 
 package okio.internal
 
-import okio.BASE64_URL_SAFE
 import okio.Buffer
 import okio.ByteString
 import okio.REPLACEMENT_CODE_POINT
@@ -24,10 +23,9 @@ import okio.and
 import okio.arrayRangeEquals
 import okio.asUtf8ToByteArray
 import okio.checkOffsetAndCount
-import okio.decodeBase64ToArray
-import okio.encodeBase64
 import okio.isIsoControl
 import okio.processUtf8CodePoints
+import okio.commonReadBase64Url
 import okio.shr
 import okio.toUtf8String
 
@@ -46,10 +44,12 @@ internal inline fun ByteString.commonUtf8(): String {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun ByteString.commonBase64(): String = data.encodeBase64()
+internal inline fun ByteString.commonBase64(): String =
+  Buffer().write(this).readBase64()
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun ByteString.commonBase64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
+internal inline fun ByteString.commonBase64Url(): String =
+  Buffer().write(this).commonReadBase64Url()
 
 internal val HEX_DIGIT_CHARS =
   charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
@@ -266,8 +266,13 @@ internal inline fun String.commonEncodeUtf8(): ByteString {
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun String.commonDecodeBase64(): ByteString? {
-  val decoded = decodeBase64ToArray()
-  return if (decoded != null) ByteString(decoded) else null
+  val buffer = Buffer()
+  try {
+    buffer.writeBase64(this)
+  } catch (e: IllegalArgumentException) { // TODO: Dedicated Base64 exception?
+    return null
+  }
+  return buffer.readByteString()
 }
 
 @Suppress("NOTHING_TO_INLINE")

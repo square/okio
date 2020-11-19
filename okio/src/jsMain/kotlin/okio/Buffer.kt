@@ -130,6 +130,10 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   override fun readUtf8CodePoint(): Int = commonReadUtf8CodePoint()
 
+  override fun readBase64(): String = commonReadBase64()
+
+  override fun readBase64Url(): String = commonReadBase64Url()
+
   override fun select(options: Options): Int = commonSelect(options)
 
   override fun readByteArray(): ByteArray = commonReadByteArray()
@@ -191,6 +195,9 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer =
     commonWriteHexadecimalUnsignedLong(v)
+
+  actual override fun writeBase64(string: String): Buffer =
+    commonWriteBase64(string)
 
   override fun write(source: Buffer, byteCount: Long): Unit = commonWrite(source, byteCount)
 

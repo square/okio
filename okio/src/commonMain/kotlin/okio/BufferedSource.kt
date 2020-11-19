@@ -421,6 +421,18 @@ expect interface BufferedSource : Source {
    */
   fun readUtf8CodePoint(): Int
 
+  /**
+   * Removes all bytes from this, encodes them as as [Base64](http://www.ietf.org/rfc/rfc2045.txt), and returns the
+   * string. In violation of the RFC, the returned string does not wrap lines at 76 columns.
+   */
+  fun readBase64(): String
+
+  /**
+   * Removes all bytes from this, encodes them as as [URL-safe Base64](http://www.ietf.org/rfc/rfc4648.txt), and
+   * returns the string.
+   */
+  fun readBase64Url(): String
+
   /** Equivalent to [indexOf(b, 0)][indexOf]. */
   fun indexOf(b: Byte): Long
 

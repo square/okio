@@ -242,6 +242,11 @@ expect interface BufferedSink : Sink {
   fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
 
   /**
+   * Decodes the Base64-encoded bytes from [string] and writes them to this sink.
+   */
+  fun writeBase64(string: String): BufferedSink
+
+  /**
    * Writes all buffered data to the underlying sink, if one exists. Then that sink is recursively
    * flushed which pushes data as far as possible towards its ultimate destination. Typically that
    * destination is a network socket or file.

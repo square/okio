@@ -91,6 +91,9 @@ actual interface BufferedSink : Sink, WritableByteChannel {
   actual fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
 
   @Throws(IOException::class)
+  actual fun writeBase64(string: String): BufferedSink
+
+  @Throws(IOException::class)
   actual override fun flush()
 
   @Throws(IOException::class)

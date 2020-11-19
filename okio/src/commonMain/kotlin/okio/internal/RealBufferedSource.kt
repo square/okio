@@ -110,6 +110,16 @@ internal inline fun RealBufferedSource.commonReadByteArray(byteCount: Long): Byt
   return buffer.readByteArray(byteCount)
 }
 
+internal inline fun RealBufferedSource.commonReadBase64(): String {
+  buffer.writeAll(source)
+  return buffer.readBase64()
+}
+
+internal inline fun RealBufferedSource.commonReadBase64Url(): String {
+  buffer.writeAll(source)
+  return buffer.readBase64Url()
+}
+
 internal inline fun RealBufferedSource.commonReadFully(sink: ByteArray) {
   try {
     require(sink.size.toLong())

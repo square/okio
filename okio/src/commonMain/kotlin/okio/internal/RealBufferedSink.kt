@@ -163,6 +163,12 @@ internal inline fun RealBufferedSink.commonWriteHexadecimalUnsignedLong(v: Long)
   return emitCompleteSegments()
 }
 
+internal inline fun RealBufferedSink.commonWriteBase64(string: String): BufferedSink {
+  check(!closed) { "closed" }
+  buffer.writeBase64(string)
+  return emitCompleteSegments()
+}
+
 internal inline fun RealBufferedSink.commonEmitCompleteSegments(): BufferedSink {
   check(!closed) { "closed" }
   val byteCount = buffer.completeSegmentByteCount()

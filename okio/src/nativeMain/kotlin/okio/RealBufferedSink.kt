@@ -24,6 +24,7 @@ import okio.internal.commonTimeout
 import okio.internal.commonToString
 import okio.internal.commonWrite
 import okio.internal.commonWriteAll
+import okio.internal.commonWriteBase64
 import okio.internal.commonWriteByte
 import okio.internal.commonWriteDecimalLong
 import okio.internal.commonWriteHexadecimalUnsignedLong
@@ -66,6 +67,7 @@ internal actual class RealBufferedSink actual constructor(
   override fun writeLongLe(v: Long) = commonWriteLongLe(v)
   override fun writeDecimalLong(v: Long) = commonWriteDecimalLong(v)
   override fun writeHexadecimalUnsignedLong(v: Long) = commonWriteHexadecimalUnsignedLong(v)
+  override fun writeBase64(string: String): BufferedSink = commonWriteBase64(string)
   override fun emitCompleteSegments() = commonEmitCompleteSegments()
   override fun emit() = commonEmit()
   override fun flush() = commonFlush()

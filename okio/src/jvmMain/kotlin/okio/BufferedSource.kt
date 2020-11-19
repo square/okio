@@ -117,6 +117,12 @@ actual interface BufferedSource : Source, ReadableByteChannel {
   @Throws(IOException::class)
   actual fun readUtf8CodePoint(): Int
 
+  @Throws(IOException::class)
+  actual fun readBase64(): String
+
+  @Throws(IOException::class)
+  actual fun readBase64Url(): String
+
   /** Removes all bytes from this, decodes them as `charset`, and returns the string. */
   @Throws(IOException::class)
   fun readString(charset: Charset): String

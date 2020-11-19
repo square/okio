@@ -76,6 +76,10 @@ actual interface BufferedSource : Source {
 
   actual fun readUtf8CodePoint(): Int
 
+  actual fun readBase64(): String
+
+  actual fun readBase64Url(): String
+
   actual fun indexOf(b: Byte): Long
 
   actual fun indexOf(b: Byte, fromIndex: Long): Long

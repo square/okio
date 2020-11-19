@@ -23,6 +23,8 @@ import okio.internal.commonPeek
 import okio.internal.commonRangeEquals
 import okio.internal.commonRead
 import okio.internal.commonReadAll
+import okio.internal.commonReadBase64
+import okio.internal.commonReadBase64Url
 import okio.internal.commonReadByte
 import okio.internal.commonReadByteArray
 import okio.internal.commonReadByteString
@@ -62,6 +64,8 @@ internal actual class RealBufferedSource actual constructor(
   override fun select(options: Options): Int = commonSelect(options)
   override fun readByteArray(): ByteArray = commonReadByteArray()
   override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
+  override fun readBase64(): String = commonReadBase64()
+  override fun readBase64Url(): String = commonReadBase64Url()
   override fun read(sink: ByteArray): Int = read(sink, 0, sink.size)
   override fun readFully(sink: ByteArray): Unit = commonReadFully(sink)
   override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int =
