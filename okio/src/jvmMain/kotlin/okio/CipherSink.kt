@@ -26,10 +26,8 @@ class CipherSink(
   private var closed = false
 
   init {
-    // Require block cipher, and check for unsupported (too large) block size (should never happen
-    // with standard algorithms)
+    // Require block cipher
     require(blockSize > 0) { "Block cipher required $cipher" }
-    require(blockSize <= Segment.SIZE) { "Cipher block size $blockSize too large $cipher" }
   }
 
   @Throws(IOException::class)
@@ -46,11 +44,17 @@ class CipherSink(
 
   private fun update(source: Buffer, remaining: Long): Int {
     val head = source.head!!
-    val size = minOf(remaining, head.limit - head.pos).toInt()
+    var size = minOf(remaining, head.limit - head.pos).toInt()
     val buffer = sink.buffer
 
-    // For block cipher, output size cannot exceed input size in update.
-    val s = buffer.writableSegment(size)
+    // Shorten input until output is guaranteed to fit within a segment
+    var outputSize = cipher.getOutputSize(size)
+    while (outputSize > Segment.SIZE) {
+      check(size > blockSize) { "Unexpected output size $outputSize for input size $size" }
+      size -= blockSize
+      outputSize = cipher.getOutputSize(size)
+    }
+    val s = buffer.writableSegment(outputSize)
 
     val ciphered = cipher.update(head.data, head.pos, size, s.data, s.limit)
 
