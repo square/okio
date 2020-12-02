@@ -28,10 +28,8 @@ class CipherSource(
   private var closed = false
 
   init {
-    // Require block cipher, and check for unsupported (too large) block size (should never happen
-    // with standard algorithms)
+    // Require block cipher
     require(blockSize > 0) { "Block cipher required $cipher" }
-    require(blockSize <= Segment.SIZE) { "Cipher block size $blockSize too large $cipher" }
   }
 
   @Throws(IOException::class)
@@ -60,10 +58,16 @@ class CipherSource(
 
   private fun update() {
     val head = source.buffer.head!!
-    val size = head.limit - head.pos
+    var size = head.limit - head.pos
 
-    // For block cipher, output size cannot exceed input size in update.
-    val s = buffer.writableSegment(size)
+    // Shorten input until output is guaranteed to fit within a segment
+    var outputSize = cipher.getOutputSize(size)
+    while (outputSize > Segment.SIZE) {
+      check(size > blockSize) { "Unexpected output size $outputSize for input size $size" }
+      size -= blockSize
+      outputSize = cipher.getOutputSize(size)
+    }
+    val s = buffer.writableSegment(outputSize)
 
     val ciphered =
       cipher.update(head.data, head.pos, size, s.data, s.pos)
