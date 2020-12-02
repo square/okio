@@ -67,6 +67,8 @@ class CipherSink(
       SegmentPool.recycle(s)
     }
 
+    sink.emitCompleteSegments()
+
     // Mark those bytes as read.
     source.size -= size
     head.pos += size
