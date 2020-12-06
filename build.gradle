@@ -35,6 +35,7 @@ buildscript {
               'jdk': "org.jetbrains.kotlin:kotlin-test-junit",
               'js': "org.jetbrains.kotlin:kotlin-test-js",
           ],
+          'time': 'org.jetbrains.kotlinx:kotlinx-datetime:0.1.1',
       ],
       'jmh': [
           'gradlePlugin': "me.champeau.gradle:jmh-gradle-plugin:${versions.jmhPlugin}",
@@ -73,6 +74,7 @@ buildscript {
     mavenCentral()
     gradlePluginPortal()
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+    maven { url 'https://kotlin.bintray.com/kotlinx/' }
   }
 }
 
@@ -89,6 +91,7 @@ subprojects {
     mavenCentral()
     jcenter()
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+    maven { url 'https://kotlin.bintray.com/kotlinx/' }
   }
 
   apply plugin: "org.jlleitschuh.gradle.ktlint"

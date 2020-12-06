@@ -17,15 +17,25 @@ package okio.files
 
 import okio.FakeFilesystem
 import okio.Path.Companion.toPath
+import okio.createdAt
+import okio.lastAccessedAt
+import okio.lastModifiedAt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.ExperimentalTime
+import kotlin.time.minutes
 
-class FakeFilesystemTest : FileSystemTest(
-  filesystem = FakeFilesystem(),
+@ExperimentalTime
+class FakeFilesystemTest private constructor(clock: FakeClock) : FileSystemTest(
+  clock = clock,
+  filesystem = FakeFilesystem(clock),
   temporaryDirectory = "/".toPath()
 ) {
+  constructor() : this(FakeClock())
+
   private val fakeFilesystem: FakeFilesystem = filesystem as FakeFilesystem
+  private val fakeClock: FakeClock = clock
 
   @Test
   fun `open paths includes open sink`() {
@@ -45,5 +55,49 @@ class FakeFilesystemTest : FileSystemTest(
     assertEquals(openPath, fakeFilesystem.openPaths.single())
     source.close()
     assertTrue(fakeFilesystem.openPaths.isEmpty())
+  }
+
+  @Test
+  fun `file last accessed time`() {
+    val path = base / "file-last-accessed-time"
+
+    fakeClock.sleep(1.minutes)
+    path.writeUtf8("hello, world!")
+    val createdAt = clock.now()
+
+    fakeClock.sleep(1.minutes)
+    path.writeUtf8("hello again!")
+    val modifiedAt = clock.now()
+
+    fakeClock.sleep(1.minutes)
+    path.readUtf8()
+    val accessedAt = clock.now()
+
+    val metadata = filesystem.metadata(path)
+    assertEquals(createdAt, metadata.createdAt)
+    assertEquals(modifiedAt, metadata.lastModifiedAt)
+    assertEquals(accessedAt, metadata.lastAccessedAt)
+  }
+
+  @Test
+  fun `directory last accessed time`() {
+    val path = base / "directory-last-accessed-time"
+
+    fakeClock.sleep(1.minutes)
+    filesystem.createDirectory(path)
+    val createdAt = clock.now()
+
+    fakeClock.sleep(1.minutes)
+    (path / "child").writeUtf8("hello world!")
+    val modifiedAt = clock.now()
+
+    fakeClock.sleep(1.minutes)
+    filesystem.list(path)
+    val accessedAt = clock.now()
+
+    val metadata = filesystem.metadata(path)
+    assertEquals(createdAt, metadata.createdAt)
+    assertEquals(modifiedAt, metadata.lastModifiedAt)
+    assertEquals(accessedAt, metadata.lastAccessedAt)
   }
 }

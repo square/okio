@@ -16,12 +16,17 @@
 package okio.files
 
 import kotlinx.datetime.Clock
-import okio.Filesystem
+import kotlinx.datetime.Instant
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class SystemFilesystemTest : FileSystemTest(
-  clock = Clock.System,
-  filesystem = Filesystem.SYSTEM,
-  temporaryDirectory = Filesystem.SYSTEM_TEMPORARY_DIRECTORY
-)
+internal class FakeClock : Clock {
+  var now = Instant.parse("2021-01-01T00:00:00Z")
+
+  override fun now() = now
+
+  fun sleep(duration: Duration) {
+    now = now.plus(duration)
+  }
+}
