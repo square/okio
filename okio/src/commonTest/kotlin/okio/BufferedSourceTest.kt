@@ -347,7 +347,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
         'l'.toByte(),
         'o'.toByte(),
         0
-      ), array
+      ),
+      array
     )
   }
 

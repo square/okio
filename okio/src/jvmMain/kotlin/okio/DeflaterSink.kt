@@ -19,9 +19,9 @@
 
 package okio
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.io.IOException
 import java.util.zip.Deflater
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /**
  * A sink that uses [DEFLATE](http://tools.ietf.org/html/rfc1951) to
@@ -158,4 +158,4 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
  * @see DeflaterSink
  */
 inline fun Sink.deflate(deflater: Deflater = Deflater()): DeflaterSink =
-    DeflaterSink(this, deflater)
+  DeflaterSink(this, deflater)

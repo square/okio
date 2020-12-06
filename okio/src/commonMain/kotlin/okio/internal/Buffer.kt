@@ -340,17 +340,21 @@ internal inline fun Buffer.commonReadInt(): Int {
 
   // If the int is split across multiple segments, delegate to readByte().
   if (limit - pos < 4L) {
-    return (readByte() and 0xff shl 24
-      or (readByte() and 0xff shl 16)
-      or (readByte() and 0xff shl 8) // ktlint-disable no-multi-spaces
-      or (readByte() and 0xff))
+    return (
+      readByte() and 0xff shl 24
+        or (readByte() and 0xff shl 16)
+        or (readByte() and 0xff shl 8) // ktlint-disable no-multi-spaces
+        or (readByte() and 0xff)
+      )
   }
 
   val data = segment.data
-  val i = (data[pos++] and 0xff shl 24
-    or (data[pos++] and 0xff shl 16)
-    or (data[pos++] and 0xff shl 8)
-    or (data[pos++] and 0xff))
+  val i = (
+    data[pos++] and 0xff shl 24
+      or (data[pos++] and 0xff shl 16)
+      or (data[pos++] and 0xff shl 8)
+      or (data[pos++] and 0xff)
+    )
   size -= 4L
 
   if (pos == limit) {
@@ -372,19 +376,23 @@ internal inline fun Buffer.commonReadLong(): Long {
 
   // If the long is split across multiple segments, delegate to readInt().
   if (limit - pos < 8L) {
-    return (readInt() and 0xffffffffL shl 32
-      or (readInt() and 0xffffffffL))
+    return (
+      readInt() and 0xffffffffL shl 32
+        or (readInt() and 0xffffffffL)
+      )
   }
 
   val data = segment.data
-  val v = (data[pos++] and 0xffL shl 56
-    or (data[pos++] and 0xffL shl 48)
-    or (data[pos++] and 0xffL shl 40)
-    or (data[pos++] and 0xffL shl 32)
-    or (data[pos++] and 0xffL shl 24)
-    or (data[pos++] and 0xffL shl 16)
-    or (data[pos++] and 0xffL shl 8) // ktlint-disable no-multi-spaces
-    or (data[pos++] and 0xffL))
+  val v = (
+    data[pos++] and 0xffL shl 56
+      or (data[pos++] and 0xffL shl 48)
+      or (data[pos++] and 0xffL shl 40)
+      or (data[pos++] and 0xffL shl 32)
+      or (data[pos++] and 0xffL shl 24)
+      or (data[pos++] and 0xffL shl 16)
+      or (data[pos++] and 0xffL shl 8) // ktlint-disable no-multi-spaces
+      or (data[pos++] and 0xffL)
+    )
   size -= 8L
 
   if (pos == limit) {
@@ -575,10 +583,10 @@ internal inline fun Buffer.commonWrite(
 
     val toCopy = minOf(limit - offset, Segment.SIZE - tail.limit)
     source.copyInto(
-        destination = tail.data,
-        destinationOffset = tail.limit,
-        startIndex = offset,
-        endIndex = offset + toCopy
+      destination = tail.data,
+      destinationOffset = tail.limit,
+      startIndex = offset,
+      endIndex = offset + toCopy
     )
 
     offset += toCopy
@@ -617,7 +625,7 @@ internal inline fun Buffer.commonRead(sink: ByteArray, offset: Int, byteCount: I
   val s = head ?: return -1
   val toCopy = minOf(byteCount, s.limit - s.pos)
   s.data.copyInto(
-      destination = sink, destinationOffset = offset, startIndex = s.pos, endIndex = s.pos + toCopy
+    destination = sink, destinationOffset = offset, startIndex = s.pos, endIndex = s.pos + toCopy
   )
 
   s.pos += toCopy
@@ -671,7 +679,8 @@ internal inline fun Buffer.commonReadDecimalLong(): Long {
       } else {
         if (seen == 0) {
           throw NumberFormatException(
-            "Expected leading [0-9] or '-' character but was 0x${b.toHexString()}")
+            "Expected leading [0-9] or '-' character but was 0x${b.toHexString()}"
+          )
         }
         // Set a flag to stop iteration. We still need to run through segment updating below.
         done = true
@@ -720,7 +729,8 @@ internal inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
       } else {
         if (seen == 0) {
           throw NumberFormatException(
-            "Expected leading [0-9a-fA-F] character but was 0x${b.toHexString()}")
+            "Expected leading [0-9a-fA-F] character but was 0x${b.toHexString()}"
+          )
         }
         // Set a flag to stop iteration. We still need to run through segment updating below.
         done = true
@@ -831,13 +841,18 @@ internal inline fun Buffer.commonReadUtf8LineStrict(limit: Long): String {
   if (newline != -1L) return readUtf8Line(newline)
   if (scanLength < size &&
     this[scanLength - 1] == '\r'.toByte() &&
-    this[scanLength] == '\n'.toByte()) {
+    this[scanLength] == '\n'.toByte()
+  ) {
     return readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
   }
   val data = Buffer()
   copyTo(data, 0, minOf(32, size))
-  throw EOFException("\\n not found: limit=${minOf(size,
-    limit)} content=${data.readByteString().hex()}${'…'}")
+  throw EOFException(
+    "\\n not found: limit=${minOf(
+      size,
+      limit
+    )} content=${data.readByteString().hex()}${'…'}"
+  )
 }
 
 internal inline fun Buffer.commonReadUtf8CodePoint(): Int {
@@ -1185,7 +1200,8 @@ internal inline fun Buffer.commonWrite(source: Buffer, byteCount: Long) {
     if (byteCount < source.head!!.limit - source.head!!.pos) {
       val tail = if (head != null) head!!.prev else null
       if (tail != null && tail.owner &&
-        byteCount + tail.limit - (if (tail.shared) 0 else tail.pos) <= Segment.SIZE) {
+        byteCount + tail.limit - (if (tail.shared) 0 else tail.pos) <= Segment.SIZE
+      ) {
         // Our existing segments are sufficient. Move bytes from source's head to our tail.
         source.head!!.writeTo(tail, byteCount.toInt())
         source.size -= byteCount
@@ -1363,7 +1379,8 @@ internal inline fun Buffer.commonRangeEquals(
     bytesOffset < 0 ||
     byteCount < 0 ||
     size - offset < byteCount ||
-    bytes.size - bytesOffset < byteCount) {
+    bytes.size - bytesOffset < byteCount
+  ) {
     return false
   }
   for (i in 0 until byteCount) {

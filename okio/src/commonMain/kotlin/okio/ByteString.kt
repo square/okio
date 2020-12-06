@@ -190,7 +190,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
     @JvmStatic
     fun String.decodeBase64(): ByteString?
 
-      /** Decodes the hex-encoded bytes and returns their value a byte string.  */
+    /** Decodes the hex-encoded bytes and returns their value a byte string.  */
     @JvmStatic
     fun String.decodeHex(): ByteString
   }

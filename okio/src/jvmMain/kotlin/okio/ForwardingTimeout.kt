@@ -40,7 +40,8 @@ open class ForwardingTimeout(
   override fun deadlineNanoTime() = delegate.deadlineNanoTime()
 
   override fun deadlineNanoTime(deadlineNanoTime: Long) = delegate.deadlineNanoTime(
-      deadlineNanoTime)
+    deadlineNanoTime
+  )
 
   override fun clearTimeout() = delegate.clearTimeout()
 

@@ -16,8 +16,8 @@
 
 package okio
 
-import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.decodeHex
+import okio.ByteString.Companion.encodeUtf8
 import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.test.assertEquals

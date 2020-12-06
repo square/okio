@@ -15,7 +15,8 @@ buildscript {
       'junit': '4.12',
       'assertj': '1.7.0',
       'shadowPlugin': '5.2.0',
-      'ktlintPlugin': '8.2.0',
+      'spotless': '5.8.2',
+      'ktlint': '0.40.0',
       'bndPlugin': '5.1.2'
   ]
 
@@ -49,7 +50,7 @@ buildscript {
       'japicmp': 'me.champeau.gradle:japicmp-gradle-plugin:0.2.8',
       'dokka': "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}",
       'shadow': "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}",
-      'ktlint': "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintPlugin}",
+      'spotless': "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotless}",
       'bnd': "biz.aQute.bnd:biz.aQute.bnd.gradle:${versions.bndPlugin}",
       'test': [
           'junit': "junit:junit:${versions.junit}",
@@ -64,7 +65,7 @@ buildscript {
     classpath deps.dokka
     classpath deps.shadow
     classpath deps.jmh.gradlePlugin
-    classpath deps.ktlint
+    classpath deps.spotless
     classpath deps.bnd
     // https://github.com/melix/japicmp-gradle-plugin/issues/36
     classpath 'com.google.guava:guava:28.2-jre'
@@ -94,5 +95,14 @@ subprojects {
     maven { url 'https://kotlin.bintray.com/kotlinx/' }
   }
 
-  apply plugin: "org.jlleitschuh.gradle.ktlint"
+  apply plugin: "com.diffplug.spotless"
+
+  spotless {
+    kotlin {
+      target("**/*.kt")
+      ktlint(versions.ktlint).userData([indent_size: '2'])
+      trimTrailingWhitespace()
+      endWithNewline()
+    }
+  }
 }

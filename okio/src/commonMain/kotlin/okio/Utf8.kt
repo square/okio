@@ -175,16 +175,19 @@ internal inline fun String.processUtf8Bytes(
         // surrogate. If not, the UTF-16 is invalid, in which case we emit a replacement
         // byte.
         if (c > '\udbff' ||
-            endIndex <= index + 1 ||
-            this[index + 1] !in '\udc00'..'\udfff') {
+          endIndex <= index + 1 ||
+          this[index + 1] !in '\udc00'..'\udfff'
+        ) {
           yield(REPLACEMENT_BYTE)
           index++
         } else {
           // UTF-16 high surrogate: 110110xxxxxxxxxx (10 bits)
           // UTF-16 low surrogate:  110111yyyyyyyyyy (10 bits)
           // Unicode code point:    00010000000000000000 + xxxxxxxxxxyyyyyyyyyy (21 bits)
-          val codePoint = (((c.toInt() shl 10) + this[index + 1].toInt()) +
-            (0x010000 - (0xd800 shl 10) - 0xdc00))
+          val codePoint = (
+            ((c.toInt() shl 10) + this[index + 1].toInt()) +
+              (0x010000 - (0xd800 shl 10) - 0xdc00)
+            )
 
           // Emit a 21-bit character with 4 bytes.
           /* ktlint-disable no-multi-spaces */
@@ -404,9 +407,11 @@ internal inline fun ByteArray.process2Utf8Bytes(
   }
 
   val codePoint =
-    (MASK_2BYTES
+    (
+      MASK_2BYTES
         xor (b1.toInt())
-        xor (b0.toInt() shl 6))
+        xor (b0.toInt() shl 6)
+      )
 
   when {
     codePoint < 0x80 -> {
@@ -457,10 +462,12 @@ internal inline fun ByteArray.process3Utf8Bytes(
   }
 
   val codePoint =
-    (MASK_3BYTES
+    (
+      MASK_3BYTES
         xor (b2.toInt())
         xor (b1.toInt() shl 6)
-        xor (b0.toInt() shl 12))
+        xor (b0.toInt() shl 12)
+      )
 
   when {
     codePoint < 0x800 -> {
@@ -524,11 +531,13 @@ internal inline fun ByteArray.process4Utf8Bytes(
   }
 
   val codePoint =
-    (MASK_4BYTES
+    (
+      MASK_4BYTES
         xor (b3.toInt())
         xor (b2.toInt() shl 6)
         xor (b1.toInt() shl 12)
-        xor (b0.toInt() shl 18))
+        xor (b0.toInt() shl 18)
+      )
 
   when {
     codePoint > 0x10ffff -> {

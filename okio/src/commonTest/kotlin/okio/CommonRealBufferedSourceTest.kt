@@ -27,11 +27,13 @@ import kotlin.test.assertFailsWith
 class CommonRealBufferedSourceTest {
   @Test fun indexOfStopsReadingAtLimit() {
     val buffer = Buffer().writeUtf8("abcdef")
-    val bufferedSource = (object : Source by buffer {
-      override fun read(sink: Buffer, byteCount: Long): Long {
-        return buffer.read(sink, minOf(1, byteCount))
+    val bufferedSource = (
+      object : Source by buffer {
+        override fun read(sink: Buffer, byteCount: Long): Long {
+          return buffer.read(sink, minOf(1, byteCount))
+        }
       }
-    }).buffer()
+      ).buffer()
 
     assertEquals(6, buffer.size)
     assertEquals(-1, bufferedSource.indexOf('e'.toByte(), 0, 4))

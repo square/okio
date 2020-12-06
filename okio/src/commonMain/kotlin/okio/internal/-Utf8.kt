@@ -17,8 +17,8 @@
 package okio.internal
 
 import okio.ArrayIndexOutOfBoundsException
-import okio.processUtf8Bytes
 import okio.processUtf16Chars
+import okio.processUtf8Bytes
 
 // TODO For benchmarking, these methods need to be available but preferably invisible
 // to everything else. Putting them in this file, `-Utf8.kt`, makes them invisible to

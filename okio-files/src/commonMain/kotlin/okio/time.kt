@@ -31,7 +31,8 @@ fun FileMetadata(
     size = size,
     createdAtMillis = createdAt?.toEpochMilliseconds(),
     lastModifiedAtMillis = lastModifiedAt?.toEpochMilliseconds(),
-    lastAccessedAtMillis = lastAccessedAt?.toEpochMilliseconds())
+    lastAccessedAtMillis = lastAccessedAt?.toEpochMilliseconds()
+  )
 }
 
 val FileMetadata.createdAt: Instant?

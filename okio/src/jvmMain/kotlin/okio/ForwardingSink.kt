@@ -40,8 +40,9 @@ abstract class ForwardingSink(
 
   @JvmName("-deprecated_delegate")
   @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "delegate"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to val",
+    replaceWith = ReplaceWith(expression = "delegate"),
+    level = DeprecationLevel.ERROR
+  )
   fun delegate() = delegate
 }

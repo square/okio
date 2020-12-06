@@ -162,26 +162,28 @@ internal inline fun ByteString.commonRangeEquals(
   otherOffset: Int,
   byteCount: Int
 ): Boolean {
-  return (offset >= 0 && offset <= data.size - byteCount &&
-    otherOffset >= 0 && otherOffset <= other.size - byteCount &&
-    arrayRangeEquals(data, offset, other, otherOffset, byteCount))
+  return (
+    offset >= 0 && offset <= data.size - byteCount &&
+      otherOffset >= 0 && otherOffset <= other.size - byteCount &&
+      arrayRangeEquals(data, offset, other, otherOffset, byteCount)
+    )
 }
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonStartsWith(prefix: ByteString) =
-    rangeEquals(0, prefix, 0, prefix.size)
+  rangeEquals(0, prefix, 0, prefix.size)
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonStartsWith(prefix: ByteArray) =
-    rangeEquals(0, prefix, 0, prefix.size)
+  rangeEquals(0, prefix, 0, prefix.size)
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonEndsWith(suffix: ByteString) =
-    rangeEquals(size - suffix.size, suffix, 0, suffix.size)
+  rangeEquals(size - suffix.size, suffix, 0, suffix.size)
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonEndsWith(suffix: ByteArray) =
-    rangeEquals(size - suffix.size, suffix, 0, suffix.size)
+  rangeEquals(size - suffix.size, suffix, 0, suffix.size)
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonIndexOf(other: ByteArray, fromIndex: Int): Int {
@@ -331,7 +333,8 @@ private fun codePointIndexToCharIndex(s: ByteArray, codePointCount: Int): Int {
     }
 
     if ((c != '\n'.toInt() && c != '\r'.toInt() && isIsoControl(c)) ||
-      c == REPLACEMENT_CODE_POINT) {
+      c == REPLACEMENT_CODE_POINT
+    ) {
       return -1
     }
 

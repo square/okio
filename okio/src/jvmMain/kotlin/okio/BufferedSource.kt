@@ -25,7 +25,8 @@ actual interface BufferedSource : Source, ReadableByteChannel {
   @Deprecated(
     message = "moved to val: use getBuffer() instead",
     replaceWith = ReplaceWith(expression = "buffer"),
-    level = DeprecationLevel.WARNING)
+    level = DeprecationLevel.WARNING
+  )
   fun buffer(): Buffer
 
   actual val buffer: Buffer

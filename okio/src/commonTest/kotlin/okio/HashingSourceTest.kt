@@ -22,8 +22,8 @@ import okio.HashingSource.Companion.md5
 import okio.HashingSource.Companion.sha1
 import okio.HashingSource.Companion.sha256
 import kotlin.test.Test
-import kotlin.test.fail
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class HashingSourceTest {
   private val source = Buffer()

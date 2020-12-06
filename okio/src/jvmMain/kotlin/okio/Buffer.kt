@@ -386,8 +386,10 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   actual override fun writeUtf8CodePoint(codePoint: Int): Buffer =
     commonWriteUtf8CodePoint(codePoint)
 
-  override fun writeString(string: String, charset: Charset) = writeString(string, 0, string.length,
-      charset)
+  override fun writeString(string: String, charset: Charset) = writeString(
+    string, 0, string.length,
+    charset
+  )
 
   override fun writeString(
     string: String,
@@ -581,16 +583,18 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   @JvmName("-deprecated_getByte")
   @Deprecated(
-      message = "moved to operator function",
-      replaceWith = ReplaceWith(expression = "this[index]"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to operator function",
+    replaceWith = ReplaceWith(expression = "this[index]"),
+    level = DeprecationLevel.ERROR
+  )
   fun getByte(index: Long) = this[index]
 
   @JvmName("-deprecated_size")
   @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "size"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to val",
+    replaceWith = ReplaceWith(expression = "size"),
+    level = DeprecationLevel.ERROR
+  )
   fun size() = size
 
   actual class UnsafeCursor : Closeable {

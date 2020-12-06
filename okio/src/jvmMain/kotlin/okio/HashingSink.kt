@@ -101,9 +101,10 @@ actual class HashingSink : ForwardingSink, Sink { // Need to explicitly declare 
 
   @JvmName("-deprecated_hash")
   @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "hash"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to val",
+    replaceWith = ReplaceWith(expression = "hash"),
+    level = DeprecationLevel.ERROR
+  )
   fun hash() = hash
 
   actual companion object {

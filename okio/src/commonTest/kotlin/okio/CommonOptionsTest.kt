@@ -29,46 +29,52 @@ class CommonOptionsTest {
   }
 
   @Test fun simpleOptionsTrie() {
-    assertEquals(utf8Options("hotdog", "hoth", "hot").trieString(), """
+    assertEquals(
+      utf8Options("hotdog", "hoth", "hot").trieString(),
+      """
         |hot
         |   -> 2
         |   d
         |    og -> 0
         |   h -> 1
-        |""".trimMargin())
+        |""".trimMargin()
+    )
   }
 
   @Test fun realisticOptionsTrie() {
     // These are the fields of OkHttpClient in 3.10.
     val options = utf8Options(
-        "dispatcher",
-        "proxy",
-        "protocols",
-        "connectionSpecs",
-        "interceptors",
-        "networkInterceptors",
-        "eventListenerFactory",
-        "proxySelector", // No index 7 in the trie because 'proxy' is a prefix!
-        "cookieJar",
-        "cache",
-        "internalCache",
-        "socketFactory",
-        "sslSocketFactory",
-        "certificateChainCleaner",
-        "hostnameVerifier",
-        "certificatePinner",
-        "proxyAuthenticator", // No index 16 in the trie because 'proxy' is a prefix!
-        "authenticator",
-        "connectionPool",
-        "dns",
-        "followSslRedirects",
-        "followRedirects",
-        "retryOnConnectionFailure",
-        "connectTimeout",
-        "readTimeout",
-        "writeTimeout",
-        "pingInterval")
-    assertEquals(options.trieString(), """
+      "dispatcher",
+      "proxy",
+      "protocols",
+      "connectionSpecs",
+      "interceptors",
+      "networkInterceptors",
+      "eventListenerFactory",
+      "proxySelector", // No index 7 in the trie because 'proxy' is a prefix!
+      "cookieJar",
+      "cache",
+      "internalCache",
+      "socketFactory",
+      "sslSocketFactory",
+      "certificateChainCleaner",
+      "hostnameVerifier",
+      "certificatePinner",
+      "proxyAuthenticator", // No index 16 in the trie because 'proxy' is a prefix!
+      "authenticator",
+      "connectionPool",
+      "dns",
+      "followSslRedirects",
+      "followRedirects",
+      "retryOnConnectionFailure",
+      "connectTimeout",
+      "readTimeout",
+      "writeTimeout",
+      "pingInterval"
+    )
+    assertEquals(
+      options.trieString(),
+      """
         |a
         | uthenticator -> 17
         |c
@@ -138,7 +144,8 @@ class CommonOptionsTest {
         |  lSocketFactory -> 12
         |w
         | riteTimeout -> 25
-        |""".trimMargin())
+        |""".trimMargin()
+    )
     assertSelect("", -1, options)
     assertSelect("a", -1, options)
     assertSelect("eventListenerFactor", -1, options)
@@ -202,11 +209,14 @@ class CommonOptionsTest {
 
   @Test fun prefixesAreStripped() {
     val options = utf8Options("abcA", "abc", "abcB")
-    assertEquals(options.trieString(), """
+    assertEquals(
+      options.trieString(),
+      """
         |abc
         |   -> 1
         |   A -> 0
-        |""".trimMargin())
+        |""".trimMargin()
+    )
     assertSelect("abc", 1, options)
     assertSelect("abcA", 0, options)
     assertSelect("abcB", 1, options)
@@ -215,27 +225,39 @@ class CommonOptionsTest {
   }
 
   @Test fun multiplePrefixesAreStripped() {
-    assertEquals(utf8Options("a", "ab", "abc", "abcd", "abcde").trieString(), """
+    assertEquals(
+      utf8Options("a", "ab", "abc", "abcd", "abcde").trieString(),
+      """
         |a -> 0
-        |""".trimMargin())
-    assertEquals(utf8Options("abc", "a", "ab", "abe", "abcd", "abcf").trieString(), """
+        |""".trimMargin()
+    )
+    assertEquals(
+      utf8Options("abc", "a", "ab", "abe", "abcd", "abcf").trieString(),
+      """
         |a
         | -> 1
         | bc -> 0
-        |""".trimMargin())
-    assertEquals(utf8Options("abc", "ab", "a").trieString(), """
+        |""".trimMargin()
+    )
+    assertEquals(
+      utf8Options("abc", "ab", "a").trieString(),
+      """
         |a
         | -> 2
         | b
         |  -> 1
         |  c -> 0
-        |""".trimMargin())
-    assertEquals(utf8Options("abcd", "abce", "abc", "abcf", "abcg").trieString(), """
+        |""".trimMargin()
+    )
+    assertEquals(
+      utf8Options("abcd", "abce", "abc", "abcf", "abcg").trieString(),
+      """
         |abc
         |   -> 2
         |   d -> 0
         |   e -> 1
-        |""".trimMargin())
+        |""".trimMargin()
+    )
   }
 
   @Test fun scan() {

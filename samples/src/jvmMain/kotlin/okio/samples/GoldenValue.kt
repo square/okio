@@ -28,8 +28,10 @@ class KotlinGoldenValue {
     val point = Point(8.0, 15.0)
     val pointBytes = serialize(point)
     println(pointBytes.base64())
-    val goldenBytes = ("rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAA" +
-      "kQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA").decodeBase64()!!
+    val goldenBytes = (
+      "rO0ABXNyACRva2lvLnNhbXBsZXMuS290bGluR29sZGVuVmFsdWUkUG9pbnRF9yaY7cJ9EwIAA" +
+        "kQAAXhEAAF5eHBAIAAAAAAAAEAuAAAAAAAA"
+      ).decodeBase64()!!
     val decoded = deserialize(goldenBytes) as Point
     assertEquals(point, decoded)
   }

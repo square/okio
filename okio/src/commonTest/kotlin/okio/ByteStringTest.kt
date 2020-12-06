@@ -209,8 +209,13 @@ abstract class AbstractByteStringTest internal constructor(
     val byteString = factory.encodeUtf8(bronzeHorseman)
     assertEquals(byteString.toByteArray().toList(), bronzeHorseman.commonAsUtf8ToByteArray().toList())
     assertTrue(byteString == ByteString.of(*bronzeHorseman.commonAsUtf8ToByteArray()))
-    assertEquals(byteString, ("d09dd0b020d0b1d0b5d180d0b5d0b3d18320d0bfd183d181" +
-      "d182d18bd0bdd0bdd18bd18520d0b2d0bed0bbd0bd").decodeHex())
+    assertEquals(
+      byteString,
+      (
+        "d09dd0b020d0b1d0b5d180d0b5d0b3d18320d0bfd183d181" +
+          "d182d18bd0bdd0bdd18bd18520d0b2d0bed0bbd0bd"
+        ).decodeHex()
+    )
     assertEquals(byteString.utf8(), bronzeHorseman)
   }
 
@@ -270,8 +275,10 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals("AA==", factory.encodeUtf8("\u0000").base64())
     assertEquals("AAA=", factory.encodeUtf8("\u0000\u0000").base64())
     assertEquals("AAAA", factory.encodeUtf8("\u0000\u0000\u0000").base64())
-    assertEquals("SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU/ICdib3V0IDIgbWlsbGlvbi4=",
-      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64())
+    assertEquals(
+      "SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU/ICdib3V0IDIgbWlsbGlvbi4=",
+      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64()
+    )
   }
 
   @Test fun encodeBase64Url() {
@@ -279,8 +286,10 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals("AA==", factory.encodeUtf8("\u0000").base64Url())
     assertEquals("AAA=", factory.encodeUtf8("\u0000\u0000").base64Url())
     assertEquals("AAAA", factory.encodeUtf8("\u0000\u0000\u0000").base64Url())
-    assertEquals("SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU_ICdib3V0IDIgbWlsbGlvbi4=",
-      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url())
+    assertEquals(
+      "SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU_ICdib3V0IDIgbWlsbGlvbi4=",
+      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url()
+    )
   }
 
   @Test fun ignoreUnnecessaryPadding() {
@@ -299,9 +308,13 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals("ffffff".decodeHex(), "____".decodeBase64())
     assertEquals("ffffffffffff".decodeHex(), "////////".decodeBase64())
     assertEquals("ffffffffffff".decodeHex(), "________".decodeBase64())
-    assertEquals("What's to be scared about? It's just a little hiccup in the power...",
-      ("V2hhdCdzIHRvIGJlIHNjYXJlZCBhYm91dD8gSXQncyBqdXN0IGEgbGl0dGxlIGhpY2" +
-        "N1cCBpbiB0aGUgcG93ZXIuLi4=").decodeBase64()!!.utf8())
+    assertEquals(
+      "What's to be scared about? It's just a little hiccup in the power...",
+      (
+        "V2hhdCdzIHRvIGJlIHNjYXJlZCBhYm91dD8gSXQncyBqdXN0IGEgbGl0dGxlIGhpY2" +
+          "N1cCBpbiB0aGUgcG93ZXIuLi4="
+        ).decodeBase64()!!.utf8()
+    )
     // Uses two encoding styles. Malformed, but supported as a side-effect.
     assertEquals("ffffff".decodeHex(), "__//".decodeBase64())
   }
@@ -343,54 +356,80 @@ abstract class AbstractByteStringTest internal constructor(
   }
 
   @Test fun toStringOnShortText() {
-    assertEquals("[text=Tyrannosaur]",
-      factory.encodeUtf8("Tyrannosaur").toString())
-    assertEquals("[text=təˈranəˌsôr]",
-      factory.decodeHex("74c999cb8872616ec999cb8c73c3b472").toString())
+    assertEquals(
+      "[text=Tyrannosaur]",
+      factory.encodeUtf8("Tyrannosaur").toString()
+    )
+    assertEquals(
+      "[text=təˈranəˌsôr]",
+      factory.decodeHex("74c999cb8872616ec999cb8c73c3b472").toString()
+    )
   }
 
   @Test fun toStringOnLongTextIsTruncated() {
-    val raw = ("Um, I'll tell you the problem with the scientific power that you're using here, " +
-      "it didn't require any discipline to attain it. You read what others had done and you " +
-      "took the next step. You didn't earn the knowledge for yourselves, so you don't take any " +
-      "responsibility for it. You stood on the shoulders of geniuses to accomplish something " +
-      "as fast as you could, and before you even knew what you had, you patented it, and " +
-      "packaged it, and slapped it on a plastic lunchbox, and now you're selling it, you wanna " +
-      "sell it.")
-    assertEquals("[size=517 text=Um, I'll tell you the problem with the scientific power that " +
-      "you…]", factory.encodeUtf8(raw).toString())
-    val war = ("Սｍ, I'll 𝓽𝖾ll ᶌօ𝘂 ᴛℎ℮ 𝜚𝕣०ｂl𝖾ｍ ｗі𝕥𝒽 𝘵𝘩𝐞 𝓼𝙘𝐢𝔢𝓷𝗍𝜄𝚏𝑖ｃ 𝛠𝝾ｗ𝚎𝑟 𝕥ｈ⍺𝞃 𝛄𝓸𝘂'𝒓𝗲 υ𝖘𝓲𝗇ɡ 𝕙𝚎𝑟ｅ, " +
-      "𝛊𝓽 ⅆ𝕚𝐝𝝿'𝗍 𝔯𝙚𝙦ᴜ𝜾𝒓𝘦 𝔞𝘯𝐲 ԁ𝜄𝑠𝚌ι𝘱lι𝒏ｅ 𝑡𝜎 𝕒𝚝𝖙𝓪і𝞹 𝔦𝚝. 𝒀ο𝗎 𝔯𝑒⍺𝖉 ｗ𝐡𝝰𝔱 𝞂𝞽һ𝓮𝓇ƽ հ𝖺𝖉 ⅾ𝛐𝝅ⅇ 𝝰πԁ 𝔂ᴑᴜ 𝓉ﮨ၀𝚔 " +
-      "т𝒽𝑒 𝗇𝕖ⅹ𝚝 𝔰𝒕е𝓅. 𝘠ⲟ𝖚 𝖉ⅰԁ𝝕'τ 𝙚𝚊ｒ𝞹 𝘵Ꮒ𝖾 𝝒𝐧هｗl𝑒𝖉ƍ𝙚 𝓯૦ｒ 𝔂𝞼𝒖𝕣𝑠𝕖l𝙫𝖊𝓼, 𐑈о ｙ𝘰𝒖 ⅆە𝗇'ｔ 𝜏α𝒌𝕖 𝛂𝟉ℽ " +
-      "𝐫ⅇ𝗌ⲣ๐ϖ𝖘ꙇᖯ𝓲l𝓲𝒕𝘆 𝐟𝞼𝘳 𝚤𝑡. 𝛶𝛔𝔲 ｓ𝕥σσ𝐝 ﮩ𝕟 𝒕𝗁𝔢 𝘴𝐡𝜎ᴜlⅾ𝓮𝔯𝚜 𝛐𝙛 ᶃ𝚎ᴨᎥս𝚜𝘦𝓈 𝓽𝞸 ａ𝒄𝚌𝞸ｍρl𝛊ꜱ𝐡 𝓈𝚘ｍ𝚎𝞃𝔥⍳𝞹𝔤 𝐚𝗌 𝖋ａ𝐬𝒕 " +
-      "αｓ γ𝛐𝕦 𝔠ﻫ𝛖lԁ, 𝚊π𝑑 Ь𝑒𝙛૦𝓇𝘦 𝓎٥𝖚 ⅇｖℯ𝝅 𝜅ո𝒆ｗ ｗ𝗵𝒂𝘁 ᶌ੦𝗎 ｈ𝐚𝗱, 𝜸ﮨ𝒖 𝓹𝝰𝔱𝖾𝗇𝓽𝔢ⅆ і𝕥, 𝚊𝜛𝓭 𝓹𝖺ⅽϰ𝘢ℊеᏧ 𝑖𝞃, " +
-      "𝐚𝛑ꓒ 𝙨l𝔞р𝘱𝔢𝓭 ɩ𝗍 ہ𝛑 𝕒 ｐl𝛂ѕᴛ𝗂𝐜 l𝞄ℼ𝔠𝒽𝑏ﮪ⨯, 𝔞ϖ𝒹 ｎ𝛔ｗ 𝛾𝐨𝞄'𝗿𝔢 ꜱ℮ll𝙞ｎɡ ɩ𝘁, 𝙮𝕠𝛖 ｗ𝑎ℼ𝚗𝛂 𝕤𝓮ll 𝙞𝓉.")
-    assertEquals("[size=1496 text=Սｍ, I'll 𝓽𝖾ll ᶌօ𝘂 ᴛℎ℮ 𝜚𝕣०ｂl𝖾ｍ ｗі𝕥𝒽 𝘵𝘩𝐞 𝓼𝙘𝐢𝔢𝓷𝗍𝜄𝚏𝑖ｃ 𝛠𝝾ｗ𝚎𝑟 𝕥ｈ⍺𝞃 " +
-      "𝛄𝓸𝘂…]", factory.encodeUtf8(war).toString())
+    val raw = (
+      "Um, I'll tell you the problem with the scientific power that you're using here, " +
+        "it didn't require any discipline to attain it. You read what others had done and you " +
+        "took the next step. You didn't earn the knowledge for yourselves, so you don't take any " +
+        "responsibility for it. You stood on the shoulders of geniuses to accomplish something " +
+        "as fast as you could, and before you even knew what you had, you patented it, and " +
+        "packaged it, and slapped it on a plastic lunchbox, and now you're selling it, you wanna " +
+        "sell it."
+      )
+    assertEquals(
+      "[size=517 text=Um, I'll tell you the problem with the scientific power that " +
+        "you…]",
+      factory.encodeUtf8(raw).toString()
+    )
+    val war = (
+      "Սｍ, I'll 𝓽𝖾ll ᶌօ𝘂 ᴛℎ℮ 𝜚𝕣०ｂl𝖾ｍ ｗі𝕥𝒽 𝘵𝘩𝐞 𝓼𝙘𝐢𝔢𝓷𝗍𝜄𝚏𝑖ｃ 𝛠𝝾ｗ𝚎𝑟 𝕥ｈ⍺𝞃 𝛄𝓸𝘂'𝒓𝗲 υ𝖘𝓲𝗇ɡ 𝕙𝚎𝑟ｅ, " +
+        "𝛊𝓽 ⅆ𝕚𝐝𝝿'𝗍 𝔯𝙚𝙦ᴜ𝜾𝒓𝘦 𝔞𝘯𝐲 ԁ𝜄𝑠𝚌ι𝘱lι𝒏ｅ 𝑡𝜎 𝕒𝚝𝖙𝓪і𝞹 𝔦𝚝. 𝒀ο𝗎 𝔯𝑒⍺𝖉 ｗ𝐡𝝰𝔱 𝞂𝞽һ𝓮𝓇ƽ հ𝖺𝖉 ⅾ𝛐𝝅ⅇ 𝝰πԁ 𝔂ᴑᴜ 𝓉ﮨ၀𝚔 " +
+        "т𝒽𝑒 𝗇𝕖ⅹ𝚝 𝔰𝒕е𝓅. 𝘠ⲟ𝖚 𝖉ⅰԁ𝝕'τ 𝙚𝚊ｒ𝞹 𝘵Ꮒ𝖾 𝝒𝐧هｗl𝑒𝖉ƍ𝙚 𝓯૦ｒ 𝔂𝞼𝒖𝕣𝑠𝕖l𝙫𝖊𝓼, 𐑈о ｙ𝘰𝒖 ⅆە𝗇'ｔ 𝜏α𝒌𝕖 𝛂𝟉ℽ " +
+        "𝐫ⅇ𝗌ⲣ๐ϖ𝖘ꙇᖯ𝓲l𝓲𝒕𝘆 𝐟𝞼𝘳 𝚤𝑡. 𝛶𝛔𝔲 ｓ𝕥σσ𝐝 ﮩ𝕟 𝒕𝗁𝔢 𝘴𝐡𝜎ᴜlⅾ𝓮𝔯𝚜 𝛐𝙛 ᶃ𝚎ᴨᎥս𝚜𝘦𝓈 𝓽𝞸 ａ𝒄𝚌𝞸ｍρl𝛊ꜱ𝐡 𝓈𝚘ｍ𝚎𝞃𝔥⍳𝞹𝔤 𝐚𝗌 𝖋ａ𝐬𝒕 " +
+        "αｓ γ𝛐𝕦 𝔠ﻫ𝛖lԁ, 𝚊π𝑑 Ь𝑒𝙛૦𝓇𝘦 𝓎٥𝖚 ⅇｖℯ𝝅 𝜅ո𝒆ｗ ｗ𝗵𝒂𝘁 ᶌ੦𝗎 ｈ𝐚𝗱, 𝜸ﮨ𝒖 𝓹𝝰𝔱𝖾𝗇𝓽𝔢ⅆ і𝕥, 𝚊𝜛𝓭 𝓹𝖺ⅽϰ𝘢ℊеᏧ 𝑖𝞃, " +
+        "𝐚𝛑ꓒ 𝙨l𝔞р𝘱𝔢𝓭 ɩ𝗍 ہ𝛑 𝕒 ｐl𝛂ѕᴛ𝗂𝐜 l𝞄ℼ𝔠𝒽𝑏ﮪ⨯, 𝔞ϖ𝒹 ｎ𝛔ｗ 𝛾𝐨𝞄'𝗿𝔢 ꜱ℮ll𝙞ｎɡ ɩ𝘁, 𝙮𝕠𝛖 ｗ𝑎ℼ𝚗𝛂 𝕤𝓮ll 𝙞𝓉."
+      )
+    assertEquals(
+      "[size=1496 text=Սｍ, I'll 𝓽𝖾ll ᶌօ𝘂 ᴛℎ℮ 𝜚𝕣०ｂl𝖾ｍ ｗі𝕥𝒽 𝘵𝘩𝐞 𝓼𝙘𝐢𝔢𝓷𝗍𝜄𝚏𝑖ｃ 𝛠𝝾ｗ𝚎𝑟 𝕥ｈ⍺𝞃 " +
+        "𝛄𝓸𝘂…]",
+      factory.encodeUtf8(war).toString()
+    )
   }
 
   @Test fun toStringOnTextWithNewlines() {
     // Instead of emitting a literal newline in the toString(), these are escaped as "\n".
-    assertEquals("[text=a\\r\\nb\\nc\\rd\\\\e]",
-      factory.encodeUtf8("a\r\nb\nc\rd\\e").toString())
+    assertEquals(
+      "[text=a\\r\\nb\\nc\\rd\\\\e]",
+      factory.encodeUtf8("a\r\nb\nc\rd\\e").toString()
+    )
   }
 
   @Test fun toStringOnData() {
-    val byteString = factory.decodeHex("" +
-      "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
-      "4bf0b54023c29b624de9ef9c2f931efc580f9afb")
-    assertEquals("[hex=" +
-      "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
-      "4bf0b54023c29b624de9ef9c2f931efc580f9afb]", byteString.toString())
+    val byteString = factory.decodeHex(
+      "" +
+        "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
+        "4bf0b54023c29b624de9ef9c2f931efc580f9afb"
+    )
+    assertEquals(
+      "[hex=" +
+        "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
+        "4bf0b54023c29b624de9ef9c2f931efc580f9afb]",
+      byteString.toString()
+    )
   }
 
   @Test fun toStringOnLongDataIsTruncated() {
-    val byteString = factory.decodeHex("" +
-      "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
-      "4bf0b54023c29b624de9ef9c2f931efc580f9afba1")
-    assertEquals("[size=65 hex=" +
-      "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
-      "4bf0b54023c29b624de9ef9c2f931efc580f9afb…]", byteString.toString())
+    val byteString = factory.decodeHex(
+      "" +
+        "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
+        "4bf0b54023c29b624de9ef9c2f931efc580f9afba1"
+    )
+    assertEquals(
+      "[size=65 hex=" +
+        "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
+        "4bf0b54023c29b624de9ef9c2f931efc580f9afb…]",
+      byteString.toString()
+    )
   }
 
   @Test fun compareToSingleBytes() {
@@ -402,7 +441,8 @@ abstract class AbstractByteStringTest internal constructor(
       factory.decodeHex("80"),
       factory.decodeHex("81"),
       factory.decodeHex("fe"),
-      factory.decodeHex("ff"))
+      factory.decodeHex("ff")
+    )
 
     val sortedByteStrings = originalByteStrings.toMutableList()
     sortedByteStrings.shuffle(Random(0))
@@ -439,7 +479,8 @@ abstract class AbstractByteStringTest internal constructor(
       factory.decodeHex("010101"),
       factory.decodeHex("7f0000"),
       factory.decodeHex("7f0000ffff"),
-      factory.decodeHex("ffffff"))
+      factory.decodeHex("ffffff")
+    )
 
     val sortedByteStrings = originalByteStrings.toMutableList()
     sortedByteStrings.shuffle(Random(0))
