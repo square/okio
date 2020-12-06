@@ -44,7 +44,18 @@ kotlin {
     unixMain {
       dependsOn posixMain
     }
-    configure([macosX64Main, linuxX64Main]) {
+    appleMain {
+      dependsOn unixMain
+    }
+    linuxMain {
+      dependsOn unixMain
+    }
+    macosX64Main {
+      dependsOn appleMain
+      dependsOn unixMain
+    }
+    linuxX64Main {
+      dependsOn linuxMain
       dependsOn unixMain
     }
   }

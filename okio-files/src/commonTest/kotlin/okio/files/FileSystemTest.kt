@@ -297,12 +297,10 @@ abstract class FileSystemTest(
 
   @Test
   fun `file metadata`() {
-    if (!isJvm()) return
-
-    val minTime = clock.now().floorSeconds()
+    val minTime = clock.now().minFileSystemTime()
     val path = base / "file-metadata"
     path.writeUtf8("hello, world!")
-    val maxTime = clock.now().plus(1.seconds).floorSeconds()
+    val maxTime = clock.now().maxFileSystemTime()
 
     val metadata = filesystem.metadata(path)
     assertTrue(metadata.isRegularFile)
@@ -315,12 +313,10 @@ abstract class FileSystemTest(
 
   @Test
   fun `directory metadata`() {
-    if (!isJvm()) return
-
-    val minTime = clock.now().floorSeconds()
+    val minTime = clock.now().minFileSystemTime()
     val path = base / "directory-metadata"
     filesystem.createDirectory(path)
-    val maxTime = clock.now().plus(1.seconds).floorSeconds()
+    val maxTime = clock.now().maxFileSystemTime()
 
     val metadata = filesystem.metadata(path)
     assertFalse(metadata.isRegularFile)
@@ -333,8 +329,6 @@ abstract class FileSystemTest(
 
   @Test
   fun `absent metadata`() {
-    if (!isJvm()) return
-
     val path = base / "no-such-file"
     assertFailsWith<IOException> {
       filesystem.metadata(path)
@@ -361,11 +355,23 @@ abstract class FileSystemTest(
     }
   }
 
-  private fun isJvm() = filesystem::class.simpleName == "JvmSystemFilesystem"
+  /**
+   * Returns the earliest filesystem time that could be recorded for an event occurring at this
+   * instant. This truncates fractional seconds because most host filesystems do not use precise
+   * timestamps for file metadata.
+   */
+  private fun Instant.minFileSystemTime(): Instant {
+    return Instant.fromEpochSeconds(epochSeconds)
+  }
 
   /**
-   * Truncates fractional seconds on this instant. This is because most host filesystems do not
-   * use precise timestamps for file metadata.
+   * Returns the latest filesystem time that could be recorded for an event occurring at this
+   * instant. This adds 2 seconds and truncates fractional seconds because filesystems may defer
+   * assigning the timestamp.
+   *
+   * https://docs.microsoft.com/en-us/windows/win32/sysinfo/file-times
    */
-  private fun Instant.floorSeconds() = Instant.fromEpochSeconds(epochSeconds)
+  private fun Instant.maxFileSystemTime(): Instant {
+    return Instant.fromEpochSeconds(plus(2.seconds).epochSeconds)
+  }
 }

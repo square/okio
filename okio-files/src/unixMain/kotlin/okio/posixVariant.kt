@@ -21,6 +21,7 @@ import platform.posix.free
 import platform.posix.mkdir
 import platform.posix.realpath
 import platform.posix.remove
+import platform.posix.timespec
 
 internal actual val VARIANT_DIRECTORY_SEPARATOR = "/"
 
@@ -45,3 +46,6 @@ internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path 
     free(fullpath)
   }
 }
+
+internal val timespec.epochMillis: Long
+  get() = tv_sec * 1000L + tv_sec / 1_000_000L
