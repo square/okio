@@ -32,6 +32,13 @@ abstract class Filesystem {
   abstract fun canonicalize(path: Path): Path
 
   /**
+   * Returns metadata of the file, directory, or object identified by [path].
+   *
+   * @throws IOException if [path] does not exist or its metadata cannot be read.
+   */
+  abstract fun metadata(path: Path): FileMetadata
+
+  /**
    * Returns the children of the directory identified by [dir].
    *
    * @throws IOException if [dir] does not exist, is not a directory, or cannot be read. A directory

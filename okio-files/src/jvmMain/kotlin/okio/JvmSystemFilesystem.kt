@@ -16,14 +16,44 @@
 package okio
 
 import java.nio.file.Files
+import java.nio.file.LinkOption
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.FileTime
 
 object JvmSystemFilesystem : Filesystem() {
   override fun canonicalize(path: Path): Path {
     val canonicalFile = path.toFile().canonicalFile
     if (!canonicalFile.exists()) throw IOException("no such file")
     return canonicalFile.toOkioPath()
+  }
+
+  override fun metadata(path: Path): FileMetadata {
+    val nioPath = path.toNioPath()
+
+    val attributes = Files.readAttributes(
+      nioPath,
+      BasicFileAttributes::class.java,
+      LinkOption.NOFOLLOW_LINKS
+    )
+
+    return FileMetadata(
+      isRegularFile = attributes.isRegularFile,
+      isDirectory = attributes.isDirectory,
+      size = attributes.size(),
+      createdAtMillis = attributes.creationTime()?.zeroToNull(),
+      lastModifiedAtMillis = attributes.lastModifiedTime()?.zeroToNull(),
+      lastAccessedAtMillis = attributes.lastAccessTime()?.zeroToNull()
+    )
+  }
+
+  /**
+   * Returns this time as a epoch millis. If this is 0L this returns null, because epoch time 0L is
+   * a special value that indicates the requested time was not available.
+   */
+  private fun FileTime.zeroToNull(): Long? {
+    return toMillis().takeIf { it != 0L }
   }
 
   override fun list(dir: Path): List<Path> {

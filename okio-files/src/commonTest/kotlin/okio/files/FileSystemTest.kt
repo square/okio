@@ -15,6 +15,8 @@
  */
 package okio.files
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import okio.Buffer
 import okio.ByteString.Companion.toByteString
 import okio.FakeFilesystem
@@ -23,6 +25,9 @@ import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.buffer
+import okio.createdAt
+import okio.lastAccessedAt
+import okio.lastModifiedAt
 import kotlin.random.Random
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
@@ -31,9 +36,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
+@ExperimentalTime
 abstract class FileSystemTest(
+  val clock: Clock,
   val filesystem: Filesystem,
   temporaryDirectory: Path
 ) {
@@ -286,6 +295,52 @@ abstract class FileSystemTest(
     }
   }
 
+  @Test
+  fun `file metadata`() {
+    if (!isJvm()) return
+
+    val minTime = clock.now().floorSeconds()
+    val path = base / "file-metadata"
+    path.writeUtf8("hello, world!")
+    val maxTime = clock.now().plus(1.seconds).floorSeconds()
+
+    val metadata = filesystem.metadata(path)
+    assertTrue(metadata.isRegularFile)
+    assertFalse(metadata.isDirectory)
+    assertEquals(13, metadata.size)
+    assertTrue { (metadata.createdAt ?: minTime) in minTime..maxTime }
+    assertTrue { (metadata.lastModifiedAt ?: minTime) in minTime..maxTime }
+    assertTrue { (metadata.lastAccessedAt ?: minTime) in minTime..maxTime }
+  }
+
+  @Test
+  fun `directory metadata`() {
+    if (!isJvm()) return
+
+    val minTime = clock.now().floorSeconds()
+    val path = base / "directory-metadata"
+    filesystem.createDirectory(path)
+    val maxTime = clock.now().plus(1.seconds).floorSeconds()
+
+    val metadata = filesystem.metadata(path)
+    assertFalse(metadata.isRegularFile)
+    assertTrue(metadata.isDirectory)
+    // Note that the size check is omitted; we'd expect null but the JVM returns values like 64.
+    assertTrue { (metadata.createdAt ?: minTime) in minTime..maxTime }
+    assertTrue { (metadata.lastModifiedAt ?: minTime) in minTime..maxTime }
+    assertTrue { (metadata.lastAccessedAt ?: minTime) in minTime..maxTime }
+  }
+
+  @Test
+  fun `absent metadata`() {
+    if (!isJvm()) return
+
+    val path = base / "no-such-file"
+    assertFailsWith<IOException> {
+      filesystem.metadata(path)
+    }
+  }
+
   private fun randomToken() = Random.nextBytes(16).toByteString().hex()
 
   fun Path.readUtf8(): String {
@@ -305,4 +360,12 @@ abstract class FileSystemTest(
       sink.close()
     }
   }
+
+  private fun isJvm() = filesystem::class.simpleName == "JvmSystemFilesystem"
+
+  /**
+   * Truncates fractional seconds on this instant. This is because most host filesystems do not
+   * use precise timestamps for file metadata.
+   */
+  private fun Instant.floorSeconds() = Instant.fromEpochSeconds(epochSeconds)
 }

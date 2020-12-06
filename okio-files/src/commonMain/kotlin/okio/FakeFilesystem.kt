@@ -15,6 +15,10 @@
  */
 package okio
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import okio.FakeFilesystem.Element.Directory
+import okio.FakeFilesystem.Element.File
 import okio.Path.Companion.toPath
 
 /**
@@ -25,11 +29,13 @@ import okio.Path.Companion.toPath
  * should assert that this list is empty in `tearDown()`. This way the test only pass if all streams
  * that were opened are also closed.
  */
-class FakeFilesystem : Filesystem() {
+class FakeFilesystem(
+  val clock: Clock = Clock.System
+) : Filesystem() {
   private val root = "/".toPath()
 
   /** Keys are canonical paths. Each value is either a [Directory] or a [ByteString]. */
-  private val elements = mutableMapOf<Path, Any>(root to Directory)
+  private val elements = mutableMapOf<Path, Element>(root to Directory(clock.now()))
 
   private val openPathsMutable = mutableListOf<Path>()
 
@@ -50,6 +56,12 @@ class FakeFilesystem : Filesystem() {
     return canonicalPath
   }
 
+  override fun metadata(path: Path): FileMetadata {
+    val canonicalPath = root / path
+    val element = elements[canonicalPath] ?: throw IOException("no such file")
+    return element.metadata
+  }
+
   override fun list(dir: Path): List<Path> {
     val canonicalPath = root / dir
     val element = elements[canonicalPath] ?: throw IOException("no such file")
@@ -58,6 +70,7 @@ class FakeFilesystem : Filesystem() {
       throw IOException("not a directory")
     }
 
+    element.access(now = clock.now())
     return elements.keys.filter { it.parent == canonicalPath }
   }
 
@@ -65,27 +78,35 @@ class FakeFilesystem : Filesystem() {
     val canonicalPath = root / file
     val element = elements[canonicalPath] ?: throw IOException("no such file")
 
-    if (element !is ByteString) {
+    if (element !is File) {
       throw IOException("not a file")
     }
 
     openPathsMutable += canonicalPath
-    return FakeFileSource(canonicalPath, Buffer().write(element))
+    element.access(now = clock.now())
+    return FakeFileSource(canonicalPath, Buffer().write(element.data))
   }
 
   override fun sink(file: Path): Sink {
     val canonicalPath = root / file
+    val now = clock.now()
 
-    if (elements[canonicalPath] is Directory) {
+    val existing = elements[canonicalPath]
+    if (existing is Directory) {
       throw IOException("destination is a directory")
     }
-    if (elements[canonicalPath.parent] !is Directory) {
+
+    val parent = elements[canonicalPath.parent]
+    if (parent !is Directory) {
       throw IOException("parent isn't a directory")
     }
+    parent.access(now, true)
 
     openPathsMutable += canonicalPath
-    elements[canonicalPath] = ByteString.EMPTY
-    return FakeFileSink(canonicalPath)
+    val regularFile = File(createdAt = existing?.createdAt ?: now)
+    regularFile.access(now = now, modified = true)
+    elements[canonicalPath] = regularFile
+    return FakeFileSink(canonicalPath, regularFile)
   }
 
   override fun createDirectory(dir: Path) {
@@ -98,7 +119,7 @@ class FakeFilesystem : Filesystem() {
       throw IOException("parent isn't a directory")
     }
 
-    elements[canonicalPath] = Directory
+    elements[canonicalPath] = Directory(createdAt = clock.now())
   }
 
   override fun atomicMove(source: Path, target: Path) {
@@ -130,10 +151,50 @@ class FakeFilesystem : Filesystem() {
     if (elements.remove(canonicalPath) == null) throw IOException("no such file")
   }
 
-  internal object Directory
+  internal sealed class Element(
+    val createdAt: Instant
+  ) {
+    var lastModifiedAt: Instant = createdAt
+    var lastAccessedAt: Instant = createdAt
+
+    class File(createdAt: Instant) : Element(createdAt) {
+      var data: ByteString = ByteString.EMPTY
+
+      override val metadata: FileMetadata
+        get() = FileMetadata(
+          isRegularFile = true,
+          size = data.size.toLong(),
+          createdAt = createdAt,
+          lastModifiedAt = lastModifiedAt,
+          lastAccessedAt = lastAccessedAt
+        )
+    }
+
+    class Directory(createdAt: Instant) : Element(createdAt) {
+      override val metadata: FileMetadata
+        get() = FileMetadata(
+          isDirectory = true,
+          createdAt = createdAt,
+          lastModifiedAt = lastModifiedAt,
+          lastAccessedAt = lastAccessedAt
+        )
+    }
+
+    fun access(now: Instant, modified: Boolean = false) {
+      lastAccessedAt = now
+      if (modified) {
+        lastModifiedAt = now
+      }
+    }
+
+    abstract val metadata: FileMetadata
+  }
 
   /** Reads data from [buffer], removing itself from [openPathsMutable] when closed. */
-  internal inner class FakeFileSource(val path: Path, val buffer: Buffer) : Source {
+  internal inner class FakeFileSource(
+    private val path: Path,
+    private val buffer: Buffer
+  ) : Source {
     private var closed = false
 
     override fun read(sink: Buffer, byteCount: Long): Long {
@@ -151,7 +212,10 @@ class FakeFilesystem : Filesystem() {
   }
 
   /** Writes data to [path]. */
-  internal inner class FakeFileSink(val path: Path) : Sink {
+  internal inner class FakeFileSink(
+    private val path: Path,
+    private val file: File
+  ) : Sink {
     private var buffer = Buffer()
     private var closed = false
 
@@ -162,7 +226,8 @@ class FakeFilesystem : Filesystem() {
 
     override fun flush() {
       check(!closed) { "closed" }
-      elements[path] = buffer.snapshot()
+      file.data = buffer.snapshot()
+      file.access(now = clock.now(), modified = true)
     }
 
     override fun timeout() = Timeout.NONE
@@ -170,7 +235,8 @@ class FakeFilesystem : Filesystem() {
     override fun close() {
       if (closed) return
       closed = true
-      elements[path] = buffer.snapshot()
+      file.data = buffer.snapshot()
+      file.access(now = clock.now(), modified = true)
       openPathsMutable -= path
     }
   }
