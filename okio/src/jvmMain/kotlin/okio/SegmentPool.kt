@@ -31,9 +31,9 @@ import java.util.concurrent.atomic.AtomicReference
  * On [recycle], a caller swaps the head with a new node whose successor is the replaced head.
  *
  * On conflict, operations succeed, but segments are not pushed into the stack. For example, a
- * [take] that loses a race allocates a new segment regardless of the pool size. A [take] call that
- * loses a race will not increase the size of the pool. Under significant contention, this pool will
- * have fewer hits and the VM will do more GC and zero filling of arrays.
+ * [take] that loses a race allocates a new segment regardless of the pool size. A [recycle] call
+ * that loses a race will not increase the size of the pool. Under significant contention, this pool
+ * will have fewer hits and the VM will do more GC and zero filling of arrays.
  *
  * This tracks the number of bytes in each linked list in its [Segment.limit] property. Each element
  * has a limit that's one segment size greater than its successor element. The maximum size of the
