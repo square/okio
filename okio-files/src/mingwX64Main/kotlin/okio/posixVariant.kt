@@ -15,11 +15,18 @@
  */
 package okio
 
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import okio.Path.Companion.toPath
 import platform.posix.EACCES
 import platform.posix.ENOENT
 import platform.posix.PATH_MAX
+import platform.posix.S_IFDIR
+import platform.posix.S_IFMT
+import platform.posix.S_IFREG
 import platform.posix._fullpath
+import platform.posix._stat64
 import platform.posix.errno
 import platform.posix.free
 import platform.posix.mkdir
@@ -55,5 +62,22 @@ internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path 
     return pathString.toPath()
   } finally {
     free(fullpath)
+  }
+}
+
+internal actual fun PosixSystemFilesystem.variantMetadata(path: Path): FileMetadata {
+  return memScoped {
+    val stat = alloc<_stat64>()
+    if (_stat64(path.toString(), stat.ptr) != 0) {
+      throw IOException(errnoString(errno))
+    }
+    return@memScoped FileMetadata(
+      isRegularFile = stat.st_mode.toInt() and S_IFMT == S_IFREG,
+      isDirectory = stat.st_mode.toInt() and S_IFMT == S_IFDIR,
+      size = stat.st_size,
+      createdAtMillis = stat.st_ctime * 1000L,
+      lastModifiedAtMillis = stat.st_mtime * 1000L,
+      lastAccessedAtMillis = stat.st_atime * 1000L
+    )
   }
 }

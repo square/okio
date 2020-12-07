@@ -36,15 +36,7 @@ internal object PosixSystemFilesystem : Filesystem() {
   override fun canonicalize(path: Path) = variantCanonicalize(path)
 
   override fun metadata(path: Path): FileMetadata {
-    // TOOD(jwilson): implement metadata for POSIX!
-    return FileMetadata(
-      isRegularFile = false,
-      isDirectory = false,
-      size = null,
-      createdAtMillis = null,
-      lastModifiedAtMillis = null,
-      lastAccessedAtMillis = null
-    )
+    return variantMetadata(path)
   }
 
   override fun list(dir: Path): List<Path> {
