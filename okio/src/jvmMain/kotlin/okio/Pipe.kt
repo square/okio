@@ -212,16 +212,18 @@ class Pipe(internal val maxBufferSize: Long) {
 
   @JvmName("-deprecated_sink")
   @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "sink"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to val",
+    replaceWith = ReplaceWith(expression = "sink"),
+    level = DeprecationLevel.ERROR
+  )
   fun sink() = sink
 
   @JvmName("-deprecated_source")
   @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "source"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to val",
+    replaceWith = ReplaceWith(expression = "source"),
+    level = DeprecationLevel.ERROR
+  )
   fun source() = source
 
   /**

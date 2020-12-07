@@ -81,13 +81,13 @@ internal class Sha512 : HashFunction {
     var pos = pos
     for (w in 0 until 16) {
       words[w] = ((input[pos++].toLong() and 0xff) shl 56) or
-          ((input[pos++].toLong() and 0xff) shl 48) or
-          ((input[pos++].toLong() and 0xff) shl 40) or
-          ((input[pos++].toLong() and 0xff) shl 32) or
-          ((input[pos++].toLong() and 0xff) shl 24) or
-          ((input[pos++].toLong() and 0xff) shl 16) or
-          ((input[pos++].toLong() and 0xff) shl 8) or
-          ((input[pos++].toLong() and 0xff))
+        ((input[pos++].toLong() and 0xff) shl 48) or
+        ((input[pos++].toLong() and 0xff) shl 40) or
+        ((input[pos++].toLong() and 0xff) shl 32) or
+        ((input[pos++].toLong() and 0xff) shl 24) or
+        ((input[pos++].toLong() and 0xff) shl 16) or
+        ((input[pos++].toLong() and 0xff) shl 8) or
+        ((input[pos++].toLong() and 0xff))
     }
 
     for (i in 16 until 80) {

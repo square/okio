@@ -282,9 +282,9 @@ object TestUtil {
   fun Int.reverseBytes(): Int {
     /* ktlint-disable no-multi-spaces indent */
     return (this and -0x1000000 ushr 24) or
-           (this and 0x00ff0000 ushr  8) or
-           (this and 0x0000ff00  shl  8) or
-           (this and 0x000000ff  shl 24)
+      (this and 0x00ff0000 ushr  8) or
+      (this and 0x0000ff00  shl  8) or
+      (this and 0x000000ff  shl 24)
     /* ktlint-enable no-multi-spaces indent */
   }
 
@@ -293,7 +293,7 @@ object TestUtil {
     val i = toInt() and 0xffff
     /* ktlint-disable no-multi-spaces indent */
     val reversed = (i and 0xff00 ushr 8) or
-                   (i and 0x00ff  shl 8)
+      (i and 0x00ff  shl 8)
     /* ktlint-enable no-multi-spaces indent */
     return reversed.toShort()
   }

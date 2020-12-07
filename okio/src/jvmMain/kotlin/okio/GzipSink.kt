@@ -22,7 +22,6 @@ package okio
 import java.io.IOException
 import java.util.zip.CRC32
 import java.util.zip.Deflater
-
 import java.util.zip.Deflater.DEFAULT_COMPRESSION
 
 /**
@@ -138,9 +137,10 @@ class GzipSink(sink: Sink) : Sink {
 
   @JvmName("-deprecated_deflater")
   @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "deflater"),
-      level = DeprecationLevel.ERROR)
+    message = "moved to val",
+    replaceWith = ReplaceWith(expression = "deflater"),
+    level = DeprecationLevel.ERROR
+  )
   fun deflater() = deflater
 }
 

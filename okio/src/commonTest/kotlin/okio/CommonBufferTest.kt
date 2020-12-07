@@ -55,13 +55,14 @@ class CommonBufferTest {
       Buffer().writeUtf8("Tyrannosaur").toString()
     )
     assertEquals(
-      "[text=təˈranəˌsôr]", Buffer()
+      "[text=təˈranəˌsôr]",
+      Buffer()
         .write("74c999cb8872616ec999cb8c73c3b472".decodeHex())
         .toString()
     )
     assertEquals(
       "[hex=0000000000000000000000000000000000000000000000000000000000000000000000000000" +
-          "0000000000000000000000000000000000000000000000000000]",
+        "0000000000000000000000000000000000000000000000000000]",
       Buffer().write(ByteArray(64)).toString()
     )
   }
@@ -128,7 +129,8 @@ class CommonBufferTest {
       listOf(
         Segment.SIZE, Segment.SIZE, Segment.SIZE, 1,
         Segment.SIZE, Segment.SIZE, Segment.SIZE, 1
-      ), segmentSizes
+      ),
+      segmentSizes
     )
   }
 

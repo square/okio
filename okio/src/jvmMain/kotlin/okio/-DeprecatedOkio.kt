@@ -26,98 +26,122 @@ import java.nio.file.Path
 @Deprecated(message = "changed in Okio 2.x")
 object `-DeprecatedOkio` {
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "file.appendingSink()",
-          imports = ["okio.appendingSink"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "file.appendingSink()",
+      imports = ["okio.appendingSink"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun appendingSink(file: File) = file.appendingSink()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "sink.buffer()",
-          imports = ["okio.buffer"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "sink.buffer()",
+      imports = ["okio.buffer"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun buffer(sink: Sink) = sink.buffer()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "source.buffer()",
-          imports = ["okio.buffer"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "source.buffer()",
+      imports = ["okio.buffer"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun buffer(source: Source) = source.buffer()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "file.sink()",
-          imports = ["okio.sink"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "file.sink()",
+      imports = ["okio.sink"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun sink(file: File) = file.sink()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "outputStream.sink()",
-          imports = ["okio.sink"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "outputStream.sink()",
+      imports = ["okio.sink"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun sink(outputStream: OutputStream) = outputStream.sink()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "path.sink(*options)",
-          imports = ["okio.sink"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "path.sink(*options)",
+      imports = ["okio.sink"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun sink(path: Path, vararg options: OpenOption) = path.sink(*options)
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "socket.sink()",
-          imports = ["okio.sink"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "socket.sink()",
+      imports = ["okio.sink"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun sink(socket: Socket) = socket.sink()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "file.source()",
-          imports = ["okio.source"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "file.source()",
+      imports = ["okio.source"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun source(file: File) = file.source()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "inputStream.source()",
-          imports = ["okio.source"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "inputStream.source()",
+      imports = ["okio.source"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun source(inputStream: InputStream) = inputStream.source()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "path.source(*options)",
-          imports = ["okio.source"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "path.source(*options)",
+      imports = ["okio.source"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun source(path: Path, vararg options: OpenOption) = path.source(*options)
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "socket.source()",
-          imports = ["okio.source"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "socket.source()",
+      imports = ["okio.source"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun source(socket: Socket) = socket.source()
 
   @Deprecated(
-      message = "moved to extension function",
-      replaceWith = ReplaceWith(
-          expression = "blackholeSink()",
-          imports = ["okio.blackholeSink"]),
-      level = DeprecationLevel.ERROR)
+    message = "moved to extension function",
+    replaceWith = ReplaceWith(
+      expression = "blackholeSink()",
+      imports = ["okio.blackholeSink"]
+    ),
+    level = DeprecationLevel.ERROR
+  )
   fun blackhole() = blackholeSink()
 }

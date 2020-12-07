@@ -184,13 +184,13 @@ fun File.source(): Source = inputStream().source()
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
 fun Path.sink(vararg options: OpenOption): Sink =
-    Files.newOutputStream(this, *options).sink()
+  Files.newOutputStream(this, *options).sink()
 
 /** Returns a sink that writes to `path`. */
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
 fun Path.source(vararg options: OpenOption): Source =
-    Files.newInputStream(this, *options).source()
+  Files.newInputStream(this, *options).source()
 
 /**
  * Returns a sink that uses [cipher] to encrypt or decrypt [this].

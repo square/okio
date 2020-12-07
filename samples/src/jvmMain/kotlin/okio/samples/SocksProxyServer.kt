@@ -101,8 +101,8 @@ class KotlinSocksProxyServer {
 
       // Respond to hello.
       fromSink.writeByte(VERSION_5)
-          .writeByte(METHOD_NO_AUTHENTICATION_REQUIRED)
-          .emit()
+        .writeByte(METHOD_NO_AUTHENTICATION_REQUIRED)
+        .emit()
 
       // Read a command.
       val version = fromSource.readByte().toInt() and 0xff
@@ -132,12 +132,12 @@ class KotlinSocksProxyServer {
 
       // Write the reply.
       fromSink.writeByte(VERSION_5)
-          .writeByte(REPLY_SUCCEEDED)
-          .writeByte(0)
-          .writeByte(ADDRESS_TYPE_IPV4)
-          .write(localAddress)
-          .writeShort(toSocket.localPort)
-          .emit()
+        .writeByte(REPLY_SUCCEEDED)
+        .writeByte(0)
+        .writeByte(ADDRESS_TYPE_IPV4)
+        .write(localAddress)
+        .writeShort(toSocket.localPort)
+        .emit()
 
       // Connect sources to sinks in both directions.
       val toSink = toSocket.sink()
@@ -182,7 +182,7 @@ fun main() {
   val connection = url.openConnection(proxyServer.proxy())
   connection.getInputStream().source().buffer().use { source ->
     generateSequence { source.readUtf8Line() }
-        .forEach(::println)
+      .forEach(::println)
   }
 
   proxyServer.shutdown()

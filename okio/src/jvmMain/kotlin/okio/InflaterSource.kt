@@ -143,4 +143,4 @@ internal constructor(private val source: BufferedSource, private val inflater: I
  * @see InflaterSource
  */
 inline fun Source.inflate(inflater: Inflater = Inflater()): InflaterSource =
-    InflaterSource(this, inflater)
+  InflaterSource(this, inflater)

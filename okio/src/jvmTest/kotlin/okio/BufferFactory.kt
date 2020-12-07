@@ -15,10 +15,9 @@
  */
 package okio
 
-import java.util.Random
-
 import okio.TestUtil.bufferWithRandomSegmentLayout
 import okio.TestUtil.bufferWithSegments
+import java.util.Random
 
 enum class BufferFactory {
   EMPTY {

@@ -165,20 +165,22 @@ class Options private constructor(
           }
 
           if (rangeStart + 1 == rangeEnd &&
-              byteStringOffset + 1 == byteStrings[rangeStart].size) {
+            byteStringOffset + 1 == byteStrings[rangeStart].size
+          ) {
             // The result is a single index.
             node.writeInt(indexes[rangeStart])
           } else {
             // The result is another node.
             node.writeInt(-1 * (childNodesOffset + childNodes.intCount).toInt())
             buildTrieRecursive(
-                nodeOffset = childNodesOffset,
-                node = childNodes,
-                byteStringOffset = byteStringOffset + 1,
-                byteStrings = byteStrings,
-                fromIndex = rangeStart,
-                toIndex = rangeEnd,
-                indexes = indexes)
+              nodeOffset = childNodesOffset,
+              node = childNodes,
+              byteStringOffset = byteStringOffset + 1,
+              byteStrings = byteStrings,
+              fromIndex = rangeStart,
+              toIndex = rangeEnd,
+              indexes = indexes
+            )
           }
 
           rangeStart = rangeEnd
@@ -215,13 +217,14 @@ class Options private constructor(
           val childNodes = Buffer()
           node.writeInt(-1 * (childNodesOffset + childNodes.intCount).toInt())
           buildTrieRecursive(
-              nodeOffset = childNodesOffset,
-              node = childNodes,
-              byteStringOffset = byteStringOffset + scanByteCount,
-              byteStrings = byteStrings,
-              fromIndex = fromIndex,
-              toIndex = toIndex,
-              indexes = indexes)
+            nodeOffset = childNodesOffset,
+            node = childNodes,
+            byteStringOffset = byteStringOffset + scanByteCount,
+            byteStrings = byteStrings,
+            fromIndex = fromIndex,
+            toIndex = toIndex,
+            indexes = indexes
+          )
           node.writeAll(childNodes)
         }
       }
