@@ -22,23 +22,25 @@ import java.util.concurrent.atomic.AtomicReference
 
 /**
  * This class pools segments in a lock-free singly-linked stack. Though this code is lock-free it
- * does use a sentinel [LOCK] value to defend against races.
+ * does use a sentinel [LOCK] value to defend against races. Conflicted operations are not retried,
+ * so there is no chance of blocking despite the term "lock".
  *
- * When popping, a caller swaps the stack's next pointer with the [LOCK] sentinel. If the stack was
+ * On [take], a caller swaps the stack's next pointer with the [LOCK] sentinel. If the stack was
  * not already locked, the caller replaces the head node with its successor.
  *
- * When pushing, a caller swaps the head with a new node whose successor is the replaced head.
+ * On [recycle], a caller swaps the head with a new node whose successor is the replaced head.
  *
- * If operations conflict, segments are not pushed into the stack. A [recycle] call that loses a
- * race will not add to the pool, and a [take] call that loses a race will not take from the pool.
- * Under significant contention this pool will have fewer hits and the VM will do more GC and zero
- * filling of arrays.
+ * On conflict, operations succeed, but segments are not pushed into the stack. For example, a
+ * [take] that loses a race allocates a new segment regardless of the pool size. A [recycle] call
+ * that loses a race will not increase the size of the pool. Under significant contention, this pool
+ * will have fewer hits and the VM will do more GC and zero filling of arrays.
  *
  * This tracks the number of bytes in each linked list in its [Segment.limit] property. Each element
- * has a limit that's one segment size greater than its successor element.
+ * has a limit that's one segment size greater than its successor element. The maximum size of the
+ * pool is a product of [MAX_SIZE] and [HASH_BUCKET_COUNT].
  */
 internal actual object SegmentPool {
-  /** The maximum number of bytes to pool.  */
+  /** The maximum number of bytes to pool per hash bucket. */
   // TODO: Is 64 KiB a good maximum size? Do we ever have that many idle segments?
   actual val MAX_SIZE = 64 * 1024 // 64 KiB.
 
@@ -54,15 +56,14 @@ internal actual object SegmentPool {
     Integer.highestOneBit(Runtime.getRuntime().availableProcessors() * 2 - 1)
 
   /**
-   * Hash buckets each containing a singly-linked list of segments. We use multiple hash buckets so
-   * different threads don't race each other. We use thread IDs as hash keys because they're handy,
-   * and because it may increase locality.
+   * Hash buckets each contain a singly-linked list of segments. The index/key is a hash function of
+   * thread ID because it may reduce contention or increase locality.
    *
    * We don't use [ThreadLocal] because we don't know how many threads the host process has and we
    * don't want to leak memory for the duration of a thread's life.
    */
   private val hashBuckets: Array<AtomicReference<Segment?>> = Array(HASH_BUCKET_COUNT) {
-    AtomicReference<Segment?>()
+    AtomicReference<Segment?>() // null value implies an empty bucket
   }
 
   actual val byteCount: Int
@@ -112,12 +113,14 @@ internal actual object SegmentPool {
     segment.pos = 0
     segment.limit = firstLimit + Segment.SIZE
 
-    if (!firstRef.compareAndSet(first, segment)) segment.next = null
-    // If we raced another operation: Don't recycle this segment.
+    // If we lost a race with another operation, don't recycle this segment.
+    if (!firstRef.compareAndSet(first, segment)) {
+      segment.next = null // Don't leak a reference in the pool either!
+    }
   }
 
   private fun firstRef(): AtomicReference<Segment?> {
-    // Get a value in [0..HASH_BUCKET_COUNT).
+    // Get a value in [0..HASH_BUCKET_COUNT) based on the current thread.
     val hashBucket = (Thread.currentThread().id and (HASH_BUCKET_COUNT - 1L)).toInt()
     return hashBuckets[hashBucket]
   }
