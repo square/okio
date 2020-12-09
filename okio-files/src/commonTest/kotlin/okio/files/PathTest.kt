@@ -16,6 +16,7 @@
 package okio.files
 
 import okio.Path.Companion.toPath
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -85,28 +86,28 @@ class PathTest {
 
   @Test
   fun `relative path traversal with div operator`() {
-    val cwd = ".".toPath()
-    assertEquals("home".toPath(), cwd / "home")
-    assertEquals("home/jesse".toPath(), cwd / "home" / "jesse")
-    assertEquals("home".toPath(), cwd / "home" / "jesse" / "..")
-    assertEquals("home/jake".toPath(), cwd / "home" / "jesse" / ".." / "jake")
+    val cwd = ".".toPath("/")
+    assertEquals("home".toPath("/"), cwd / "home")
+    assertEquals("home/jesse".toPath("/"), cwd / "home" / "jesse")
+    assertEquals("home".toPath("/"), cwd / "home" / "jesse" / "..")
+    assertEquals("home/jake".toPath("/"), cwd / "home" / "jesse" / ".." / "jake")
   }
 
   @Test
   fun `relative path traversal with dots`() {
-    val cwd = ".".toPath()
-    assertEquals("..".toPath(), cwd / "..")
-    assertEquals("../..".toPath(), cwd / ".." / "..")
-    assertEquals("../../etc".toPath(), cwd / ".." / ".." / "etc")
-    assertEquals("../../etc/passwd".toPath(), cwd / ".." / ".." / "etc" / "passwd")
+    val cwd = ".".toPath("/")
+    assertEquals("..".toPath("/"), cwd / "..")
+    assertEquals("../..".toPath("/"), cwd / ".." / "..")
+    assertEquals("../../etc".toPath("/"), cwd / ".." / ".." / "etc")
+    assertEquals("../../etc/passwd".toPath("/"), cwd / ".." / ".." / "etc" / "passwd")
   }
 
   @Test
   fun `path traversal base ignored if child is an absolute path`() {
-    assertEquals("/home".toPath(), "".toPath() / "/home")
-    assertEquals("/home".toPath(), "relative".toPath() / "/home")
-    assertEquals("/home".toPath(), "/base".toPath() / "/home")
-    assertEquals("/home".toPath(), "/".toPath() / "/home")
+    assertEquals("/home".toPath(), "".toPath("/") / "/home")
+    assertEquals("/home".toPath(), "relative".toPath("/") / "/home")
+    assertEquals("/home".toPath(), "/base".toPath("/") / "/home")
+    assertEquals("/home".toPath(), "/".toPath("/") / "/home")
   }
 
   @Test
@@ -197,5 +198,69 @@ class PathTest {
     assertEquals("a/b", "a//b/./".toPath().toString())
     assertEquals("a/b", "a//b/./.".toPath().toString())
     assertEquals("a/b/c", "a/b/./c/".toPath().toString())
+  }
+
+  @Test
+  fun `windows fully qualified path`() {
+    assertEquals("C:\\", "C:\\".toPath().toString())
+    assertEquals("C:\\Windows\\notepad.exe", "C:\\Windows\\notepad.exe".toPath().toString())
+  }
+
+  @Test
+  fun `composing windows path`() {
+    assertEquals("C:\\Windows\\notepad.exe".toPath(), "C:\\".toPath() / "Windows" / "notepad.exe")
+  }
+
+  @Test
+  fun `windows path traversal up`() {
+    assertEquals("C:\\z".toPath(), "C:\\x\\y\\..\\..\\..\\z".toPath())
+    assertEquals("C:..\\z".toPath(), "C:x\\y\\..\\..\\..\\z".toPath())
+  }
+
+  @Test
+  fun `volume letter`() {
+    assertEquals('C', "C:\\Windows".toPath("\\").volumeLetter)
+    assertEquals('C', "C:".toPath("\\").volumeLetter)
+    assertEquals('z', "z:\\Windows".toPath("\\").volumeLetter)
+    assertEquals('z', "z:".toPath("\\").volumeLetter)
+    assertNull("\\\\server\\directory".toPath("\\").volumeLetter)
+    assertNull("\\\\server\\directory".toPath("\\").volumeLetter)
+    assertNull("\\Windows".toPath("\\").volumeLetter)
+    assertNull("/Windows".toPath("\\").volumeLetter)
+    assertNull("\\".toPath("\\").volumeLetter)
+    assertNull("/".toPath("\\").volumeLetter)
+    assertNull("C:".toPath("/").volumeLetter)
+    assertNull("C:/Windows".toPath("/").volumeLetter)
+  }
+
+  @Test
+  fun `windows absolute path`() {
+    assertEquals("\\Program Files", "\\Program Files".toPath().toString())
+    assertEquals("\\Program Files\\Photoshop".toPath(), "\\Program Files".toPath() / "Photoshop")
+  }
+
+  /** If a volume is present in the relative path... */
+  @Test
+  fun `windows volume relative path`() {
+    assertEquals("c:notepad.exe".toPath("\\"), "A:\\DOOM".toPath() / "c:notepad.exe")
+    assertEquals("c:notepad.exe".toPath("\\"), "C:\\Program Files".toPath() / "c:notepad.exe")
+  }
+
+  /**
+   * > fopen accepts UNC paths and paths that involve mapped network drives as long as the system
+   * > that executes the code has access to the share or mapped drive at the time of execution.
+   * > When you construct paths for fopen, make sure that drives, paths, or network shares will be
+   * > available in the execution environment. You can use either forward slashes (/) or backslashes
+   * > (\) as the directory separators in a path.
+   *
+   * TODO(swankjesse): support \\?\ and \\.\ paths.
+   */
+  @Test @Ignore
+  fun `windows qualified path`() {
+    assertEquals("\\\\server\\share", "\\\\server\\share".toPath().toString())
+    assertEquals("\\\\?\\directory", "\\\\?\\directory".toPath().toString())
+    assertEquals("\\\\.\\COM56", "\\\\.\\COM56".toPath().toString())
+    assertEquals("\\Global??", "\\Global??".toPath().toString())
+    assertEquals("\\", "\\".toPath().toString())
   }
 }

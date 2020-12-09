@@ -36,6 +36,7 @@ abstract class Filesystem {
    *
    * @throws IOException if [path] does not exist or its metadata cannot be read.
    */
+  @Throws(IOException::class)
   abstract fun metadata(path: Path): FileMetadata
 
   /**
