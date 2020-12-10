@@ -107,7 +107,13 @@ abstract class Filesystem {
    * @throws IOException if [source] cannot be read or if [target] cannot be written.
    */
   @Throws(IOException::class)
-  abstract fun copy(source: Path, target: Path)
+  open fun copy(source: Path, target: Path) {
+    source(source).use { bytesIn ->
+      sink(target).buffer().use { bytesOut ->
+        bytesOut.writeAll(bytesIn)
+      }
+    }
+  }
 
   /**
    * Deletes the file or directory at [path].

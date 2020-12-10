@@ -13,7 +13,6 @@ kotlin {
     commonMain {
       dependencies {
         api deps.kotlin.stdLib.common
-        api deps.kotlin.time
         api project(":okio")
       }
     }
@@ -21,6 +20,8 @@ kotlin {
       dependencies {
         implementation deps.kotlin.test.common
         implementation deps.kotlin.test.annotations
+        implementation deps.kotlin.time
+        implementation project(":okio-testing")
       }
     }
     jvmMain {

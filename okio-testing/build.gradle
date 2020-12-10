@@ -1,0 +1,22 @@
+apply plugin: 'org.jetbrains.kotlin.multiplatform'
+
+kotlin {
+  jvm {
+    withJava()
+  }
+  if (kmpNativeEnabled) {
+    macosX64()
+    linuxX64()
+    mingwX64()
+  }
+  sourceSets {
+    commonMain {
+      dependencies {
+        api deps.kotlin.stdLib.common
+        api deps.kotlin.time
+        api project(":okio")
+        api project(":okio-files")
+      }
+    }
+  }
+}
