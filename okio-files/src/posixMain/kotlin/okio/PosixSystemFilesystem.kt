@@ -98,13 +98,6 @@ internal object PosixSystemFilesystem : Filesystem() {
     }
   }
 
-  override fun copy(
-    source: Path,
-    target: Path
-  ) {
-    commonCopy(source, target)
-  }
-
   override fun delete(path: Path) {
     variantDelete(path)
   }

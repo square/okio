@@ -137,10 +137,6 @@ class FakeFilesystem(
     elements[canonicalTarget] = removed
   }
 
-  override fun copy(source: Path, target: Path) {
-    commonCopy(source, target)
-  }
-
   override fun delete(path: Path) {
     val canonicalPath = root / path
 

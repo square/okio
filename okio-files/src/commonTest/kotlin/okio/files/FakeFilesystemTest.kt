@@ -17,9 +17,6 @@ package okio.files
 
 import okio.FakeFilesystem
 import okio.Path.Companion.toPath
-import okio.createdAt
-import okio.lastAccessedAt
-import okio.lastModifiedAt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

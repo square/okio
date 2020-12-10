@@ -15,17 +15,6 @@
  */
 package okio
 
-internal fun Filesystem.commonCopy(
-  source: Path,
-  target: Path
-) {
-  source(source).use { bytesIn ->
-    sink(target).buffer().use { bytesOut ->
-      bytesOut.writeAll(bytesIn)
-    }
-  }
-}
-
 internal inline fun <S : Source, T> S.use(block: (S) -> T): T {
   var result: T? = null
   var thrown: Throwable? = null

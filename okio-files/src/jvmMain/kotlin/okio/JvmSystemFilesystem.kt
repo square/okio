@@ -84,13 +84,6 @@ object JvmSystemFilesystem : Filesystem() {
     }
   }
 
-  override fun copy(
-    source: Path,
-    target: Path
-  ) {
-    commonCopy(source, target)
-  }
-
   override fun delete(path: Path) {
     val deleted = path.toFile().delete()
     if (!deleted) throw IOException("failed to delete $path")

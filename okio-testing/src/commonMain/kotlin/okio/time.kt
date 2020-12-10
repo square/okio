@@ -17,7 +17,7 @@ package okio
 
 import kotlinx.datetime.Instant
 
-fun FileMetadata(
+internal fun FileMetadata(
   isRegularFile: Boolean = false,
   isDirectory: Boolean = false,
   size: Long? = null,
@@ -34,21 +34,3 @@ fun FileMetadata(
     lastAccessedAtMillis = lastAccessedAt?.toEpochMilliseconds()
   )
 }
-
-val FileMetadata.createdAt: Instant?
-  get() {
-    val createdAt = createdAtMillis ?: return null
-    return Instant.fromEpochMilliseconds(createdAt)
-  }
-
-val FileMetadata.lastModifiedAt: Instant?
-  get() {
-    val lastModifiedAt = lastModifiedAtMillis ?: return null
-    return Instant.fromEpochMilliseconds(lastModifiedAt)
-  }
-
-val FileMetadata.lastAccessedAt: Instant?
-  get() {
-    val lastAccessedAt = lastAccessedAtMillis ?: return null
-    return Instant.fromEpochMilliseconds(lastAccessedAt)
-  }
