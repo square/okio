@@ -2,31 +2,28 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'org.jetbrains.dokka'
 
-dokkaGfm {
-  outputDirectory = "$rootDir/docs/2.x"
+def dokkaConfiguration = {
+  outputDirectory.set(file("$rootDir/docs/2.x"))
 
   dokkaSourceSets {
     configureEach {
-      reportUndocumented = false
-      skipDeprecated = true
-      jdkVersion = 8
+      reportUndocumented.set(false)
+      skipDeprecated.set(true)
+      jdkVersion.set(8)
       perPackageOption {
-        prefix = "com.squareup.okio"
-        suppress = true
+        prefix.set("com.squareup.okio")
+        suppress.set(true)
       }
       perPackageOption {
-        prefix = "okio.internal"
-        suppress = true
+        prefix.set("okio.internal")
+        suppress.set(true)
       }
-    }
-    create("jvmMain") {
-    }
-    create("jsMain") {
-    }
-    create("nativeMain") {
     }
   }
 }
+
+dokkaGfm.configure(dokkaConfiguration)
+dokkaHtml.configure(dokkaConfiguration)
 
 def isReleaseBuild() {
   return VERSION_NAME.contains("SNAPSHOT") == false
