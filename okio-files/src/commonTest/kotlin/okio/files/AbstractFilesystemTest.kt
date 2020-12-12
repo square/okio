@@ -25,6 +25,7 @@ import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.buffer
+import okio.use
 import kotlin.random.Random
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
@@ -38,9 +39,10 @@ import kotlin.time.seconds
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 @ExperimentalTime
-abstract class FileSystemTest(
+abstract class AbstractFilesystemTest(
   val clock: Clock,
   val filesystem: Filesystem,
+  val windowsLimitations: Boolean,
   temporaryDirectory: Path
 ) {
   val base: Path = temporaryDirectory / "FileSystemTest-${randomToken()}"
@@ -332,23 +334,93 @@ abstract class FileSystemTest(
     }
   }
 
+  @Test
+  fun `delete open for writing fails on Windows`() {
+    val file = base / "file.txt"
+    expectIOExceptionOnWindows {
+      filesystem.sink(file).use {
+        filesystem.delete(file)
+      }
+    }
+  }
+
+  @Test
+  fun `delete open for reading fails on Windows`() {
+    val file = base / "file.txt"
+    file.writeUtf8("abc")
+    expectIOExceptionOnWindows {
+      filesystem.source(file).use {
+        filesystem.delete(file)
+      }
+    }
+  }
+
+  @Test
+  fun `rename source is open fails on Windows`() {
+    val from = base / "from.txt"
+    val to = base / "to.txt"
+    from.writeUtf8("source file")
+    to.writeUtf8("target file")
+    expectIOExceptionOnWindows {
+      filesystem.source(from).use {
+        filesystem.atomicMove(from, to)
+      }
+    }
+  }
+
+  @Test
+  fun `rename target is open fails on Windows`() {
+    val from = base / "from.txt"
+    val to = base / "to.txt"
+    from.writeUtf8("source file")
+    to.writeUtf8("target file")
+    expectIOExceptionOnWindows {
+      filesystem.source(to).use {
+        filesystem.atomicMove(from, to)
+      }
+    }
+  }
+
+  @Test
+  fun `delete contents of parent of file open for reading fails on Windows`() {
+    val parentA = (base / "a")
+    filesystem.createDirectory(parentA)
+    val parentAB = parentA / "b"
+    filesystem.createDirectory(parentAB)
+    val parentABC = parentAB / "c"
+    filesystem.createDirectory(parentABC)
+    val file = parentABC / "file.txt"
+    file.writeUtf8("child file")
+    expectIOExceptionOnWindows {
+      filesystem.source(file).use {
+        filesystem.delete(file)
+        filesystem.delete(parentABC)
+        filesystem.delete(parentAB)
+        filesystem.delete(parentA)
+      }
+    }
+  }
+
+  private fun expectIOExceptionOnWindows(block: () -> Unit) {
+    try {
+      block()
+      assertFalse(windowsLimitations)
+    } catch (_: IOException) {
+      assertTrue(windowsLimitations)
+    }
+  }
+
   private fun randomToken() = Random.nextBytes(16).toByteString().hex()
 
   fun Path.readUtf8(): String {
-    val source = filesystem.source(this).buffer()
-    try {
-      return source.readUtf8()
-    } finally {
-      source.close()
+    return filesystem.source(this).buffer().use {
+      it.readUtf8()
     }
   }
 
   fun Path.writeUtf8(string: String) {
-    val sink = filesystem.sink(this).buffer()
-    try {
-      sink.writeUtf8(string)
-    } finally {
-      sink.close()
+    filesystem.sink(this).buffer().use {
+      it.writeUtf8(string)
     }
   }
 

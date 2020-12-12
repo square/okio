@@ -24,13 +24,27 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
 
 @ExperimentalTime
-class FakeFilesystemTest private constructor(clock: FakeClock) : FileSystemTest(
-  clock = clock,
-  filesystem = FakeFilesystem(clock),
-  temporaryDirectory = "/".toPath()
-) {
-  constructor() : this(FakeClock())
+class FakeWindowsFilesystemTest : FakeFilesystemTest(
+  clock = FakeClock(),
+  windowsLimitations = true
+)
 
+@ExperimentalTime
+class FakeUnixFilesystemTest : FakeFilesystemTest(
+  clock = FakeClock(),
+  windowsLimitations = false
+)
+
+@ExperimentalTime
+abstract class FakeFilesystemTest internal constructor(
+  clock: FakeClock,
+  windowsLimitations: Boolean
+) : AbstractFilesystemTest(
+  clock = clock,
+  filesystem = FakeFilesystem(clock, windowsLimitations),
+  windowsLimitations = windowsLimitations,
+  temporaryDirectory = "/".toPath(),
+) {
   private val fakeFilesystem: FakeFilesystem = filesystem as FakeFilesystem
   private val fakeClock: FakeClock = clock
 

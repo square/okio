@@ -16,12 +16,14 @@
 package okio.files
 
 import kotlinx.datetime.Clock
+import okio.DIRECTORY_SEPARATOR
 import okio.Filesystem
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class SystemFilesystemTest : FileSystemTest(
+class SystemFilesystemTest : AbstractFilesystemTest(
   clock = Clock.System,
   filesystem = Filesystem.SYSTEM,
+  windowsLimitations = DIRECTORY_SEPARATOR == "\\",
   temporaryDirectory = Filesystem.SYSTEM_TEMPORARY_DIRECTORY
 )
