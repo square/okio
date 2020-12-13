@@ -85,9 +85,43 @@ abstract class Filesystem {
    * exists, it is first removed. If `source == target`, this operation does nothing. This may be
    * used to move a file or a directory.
    *
-   * If the file cannot be moved atomically, no move is performed and this method throws an
-   * [IOException]. Typically atomic moves are not possible if the paths are on different
-   * logical devices (filesystems).
+   * **Only as Atomic as the Underlying Filesystem Supports**
+   *
+   * FAT and NTFS filesystems cannot atomically move a file over an existing file. If the target
+   * file already exists, the move is performed into two steps:
+   *
+   *  1. Atomically delete the target file.
+   *  2. Atomically rename the source file to the target file.
+   *
+   * The delete step and move step are each atomic but not atomic in aggregate! If this process
+   * crashes, the host operating system crashes, or the hardware fails it is possible that the
+   * delete step will succeed and the rename will not.
+   *
+   * **Entire-file or nothing**
+   *
+   * These are the possible results of this operation:
+   *
+   *  * This operation returns normally, the source file is absent, and the target file contains the
+   *    data previously held by the source file. This is the success case.
+   *
+   *  * The operation throws an [IOException] and the filesystem is unchanged. For example, this
+   *    occurs if this process lacks permissions to perform the move.
+   *
+   *  * This operation throws an [IOException], the target file is deleted, but the source file is
+   *    unchanged. This is the partial failure case described above and is only possible on
+   *    filesystems like FAT and NTFS that do not support atomic file replacement. Typically in such
+   *    cases this operation won't return at all because the process or operating system has also
+   *    crashed.
+   *
+   * There is no failure mode where the target file holds a subset of the bytes of the source file.
+   * If the rename step cannot be performed atomically, this function will throw an [IOException]
+   * before attempting a move. Typically this occurs if the source and target files are on different
+   * physical volumes.
+   *
+   * **Non-Atomic Moves**
+   *
+   * If you need to move files across volumes, use [copy] followed by [delete], and change your
+   * application logic to recover should the copy step suffer a partial failure.
    *
    * @throws IOException if the move cannot be performed, or cannot be performed atomically. Moves
    *     fail if the source doesn't exist, if the target is not writable, if the target already

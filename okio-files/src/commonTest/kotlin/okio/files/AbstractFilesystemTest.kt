@@ -28,7 +28,6 @@ import okio.buffer
 import okio.use
 import kotlin.random.Random
 import kotlin.test.BeforeTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -184,7 +183,6 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  @Ignore // TODO(jwilson): Windows has different behavior for this test. Fix and re-enable.
   fun `atomicMove clobber existing file`() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
@@ -217,13 +215,12 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  @Ignore // somehow the behaviour is different on windows
   fun `atomicMove source is directory and target is file`() {
     val source = base / "source"
     filesystem.createDirectory(source)
     val target = base / "target"
     target.writeUtf8("hello, world!")
-    assertFailsWith<IOException> {
+    expectIOExceptionOnEverythingButWindows {
       filesystem.atomicMove(source, target)
     }
   }
@@ -407,6 +404,15 @@ abstract class AbstractFilesystemTest(
       assertFalse(windowsLimitations)
     } catch (_: IOException) {
       assertTrue(windowsLimitations)
+    }
+  }
+
+  private fun expectIOExceptionOnEverythingButWindows(block: () -> Unit) {
+    try {
+      block()
+      assertTrue(windowsLimitations)
+    } catch (e: IOException) {
+      assertFalse(windowsLimitations)
     }
   }
 
