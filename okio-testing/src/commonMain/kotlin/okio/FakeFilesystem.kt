@@ -28,9 +28,14 @@ import okio.Path.Companion.toPath
  * Use [openPaths] to see which paths have been opened for read or write, but not yet closed. Tests
  * should assert that this list is empty in `tearDown()`. This way the test only pass if all streams
  * that were opened are also closed.
+ *
+ * By default this filesystem permits deletion and removal of open files. Configure
+ * [windowsLimitations] to true to throw an [IOException] when asked to delete or rename an open
+ * file.
  */
 class FakeFilesystem(
-  val clock: Clock = Clock.System
+  val clock: Clock = Clock.System,
+  private val windowsLimitations: Boolean = false
 ) : Filesystem() {
   private val root = "/".toPath()
 
@@ -126,6 +131,12 @@ class FakeFilesystem(
     val canonicalSource = root / source
     val canonicalTarget = root / target
 
+    if (windowsLimitations && canonicalSource in openPathsMutable) {
+      throw IOException("source is open $source")
+    }
+    if (windowsLimitations && canonicalTarget in openPathsMutable) {
+      throw IOException("target is open $target")
+    }
     if (elements[canonicalTarget] is Directory) {
       throw IOException("target is a directory")
     }
@@ -144,7 +155,13 @@ class FakeFilesystem(
       throw IOException("non-empty directory")
     }
 
-    if (elements.remove(canonicalPath) == null) throw IOException("no such file")
+    if (windowsLimitations && path in openPathsMutable) {
+      throw IOException("file is open $path")
+    }
+
+    if (elements.remove(canonicalPath) == null) {
+      throw IOException("no such file")
+    }
   }
 
   internal sealed class Element(
