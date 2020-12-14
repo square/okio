@@ -131,17 +131,30 @@ class FakeFilesystem(
     val canonicalSource = root / source
     val canonicalTarget = root / target
 
-    if (windowsLimitations && canonicalSource in openPathsMutable) {
-      throw IOException("source is open $source")
-    }
-    if (windowsLimitations && canonicalTarget in openPathsMutable) {
-      throw IOException("target is open $target")
-    }
-    if (elements[canonicalTarget] is Directory) {
+    val targetElement = elements[canonicalTarget]
+    val sourceElement = elements[canonicalSource]
+    val targetParentElement = elements[canonicalTarget.parent]
+
+    // Universal constraints.
+    if (targetElement is Directory) {
       throw IOException("target is a directory")
     }
-    if (elements[canonicalTarget.parent] !is Directory) {
+    if (targetParentElement !is Directory) {
       throw IOException("target parent isn't a directory")
+    }
+    if (windowsLimitations) {
+      // Windows-only constraints.
+      if (canonicalSource in openPathsMutable) {
+        throw IOException("source is open $source")
+      }
+      if (canonicalTarget in openPathsMutable) {
+        throw IOException("target is open $target")
+      }
+    } else {
+      // UNIX-only constraints.
+      if (sourceElement is Directory && targetElement is File) {
+        throw IOException("source is a directory and target is a file")
+      }
     }
 
     val removed = elements.remove(canonicalSource) ?: throw IOException("source doesn't exist")

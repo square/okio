@@ -26,7 +26,6 @@ import platform.posix.errno
 import platform.posix.fopen
 import platform.posix.opendir
 import platform.posix.readdir
-import platform.posix.rename
 import platform.posix.set_posix_errno
 
 internal object PosixSystemFilesystem : Filesystem() {
@@ -92,10 +91,7 @@ internal object PosixSystemFilesystem : Filesystem() {
     source: Path,
     target: Path
   ) {
-    val result = rename(source.toString(), target.toString())
-    if (result != 0) {
-      throw IOException(errnoString(errno))
-    }
+    variantMove(source, target)
   }
 
   override fun delete(path: Path) {

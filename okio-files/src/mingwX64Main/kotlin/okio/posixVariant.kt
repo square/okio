@@ -32,6 +32,8 @@ import platform.posix.free
 import platform.posix.mkdir
 import platform.posix.remove
 import platform.posix.rmdir
+import platform.windows.MOVEFILE_REPLACE_EXISTING
+import platform.windows.MoveFileExA
 
 internal actual val VARIANT_DIRECTORY_SEPARATOR = "\\"
 
@@ -79,5 +81,11 @@ internal actual fun PosixSystemFilesystem.variantMetadata(path: Path): FileMetad
       lastModifiedAtMillis = stat.st_mtime * 1000L,
       lastAccessedAtMillis = stat.st_atime * 1000L
     )
+  }
+}
+
+internal actual fun PosixSystemFilesystem.variantMove(source: Path, target: Path) {
+  if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING) == 0) {
+    throw IOException(lastErrorString())
   }
 }

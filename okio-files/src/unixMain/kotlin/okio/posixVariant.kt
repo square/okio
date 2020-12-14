@@ -21,6 +21,7 @@ import platform.posix.free
 import platform.posix.mkdir
 import platform.posix.realpath
 import platform.posix.remove
+import platform.posix.rename
 import platform.posix.timespec
 
 internal actual val VARIANT_DIRECTORY_SEPARATOR = "/"
@@ -44,6 +45,16 @@ internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path 
     return Buffer().writeNullTerminated(fullpath).toPath()
   } finally {
     free(fullpath)
+  }
+}
+
+internal actual fun PosixSystemFilesystem.variantMove(
+  source: Path,
+  target: Path
+) {
+  val result = rename(source.toString(), target.toString())
+  if (result != 0) {
+    throw IOException(errnoString(errno))
   }
 }
 
