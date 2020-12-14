@@ -35,12 +35,12 @@ import okio.Path.Companion.toPath
  */
 class FakeFilesystem(
   val clock: Clock = Clock.System,
-  private val windowsLimitations: Boolean = false
+  private val windowsLimitations: Boolean = false,
+  private val workingDirectory: Path = (if (windowsLimitations) "F:\\".toPath() else "/".toPath())
 ) : Filesystem() {
-  private val root = "/".toPath()
 
   /** Keys are canonical paths. Each value is either a [Directory] or a [ByteString]. */
-  private val elements = mutableMapOf<Path, Element>(root to Directory(clock.now()))
+  private val elements = mutableMapOf<Path, Element>()
 
   private val openPathsMutable = mutableListOf<Path>()
 
@@ -52,7 +52,7 @@ class FakeFilesystem(
     get() = openPathsMutable.toList()
 
   override fun canonicalize(path: Path): Path {
-    val canonicalPath = root / path
+    val canonicalPath = workingDirectory / path
 
     if (canonicalPath !in elements) {
       throw IOException("no such file")
@@ -62,25 +62,21 @@ class FakeFilesystem(
   }
 
   override fun metadata(path: Path): FileMetadata {
-    val canonicalPath = root / path
+    val canonicalPath = workingDirectory / path
     val element = elements[canonicalPath] ?: throw IOException("no such file")
     return element.metadata
   }
 
   override fun list(dir: Path): List<Path> {
-    val canonicalPath = root / dir
-    val element = elements[canonicalPath] ?: throw IOException("no such file")
-
-    if (element !is Directory) {
-      throw IOException("not a directory")
-    }
+    val canonicalPath = workingDirectory / dir
+    val element = requireDirectory(canonicalPath)
 
     element.access(now = clock.now())
     return elements.keys.filter { it.parent == canonicalPath }
   }
 
   override fun source(file: Path): Source {
-    val canonicalPath = root / file
+    val canonicalPath = workingDirectory / file
     val element = elements[canonicalPath] ?: throw IOException("no such file")
 
     if (element !is File) {
@@ -93,18 +89,14 @@ class FakeFilesystem(
   }
 
   override fun sink(file: Path): Sink {
-    val canonicalPath = root / file
+    val canonicalPath = workingDirectory / file
     val now = clock.now()
 
     val existing = elements[canonicalPath]
     if (existing is Directory) {
       throw IOException("destination is a directory")
     }
-
-    val parent = elements[canonicalPath.parent]
-    if (parent !is Directory) {
-      throw IOException("parent isn't a directory")
-    }
+    val parent = requireDirectory(canonicalPath.parent)
     parent.access(now, true)
 
     openPathsMutable += canonicalPath
@@ -115,33 +107,28 @@ class FakeFilesystem(
   }
 
   override fun createDirectory(dir: Path) {
-    val canonicalPath = root / dir
+    val canonicalPath = workingDirectory / dir
 
     if (elements[canonicalPath] != null) {
       throw IOException("already exists")
     }
-    if (elements[canonicalPath.parent] !is Directory) {
-      throw IOException("parent isn't a directory")
-    }
+    requireDirectory(canonicalPath.parent)
 
     elements[canonicalPath] = Directory(createdAt = clock.now())
   }
 
   override fun atomicMove(source: Path, target: Path) {
-    val canonicalSource = root / source
-    val canonicalTarget = root / target
+    val canonicalSource = workingDirectory / source
+    val canonicalTarget = workingDirectory / target
 
     val targetElement = elements[canonicalTarget]
     val sourceElement = elements[canonicalSource]
-    val targetParentElement = elements[canonicalTarget.parent]
 
     // Universal constraints.
     if (targetElement is Directory) {
       throw IOException("target is a directory")
     }
-    if (targetParentElement !is Directory) {
-      throw IOException("target parent isn't a directory")
-    }
+    requireDirectory(canonicalTarget.parent)
     if (windowsLimitations) {
       // Windows-only constraints.
       if (canonicalSource in openPathsMutable) {
@@ -162,7 +149,7 @@ class FakeFilesystem(
   }
 
   override fun delete(path: Path) {
-    val canonicalPath = root / path
+    val canonicalPath = workingDirectory / path
 
     if (elements.keys.any { it.parent == canonicalPath }) {
       throw IOException("non-empty directory")
@@ -175,6 +162,29 @@ class FakeFilesystem(
     if (elements.remove(canonicalPath) == null) {
       throw IOException("no such file")
     }
+  }
+
+  /**
+   * Gets the directory at [path], creating it if [path] is a filesystem root.
+   *
+   * @throws IOException if the named directory is not a root and does not exist, or if it does
+   *     exist but is not a directory.
+   */
+  private fun requireDirectory(path: Path?): Directory {
+    if (path == null) throw IOException("directory does not exist")
+
+    // If the path is a directory, return it!
+    val element = elements[path]
+    if (element is Directory) return element
+
+    // If the path is a root, create it on demand.
+    if (element == null && path.parent == null && path.isAbsolute) {
+      val root = Directory(createdAt = clock.now())
+      elements[path] = root
+      return root
+    }
+
+    throw IOException("path is not a directory")
   }
 
   internal sealed class Element(
