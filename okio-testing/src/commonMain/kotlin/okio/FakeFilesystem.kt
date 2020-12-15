@@ -89,6 +89,14 @@ class FakeFilesystem(
   }
 
   override fun sink(file: Path): Sink {
+    return newSink(file, append = false)
+  }
+
+  override fun appendingSink(file: Path): Sink {
+    return newSink(file, append = true)
+  }
+
+  private fun newSink(file: Path, append: Boolean): Sink {
     val canonicalPath = workingDirectory / file
     val now = clock.now()
 
@@ -101,9 +109,14 @@ class FakeFilesystem(
 
     openPathsMutable += canonicalPath
     val regularFile = File(createdAt = existing?.createdAt ?: now)
-    regularFile.access(now = now, modified = true)
+    val result = FakeFileSink(canonicalPath, regularFile)
+    if (append && existing is File) {
+      val existingBytes = Buffer().write(existing.data)
+      result.write(existingBytes, existingBytes.size)
+    }
     elements[canonicalPath] = regularFile
-    return FakeFileSink(canonicalPath, regularFile)
+    regularFile.access(now = now, modified = true)
+    return result
   }
 
   override fun createDirectory(dir: Path) {

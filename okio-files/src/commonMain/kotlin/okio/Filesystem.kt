@@ -71,6 +71,17 @@ abstract class Filesystem {
   abstract fun sink(file: Path): Sink
 
   /**
+   * Returns a sink that appends bytes to the end of [file], creating it if it doesn't already
+   * exist.
+   *
+   * @throws IOException if [file] cannot be written. A file cannot be written if its enclosing
+   *     directory does not exist, if the current process doesn't have access to [file], if there's
+   *     a loop of symbolic links, or if any name is too long.
+   */
+  @Throws(IOException::class)
+  abstract fun appendingSink(file: Path): Sink
+
+  /**
    * Creates a directory at the path identified by [dir].
    *
    * @throws IOException if [dir]'s parent does not exist, is not a directory, or cannot be written.
