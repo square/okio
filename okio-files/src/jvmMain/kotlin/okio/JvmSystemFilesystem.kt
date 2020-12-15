@@ -69,6 +69,10 @@ object JvmSystemFilesystem : Filesystem() {
     return file.toFile().sink()
   }
 
+  override fun appendingSink(file: Path): Sink {
+    return file.toFile().sink(append = true)
+  }
+
   override fun createDirectory(dir: Path) {
     if (!dir.toFile().mkdir()) throw IOException("failed to create directory $dir")
   }

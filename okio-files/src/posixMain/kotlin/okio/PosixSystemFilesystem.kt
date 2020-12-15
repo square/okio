@@ -80,6 +80,12 @@ internal object PosixSystemFilesystem : Filesystem() {
     return FileSink(openFile)
   }
 
+  override fun appendingSink(file: Path): Sink {
+    val openFile: CPointer<FILE> = fopen(file.toString(), "a")
+      ?: throw IOException(errnoString(errno))
+    return FileSink(openFile)
+  }
+
   override fun createDirectory(dir: Path) {
     val result = variantMkdir(dir)
     if (result != 0) {

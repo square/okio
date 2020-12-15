@@ -104,7 +104,7 @@ abstract class AbstractFilesystemTest(
 
   @Test
   fun `file sink`() {
-    val path = base / "file=sink"
+    val path = base / "file-sink"
     val sink = filesystem.sink(path)
     val buffer = Buffer().writeUtf8("hello, world!")
     sink.write(buffer, buffer.size)
@@ -112,6 +112,29 @@ abstract class AbstractFilesystemTest(
     assertTrue(path in filesystem.list(base))
     assertEquals(0, buffer.size)
     assertEquals("hello, world!", path.readUtf8())
+  }
+
+  @Test
+  fun `appending sink appends to existing file`() {
+    val path = base / "appending-sink-appends-to-existing-file"
+    path.writeUtf8("hello, world!\n")
+    val sink = filesystem.appendingSink(path)
+    val buffer = Buffer().writeUtf8("this is added later!")
+    sink.write(buffer, buffer.size)
+    sink.close()
+    assertTrue(path in filesystem.list(base))
+    assertEquals("hello, world!\nthis is added later!", path.readUtf8())
+  }
+
+  @Test
+  fun `appending sink creates new file`() {
+    val path = base / "appending-sink-creates-new-file"
+    val sink = filesystem.appendingSink(path)
+    val buffer = Buffer().writeUtf8("this is all there is!")
+    sink.write(buffer, buffer.size)
+    sink.close()
+    assertTrue(path in filesystem.list(base))
+    assertEquals("this is all there is!", path.readUtf8())
   }
 
   @Test
