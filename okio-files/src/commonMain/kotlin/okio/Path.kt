@@ -147,20 +147,51 @@ class Path private constructor(
     get() = nameBytes.utf8()
 
   /**
-   * Returns the path immediately enclosing this path. This returns null if this is either the
-   * filesystem root (`/`), the identity relative path (`.`), or a series of relative paths (`..`).
+   * Returns the path immediately enclosing this path.
+   *
+   * This returns null if this has no parent. That includes these paths:
+   *
+   *  * The filesystem root (`/`)
+   *  * The identity relative path (`.`)
+   *  * A windows Windows volume root (like `C:\`)
+   *  * A reference to the current working directory on a Windows volume (`C:`).
+   *  * A series of relative paths (like `..` and `../..`).
    */
   val parent: Path?
     get() {
-      if (bytes == DOT || bytes == SLASH || bytes.endsWith(SLASH_DOT_DOT) || bytes == DOT_DOT) {
+      if (bytes == DOT || bytes == slash || lastSegmentIsDotDot()) {
         return null // Terminal path.
       }
-      return when (val lastSlash = bytes.lastIndexOf(SLASH)) {
-        -1 -> Path(slash, DOT) // Parent is the current working directory.
-        0 -> Path(slash, bytes.substring(endIndex = 1)) // Parent is the filesystem root '/'.
-        else -> Path(slash, bytes.substring(endIndex = lastSlash))
+
+      val lastSlash = bytes.lastIndexOf(slash)
+      when {
+        lastSlash == 2 && volumeLetter != null -> {
+          if (bytes.size == 3) return null // "C:\" has no parent.
+          return Path(slash, bytes.substring(endIndex = 3)) // Keep the trailing '\' in C:\.
+        }
+        lastSlash == -1 && volumeLetter != null -> {
+          if (bytes.size == 2) return null // "C:" has no parent.
+          return Path(slash, bytes.substring(endIndex = 2)) // C: is volume-relative.
+        }
+        lastSlash == -1 -> {
+          return Path(slash, DOT) // Parent is the current working directory.
+        }
+        lastSlash == 0 -> {
+          return Path(slash, bytes.substring(endIndex = 1)) // Parent is the filesystem root '/'.
+        }
+        else -> {
+          return Path(slash, bytes.substring(endIndex = lastSlash))
+        }
       }
     }
+
+  private fun lastSegmentIsDotDot(): Boolean {
+    if (bytes.endsWith(DOT_DOT)) {
+      if (bytes.size == 2) return true // ".." is the whole string.
+      if (bytes.rangeEquals(bytes.size - 3, slash, 0, 1)) return true // Ends with "/.." or "\..".
+    }
+    return false
+  }
 
   /**
    * Returns a path that resolves [child] relative to this path.

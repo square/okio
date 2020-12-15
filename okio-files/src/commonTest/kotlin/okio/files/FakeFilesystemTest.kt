@@ -16,6 +16,7 @@
 package okio.files
 
 import okio.FakeFilesystem
+import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,24 +27,27 @@ import kotlin.time.minutes
 @ExperimentalTime
 class FakeWindowsFilesystemTest : FakeFilesystemTest(
   clock = FakeClock(),
-  windowsLimitations = true
+  windowsLimitations = true,
+  temporaryDirectory = "C:\\".toPath(),
 )
 
 @ExperimentalTime
 class FakeUnixFilesystemTest : FakeFilesystemTest(
   clock = FakeClock(),
-  windowsLimitations = false
+  windowsLimitations = false,
+  temporaryDirectory = "/".toPath(),
 )
 
 @ExperimentalTime
 abstract class FakeFilesystemTest internal constructor(
   clock: FakeClock,
-  windowsLimitations: Boolean
+  windowsLimitations: Boolean,
+  temporaryDirectory: Path
 ) : AbstractFilesystemTest(
   clock = clock,
   filesystem = FakeFilesystem(clock, windowsLimitations),
   windowsLimitations = windowsLimitations,
-  temporaryDirectory = "/".toPath(),
+  temporaryDirectory = temporaryDirectory
 ) {
   private val fakeFilesystem: FakeFilesystem = filesystem as FakeFilesystem
   private val fakeClock: FakeClock = clock

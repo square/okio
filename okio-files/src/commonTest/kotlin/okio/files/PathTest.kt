@@ -234,6 +234,20 @@ class PathTest {
   }
 
   @Test
+  fun `absolute volume letter path parent`() {
+    assertEquals(null, "C:\\".toPath("\\").parent)
+    assertEquals("C:\\".toPath("\\"), "C:\\Windows".toPath("\\").parent)
+    assertEquals("C:\\Windows".toPath("\\"), "C:\\Windows\\system32".toPath("\\").parent)
+  }
+
+  @Test
+  fun `relative volume letter path parent`() {
+    assertEquals(null, "C:".toPath("\\").parent)
+    assertEquals("C:".toPath("\\"), "C:hello".toPath("\\").parent)
+    assertEquals("C:hello".toPath("\\"), "C:hello\\world".toPath("\\").parent)
+  }
+
+  @Test
   fun `windows absolute path`() {
     assertEquals("\\Program Files", "\\Program Files".toPath().toString())
     assertEquals("\\Program Files\\Photoshop".toPath(), "\\Program Files".toPath() / "Photoshop")
