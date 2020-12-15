@@ -11,11 +11,11 @@ def dokkaConfiguration = {
       skipDeprecated.set(true)
       jdkVersion.set(8)
       perPackageOption {
-        prefix.set("com.squareup.okio")
+        matchingRegex.set("com\\.squareup.okio.*")
         suppress.set(true)
       }
       perPackageOption {
-        prefix.set("okio.internal")
+        matchingRegex.set("okio\\.internal.*")
         suppress.set(true)
       }
     }
@@ -24,6 +24,14 @@ def dokkaConfiguration = {
 
 dokkaGfm.configure(dokkaConfiguration)
 dokkaHtml.configure(dokkaConfiguration)
+
+def rootRelativePath(path) {
+  return rootProject.file(path).toString().replace('\\', '/')
+}
+
+dokkaHtml.pluginsMapConfiguration.set([
+  "org.jetbrains.dokka.base.DokkaBase": """{ "customStyleSheets": ["${rootRelativePath("docs/css/dokka-logo.css")}"], "customAssets" : ["${rootRelativePath("docs/images/logo-square.png")}"]}"""
+])
 
 def isReleaseBuild() {
   return VERSION_NAME.contains("SNAPSHOT") == false
