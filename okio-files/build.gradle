@@ -61,3 +61,11 @@ kotlin {
     }
   }
 }
+
+apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"
+
+// Disable Dokka for now, there's an error while parsing tables
+// See https://github.com/Kotlin/dokka/issues/1592
+dokkaGfm.configure {
+  enabled = false
+}
