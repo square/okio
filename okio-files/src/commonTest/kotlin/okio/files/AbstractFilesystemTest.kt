@@ -45,6 +45,7 @@ abstract class AbstractFilesystemTest(
   temporaryDirectory: Path
 ) {
   val base: Path = temporaryDirectory / "FileSystemTest-${randomToken()}"
+  private val isJs = filesystem::class.simpleName?.startsWith("NodeJs") ?: false
 
   @BeforeTest
   fun setUp() {
@@ -52,16 +53,17 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `canonicalize dot returns current working directory`() {
+  fun canonicalizeDotReturnsCurrentWorkingDirectory() {
     if (filesystem is FakeFilesystem) return
     val cwd = filesystem.canonicalize(".".toPath())
     assertTrue(cwd.toString()) {
-      cwd.toString().endsWith("okio${Path.directorySeparator}okio-files")
+      cwd.toString().endsWith("okio${Path.directorySeparator}okio-files") ||
+        cwd.toString().endsWith("${Path.directorySeparator}okio-okio-files-test")
     }
   }
 
   @Test
-  fun `canonicalize no such file`() {
+  fun canonicalizeNoSuchFile() {
     assertFailsWith<IOException> {
       filesystem.canonicalize(base / "no-such-file")
     }
@@ -76,21 +78,21 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `list no such directory`() {
+  fun listNoSuchDirectory() {
     assertFailsWith<IOException> {
       filesystem.list(base / "no-such-directory")
     }
   }
 
   @Test
-  fun `file source no such directory`() {
+  fun fileSourceNoSuchDirectory() {
     assertFailsWith<IOException> {
       filesystem.source(base / "no-such-directory" / "file")
     }
   }
 
   @Test
-  fun `file source`() {
+  fun fileSource() {
     val path = base / "file-source"
     path.writeUtf8("hello, world!")
 
@@ -103,7 +105,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `file sink`() {
+  fun fileSink() {
     val path = base / "file-sink"
     val sink = filesystem.sink(path)
     val buffer = Buffer().writeUtf8("hello, world!")
@@ -115,7 +117,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `appending sink appends to existing file`() {
+  fun appendingSinkAppendsToExistingFile() {
     val path = base / "appending-sink-appends-to-existing-file"
     path.writeUtf8("hello, world!\n")
     val sink = filesystem.appendingSink(path)
@@ -127,7 +129,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `appending sink creates new file`() {
+  fun appendingSinkCreatesNewFile() {
     val path = base / "appending-sink-creates-new-file"
     val sink = filesystem.appendingSink(path)
     val buffer = Buffer().writeUtf8("this is all there is!")
@@ -138,7 +140,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `file sink flush`() {
+  fun fileSinkFlush() {
     val path = base / "file-sink"
     val sink = filesystem.sink(path)
 
@@ -154,7 +156,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `file sink no such directory`() {
+  fun fileSinkNoSuchDirectory() {
     assertFailsWith<IOException> {
       filesystem.sink(base / "no-such-directory" / "file")
     }
@@ -168,7 +170,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `createDirectory parent directory does not exist`() {
+  fun createDirectoryParentDirectoryDoesNotExist() {
     val path = base / "no-such-directory" / "created"
     assertFailsWith<IOException> {
       filesystem.createDirectory(path)
@@ -176,7 +178,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `atomicMove file`() {
+  fun atomicMoveFile() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
@@ -187,7 +189,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `atomicMove directory`() {
+  fun atomicMoveDirectory() {
     val source = base / "source"
     filesystem.createDirectory(source)
     val target = base / "target"
@@ -197,7 +199,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `atomicMove source is target`() {
+  fun atomicMoveSourceIsTarget() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
     filesystem.atomicMove(source, source)
@@ -206,7 +208,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `atomicMove clobber existing file`() {
+  fun atomicMoveClobberExistingFile() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
@@ -218,7 +220,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `atomicMove source does not exist`() {
+  fun atomicMoveSourceDoesNotExist() {
     val source = base / "source"
     val target = base / "target"
     assertFailsWith<IOException> {
@@ -227,7 +229,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `atomicMove source is file and target is directory`() {
+  fun atomicMoveSourceIsFileAndTargetIsDirectory() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
@@ -238,7 +240,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `atomicMove source is directory and target is file`() {
+  fun atomicMoveSourceIsDirectoryAndTargetIsFile() {
     val source = base / "source"
     filesystem.createDirectory(source)
     val target = base / "target"
@@ -249,7 +251,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `copy file`() {
+  fun copyFile() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
@@ -260,7 +262,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `copy source does not exist`() {
+  fun copySourceDoesNotExist() {
     val source = base / "source"
     val target = base / "target"
     assertFailsWith<IOException> {
@@ -270,7 +272,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `copy target is clobbered`() {
+  fun copyTargetIsClobbered() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
@@ -281,7 +283,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `delete file`() {
+  fun deleteFile() {
     val path = base / "delete-file"
     path.writeUtf8("delete me")
     filesystem.delete(path)
@@ -289,7 +291,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `delete empty directory`() {
+  fun deleteEmptyDirectory() {
     val path = base / "delete-empty-directory"
     filesystem.createDirectory(path)
     filesystem.delete(path)
@@ -297,7 +299,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `delete fails on no such file`() {
+  fun deleteFailsOnNoSuchFile() {
     val path = base / "no-such-file"
     assertFailsWith<IOException> {
       filesystem.delete(path)
@@ -305,7 +307,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `delete fails on nonempty directory`() {
+  fun deleteFailsOnNonemptyDirectory() {
     val path = base / "non-empty-directory"
     filesystem.createDirectory(path)
     (path / "file.txt").writeUtf8("inside directory")
@@ -315,7 +317,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `file metadata`() {
+  fun fileMetadata() {
     val minTime = clock.now().minFileSystemTime()
     val path = base / "file-metadata"
     path.writeUtf8("hello, world!")
@@ -331,7 +333,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `directory metadata`() {
+  fun directoryMetadata() {
     val minTime = clock.now().minFileSystemTime()
     val path = base / "directory-metadata"
     filesystem.createDirectory(path)
@@ -347,7 +349,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `absent metadata`() {
+  fun absentMetadata() {
     val path = base / "no-such-file"
     assertFailsWith<IOException> {
       filesystem.metadata(path)
@@ -355,9 +357,9 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `delete open for writing fails on Windows`() {
+  fun deleteOpenForWritingFailsOnWindows() {
     val file = base / "file.txt"
-    expectIOExceptionOnWindows {
+    expectIOExceptionOnWindows(exceptJs = true) {
       filesystem.sink(file).use {
         filesystem.delete(file)
       }
@@ -365,10 +367,10 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `delete open for reading fails on Windows`() {
+  fun deleteOpenForReadingFailsOnWindows() {
     val file = base / "file.txt"
     file.writeUtf8("abc")
-    expectIOExceptionOnWindows {
+    expectIOExceptionOnWindows(exceptJs = true) {
       filesystem.source(file).use {
         filesystem.delete(file)
       }
@@ -376,12 +378,12 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `rename source is open fails on Windows`() {
+  fun renameSourceIsOpenFailsOnWindows() {
     val from = base / "from.txt"
     val to = base / "to.txt"
     from.writeUtf8("source file")
     to.writeUtf8("target file")
-    expectIOExceptionOnWindows {
+    expectIOExceptionOnWindows(exceptJs = true) {
       filesystem.source(from).use {
         filesystem.atomicMove(from, to)
       }
@@ -389,7 +391,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `rename target is open fails on Windows`() {
+  fun renameTargetIsOpenFailsOnWindows() {
     val from = base / "from.txt"
     val to = base / "to.txt"
     from.writeUtf8("source file")
@@ -402,7 +404,7 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
-  fun `delete contents of parent of file open for reading fails on Windows`() {
+  fun deleteContentsOfParentOfFileOpenForReadingFailsOnWindows() {
     val parentA = (base / "a")
     filesystem.createDirectory(parentA)
     val parentAB = parentA / "b"
@@ -421,12 +423,13 @@ abstract class AbstractFilesystemTest(
     }
   }
 
-  private fun expectIOExceptionOnWindows(block: () -> Unit) {
+  private fun expectIOExceptionOnWindows(exceptJs: Boolean = false, block: () -> Unit) {
+    val expectCrash = windowsLimitations && (!isJs || !exceptJs)
     try {
       block()
-      assertFalse(windowsLimitations)
+      assertFalse(expectCrash)
     } catch (_: IOException) {
-      assertTrue(windowsLimitations)
+      assertTrue(expectCrash)
     }
   }
 
@@ -439,7 +442,7 @@ abstract class AbstractFilesystemTest(
     }
   }
 
-  private fun randomToken() = Random.nextBytes(16).toByteString().hex()
+  private fun randomToken() = Random.nextBytes(16).toByteString(0, 16).hex()
 
   fun Path.readUtf8(): String {
     return filesystem.source(this).buffer().use {

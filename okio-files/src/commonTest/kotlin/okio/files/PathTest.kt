@@ -23,7 +23,7 @@ import kotlin.test.assertNull
 
 class PathTest {
   @Test
-  fun `path names`() {
+  fun pathNames() {
     assertEquals(".", ".".toPath().name)
     assertEquals("", "/".toPath().name)
     assertEquals("..", "..".toPath().name)
@@ -36,7 +36,7 @@ class PathTest {
   }
 
   @Test
-  fun `basic paths`() {
+  fun basicPaths() {
     assertEquals("gradlew", "./gradlew".toPath().toString())
     assertEquals(".gitignore", "./.gitignore".toPath().toString())
     assertEquals("/home/jesse", "/home/jesse".toPath().toString())
@@ -45,14 +45,14 @@ class PathTest {
   }
 
   @Test
-  fun `parent of absolute path`() {
+  fun parentOfAbsolutePath() {
     assertEquals("/home", "/home/jesse".toPath().parent?.toString())
     assertEquals("/", "/home".toPath().parent?.toString())
     assertNull("/".toPath().parent)
   }
 
   @Test
-  fun `parent of relative path`() {
+  fun parentOfRelativePath() {
     assertEquals("src/main", "src/main/java".toPath().parent?.toString())
     assertEquals("src", "src/main".toPath().parent?.toString())
     assertEquals(".", "src".toPath().parent?.toString())
@@ -60,7 +60,7 @@ class PathTest {
   }
 
   @Test
-  fun `parent of relative path with single traversal`() {
+  fun parentOfRelativePathWithSingleTraversal() {
     assertEquals("../src/main", "../src/main/java".toPath().parent?.toString())
     assertEquals("../src", "../src/main".toPath().parent?.toString())
     assertEquals("..", "../src".toPath().parent?.toString())
@@ -68,7 +68,7 @@ class PathTest {
   }
 
   @Test
-  fun `parent of relative path with multiple traversal`() {
+  fun parentOfRelativePathWithMultipleTraversal() {
     assertEquals("../../src/main", "../../src/main/java".toPath().parent?.toString())
     assertEquals("../../src", "../../src/main".toPath().parent?.toString())
     assertEquals("../..", "../../src".toPath().parent?.toString())
@@ -76,7 +76,7 @@ class PathTest {
   }
 
   @Test
-  fun `absolute path traversal with div operator`() {
+  fun absolutePathTraversalWithDivOperator() {
     val root = "/".toPath()
     assertEquals("/home".toPath(), root / "home")
     assertEquals("/home/jesse".toPath(), root / "home" / "jesse")
@@ -85,7 +85,7 @@ class PathTest {
   }
 
   @Test
-  fun `relative path traversal with div operator`() {
+  fun relativePathTraversalWithDivOperator() {
     val cwd = ".".toPath("/")
     assertEquals("home".toPath("/"), cwd / "home")
     assertEquals("home/jesse".toPath("/"), cwd / "home" / "jesse")
@@ -94,7 +94,7 @@ class PathTest {
   }
 
   @Test
-  fun `relative path traversal with dots`() {
+  fun relativePathTraversalWithDots() {
     val cwd = ".".toPath("/")
     assertEquals("..".toPath("/"), cwd / "..")
     assertEquals("../..".toPath("/"), cwd / ".." / "..")
@@ -103,7 +103,7 @@ class PathTest {
   }
 
   @Test
-  fun `path traversal base ignored if child is an absolute path`() {
+  fun pathTraversalBaseIgnoredIfChildIsAnAbsolutePath() {
     assertEquals("/home".toPath(), "".toPath("/") / "/home")
     assertEquals("/home".toPath(), "relative".toPath("/") / "/home")
     assertEquals("/home".toPath(), "/base".toPath("/") / "/home")
@@ -111,7 +111,7 @@ class PathTest {
   }
 
   @Test
-  fun `string to absolute path`() {
+  fun stringToAbsolutePath() {
     assertEquals("/", "/".toPath().toString())
     assertEquals("/a", "/a".toPath().toString())
     assertEquals("/a", "/a/".toPath().toString())
@@ -120,7 +120,7 @@ class PathTest {
   }
 
   @Test
-  fun `string to absolute path with traversal`() {
+  fun stringToAbsolutePathWithTraversal() {
     assertEquals("/", "/..".toPath().toString())
     assertEquals("/", "/../".toPath().toString())
     assertEquals("/", "/../..".toPath().toString())
@@ -128,7 +128,7 @@ class PathTest {
   }
 
   @Test
-  fun `string to absolute path with empty segments`() {
+  fun stringToAbsolutePathWithEmptySegments() {
     assertEquals("/", "//".toPath().toString())
     assertEquals("/a", "//a".toPath().toString())
     assertEquals("/a", "/a//".toPath().toString())
@@ -137,7 +137,7 @@ class PathTest {
   }
 
   @Test
-  fun `string to absolute path with dots`() {
+  fun stringToAbsolutePathWithDots() {
     assertEquals("/", "/./".toPath().toString())
     assertEquals("/a", "/./a".toPath().toString())
     assertEquals("/a", "/a/./".toPath().toString())
@@ -150,7 +150,7 @@ class PathTest {
   }
 
   @Test
-  fun `string to relative path`() {
+  fun stringToRelativePath() {
     assertEquals(".", "".toPath().toString())
     assertEquals(".", ".".toPath().toString())
     assertEquals("a", "a/".toPath().toString())
@@ -161,7 +161,7 @@ class PathTest {
   }
 
   @Test
-  fun `string to relative path with traversal`() {
+  fun stringToRelativePathWithTraversal() {
     assertEquals("..", "..".toPath().toString())
     assertEquals("..", "../".toPath().toString())
     assertEquals(".", "a/..".toPath().toString())
@@ -175,7 +175,7 @@ class PathTest {
   }
 
   @Test
-  fun `string to relative path with empty segments`() {
+  fun stringToRelativePathWithEmptySegments() {
     assertEquals("a", "a//".toPath().toString())
     assertEquals("a/b", "a//b".toPath().toString())
     assertEquals("a/b", "a/b//".toPath().toString())
@@ -184,7 +184,7 @@ class PathTest {
   }
 
   @Test
-  fun `string to relative path with dots`() {
+  fun stringToRelativePathWithDots() {
     assertEquals(".", ".".toPath().toString())
     assertEquals(".", "./".toPath().toString())
     assertEquals(".", "././".toPath().toString())
@@ -201,24 +201,24 @@ class PathTest {
   }
 
   @Test
-  fun `windows fully qualified path`() {
+  fun windowsFullyQualifiedPath() {
     assertEquals("C:\\", "C:\\".toPath().toString())
     assertEquals("C:\\Windows\\notepad.exe", "C:\\Windows\\notepad.exe".toPath().toString())
   }
 
   @Test
-  fun `composing windows path`() {
+  fun composingWindowsPath() {
     assertEquals("C:\\Windows\\notepad.exe".toPath(), "C:\\".toPath() / "Windows" / "notepad.exe")
   }
 
   @Test
-  fun `windows path traversal up`() {
+  fun windowsPathTraversalUp() {
     assertEquals("C:\\z".toPath(), "C:\\x\\y\\..\\..\\..\\z".toPath())
     assertEquals("C:..\\z".toPath(), "C:x\\y\\..\\..\\..\\z".toPath())
   }
 
   @Test
-  fun `volume letter`() {
+  fun volumeLetter() {
     assertEquals('C', "C:\\Windows".toPath("\\").volumeLetter)
     assertEquals('C', "C:".toPath("\\").volumeLetter)
     assertEquals('z', "z:\\Windows".toPath("\\").volumeLetter)
@@ -234,28 +234,28 @@ class PathTest {
   }
 
   @Test
-  fun `absolute volume letter path parent`() {
+  fun absoluteVolumeLetterPathParent() {
     assertEquals(null, "C:\\".toPath("\\").parent)
     assertEquals("C:\\".toPath("\\"), "C:\\Windows".toPath("\\").parent)
     assertEquals("C:\\Windows".toPath("\\"), "C:\\Windows\\system32".toPath("\\").parent)
   }
 
   @Test
-  fun `relative volume letter path parent`() {
+  fun relativeVolumeLetterPathParent() {
     assertEquals(null, "C:".toPath("\\").parent)
     assertEquals("C:".toPath("\\"), "C:hello".toPath("\\").parent)
     assertEquals("C:hello".toPath("\\"), "C:hello\\world".toPath("\\").parent)
   }
 
   @Test
-  fun `windows absolute path`() {
+  fun windowsAbsolutePath() {
     assertEquals("\\Program Files", "\\Program Files".toPath().toString())
     assertEquals("\\Program Files\\Photoshop".toPath(), "\\Program Files".toPath() / "Photoshop")
   }
 
   /** If a volume is present in the relative path... */
   @Test
-  fun `windows volume relative path`() {
+  fun windowsVolumeRelativePath() {
     assertEquals("c:notepad.exe".toPath("\\"), "A:\\DOOM".toPath() / "c:notepad.exe")
     assertEquals("c:notepad.exe".toPath("\\"), "C:\\Program Files".toPath() / "c:notepad.exe")
   }
@@ -270,7 +270,7 @@ class PathTest {
    * TODO(swankjesse): support \\?\ and \\.\ paths.
    */
   @Test @Ignore
-  fun `windows qualified path`() {
+  fun windowsQualifiedPath() {
     assertEquals("\\\\server\\share", "\\\\server\\share".toPath().toString())
     assertEquals("\\\\?\\directory", "\\\\?\\directory".toPath().toString())
     assertEquals("\\\\.\\COM56", "\\\\.\\COM56".toPath().toString())

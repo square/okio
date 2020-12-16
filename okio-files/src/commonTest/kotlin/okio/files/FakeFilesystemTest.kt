@@ -53,7 +53,7 @@ abstract class FakeFilesystemTest internal constructor(
   private val fakeClock: FakeClock = clock
 
   @Test
-  fun `open paths includes open sink`() {
+  fun openPathsIncludesOpenSink() {
     val openPath = base / "open-file"
     val sink = filesystem.sink(openPath)
     assertEquals(openPath, fakeFilesystem.openPaths.single())
@@ -62,7 +62,7 @@ abstract class FakeFilesystemTest internal constructor(
   }
 
   @Test
-  fun `open paths includes open source`() {
+  fun openPathsIncludesOpenSource() {
     val openPath = base / "open-file"
     openPath.writeUtf8("hello, world!")
     assertTrue(fakeFilesystem.openPaths.isEmpty())
@@ -73,7 +73,7 @@ abstract class FakeFilesystemTest internal constructor(
   }
 
   @Test
-  fun `file last accessed time`() {
+  fun fileLastAccessedTime() {
     val path = base / "file-last-accessed-time"
 
     fakeClock.sleep(1.minutes)
@@ -95,7 +95,7 @@ abstract class FakeFilesystemTest internal constructor(
   }
 
   @Test
-  fun `directory last accessed time`() {
+  fun directoryLastAccessedTime() {
     val path = base / "directory-last-accessed-time"
 
     fakeClock.sleep(1.minutes)

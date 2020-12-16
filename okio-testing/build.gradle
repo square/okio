@@ -4,6 +4,24 @@ kotlin {
   jvm {
     withJava()
   }
+  if (kmpJsEnabled) {
+    js {
+      configure([compilations.main, compilations.test]) {
+        tasks.getByName(compileKotlinTaskName).kotlinOptions {
+          moduleKind = "umd"
+          sourceMap = true
+          metaInfo = true
+        }
+      }
+      nodejs {
+        testTask {
+          useMocha {
+            timeout = "30s"
+          }
+        }
+      }
+    }
+  }
   if (kmpNativeEnabled) {
     macosX64()
     linuxX64()
