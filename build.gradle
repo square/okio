@@ -9,7 +9,7 @@ buildscript {
       'kotlin': '1.4.20',
       'jmhPlugin': '0.5.0',
       'animalSnifferPlugin': '1.5.0',
-      'dokka': '1.4.0',
+      'dokka': '1.4.20',
       'jmh': '1.23',
       'animalSniffer': '1.16',
       'junit': '4.12',
