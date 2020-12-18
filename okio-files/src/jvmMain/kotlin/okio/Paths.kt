@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.files
+@file:JvmName("Paths")
+package okio
 
-import okio.Filesystem
 import okio.Path.Companion.toPath
-import org.assertj.core.api.Assertions.assertThat
 import java.io.File
-import kotlin.test.Test
+import java.nio.file.Paths
+import java.nio.file.Path as NioPath
 
-class JvmSystemFilesystemTest {
-  @Test
-  fun `base directory consistent with java io File`() {
-    assertThat(Filesystem.SYSTEM.canonicalize(".".toPath()).toString())
-      .isEqualTo(File("").canonicalFile.toString())
-  }
-}
+fun Path.toFile(): File = File(toString())
+
+fun Path.toNioPath(): NioPath = Paths.get(toString())
+
+fun File.toOkioPath(): Path = toString().toPath()
+
+fun NioPath.toOkioPath(): Path = toString().toPath()

@@ -170,6 +170,15 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
+  fun createDirectoryAlreadyExists() {
+    val path = base / "already-exists"
+    filesystem.createDirectory(path)
+    assertFailsWith<IOException> {
+      filesystem.createDirectory(path)
+    }
+  }
+
+  @Test
   fun createDirectoryParentDirectoryDoesNotExist() {
     val path = base / "no-such-directory" / "created"
     assertFailsWith<IOException> {

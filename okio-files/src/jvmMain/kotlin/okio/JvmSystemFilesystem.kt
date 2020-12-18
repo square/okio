@@ -22,7 +22,7 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 
-object JvmSystemFilesystem : Filesystem() {
+internal object JvmSystemFilesystem : Filesystem() {
   override fun canonicalize(path: Path): Path {
     val canonicalFile = path.toFile().canonicalFile
     if (!canonicalFile.exists()) throw IOException("no such file")
