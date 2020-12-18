@@ -107,7 +107,7 @@ publishing {
   // Use default artifact name for the JVM target
   publications {
     kotlinMultiplatform {
-      artifactId = 'okio-multiplatform'
+      artifactId = POM_ARTIFACT_ID + '-multiplatform'
     }
     jvm {
       artifactId = 'okio'
