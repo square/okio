@@ -4,6 +4,24 @@ kotlin {
   jvm {
     withJava()
   }
+  if (kmpJsEnabled) {
+    js {
+      configure([compilations.main, compilations.test]) {
+        tasks.getByName(compileKotlinTaskName).kotlinOptions {
+          moduleKind = "umd"
+          sourceMap = true
+          metaInfo = true
+        }
+      }
+      nodejs {
+        testTask {
+          useMocha {
+            timeout = "30s"
+          }
+        }
+      }
+    }
+  }
   if (kmpNativeEnabled) {
     macosX64()
     linuxX64()
@@ -34,6 +52,17 @@ kotlin {
         implementation deps.test.junit
         implementation deps.test.assertj
         implementation deps.kotlin.test.jdk
+      }
+    }
+    jsMain {
+      dependencies {
+        api deps.kotlin.stdLib.js
+        implementation("org.jetbrains.kotlinx:kotlinx-nodejs:0.0.7")
+      }
+    }
+    jsTest {
+      dependencies {
+        implementation deps.kotlin.test.js
       }
     }
     posixMain {

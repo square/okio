@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.files
+package okio
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import okio.Path.Companion.toPath
 
-@ExperimentalTime
-internal class FakeClock : Clock {
-  var time = Instant.parse("2021-01-01T00:00:00Z")
+internal actual val PLATFORM_FILESYSTEM: Filesystem = NodeJsSystemFilesystem
 
-  override fun now() = time
+internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
+  get() = os.tmpdir().toPath()
 
-  fun sleep(duration: Duration) {
-    time = time.plus(duration)
+internal actual val DIRECTORY_SEPARATOR: String
+  get() {
+    // TODO(swankjesse): return path.path.sep instead, once it has @JsNonModule
+    return when (os.platform()) {
+      "win32" -> "\\"
+      else -> "/"
+    }
   }
-}
