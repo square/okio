@@ -15,6 +15,74 @@
  */
 package okio
 
+/**
+ * Read and write access to a hierarchical collection of files, addressed by [paths][Path]. This
+ * is a natural interface to the [current computer's local filesystem][SYSTEM].
+ *
+ * Not Just the Local Filesystem
+ * -----------------------------
+ *
+ * Other implementations are possible:
+ *
+ *  * `FakeFilesystem` is an in-memory filesystem suitable for testing. Note that this class is
+ *    included in the `okio-testing` artifact.
+ *
+ *  * A ZIP filesystem could provide access to the contents of a `.zip` file.
+ *
+ *  * A remote filesystem could access files over the network.
+ *
+ *  * A decorating filesystem could apply monitoring, encryption, compression, or filtering to
+ *    another filesystem implementation.
+ *
+ * For improved capability and testability, consider structuring your classes to dependency inject
+ * a `Filesystem` rather than using [SYSTEM] directly.
+ *
+ * Limited API
+ * -----------
+ *
+ * This interface is limited in which filesystem features it supports. Applications that need rich
+ * filesystem features should use another API, possibly alongside this API.
+ *
+ * This class cannot create special file types like hard links, symlinks, pipes, or mounts. Reading
+ * or writing these files works as if they were regular files.
+ *
+ * It cannot read or write file access control features like the UNIX `chmod` and Windows access
+ * control lists. It does honor these controls and will fail with an [IOException] if privileges
+ * are insufficient!
+ *
+ * It cannot lock files, or query which files are locked.
+ *
+ * It cannot watch the filesystem for changes.
+ *
+ * Multiplatform
+ * -------------
+ *
+ * This class supports a matrix of Kotlin platforms (JVM, Kotlin/Native, Kotlin/JS) and operating
+ * systems (Linux, macOS, and Windows). It attempts to balance working similarly across platforms
+ * with being consistent with the local operating system.
+ *
+ * This is a blocking API which limits its applicability on concurrent Node.js services. File
+ * operations will block the event loop (and all JavaScript execution!) until they complete.
+ *
+ * It supports the path schemes of both Windows (like `C:\Users`) and UNIX (like `/home`). Note that
+ * path resolution rules differ by platform.
+ *
+ * Differences vs. Java IO APIs
+ * ----------------------------
+ *
+ * The `java.io.File` class is Java's original filesystem API. The `delete` and `renameTo` methods
+ * return false if the operation failed. The `list` method returns null if the file isn't a
+ * directory or could not be listed. This class always throws `IOExceptions` when operations don't
+ * succeed.
+ *
+ * The `java.nio.Path` and `java.nio.Files` classes are the entry points of Java's new filesystem
+ * API. Each `Path` instance is scoped to a particular filesystem, though that is often implicit
+ * because the `Paths.get()` function automatically uses the default (ie. system) filesystem.
+ * In Okio's API paths are just identifiers; you must use a specific `Filesystem` object to do
+ * I/O with.
+ *
+ * [s3]: https://aws.amazon.com/s3/
+ */
 abstract class Filesystem {
   /**
    * Resolves [path] against the current working directory and symlinks in this filesystem. The
@@ -85,8 +153,8 @@ abstract class Filesystem {
    * Creates a directory at the path identified by [dir].
    *
    * @throws IOException if [dir]'s parent does not exist, is not a directory, or cannot be written.
-   *     A directory cannot be created if the current process doesn't have access, if there's a
-   *     loop of symbolic links, or if any name is too long.
+   *     A directory cannot be created if it already exists, if the current process doesn't have
+   *     access, if there's a loop of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
   abstract fun createDirectory(dir: Path)
