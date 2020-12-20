@@ -110,7 +110,7 @@ publishing {
       artifactId = POM_ARTIFACT_ID + '-multiplatform'
     }
     jvm {
-      artifactId = 'okio'
+      artifactId = POM_ARTIFACT_ID
     }
   }
 
