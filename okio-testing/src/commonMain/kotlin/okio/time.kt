@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("-Time")
 package okio
 
 import kotlinx.datetime.Instant
+import kotlin.jvm.JvmName
 
+@JvmName("newFileMetadata")
 internal fun FileMetadata(
   isRegularFile: Boolean = false,
   isDirectory: Boolean = false,

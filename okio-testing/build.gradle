@@ -23,8 +23,14 @@ kotlin {
     }
   }
   if (kmpNativeEnabled) {
-    macosX64()
+    iosX64()
+    iosArm64()
+    watchosArm32()
+    watchosArm64()
+    watchosX86()
+    // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
     linuxX64()
+    macosX64()
     mingwX64()
   }
   sourceSets {
@@ -33,7 +39,6 @@ kotlin {
         api deps.kotlin.stdLib.common
         api deps.kotlin.time
         api project(":okio")
-        api project(":okio-files")
       }
     }
   }

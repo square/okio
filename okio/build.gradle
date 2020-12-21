@@ -1,5 +1,37 @@
 apply plugin: 'org.jetbrains.kotlin.multiplatform'
 
+/*
+ * Here's the main hierarchy of variants. Any `expect` functions in one level of the tree are
+ * `actual` functions in a (potentially indirect) child node.
+ *
+ * ```
+ *   common
+ *   |-- jvm
+ *   '-- nonJvm
+ *       |-- js
+ *       '-- native
+ *           |- unix
+ *           |   |-- apple
+ *           |   |   |-- iosArm64
+ *           |   |   |-- iosX64
+ *           |   |   |-- macosX64
+ *           |   |   |-- watchosArm32
+ *           |   |   |-- watchosArm64
+ *           |   |   '-- watchosX86
+ *           |   '-- linux
+ *           |       '-- linuxX64
+ *           '-- mingw
+ *               '-- mingwX64
+ * ```
+ *
+ * Every child of `native` also includes a source set that depends on the pointer size:
+ *
+ *  * sizet32 for watchOS, including watchOS 64-bit architectures
+ *  * sizet64 for everything else
+ *
+ * The `hashFunctions` source set builds on all platforms. It ships as a main source set on non-JVM
+ * platforms and as a test source set on the JVM platform.
+ */
 kotlin {
   jvm {
     withJava()
@@ -43,6 +75,8 @@ kotlin {
       dependencies {
         implementation deps.kotlin.test.common
         implementation deps.kotlin.test.annotations
+        implementation deps.kotlin.time
+        implementation project(":okio-testing")
       }
     }
     nonJvmMain {
@@ -66,6 +100,7 @@ kotlin {
       dependsOn nonJvmMain
       dependencies {
         api deps.kotlin.stdLib.js
+        implementation("org.jetbrains.kotlinx:kotlinx-nodejs:0.0.7")
       }
     }
     jsTest {
@@ -73,38 +108,75 @@ kotlin {
         implementation deps.kotlin.test.js
       }
     }
+
     nativeMain {
       dependsOn nonJvmMain
     }
     nativeTest {
       dependsOn commonTest
     }
-    appleMain {
-      dependsOn nonJvmMain
-    }
-    appleTest {
-      dependsOn commonTest
-    }
 
-    configure([iosX64Main, iosArm64Main, watchosArm32Main, watchosArm64Main, watchosX86Main, linuxX64Main, macosX64Main,
-               mingwX64Main]) {
+    sizet32Main {
       dependsOn nativeMain
     }
-    configure([iosX64Test, iosArm64Test, watchosArm32Test, watchosArm64Test, watchosX86Test, linuxX64Test, macosX64Test,
-               mingwX64Test]) {
+    sizet64Main {
+      dependsOn nativeMain
+    }
+
+    mingwMain {
+      dependsOn nativeMain
+    }
+    mingwX64Main {
+      dependsOn sizet64Main
+      dependsOn mingwMain
+    }
+    mingwX64Test {
       dependsOn nativeTest
     }
-    configure([iosX64Main, iosArm64Main, macosX64Main, watchosArm32Main, watchosArm64Main, watchosX86Main]) {
+
+    unixMain {
+      dependsOn nativeMain
+    }
+
+    appleMain {
+      dependsOn unixMain
+    }
+    appleTest {
+      dependsOn nativeTest
+    }
+    configure([iosX64Main, iosArm64Main, macosX64Main]) {
+      dependsOn sizet64Main
       dependsOn appleMain
     }
-    configure([iosX64Test, iosArm64Test, watchosArm32Test, watchosArm64Test, watchosX86Test, macosX64Test]) {
+    configure([iosX64Test, iosArm64Test, macosX64Test]) {
       dependsOn appleTest
+    }
+    configure([watchosArm32Main, watchosArm64Main, watchosX86Main]) {
+      // Note that size_t is 32-bit on all watchOS versions (ie. pointers are always 32-bit).
+      dependsOn sizet32Main
+      dependsOn appleMain
+    }
+    configure([watchosArm32Test, watchosArm64Test, watchosX86Test]) {
+      dependsOn appleTest
+    }
+
+    linuxMain {
+      dependsOn unixMain
+      dependsOn nativeMain
+    }
+    linuxX64Main {
+      dependsOn sizet64Main
+      dependsOn linuxMain
+    }
+    linuxX64Test {
+      dependsOn nativeTest
     }
   }
 }
 
 tasks.withType(JavaCompile) {
   options.encoding = 'UTF-8'
+  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 apply from: 'jvm/jvm.gradle'

@@ -13,20 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.files
+package okio
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import kotlinx.cinterop.ByteVar
+import kotlinx.cinterop.ByteVarOf
+import kotlinx.cinterop.CPointer
+import platform.posix.FILE
+import platform.posix.fread
+import platform.posix.fwrite
 
-@ExperimentalTime
-internal class FakeClock : Clock {
-  var time = Instant.parse("2021-01-01T00:00:00Z")
+internal actual fun variantFread(
+  target: CPointer<ByteVarOf<Byte>>,
+  byteCount: UInt,
+  file: CPointer<FILE>
+): UInt {
+  return fread(target, 1, byteCount, file)
+}
 
-  override fun now() = time
-
-  fun sleep(duration: Duration) {
-    time = time.plus(duration)
-  }
+internal actual fun variantFwrite(
+  target: CPointer<ByteVar>,
+  byteCount: UInt,
+  file: CPointer<FILE>
+): UInt {
+  return fwrite(target, 1, byteCount, file)
 }
