@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.ByteString.Companion.EMPTY
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 
@@ -86,19 +87,22 @@ import okio.Path.Companion.toPath
  * Sample Paths
  * ------------
  *
- * | Path                   | Type       | Parent              | Name          |
- * | :--------------------- | :--------- | :------------------ | :------------ |
- * | `/Users/jessewilson`   | Absolute   | `/Users`            | `jessewilson` |
- * | `/Users`               | Absolute   | `/`                 | `Users`       |
- * | `/`                    | Absolute   | null                | (empty)       |
- * | `src/main/java`        | Relative   | `src/main`          | `java`        |
- * | `src/main`             | Relative   | `src`               | `main`        |
- * | `src`                  | Relative   | `.`                 | `src`         |
- * | `.`                    | Relative   | null                | `.`           |
- * | `../../src/main/java`  | Relative   | `../../src/main`    | `java`        |
- * | `../../src/main`       | Relative   | `../../src`         | `main`        |
- * | `../../src`            | Relative   | `../..`             | `src`         |
- * | `../..`                | Relative   | null                | `..`          |
+ * | Path                         | Parent             | Name          | Notes                          |
+ * | :--------------------------- | :----------------- | :------------ | :----------------------------- |
+ * | `/`                          | null               | (empty)       | root                           |
+ * | `/home/jesse/notes.txt`      | `/home/jesse`      | `notes.txt`   | absolute path                  |
+ * | `project/notes.txt`          | `project`          | `notes.txt`   | relative path                  |
+ * | `../../project/notes.txt`    | `../../project`    | `notes.txt`   | relative path with traversal   |
+ * | `../../..`                   | null               | `..`          | relative path with traversal   |
+ * | `.`                          | null               | `.`           | current working directory      |
+ * | `C:\`                        | null               | (empty)       | volume root (Windows)          |
+ * | `C:\Windows\notepad.exe`     | `C:\Windows`       | `notepad.exe` | volume absolute path (Windows) |
+ * | `\`                          | null               | (empty)       | absolute path (Windows)        |
+ * | `\Windows\notepad.exe`       | `\Windows`         | `notepad.exe` | absolute path (Windows)        |
+ * | `C:`                         | null               | (empty)       | volume-relative path (Windows) |
+ * | `C:project\notes.txt`        | `C:project`        | `notes.txt`   | volume-relative path (Windows) |
+ * | `\\server`                   | null               | `server`      | UNC server (Windows)           |
+ * | `\\server\project\notes.txt` | `\\server\project` | `notes.txt`   | UNC absolute path (Windows)    |
  */
 class Path private constructor(
   private val slash: ByteString,
@@ -139,6 +143,7 @@ class Path private constructor(
       val lastSlash = bytes.lastIndexOf(slash)
       return when {
         lastSlash != -1 -> bytes.substring(lastSlash + 1)
+        volumeLetter != null && bytes.size == 2 -> EMPTY // "C:" has no name.
         else -> bytes
       }
     }
@@ -153,7 +158,8 @@ class Path private constructor(
    *
    *  * The filesystem root (`/`)
    *  * The identity relative path (`.`)
-   *  * A windows Windows volume root (like `C:\`)
+   *  * A Windows volume root (like `C:\`)
+   *  * A Windows Universal Naming Convention (UNC) root path (`\\server`)
    *  * A reference to the current working directory on a Windows volume (`C:`).
    *  * A series of relative paths (like `..` and `../..`).
    */
@@ -168,6 +174,9 @@ class Path private constructor(
         lastSlash == 2 && volumeLetter != null -> {
           if (bytes.size == 3) return null // "C:\" has no parent.
           return Path(slash, bytes.substring(endIndex = 3)) // Keep the trailing '\' in C:\.
+        }
+        lastSlash == 1 && bytes.startsWith(BACKSLASH_BACKSLASH) -> {
+          return null // "\\server" is a UNC path with no parent.
         }
         lastSlash == -1 && volumeLetter != null -> {
           if (bytes.size == 2) return null // "C:" has no parent.
@@ -232,10 +241,10 @@ class Path private constructor(
   companion object {
     private val SLASH = "/".encodeUtf8()
     private val BACKSLASH = "\\".encodeUtf8()
+    private val BACKSLASH_BACKSLASH = "\\".encodeUtf8()
     private val ANY_SLASH = "/\\".encodeUtf8()
     private val DOT = ".".encodeUtf8()
     private val DOT_DOT = "..".encodeUtf8()
-    private val SLASH_DOT_DOT = "/..".encodeUtf8()
 
     val directorySeparator = DIRECTORY_SEPARATOR
 
