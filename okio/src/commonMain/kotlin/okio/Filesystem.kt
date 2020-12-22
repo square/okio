@@ -83,6 +83,7 @@ package okio
  *
  * [s3]: https://aws.amazon.com/s3/
  */
+@ExperimentalFilesystem
 abstract class Filesystem {
   /**
    * Resolves [path] against the current working directory and symlinks in this filesystem. The

@@ -20,6 +20,7 @@ import kotlinx.datetime.Instant
 import kotlin.jvm.JvmName
 
 @JvmName("newFileMetadata")
+@ExperimentalFilesystem
 internal fun FileMetadata(
   isRegularFile: Boolean = false,
   isDirectory: Boolean = false,

@@ -23,6 +23,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
 
 @ExperimentalTime
+@ExperimentalFilesystem
 class FakeWindowsFilesystemTest : FakeFilesystemTest(
   clock = FakeClock(),
   windowsLimitations = true,
@@ -30,6 +31,7 @@ class FakeWindowsFilesystemTest : FakeFilesystemTest(
 )
 
 @ExperimentalTime
+@ExperimentalFilesystem
 class FakeUnixFilesystemTest : FakeFilesystemTest(
   clock = FakeClock(),
   windowsLimitations = false,
@@ -37,6 +39,7 @@ class FakeUnixFilesystemTest : FakeFilesystemTest(
 )
 
 @ExperimentalTime
+@ExperimentalFilesystem
 abstract class FakeFilesystemTest internal constructor(
   clock: FakeClock,
   windowsLimitations: Boolean,

@@ -104,6 +104,7 @@ import okio.Path.Companion.toPath
  * | `\\server`                   | null               | `server`      | UNC server (Windows)           |
  * | `\\server\project\notes.txt` | `\\server\project` | `notes.txt`   | UNC absolute path (Windows)    |
  */
+@ExperimentalFilesystem
 class Path private constructor(
   private val slash: ByteString,
   private val bytes: ByteString

@@ -17,12 +17,17 @@ package okio
 
 internal expect val VARIANT_DIRECTORY_SEPARATOR: String
 
+@ExperimentalFilesystem
 internal expect fun PosixSystemFilesystem.variantDelete(path: Path)
 
+@ExperimentalFilesystem
 internal expect fun PosixSystemFilesystem.variantMkdir(dir: Path): Int
 
+@ExperimentalFilesystem
 internal expect fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path
 
+@ExperimentalFilesystem
 internal expect fun PosixSystemFilesystem.variantMetadata(path: Path): FileMetadata
 
+@ExperimentalFilesystem
 internal expect fun PosixSystemFilesystem.variantMove(source: Path, target: Path)

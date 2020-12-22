@@ -22,12 +22,16 @@ import java.io.File
 import java.nio.file.Paths
 import java.nio.file.Path as NioPath
 
+@ExperimentalFilesystem
 fun Path.toFile(): File = File(toString())
 
 @IgnoreJRERequirement // Can only be invoked on platforms that have java.nio.file.
+@ExperimentalFilesystem
 fun Path.toNioPath(): NioPath = Paths.get(toString())
 
+@ExperimentalFilesystem
 fun File.toOkioPath(): Path = toString().toPath()
 
 @IgnoreJRERequirement // Can only be invoked on platforms that have java.nio.file.
+@ExperimentalFilesystem
 fun NioPath.toOkioPath(): Path = toString().toPath()

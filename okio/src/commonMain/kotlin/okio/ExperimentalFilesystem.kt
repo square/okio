@@ -15,15 +15,13 @@
  */
 package okio
 
-import kotlinx.cinterop.toKString
-import okio.Path.Companion.toPath
-import platform.posix.getenv
+import kotlin.RequiresOptIn.Level.ERROR
+import kotlin.annotation.AnnotationRetention.BINARY
+import kotlin.annotation.AnnotationTarget.CLASS
+import kotlin.annotation.AnnotationTarget.FUNCTION
+import kotlin.annotation.AnnotationTarget.PROPERTY
 
-@ExperimentalFilesystem
-internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
-  get() {
-    val tmpdir = getenv("TMPDIR")
-    if (tmpdir != null) return tmpdir.toKString().toPath()
-
-    return "/tmp".toPath()
-  }
+@RequiresOptIn(level = ERROR, message = "okio's Filesystem is unstable and subject to change")
+@Retention(BINARY)
+@Target(CLASS, FUNCTION, PROPERTY)
+annotation class ExperimentalFilesystem

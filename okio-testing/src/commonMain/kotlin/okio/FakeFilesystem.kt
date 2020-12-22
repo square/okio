@@ -33,6 +33,7 @@ import okio.Path.Companion.toPath
  * [windowsLimitations] to true to throw an [IOException] when asked to delete or rename an open
  * file.
  */
+@ExperimentalFilesystem
 class FakeFilesystem(
   val clock: Clock = Clock.System,
   private val windowsLimitations: Boolean = false,

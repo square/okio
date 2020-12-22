@@ -66,6 +66,11 @@ kotlin {
     mingwX64()
   }
   sourceSets {
+    all {
+      languageSettings {
+        useExperimentalAnnotation('kotlin.RequiresOptIn')
+      }
+    }
     commonMain {
       dependencies {
         api deps.kotlin.stdLib.common
