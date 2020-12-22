@@ -13,19 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.files
+package okio
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import okio.Buffer
 import okio.ByteString.Companion.toByteString
-import okio.FakeFilesystem
-import okio.Filesystem
-import okio.IOException
-import okio.Path
 import okio.Path.Companion.toPath
-import okio.buffer
-import okio.use
 import kotlin.random.Random
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -57,8 +50,9 @@ abstract class AbstractFilesystemTest(
     if (filesystem is FakeFilesystem) return
     val cwd = filesystem.canonicalize(".".toPath())
     assertTrue(cwd.toString()) {
-      cwd.toString().endsWith("okio${Path.directorySeparator}okio-files") ||
-        cwd.toString().endsWith("${Path.directorySeparator}okio-okio-files-test")
+      cwd.toString().endsWith("okio${Path.directorySeparator}okio") ||
+        cwd.toString().endsWith("${Path.directorySeparator}okio-okio-test") ||
+        cwd.toString().contains("/CoreSimulator/Devices/")
     }
   }
 

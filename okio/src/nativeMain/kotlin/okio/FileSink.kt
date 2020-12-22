@@ -23,7 +23,6 @@ import platform.posix.FILE
 import platform.posix.errno
 import platform.posix.fclose
 import platform.posix.fflush
-import platform.posix.fwrite
 
 /** Writes bytes to a file as a sink. */
 internal class FileSink(
@@ -49,12 +48,12 @@ internal class FileSink(
 
       // Copy bytes from that segment into the file.
       val bytesWritten = cursor.data!!.usePinned { pinned ->
-        fwrite(pinned.addressOf(cursor.start), 1, attemptCount.toULong(), file).toInt()
+        variantFwrite(pinned.addressOf(cursor.start), attemptCount.toUInt(), file).toLong()
       }
 
       // Consume the bytes from the segment.
       cursor.close()
-      source.skip(bytesWritten.toLong())
+      source.skip(bytesWritten)
       byteCount -= bytesWritten
 
       // If the write was shorter than expected, some I/O failed.

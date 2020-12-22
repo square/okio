@@ -15,6 +15,7 @@
  */
 package okio
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
@@ -29,6 +30,7 @@ internal object JvmSystemFilesystem : Filesystem() {
     return canonicalFile.toOkioPath()
   }
 
+  @IgnoreJRERequirement // TODO(jwilson): fix for Android releases that don't have java.nio.file.
   override fun metadata(path: Path): FileMetadata {
     val nioPath = path.toNioPath()
 
@@ -52,6 +54,7 @@ internal object JvmSystemFilesystem : Filesystem() {
    * Returns this time as a epoch millis. If this is 0L this returns null, because epoch time 0L is
    * a special value that indicates the requested time was not available.
    */
+  @IgnoreJRERequirement // TODO(jwilson): fix for Android releases that don't have java.nio.file.
   private fun FileTime.zeroToNull(): Long? {
     return toMillis().takeIf { it != 0L }
   }
@@ -77,6 +80,7 @@ internal object JvmSystemFilesystem : Filesystem() {
     if (!dir.toFile().mkdir()) throw IOException("failed to create directory $dir")
   }
 
+  @IgnoreJRERequirement // TODO(jwilson): fix for Android releases that don't have java.nio.file.
   override fun atomicMove(
     source: Path,
     target: Path

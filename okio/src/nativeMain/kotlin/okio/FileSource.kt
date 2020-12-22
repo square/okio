@@ -24,7 +24,6 @@ import platform.posix.errno
 import platform.posix.fclose
 import platform.posix.feof
 import platform.posix.ferror
-import platform.posix.fread
 
 /** Reads the bytes of a file as a source. */
 internal class FileSource(
@@ -52,7 +51,7 @@ internal class FileSource(
 
     // Copy bytes from the file to the segment.
     val bytesRead = cursor.data!!.usePinned { pinned ->
-      fread(pinned.addressOf(cursor.start), 1, attemptCount.toULong(), file).toLong()
+      variantFread(pinned.addressOf(cursor.start), attemptCount.toUInt(), file).toLong()
     }
 
     // Remove new capacity that was added but not used.

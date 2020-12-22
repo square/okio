@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.files
+package okio
 
 import kotlinx.datetime.Clock
-import okio.DIRECTORY_SEPARATOR
-import okio.Filesystem
+import kotlinx.datetime.Instant
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-class SystemFilesystemTest : AbstractFilesystemTest(
-  clock = Clock.System,
-  filesystem = Filesystem.SYSTEM,
-  windowsLimitations = DIRECTORY_SEPARATOR == "\\",
-  temporaryDirectory = Filesystem.SYSTEM_TEMPORARY_DIRECTORY
-)
+internal class FakeClock : Clock {
+  var time = Instant.parse("2021-01-01T00:00:00Z")
+
+  override fun now() = time
+
+  fun sleep(duration: Duration) {
+    time = time.plus(duration)
+  }
+}

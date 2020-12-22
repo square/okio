@@ -53,6 +53,7 @@ nav:
   - '2.x API': 2.x/okio/okio/index.html
   - '1.x API ⏏': https://square.github.io/okio/1.x/okio/
   - 'Change Log': changelog.md
+  - 'Multiplatform': multiplatform.md
   - 'Contributing': contributing.md
   - 'Code of Conduct': code_of_conduct.md
 
