@@ -330,9 +330,9 @@ abstract class AbstractFilesystemTest(
     assertTrue(metadata.isRegularFile)
     assertFalse(metadata.isDirectory)
     assertEquals(13, metadata.size)
-    assertTrue { (metadata.createdAt ?: minTime) in minTime..maxTime }
-    assertTrue { (metadata.lastModifiedAt ?: minTime) in minTime..maxTime }
-    assertTrue { (metadata.lastAccessedAt ?: minTime) in minTime..maxTime }
+    assertInRange(metadata.createdAt, minTime, maxTime)
+    assertInRange(metadata.lastModifiedAt, minTime, maxTime)
+    assertInRange(metadata.lastAccessedAt, minTime, maxTime)
   }
 
   @Test
@@ -346,9 +346,9 @@ abstract class AbstractFilesystemTest(
     assertFalse(metadata.isRegularFile)
     assertTrue(metadata.isDirectory)
     // Note that the size check is omitted; we'd expect null but the JVM returns values like 64.
-    assertTrue { (metadata.createdAt ?: minTime) in minTime..maxTime }
-    assertTrue { (metadata.lastModifiedAt ?: minTime) in minTime..maxTime }
-    assertTrue { (metadata.lastAccessedAt ?: minTime) in minTime..maxTime }
+    assertInRange(metadata.createdAt, minTime, maxTime)
+    assertInRange(metadata.lastModifiedAt, minTime, maxTime)
+    assertInRange(metadata.lastAccessedAt, minTime, maxTime)
   }
 
   @Test
@@ -477,5 +477,10 @@ abstract class AbstractFilesystemTest(
    */
   private fun Instant.maxFileSystemTime(): Instant {
     return Instant.fromEpochSeconds(plus(2.seconds).epochSeconds)
+  }
+
+  private fun assertInRange(sampled: Instant?, minTime: Instant, maxTime: Instant) {
+    if (sampled == null) return
+    assertTrue("expected $sampled in $minTime..$maxTime") { sampled in minTime..maxTime }
   }
 }
