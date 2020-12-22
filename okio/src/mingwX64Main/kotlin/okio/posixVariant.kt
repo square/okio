@@ -37,6 +37,7 @@ import platform.windows.MoveFileExA
 
 internal actual val VARIANT_DIRECTORY_SEPARATOR = "\\"
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
   val pathString = path.toString()
 
@@ -50,10 +51,12 @@ internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
   throw IOException(errnoString(EACCES))
 }
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantMkdir(dir: Path): Int {
   return mkdir(dir.toString())
 }
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path {
   // Note that _fullpath() returns normally if the file doesn't exist.
   val fullpath = _fullpath(null, path.toString(), PATH_MAX)
@@ -67,6 +70,7 @@ internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path 
   }
 }
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantMetadata(path: Path): FileMetadata {
   return memScoped {
     val stat = alloc<_stat64>()
@@ -84,6 +88,7 @@ internal actual fun PosixSystemFilesystem.variantMetadata(path: Path): FileMetad
   }
 }
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantMove(source: Path, target: Path) {
   if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING) == 0) {
     throw IOException(lastErrorString())

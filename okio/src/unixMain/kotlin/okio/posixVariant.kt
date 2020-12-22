@@ -26,6 +26,7 @@ import platform.posix.timespec
 
 internal actual val VARIANT_DIRECTORY_SEPARATOR = "/"
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
   val result = remove(path.toString())
   if (result != 0) {
@@ -33,10 +34,12 @@ internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
   }
 }
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantMkdir(dir: Path): Int {
   return mkdir(dir.toString(), 0b111111111 /* octal 777 */)
 }
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path {
   // Note that realpath() fails if the file doesn't exist.
   val fullpath = realpath(path.toString(), null)
@@ -48,6 +51,7 @@ internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path 
   }
 }
 
+@ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantMove(
   source: Path,
   target: Path

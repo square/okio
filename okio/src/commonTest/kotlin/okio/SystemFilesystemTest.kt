@@ -19,6 +19,7 @@ import kotlinx.datetime.Clock
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
+@ExperimentalFilesystem
 class SystemFilesystemTest : AbstractFilesystemTest(
   clock = Clock.System,
   filesystem = Filesystem.SYSTEM,

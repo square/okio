@@ -31,6 +31,7 @@ import kotlin.time.seconds
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 @ExperimentalTime
+@ExperimentalFilesystem
 abstract class AbstractFilesystemTest(
   val clock: Clock,
   val filesystem: Filesystem,
