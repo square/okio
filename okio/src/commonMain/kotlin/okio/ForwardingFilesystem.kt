@@ -136,7 +136,7 @@ abstract class ForwardingFilesystem(
    *
    * The base implementation returns [path].
    *
-   * @param path the path passed to of the functions of this.
+   * @param path the path returned by any of the functions of this.
    * @param functionName a string like "canonicalize" or "list".
    * @return the path to return to the caller.
    */
