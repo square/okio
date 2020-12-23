@@ -97,4 +97,6 @@ internal object JvmSystemFilesystem : Filesystem() {
     val deleted = path.toFile().delete()
     if (!deleted) throw IOException("failed to delete $path")
   }
+
+  override fun toString() = "JvmSystemFilesystem"
 }

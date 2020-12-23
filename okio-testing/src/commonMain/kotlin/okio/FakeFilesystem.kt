@@ -290,4 +290,6 @@ class FakeFilesystem(
       openPathsMutable -= path
     }
   }
+
+  override fun toString() = "FakeFilesystem"
 }

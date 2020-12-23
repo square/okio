@@ -48,7 +48,7 @@ abstract class AbstractFilesystemTest(
 
   @Test
   fun canonicalizeDotReturnsCurrentWorkingDirectory() {
-    if (filesystem is FakeFilesystem) return
+    if (filesystem is FakeFilesystem || filesystem is ForwardingFilesystem) return
     val cwd = filesystem.canonicalize(".".toPath())
     assertTrue(cwd.toString()) {
       cwd.toString().endsWith("okio${Path.directorySeparator}okio") ||
