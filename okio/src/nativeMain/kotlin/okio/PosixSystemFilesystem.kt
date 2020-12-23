@@ -104,4 +104,6 @@ internal object PosixSystemFilesystem : Filesystem() {
   override fun delete(path: Path) {
     variantDelete(path)
   }
+
+  override fun toString() = "PosixSystemFilesystem"
 }

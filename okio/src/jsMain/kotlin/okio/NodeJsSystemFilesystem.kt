@@ -142,4 +142,6 @@ internal object NodeJsSystemFilesystem : Filesystem() {
       throw IOException(e.message)
     }
   }
+
+  override fun toString() = "NodeJsSystemFilesystem"
 }
