@@ -46,8 +46,25 @@ class FakeFilesystem(
   private val openPathsMutable = mutableListOf<Path>()
 
   /**
+   * Canonical paths for every file and directory in this filesystem. This omits filesystem roots
+   * like `C:\` and `/`.
+   */
+  val allPaths: Set<Path>
+    get() {
+      val result = mutableSetOf<Path>()
+      for (path in elements.keys) {
+        if (path.parent == null) continue
+        result += path
+      }
+      return result
+    }
+
+  /**
    * Canonical paths currently opened for reading or writing in the order they were opened. This may
    * contain duplicates if a single path is open by multiple readers.
+   *
+   * Note that this may contain paths not present in [allPaths]. This occurs if a file is deleted
+   * while it is still open.
    */
   val openPaths: List<Path>
     get() = openPathsMutable.toList()
@@ -56,7 +73,7 @@ class FakeFilesystem(
     val canonicalPath = workingDirectory / path
 
     if (canonicalPath !in elements) {
-      throw IOException("no such file")
+      throw IOException("no such file: $path")
     }
 
     return canonicalPath
@@ -64,7 +81,7 @@ class FakeFilesystem(
 
   override fun metadata(path: Path): FileMetadata {
     val canonicalPath = workingDirectory / path
-    val element = elements[canonicalPath] ?: throw IOException("no such file")
+    val element = elements[canonicalPath] ?: throw IOException("no such file: $path")
     return element.metadata
   }
 
@@ -78,10 +95,10 @@ class FakeFilesystem(
 
   override fun source(file: Path): Source {
     val canonicalPath = workingDirectory / file
-    val element = elements[canonicalPath] ?: throw IOException("no such file")
+    val element = elements[canonicalPath] ?: throw IOException("no such file: $file")
 
     if (element !is File) {
-      throw IOException("not a file")
+      throw IOException("not a file: $file")
     }
 
     openPathsMutable += canonicalPath
@@ -103,7 +120,7 @@ class FakeFilesystem(
 
     val existing = elements[canonicalPath]
     if (existing is Directory) {
-      throw IOException("destination is a directory")
+      throw IOException("destination is a directory: $file")
     }
     val parent = requireDirectory(canonicalPath.parent)
     parent.access(now, true)
@@ -124,7 +141,7 @@ class FakeFilesystem(
     val canonicalPath = workingDirectory / dir
 
     if (elements[canonicalPath] != null) {
-      throw IOException("already exists")
+      throw IOException("already exists: $dir")
     }
     requireDirectory(canonicalPath.parent)
 
@@ -140,7 +157,7 @@ class FakeFilesystem(
 
     // Universal constraints.
     if (targetElement is Directory) {
-      throw IOException("target is a directory")
+      throw IOException("target is a directory: $target")
     }
     requireDirectory(canonicalTarget.parent)
     if (windowsLimitations) {
@@ -158,7 +175,8 @@ class FakeFilesystem(
       }
     }
 
-    val removed = elements.remove(canonicalSource) ?: throw IOException("source doesn't exist")
+    val removed = elements.remove(canonicalSource)
+      ?: throw IOException("source doesn't exist: $source")
     elements[canonicalTarget] = removed
   }
 
@@ -174,7 +192,7 @@ class FakeFilesystem(
     }
 
     if (elements.remove(canonicalPath) == null) {
-      throw IOException("no such file")
+      throw IOException("no such file: $path")
     }
   }
 
@@ -198,7 +216,7 @@ class FakeFilesystem(
       return root
     }
 
-    throw IOException("path is not a directory")
+    throw IOException("path is not a directory: $path")
   }
 
   internal sealed class Element(
