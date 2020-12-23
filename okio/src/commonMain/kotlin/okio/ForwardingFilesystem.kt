@@ -120,7 +120,7 @@ abstract class ForwardingFilesystem(
    * Note that this function will be called twice for calls to [atomicMove]; once for the source
    * file and once for the target file.
    *
-   * @param path the path passed to of the functions of this.
+   * @param path the path passed to any of the functions of this.
    * @param functionName a string like "canonicalize", "metadata", or "appendingSink".
    * @param parameterName a string like "path", "file", "source", or "target".
    * @return the path to pass to [delegate] for the same parameter.
