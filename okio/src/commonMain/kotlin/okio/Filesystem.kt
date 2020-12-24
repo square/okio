@@ -161,6 +161,36 @@ abstract class Filesystem {
   abstract fun createDirectory(dir: Path)
 
   /**
+   * Creates a directory at the path identified by [dir], and any enclosing parent path directories,
+   * recursively.
+   *
+   * @throws IOException if any [metadata] or [createDirectory] operation fails.
+   */
+  @Throws(IOException::class)
+  fun createDirectories(dir: Path) {
+    // Compute the sequence of directories to create.
+    val directories = ArrayDeque<Path>()
+    var path: Path? = dir
+    while (path != null && !isDirectory(path)) {
+      directories.addFirst(path)
+      path = path.parent
+    }
+
+    // Create them.
+    for (toCreate in directories) {
+      createDirectory(toCreate)
+    }
+  }
+
+  private fun isDirectory(dir: Path): Boolean {
+    return try {
+      metadata(dir).isDirectory
+    } catch (_: IOException) {
+      false // Maybe the file doesn't exist?
+    }
+  }
+
+  /**
    * Moves [source] to [target] in-place if the underlying file system supports it. If [target]
    * exists, it is first removed. If `source == target`, this operation does nothing. This may be
    * used to move a file or a directory.
@@ -239,6 +269,36 @@ abstract class Filesystem {
    */
   @Throws(IOException::class)
   abstract fun delete(path: Path)
+
+  /**
+   * Recursively deletes all children of [fileOrDirectory] if it is a directory, then deletes
+   * [fileOrDirectory] itself.
+   *
+   * This function does not defend against race conditions. For example, if child files are created
+   * or deleted in [fileOrDirectory] while this function is executing, this may fail with an
+   * [IOException].
+   *
+   * @throws IOException if any [metadata], [list], or [delete] operation fails.
+   */
+  @Throws(IOException::class)
+  open fun deleteRecursively(fileOrDirectory: Path) {
+    val stack = ArrayDeque<Path>()
+    stack += fileOrDirectory
+
+    while (stack.isNotEmpty()) {
+      val toDelete = stack.removeLast()
+
+      val metadata = metadata(toDelete)
+      val children = if (metadata.isDirectory) list(toDelete) else listOf()
+
+      if (children.isNotEmpty()) {
+        stack += toDelete
+        stack += children
+      } else {
+        delete(toDelete)
+      }
+    }
+  }
 
   companion object {
     /**

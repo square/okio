@@ -74,6 +74,40 @@ abstract class FakeFilesystemTest internal constructor(
   }
 
   @Test
+  fun allPathsIncludesFile() {
+    val file = base / "all-files-includes-file"
+    file.writeUtf8("hello, world!")
+    assertEquals(fakeFilesystem.allPaths, setOf(base, file))
+  }
+
+  @Test
+  fun allPathsIncludesDirectory() {
+    val dir = base / "all-files-includes-directory"
+    filesystem.createDirectory(dir)
+    assertEquals(fakeFilesystem.allPaths, setOf(base, dir))
+  }
+
+  @Test
+  fun allPathsDoesNotIncludeDeletedFile() {
+    val file = base / "all-files-does-not-include-deleted-file"
+    file.writeUtf8("hello, world!")
+    filesystem.delete(file)
+    assertEquals(fakeFilesystem.allPaths, setOf(base))
+  }
+
+  @Test
+  fun allPathsDoesNotIncludeDeletedOpenFile() {
+    if (windowsLimitations) return // Can't delete open files with Windows' limitations.
+
+    val file = base / "all-files-does-not-include-deleted-open-file"
+    val sink = filesystem.sink(file)
+    assertEquals(fakeFilesystem.allPaths, setOf(base, file))
+    filesystem.delete(file)
+    assertEquals(fakeFilesystem.allPaths, setOf(base))
+    sink.close()
+  }
+
+  @Test
   fun fileLastAccessedTime() {
     val path = base / "file-last-accessed-time"
 

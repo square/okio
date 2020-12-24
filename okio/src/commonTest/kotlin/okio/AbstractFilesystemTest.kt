@@ -182,6 +182,40 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
+  fun createDirectoriesSingle() {
+    val path = base / "create-directories-single"
+    filesystem.createDirectories(path)
+    assertTrue(path in filesystem.list(base))
+    assertTrue(filesystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesAlreadyExists() {
+    val path = base / "already-exists"
+    filesystem.createDirectory(path)
+    filesystem.createDirectories(path)
+    assertTrue(filesystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesParentDirectoryDoesNotExist() {
+    filesystem.createDirectories(base / "a" / "b" / "c")
+    assertTrue(base / "a" in filesystem.list(base))
+    assertTrue(base / "a" / "b" in filesystem.list(base / "a"))
+    assertTrue(base / "a" / "b" / "c" in filesystem.list(base / "a" / "b"))
+    assertTrue(filesystem.metadata(base / "a" / "b" / "c").isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesParentIsFile() {
+    val file = base / "simple-file"
+    file.writeUtf8("just a file")
+    assertFailsWith<IOException> {
+      filesystem.createDirectories(file / "child")
+    }
+  }
+
+  @Test
   fun atomicMoveFile() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
@@ -318,6 +352,50 @@ abstract class AbstractFilesystemTest(
     assertFailsWith<IOException> {
       filesystem.delete(path)
     }
+  }
+
+  @Test
+  fun deleteRecursivelyFile() {
+    val path = base / "delete-recursively-file"
+    path.writeUtf8("delete me")
+    filesystem.deleteRecursively(path)
+    assertTrue(path !in filesystem.list(base))
+  }
+
+  @Test
+  fun deleteRecursivelyEmptyDirectory() {
+    val path = base / "delete-recursively-empty-directory"
+    filesystem.createDirectory(path)
+    filesystem.deleteRecursively(path)
+    assertTrue(path !in filesystem.list(base))
+  }
+
+  @Test
+  fun deleteRecursivelyFailsOnNoSuchFile() {
+    val path = base / "no-such-file"
+    assertFailsWith<IOException> {
+      filesystem.deleteRecursively(path)
+    }
+  }
+
+  @Test
+  fun deleteRecursivelyNonemptyDirectory() {
+    val path = base / "delete-recursively-non-empty-directory"
+    filesystem.createDirectory(path)
+    (path / "file.txt").writeUtf8("inside directory")
+    filesystem.deleteRecursively(path)
+    assertTrue(path !in filesystem.list(base))
+    assertTrue((path / "file.txt") !in filesystem.list(base))
+  }
+
+  @Test
+  fun deleteRecursivelyDeepHierarchy() {
+    filesystem.createDirectory(base / "a")
+    filesystem.createDirectory(base / "a" / "b")
+    filesystem.createDirectory(base / "a" / "b" / "c")
+    (base / "a" / "b" / "c" / "d.txt").writeUtf8("inside deep hierarchy")
+    filesystem.deleteRecursively(base / "a")
+    assertEquals(filesystem.list(base), listOf())
   }
 
   @Test
