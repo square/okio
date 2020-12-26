@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
-public final class ByteStringTest {
+public final class ByteStringJavaTest {
   interface Factory {
     Factory BYTE_STRING = new Factory() {
       @Override public ByteString decodeHex(String hex) {
@@ -286,7 +286,7 @@ public final class ByteStringTest {
     try {
       ByteString.encodeString("hello", null);
       fail();
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -294,7 +294,7 @@ public final class ByteStringTest {
     try {
       ByteString.encodeString(null, Charset.forName("UTF-8"));
       fail();
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -302,7 +302,7 @@ public final class ByteStringTest {
     try {
       ByteString.of().string(null);
       fail();
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 

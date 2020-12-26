@@ -24,13 +24,13 @@ import kotlin.test.Test
 @ExperimentalFilesystem
 class JvmTest {
   @Test
-  fun `base directory consistent with java io File`() {
+  fun baseDirectoryConsistentWithJavaIoFile() {
     assertThat(Filesystem.SYSTEM.canonicalize(".".toPath()).toString())
       .isEqualTo(File("").canonicalFile.toString())
   }
 
   @Test
-  fun `java io File to okio Path`() {
+  fun javaIoFileToOkioPath() {
     val javaIoFile = File("/foo/bar/baz")
     val okioPath = "/foo/bar/baz".toPath(Path.directorySeparator)
     assertThat(javaIoFile.toOkioPath()).isEqualTo(okioPath)
@@ -38,7 +38,7 @@ class JvmTest {
   }
 
   @Test
-  fun `nio Path to okio Path`() {
+  fun nioPathToOkioPath() {
     val nioPath = Paths.get("/foo/bar/baz")
     val okioPath = "/foo/bar/baz".toPath(Path.directorySeparator)
     assertThat(nioPath.toOkioPath()).isEqualTo(okioPath)

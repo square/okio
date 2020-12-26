@@ -28,7 +28,7 @@ import static org.junit.Assert.fail;
  * Tests solely for the behavior of RealBufferedSink's implementation. For generic
  * BufferedSink behavior use BufferedSinkTest.
  */
-public final class RealBufferedSinkTest {
+public final class BufferedSinkJavaTest {
   @Test public void inputStreamCloses() throws Exception {
     BufferedSink sink = Okio.buffer((Sink) new Buffer());
     OutputStream out = sink.outputStream();

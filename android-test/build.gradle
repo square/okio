@@ -1,0 +1,66 @@
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+buildscript {
+  repositories {
+    mavenCentral()
+    gradlePluginPortal()
+    google()
+  }
+}
+
+def isIDE = properties.containsKey('android.injected.invoked.from.ide') ||
+  (System.getenv("XPC_SERVICE_NAME") ?: "").contains("intellij") ||
+  System.getenv("IDEA_INITIAL_DIRECTORY") != null
+
+android {
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_7
+    targetCompatibility JavaVersion.VERSION_1_7
+  }
+
+  kotlinOptions {
+    freeCompilerArgs += "-Xmulti-platform"
+  }
+
+  compileSdkVersion 30
+
+  defaultConfig {
+    minSdkVersion 15
+    targetSdkVersion 30
+    versionCode 1
+    versionName "1.0"
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  if (!isIDE) {
+    sourceSets {
+      named("androidTest") {
+        it.java.srcDirs += [
+          project.file("../okio-testing/src/commonMain/kotlin"),
+          project.file("../okio/src/commonMain/kotlin"),
+          project.file("../okio/src/commonTest/java"),
+          project.file("../okio/src/commonTest/kotlin"),
+          project.file("../okio/src/hashFunctions/kotlin"),
+          project.file("../okio/src/jvmMain/kotlin"),
+          project.file("../okio/src/jvmTest/java"),
+          project.file("../okio/src/jvmTest/kotlin"),
+        ]
+      }
+    }
+  }
+}
+
+
+dependencies {
+  androidTestImplementation deps.androidx.testExtJunit
+  androidTestImplementation deps.androidx.testRunner
+  androidTestImplementation deps.animalSniffer.annotations
+  androidTestImplementation deps.kotlin.stdLib.common
+  androidTestImplementation deps.kotlin.test.annotations
+  androidTestImplementation deps.kotlin.test.common
+  androidTestImplementation deps.kotlin.test.jdk
+  androidTestImplementation deps.kotlin.time
+  androidTestImplementation deps.test.assertj
+  androidTestImplementation deps.test.junit
+}

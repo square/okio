@@ -146,9 +146,6 @@ public final class OkioTest {
       Okio.buffer((Sink) null);
       fail();
     } catch (NullPointerException expected) {
-      assertEquals("Parameter specified as non-null is null: "
-              + "method okio.Okio__OkioKt.buffer, parameter $this$buffer",
-          expected.getMessage());
     }
   }
 
@@ -157,9 +154,6 @@ public final class OkioTest {
       Okio.buffer((Source) null);
       fail();
     } catch (NullPointerException expected) {
-      assertEquals("Parameter specified as non-null is null: "
-              + "method okio.Okio__OkioKt.buffer, parameter $this$buffer",
-          expected.getMessage());
     }
   }
 
