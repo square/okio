@@ -19,7 +19,14 @@ import okio.Path.Companion.toPath
 import java.io.File
 
 @ExperimentalFilesystem
-internal actual val PLATFORM_FILESYSTEM: Filesystem = JvmSystemFilesystem
+internal actual val PLATFORM_FILESYSTEM: Filesystem = run {
+  try {
+    Class.forName("java.nio.file.Files")
+    NioSystemFilesystem()
+  } catch (e: ClassNotFoundException) {
+    JvmSystemFilesystem()
+  }
+}
 
 @ExperimentalFilesystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path

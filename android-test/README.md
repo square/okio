@@ -20,7 +20,13 @@ adb logcat '*:E' TestRunner:D TaskRunner:D GnssHAL_GnssInterface:F DeviceStateCh
 Then run the tests:
 
 ```
-./gradlew :android-test:connectedCheck
+./gradlew :android-test:connectedAndroidTest
+```
+
+Or just a single test:
+
+```
+./gradlew :android-test:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=okio.SystemFilesystemTest
 ```
 
 

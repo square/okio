@@ -22,7 +22,8 @@ buildscript {
 
   ext.deps = [
       'android': [
-        "gradlePlugin": "com.android.tools.build:gradle:4.0.2",
+        'gradlePlugin': "com.android.tools.build:gradle:4.1.1",
+        'desugarJdkLibs': "com.android.tools:desugar_jdk_libs:1.1.1",
       ],
       'androidx': [
         'testExtJunit': "androidx.test.ext:junit:1.1.2",
