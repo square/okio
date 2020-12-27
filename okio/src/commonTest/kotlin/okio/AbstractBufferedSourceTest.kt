@@ -1013,6 +1013,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
     assertTrue(source.exhausted())
   }
 
+  /** Note that this test crashes the VM on Android. */
   @Test fun selectSpanningMultipleSegments() {
     val commonPrefix = randomBytes(Segment.SIZE + 10)
     val a = Buffer().write(commonPrefix).writeUtf8("a").readByteString()

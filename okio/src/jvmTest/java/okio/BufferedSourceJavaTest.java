@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
  * Tests solely for the behavior of RealBufferedSource's implementation. For generic
  * BufferedSource behavior use BufferedSourceTest.
  */
-public final class RealBufferedSourceTest {
+public final class BufferedSourceJavaTest {
   @Test public void inputStreamTracksSegments() throws Exception {
     Buffer source = new Buffer();
     source.writeUtf8("a");

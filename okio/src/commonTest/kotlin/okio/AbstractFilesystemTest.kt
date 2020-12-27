@@ -50,10 +50,12 @@ abstract class AbstractFilesystemTest(
   fun canonicalizeDotReturnsCurrentWorkingDirectory() {
     if (filesystem is FakeFilesystem || filesystem is ForwardingFilesystem) return
     val cwd = filesystem.canonicalize(".".toPath())
-    assertTrue(cwd.toString()) {
-      cwd.toString().endsWith("okio${Path.directorySeparator}okio") ||
-        cwd.toString().endsWith("${Path.directorySeparator}okio-okio-test") ||
-        cwd.toString().contains("/CoreSimulator/Devices/")
+    val cwdString = cwd.toString()
+    assertTrue(cwdString) {
+      cwdString.endsWith("okio${Path.directorySeparator}okio") ||
+        cwdString.endsWith("${Path.directorySeparator}okio-parent-okio-test") || // JS
+        cwdString.contains("/CoreSimulator/Devices/") || // iOS simulator.
+        cwdString == "/" // Android emulator.
     }
   }
 

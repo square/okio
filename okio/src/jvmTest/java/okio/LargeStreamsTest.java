@@ -51,6 +51,7 @@ public final class LargeStreamsTest {
     assertEquals(SHA256_RANDOM_FOUR_GIB_PLUS_1, hashingSink.hash());
   }
 
+  /** Note that this test hangs on Android. */
   @Test public void gzipSource() throws Exception {
     Pipe pipe = new Pipe(1024 * 1024);
 
@@ -71,6 +72,7 @@ public final class LargeStreamsTest {
     assertEquals(SHA256_RANDOM_FOUR_GIB_PLUS_1, hashingSink.hash());
   }
 
+  /** Note that this test hangs on Android. */
   @Test public void gzipSink() throws Exception {
     Pipe pipe = new Pipe(1024 * 1024);
 

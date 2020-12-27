@@ -1192,6 +1192,7 @@ public final class BufferedSourceTest {
     assertTrue(source.exhausted());
   }
 
+  /** Note that this test crashes the VM on Android. */
   @Test public void selectSpanningMultipleSegments() throws IOException {
     ByteString commonPrefix = TestUtil.randomBytes(SEGMENT_SIZE + 10);
     ByteString a = new Buffer().write(commonPrefix).writeUtf8("a").readByteString();
@@ -1458,6 +1459,7 @@ public final class BufferedSourceTest {
     assertEquals(expected, new String(data));
   }
 
+  /** Note that this test crashes the VM on Android. */
   @Test public void readLargeNioBufferOnlyReadsOneSegment() throws Exception {
     String expected = factory.isOneByteAtATime()
         ? "a"
