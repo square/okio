@@ -25,6 +25,7 @@ kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
   }
   
   target.project.dependencies {
-    signature 'org.codehaus.mojo.signature:java16:1.1@signature'
+    signature 'net.sf.androidscents.signature:android-api-level-15:4.0.3_r5@signature'
+    signature 'org.codehaus.mojo.signature:java17:1.0@signature'
   }
 }

@@ -15,49 +15,44 @@
  */
 package okio
 
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
-import java.nio.file.Files
-import java.nio.file.LinkOption
-import java.nio.file.StandardCopyOption.ATOMIC_MOVE
-import java.nio.file.StandardCopyOption.REPLACE_EXISTING
-import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.attribute.FileTime
-
+/**
+ * A filesystem that adapts `java.io`.
+ *
+ * This base class is used on Android API levels 15 (our minimum supported API) through 26
+ * (the first release that includes java.nio.file).
+ */
 @ExperimentalFilesystem
-internal object JvmSystemFilesystem : Filesystem() {
+internal open class JvmSystemFilesystem : Filesystem() {
   override fun canonicalize(path: Path): Path {
     val canonicalFile = path.toFile().canonicalFile
     if (!canonicalFile.exists()) throw IOException("no such file")
     return canonicalFile.toOkioPath()
   }
 
-  @IgnoreJRERequirement // TODO(jwilson): fix for Android releases that don't have java.nio.file.
   override fun metadata(path: Path): FileMetadata {
-    val nioPath = path.toNioPath()
+    val file = path.toFile()
+    val isRegularFile = file.isFile
+    val isDirectory = file.isDirectory
+    val lastModifiedAtMillis = file.lastModified()
+    val size = file.length()
 
-    val attributes = Files.readAttributes(
-      nioPath,
-      BasicFileAttributes::class.java,
-      LinkOption.NOFOLLOW_LINKS
-    )
+    if (!isRegularFile &&
+      !isDirectory &&
+      lastModifiedAtMillis == 0L &&
+      size == 0L &&
+      !file.exists()
+    ) {
+      throw IOException("no such file")
+    }
 
     return FileMetadata(
-      isRegularFile = attributes.isRegularFile,
-      isDirectory = attributes.isDirectory,
-      size = attributes.size(),
-      createdAtMillis = attributes.creationTime()?.zeroToNull(),
-      lastModifiedAtMillis = attributes.lastModifiedTime()?.zeroToNull(),
-      lastAccessedAtMillis = attributes.lastAccessTime()?.zeroToNull()
+      isRegularFile = isRegularFile,
+      isDirectory = isDirectory,
+      size = size,
+      createdAtMillis = null,
+      lastModifiedAtMillis = lastModifiedAtMillis,
+      lastAccessedAtMillis = null
     )
-  }
-
-  /**
-   * Returns this time as a epoch millis. If this is 0L this returns null, because epoch time 0L is
-   * a special value that indicates the requested time was not available.
-   */
-  @IgnoreJRERequirement // TODO(jwilson): fix for Android releases that don't have java.nio.file.
-  private fun FileTime.zeroToNull(): Long? {
-    return toMillis().takeIf { it != 0L }
   }
 
   override fun list(dir: Path): List<Path> {
@@ -81,16 +76,9 @@ internal object JvmSystemFilesystem : Filesystem() {
     if (!dir.toFile().mkdir()) throw IOException("failed to create directory $dir")
   }
 
-  @IgnoreJRERequirement // TODO(jwilson): fix for Android releases that don't have java.nio.file.
-  override fun atomicMove(
-    source: Path,
-    target: Path
-  ) {
-    try {
-      Files.move(source.toNioPath(), target.toNioPath(), ATOMIC_MOVE, REPLACE_EXISTING)
-    } catch (e: UnsupportedOperationException) {
-      throw IOException("atomic move not supported")
-    }
+  override fun atomicMove(source: Path, target: Path) {
+    val renamed = source.toFile().renameTo(target.toFile())
+    if (!renamed) throw IOException("failed to move $source to $target")
   }
 
   override fun delete(path: Path) {

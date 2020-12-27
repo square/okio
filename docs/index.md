@@ -78,6 +78,15 @@ works and how Okio does it.
 Okio’s implementation language from Java to Kotlin.
 
 
+Requirements
+------------
+
+Okio supports Android 4.0.3+ (API level 15+) and Java 7+.
+
+Okio depends on the [Kotlin standard library][kotlin]. It is a small library with strong
+backward-compatibility.
+
+
 Recipes
 -------
 
@@ -1027,6 +1036,7 @@ License
  [nfc]: https://docs.oracle.com/javase/7/docs/api/java/text/Normalizer.Form.html#NFC
  [base64]: https://tools.ietf.org/html/rfc4648#section-4
  [bmp]: https://en.wikipedia.org/wiki/BMP_file_format
+ [kotlin]: https://kotlinlang.org/
  [ok_libraries_talk]: https://www.youtube.com/watch?v=WvyScM_S88c
  [ok_libraries_slides]: https://speakerdeck.com/jakewharton/a-few-ok-libraries-droidcon-mtl-2015
  [encoding_talk]: https://www.youtube.com/watch?v=T_p22jMZSrk

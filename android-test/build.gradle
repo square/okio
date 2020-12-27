@@ -15,8 +15,9 @@ def isIDE = properties.containsKey('android.injected.invoked.from.ide') ||
 
 android {
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_7
-    targetCompatibility JavaVersion.VERSION_1_7
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+    coreLibraryDesugaringEnabled true
   }
 
   kotlinOptions {
@@ -31,6 +32,12 @@ android {
     versionCode 1
     versionName "1.0"
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    // AndroidJUnitRunner wasn't finding tests in multidex artifacts when running on Android 4.0.3.
+    // Work around by adding all Okio classes to the keep list. That way they'll be in the main
+    // .dx file where TestRequestBuilder will find them.
+    multiDexEnabled true
+    multiDexKeepProguard file('multidex-config.pro')
   }
 
   if (!isIDE) {
@@ -53,6 +60,7 @@ android {
 
 
 dependencies {
+  coreLibraryDesugaring deps.android.desugarJdkLibs
   androidTestImplementation deps.androidx.testExtJunit
   androidTestImplementation deps.androidx.testRunner
   androidTestImplementation deps.animalSniffer.annotations
