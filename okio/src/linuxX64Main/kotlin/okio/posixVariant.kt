@@ -18,6 +18,7 @@ package okio
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import platform.posix.ENOENT
 import platform.posix.S_IFDIR
 import platform.posix.S_IFMT
 import platform.posix.S_IFREG
@@ -25,10 +26,11 @@ import platform.posix.errno
 import platform.posix.stat
 
 @ExperimentalFilesystem
-internal actual fun PosixSystemFilesystem.variantMetadata(path: Path): FileMetadata {
+internal actual fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
     val stat = alloc<stat>()
     if (platform.posix.lstat(path.toString(), stat.ptr) != 0) {
+      if (errno == ENOENT) return null
       throw IOException(errnoString(errno))
     }
     return@memScoped FileMetadata(

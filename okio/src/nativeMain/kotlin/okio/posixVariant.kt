@@ -27,7 +27,7 @@ internal expect fun PosixSystemFilesystem.variantMkdir(dir: Path): Int
 internal expect fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path
 
 @ExperimentalFilesystem
-internal expect fun PosixSystemFilesystem.variantMetadata(path: Path): FileMetadata
+internal expect fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): FileMetadata?
 
 @ExperimentalFilesystem
 internal expect fun PosixSystemFilesystem.variantMove(source: Path, target: Path)

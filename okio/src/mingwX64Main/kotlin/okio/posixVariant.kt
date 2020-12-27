@@ -71,10 +71,11 @@ internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path 
 }
 
 @ExperimentalFilesystem
-internal actual fun PosixSystemFilesystem.variantMetadata(path: Path): FileMetadata {
+internal actual fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
     val stat = alloc<_stat64>()
     if (_stat64(path.toString(), stat.ptr) != 0) {
+      if (errno == ENOENT) return null
       throw IOException(errnoString(errno))
     }
     return@memScoped FileMetadata(
