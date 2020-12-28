@@ -25,6 +25,8 @@ expect class ArrayIndexOutOfBoundsException(message: String?) : IndexOutOfBounds
 
 internal expect inline fun <R> synchronized(lock: Any, block: () -> R): R
 
-expect open class IOException(message: String? = null) : Exception
+expect open class IOException(message: String?, cause: Throwable?) : Exception {
+  constructor(message: String? = null)
+}
 
 expect open class EOFException(message: String? = null) : IOException

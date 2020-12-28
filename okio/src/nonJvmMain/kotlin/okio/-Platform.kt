@@ -29,6 +29,11 @@ actual open class ArrayIndexOutOfBoundsException actual constructor(
 
 internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R = block()
 
-actual open class IOException actual constructor(message: String?) : Exception(message)
+actual open class IOException actual constructor(
+  message: String?,
+  cause: Throwable?
+) : Exception(message, cause) {
+  actual constructor(message: String?) : this(message, null)
+}
 
 actual open class EOFException actual constructor(message: String?) : IOException(message)
