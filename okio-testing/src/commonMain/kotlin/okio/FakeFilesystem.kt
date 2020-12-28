@@ -129,8 +129,8 @@ class FakeFilesystem(
     val regularFile = File(createdAt = existing?.createdAt ?: now)
     val result = FakeFileSink(canonicalPath, regularFile)
     if (append && existing is File) {
-      val existingBytes = Buffer().write(existing.data)
-      result.write(existingBytes, existingBytes.size)
+      result.buffer.write(existing.data)
+      regularFile.data = existing.data
     }
     elements[canonicalPath] = regularFile
     regularFile.access(now = now, modified = true)
@@ -284,7 +284,7 @@ class FakeFilesystem(
     private val path: Path,
     private val file: File
   ) : Sink {
-    private var buffer = Buffer()
+    val buffer = Buffer()
     private var closed = false
 
     override fun write(source: Buffer, byteCount: Long) {
