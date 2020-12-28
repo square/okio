@@ -49,13 +49,13 @@ import okio.Path.Companion.toPath
  * There are some special cases when working with relative paths.
  *
  * On Windows, each volume (like `A:\` and `C:\`) has its own current working directory. A path
- * prefixed with a volume letter and colon but no slash (like `A:essay.doc`) is relative to the
+ * prefixed with a volume letter and colon but no slash (like `A:letter.doc`) is relative to the
  * working directory on the named volume. For example, if the working directory on `A:\` is
- * `A:\jessewilson`, then the path `A:essay.doc` resolves to `A:\jessewilson\essay.doc`.
+ * `A:\jesse`, then the path `A:letter.doc` resolves to `A:\jesse\letter.doc`.
  *
  * The path string `C:\Windows` is an absolute path when following Windows rules and a relative
  * path when following UNIX rules. For example, if the current working directory is
- * `/Users/jwilson`, then `C:\Windows` resolves to `/Users/jwilson/C:/Windows`.
+ * `/Users/jesse`, then `C:\Windows` resolves to `/Users/jesse/C:/Windows`.
  *
  * This class decides which rules to follow by inspecting the first slash character in the path
  * string. If the path contains no slash characters, it uses the host platform's rules. Or you may
@@ -176,7 +176,7 @@ class Path private constructor(
           if (bytes.size == 3) return null // "C:\" has no parent.
           return Path(slash, bytes.substring(endIndex = 3)) // Keep the trailing '\' in C:\.
         }
-        lastSlash == 1 && bytes.startsWith(BACKSLASH_BACKSLASH) -> {
+        lastSlash == 1 && bytes.startsWith(BACKSLASH) -> {
           return null // "\\server" is a UNC path with no parent.
         }
         lastSlash == -1 && volumeLetter != null -> {
@@ -194,6 +194,14 @@ class Path private constructor(
         }
       }
     }
+
+  /**
+   * Returns true if this is an absolute path with no parent. UNIX paths have a single root, `/`.
+   * Each volume on Windows is its own root, like `C:\` and `D:\`. Windows UNC paths like `\\server`
+   * are also roots.
+   */
+  val isRoot: Boolean
+    get() = parent == null && isAbsolute
 
   private fun lastSegmentIsDotDot(): Boolean {
     if (bytes.endsWith(DOT_DOT)) {
@@ -242,7 +250,6 @@ class Path private constructor(
   companion object {
     private val SLASH = "/".encodeUtf8()
     private val BACKSLASH = "\\".encodeUtf8()
-    private val BACKSLASH_BACKSLASH = "\\".encodeUtf8()
     private val ANY_SLASH = "/\\".encodeUtf8()
     private val DOT = ".".encodeUtf8()
     private val DOT_DOT = "..".encodeUtf8()

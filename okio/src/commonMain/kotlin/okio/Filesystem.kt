@@ -194,7 +194,7 @@ abstract class Filesystem {
     // Compute the sequence of directories to create.
     val directories = ArrayDeque<Path>()
     var path: Path? = dir
-    while (path != null && !isDirectory(path)) {
+    while (path != null && !exists(path)) {
       directories.addFirst(path)
       path = path.parent
     }

@@ -40,6 +40,12 @@ class FakeFilesystem(
   private val workingDirectory: Path = (if (windowsLimitations) "F:\\".toPath() else "/".toPath())
 ) : Filesystem() {
 
+  init {
+    require(workingDirectory.isAbsolute) {
+      "expected an absolute path but was $workingDirectory"
+    }
+  }
+
   /** Keys are canonical paths. Each value is either a [Directory] or a [ByteString]. */
   private val elements = mutableMapOf<Path, Element>()
 
@@ -53,7 +59,7 @@ class FakeFilesystem(
     get() {
       val result = mutableSetOf<Path>()
       for (path in elements.keys) {
-        if (path.parent == null) continue
+        if (path.isRoot) continue
         result += path
       }
       return result
@@ -81,7 +87,14 @@ class FakeFilesystem(
 
   override fun metadataOrNull(path: Path): FileMetadata? {
     val canonicalPath = workingDirectory / path
-    val element = elements[canonicalPath]
+    var element = elements[canonicalPath]
+
+    // If the path is a root, create it on demand.
+    if (element == null && path.isRoot) {
+      element = Directory(createdAt = clock.now())
+      elements[path] = element
+    }
+
     return element?.metadata
   }
 
@@ -210,7 +223,7 @@ class FakeFilesystem(
     if (element is Directory) return element
 
     // If the path is a root, create it on demand.
-    if (element == null && path.parent == null && path.isAbsolute) {
+    if (element == null && path.isRoot) {
       val root = Directory(createdAt = clock.now())
       elements[path] = root
       return root
