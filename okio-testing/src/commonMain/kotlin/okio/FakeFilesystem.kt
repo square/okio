@@ -26,8 +26,7 @@ import okio.Path.Companion.toPath
  * better tests.
  *
  * Use [openPaths] to see which paths have been opened for read or write, but not yet closed. Tests
- * should assert that this list is empty in `tearDown()`. This way the test only pass if all streams
- * that were opened are also closed.
+ * should call [checkNoOpenFiles] in `tearDown()` to confirm that no file streams were leaked.
  *
  * By default this filesystem permits deletion and removal of open files. Configure
  * [windowsLimitations] to true to throw an [IOException] when asked to delete or rename an open
@@ -49,7 +48,8 @@ class FakeFilesystem(
   /** Keys are canonical paths. Each value is either a [Directory] or a [ByteString]. */
   private val elements = mutableMapOf<Path, Element>()
 
-  private val openPathsMutable = mutableListOf<Path>()
+  /** Files that are currently open and need to be closed to avoid resource leaks. */
+  private val openFiles = mutableListOf<OpenFile>()
 
   /**
    * Canonical paths for every file and directory in this filesystem. This omits filesystem roots
@@ -73,7 +73,31 @@ class FakeFilesystem(
    * while it is still open.
    */
   val openPaths: List<Path>
-    get() = openPathsMutable.toList()
+    get() = openFiles.map { it.canonicalPath }
+
+  /**
+   * Confirm that all files that have been opened on this filesystem (with [source], [sink], and
+   * [appendingSink]) have since been closed. Call this in your test's `tearDown()` function to
+   * confirm that your program hasn't leaked any open files.
+   *
+   * Forgetting to close a file on a real filesystem is a severe error that may lead to a program
+   * crash. The operating system enforces a limit on how many files may be open simultaneously. On
+   * Linux this is [getrlimit] and is commonly adjusted with the `ulimit` command.
+   *
+   * [getrlimit]: https://man7.org/linux/man-pages/man2/getrlimit.2.html
+   *
+   * @throws IllegalStateException if any files are open when this function is called.
+   */
+  fun checkNoOpenFiles() {
+    val firstOpenFile = openFiles.firstOrNull() ?: return
+    throw IllegalStateException(
+      """
+      |expected 0 open files, but found:
+      |    ${openFiles.joinToString(separator = "\n    ") { it.canonicalPath.toString() }}
+      """.trimMargin(),
+      firstOpenFile.backtrace
+    )
+  }
 
   override fun canonicalize(path: Path): Path {
     val canonicalPath = workingDirectory / path
@@ -114,9 +138,10 @@ class FakeFilesystem(
       throw IOException("not a file: $file")
     }
 
-    openPathsMutable += canonicalPath
+    val openFile = OpenFile(canonicalPath, Exception("file opened for reading here"))
+    openFiles += openFile
     element.access(now = clock.now())
-    return FakeFileSource(canonicalPath, Buffer().write(element.data))
+    return FakeFileSource(openFile, Buffer().write(element.data))
   }
 
   override fun sink(file: Path): Sink {
@@ -138,9 +163,10 @@ class FakeFilesystem(
     val parent = requireDirectory(canonicalPath.parent)
     parent.access(now, true)
 
-    openPathsMutable += canonicalPath
+    val openFile = OpenFile(canonicalPath, Exception("file opened for writing here"))
+    openFiles += openFile
     val regularFile = File(createdAt = existing?.createdAt ?: now)
-    val result = FakeFileSink(canonicalPath, regularFile)
+    val result = FakeFileSink(openFile, regularFile)
     if (append && existing is File) {
       result.buffer.write(existing.data)
       regularFile.data = existing.data
@@ -175,11 +201,11 @@ class FakeFilesystem(
     requireDirectory(canonicalTarget.parent)
     if (windowsLimitations) {
       // Windows-only constraints.
-      if (canonicalSource in openPathsMutable) {
-        throw IOException("source is open $source")
+      openFileOrNull(canonicalSource)?.let {
+        throw IOException("source is open $source", it.backtrace)
       }
-      if (canonicalTarget in openPathsMutable) {
-        throw IOException("target is open $target")
+      openFileOrNull(canonicalTarget)?.let {
+        throw IOException("target is open $target", it.backtrace)
       }
     } else {
       // UNIX-only constraints.
@@ -200,8 +226,10 @@ class FakeFilesystem(
       throw IOException("non-empty directory")
     }
 
-    if (windowsLimitations && path in openPathsMutable) {
-      throw IOException("file is open $path")
+    if (windowsLimitations) {
+      openFileOrNull(canonicalPath)?.let {
+        throw IOException("file is open $path", it.backtrace)
+      }
     }
 
     if (elements.remove(canonicalPath) == null) {
@@ -271,9 +299,18 @@ class FakeFilesystem(
     abstract val metadata: FileMetadata
   }
 
+  private fun openFileOrNull(canonicalPath: Path): OpenFile? {
+    return openFiles.firstOrNull { it.canonicalPath == canonicalPath }
+  }
+
+  internal class OpenFile(
+    val canonicalPath: Path,
+    val backtrace: Throwable
+  )
+
   /** Reads data from [buffer], removing itself from [openPathsMutable] when closed. */
   internal inner class FakeFileSource(
-    private val path: Path,
+    private val openFile: OpenFile,
     private val buffer: Buffer
   ) : Source {
     private var closed = false
@@ -288,13 +325,15 @@ class FakeFilesystem(
     override fun close() {
       if (closed) return
       closed = true
-      openPathsMutable -= path
+      openFiles -= openFile
     }
+
+    override fun toString() = "source(${openFile.canonicalPath})"
   }
 
   /** Writes data to [path]. */
   internal inner class FakeFileSink(
-    private val path: Path,
+    private val openFile: OpenFile,
     private val file: File
   ) : Sink {
     val buffer = Buffer()
@@ -318,8 +357,10 @@ class FakeFilesystem(
       closed = true
       file.data = buffer.snapshot()
       file.access(now = clock.now(), modified = true)
-      openPathsMutable -= path
+      openFiles -= openFile
     }
+
+    override fun toString() = "sink(${openFile.canonicalPath})"
   }
 
   override fun toString() = "FakeFilesystem"

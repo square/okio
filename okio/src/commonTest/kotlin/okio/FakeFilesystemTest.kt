@@ -153,6 +153,51 @@ abstract class FakeFilesystemTest internal constructor(
   }
 
   @Test
+  fun checkNoOpenFilesThrowsOnOpenSource() {
+    val path = base / "check-no-open-files-open-source"
+    path.writeUtf8("hello, world!")
+    val exception = filesystem.source(path).use { source ->
+      assertFailsWith<IllegalStateException> {
+        fakeFilesystem.checkNoOpenFiles()
+      }
+    }
+
+    assertEquals(
+      """
+      |expected 0 open files, but found:
+      |    $path
+      """.trimMargin(),
+      exception.message
+    )
+    assertEquals("file opened for reading here", exception.cause?.message)
+
+    // Now that the source is closed this is safe.
+    fakeFilesystem.checkNoOpenFiles()
+  }
+
+  @Test
+  fun checkNoOpenFilesThrowsOnOpenSink() {
+    val path = base / "check-no-open-files-open-sink"
+    val exception = filesystem.sink(path).use { source ->
+      assertFailsWith<IllegalStateException> {
+        fakeFilesystem.checkNoOpenFiles()
+      }
+    }
+
+    assertEquals(
+      """
+      |expected 0 open files, but found:
+      |    $path
+      """.trimMargin(),
+      exception.message
+    )
+    assertEquals("file opened for writing here", exception.cause?.message)
+
+    // Now that the source is closed this is safe.
+    fakeFilesystem.checkNoOpenFiles()
+  }
+
+  @Test
   fun createDirectoriesForVolumeLetterRoot() {
     val path = "X:\\".toPath()
     filesystem.createDirectories(path)
