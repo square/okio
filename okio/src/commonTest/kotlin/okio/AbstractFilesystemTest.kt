@@ -40,7 +40,7 @@ abstract class AbstractFilesystemTest(
   val windowsLimitations: Boolean,
   temporaryDirectory: Path
 ) {
-  val base: Path = temporaryDirectory / "FileSystemTest-${randomToken()}"
+  val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken()}"
   private val isJs = filesystem::class.simpleName?.startsWith("NodeJs") ?: false
 
   @BeforeTest
@@ -125,6 +125,16 @@ abstract class AbstractFilesystemTest(
     sink.close()
     assertTrue(path in filesystem.list(base))
     assertEquals("hello, world!\nthis is added later!", path.readUtf8())
+  }
+
+  @Test
+  fun appendingSinkDoesNotImpactExistingFile() {
+    val path = base / "appending-sink-does-not-impact-existing-file"
+    path.writeUtf8("hello, world!\n")
+    val sink = filesystem.appendingSink(path)
+    assertEquals("hello, world!\n", path.readUtf8())
+    sink.close()
+    assertEquals("hello, world!\n", path.readUtf8())
   }
 
   @Test
