@@ -32,6 +32,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("", path.name)
     assertTrue(path.isAbsolute)
+    assertTrue(path.isRoot)
   }
 
   @Test
@@ -42,6 +43,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("todo.txt", path.name)
     assertTrue(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -52,6 +54,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("todo.txt", path.name)
     assertFalse(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -62,6 +65,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("todo.txt", path.name)
     assertFalse(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -72,6 +76,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("..", path.name)
     assertFalse(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -82,6 +87,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("", path.name)
     assertTrue(path.isAbsolute)
+    assertTrue(path.isRoot)
   }
 
   @Test
@@ -92,6 +98,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("", path.name)
     assertTrue(path.isAbsolute)
+    assertTrue(path.isRoot)
   }
 
   @Test
@@ -102,6 +109,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("..", path.name)
     assertFalse(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -112,6 +120,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals(".", path.name)
     assertFalse(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -122,6 +131,7 @@ class PathTest {
     assertEquals('C', path.volumeLetter)
     assertEquals("", path.name)
     assertTrue(path.isAbsolute)
+    assertTrue(path.isRoot)
   }
 
   @Test
@@ -132,6 +142,7 @@ class PathTest {
     assertEquals('C', path.volumeLetter)
     assertEquals("notepad.exe", path.name)
     assertTrue(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -142,6 +153,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("", path.name)
     assertTrue(path.isAbsolute)
+    assertTrue(path.isRoot)
   }
 
   @Test
@@ -152,6 +164,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("notepad.exe", path.name)
     assertTrue(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -162,6 +175,7 @@ class PathTest {
     assertEquals('C', path.volumeLetter)
     assertEquals("notepad.exe", path.name)
     assertFalse(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -172,6 +186,7 @@ class PathTest {
     assertEquals('C', path.volumeLetter)
     assertEquals("", path.name)
     assertFalse(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -182,6 +197,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("notepad.exe", path.name)
     assertFalse(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test
@@ -192,6 +208,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("server", path.name)
     assertTrue(path.isAbsolute)
+    assertTrue(path.isRoot)
   }
 
   @Test
@@ -202,6 +219,7 @@ class PathTest {
     assertNull(path.volumeLetter)
     assertEquals("notes.txt", path.name)
     assertTrue(path.isAbsolute)
+    assertFalse(path.isRoot)
   }
 
   @Test

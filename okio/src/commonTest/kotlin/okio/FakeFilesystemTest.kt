@@ -18,6 +18,7 @@ package okio
 import okio.Path.Companion.toPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
@@ -149,5 +150,62 @@ abstract class FakeFilesystemTest internal constructor(
     assertEquals(createdAt, metadata.createdAt)
     assertEquals(modifiedAt, metadata.lastModifiedAt)
     assertEquals(accessedAt, metadata.lastAccessedAt)
+  }
+
+  @Test
+  fun createDirectoriesForVolumeLetterRoot() {
+    val path = "X:\\".toPath()
+    filesystem.createDirectories(path)
+    assertTrue(filesystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesForChildOfVolumeLetterRoot() {
+    val path = "X:\\path".toPath()
+    filesystem.createDirectories(path)
+    assertTrue(filesystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesForUnixRoot() {
+    val path = "/".toPath()
+    filesystem.createDirectories(path)
+    assertTrue(filesystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesForChildOfUnixRoot() {
+    val path = "/path".toPath()
+    filesystem.createDirectories(path)
+    assertTrue(filesystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesForUncRoot() {
+    val path = "\\\\server".toPath()
+    filesystem.createDirectories(path)
+    assertTrue(filesystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesForChildOfUncRoot() {
+    val path = "\\\\server\\project".toPath()
+    filesystem.createDirectories(path)
+    assertTrue(filesystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun workingDirectoryMustBeAbsolute() {
+    val exception = assertFailsWith<IllegalArgumentException> {
+      FakeFilesystem(workingDirectory = "some/relative/path".toPath())
+    }
+    assertEquals("expected an absolute path but was some/relative/path", exception.message)
+  }
+
+  @Test
+  fun metadataForRootsGeneratedOnDemand() {
+    assertTrue(filesystem.metadata("X:\\".toPath()).isDirectory)
+    assertTrue(filesystem.metadata("/".toPath()).isDirectory)
+    assertTrue(filesystem.metadata("\\\\server".toPath()).isDirectory)
   }
 }
