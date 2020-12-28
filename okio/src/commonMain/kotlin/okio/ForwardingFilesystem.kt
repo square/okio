@@ -98,7 +98,8 @@ import kotlin.jvm.JvmName
  * non-abstract functions in the [Filesystem] interface.
  *
  * **This class forwards only the abstract functions;** non-abstract functions delegate to the
- * other functions of this class.
+ * other functions of this class. If desired, subclasses may override non-abstract functions to
+ * forward them.
  */
 @ExperimentalFilesystem
 abstract class ForwardingFilesystem(
@@ -121,7 +122,7 @@ abstract class ForwardingFilesystem(
    * file and once for the target file.
    *
    * @param path the path passed to any of the functions of this.
-   * @param functionName a string like "canonicalize", "metadata", or "appendingSink".
+   * @param functionName a string like "canonicalize", "metadataOrNull", or "appendingSink".
    * @param parameterName a string like "path", "file", "source", or "target".
    * @return the path to pass to [delegate] for the same parameter.
    */
@@ -150,9 +151,9 @@ abstract class ForwardingFilesystem(
   }
 
   @Throws(IOException::class)
-  override fun metadata(path: Path): FileMetadata {
-    val path = onPathParameter(path, "metadata", "path")
-    return delegate.metadata(path)
+  override fun metadataOrNull(path: Path): FileMetadata? {
+    val path = onPathParameter(path, "metadataOrNull", "path")
+    return delegate.metadataOrNull(path)
   }
 
   @Throws(IOException::class)

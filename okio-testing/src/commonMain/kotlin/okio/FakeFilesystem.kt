@@ -79,10 +79,10 @@ class FakeFilesystem(
     return canonicalPath
   }
 
-  override fun metadata(path: Path): FileMetadata {
+  override fun metadataOrNull(path: Path): FileMetadata? {
     val canonicalPath = workingDirectory / path
-    val element = elements[canonicalPath] ?: throw IOException("no such file: $path")
-    return element.metadata
+    val element = elements[canonicalPath]
+    return element?.metadata
   }
 
   override fun list(dir: Path): List<Path> {

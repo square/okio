@@ -31,8 +31,8 @@ package okio
  *
  *  * A remote filesystem could access files over the network.
  *
- *  * A decorating filesystem could apply monitoring, encryption, compression, or filtering to
- *    another filesystem implementation.
+ *  * A [decorating filesystem][ForwardingFilesystem] could apply monitoring, encryption,
+ *    compression, or filtering to another filesystem implementation.
  *
  * For improved capability and testability, consider structuring your classes to dependency inject
  * a `Filesystem` rather than using [SYSTEM] directly.
@@ -106,7 +106,30 @@ abstract class Filesystem {
    * @throws IOException if [path] does not exist or its metadata cannot be read.
    */
   @Throws(IOException::class)
-  abstract fun metadata(path: Path): FileMetadata
+  fun metadata(path: Path): FileMetadata {
+    return metadataOrNull(path) ?: throw IOException("no such file: $path")
+  }
+
+  /**
+   * Returns metadata of the file, directory, or object identified by [path]. This returns null if
+   * there is no file at [path].
+   *
+   * @throws IOException if [path] cannot be accessed due to a connectivity problem, permissions
+   *     problem, or other issue.
+   */
+  @Throws(IOException::class)
+  abstract fun metadataOrNull(path: Path): FileMetadata?
+
+  /**
+   * Returns true if [path] identifies an object on this filesystem.
+   *
+   * @throws IOException if [path] cannot be accessed due to a connectivity problem, permissions
+   *     problem, or other issue.
+   */
+  @Throws(IOException::class)
+  fun exists(path: Path): Boolean {
+    return metadataOrNull(path) != null
+  }
 
   /**
    * Returns the children of the directory identified by [dir].

@@ -29,7 +29,7 @@ internal open class JvmSystemFilesystem : Filesystem() {
     return canonicalFile.toOkioPath()
   }
 
-  override fun metadata(path: Path): FileMetadata {
+  override fun metadataOrNull(path: Path): FileMetadata? {
     val file = path.toFile()
     val isRegularFile = file.isFile
     val isDirectory = file.isDirectory
@@ -42,7 +42,7 @@ internal open class JvmSystemFilesystem : Filesystem() {
       size == 0L &&
       !file.exists()
     ) {
-      throw IOException("no such file")
+      return null
     }
 
     return FileMetadata(

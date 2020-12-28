@@ -21,10 +21,12 @@ import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
 import kotlin.random.Random
 import kotlin.test.BeforeTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
@@ -433,11 +435,40 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
+  fun absentMetadataOrNull() {
+    val path = base / "no-such-file"
+    assertNull(filesystem.metadataOrNull(path))
+  }
+
+  @Test
+  @Ignore
+  fun inaccessibleMetadata() {
+    // TODO(swankjesse): configure a test directory in CI that exists, but that this process doesn't
+    //     have permission to read metadata of. Perhaps a file in another user's /home directory?
+  }
+
+  @Test
   fun absentMetadata() {
     val path = base / "no-such-file"
     assertFailsWith<IOException> {
       filesystem.metadata(path)
     }
+  }
+
+  @Test
+  fun fileExists() {
+    val path = base / "file-exists"
+    assertFalse(filesystem.exists(path))
+    path.writeUtf8("hello, world!")
+    assertTrue(filesystem.exists(path))
+  }
+
+  @Test
+  fun directoryExists() {
+    val path = base / "directory-exists"
+    assertFalse(filesystem.exists(path))
+    filesystem.createDirectory(path)
+    assertTrue(filesystem.exists(path))
   }
 
   @Test

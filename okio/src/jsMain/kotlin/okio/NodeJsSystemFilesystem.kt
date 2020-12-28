@@ -46,10 +46,11 @@ internal object NodeJsSystemFilesystem : Filesystem() {
     }
   }
 
-  override fun metadata(path: Path): FileMetadata {
+  override fun metadataOrNull(path: Path): FileMetadata? {
     val stat = try {
       statSync(path.toString())
     } catch (e: Throwable) {
+      if (e.errorCode == "ENOENT") return null // "No such file or directory".
       throw IOException(e.message)
     }
     return FileMetadata(
@@ -61,6 +62,16 @@ internal object NodeJsSystemFilesystem : Filesystem() {
       lastAccessedAtMillis = stat.atimeMs.toLong()
     )
   }
+
+  /**
+   * Returns the error code on this `SystemError`. This uses `asDynamic()` because our JS bindings
+   * don't (yet) include the `SystemError` type.
+   *
+   * https://nodejs.org/dist/latest-v14.x/docs/api/errors.html#errors_class_systemerror
+   * https://nodejs.org/dist/latest-v14.x/docs/api/errors.html#errors_common_system_errors
+   */
+  private val Throwable.errorCode
+    get() = asDynamic().code
 
   override fun list(dir: Path): List<Path> {
     try {

@@ -18,6 +18,7 @@ package okio
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.nio.file.Files
 import java.nio.file.LinkOption
+import java.nio.file.NoSuchFileException
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.attribute.BasicFileAttributes
@@ -30,14 +31,18 @@ import java.nio.file.attribute.FileTime
 @ExperimentalFilesystem
 @IgnoreJRERequirement // Only used on platforms that support java.nio.file.
 internal class NioSystemFilesystem : JvmSystemFilesystem() {
-  override fun metadata(path: Path): FileMetadata {
+  override fun metadataOrNull(path: Path): FileMetadata? {
     val nioPath = path.toNioPath()
 
-    val attributes = Files.readAttributes(
-      nioPath,
-      BasicFileAttributes::class.java,
-      LinkOption.NOFOLLOW_LINKS
-    )
+    val attributes = try {
+      Files.readAttributes(
+        nioPath,
+        BasicFileAttributes::class.java,
+        LinkOption.NOFOLLOW_LINKS
+      )
+    } catch (_: NoSuchFileException) {
+      return null
+    }
 
     return FileMetadata(
       isRegularFile = attributes.isRegularFile,
@@ -53,7 +58,6 @@ internal class NioSystemFilesystem : JvmSystemFilesystem() {
    * Returns this time as a epoch millis. If this is 0L this returns null, because epoch time 0L is
    * a special value that indicates the requested time was not available.
    */
-  @IgnoreJRERequirement
   private fun FileTime.zeroToNull(): Long? {
     return toMillis().takeIf { it != 0L }
   }
