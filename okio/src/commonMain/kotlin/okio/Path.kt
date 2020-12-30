@@ -90,22 +90,23 @@ import kotlin.jvm.JvmStatic
  * Sample Paths
  * ------------
  *
- * | Path                         | Parent             | Name          | Notes                          |
- * | :--------------------------- | :----------------- | :------------ | :----------------------------- |
- * | `/`                          | null               | (empty)       | root                           |
- * | `/home/jesse/notes.txt`      | `/home/jesse`      | `notes.txt`   | absolute path                  |
- * | `project/notes.txt`          | `project`          | `notes.txt`   | relative path                  |
- * | `../../project/notes.txt`    | `../../project`    | `notes.txt`   | relative path with traversal   |
- * | `../../..`                   | null               | `..`          | relative path with traversal   |
- * | `.`                          | null               | `.`           | current working directory      |
- * | `C:\`                        | null               | (empty)       | volume root (Windows)          |
- * | `C:\Windows\notepad.exe`     | `C:\Windows`       | `notepad.exe` | volume absolute path (Windows) |
- * | `\`                          | null               | (empty)       | absolute path (Windows)        |
- * | `\Windows\notepad.exe`       | `\Windows`         | `notepad.exe` | absolute path (Windows)        |
- * | `C:`                         | null               | (empty)       | volume-relative path (Windows) |
- * | `C:project\notes.txt`        | `C:project`        | `notes.txt`   | volume-relative path (Windows) |
- * | `\\server`                   | null               | `server`      | UNC server (Windows)           |
- * | `\\server\project\notes.txt` | `\\server\project` | `notes.txt`   | UNC absolute path (Windows)    |
+ * <table>
+ * <tr><th> Path                         <th> Parent             <th> Name          <th> Notes                          </tr>
+ * <tr><td> `/`                          <td> null               <td> (empty)       <td> root                           </tr>
+ * <tr><td> `/home/jesse/notes.txt`      <td> `/home/jesse`      <td> `notes.txt`   <td> absolute path                  </tr>
+ * <tr><td> `project/notes.txt`          <td> `project`          <td> `notes.txt`   <td> relative path                  </tr>
+ * <tr><td> `../../project/notes.txt`    <td> `../../project`    <td> `notes.txt`   <td> relative path with traversal   </tr>
+ * <tr><td> `../../..`                   <td> null               <td> `..`          <td> relative path with traversal   </tr>
+ * <tr><td> `.`                          <td> null               <td> `.`           <td> current working directory      </tr>
+ * <tr><td> `C:\`                        <td> null               <td> (empty)       <td> volume root (Windows)          </tr>
+ * <tr><td> `C:\Windows\notepad.exe`     <td> `C:\Windows`       <td> `notepad.exe` <td> volume absolute path (Windows) </tr>
+ * <tr><td> `\`                          <td> null               <td> (empty)       <td> absolute path (Windows)        </tr>
+ * <tr><td> `\Windows\notepad.exe`       <td> `\Windows`         <td> `notepad.exe` <td> absolute path (Windows)        </tr>
+ * <tr><td> `C:`                         <td> null               <td> (empty)       <td> volume-relative path (Windows) </tr>
+ * <tr><td> `C:project\notes.txt`        <td> `C:project`        <td> `notes.txt`   <td> volume-relative path (Windows) </tr>
+ * <tr><td> `\\server`                   <td> null               <td> `server`      <td> UNC server (Windows)           </tr>
+ * <tr><td> `\\server\project\notes.txt` <td> `\\server\project` <td> `notes.txt`   <td> UNC absolute path (Windows)    </tr>
+ * </table>
  */
 @ExperimentalFilesystem
 class Path private constructor(
