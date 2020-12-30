@@ -13,23 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * See `fs.kt` for information on what this file does and how to keep it up-to-date.
+ */
+@file:JsModule("os")
+@file:JsNonModule
 package okio
 
-import okio.Path.Companion.toPath
+internal external fun tmpdir(): String
 
-@ExperimentalFilesystem
-internal actual val PLATFORM_FILESYSTEM: Filesystem
-  get() = NodeJsSystemFilesystem
-
-@ExperimentalFilesystem
-internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
-  get() = tmpdir().toPath()
-
-internal actual val DIRECTORY_SEPARATOR: String
-  get() {
-    // TODO(swankjesse): return path.path.sep instead, once it has @JsNonModule
-    return when (platform()) {
-      "win32" -> "\\"
-      else -> "/"
-    }
-  }
+internal external fun platform(): String

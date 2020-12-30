@@ -15,12 +15,6 @@
  */
 package okio
 
-import fs.Dirent
-import fs.MakeDirectoryOptions
-import fs.mkdirSync
-import fs.openSync
-import fs.opendirSync
-import fs.statSync
 import okio.Path.Companion.toPath
 
 /**
@@ -39,7 +33,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
 
   override fun canonicalize(path: Path): Path {
     try {
-      val canonicalPath = fs.realpathSync(path.toString(), options = undefined as String?)
+      val canonicalPath = realpathSync(path.toString())
       return canonicalPath.toString().toPath()
     } catch (e: Throwable) {
       throw IOException(e.message)
@@ -79,8 +73,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
       try {
         val result = mutableListOf<Path>()
         while (true) {
-          // Note that the signature of readSync() returns a non-nullable Dirent; that's incorrect.
-          val dirent = (opendir.readSync() as Dirent?) ?: break
+          val dirent = opendir.readSync() ?: break
           result += dir / dirent.name
         }
         return result
@@ -94,7 +87,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
 
   override fun source(file: Path): Source {
     try {
-      val fd = openSync(file.toString(), flags = "r", mode = undefined as String?)
+      val fd = openSync(file.toString(), flags = "r")
       return FileSource(fd)
     } catch (e: Throwable) {
       throw IOException(e.message)
@@ -103,7 +96,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
 
   override fun sink(file: Path): Sink {
     try {
-      val fd = openSync(file.toString(), flags = "w", mode = undefined as String?)
+      val fd = openSync(file.toString(), flags = "w")
       return FileSink(fd)
     } catch (e: Throwable) {
       throw IOException(e.message)
@@ -112,7 +105,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
 
   override fun appendingSink(file: Path): Sink {
     try {
-      val fd = openSync(file.toString(), flags = "a", mode = undefined as String?)
+      val fd = openSync(file.toString(), flags = "a")
       return FileSink(fd)
     } catch (e: Throwable) {
       throw IOException(e.message)
@@ -121,7 +114,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
 
   override fun createDirectory(dir: Path) {
     try {
-      mkdirSync(dir.toString(), options = undefined as MakeDirectoryOptions?)
+      mkdirSync(dir.toString())
     } catch (e: Throwable) {
       throw IOException(e.message)
     }
@@ -129,7 +122,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
 
   override fun atomicMove(source: Path, target: Path) {
     try {
-      fs.renameSync(source.toString(), target.toString())
+      renameSync(source.toString(), target.toString())
     } catch (e: Throwable) {
       throw IOException(e.message)
     }
@@ -139,16 +132,16 @@ internal object NodeJsSystemFilesystem : Filesystem() {
    * We don't know if [path] is a file or a directory, but we don't (yet) have an API to delete
    * either type. Just try each in sequence.
    *
-   * TODO(jwilson): when Kotlin/JS uses a newer Node version, switch to fs.rmSync().
+   * TODO(jwilson): switch to fs.rmSync() when our minimum requirements are Node 14.14.0.
    */
   override fun delete(path: Path) {
     try {
-      fs.unlinkSync(path.toString())
+      unlinkSync(path.toString())
       return
     } catch (e: Throwable) {
     }
     try {
-      fs.rmdirSync(path.toString())
+      rmdirSync(path.toString())
     } catch (e: Throwable) {
       throw IOException(e.message)
     }

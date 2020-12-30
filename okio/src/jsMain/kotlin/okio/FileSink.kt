@@ -15,7 +15,6 @@
  */
 package okio
 
-import fs.writeSync
 import org.khronos.webgl.Uint8Array
 
 internal class FileSink(
@@ -46,6 +45,6 @@ internal class FileSink(
   override fun close() {
     if (closed) return
     closed = true
-    fs.closeSync(fd)
+    closeSync(fd)
   }
 }
