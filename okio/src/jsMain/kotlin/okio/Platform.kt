@@ -18,7 +18,8 @@ package okio
 import okio.Path.Companion.toPath
 
 @ExperimentalFilesystem
-internal actual val PLATFORM_FILESYSTEM: Filesystem = NodeJsSystemFilesystem
+internal actual val PLATFORM_FILESYSTEM: Filesystem
+  get() = NodeJsSystemFilesystem
 
 @ExperimentalFilesystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path

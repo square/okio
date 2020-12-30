@@ -20,6 +20,8 @@ import kotlinx.datetime.Instant
 import okio.FakeFilesystem.Element.Directory
 import okio.FakeFilesystem.Element.File
 import okio.Path.Companion.toPath
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
 
 /**
  * A fully in-memory filesystem useful for testing. It includes features to support writing
@@ -34,9 +36,11 @@ import okio.Path.Companion.toPath
  */
 @ExperimentalFilesystem
 class FakeFilesystem(
-  val clock: Clock = Clock.System,
   private val windowsLimitations: Boolean = false,
-  private val workingDirectory: Path = (if (windowsLimitations) "F:\\".toPath() else "/".toPath())
+  private val workingDirectory: Path = (if (windowsLimitations) "F:\\".toPath() else "/".toPath()),
+
+  @JvmField
+  val clock: Clock = Clock.System
 ) : Filesystem() {
 
   init {
@@ -55,6 +59,7 @@ class FakeFilesystem(
    * Canonical paths for every file and directory in this filesystem. This omits filesystem roots
    * like `C:\` and `/`.
    */
+  @get:JvmName("allPaths")
   val allPaths: Set<Path>
     get() {
       val result = mutableSetOf<Path>()
@@ -72,6 +77,7 @@ class FakeFilesystem(
    * Note that this may contain paths not present in [allPaths]. This occurs if a file is deleted
    * while it is still open.
    */
+  @get:JvmName("openPaths")
   val openPaths: List<Path>
     get() = openFiles.map { it.canonicalPath }
 
@@ -260,7 +266,7 @@ class FakeFilesystem(
     throw IOException("path is not a directory: $path")
   }
 
-  internal sealed class Element(
+  private sealed class Element(
     val createdAt: Instant
   ) {
     var lastModifiedAt: Instant = createdAt
@@ -303,13 +309,13 @@ class FakeFilesystem(
     return openFiles.firstOrNull { it.canonicalPath == canonicalPath }
   }
 
-  internal class OpenFile(
+  private class OpenFile(
     val canonicalPath: Path,
     val backtrace: Throwable
   )
 
   /** Reads data from [buffer], removing itself from [openPathsMutable] when closed. */
-  internal inner class FakeFileSource(
+  private inner class FakeFileSource(
     private val openFile: OpenFile,
     private val buffer: Buffer
   ) : Source {
@@ -332,7 +338,7 @@ class FakeFilesystem(
   }
 
   /** Writes data to [path]. */
-  internal inner class FakeFileSink(
+  private inner class FakeFileSink(
     private val openFile: OpenFile,
     private val file: File
   ) : Sink {

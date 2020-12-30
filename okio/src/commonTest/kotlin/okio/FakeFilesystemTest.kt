@@ -47,7 +47,7 @@ abstract class FakeFilesystemTest internal constructor(
   temporaryDirectory: Path
 ) : AbstractFilesystemTest(
   clock = clock,
-  filesystem = FakeFilesystem(clock, windowsLimitations),
+  filesystem = FakeFilesystem(windowsLimitations, clock = clock),
   windowsLimitations = windowsLimitations,
   temporaryDirectory = temporaryDirectory
 ) {

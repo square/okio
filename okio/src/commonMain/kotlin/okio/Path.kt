@@ -18,6 +18,9 @@ package okio
 import okio.ByteString.Companion.EMPTY
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmStatic
 
 /**
  * A hierarchical address on a filesystem. A path is an identifier only; a [Filesystem] is required
@@ -129,6 +132,7 @@ class Path private constructor(
    * example, the path "C:notepad.exe" is relative to whatever the current working directory is on
    * the C: drive.
    */
+  @get:JvmName("volumeLetter")
   val volumeLetter: Char?
     get() {
       if (slash != BACKSLASH) return null
@@ -139,6 +143,7 @@ class Path private constructor(
       return c
     }
 
+  @get:JvmName("nameBytes")
   val nameBytes: ByteString
     get() {
       val lastSlash = bytes.lastIndexOf(slash)
@@ -149,6 +154,7 @@ class Path private constructor(
       }
     }
 
+  @get:JvmName("name")
   val name: String
     get() = nameBytes.utf8()
 
@@ -164,6 +170,7 @@ class Path private constructor(
    *  * A reference to the current working directory on a Windows volume (`C:`).
    *  * A series of relative paths (like `..` and `../..`).
    */
+  @get:JvmName("parent")
   val parent: Path?
     get() {
       if (bytes == DOT || bytes == slash || lastSegmentIsDotDot()) {
@@ -217,6 +224,7 @@ class Path private constructor(
    * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
    * this function is equivalent to `child.toPath()`.
    */
+  @JvmName("resolve")
   operator fun div(child: String): Path {
     return div(Buffer().writeUtf8(child).toPath(slash))
   }
@@ -227,6 +235,7 @@ class Path private constructor(
    * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
    * this function is equivalent to `child.toPath()`.
    */
+  @JvmName("resolve")
   operator fun div(child: Path): Path {
     if (child.isAbsolute || child.volumeLetter != null) return child
 
@@ -256,6 +265,7 @@ class Path private constructor(
 
     val directorySeparator = DIRECTORY_SEPARATOR
 
+    @JvmName("get") @JvmOverloads @JvmStatic
     fun String.toPath(directorySeparator: String? = null): Path =
       Buffer().writeUtf8(this).toPath(directorySeparator?.toSlash())
 

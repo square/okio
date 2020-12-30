@@ -15,6 +15,9 @@
  */
 package okio
 
+import okio.Filesystem.Companion.SYSTEM
+import kotlin.jvm.JvmField
+
 /**
  * Read and write access to a hierarchical collection of files, addressed by [paths][Path]. This
  * is a natural interface to the [current computer's local filesystem][SYSTEM].
@@ -205,14 +208,6 @@ abstract class Filesystem {
     }
   }
 
-  private fun isDirectory(dir: Path): Boolean {
-    return try {
-      metadata(dir).isDirectory
-    } catch (_: IOException) {
-      false // Maybe the file doesn't exist?
-    }
-  }
-
   /**
    * Moves [source] to [target] in-place if the underlying file system supports it. If [target]
    * exists, it is first removed. If `source == target`, this operation does nothing. This may be
@@ -328,8 +323,8 @@ abstract class Filesystem {
      * The current process's host filesystem. Use this instance directly, or dependency inject a
      * [Filesystem] to make code testable.
      */
-    val SYSTEM: Filesystem
-      get() = PLATFORM_FILESYSTEM
+    @JvmField
+    val SYSTEM: Filesystem = PLATFORM_FILESYSTEM
 
     /**
      * Returns a writable temporary directory on [SYSTEM].
@@ -340,7 +335,7 @@ abstract class Filesystem {
      *  * **Linux, iOS, and macOS**: the path in the `TMPDIR` environment variable.
      *  * **Windows**: the first non-null of `TEMP`, `TMP`, and `USERPROFILE` environment variables.
      */
-    val SYSTEM_TEMPORARY_DIRECTORY: Path
-      get() = PLATFORM_TEMPORARY_DIRECTORY
+    @JvmField
+    val SYSTEM_TEMPORARY_DIRECTORY: Path = PLATFORM_TEMPORARY_DIRECTORY
   }
 }
