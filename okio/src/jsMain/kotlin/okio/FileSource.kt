@@ -28,7 +28,7 @@ internal class FileSource(
     check(!closed) { "closed" }
 
     val data = Uint8Array(byteCount.toInt())
-    val readByteCount = fs.readSync(
+    val readByteCount = readSync(
       fd = fd,
       buffer = data,
       length = byteCount,
@@ -50,6 +50,6 @@ internal class FileSource(
   override fun close() {
     if (closed) return
     closed = true
-    fs.closeSync(fd)
+    closeSync(fd)
   }
 }

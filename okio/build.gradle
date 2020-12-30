@@ -105,7 +105,6 @@ kotlin {
       dependsOn nonJvmMain
       dependencies {
         api deps.kotlin.stdLib.js
-        implementation("org.jetbrains.kotlinx:kotlinx-nodejs:0.0.7")
       }
     }
     jsTest {
