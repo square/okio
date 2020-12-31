@@ -48,7 +48,7 @@ internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
     if (rmdir(pathString) == 0) return
   }
 
-  throw IOException(errnoString(EACCES))
+  throw errnoToIOException(EACCES)
 }
 
 @ExperimentalFilesystem
@@ -60,10 +60,12 @@ internal actual fun PosixSystemFilesystem.variantMkdir(dir: Path): Int {
 internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path {
   // Note that _fullpath() returns normally if the file doesn't exist.
   val fullpath = _fullpath(null, path.toString(), PATH_MAX)
-    ?: throw IOException(errnoString(errno))
+    ?: throw errnoToIOException(errno)
   try {
     val pathString = Buffer().writeNullTerminated(fullpath).readUtf8()
-    if (platform.posix.access(pathString, 0) != 0 && errno == ENOENT) throw IOException("no such file")
+    if (platform.posix.access(pathString, 0) != 0 && errno == ENOENT) {
+      throw FileNotFoundException("no such file")
+    }
     return pathString.toPath()
   } finally {
     free(fullpath)
@@ -76,7 +78,7 @@ internal actual fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): Fil
     val stat = alloc<_stat64>()
     if (_stat64(path.toString(), stat.ptr) != 0) {
       if (errno == ENOENT) return null
-      throw IOException(errnoString(errno))
+      throw errnoToIOException(errno)
     }
     return@memScoped FileMetadata(
       isRegularFile = stat.st_mode.toInt() and S_IFMT == S_IFREG,
@@ -92,6 +94,6 @@ internal actual fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): Fil
 @ExperimentalFilesystem
 internal actual fun PosixSystemFilesystem.variantMove(source: Path, target: Path) {
   if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING) == 0) {
-    throw IOException(lastErrorString())
+    throw lastErrorToIOException()
   }
 }

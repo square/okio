@@ -30,7 +30,7 @@ internal actual val VARIANT_DIRECTORY_SEPARATOR = "/"
 internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
   val result = remove(path.toString())
   if (result != 0) {
-    throw IOException(errnoString(errno))
+    throw errnoToIOException(errno)
   }
 }
 
@@ -43,7 +43,7 @@ internal actual fun PosixSystemFilesystem.variantMkdir(dir: Path): Int {
 internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path {
   // Note that realpath() fails if the file doesn't exist.
   val fullpath = realpath(path.toString(), null)
-    ?: throw IOException(errnoString(errno))
+    ?: throw errnoToIOException(errno)
   try {
     return Buffer().writeNullTerminated(fullpath).toPath()
   } finally {
@@ -58,7 +58,7 @@ internal actual fun PosixSystemFilesystem.variantMove(
 ) {
   val result = rename(source.toString(), target.toString())
   if (result != 0) {
-    throw IOException(errnoString(errno))
+    throw errnoToIOException(errno)
   }
 }
 

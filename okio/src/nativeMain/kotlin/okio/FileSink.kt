@@ -58,14 +58,14 @@ internal class FileSink(
 
       // If the write was shorter than expected, some I/O failed.
       if (bytesWritten < attemptCount) {
-        throw IOException(errnoString(errno))
+        throw errnoToIOException(errno)
       }
     }
   }
 
   override fun flush() {
     if (fflush(file) != 0) {
-      throw IOException(errnoString(errno))
+      throw errnoToIOException(errno)
     }
   }
 
@@ -75,7 +75,7 @@ internal class FileSink(
     if (closed) return
     closed = true
     if (fclose(file) != 0) {
-      throw IOException(errnoString(errno))
+      throw errnoToIOException(errno)
     }
   }
 }

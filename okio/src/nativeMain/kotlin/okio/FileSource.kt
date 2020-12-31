@@ -61,7 +61,7 @@ internal class FileSource(
     return when {
       bytesRead == attemptCount -> bytesRead
       feof(file) != 0 -> if (bytesRead == 0L) -1L else bytesRead
-      ferror(file) != 0 -> throw IOException(errnoString(errno))
+      ferror(file) != 0 -> throw errnoToIOException(errno)
       else -> bytesRead
     }
   }

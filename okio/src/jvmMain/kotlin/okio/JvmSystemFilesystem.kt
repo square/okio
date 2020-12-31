@@ -25,7 +25,7 @@ package okio
 internal open class JvmSystemFilesystem : Filesystem() {
   override fun canonicalize(path: Path): Path {
     val canonicalFile = path.toFile().canonicalFile
-    if (!canonicalFile.exists()) throw IOException("no such file")
+    if (!canonicalFile.exists()) throw FileNotFoundException("no such file")
     return canonicalFile.toOkioPath()
   }
 
@@ -56,7 +56,12 @@ internal open class JvmSystemFilesystem : Filesystem() {
   }
 
   override fun list(dir: Path): List<Path> {
-    val entries = dir.toFile().list() ?: throw IOException("failed to list $dir")
+    val file = dir.toFile()
+    val entries = file.list()
+    if (entries == null) {
+      if (!file.exists()) throw FileNotFoundException("no such file $dir")
+      throw IOException("failed to list $dir")
+    }
     return entries.map { dir / it }
   }
 
@@ -82,8 +87,12 @@ internal open class JvmSystemFilesystem : Filesystem() {
   }
 
   override fun delete(path: Path) {
-    val deleted = path.toFile().delete()
-    if (!deleted) throw IOException("failed to delete $path")
+    val file = path.toFile()
+    val deleted = file.delete()
+    if (!deleted) {
+      if (!file.exists()) throw FileNotFoundException("no such file $path")
+      else throw IOException("failed to delete $path")
+    }
   }
 
   override fun toString() = "JvmSystemFilesystem"

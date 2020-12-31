@@ -19,6 +19,7 @@ import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import kotlinx.cinterop.set
+import platform.posix.ENOENT
 import platform.posix.strerror
 
 internal fun Buffer.writeNullTerminated(bytes: CPointer<ByteVarOf<Byte>>): Buffer = apply {
@@ -53,11 +54,15 @@ internal fun Buffer.read(
   }
 }
 
-internal fun errnoString(errno: Int): String {
+internal fun errnoToIOException(errno: Int): IOException {
   val message = strerror(errno)
-  return if (message != null) {
+  val messageString = if (message != null) {
     Buffer().writeNullTerminated(message).readUtf8()
   } else {
     "errno: $errno"
+  }
+  return when (errno) {
+    ENOENT -> FileNotFoundException(messageString)
+    else -> IOException(messageString)
   }
 }
