@@ -161,3 +161,45 @@ internal fun Long.toHexString(): String {
 
   return String(result, i, result.size - i)
 }
+
+internal inline fun <S : Source, T> S.use(block: (S) -> T): T {
+  var result: T? = null
+  var thrown: Throwable? = null
+
+  try {
+    result = block(this)
+  } catch (t: Throwable) {
+    thrown = t
+  }
+
+  try {
+    close()
+  } catch (t: Throwable) {
+    if (thrown == null) thrown = t
+    else thrown.addSuppressed(t)
+  }
+
+  if (thrown != null) throw thrown
+  return result!!
+}
+
+internal inline fun <S : Sink, T> S.use(block: (S) -> T): T {
+  var result: T? = null
+  var thrown: Throwable? = null
+
+  try {
+    result = block(this)
+  } catch (t: Throwable) {
+    thrown = t
+  }
+
+  try {
+    close()
+  } catch (t: Throwable) {
+    if (thrown == null) thrown = t
+    else thrown.addSuppressed(t)
+  }
+
+  if (thrown != null) throw thrown
+  return result!!
+}
