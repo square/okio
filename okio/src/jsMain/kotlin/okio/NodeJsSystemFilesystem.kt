@@ -76,6 +76,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
           val dirent = opendir.readSync() ?: break
           result += dir / dirent.name
         }
+        result.sort()
         return result
       } finally {
         opendir.closeSync()

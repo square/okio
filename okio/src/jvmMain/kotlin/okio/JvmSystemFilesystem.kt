@@ -62,7 +62,9 @@ internal open class JvmSystemFilesystem : Filesystem() {
       if (!file.exists()) throw FileNotFoundException("no such file $dir")
       throw IOException("failed to list $dir")
     }
-    return entries.map { dir / it }
+    val result = entries.mapTo(mutableListOf()) { dir / it }
+    result.sort()
+    return result
   }
 
   override fun source(file: Path): Source {

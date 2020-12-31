@@ -77,6 +77,24 @@ abstract class AbstractFilesystemTest(
   }
 
   @Test
+  fun listResultsAreSorted() {
+    val fileA = base / "a"
+    val fileB = base / "b"
+    val fileC = base / "c"
+    val fileD = base / "d"
+
+    // Create files in a different order than the sorted order, so a filesystem that returns files
+    // in creation-order or reverse-creation order won't pass by accident.
+    fileD.writeUtf8("fileD")
+    fileB.writeUtf8("fileB")
+    fileC.writeUtf8("fileC")
+    fileA.writeUtf8("fileA")
+
+    val entries = filesystem.list(base)
+    assertEquals(entries, listOf(fileA, fileB, fileC, fileD))
+  }
+
+  @Test
   fun listNoSuchDirectory() {
     assertFailsWith<FileNotFoundException> {
       filesystem.list(base / "no-such-directory")

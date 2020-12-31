@@ -87,6 +87,37 @@ import kotlin.jvm.JvmStatic
  *  * `.` is the name of the identity relative path (full path `.`).
  *  * `..` is the name of a path consisting of only `..` segments (such as `../../..`).
  *
+ * Comparing Paths
+ * ---------------
+ *
+ * Path implements [Comparable], [equals], and [hashCode]. If two paths are equal then they operate
+ * on the same file on the filesystem.
+ *
+ * Note that the converse is not true: **if two paths are non-equal, they may still resolve to the
+ * same file on the filesystem.** Here are some of the ways non-equal paths resolve to the same
+ * file:
+ *
+ *  * **Case differences.** The default file system on macOS is case-insensitive. The paths
+ *    `/Users/jesse/notes.txt` and `/USERS/JESSE/NOTES.TXT` are non-equal but these paths resolve to
+ *    the same file.
+ *  * **Mounting differences.** Volumes may be mounted at multiple paths. On macOS,
+ *    `/Users/jesse/notes.txt`  and `/Volumes/Macintosh HD/Users/jesse/notes.txt` typically resolve
+ *    to the same file. On Windows, `C:\project\notes.txt` and `\\localhost\c$\project\notes.txt`
+ *    typically resolve to the same file.
+ *  * **Hard links.** UNIX filesystems permit multiple paths to refer for same file. The paths may
+ *    be wildly different, like `/Users/jesse/bruce_wayne.vcard` and
+ *    `/Users/jesse/batman.vcard`, but changes via either path are reflected in both.
+ *  * **Symlinks.** Symlinks permit multiple paths and directories to refer to the same file. On
+ *     macOS `/tmp` is symlinked to `/private/tmp`, so `/tmp/notes.txt` and `/private/tmp/notes.txt`
+ *     resolve to the same file.
+ *
+ * To test whether two paths refer to the same file, try [Filesystem.canonicalize] first. This
+ * follows symlinks and looks up the preserved casing for case-insensitive case-preserved paths.
+ * **This method does not guarantee a unique result, however.** For example, each hard link to a
+ * file may return its own canonical path.
+ *
+ * Paths are sorted in case-sensitive order.
+ *
  * Sample Paths
  * ------------
  *
@@ -112,7 +143,7 @@ import kotlin.jvm.JvmStatic
 class Path private constructor(
   private val slash: ByteString,
   private val bytes: ByteString
-) {
+) : Comparable<Path> {
   init {
     require(slash == SLASH || slash == BACKSLASH)
   }
@@ -247,6 +278,12 @@ class Path private constructor(
     }
     buffer.write(child.bytes)
     return buffer.toPath(directorySeparator = slash)
+  }
+
+  override fun compareTo(other: Path): Int {
+    val bytesResult = bytes.compareTo(other.bytes)
+    if (bytesResult != 0) return bytesResult
+    return slash.compareTo(other.slash)
   }
 
   override fun equals(other: Any?): Boolean {

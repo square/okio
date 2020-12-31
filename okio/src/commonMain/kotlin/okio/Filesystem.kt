@@ -135,7 +135,8 @@ abstract class Filesystem {
   }
 
   /**
-   * Returns the children of the directory identified by [dir].
+   * Returns the children of the directory identified by [dir]. The returned list is sorted using
+   * natural ordering.
    *
    * @throws IOException if [dir] does not exist, is not a directory, or cannot be read. A directory
    *     cannot be read if the current process doesn't have access to [dir], or if there's a loop of
