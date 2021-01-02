@@ -109,7 +109,7 @@ class FakeFilesystem(
     val canonicalPath = workingDirectory / path
 
     if (canonicalPath !in elements) {
-      throw IOException("no such file: $path")
+      throw FileNotFoundException("no such file: $path")
     }
 
     return canonicalPath
@@ -138,7 +138,7 @@ class FakeFilesystem(
 
   override fun source(file: Path): Source {
     val canonicalPath = workingDirectory / file
-    val element = elements[canonicalPath] ?: throw IOException("no such file: $file")
+    val element = elements[canonicalPath] ?: throw FileNotFoundException("no such file: $file")
 
     if (element !is File) {
       throw IOException("not a file: $file")
@@ -221,7 +221,7 @@ class FakeFilesystem(
     }
 
     val removed = elements.remove(canonicalSource)
-      ?: throw IOException("source doesn't exist: $source")
+      ?: throw FileNotFoundException("source doesn't exist: $source")
     elements[canonicalTarget] = removed
   }
 
@@ -239,7 +239,7 @@ class FakeFilesystem(
     }
 
     if (elements.remove(canonicalPath) == null) {
-      throw IOException("no such file: $path")
+      throw FileNotFoundException("no such file: $path")
     }
   }
 
@@ -256,14 +256,16 @@ class FakeFilesystem(
     val element = elements[path]
     if (element is Directory) return element
 
-    // If the path is a root, create it on demand.
-    if (element == null && path.isRoot) {
+    // If the path is a root, create a directory for it on demand.
+    if (path.isRoot) {
       val root = Directory(createdAt = clock.now())
       elements[path] = root
       return root
     }
 
-    throw IOException("path is not a directory: $path")
+    if (element == null) throw FileNotFoundException("no such directory: $path")
+
+    throw IOException("not a directory: $path")
   }
 
   private sealed class Element(

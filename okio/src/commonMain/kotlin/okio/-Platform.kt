@@ -38,3 +38,5 @@ expect open class IOException(message: String?, cause: Throwable?) : Exception {
 }
 
 expect open class EOFException(message: String? = null) : IOException
+
+expect class FileNotFoundException(message: String? = null) : IOException

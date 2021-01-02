@@ -31,7 +31,7 @@ internal actual fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): Fil
     val stat = alloc<stat>()
     if (platform.posix.lstat(path.toString(), stat.ptr) != 0) {
       if (errno == ENOENT) return null
-      throw IOException(errnoString(errno))
+      throw errnoToIOException(errno)
     }
     return@memScoped FileMetadata(
       isRegularFile = stat.st_mode.toInt() and S_IFMT == S_IFREG,

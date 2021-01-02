@@ -41,7 +41,7 @@ internal object PosixSystemFilesystem : Filesystem() {
 
   override fun list(dir: Path): List<Path> {
     val opendir: CPointer<DIR> = opendir(dir.toString())
-      ?: throw IOException(errnoString(errno))
+      ?: throw errnoToIOException(errno)
 
     try {
       val result = mutableListOf<Path>()
@@ -61,7 +61,7 @@ internal object PosixSystemFilesystem : Filesystem() {
         result += dir / childPath
       }
 
-      if (errno != 0) throw IOException(errnoString(errno))
+      if (errno != 0) throw errnoToIOException(errno)
 
       return result
     } finally {
@@ -71,26 +71,26 @@ internal object PosixSystemFilesystem : Filesystem() {
 
   override fun source(file: Path): Source {
     val openFile: CPointer<FILE> = fopen(file.toString(), "r")
-      ?: throw IOException(errnoString(errno))
+      ?: throw errnoToIOException(errno)
     return FileSource(openFile)
   }
 
   override fun sink(file: Path): Sink {
     val openFile: CPointer<FILE> = fopen(file.toString(), "w")
-      ?: throw IOException(errnoString(errno))
+      ?: throw errnoToIOException(errno)
     return FileSink(openFile)
   }
 
   override fun appendingSink(file: Path): Sink {
     val openFile: CPointer<FILE> = fopen(file.toString(), "a")
-      ?: throw IOException(errnoString(errno))
+      ?: throw errnoToIOException(errno)
     return FileSink(openFile)
   }
 
   override fun createDirectory(dir: Path) {
     val result = variantMkdir(dir)
     if (result != 0) {
-      throw IOException(errnoString(errno))
+      throw errnoToIOException(errno)
     }
   }
 

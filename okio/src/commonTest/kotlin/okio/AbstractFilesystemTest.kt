@@ -63,7 +63,7 @@ abstract class AbstractFilesystemTest(
 
   @Test
   fun canonicalizeNoSuchFile() {
-    assertFailsWith<IOException> {
+    assertFailsWith<FileNotFoundException> {
       filesystem.canonicalize(base / "no-such-file")
     }
   }
@@ -78,14 +78,23 @@ abstract class AbstractFilesystemTest(
 
   @Test
   fun listNoSuchDirectory() {
-    assertFailsWith<IOException> {
+    assertFailsWith<FileNotFoundException> {
       filesystem.list(base / "no-such-directory")
     }
   }
 
   @Test
-  fun fileSourceNoSuchDirectory() {
+  fun listFile() {
+    val target = base / "list"
+    target.writeUtf8("hello, world!")
     assertFailsWith<IOException> {
+      filesystem.list(target)
+    }
+  }
+
+  @Test
+  fun fileSourceNoSuchDirectory() {
+    assertFailsWith<FileNotFoundException> {
       filesystem.source(base / "no-such-directory" / "file")
     }
   }
@@ -166,7 +175,7 @@ abstract class AbstractFilesystemTest(
 
   @Test
   fun fileSinkNoSuchDirectory() {
-    assertFailsWith<IOException> {
+    assertFailsWith<FileNotFoundException> {
       filesystem.sink(base / "no-such-directory" / "file")
     }
   }
@@ -275,7 +284,7 @@ abstract class AbstractFilesystemTest(
   fun atomicMoveSourceDoesNotExist() {
     val source = base / "source"
     val target = base / "target"
-    assertFailsWith<IOException> {
+    assertFailsWith<FileNotFoundException> {
       filesystem.atomicMove(source, target)
     }
   }
@@ -317,7 +326,7 @@ abstract class AbstractFilesystemTest(
   fun copySourceDoesNotExist() {
     val source = base / "source"
     val target = base / "target"
-    assertFailsWith<IOException> {
+    assertFailsWith<FileNotFoundException> {
       filesystem.copy(source, target)
     }
     assertFalse(target in filesystem.list(base))
@@ -353,8 +362,15 @@ abstract class AbstractFilesystemTest(
   @Test
   fun deleteFailsOnNoSuchFile() {
     val path = base / "no-such-file"
-    assertFailsWith<IOException> {
-      filesystem.delete(path)
+    // TODO(jwilson): fix Windows to throw FileNotFoundException on deleting an absent file.
+    if (windowsLimitations) {
+      assertFailsWith<IOException> {
+        filesystem.delete(path)
+      }
+    } else {
+      assertFailsWith<FileNotFoundException> {
+        filesystem.delete(path)
+      }
     }
   }
 
@@ -387,7 +403,7 @@ abstract class AbstractFilesystemTest(
   @Test
   fun deleteRecursivelyFailsOnNoSuchFile() {
     val path = base / "no-such-file"
-    assertFailsWith<IOException> {
+    assertFailsWith<FileNotFoundException> {
       filesystem.deleteRecursively(path)
     }
   }
@@ -460,7 +476,7 @@ abstract class AbstractFilesystemTest(
   @Test
   fun absentMetadata() {
     val path = base / "no-such-file"
-    assertFailsWith<IOException> {
+    assertFailsWith<FileNotFoundException> {
       filesystem.metadata(path)
     }
   }

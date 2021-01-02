@@ -36,7 +36,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
       val canonicalPath = realpathSync(path.toString())
       return canonicalPath.toString().toPath()
     } catch (e: Throwable) {
-      throw IOException(e.message)
+      throw e.toIOException()
     }
   }
 
@@ -81,7 +81,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
         opendir.closeSync()
       }
     } catch (e: Throwable) {
-      throw IOException(e.message)
+      throw e.toIOException()
     }
   }
 
@@ -90,7 +90,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
       val fd = openSync(file.toString(), flags = "r")
       return FileSource(fd)
     } catch (e: Throwable) {
-      throw IOException(e.message)
+      throw e.toIOException()
     }
   }
 
@@ -99,7 +99,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
       val fd = openSync(file.toString(), flags = "w")
       return FileSink(fd)
     } catch (e: Throwable) {
-      throw IOException(e.message)
+      throw e.toIOException()
     }
   }
 
@@ -108,7 +108,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
       val fd = openSync(file.toString(), flags = "a")
       return FileSink(fd)
     } catch (e: Throwable) {
-      throw IOException(e.message)
+      throw e.toIOException()
     }
   }
 
@@ -116,7 +116,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
     try {
       mkdirSync(dir.toString())
     } catch (e: Throwable) {
-      throw IOException(e.message)
+      throw e.toIOException()
     }
   }
 
@@ -124,7 +124,7 @@ internal object NodeJsSystemFilesystem : Filesystem() {
     try {
       renameSync(source.toString(), target.toString())
     } catch (e: Throwable) {
-      throw IOException(e.message)
+      throw e.toIOException()
     }
   }
 
@@ -143,7 +143,14 @@ internal object NodeJsSystemFilesystem : Filesystem() {
     try {
       rmdirSync(path.toString())
     } catch (e: Throwable) {
-      throw IOException(e.message)
+      throw e.toIOException()
+    }
+  }
+
+  private fun Throwable.toIOException(): IOException {
+    return when (errorCode) {
+      "ENOENT" -> FileNotFoundException(message)
+      else -> IOException(message)
     }
   }
 

@@ -65,6 +65,8 @@ internal class NioSystemFilesystem : JvmSystemFilesystem() {
   override fun atomicMove(source: Path, target: Path) {
     try {
       Files.move(source.toNioPath(), target.toNioPath(), ATOMIC_MOVE, REPLACE_EXISTING)
+    } catch (e: NoSuchFileException) {
+      throw FileNotFoundException(e.message)
     } catch (e: UnsupportedOperationException) {
       throw IOException("atomic move not supported")
     }

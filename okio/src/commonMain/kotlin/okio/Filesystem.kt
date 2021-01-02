@@ -110,7 +110,7 @@ abstract class Filesystem {
    */
   @Throws(IOException::class)
   fun metadata(path: Path): FileMetadata {
-    return metadataOrNull(path) ?: throw IOException("no such file: $path")
+    return metadataOrNull(path) ?: throw FileNotFoundException("no such file: $path")
   }
 
   /**

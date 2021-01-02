@@ -18,6 +18,9 @@ package okio
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
+import platform.windows.DWORD
+import platform.windows.ERROR_FILE_NOT_FOUND
+import platform.windows.ERROR_PATH_NOT_FOUND
 import platform.windows.FORMAT_MESSAGE_FROM_SYSTEM
 import platform.windows.FORMAT_MESSAGE_IGNORE_INSERTS
 import platform.windows.FormatMessageA
@@ -25,8 +28,15 @@ import platform.windows.GetLastError
 import platform.windows.LANG_NEUTRAL
 import platform.windows.SUBLANG_DEFAULT
 
-internal fun lastErrorString(): String {
+internal fun lastErrorToIOException(): IOException {
   val lastError = GetLastError()
+  return when (lastError.toInt()) {
+    ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND -> FileNotFoundException(lastErrorString(lastError))
+    else -> IOException(lastErrorString(lastError))
+  }
+}
+
+internal fun lastErrorString(lastError: DWORD): String {
   memScoped {
     val messageMaxSize = 2048
     val message = allocArray<ByteVarOf<Byte>>(messageMaxSize)
