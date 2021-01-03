@@ -110,7 +110,7 @@ import kotlin.jvm.JvmStatic
  */
 @ExperimentalFilesystem
 class Path private constructor(
-  private val slash: ByteString,
+  internal val slash: ByteString,
   private val bytes: ByteString
 ) {
   init {
