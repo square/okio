@@ -18,15 +18,15 @@ package okio
 import okio.Path.Companion.toPath
 
 /**
- * Use [Node.js APIs][node_fs] to implement the Okio filesystem interface.
+ * Use [Node.js APIs][node_fs] to implement the Okio file system interface.
  *
  * This class needs to make calls to some fs APIs that have multiple competing overloads. To
  * unambiguously select an overload this passes `undefined` as the target type to some functions.
  *
  * [node_fs]: https://nodejs.org/dist/latest-v14.x/docs/api/fs.html
  */
-@ExperimentalFilesystem
-internal object NodeJsSystemFilesystem : Filesystem() {
+@ExperimentalFileSystem
+internal object NodeJsFileSystem : FileSystem() {
   private var S_IFMT = 0xf000 // fs.constants.S_IFMT
   private var S_IFREG = 0x8000 // fs.constants.S_IFREG
   private var S_IFDIR = 0x4000 // fs.constants.S_IFDIR
@@ -155,5 +155,5 @@ internal object NodeJsSystemFilesystem : Filesystem() {
     }
   }
 
-  override fun toString() = "NodeJsSystemFilesystem"
+  override fun toString() = "NodeJsSystemFileSystem"
 }

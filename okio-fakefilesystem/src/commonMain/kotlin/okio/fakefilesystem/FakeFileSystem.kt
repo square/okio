@@ -19,40 +19,40 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import okio.Buffer
 import okio.ByteString
-import okio.ExperimentalFilesystem
+import okio.ExperimentalFileSystem
 import okio.FileMetadata
 import okio.FileNotFoundException
-import okio.Filesystem
+import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.Sink
 import okio.Source
 import okio.Timeout
-import okio.fakefilesystem.FakeFilesystem.Element.Directory
-import okio.fakefilesystem.FakeFilesystem.Element.File
+import okio.fakefilesystem.FakeFileSystem.Element.Directory
+import okio.fakefilesystem.FakeFileSystem.Element.File
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 
 /**
- * A fully in-memory filesystem useful for testing. It includes features to support writing
+ * A fully in-memory file system useful for testing. It includes features to support writing
  * better tests.
  *
  * Use [openPaths] to see which paths have been opened for read or write, but not yet closed. Tests
  * should call [checkNoOpenFiles] in `tearDown()` to confirm that no file streams were leaked.
  *
- * By default this filesystem permits deletion and removal of open files. Configure
+ * By default this file system permits deletion and removal of open files. Configure
  * [windowsLimitations] to true to throw an [IOException] when asked to delete or rename an open
  * file.
  */
-@ExperimentalFilesystem
-class FakeFilesystem(
+@ExperimentalFileSystem
+class FakeFileSystem(
   private val windowsLimitations: Boolean = false,
   private val workingDirectory: Path = (if (windowsLimitations) "F:\\".toPath() else "/".toPath()),
 
   @JvmField
   val clock: Clock = Clock.System
-) : Filesystem() {
+) : FileSystem() {
 
   init {
     require(workingDirectory.isAbsolute) {
@@ -67,7 +67,7 @@ class FakeFilesystem(
   private val openFiles = mutableListOf<OpenFile>()
 
   /**
-   * Canonical paths for every file and directory in this filesystem. This omits filesystem roots
+   * Canonical paths for every file and directory in this file system. This omits file system roots
    * like `C:\` and `/`.
    */
   @get:JvmName("allPaths")
@@ -96,11 +96,11 @@ class FakeFilesystem(
     get() = openFiles.map { it.canonicalPath }
 
   /**
-   * Confirm that all files that have been opened on this filesystem (with [source], [sink], and
+   * Confirm that all files that have been opened on this file system (with [source], [sink], and
    * [appendingSink]) have since been closed. Call this in your test's `tearDown()` function to
    * confirm that your program hasn't leaked any open files.
    *
-   * Forgetting to close a file on a real filesystem is a severe error that may lead to a program
+   * Forgetting to close a file on a real file system is a severe error that may lead to a program
    * crash. The operating system enforces a limit on how many files may be open simultaneously. On
    * Linux this is [getrlimit] and is commonly adjusted with the `ulimit` command.
    *
@@ -260,7 +260,7 @@ class FakeFilesystem(
   }
 
   /**
-   * Gets the directory at [path], creating it if [path] is a filesystem root.
+   * Gets the directory at [path], creating it if [path] is a file system root.
    *
    * @throws IOException if the named directory is not a root and does not exist, or if it does
    *     exist but is not a directory.
@@ -387,5 +387,5 @@ class FakeFilesystem(
     override fun toString() = "sink(${openFile.canonicalPath})"
   }
 
-  override fun toString() = "FakeFilesystem"
+  override fun toString() = "FakeFileSystem"
 }

@@ -16,7 +16,7 @@
 package okio
 
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFilesystem
+import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -25,54 +25,54 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
 
 @ExperimentalTime
-@ExperimentalFilesystem
-class FakeWindowsFilesystemTest : FakeFilesystemTest(
+@ExperimentalFileSystem
+class FakeWindowsFileSystemTest : FakeFileSystemTest(
   clock = FakeClock(),
   windowsLimitations = true,
   temporaryDirectory = "C:\\".toPath(),
 )
 
 @ExperimentalTime
-@ExperimentalFilesystem
-class FakeUnixFilesystemTest : FakeFilesystemTest(
+@ExperimentalFileSystem
+class FakeUnixFileSystemTest : FakeFileSystemTest(
   clock = FakeClock(),
   windowsLimitations = false,
   temporaryDirectory = "/".toPath(),
 )
 
 @ExperimentalTime
-@ExperimentalFilesystem
-abstract class FakeFilesystemTest internal constructor(
+@ExperimentalFileSystem
+abstract class FakeFileSystemTest internal constructor(
   clock: FakeClock,
   windowsLimitations: Boolean,
   temporaryDirectory: Path
-) : AbstractFilesystemTest(
+) : AbstractFileSystemTest(
   clock = clock,
-  filesystem = FakeFilesystem(windowsLimitations, clock = clock),
+  fileSystem = FakeFileSystem(windowsLimitations, clock = clock),
   windowsLimitations = windowsLimitations,
   temporaryDirectory = temporaryDirectory
 ) {
-  private val fakeFilesystem: FakeFilesystem = filesystem as FakeFilesystem
+  private val fakeFileSystem: FakeFileSystem = fileSystem as FakeFileSystem
   private val fakeClock: FakeClock = clock
 
   @Test
   fun openPathsIncludesOpenSink() {
     val openPath = base / "open-file"
-    val sink = filesystem.sink(openPath)
-    assertEquals(openPath, fakeFilesystem.openPaths.single())
+    val sink = fileSystem.sink(openPath)
+    assertEquals(openPath, fakeFileSystem.openPaths.single())
     sink.close()
-    assertTrue(fakeFilesystem.openPaths.isEmpty())
+    assertTrue(fakeFileSystem.openPaths.isEmpty())
   }
 
   @Test
   fun openPathsIncludesOpenSource() {
     val openPath = base / "open-file"
     openPath.writeUtf8("hello, world!")
-    assertTrue(fakeFilesystem.openPaths.isEmpty())
-    val source = filesystem.source(openPath)
-    assertEquals(openPath, fakeFilesystem.openPaths.single())
+    assertTrue(fakeFileSystem.openPaths.isEmpty())
+    val source = fileSystem.source(openPath)
+    assertEquals(openPath, fakeFileSystem.openPaths.single())
     source.close()
-    assertTrue(fakeFilesystem.openPaths.isEmpty())
+    assertTrue(fakeFileSystem.openPaths.isEmpty())
   }
 
   @Test
@@ -82,34 +82,34 @@ abstract class FakeFilesystemTest internal constructor(
     val fileC = base / "c"
     val fileD = base / "d"
 
-    assertEquals(fakeFilesystem.openPaths, listOf())
-    val sinkD = filesystem.sink(fileD)
-    assertEquals(fakeFilesystem.openPaths, listOf(fileD))
-    val sinkB = filesystem.sink(fileB)
-    assertEquals(fakeFilesystem.openPaths, listOf(fileD, fileB))
-    val sinkC = filesystem.sink(fileC)
-    assertEquals(fakeFilesystem.openPaths, listOf(fileD, fileB, fileC))
-    val sinkA = filesystem.sink(fileA)
-    assertEquals(fakeFilesystem.openPaths, listOf(fileD, fileB, fileC, fileA))
-    val sinkB2 = filesystem.sink(fileB)
-    assertEquals(fakeFilesystem.openPaths, listOf(fileD, fileB, fileC, fileA, fileB))
+    assertEquals(fakeFileSystem.openPaths, listOf())
+    val sinkD = fileSystem.sink(fileD)
+    assertEquals(fakeFileSystem.openPaths, listOf(fileD))
+    val sinkB = fileSystem.sink(fileB)
+    assertEquals(fakeFileSystem.openPaths, listOf(fileD, fileB))
+    val sinkC = fileSystem.sink(fileC)
+    assertEquals(fakeFileSystem.openPaths, listOf(fileD, fileB, fileC))
+    val sinkA = fileSystem.sink(fileA)
+    assertEquals(fakeFileSystem.openPaths, listOf(fileD, fileB, fileC, fileA))
+    val sinkB2 = fileSystem.sink(fileB)
+    assertEquals(fakeFileSystem.openPaths, listOf(fileD, fileB, fileC, fileA, fileB))
     sinkD.close()
-    assertEquals(fakeFilesystem.openPaths, listOf(fileB, fileC, fileA, fileB))
+    assertEquals(fakeFileSystem.openPaths, listOf(fileB, fileC, fileA, fileB))
     sinkB2.close()
-    assertEquals(fakeFilesystem.openPaths, listOf(fileB, fileC, fileA))
+    assertEquals(fakeFileSystem.openPaths, listOf(fileB, fileC, fileA))
     sinkB.close()
-    assertEquals(fakeFilesystem.openPaths, listOf(fileC, fileA))
+    assertEquals(fakeFileSystem.openPaths, listOf(fileC, fileA))
     sinkC.close()
-    assertEquals(fakeFilesystem.openPaths, listOf(fileA))
+    assertEquals(fakeFileSystem.openPaths, listOf(fileA))
     sinkA.close()
-    assertEquals(fakeFilesystem.openPaths, listOf())
+    assertEquals(fakeFileSystem.openPaths, listOf())
   }
 
   @Test
   fun allPathsIncludesFile() {
     val file = base / "all-files-includes-file"
     file.writeUtf8("hello, world!")
-    assertEquals(fakeFilesystem.allPaths, setOf(base, file))
+    assertEquals(fakeFileSystem.allPaths, setOf(base, file))
   }
 
   @Test
@@ -119,29 +119,29 @@ abstract class FakeFilesystemTest internal constructor(
     val fileC = base / "c"
     val fileD = base / "d"
 
-    // Create files in a different order than the sorted order, so a filesystem that returns files
+    // Create files in a different order than the sorted order, so a file system that returns files
     // in creation-order or reverse-creation order won't pass by accident.
     fileD.writeUtf8("fileD")
     fileB.writeUtf8("fileB")
     fileC.writeUtf8("fileC")
     fileA.writeUtf8("fileA")
 
-    assertEquals(fakeFilesystem.allPaths.toList(), listOf(base, fileA, fileB, fileC, fileD))
+    assertEquals(fakeFileSystem.allPaths.toList(), listOf(base, fileA, fileB, fileC, fileD))
   }
 
   @Test
   fun allPathsIncludesDirectory() {
     val dir = base / "all-files-includes-directory"
-    filesystem.createDirectory(dir)
-    assertEquals(fakeFilesystem.allPaths, setOf(base, dir))
+    fileSystem.createDirectory(dir)
+    assertEquals(fakeFileSystem.allPaths, setOf(base, dir))
   }
 
   @Test
   fun allPathsDoesNotIncludeDeletedFile() {
     val file = base / "all-files-does-not-include-deleted-file"
     file.writeUtf8("hello, world!")
-    filesystem.delete(file)
-    assertEquals(fakeFilesystem.allPaths, setOf(base))
+    fileSystem.delete(file)
+    assertEquals(fakeFileSystem.allPaths, setOf(base))
   }
 
   @Test
@@ -149,10 +149,10 @@ abstract class FakeFilesystemTest internal constructor(
     if (windowsLimitations) return // Can't delete open files with Windows' limitations.
 
     val file = base / "all-files-does-not-include-deleted-open-file"
-    val sink = filesystem.sink(file)
-    assertEquals(fakeFilesystem.allPaths, setOf(base, file))
-    filesystem.delete(file)
-    assertEquals(fakeFilesystem.allPaths, setOf(base))
+    val sink = fileSystem.sink(file)
+    assertEquals(fakeFileSystem.allPaths, setOf(base, file))
+    fileSystem.delete(file)
+    assertEquals(fakeFileSystem.allPaths, setOf(base))
     sink.close()
   }
 
@@ -172,7 +172,7 @@ abstract class FakeFilesystemTest internal constructor(
     path.readUtf8()
     val accessedAt = clock.now()
 
-    val metadata = filesystem.metadata(path)
+    val metadata = fileSystem.metadata(path)
     assertEquals(createdAt, metadata.createdAt)
     assertEquals(modifiedAt, metadata.lastModifiedAt)
     assertEquals(accessedAt, metadata.lastAccessedAt)
@@ -183,7 +183,7 @@ abstract class FakeFilesystemTest internal constructor(
     val path = base / "directory-last-accessed-time"
 
     fakeClock.sleep(1.minutes)
-    filesystem.createDirectory(path)
+    fileSystem.createDirectory(path)
     val createdAt = clock.now()
 
     fakeClock.sleep(1.minutes)
@@ -191,10 +191,10 @@ abstract class FakeFilesystemTest internal constructor(
     val modifiedAt = clock.now()
 
     fakeClock.sleep(1.minutes)
-    filesystem.list(path)
+    fileSystem.list(path)
     val accessedAt = clock.now()
 
-    val metadata = filesystem.metadata(path)
+    val metadata = fileSystem.metadata(path)
     assertEquals(createdAt, metadata.createdAt)
     assertEquals(modifiedAt, metadata.lastModifiedAt)
     assertEquals(accessedAt, metadata.lastAccessedAt)
@@ -204,9 +204,9 @@ abstract class FakeFilesystemTest internal constructor(
   fun checkNoOpenFilesThrowsOnOpenSource() {
     val path = base / "check-no-open-files-open-source"
     path.writeUtf8("hello, world!")
-    val exception = filesystem.source(path).use { source ->
+    val exception = fileSystem.source(path).use { source ->
       assertFailsWith<IllegalStateException> {
-        fakeFilesystem.checkNoOpenFiles()
+        fakeFileSystem.checkNoOpenFiles()
       }
     }
 
@@ -220,15 +220,15 @@ abstract class FakeFilesystemTest internal constructor(
     assertEquals("file opened for reading here", exception.cause?.message)
 
     // Now that the source is closed this is safe.
-    fakeFilesystem.checkNoOpenFiles()
+    fakeFileSystem.checkNoOpenFiles()
   }
 
   @Test
   fun checkNoOpenFilesThrowsOnOpenSink() {
     val path = base / "check-no-open-files-open-sink"
-    val exception = filesystem.sink(path).use { source ->
+    val exception = fileSystem.sink(path).use { source ->
       assertFailsWith<IllegalStateException> {
-        fakeFilesystem.checkNoOpenFiles()
+        fakeFileSystem.checkNoOpenFiles()
       }
     }
 
@@ -242,63 +242,63 @@ abstract class FakeFilesystemTest internal constructor(
     assertEquals("file opened for writing here", exception.cause?.message)
 
     // Now that the source is closed this is safe.
-    fakeFilesystem.checkNoOpenFiles()
+    fakeFileSystem.checkNoOpenFiles()
   }
 
   @Test
   fun createDirectoriesForVolumeLetterRoot() {
     val path = "X:\\".toPath()
-    filesystem.createDirectories(path)
-    assertTrue(filesystem.metadata(path).isDirectory)
+    fileSystem.createDirectories(path)
+    assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
   @Test
   fun createDirectoriesForChildOfVolumeLetterRoot() {
     val path = "X:\\path".toPath()
-    filesystem.createDirectories(path)
-    assertTrue(filesystem.metadata(path).isDirectory)
+    fileSystem.createDirectories(path)
+    assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
   @Test
   fun createDirectoriesForUnixRoot() {
     val path = "/".toPath()
-    filesystem.createDirectories(path)
-    assertTrue(filesystem.metadata(path).isDirectory)
+    fileSystem.createDirectories(path)
+    assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
   @Test
   fun createDirectoriesForChildOfUnixRoot() {
     val path = "/path".toPath()
-    filesystem.createDirectories(path)
-    assertTrue(filesystem.metadata(path).isDirectory)
+    fileSystem.createDirectories(path)
+    assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
   @Test
   fun createDirectoriesForUncRoot() {
     val path = "\\\\server".toPath()
-    filesystem.createDirectories(path)
-    assertTrue(filesystem.metadata(path).isDirectory)
+    fileSystem.createDirectories(path)
+    assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
   @Test
   fun createDirectoriesForChildOfUncRoot() {
     val path = "\\\\server\\project".toPath()
-    filesystem.createDirectories(path)
-    assertTrue(filesystem.metadata(path).isDirectory)
+    fileSystem.createDirectories(path)
+    assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
   @Test
   fun workingDirectoryMustBeAbsolute() {
     val exception = assertFailsWith<IllegalArgumentException> {
-      FakeFilesystem(workingDirectory = "some/relative/path".toPath())
+      FakeFileSystem(workingDirectory = "some/relative/path".toPath())
     }
     assertEquals("expected an absolute path but was some/relative/path", exception.message)
   }
 
   @Test
   fun metadataForRootsGeneratedOnDemand() {
-    assertTrue(filesystem.metadata("X:\\".toPath()).isDirectory)
-    assertTrue(filesystem.metadata("/".toPath()).isDirectory)
-    assertTrue(filesystem.metadata("\\\\server".toPath()).isDirectory)
+    assertTrue(fileSystem.metadata("X:\\".toPath()).isDirectory)
+    assertTrue(fileSystem.metadata("/".toPath()).isDirectory)
+    assertTrue(fileSystem.metadata("\\\\server".toPath()).isDirectory)
   }
 }

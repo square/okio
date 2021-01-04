@@ -15,9 +15,9 @@
  */
 package okio
 
-@ExperimentalFilesystem
-internal actual val PLATFORM_FILESYSTEM: Filesystem
-  get() = PosixSystemFilesystem
+@ExperimentalFileSystem
+internal actual val PLATFORM_FILE_SYSTEM: FileSystem
+  get() = PosixFileSystem
 
 internal actual val DIRECTORY_SEPARATOR
   get() = VARIANT_DIRECTORY_SEPARATOR

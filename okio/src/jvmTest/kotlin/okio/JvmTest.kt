@@ -21,11 +21,11 @@ import java.io.File
 import java.nio.file.Paths
 import kotlin.test.Test
 
-@ExperimentalFilesystem
+@ExperimentalFileSystem
 class JvmTest {
   @Test
   fun baseDirectoryConsistentWithJavaIoFile() {
-    assertThat(Filesystem.SYSTEM.canonicalize(".".toPath()).toString())
+    assertThat(FileSystem.SYSTEM.canonicalize(".".toPath()).toString())
       .isEqualTo(File("").canonicalFile.toString())
   }
 

@@ -18,12 +18,12 @@ package okio;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import okio.fakefilesystem.FakeFilesystem;
+import okio.fakefilesystem.FakeFileSystem;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public final class FilesystemJavaTest {
+public final class FileSystemJavaTest {
   @Test
   public void pathApi() {
     Path path = Path.get("/home/jesse/todo.txt");
@@ -40,30 +40,30 @@ public final class FilesystemJavaTest {
   }
 
   @Test
-  public void filesystemApi() throws IOException {
-    assertThat(Filesystem.SYSTEM.metadata(Filesystem.SYSTEM_TEMPORARY_DIRECTORY)).isNotNull();
+  public void fileSystemApi() throws IOException {
+    assertThat(FileSystem.SYSTEM.metadata(FileSystem.SYSTEM_TEMPORARY_DIRECTORY)).isNotNull();
   }
 
   @Test
-  public void fakeFilesystemApi() {
-    FakeFilesystem fakeFilesystem = new FakeFilesystem();
-    assertThat(fakeFilesystem.clock).isNotNull();
-    assertThat(fakeFilesystem.allPaths()).isEmpty();
-    assertThat(fakeFilesystem.openPaths()).isEmpty();
-    fakeFilesystem.checkNoOpenFiles();
+  public void fakeFileSystemApi() {
+    FakeFileSystem fakeFileSystem = new FakeFileSystem();
+    assertThat(fakeFileSystem.clock).isNotNull();
+    assertThat(fakeFileSystem.allPaths()).isEmpty();
+    assertThat(fakeFileSystem.openPaths()).isEmpty();
+    fakeFileSystem.checkNoOpenFiles();
   }
 
   @Test
-  public void forwardingFilesystemApi() throws IOException {
-    FakeFilesystem fakeFilesystem = new FakeFilesystem();
+  public void forwardingFileSystemApi() throws IOException {
+    FakeFileSystem fakeFileSystem = new FakeFileSystem();
     final List<String> log = new ArrayList<>();
-    ForwardingFilesystem forwardingFilesystem = new ForwardingFilesystem(fakeFilesystem) {
+    ForwardingFileSystem forwardingFileSystem = new ForwardingFileSystem(fakeFileSystem) {
       @Override public Path onPathParameter(Path path, String functionName, String parameterName) {
         log.add(functionName + "(" + parameterName + "=" + path + ")");
         return path;
       }
     };
-    forwardingFilesystem.metadataOrNull(Path.get("/"));
+    forwardingFileSystem.metadataOrNull(Path.get("/"));
     assertThat(log).containsExactly("metadataOrNull(path=/)");
   }
 }

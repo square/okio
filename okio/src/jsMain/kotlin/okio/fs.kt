@@ -15,7 +15,7 @@
  */
 
 /**
- * This class declares the subset of Node.js filesystem APIs that we need in Okio.
+ * This class declares the subset of Node.js file system APIs that we need in Okio.
  *
  *
  * Why not Dukat?

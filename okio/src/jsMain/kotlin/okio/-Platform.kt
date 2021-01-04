@@ -17,11 +17,11 @@ package okio
 
 import okio.Path.Companion.toPath
 
-@ExperimentalFilesystem
-internal actual val PLATFORM_FILESYSTEM: Filesystem
-  get() = NodeJsSystemFilesystem
+@ExperimentalFileSystem
+internal actual val PLATFORM_FILE_SYSTEM: FileSystem
+  get() = NodeJsFileSystem
 
-@ExperimentalFilesystem
+@ExperimentalFileSystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
   get() = tmpdir().toPath()
 

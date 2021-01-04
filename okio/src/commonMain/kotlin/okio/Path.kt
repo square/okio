@@ -23,7 +23,7 @@ import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 
 /**
- * A hierarchical address on a filesystem. A path is an identifier only; a [Filesystem] is required
+ * A hierarchical address on a file system. A path is an identifier only; a [FileSystem] is required
  * to access the file that a path refers to, if any.
  *
  * UNIX and Windows Paths
@@ -45,9 +45,9 @@ import kotlin.jvm.JvmStatic
  *   ‘fully-qualified path’ is a synonym of ‘absolute path’.
  *
  * * **Relative paths** are everything else. On their own, relative paths do not identify a
- *   location on a filesystem; they are relative to the system's current working directory. Use
- *   [Filesystem.canonicalize] to convert a relative path to its absolute path on a particular
- *   filesystem.
+ *   location on a file system; they are relative to the system's current working directory. Use
+ *   [FileSystem.canonicalize] to convert a relative path to its absolute path on a particular
+ *   file system.
  *
  * There are some special cases when working with relative paths.
  *
@@ -77,7 +77,7 @@ import kotlin.jvm.JvmStatic
  *  * If the segment is `..`, then the the path must be relative. All `..` segments precede all
  *    other segments.
  *
- * The only path that ends with `/` is the filesystem root, `/`. The dot path `.` is a relative
+ * The only path that ends with `/` is the file system root, `/`. The dot path `.` is a relative
  * path that resolves to whichever path it is resolved against.
  *
  * The [name] is the last segment in a path. It is typically a file or directory name, like
@@ -91,10 +91,10 @@ import kotlin.jvm.JvmStatic
  * ---------------
  *
  * Path implements [Comparable], [equals], and [hashCode]. If two paths are equal then they operate
- * on the same file on the filesystem.
+ * on the same file on the file system.
  *
  * Note that the converse is not true: **if two paths are non-equal, they may still resolve to the
- * same file on the filesystem.** Here are some of the ways non-equal paths resolve to the same
+ * same file on the file system.** Here are some of the ways non-equal paths resolve to the same
  * file:
  *
  *  * **Case differences.** The default file system on macOS is case-insensitive. The paths
@@ -104,14 +104,14 @@ import kotlin.jvm.JvmStatic
  *    `/Users/jesse/notes.txt`  and `/Volumes/Macintosh HD/Users/jesse/notes.txt` typically resolve
  *    to the same file. On Windows, `C:\project\notes.txt` and `\\localhost\c$\project\notes.txt`
  *    typically resolve to the same file.
- *  * **Hard links.** UNIX filesystems permit multiple paths to refer for same file. The paths may
+ *  * **Hard links.** UNIX file systems permit multiple paths to refer for same file. The paths may
  *    be wildly different, like `/Users/jesse/bruce_wayne.vcard` and
  *    `/Users/jesse/batman.vcard`, but changes via either path are reflected in both.
  *  * **Symlinks.** Symlinks permit multiple paths and directories to refer to the same file. On
  *     macOS `/tmp` is symlinked to `/private/tmp`, so `/tmp/notes.txt` and `/private/tmp/notes.txt`
  *     resolve to the same file.
  *
- * To test whether two paths refer to the same file, try [Filesystem.canonicalize] first. This
+ * To test whether two paths refer to the same file, try [FileSystem.canonicalize] first. This
  * follows symlinks and looks up the preserved casing for case-insensitive case-preserved paths.
  * **This method does not guarantee a unique result, however.** For example, each hard link to a
  * file may return its own canonical path.
@@ -139,7 +139,7 @@ import kotlin.jvm.JvmStatic
  * <tr><td> `\\server\project\notes.txt` <td> `\\server\project` <td> `notes.txt`   <td> UNC absolute path (Windows)    </tr>
  * </table>
  */
-@ExperimentalFilesystem
+@ExperimentalFileSystem
 class Path private constructor(
   private val slash: ByteString,
   private val bytes: ByteString
@@ -195,7 +195,7 @@ class Path private constructor(
    *
    * This returns null if this has no parent. That includes these paths:
    *
-   *  * The filesystem root (`/`)
+   *  * The file system root (`/`)
    *  * The identity relative path (`.`)
    *  * A Windows volume root (like `C:\`)
    *  * A Windows Universal Naming Convention (UNC) root path (`\\server`)
@@ -226,7 +226,7 @@ class Path private constructor(
           return Path(slash, DOT) // Parent is the current working directory.
         }
         lastSlash == 0 -> {
-          return Path(slash, bytes.substring(endIndex = 1)) // Parent is the filesystem root '/'.
+          return Path(slash, bytes.substring(endIndex = 1)) // Parent is the file system root '/'.
         }
         else -> {
           return Path(slash, bytes.substring(endIndex = lastSlash))

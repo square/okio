@@ -17,12 +17,12 @@
 package okio.fakefilesystem
 
 import kotlinx.datetime.Instant
-import okio.ExperimentalFilesystem
+import okio.ExperimentalFileSystem
 import okio.FileMetadata
 import kotlin.jvm.JvmName
 
 @JvmName("newFileMetadata")
-@ExperimentalFilesystem
+@ExperimentalFileSystem
 internal fun FileMetadata(
   isRegularFile: Boolean = false,
   isDirectory: Boolean = false,

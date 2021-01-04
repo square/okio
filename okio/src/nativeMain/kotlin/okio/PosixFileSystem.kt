@@ -28,8 +28,8 @@ import platform.posix.opendir
 import platform.posix.readdir
 import platform.posix.set_posix_errno
 
-@ExperimentalFilesystem
-internal object PosixSystemFilesystem : Filesystem() {
+@ExperimentalFileSystem
+internal object PosixFileSystem : FileSystem() {
   private val SELF_DIRECTORY_ENTRY = ".".toPath()
   private val PARENT_DIRECTORY_ENTRY = "..".toPath()
 
@@ -106,5 +106,5 @@ internal object PosixSystemFilesystem : Filesystem() {
     variantDelete(path)
   }
 
-  override fun toString() = "PosixSystemFilesystem"
+  override fun toString() = "PosixSystemFileSystem"
 }

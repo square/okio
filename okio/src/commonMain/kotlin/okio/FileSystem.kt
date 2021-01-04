@@ -15,36 +15,36 @@
  */
 package okio
 
-import okio.Filesystem.Companion.SYSTEM
+import okio.FileSystem.Companion.SYSTEM
 import kotlin.jvm.JvmField
 
 /**
  * Read and write access to a hierarchical collection of files, addressed by [paths][Path]. This
- * is a natural interface to the [current computer's local filesystem][SYSTEM].
+ * is a natural interface to the [current computer's local file system][SYSTEM].
  *
- * Not Just the Local Filesystem
- * -----------------------------
+ * Not Just the Local File System
+ * ------------------------------
  *
  * Other implementations are possible:
  *
- *  * `FakeFilesystem` is an in-memory filesystem suitable for testing. Note that this class is
+ *  * `FakeFileSystem` is an in-memory file system suitable for testing. Note that this class is
  *    included in the `okio-fakefilesystem` artifact.
  *
- *  * A ZIP filesystem could provide access to the contents of a `.zip` file.
+ *  * A ZIP file system could provide access to the contents of a `.zip` file.
  *
- *  * A remote filesystem could access files over the network.
+ *  * A remote file system could access files over the network.
  *
- *  * A [decorating filesystem][ForwardingFilesystem] could apply monitoring, encryption,
- *    compression, or filtering to another filesystem implementation.
+ *  * A [decorating file system][ForwardingFileSystem] could apply monitoring, encryption,
+ *    compression, or filtering to another file system implementation.
  *
  * For improved capability and testability, consider structuring your classes to dependency inject
- * a `Filesystem` rather than using [SYSTEM] directly.
+ * a `FileSystem` rather than using [SYSTEM] directly.
  *
  * Limited API
  * -----------
  *
- * This interface is limited in which filesystem features it supports. Applications that need rich
- * filesystem features should use another API, possibly alongside this API.
+ * This interface is limited in which file system features it supports. Applications that need rich
+ * file system features should use another API, possibly alongside this API.
  *
  * This class cannot create special file types like hard links, symlinks, pipes, or mounts. Reading
  * or writing these files works as if they were regular files.
@@ -55,7 +55,7 @@ import kotlin.jvm.JvmField
  *
  * It cannot lock files, or query which files are locked.
  *
- * It cannot watch the filesystem for changes.
+ * It cannot watch the file system for changes.
  *
  * Multiplatform
  * -------------
@@ -73,23 +73,21 @@ import kotlin.jvm.JvmField
  * Differences vs. Java IO APIs
  * ----------------------------
  *
- * The `java.io.File` class is Java's original filesystem API. The `delete` and `renameTo` methods
+ * The `java.io.File` class is Java's original file system API. The `delete` and `renameTo` methods
  * return false if the operation failed. The `list` method returns null if the file isn't a
  * directory or could not be listed. This class always throws `IOExceptions` when operations don't
  * succeed.
  *
- * The `java.nio.Path` and `java.nio.Files` classes are the entry points of Java's new filesystem
- * API. Each `Path` instance is scoped to a particular filesystem, though that is often implicit
- * because the `Paths.get()` function automatically uses the default (ie. system) filesystem.
- * In Okio's API paths are just identifiers; you must use a specific `Filesystem` object to do
+ * The `java.nio.Path` and `java.nio.Files` classes are the entry points of Java's new file system
+ * API. Each `Path` instance is scoped to a particular file system, though that is often implicit
+ * because the `Paths.get()` function automatically uses the default (ie. system) file system.
+ * In Okio's API paths are just identifiers; you must use a specific `FileSystem` object to do
  * I/O with.
- *
- * [s3]: https://aws.amazon.com/s3/
  */
-@ExperimentalFilesystem
-abstract class Filesystem {
+@ExperimentalFileSystem
+abstract class FileSystem {
   /**
-   * Resolves [path] against the current working directory and symlinks in this filesystem. The
+   * Resolves [path] against the current working directory and symlinks in this file system. The
    * returned path identifies the same file as [path], but with an absolute path that does not
    * include any symbolic links.
    *
@@ -124,7 +122,7 @@ abstract class Filesystem {
   abstract fun metadataOrNull(path: Path): FileMetadata?
 
   /**
-   * Returns true if [path] identifies an object on this filesystem.
+   * Returns true if [path] identifies an object on this file system.
    *
    * @throws IOException if [path] cannot be accessed due to a connectivity problem, permissions
    *     problem, or other issue.
@@ -214,9 +212,9 @@ abstract class Filesystem {
    * exists, it is first removed. If `source == target`, this operation does nothing. This may be
    * used to move a file or a directory.
    *
-   * **Only as Atomic as the Underlying Filesystem Supports**
+   * **Only as Atomic as the Underlying File System Supports**
    *
-   * FAT and NTFS filesystems cannot atomically move a file over an existing file. If the target
+   * FAT and NTFS file systems cannot atomically move a file over an existing file. If the target
    * file already exists, the move is performed into two steps:
    *
    *  1. Atomically delete the target file.
@@ -233,14 +231,14 @@ abstract class Filesystem {
    *  * This operation returns normally, the source file is absent, and the target file contains the
    *    data previously held by the source file. This is the success case.
    *
-   *  * The operation throws an [IOException] and the filesystem is unchanged. For example, this
+   *  * The operation throws an [IOException] and the file system is unchanged. For example, this
    *    occurs if this process lacks permissions to perform the move.
    *
    *  * This operation throws an [IOException], the target file is deleted, but the source file is
    *    unchanged. This is the partial failure case described above and is only possible on
-   *    filesystems like FAT and NTFS that do not support atomic file replacement. Typically in such
-   *    cases this operation won't return at all because the process or operating system has also
-   *    crashed.
+   *    file systems like FAT and NTFS that do not support atomic file replacement. Typically in
+   *    such cases this operation won't return at all because the process or operating system has
+   *    also crashed.
    *
    * There is no failure mode where the target file holds a subset of the bytes of the source file.
    * If the rename step cannot be performed atomically, this function will throw an [IOException]
@@ -283,7 +281,7 @@ abstract class Filesystem {
    *
    * @throws IOException if there is nothing at [path] to delete, or if there is a file or directory
    *     but it could not be deleted. Deletes fail if the current process doesn't have access, if
-   *     the filesystem is readonly, or if [path] is a non-empty directory. This list of potential
+   *     the file system is readonly, or if [path] is a non-empty directory. This list of potential
    *     problems is not exhaustive.
    */
   @Throws(IOException::class)
@@ -321,11 +319,11 @@ abstract class Filesystem {
 
   companion object {
     /**
-     * The current process's host filesystem. Use this instance directly, or dependency inject a
-     * [Filesystem] to make code testable.
+     * The current process's host file system. Use this instance directly, or dependency inject a
+     * [FileSystem] to make code testable.
      */
     @JvmField
-    val SYSTEM: Filesystem = PLATFORM_FILESYSTEM
+    val SYSTEM: FileSystem = PLATFORM_FILE_SYSTEM
 
     /**
      * Returns a writable temporary directory on [SYSTEM].

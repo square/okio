@@ -19,7 +19,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFilesystem
+import okio.fakefilesystem.FakeFileSystem
 import kotlin.random.Random
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
@@ -34,25 +34,25 @@ import kotlin.time.seconds
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 @ExperimentalTime
-@ExperimentalFilesystem
-abstract class AbstractFilesystemTest(
+@ExperimentalFileSystem
+abstract class AbstractFileSystemTest(
   val clock: Clock,
-  val filesystem: Filesystem,
+  val fileSystem: FileSystem,
   val windowsLimitations: Boolean,
   temporaryDirectory: Path
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken()}"
-  private val isJs = filesystem::class.simpleName?.startsWith("NodeJs") ?: false
+  private val isJs = fileSystem::class.simpleName?.startsWith("NodeJs") ?: false
 
   @BeforeTest
   fun setUp() {
-    filesystem.createDirectory(base)
+    fileSystem.createDirectory(base)
   }
 
   @Test
   fun canonicalizeDotReturnsCurrentWorkingDirectory() {
-    if (filesystem is FakeFilesystem || filesystem is ForwardingFilesystem) return
-    val cwd = filesystem.canonicalize(".".toPath())
+    if (fileSystem is FakeFileSystem || fileSystem is ForwardingFileSystem) return
+    val cwd = fileSystem.canonicalize(".".toPath())
     val cwdString = cwd.toString()
     assertTrue(cwdString) {
       cwdString.endsWith("okio${Path.directorySeparator}okio") ||
@@ -65,7 +65,7 @@ abstract class AbstractFilesystemTest(
   @Test
   fun canonicalizeNoSuchFile() {
     assertFailsWith<FileNotFoundException> {
-      filesystem.canonicalize(base / "no-such-file")
+      fileSystem.canonicalize(base / "no-such-file")
     }
   }
 
@@ -73,7 +73,7 @@ abstract class AbstractFilesystemTest(
   fun list() {
     val target = base / "list"
     target.writeUtf8("hello, world!")
-    val entries = filesystem.list(base)
+    val entries = fileSystem.list(base)
     assertTrue(entries.toString()) { target in entries }
   }
 
@@ -84,21 +84,21 @@ abstract class AbstractFilesystemTest(
     val fileC = base / "c"
     val fileD = base / "d"
 
-    // Create files in a different order than the sorted order, so a filesystem that returns files
+    // Create files in a different order than the sorted order, so a file system that returns files
     // in creation-order or reverse-creation order won't pass by accident.
     fileD.writeUtf8("fileD")
     fileB.writeUtf8("fileB")
     fileC.writeUtf8("fileC")
     fileA.writeUtf8("fileA")
 
-    val entries = filesystem.list(base)
+    val entries = fileSystem.list(base)
     assertEquals(entries, listOf(fileA, fileB, fileC, fileD))
   }
 
   @Test
   fun listNoSuchDirectory() {
     assertFailsWith<FileNotFoundException> {
-      filesystem.list(base / "no-such-directory")
+      fileSystem.list(base / "no-such-directory")
     }
   }
 
@@ -107,14 +107,14 @@ abstract class AbstractFilesystemTest(
     val target = base / "list"
     target.writeUtf8("hello, world!")
     assertFailsWith<IOException> {
-      filesystem.list(target)
+      fileSystem.list(target)
     }
   }
 
   @Test
   fun fileSourceNoSuchDirectory() {
     assertFailsWith<FileNotFoundException> {
-      filesystem.source(base / "no-such-directory" / "file")
+      fileSystem.source(base / "no-such-directory" / "file")
     }
   }
 
@@ -123,7 +123,7 @@ abstract class AbstractFilesystemTest(
     val path = base / "file-source"
     path.writeUtf8("hello, world!")
 
-    val source = filesystem.source(path)
+    val source = fileSystem.source(path)
     val buffer = Buffer()
     assertTrue(source.read(buffer, 100L) == 13L)
     assertEquals(-1L, source.read(buffer, 100L))
@@ -134,11 +134,11 @@ abstract class AbstractFilesystemTest(
   @Test
   fun fileSink() {
     val path = base / "file-sink"
-    val sink = filesystem.sink(path)
+    val sink = fileSystem.sink(path)
     val buffer = Buffer().writeUtf8("hello, world!")
     sink.write(buffer, buffer.size)
     sink.close()
-    assertTrue(path in filesystem.list(base))
+    assertTrue(path in fileSystem.list(base))
     assertEquals(0, buffer.size)
     assertEquals("hello, world!", path.readUtf8())
   }
@@ -147,11 +147,11 @@ abstract class AbstractFilesystemTest(
   fun appendingSinkAppendsToExistingFile() {
     val path = base / "appending-sink-appends-to-existing-file"
     path.writeUtf8("hello, world!\n")
-    val sink = filesystem.appendingSink(path)
+    val sink = fileSystem.appendingSink(path)
     val buffer = Buffer().writeUtf8("this is added later!")
     sink.write(buffer, buffer.size)
     sink.close()
-    assertTrue(path in filesystem.list(base))
+    assertTrue(path in fileSystem.list(base))
     assertEquals("hello, world!\nthis is added later!", path.readUtf8())
   }
 
@@ -159,7 +159,7 @@ abstract class AbstractFilesystemTest(
   fun appendingSinkDoesNotImpactExistingFile() {
     val path = base / "appending-sink-does-not-impact-existing-file"
     path.writeUtf8("hello, world!\n")
-    val sink = filesystem.appendingSink(path)
+    val sink = fileSystem.appendingSink(path)
     assertEquals("hello, world!\n", path.readUtf8())
     sink.close()
     assertEquals("hello, world!\n", path.readUtf8())
@@ -168,18 +168,18 @@ abstract class AbstractFilesystemTest(
   @Test
   fun appendingSinkCreatesNewFile() {
     val path = base / "appending-sink-creates-new-file"
-    val sink = filesystem.appendingSink(path)
+    val sink = fileSystem.appendingSink(path)
     val buffer = Buffer().writeUtf8("this is all there is!")
     sink.write(buffer, buffer.size)
     sink.close()
-    assertTrue(path in filesystem.list(base))
+    assertTrue(path in fileSystem.list(base))
     assertEquals("this is all there is!", path.readUtf8())
   }
 
   @Test
   fun fileSinkFlush() {
     val path = base / "file-sink"
-    val sink = filesystem.sink(path)
+    val sink = fileSystem.sink(path)
 
     val buffer = Buffer().writeUtf8("hello,")
     sink.write(buffer, buffer.size)
@@ -195,23 +195,23 @@ abstract class AbstractFilesystemTest(
   @Test
   fun fileSinkNoSuchDirectory() {
     assertFailsWith<FileNotFoundException> {
-      filesystem.sink(base / "no-such-directory" / "file")
+      fileSystem.sink(base / "no-such-directory" / "file")
     }
   }
 
   @Test
   fun createDirectory() {
     val path = base / "create-directory"
-    filesystem.createDirectory(path)
-    assertTrue(path in filesystem.list(base))
+    fileSystem.createDirectory(path)
+    assertTrue(path in fileSystem.list(base))
   }
 
   @Test
   fun createDirectoryAlreadyExists() {
     val path = base / "already-exists"
-    filesystem.createDirectory(path)
+    fileSystem.createDirectory(path)
     assertFailsWith<IOException> {
-      filesystem.createDirectory(path)
+      fileSystem.createDirectory(path)
     }
   }
 
@@ -219,33 +219,33 @@ abstract class AbstractFilesystemTest(
   fun createDirectoryParentDirectoryDoesNotExist() {
     val path = base / "no-such-directory" / "created"
     assertFailsWith<IOException> {
-      filesystem.createDirectory(path)
+      fileSystem.createDirectory(path)
     }
   }
 
   @Test
   fun createDirectoriesSingle() {
     val path = base / "create-directories-single"
-    filesystem.createDirectories(path)
-    assertTrue(path in filesystem.list(base))
-    assertTrue(filesystem.metadata(path).isDirectory)
+    fileSystem.createDirectories(path)
+    assertTrue(path in fileSystem.list(base))
+    assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
   @Test
   fun createDirectoriesAlreadyExists() {
     val path = base / "already-exists"
-    filesystem.createDirectory(path)
-    filesystem.createDirectories(path)
-    assertTrue(filesystem.metadata(path).isDirectory)
+    fileSystem.createDirectory(path)
+    fileSystem.createDirectories(path)
+    assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
   @Test
   fun createDirectoriesParentDirectoryDoesNotExist() {
-    filesystem.createDirectories(base / "a" / "b" / "c")
-    assertTrue(base / "a" in filesystem.list(base))
-    assertTrue(base / "a" / "b" in filesystem.list(base / "a"))
-    assertTrue(base / "a" / "b" / "c" in filesystem.list(base / "a" / "b"))
-    assertTrue(filesystem.metadata(base / "a" / "b" / "c").isDirectory)
+    fileSystem.createDirectories(base / "a" / "b" / "c")
+    assertTrue(base / "a" in fileSystem.list(base))
+    assertTrue(base / "a" / "b" in fileSystem.list(base / "a"))
+    assertTrue(base / "a" / "b" / "c" in fileSystem.list(base / "a" / "b"))
+    assertTrue(fileSystem.metadata(base / "a" / "b" / "c").isDirectory)
   }
 
   @Test
@@ -253,7 +253,7 @@ abstract class AbstractFilesystemTest(
     val file = base / "simple-file"
     file.writeUtf8("just a file")
     assertFailsWith<IOException> {
-      filesystem.createDirectories(file / "child")
+      fileSystem.createDirectories(file / "child")
     }
   }
 
@@ -262,29 +262,29 @@ abstract class AbstractFilesystemTest(
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
-    filesystem.atomicMove(source, target)
+    fileSystem.atomicMove(source, target)
     assertEquals("hello, world!", target.readUtf8())
-    assertTrue(source !in filesystem.list(base))
-    assertTrue(target in filesystem.list(base))
+    assertTrue(source !in fileSystem.list(base))
+    assertTrue(target in fileSystem.list(base))
   }
 
   @Test
   fun atomicMoveDirectory() {
     val source = base / "source"
-    filesystem.createDirectory(source)
+    fileSystem.createDirectory(source)
     val target = base / "target"
-    filesystem.atomicMove(source, target)
-    assertTrue(source !in filesystem.list(base))
-    assertTrue(target in filesystem.list(base))
+    fileSystem.atomicMove(source, target)
+    assertTrue(source !in fileSystem.list(base))
+    assertTrue(target in fileSystem.list(base))
   }
 
   @Test
   fun atomicMoveSourceIsTarget() {
     val source = base / "source"
     source.writeUtf8("hello, world!")
-    filesystem.atomicMove(source, source)
+    fileSystem.atomicMove(source, source)
     assertEquals("hello, world!", source.readUtf8())
-    assertTrue(source in filesystem.list(base))
+    assertTrue(source in fileSystem.list(base))
   }
 
   @Test
@@ -293,10 +293,10 @@ abstract class AbstractFilesystemTest(
     source.writeUtf8("hello, world!")
     val target = base / "target"
     target.writeUtf8("this file will be clobbered!")
-    filesystem.atomicMove(source, target)
+    fileSystem.atomicMove(source, target)
     assertEquals("hello, world!", target.readUtf8())
-    assertTrue(source !in filesystem.list(base))
-    assertTrue(target in filesystem.list(base))
+    assertTrue(source !in fileSystem.list(base))
+    assertTrue(target in fileSystem.list(base))
   }
 
   @Test
@@ -304,7 +304,7 @@ abstract class AbstractFilesystemTest(
     val source = base / "source"
     val target = base / "target"
     assertFailsWith<FileNotFoundException> {
-      filesystem.atomicMove(source, target)
+      fileSystem.atomicMove(source, target)
     }
   }
 
@@ -313,20 +313,20 @@ abstract class AbstractFilesystemTest(
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
-    filesystem.createDirectory(target)
+    fileSystem.createDirectory(target)
     assertFailsWith<IOException> {
-      filesystem.atomicMove(source, target)
+      fileSystem.atomicMove(source, target)
     }
   }
 
   @Test
   fun atomicMoveSourceIsDirectoryAndTargetIsFile() {
     val source = base / "source"
-    filesystem.createDirectory(source)
+    fileSystem.createDirectory(source)
     val target = base / "target"
     target.writeUtf8("hello, world!")
     expectIOExceptionOnEverythingButWindows {
-      filesystem.atomicMove(source, target)
+      fileSystem.atomicMove(source, target)
     }
   }
 
@@ -335,8 +335,8 @@ abstract class AbstractFilesystemTest(
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
-    filesystem.copy(source, target)
-    assertTrue(target in filesystem.list(base))
+    fileSystem.copy(source, target)
+    assertTrue(target in fileSystem.list(base))
     assertEquals("hello, world!", source.readUtf8())
     assertEquals("hello, world!", target.readUtf8())
   }
@@ -346,9 +346,9 @@ abstract class AbstractFilesystemTest(
     val source = base / "source"
     val target = base / "target"
     assertFailsWith<FileNotFoundException> {
-      filesystem.copy(source, target)
+      fileSystem.copy(source, target)
     }
-    assertFalse(target in filesystem.list(base))
+    assertFalse(target in fileSystem.list(base))
   }
 
   @Test
@@ -357,8 +357,8 @@ abstract class AbstractFilesystemTest(
     source.writeUtf8("hello, world!")
     val target = base / "target"
     target.writeUtf8("this file will be clobbered!")
-    filesystem.copy(source, target)
-    assertTrue(target in filesystem.list(base))
+    fileSystem.copy(source, target)
+    assertTrue(target in fileSystem.list(base))
     assertEquals("hello, world!", target.readUtf8())
   }
 
@@ -366,16 +366,16 @@ abstract class AbstractFilesystemTest(
   fun deleteFile() {
     val path = base / "delete-file"
     path.writeUtf8("delete me")
-    filesystem.delete(path)
-    assertTrue(path !in filesystem.list(base))
+    fileSystem.delete(path)
+    assertTrue(path !in fileSystem.list(base))
   }
 
   @Test
   fun deleteEmptyDirectory() {
     val path = base / "delete-empty-directory"
-    filesystem.createDirectory(path)
-    filesystem.delete(path)
-    assertTrue(path !in filesystem.list(base))
+    fileSystem.createDirectory(path)
+    fileSystem.delete(path)
+    assertTrue(path !in fileSystem.list(base))
   }
 
   @Test
@@ -384,11 +384,11 @@ abstract class AbstractFilesystemTest(
     // TODO(jwilson): fix Windows to throw FileNotFoundException on deleting an absent file.
     if (windowsLimitations) {
       assertFailsWith<IOException> {
-        filesystem.delete(path)
+        fileSystem.delete(path)
       }
     } else {
       assertFailsWith<FileNotFoundException> {
-        filesystem.delete(path)
+        fileSystem.delete(path)
       }
     }
   }
@@ -396,10 +396,10 @@ abstract class AbstractFilesystemTest(
   @Test
   fun deleteFailsOnNonemptyDirectory() {
     val path = base / "non-empty-directory"
-    filesystem.createDirectory(path)
+    fileSystem.createDirectory(path)
     (path / "file.txt").writeUtf8("inside directory")
     assertFailsWith<IOException> {
-      filesystem.delete(path)
+      fileSystem.delete(path)
     }
   }
 
@@ -407,44 +407,44 @@ abstract class AbstractFilesystemTest(
   fun deleteRecursivelyFile() {
     val path = base / "delete-recursively-file"
     path.writeUtf8("delete me")
-    filesystem.deleteRecursively(path)
-    assertTrue(path !in filesystem.list(base))
+    fileSystem.deleteRecursively(path)
+    assertTrue(path !in fileSystem.list(base))
   }
 
   @Test
   fun deleteRecursivelyEmptyDirectory() {
     val path = base / "delete-recursively-empty-directory"
-    filesystem.createDirectory(path)
-    filesystem.deleteRecursively(path)
-    assertTrue(path !in filesystem.list(base))
+    fileSystem.createDirectory(path)
+    fileSystem.deleteRecursively(path)
+    assertTrue(path !in fileSystem.list(base))
   }
 
   @Test
   fun deleteRecursivelyFailsOnNoSuchFile() {
     val path = base / "no-such-file"
     assertFailsWith<FileNotFoundException> {
-      filesystem.deleteRecursively(path)
+      fileSystem.deleteRecursively(path)
     }
   }
 
   @Test
   fun deleteRecursivelyNonemptyDirectory() {
     val path = base / "delete-recursively-non-empty-directory"
-    filesystem.createDirectory(path)
+    fileSystem.createDirectory(path)
     (path / "file.txt").writeUtf8("inside directory")
-    filesystem.deleteRecursively(path)
-    assertTrue(path !in filesystem.list(base))
-    assertTrue((path / "file.txt") !in filesystem.list(base))
+    fileSystem.deleteRecursively(path)
+    assertTrue(path !in fileSystem.list(base))
+    assertTrue((path / "file.txt") !in fileSystem.list(base))
   }
 
   @Test
   fun deleteRecursivelyDeepHierarchy() {
-    filesystem.createDirectory(base / "a")
-    filesystem.createDirectory(base / "a" / "b")
-    filesystem.createDirectory(base / "a" / "b" / "c")
+    fileSystem.createDirectory(base / "a")
+    fileSystem.createDirectory(base / "a" / "b")
+    fileSystem.createDirectory(base / "a" / "b" / "c")
     (base / "a" / "b" / "c" / "d.txt").writeUtf8("inside deep hierarchy")
-    filesystem.deleteRecursively(base / "a")
-    assertEquals(filesystem.list(base), listOf())
+    fileSystem.deleteRecursively(base / "a")
+    assertEquals(fileSystem.list(base), listOf())
   }
 
   @Test
@@ -454,7 +454,7 @@ abstract class AbstractFilesystemTest(
     path.writeUtf8("hello, world!")
     val maxTime = clock.now().maxFileSystemTime()
 
-    val metadata = filesystem.metadata(path)
+    val metadata = fileSystem.metadata(path)
     assertTrue(metadata.isRegularFile)
     assertFalse(metadata.isDirectory)
     assertEquals(13, metadata.size)
@@ -467,10 +467,10 @@ abstract class AbstractFilesystemTest(
   fun directoryMetadata() {
     val minTime = clock.now().minFileSystemTime()
     val path = base / "directory-metadata"
-    filesystem.createDirectory(path)
+    fileSystem.createDirectory(path)
     val maxTime = clock.now().maxFileSystemTime()
 
-    val metadata = filesystem.metadata(path)
+    val metadata = fileSystem.metadata(path)
     assertFalse(metadata.isRegularFile)
     assertTrue(metadata.isDirectory)
     // Note that the size check is omitted; we'd expect null but the JVM returns values like 64.
@@ -482,7 +482,7 @@ abstract class AbstractFilesystemTest(
   @Test
   fun absentMetadataOrNull() {
     val path = base / "no-such-file"
-    assertNull(filesystem.metadataOrNull(path))
+    assertNull(fileSystem.metadataOrNull(path))
   }
 
   @Test
@@ -496,32 +496,32 @@ abstract class AbstractFilesystemTest(
   fun absentMetadata() {
     val path = base / "no-such-file"
     assertFailsWith<FileNotFoundException> {
-      filesystem.metadata(path)
+      fileSystem.metadata(path)
     }
   }
 
   @Test
   fun fileExists() {
     val path = base / "file-exists"
-    assertFalse(filesystem.exists(path))
+    assertFalse(fileSystem.exists(path))
     path.writeUtf8("hello, world!")
-    assertTrue(filesystem.exists(path))
+    assertTrue(fileSystem.exists(path))
   }
 
   @Test
   fun directoryExists() {
     val path = base / "directory-exists"
-    assertFalse(filesystem.exists(path))
-    filesystem.createDirectory(path)
-    assertTrue(filesystem.exists(path))
+    assertFalse(fileSystem.exists(path))
+    fileSystem.createDirectory(path)
+    assertTrue(fileSystem.exists(path))
   }
 
   @Test
   fun deleteOpenForWritingFailsOnWindows() {
     val file = base / "file.txt"
     expectIOExceptionOnWindows(exceptJs = true) {
-      filesystem.sink(file).use {
-        filesystem.delete(file)
+      fileSystem.sink(file).use {
+        fileSystem.delete(file)
       }
     }
   }
@@ -531,8 +531,8 @@ abstract class AbstractFilesystemTest(
     val file = base / "file.txt"
     file.writeUtf8("abc")
     expectIOExceptionOnWindows(exceptJs = true) {
-      filesystem.source(file).use {
-        filesystem.delete(file)
+      fileSystem.source(file).use {
+        fileSystem.delete(file)
       }
     }
   }
@@ -544,8 +544,8 @@ abstract class AbstractFilesystemTest(
     from.writeUtf8("source file")
     to.writeUtf8("target file")
     expectIOExceptionOnWindows(exceptJs = true) {
-      filesystem.source(from).use {
-        filesystem.atomicMove(from, to)
+      fileSystem.source(from).use {
+        fileSystem.atomicMove(from, to)
       }
     }
   }
@@ -557,8 +557,8 @@ abstract class AbstractFilesystemTest(
     from.writeUtf8("source file")
     to.writeUtf8("target file")
     expectIOExceptionOnWindows {
-      filesystem.source(to).use {
-        filesystem.atomicMove(from, to)
+      fileSystem.source(to).use {
+        fileSystem.atomicMove(from, to)
       }
     }
   }
@@ -566,19 +566,19 @@ abstract class AbstractFilesystemTest(
   @Test
   fun deleteContentsOfParentOfFileOpenForReadingFailsOnWindows() {
     val parentA = (base / "a")
-    filesystem.createDirectory(parentA)
+    fileSystem.createDirectory(parentA)
     val parentAB = parentA / "b"
-    filesystem.createDirectory(parentAB)
+    fileSystem.createDirectory(parentAB)
     val parentABC = parentAB / "c"
-    filesystem.createDirectory(parentABC)
+    fileSystem.createDirectory(parentABC)
     val file = parentABC / "file.txt"
     file.writeUtf8("child file")
     expectIOExceptionOnWindows {
-      filesystem.source(file).use {
-        filesystem.delete(file)
-        filesystem.delete(parentABC)
-        filesystem.delete(parentAB)
-        filesystem.delete(parentA)
+      fileSystem.source(file).use {
+        fileSystem.delete(file)
+        fileSystem.delete(parentABC)
+        fileSystem.delete(parentAB)
+        fileSystem.delete(parentA)
       }
     }
   }
@@ -605,20 +605,20 @@ abstract class AbstractFilesystemTest(
   private fun randomToken() = Random.nextBytes(16).toByteString(0, 16).hex()
 
   fun Path.readUtf8(): String {
-    return filesystem.source(this).buffer().use {
+    return fileSystem.source(this).buffer().use {
       it.readUtf8()
     }
   }
 
   fun Path.writeUtf8(string: String) {
-    filesystem.sink(this).buffer().use {
+    fileSystem.sink(this).buffer().use {
       it.writeUtf8(string)
     }
   }
 
   /**
-   * Returns the earliest filesystem time that could be recorded for an event occurring at this
-   * instant. This truncates fractional seconds because most host filesystems do not use precise
+   * Returns the earliest file system time that could be recorded for an event occurring at this
+   * instant. This truncates fractional seconds because most host file systems do not use precise
    * timestamps for file metadata.
    */
   private fun Instant.minFileSystemTime(): Instant {
@@ -626,8 +626,8 @@ abstract class AbstractFilesystemTest(
   }
 
   /**
-   * Returns the latest filesystem time that could be recorded for an event occurring at this
-   * instant. This adds 2 seconds and truncates fractional seconds because filesystems may defer
+   * Returns the latest file system time that could be recorded for an event occurring at this
+   * instant. This adds 2 seconds and truncates fractional seconds because file systems may defer
    * assigning the timestamp.
    *
    * https://docs.microsoft.com/en-us/windows/win32/sysinfo/file-times

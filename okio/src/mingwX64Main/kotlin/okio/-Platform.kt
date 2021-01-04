@@ -19,7 +19,7 @@ import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
 import platform.posix.getenv
 
-@ExperimentalFilesystem
+@ExperimentalFileSystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
   get() {
     // Windows' built-in APIs check the TEMP, TMP, and USERPROFILE environment variables in order.
