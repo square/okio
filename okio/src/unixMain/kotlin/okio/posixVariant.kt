@@ -15,7 +15,7 @@
  */
 package okio
 
-import okio.Path.Companion.toPath
+import okio.internal.toPath
 import platform.posix.errno
 import platform.posix.free
 import platform.posix.mkdir
