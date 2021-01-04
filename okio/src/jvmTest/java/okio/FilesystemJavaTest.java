@@ -18,6 +18,7 @@ package okio;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import okio.fakefilesystem.FakeFilesystem;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

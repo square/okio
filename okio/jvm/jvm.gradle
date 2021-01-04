@@ -8,12 +8,7 @@ kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
   tasks['jvmJar'].configure { t ->
     // the bnd task convention modifies this jar task accordingly
     def bndConvention = bndBundleTaskConventionClass.newInstance(t);
-    // modify these lines for MANIFEST.MF properties or for specific bnd instructions
-    bndConvention.bnd = '''
-    Export-Package: okio
-    Automatic-Module-Name: okio
-    Bundle-SymbolicName: com.squareup.okio
-    '''
+    bndConvention.bnd = project.ext.bndManifest
     // call the convention when the task has finished to modify the jar to contain OSGi metadata
     t.doLast {
       bndConvention.buildBundle()

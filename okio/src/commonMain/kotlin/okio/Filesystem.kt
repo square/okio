@@ -28,7 +28,7 @@ import kotlin.jvm.JvmField
  * Other implementations are possible:
  *
  *  * `FakeFilesystem` is an in-memory filesystem suitable for testing. Note that this class is
- *    included in the `okio-testing` artifact.
+ *    included in the `okio-fakefilesystem` artifact.
  *
  *  * A ZIP filesystem could provide access to the contents of a `.zip` file.
  *
