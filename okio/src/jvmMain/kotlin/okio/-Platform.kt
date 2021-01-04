@@ -20,18 +20,18 @@ package okio
 import okio.Path.Companion.toPath
 import java.io.File
 
-@ExperimentalFilesystem
-internal actual val PLATFORM_FILESYSTEM: Filesystem
+@ExperimentalFileSystem
+internal actual val PLATFORM_FILE_SYSTEM: FileSystem
   get() {
     try {
       Class.forName("java.nio.file.Files")
-      return NioSystemFilesystem()
+      return NioSystemFileSystem()
     } catch (e: ClassNotFoundException) {
-      return JvmSystemFilesystem()
+      return JvmSystemFileSystem()
     }
   }
 
-@ExperimentalFilesystem
+@ExperimentalFileSystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
   get() = System.getProperty("java.io.tmpdir").toPath()
 

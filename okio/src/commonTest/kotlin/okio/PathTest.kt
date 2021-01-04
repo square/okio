@@ -22,7 +22,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@ExperimentalFilesystem
+@ExperimentalFileSystem
 class PathTest {
   @Test
   fun unixRoot() {

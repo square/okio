@@ -25,8 +25,8 @@ import platform.posix.S_IFREG
 import platform.posix.errno
 import platform.posix.stat
 
-@ExperimentalFilesystem
-internal actual fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): FileMetadata? {
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
     val stat = alloc<stat>()
     if (platform.posix.lstat(path.toString(), stat.ptr) != 0) {

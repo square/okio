@@ -15,13 +15,14 @@
  */
 package okio
 
-import kotlin.RequiresOptIn.Level.ERROR
-import kotlin.annotation.AnnotationRetention.BINARY
-import kotlin.annotation.AnnotationTarget.CLASS
-import kotlin.annotation.AnnotationTarget.FUNCTION
-import kotlin.annotation.AnnotationTarget.PROPERTY
+import kotlinx.datetime.Clock
+import kotlin.time.ExperimentalTime
 
-@RequiresOptIn(level = ERROR, message = "okio's Filesystem is unstable and subject to change")
-@Retention(BINARY)
-@Target(CLASS, FUNCTION, PROPERTY)
-annotation class ExperimentalFilesystem
+@ExperimentalTime
+@ExperimentalFileSystem
+class SystemFileSystemTest : AbstractFileSystemTest(
+  clock = Clock.System,
+  fileSystem = FileSystem.SYSTEM,
+  windowsLimitations = DIRECTORY_SEPARATOR == "\\",
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY
+)

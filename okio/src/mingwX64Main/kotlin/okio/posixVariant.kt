@@ -37,8 +37,8 @@ import platform.windows.MoveFileExA
 
 internal actual val VARIANT_DIRECTORY_SEPARATOR = "\\"
 
-@ExperimentalFilesystem
-internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantDelete(path: Path) {
   val pathString = path.toString()
 
   if (remove(pathString) == 0) return
@@ -51,13 +51,13 @@ internal actual fun PosixSystemFilesystem.variantDelete(path: Path) {
   throw errnoToIOException(EACCES)
 }
 
-@ExperimentalFilesystem
-internal actual fun PosixSystemFilesystem.variantMkdir(dir: Path): Int {
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantMkdir(dir: Path): Int {
   return mkdir(dir.toString())
 }
 
-@ExperimentalFilesystem
-internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path {
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
   // Note that _fullpath() returns normally if the file doesn't exist.
   val fullpath = _fullpath(null, path.toString(), PATH_MAX)
     ?: throw errnoToIOException(errno)
@@ -72,8 +72,8 @@ internal actual fun PosixSystemFilesystem.variantCanonicalize(path: Path): Path 
   }
 }
 
-@ExperimentalFilesystem
-internal actual fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): FileMetadata? {
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
     val stat = alloc<_stat64>()
     if (_stat64(path.toString(), stat.ptr) != 0) {
@@ -91,8 +91,8 @@ internal actual fun PosixSystemFilesystem.variantMetadataOrNull(path: Path): Fil
   }
 }
 
-@ExperimentalFilesystem
-internal actual fun PosixSystemFilesystem.variantMove(source: Path, target: Path) {
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantMove(source: Path, target: Path) {
   if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING) == 0) {
     throw lastErrorToIOException()
   }

@@ -17,7 +17,7 @@ package okio
 
 import kotlinx.datetime.Clock
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFilesystem
+import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -25,16 +25,16 @@ import kotlin.test.assertTrue
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-@ExperimentalFilesystem
-class ForwardingFilesystemTest : AbstractFilesystemTest(
+@ExperimentalFileSystem
+class ForwardingFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
-  filesystem = object : ForwardingFilesystem(FakeFilesystem()) {},
+  fileSystem = object : ForwardingFileSystem(FakeFileSystem()) {},
   windowsLimitations = false,
   temporaryDirectory = "/".toPath()
 ) {
   @Test
   fun pathBlocking() {
-    val forwardingFilesystem = object : ForwardingFilesystem(filesystem) {
+    val forwardingFileSystem = object : ForwardingFileSystem(fileSystem) {
       override fun delete(path: Path) {
         throw IOException("synthetic failure!")
       }
@@ -45,24 +45,24 @@ class ForwardingFilesystemTest : AbstractFilesystemTest(
       }
     }
 
-    forwardingFilesystem.createDirectory(base / "okay")
+    forwardingFileSystem.createDirectory(base / "okay")
     assertFailsWith<IOException> {
-      forwardingFilesystem.createDirectory(base / "blocked")
+      forwardingFileSystem.createDirectory(base / "blocked")
     }
   }
 
   @Test
   fun operationBlocking() {
-    val forwardingFilesystem = object : ForwardingFilesystem(filesystem) {
+    val forwardingFileSystem = object : ForwardingFileSystem(fileSystem) {
       override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
         if (functionName == "delete") throw IOException("blocked operation!")
         return path
       }
     }
 
-    forwardingFilesystem.createDirectory(base / "operation-blocking")
+    forwardingFileSystem.createDirectory(base / "operation-blocking")
     assertFailsWith<IOException> {
-      forwardingFilesystem.delete(base / "operation-blocking")
+      forwardingFileSystem.delete(base / "operation-blocking")
     }
   }
 
@@ -76,7 +76,7 @@ class ForwardingFilesystemTest : AbstractFilesystemTest(
 
     source.writeUtf8("hello, world!")
 
-    val forwardingFilesystem = object : ForwardingFilesystem(filesystem) {
+    val forwardingFileSystem = object : ForwardingFileSystem(fileSystem) {
       override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
         return path.toString().removePrefix(prefix).toPath()
       }
@@ -86,9 +86,9 @@ class ForwardingFilesystemTest : AbstractFilesystemTest(
       }
     }
 
-    forwardingFilesystem.copy(mappedSource, mappedTarget)
-    assertTrue(target in filesystem.list(base))
-    assertTrue(mappedTarget in forwardingFilesystem.list(base))
+    forwardingFileSystem.copy(mappedSource, mappedTarget)
+    assertTrue(target in fileSystem.list(base))
+    assertTrue(mappedTarget in forwardingFileSystem.list(base))
     assertEquals("hello, world!", source.readUtf8())
     assertEquals("hello, world!", target.readUtf8())
   }
@@ -106,27 +106,27 @@ class ForwardingFilesystemTest : AbstractFilesystemTest(
     by.writeUtf8("by")
     cx.writeUtf8("cx")
 
-    val forwardingFilesystem = object : ForwardingFilesystem(filesystem) {
+    val forwardingFileSystem = object : ForwardingFileSystem(fileSystem) {
       override fun onPathResult(path: Path, functionName: String): Path {
         return path.parent!! / path.name.reversed()
       }
     }
 
-    assertEquals(filesystem.list(base), listOf(base / "az", base / "by", base / "cx"))
-    assertEquals(forwardingFilesystem.list(base), listOf(base / "xc", base / "yb", base / "za"))
+    assertEquals(fileSystem.list(base), listOf(base / "az", base / "by", base / "cx"))
+    assertEquals(forwardingFileSystem.list(base), listOf(base / "xc", base / "yb", base / "za"))
   }
 
   @Test
   fun copyIsNotForwarded() {
     val log = mutableListOf<String>()
 
-    val delegate = object : ForwardingFilesystem(filesystem) {
+    val delegate = object : ForwardingFileSystem(fileSystem) {
       override fun copy(source: Path, target: Path) {
         throw AssertionError("unexpected call to copy()")
       }
     }
 
-    val forwardingFilesystem = object : ForwardingFilesystem(delegate) {
+    val forwardingFileSystem = object : ForwardingFileSystem(delegate) {
       override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
         log += "$functionName($parameterName=$path)"
         return path
@@ -136,8 +136,8 @@ class ForwardingFilesystemTest : AbstractFilesystemTest(
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
-    forwardingFilesystem.copy(source, target)
-    assertTrue(target in filesystem.list(base))
+    forwardingFileSystem.copy(source, target)
+    assertTrue(target in fileSystem.list(base))
     assertEquals("hello, world!", source.readUtf8())
     assertEquals("hello, world!", target.readUtf8())
 

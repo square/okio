@@ -16,10 +16,10 @@
 
 package okio
 
-@ExperimentalFilesystem
-internal expect val PLATFORM_FILESYSTEM: Filesystem
+@ExperimentalFileSystem
+internal expect val PLATFORM_FILE_SYSTEM: FileSystem
 
-@ExperimentalFilesystem
+@ExperimentalFileSystem
 internal expect val PLATFORM_TEMPORARY_DIRECTORY: Path
 
 internal expect val DIRECTORY_SEPARATOR: String

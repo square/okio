@@ -22,7 +22,7 @@ Timeout is on all platforms, but only the JVM has a useful implementation.
 Available on all platforms.
 
 
-### Filesystem
+### File System
 
 Available on all platforms. For JavaScript this requires [Node.js][node_js].
 

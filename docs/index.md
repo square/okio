@@ -658,7 +658,7 @@ Sending and receiving data over the network is a bit like writing and reading
 files. We use `BufferedSink` to encode output and `BufferedSource` to decode
 input. Like files, network protocols can be text, binary, or a mix of both. But
 there are also some substantial differences between the network and the
-filesystem.
+file system.
 
 With a file you’re either reading or writing but with the network you can do
 both! Some protocols handle this by taking turns: write a request, read a

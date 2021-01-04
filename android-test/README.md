@@ -26,7 +26,7 @@ Then run the tests:
 Or just a single test:
 
 ```
-./gradlew :android-test:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=okio.SystemFilesystemTest
+./gradlew :android-test:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=okio.SystemFileSystemTest
 ```
 
 

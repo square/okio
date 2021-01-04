@@ -18,16 +18,16 @@ package okio
 import kotlin.jvm.JvmName
 
 /**
- * A [Filesystem] that forwards calls to another, intended for subclassing.
+ * A [FileSystem] that forwards calls to another, intended for subclassing.
  *
  * ### Fault Injection
  *
- * You can use this to deterministically trigger filesystem failures in tests. This is useful to
- * confirm that your program behaves correctly even if its filesystem operations fail. For example,
+ * You can use this to deterministically trigger file system failures in tests. This is useful to
+ * confirm that your program behaves correctly even if its file system operations fail. For example,
  * this subclass fails every access of files named `unlucky.txt`:
  *
  * ```
- * val faultyFilesystem = object : ForwardingFilesystem(FileSystem.SYSTEM) {
+ * val faultyFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {
  *   override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
  *     if (path.name == "unlucky.txt") throw IOException("synthetic failure!")
  *     return path
@@ -38,7 +38,7 @@ import kotlin.jvm.JvmName
  * You can fail specific operations by overriding them directly:
  *
  * ```
- * val faultyFilesystem = object : ForwardingFilesystem(FileSystem.SYSTEM) {
+ * val faultyFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {
  *   override fun delete(path: Path) {
  *     throw IOException("synthetic failure!")
  *   }
@@ -47,11 +47,11 @@ import kotlin.jvm.JvmName
  *
  * ### Observability
  *
- * You can extend this to verify which files your program accesses. This is a testing filesystem
+ * You can extend this to verify which files your program accesses. This is a testing file system
  * that records accesses as they happen:
  *
  * ```
- * class LoggingFilesystem : ForwardingFilesystem(Filesystem.SYSTEM) {
+ * class LoggingFileSystem : ForwardingFileSystem(FileSystem.SYSTEM) {
  *   val log = mutableListOf<String>()
  *
  *   override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
@@ -67,11 +67,11 @@ import kotlin.jvm.JvmName
  * @Test
  * fun testMergeJsonReports() {
  *   createSampleJsonReports()
- *   loggingFilesystem.log.clear()
+ *   loggingFileSystem.log.clear()
  *
  *   mergeJsonReports()
  *
- *   assertThat(loggingFilesystem.log).containsExactly(
+ *   assertThat(loggingFileSystem.log).containsExactly(
  *     "list(dir=json_reports)",
  *     "source(file=json_reports/2020-10.json)",
  *     "source(file=json_reports/2020-12.json)",
@@ -90,31 +90,31 @@ import kotlin.jvm.JvmName
  *
  * You may also transform file content to apply application-layer encryption or compression. This
  * is particularly useful in situations where it's difficult or impossible to enable those features
- * in the underlying filesystem.
+ * in the underlying file system.
  *
  * ### Abstract Functions Only
  *
- * Some filesystem functions like [copy] are implemented by using other features. These are the
- * non-abstract functions in the [Filesystem] interface.
+ * Some file system functions like [copy] are implemented by using other features. These are the
+ * non-abstract functions in the [FileSystem] interface.
  *
  * **This class forwards only the abstract functions;** non-abstract functions delegate to the
  * other functions of this class. If desired, subclasses may override non-abstract functions to
  * forward them.
  */
-@ExperimentalFilesystem
-abstract class ForwardingFilesystem(
-  /** [Filesystem] to which this instance is delegating. */
+@ExperimentalFileSystem
+abstract class ForwardingFileSystem(
+  /** [FileSystem] to which this instance is delegating. */
   @get:JvmName("delegate")
-  val delegate: Filesystem
-) : Filesystem() {
+  val delegate: FileSystem
+) : FileSystem() {
 
   /**
-   * Invoked each time a path is passed as a parameter to this filesystem. This returns the path to
+   * Invoked each time a path is passed as a parameter to this file system. This returns the path to
    * pass to [delegate], which should be [path] itself or a path on [delegate] that corresponds to
    * it.
    *
    * Subclasses may override this to log accesses, fail on unexpected accesses, or map paths across
-   * filesystems.
+   * file systems.
    *
    * The base implementation returns [path].
    *

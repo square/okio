@@ -16,13 +16,13 @@
 package okio
 
 /**
- * A filesystem that adapts `java.io`.
+ * A file system that adapts `java.io`.
  *
  * This base class is used on Android API levels 15 (our minimum supported API) through 26
  * (the first release that includes java.nio.file).
  */
-@ExperimentalFilesystem
-internal open class JvmSystemFilesystem : Filesystem() {
+@ExperimentalFileSystem
+internal open class JvmSystemFileSystem : FileSystem() {
   override fun canonicalize(path: Path): Path {
     val canonicalFile = path.toFile().canonicalFile
     if (!canonicalFile.exists()) throw FileNotFoundException("no such file")
@@ -97,5 +97,5 @@ internal open class JvmSystemFilesystem : Filesystem() {
     }
   }
 
-  override fun toString() = "JvmSystemFilesystem"
+  override fun toString() = "JvmSystemFileSystem"
 }
