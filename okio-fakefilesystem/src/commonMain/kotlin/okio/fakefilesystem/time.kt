@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 @file:JvmName("-Time")
-package okio
+package okio.fakefilesystem
 
 import kotlinx.datetime.Instant
+import okio.ExperimentalFilesystem
+import okio.FileMetadata
 import kotlin.jvm.JvmName
 
 @JvmName("newFileMetadata")

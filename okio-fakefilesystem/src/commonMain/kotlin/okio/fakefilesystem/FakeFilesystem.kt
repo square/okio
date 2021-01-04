@@ -13,13 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio
+package okio.fakefilesystem
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import okio.FakeFilesystem.Element.Directory
-import okio.FakeFilesystem.Element.File
+import okio.Buffer
+import okio.ByteString
+import okio.ExperimentalFilesystem
+import okio.FileMetadata
+import okio.FileNotFoundException
+import okio.Filesystem
+import okio.IOException
+import okio.Path
 import okio.Path.Companion.toPath
+import okio.Sink
+import okio.Source
+import okio.Timeout
+import okio.fakefilesystem.FakeFilesystem.Element.Directory
+import okio.fakefilesystem.FakeFilesystem.Element.File
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 

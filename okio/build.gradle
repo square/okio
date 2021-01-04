@@ -81,7 +81,8 @@ kotlin {
         implementation deps.kotlin.test.common
         implementation deps.kotlin.test.annotations
         implementation deps.kotlin.time
-        implementation project(":okio-testing")
+
+        implementation project(":okio-fakefilesystem")
       }
     }
     nonJvmMain {
@@ -182,6 +183,13 @@ tasks.withType(JavaCompile) {
   options.encoding = 'UTF-8'
   targetCompatibility = JavaVersion.VERSION_1_8
 }
+
+// modify these lines for MANIFEST.MF properties or for specific bnd instructions
+project.ext.bndManifest = '''
+    Export-Package: okio
+    Automatic-Module-Name: okio
+    Bundle-SymbolicName: com.squareup.okio
+    '''
 
 apply from: 'jvm/jvm.gradle'
 apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"

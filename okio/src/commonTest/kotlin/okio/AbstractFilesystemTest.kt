@@ -19,6 +19,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
+import okio.fakefilesystem.FakeFilesystem
 import kotlin.random.Random
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore

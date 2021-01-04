@@ -43,3 +43,18 @@ kotlin {
     }
   }
 }
+
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
+  targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+// modify these lines for MANIFEST.MF properties or for specific bnd instructions
+project.ext.bndManifest = '''
+    Export-Package: okio.fakefilesystem
+    Automatic-Module-Name: okio.fakefilesystem
+    Bundle-SymbolicName: com.squareup.okio.fakefilesystem
+    '''
+
+apply from: "$rootDir/okio/jvm/jvm.gradle"
+apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"

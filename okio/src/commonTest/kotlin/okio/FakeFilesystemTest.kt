@@ -16,6 +16,7 @@
 package okio
 
 import okio.Path.Companion.toPath
+import okio.fakefilesystem.FakeFilesystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
