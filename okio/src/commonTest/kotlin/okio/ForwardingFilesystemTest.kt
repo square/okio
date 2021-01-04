@@ -92,6 +92,29 @@ class ForwardingFilesystemTest : AbstractFilesystemTest(
     assertEquals("hello, world!", target.readUtf8())
   }
 
+  /**
+   * Path mapping might impact the sort order. Confirm that list() returns elements in sorted order
+   * even if that order is different in the delegate file system.
+   */
+  @Test
+  fun pathMappingImpactedBySorting() {
+    val az = base / "az"
+    val by = base / "by"
+    val cx = base / "cx"
+    az.writeUtf8("az")
+    by.writeUtf8("by")
+    cx.writeUtf8("cx")
+
+    val forwardingFilesystem = object : ForwardingFilesystem(filesystem) {
+      override fun onPathResult(path: Path, functionName: String): Path {
+        return path.parent!! / path.name.reversed()
+      }
+    }
+
+    assertEquals(filesystem.list(base), listOf(base / "az", base / "by", base / "cx"))
+    assertEquals(forwardingFilesystem.list(base), listOf(base / "xc", base / "yb", base / "za"))
+  }
+
   @Test
   fun copyIsNotForwarded() {
     val log = mutableListOf<String>()

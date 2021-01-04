@@ -75,10 +75,57 @@ abstract class FakeFilesystemTest internal constructor(
   }
 
   @Test
+  fun openPathsIsOpenOrder() {
+    val fileA = base / "a"
+    val fileB = base / "b"
+    val fileC = base / "c"
+    val fileD = base / "d"
+
+    assertEquals(fakeFilesystem.openPaths, listOf())
+    val sinkD = filesystem.sink(fileD)
+    assertEquals(fakeFilesystem.openPaths, listOf(fileD))
+    val sinkB = filesystem.sink(fileB)
+    assertEquals(fakeFilesystem.openPaths, listOf(fileD, fileB))
+    val sinkC = filesystem.sink(fileC)
+    assertEquals(fakeFilesystem.openPaths, listOf(fileD, fileB, fileC))
+    val sinkA = filesystem.sink(fileA)
+    assertEquals(fakeFilesystem.openPaths, listOf(fileD, fileB, fileC, fileA))
+    val sinkB2 = filesystem.sink(fileB)
+    assertEquals(fakeFilesystem.openPaths, listOf(fileD, fileB, fileC, fileA, fileB))
+    sinkD.close()
+    assertEquals(fakeFilesystem.openPaths, listOf(fileB, fileC, fileA, fileB))
+    sinkB2.close()
+    assertEquals(fakeFilesystem.openPaths, listOf(fileB, fileC, fileA))
+    sinkB.close()
+    assertEquals(fakeFilesystem.openPaths, listOf(fileC, fileA))
+    sinkC.close()
+    assertEquals(fakeFilesystem.openPaths, listOf(fileA))
+    sinkA.close()
+    assertEquals(fakeFilesystem.openPaths, listOf())
+  }
+
+  @Test
   fun allPathsIncludesFile() {
     val file = base / "all-files-includes-file"
     file.writeUtf8("hello, world!")
     assertEquals(fakeFilesystem.allPaths, setOf(base, file))
+  }
+
+  @Test
+  fun allPathsIsSorted() {
+    val fileA = base / "a"
+    val fileB = base / "b"
+    val fileC = base / "c"
+    val fileD = base / "d"
+
+    // Create files in a different order than the sorted order, so a filesystem that returns files
+    // in creation-order or reverse-creation order won't pass by accident.
+    fileD.writeUtf8("fileD")
+    fileB.writeUtf8("fileB")
+    fileC.writeUtf8("fileC")
+    fileA.writeUtf8("fileA")
+
+    assertEquals(fakeFilesystem.allPaths.toList(), listOf(base, fileA, fileB, fileC, fileD))
   }
 
   @Test

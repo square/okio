@@ -63,6 +63,7 @@ internal object PosixSystemFilesystem : Filesystem() {
 
       if (errno != 0) throw errnoToIOException(errno)
 
+      result.sort()
       return result
     } finally {
       closedir(opendir) // Ignore errno from closedir.
