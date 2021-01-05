@@ -39,3 +39,8 @@ actual open class IOException actual constructor(
 actual open class EOFException actual constructor(message: String?) : IOException(message)
 
 actual open class FileNotFoundException actual constructor(message: String?) : IOException(message)
+
+actual interface Closeable {
+  @Throws(IOException::class)
+  actual fun close()
+}
