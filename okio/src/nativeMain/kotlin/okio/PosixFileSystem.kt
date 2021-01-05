@@ -18,6 +18,7 @@ package okio
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
+import okio.internal.toPath
 import platform.posix.DIR
 import platform.posix.FILE
 import platform.posix.closedir
