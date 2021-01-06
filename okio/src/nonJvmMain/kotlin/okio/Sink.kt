@@ -15,12 +15,15 @@
  */
 package okio
 
-actual interface Sink {
+actual interface Sink : Closeable {
+  @Throws(IOException::class)
   actual fun write(source: Buffer, byteCount: Long)
 
+  @Throws(IOException::class)
   actual fun flush()
 
   actual fun timeout(): Timeout
 
-  actual fun close()
+  @Throws(IOException::class)
+  actual override fun close()
 }

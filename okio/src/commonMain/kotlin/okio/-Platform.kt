@@ -40,3 +40,12 @@ expect open class IOException(message: String?, cause: Throwable?) : Exception {
 expect open class EOFException(message: String? = null) : IOException
 
 expect class FileNotFoundException(message: String? = null) : IOException
+
+expect interface Closeable {
+  /**
+   * Closes this object and releases the resources it holds. It is an error to use an object after
+   * it has been closed. It is safe to close an object more than once.
+   */
+  @Throws(IOException::class)
+  fun close()
+}
