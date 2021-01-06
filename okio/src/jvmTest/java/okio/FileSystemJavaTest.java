@@ -15,7 +15,9 @@
  */
 package okio;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import okio.fakefilesystem.FakeFileSystem;
@@ -37,6 +39,31 @@ public final class FileSystemJavaTest {
     assertThat(path.nameBytes()).isEqualTo(ByteString.encodeUtf8("todo.txt"));
     assertThat(path.parent()).isEqualTo(Path.get("/home/jesse"));
     assertThat(path.volumeLetter()).isNull();
+  }
+
+  @Test
+  public void directorySeparator() {
+    assertThat(Path.DIRECTORY_SEPARATOR).isIn("/", "\\");
+  }
+
+  /** Like the same test in JvmTest, but this is using the Java APIs. */
+  @Test
+  public void javaIoFileToOkioPath() {
+    String string = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR);
+    File javaIoFile = new File(string);
+    Path okioPath = Path.get(string);
+    assertThat(Path.get(javaIoFile)).isEqualTo(okioPath);
+    assertThat(okioPath.toFile()).isEqualTo(javaIoFile);
+  }
+
+  /** Like the same test in JvmTest, but this is using the Java APIs. */
+  @Test
+  public void nioPathToOkioPath() {
+    String string = "/foo/bar/baz".replace("/", okio.Path.DIRECTORY_SEPARATOR);
+    java.nio.file.Path nioPath = Paths.get(string);
+    Path okioPath = Path.get(string);
+    assertThat(Path.get(nioPath)).isEqualTo(okioPath);
+    assertThat((Object) okioPath.toNioPath()).isEqualTo(nioPath);
   }
 
   @Test

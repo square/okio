@@ -204,7 +204,7 @@ expect class Path internal constructor(slash: ByteString, bytes: ByteString) : C
   override fun toString(): String
 
   companion object {
-    val directorySeparator: String
+    val DIRECTORY_SEPARATOR: String
 
     fun String.toPath(): Path
 

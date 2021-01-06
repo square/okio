@@ -68,7 +68,7 @@ actual class Path internal actual constructor(
   actual override fun toString() = commonToString()
 
   actual companion object {
-    actual val directorySeparator: String = DIRECTORY_SEPARATOR
+    actual val DIRECTORY_SEPARATOR: String = PLATFORM_DIRECTORY_SEPARATOR
 
     actual fun String.toPath(): Path = commonToPath()
 

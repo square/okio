@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
 import org.assertj.core.api.Assertions.assertThat
 import java.io.File
@@ -31,16 +32,18 @@ class JvmTest {
 
   @Test
   fun javaIoFileToOkioPath() {
-    val javaIoFile = File("/foo/bar/baz")
-    val okioPath = "/foo/bar/baz".toPath(Path.directorySeparator)
+    val string = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR)
+    val javaIoFile = File(string)
+    val okioPath = string.toPath()
     assertThat(javaIoFile.toOkioPath()).isEqualTo(okioPath)
     assertThat(okioPath.toFile()).isEqualTo(javaIoFile)
   }
 
   @Test
   fun nioPathToOkioPath() {
-    val nioPath = Paths.get("/foo/bar/baz")
-    val okioPath = "/foo/bar/baz".toPath(Path.directorySeparator)
+    val string = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR)
+    val nioPath = Paths.get(string)
+    val okioPath = string.toPath()
     assertThat(nioPath.toOkioPath()).isEqualTo(okioPath)
     assertThat(okioPath.toNioPath() as Any).isEqualTo(nioPath)
   }
