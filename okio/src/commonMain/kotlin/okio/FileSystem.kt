@@ -154,6 +154,16 @@ abstract class FileSystem {
   abstract fun source(file: Path): Source
 
   /**
+   * Creates a source to read [file], executes [readerAction] to read it, and then closes the
+   * source. This is a compact way to read the contents of a file.
+   */
+  inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
+    return source(file).buffer().use {
+      it.readerAction()
+    }
+  }
+
+  /**
    * Returns a sink that writes bytes to [file] from beginning to end. If [file] already exists it
    * will be replaced with the new data.
    *
@@ -163,6 +173,16 @@ abstract class FileSystem {
    */
   @Throws(IOException::class)
   abstract fun sink(file: Path): Sink
+
+  /**
+   * Creates a sink to write [file], executes [writerAction] to write it, and then closes the sink.
+   * This is a compact way to write a file.
+   */
+  inline fun <T> write(file: Path, writerAction: BufferedSink.() -> T): T {
+    return sink(file).buffer().use {
+      it.writerAction()
+    }
+  }
 
   /**
    * Returns a sink that appends bytes to the end of [file], creating it if it doesn't already
