@@ -132,6 +132,21 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun readPath() {
+    val path = base / "read-path"
+    val string = "hello, read with a Path"
+    path.writeUtf8(string)
+
+    val result = fileSystem.read(path) {
+      assertEquals("hello", readUtf8(5))
+      assertEquals(", read with ", readUtf8(12))
+      assertEquals("a Path", readUtf8())
+      return@read "success"
+    }
+    assertEquals("success", result)
+  }
+
+  @Test
   fun fileSink() {
     val path = base / "file-sink"
     val sink = fileSystem.sink(path)
@@ -141,6 +156,18 @@ abstract class AbstractFileSystemTest(
     assertTrue(path in fileSystem.list(base))
     assertEquals(0, buffer.size)
     assertEquals("hello, world!", path.readUtf8())
+  }
+
+  @Test
+  fun writePath() {
+    val path = base / "write-path"
+    val content = fileSystem.write(path) {
+      val string = "hello, write with a Path"
+      writeUtf8(string)
+      return@write string
+    }
+    assertTrue(path in fileSystem.list(base))
+    assertEquals(content, path.readUtf8())
   }
 
   @Test
