@@ -82,7 +82,7 @@ Cutting a Release
       gradle.properties
     sed -i "" \
       "s/\"com.squareup.okio:\([^\:]*\):[^\"]*\"/\"com.squareup.okio:\1:$RELEASE_VERSION\"/g" \
-      `find . -name "README.md"`
+      `find . -name "index.md"`
     ./gradlew clean publish
     ```
 
