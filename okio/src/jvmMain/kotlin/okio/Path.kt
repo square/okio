@@ -28,6 +28,10 @@ import okio.internal.commonResolve
 import okio.internal.commonToPath
 import okio.internal.commonToString
 import okio.internal.commonVolumeLetter
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+import java.io.File
+import java.nio.file.Paths
+import java.nio.file.Path as NioPath
 
 @ExperimentalFileSystem
 actual class Path internal actual constructor(
@@ -65,6 +69,11 @@ actual class Path internal actual constructor(
   @JvmName("resolve")
   actual operator fun div(child: Path): Path = commonResolve(child)
 
+  fun toFile(): File = File(toString())
+
+  @IgnoreJRERequirement // Can only be invoked on platforms that have java.nio.file.
+  fun toNioPath(): NioPath = Paths.get(toString())
+
   actual override fun compareTo(other: Path): Int = commonCompareTo(other)
 
   actual override fun equals(other: Any?): Boolean = commonEquals(other)
@@ -74,12 +83,24 @@ actual class Path internal actual constructor(
   actual override fun toString() = commonToString()
 
   actual companion object {
-    actual val directorySeparator: String = DIRECTORY_SEPARATOR
+    /**
+     * Either `/` (on UNIX-like systems including Android, iOS, and Linux) or `\` (on Windows
+     * systems).
+     */
+    @JvmField
+    actual val DIRECTORY_SEPARATOR: String = File.separator
 
     @JvmName("get") @JvmStatic
     actual fun String.toPath(): Path = commonToPath()
 
     @JvmName("get") @JvmStatic
     actual fun String.toPath(directorySeparator: String?): Path = commonToPath(directorySeparator)
+
+    @JvmName("get") @JvmStatic
+    fun File.toOkioPath(): Path = toString().toPath()
+
+    @JvmName("get") @JvmStatic
+    @IgnoreJRERequirement // Can only be invoked on platforms that have java.nio.file.
+    fun NioPath.toOkioPath(): Path = toString().toPath()
   }
 }

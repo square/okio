@@ -23,6 +23,6 @@ import kotlin.time.ExperimentalTime
 class SystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileSystem.SYSTEM,
-  windowsLimitations = DIRECTORY_SEPARATOR == "\\",
+  windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY
 )

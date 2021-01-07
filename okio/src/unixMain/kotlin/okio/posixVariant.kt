@@ -24,7 +24,7 @@ import platform.posix.remove
 import platform.posix.rename
 import platform.posix.timespec
 
-internal actual val VARIANT_DIRECTORY_SEPARATOR = "/"
+internal actual val PLATFORM_DIRECTORY_SEPARATOR = "/"
 
 @ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantDelete(path: Path) {

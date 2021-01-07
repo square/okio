@@ -35,7 +35,7 @@ import platform.posix.rmdir
 import platform.windows.MOVEFILE_REPLACE_EXISTING
 import platform.windows.MoveFileExA
 
-internal actual val VARIANT_DIRECTORY_SEPARATOR = "\\"
+internal actual val PLATFORM_DIRECTORY_SEPARATOR = "\\"
 
 @ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantDelete(path: Path) {

@@ -15,8 +15,6 @@
  */
 package okio
 
-internal expect val VARIANT_DIRECTORY_SEPARATOR: String
-
 @ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantDelete(path: Path)
 

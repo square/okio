@@ -55,8 +55,8 @@ abstract class AbstractFileSystemTest(
     val cwd = fileSystem.canonicalize(".".toPath())
     val cwdString = cwd.toString()
     assertTrue(cwdString) {
-      cwdString.endsWith("okio${Path.directorySeparator}okio") ||
-        cwdString.endsWith("${Path.directorySeparator}okio-parent-okio-test") || // JS
+      cwdString.endsWith("okio${Path.DIRECTORY_SEPARATOR}okio") ||
+        cwdString.endsWith("${Path.DIRECTORY_SEPARATOR}okio-parent-okio-test") || // JS
         cwdString.contains("/CoreSimulator/Devices/") || // iOS simulator.
         cwdString == "/" // Android emulator.
     }

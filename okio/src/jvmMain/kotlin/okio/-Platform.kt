@@ -18,7 +18,6 @@
 package okio
 
 import okio.Path.Companion.toPath
-import java.io.File
 
 @ExperimentalFileSystem
 internal actual val PLATFORM_FILE_SYSTEM: FileSystem
@@ -34,8 +33,6 @@ internal actual val PLATFORM_FILE_SYSTEM: FileSystem
 @ExperimentalFileSystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
   get() = System.getProperty("java.io.tmpdir").toPath()
-
-internal actual val DIRECTORY_SEPARATOR = File.separator
 
 internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
 

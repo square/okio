@@ -25,7 +25,7 @@ internal actual val PLATFORM_FILE_SYSTEM: FileSystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
   get() = tmpdir().toPath()
 
-internal actual val DIRECTORY_SEPARATOR: String
+internal actual val PLATFORM_DIRECTORY_SEPARATOR: String
   get() {
     // TODO(swankjesse): return path.path.sep instead, once it has @JsNonModule
     return when (platform()) {

@@ -18,7 +18,6 @@ package okio.internal
 import okio.Buffer
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
-import okio.DIRECTORY_SEPARATOR
 import okio.ExperimentalFileSystem
 import okio.Path
 
@@ -194,7 +193,7 @@ internal fun Buffer.toPath(directorySeparator: ByteString? = null): Path {
     // This path doesn't start with any slash. We must initialize the slash character to use.
     val limit = indexOfElement(ANY_SLASH)
     slash = slash ?: when (limit) {
-      -1L -> DIRECTORY_SEPARATOR.toSlash()
+      -1L -> Path.DIRECTORY_SEPARATOR.toSlash()
       else -> get(limit).toSlash()
     }
     if (startsWithVolumeLetterAndColon(slash)) {
