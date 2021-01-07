@@ -44,7 +44,6 @@ android {
     sourceSets {
       named("androidTest") {
         it.java.srcDirs += [
-          project.file("../okio-fakefilesystem/src/commonMain/kotlin"),
           project.file("../okio/src/commonMain/kotlin"),
           project.file("../okio/src/commonTest/java"),
           project.file("../okio/src/commonTest/kotlin"),

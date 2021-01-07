@@ -19,8 +19,6 @@ package okio
 import okio.internal.commonAsUtf8ToByteArray
 import okio.internal.commonToUtf8String
 
-internal expect val PLATFORM_DIRECTORY_SEPARATOR: String
-
 internal actual fun ByteArray.toUtf8String(): String = commonToUtf8String()
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = commonAsUtf8ToByteArray()
