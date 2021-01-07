@@ -17,23 +17,6 @@
 @file:JvmName("-Platform")
 package okio
 
-import okio.Path.Companion.toPath
-
-@ExperimentalFileSystem
-internal actual val PLATFORM_FILE_SYSTEM: FileSystem
-  get() {
-    try {
-      Class.forName("java.nio.file.Files")
-      return NioSystemFileSystem()
-    } catch (e: ClassNotFoundException) {
-      return JvmSystemFileSystem()
-    }
-  }
-
-@ExperimentalFileSystem
-internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
-  get() = System.getProperty("java.io.tmpdir").toPath()
-
 internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
 
 internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets.UTF_8)
