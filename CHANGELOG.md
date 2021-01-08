@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.1
+
+_2021-01-07_
+
+* New: Experimental file system API. The `Path`, `FileMetadata`, `FileSystem` and
+  `ForwardingFileSystem` types are subject to API changes in a future release.
+* New: Experimental `okio-fakefilesystem` artifact.
+
+
 ## Version 2.10.0
 
 _2021-01-07_
