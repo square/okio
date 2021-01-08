@@ -607,6 +607,7 @@ _2014-04-08_
 
 
  [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
+ [kotlin_1_4_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.20 
  [kotlin_1_4_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.10 
  [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
  [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
