@@ -157,6 +157,7 @@ abstract class FileSystem {
    * Creates a source to read [file], executes [readerAction] to read it, and then closes the
    * source. This is a compact way to read the contents of a file.
    */
+  @Throws(IOException::class)
   inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
     return source(file).buffer().use {
       it.readerAction()
@@ -178,6 +179,7 @@ abstract class FileSystem {
    * Creates a sink to write [file], executes [writerAction] to write it, and then closes the sink.
    * This is a compact way to write a file.
    */
+  @Throws(IOException::class)
   inline fun <T> write(file: Path, writerAction: BufferedSink.() -> T): T {
     return sink(file).buffer().use {
       it.writerAction()
