@@ -41,30 +41,61 @@ import kotlin.jvm.JvmName
  * Use [openPaths] to see which paths have been opened for read or write, but not yet closed. Tests
  * should call [checkNoOpenFiles] in `tearDown()` to confirm that no file streams were leaked.
  *
- * By default this file system permits deletion and removal of open files. Configure
- * [windowsLimitations] to true to throw an [IOException] when asked to delete or rename an open
- * file.
+ * Strict By Default
+ * -----------------
+ *
+ * By default this file system is strict. These actions are not allowed and throw an [IOException]
+ * if attempted:
+ *
+ *  * Moving a file that is currently open for reading or writing.
+ *  * Deleting a file that is currently open for reading or writing.
+ *  * Moving a file to a path that currently resolves to an empty directory.
+ *
+ * Programs that do not attempt any of the above operations should work fine on both UNIX and
+ * Windows systems. Relax these constraints individually or call [emulateWindows] or [emulateUnix];
+ * to apply the constraints of a particular operating system.
  */
 @ExperimentalFileSystem
 class FakeFileSystem(
-  private val windowsLimitations: Boolean = false,
-  private val workingDirectory: Path = (if (windowsLimitations) "F:\\".toPath() else "/".toPath()),
-
   @JvmField
   val clock: Clock = Clock.System
 ) : FileSystem() {
-
-  init {
-    require(workingDirectory.isAbsolute) {
-      "expected an absolute path but was $workingDirectory"
-    }
-  }
 
   /** Keys are canonical paths. Each value is either a [Directory] or a [ByteString]. */
   private val elements = mutableMapOf<Path, Element>()
 
   /** Files that are currently open and need to be closed to avoid resource leaks. */
   private val openFiles = mutableListOf<OpenFile>()
+
+  /**
+   * An absolute path with this file system's current working directory. Relative paths will be
+   * resolved against this directory when they are used.
+   */
+  var workingDirectory: Path = "/".toPath()
+    set(value) {
+      require(value.isAbsolute) {
+        "expected an absolute path but was $value"
+      }
+      field = value
+    }
+
+  /**
+   * True to allow files to be moved even if they're currently open for read or write. UNIX file
+   * systems typically allow open files to be moved; Windows file systems do not.
+   */
+  var allowMovingOpenFiles = false
+
+  /**
+   * True to allow files to be deleted even if they're currently open for read or write. UNIX file
+   * systems typically allow open files to be deleted; Windows file systems do not.
+   */
+  var allowDeletingOpenFiles = false
+
+  /**
+   * True to allow the target of an [atomicMove] operation to be an empty directory. Windows file
+   * systems typically allow files to replace empty directories; UNIX file systems do not.
+   */
+  var allowClobberingEmptyDirectories = false
 
   /**
    * Canonical paths for every file and directory in this file system. This omits file system roots
@@ -117,6 +148,34 @@ class FakeFileSystem(
       """.trimMargin(),
       firstOpenFile.backtrace
     )
+  }
+
+  /**
+   * Configure this file system to use a Windows-like working directory (`F:\`, unless the working
+   * directory is already Windows-like) and to follow a Windows-like policy on what operations
+   * are permitted.
+   */
+  fun emulateWindows() {
+    if ("\\" !in workingDirectory.toString()) {
+      workingDirectory = "F:\\".toPath()
+    }
+    allowMovingOpenFiles = false
+    allowDeletingOpenFiles = false
+    allowClobberingEmptyDirectories = true
+  }
+
+  /**
+   * Configure this file system to use a UNIX-like working directory (`/`, unless the working
+   * directory is already UNIX-like) and to follow a UNIX-like policy on what operations are
+   * permitted.
+   */
+  fun emulateUnix() {
+    if ("/" !in workingDirectory.toString()) {
+      workingDirectory = "/".toPath()
+    }
+    allowMovingOpenFiles = true
+    allowDeletingOpenFiles = true
+    allowClobberingEmptyDirectories = false
   }
 
   override fun canonicalize(path: Path): Path {
@@ -221,16 +280,15 @@ class FakeFileSystem(
       throw IOException("target is a directory: $target")
     }
     requireDirectory(canonicalTarget.parent)
-    if (windowsLimitations) {
-      // Windows-only constraints.
+    if (!allowMovingOpenFiles) {
       openFileOrNull(canonicalSource)?.let {
         throw IOException("source is open $source", it.backtrace)
       }
       openFileOrNull(canonicalTarget)?.let {
         throw IOException("target is open $target", it.backtrace)
       }
-    } else {
-      // UNIX-only constraints.
+    }
+    if (!allowClobberingEmptyDirectories) {
       if (sourceElement is Directory && targetElement is File) {
         throw IOException("source is a directory and target is a file")
       }
@@ -248,7 +306,7 @@ class FakeFileSystem(
       throw IOException("non-empty directory")
     }
 
-    if (windowsLimitations) {
+    if (!allowDeletingOpenFiles) {
       openFileOrNull(canonicalPath)?.let {
         throw IOException("file is open $path", it.backtrace)
       }

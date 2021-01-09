@@ -28,7 +28,7 @@ import kotlin.time.minutes
 @ExperimentalFileSystem
 class FakeWindowsFileSystemTest : FakeFileSystemTest(
   clock = FakeClock(),
-  windowsLimitations = true,
+  emulateWindows = true,
   temporaryDirectory = "C:\\".toPath(),
 )
 
@@ -36,7 +36,7 @@ class FakeWindowsFileSystemTest : FakeFileSystemTest(
 @ExperimentalFileSystem
 class FakeUnixFileSystemTest : FakeFileSystemTest(
   clock = FakeClock(),
-  windowsLimitations = false,
+  emulateWindows = false,
   temporaryDirectory = "/".toPath(),
 )
 
@@ -44,12 +44,18 @@ class FakeUnixFileSystemTest : FakeFileSystemTest(
 @ExperimentalFileSystem
 abstract class FakeFileSystemTest internal constructor(
   clock: FakeClock,
-  windowsLimitations: Boolean,
+  emulateWindows: Boolean,
   temporaryDirectory: Path
 ) : AbstractFileSystemTest(
   clock = clock,
-  fileSystem = FakeFileSystem(windowsLimitations, clock = clock),
-  windowsLimitations = windowsLimitations,
+  fileSystem = FakeFileSystem(clock = clock).apply {
+    if (emulateWindows) {
+      emulateWindows()
+    } else {
+      emulateUnix()
+    }
+  },
+  windowsLimitations = emulateWindows,
   temporaryDirectory = temporaryDirectory
 ) {
   private val fakeFileSystem: FakeFileSystem = fileSystem as FakeFileSystem
@@ -290,7 +296,7 @@ abstract class FakeFileSystemTest internal constructor(
   @Test
   fun workingDirectoryMustBeAbsolute() {
     val exception = assertFailsWith<IllegalArgumentException> {
-      FakeFileSystem(workingDirectory = "some/relative/path".toPath())
+      fakeFileSystem.workingDirectory = "some/relative/path".toPath()
     }
     assertEquals("expected an absolute path but was some/relative/path", exception.message)
   }
