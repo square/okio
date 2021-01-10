@@ -28,7 +28,7 @@ import kotlin.time.ExperimentalTime
 @ExperimentalFileSystem
 class ForwardingFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
-  fileSystem = object : ForwardingFileSystem(FakeFileSystem()) {},
+  fileSystem = object : ForwardingFileSystem(FakeFileSystem().apply { emulateUnix() }) {},
   windowsLimitations = false,
   temporaryDirectory = "/".toPath()
 ) {
