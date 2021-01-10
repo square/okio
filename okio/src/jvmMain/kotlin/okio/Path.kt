@@ -35,7 +35,6 @@ import java.nio.file.Path as NioPath
 
 @ExperimentalFileSystem
 actual class Path internal actual constructor(
-  internal actual val slash: ByteString,
   internal actual val bytes: ByteString
 ) : Comparable<Path> {
   actual val isAbsolute: Boolean
@@ -92,9 +91,6 @@ actual class Path internal actual constructor(
 
     @JvmName("get") @JvmStatic
     actual fun String.toPath(): Path = commonToPath()
-
-    @JvmName("get") @JvmStatic
-    actual fun String.toPath(directorySeparator: String?): Path = commonToPath(directorySeparator)
 
     @JvmName("get") @JvmStatic
     fun File.toOkioPath(): Path = toString().toPath()

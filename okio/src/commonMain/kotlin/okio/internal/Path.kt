@@ -30,7 +30,8 @@ private val DOT_DOT = "..".encodeUtf8()
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonIsAbsolute(): Boolean {
-  return bytes.startsWith(slash) ||
+  return bytes.startsWith(SLASH) ||
+    bytes.startsWith(BACKSLASH) ||
     (volumeLetter != null && bytes.size > 2 && bytes[2] == '\\'.toByte())
 }
 
@@ -43,7 +44,7 @@ internal inline fun Path.commonIsRelative(): Boolean {
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonVolumeLetter(): Char? {
-  if (slash != BACKSLASH) return null
+  if (bytes.indexOf(SLASH) != -1) return null
   if (bytes.size < 2) return null
   if (bytes[1] != ':'.toByte()) return null
   val c = bytes[0].toChar()
@@ -52,9 +53,17 @@ internal inline fun Path.commonVolumeLetter(): Char? {
 }
 
 @ExperimentalFileSystem
+private val Path.indexOfLastSlash: Int
+  get() {
+    val lastSlash = bytes.lastIndexOf(SLASH)
+    if (lastSlash != -1) return lastSlash
+    return bytes.lastIndexOf(BACKSLASH)
+  }
+
+@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonNameBytes(): ByteString {
-  val lastSlash = bytes.lastIndexOf(slash)
+  val lastSlash = indexOfLastSlash
   return when {
     lastSlash != -1 -> bytes.substring(lastSlash + 1)
     volumeLetter != null && bytes.size == 2 -> ByteString.EMPTY // "C:" has no name.
@@ -71,31 +80,31 @@ internal inline fun Path.commonName(): String {
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonParent(): Path? {
-  if (bytes == DOT || bytes == slash || lastSegmentIsDotDot()) {
+  if (bytes == DOT || bytes == SLASH || bytes == BACKSLASH || lastSegmentIsDotDot()) {
     return null // Terminal path.
   }
 
-  val lastSlash = bytes.lastIndexOf(slash)
+  val lastSlash = indexOfLastSlash
   when {
     lastSlash == 2 && volumeLetter != null -> {
       if (bytes.size == 3) return null // "C:\" has no parent.
-      return Path(slash, bytes.substring(endIndex = 3)) // Keep the trailing '\' in C:\.
+      return Path(bytes.substring(endIndex = 3)) // Keep the trailing '\' in C:\.
     }
     lastSlash == 1 && bytes.startsWith(BACKSLASH) -> {
       return null // "\\server" is a UNC path with no parent.
     }
     lastSlash == -1 && volumeLetter != null -> {
       if (bytes.size == 2) return null // "C:" has no parent.
-      return Path(slash, bytes.substring(endIndex = 2)) // C: is volume-relative.
+      return Path(bytes.substring(endIndex = 2)) // C: is volume-relative.
     }
     lastSlash == -1 -> {
-      return Path(slash, DOT) // Parent is the current working directory.
+      return Path(DOT) // Parent is the current working directory.
     }
     lastSlash == 0 -> {
-      return Path(slash, bytes.substring(endIndex = 1)) // Parent is the filesystem root '/'.
+      return Path(bytes.substring(endIndex = 1)) // Parent is the filesystem root '/'.
     }
     else -> {
-      return Path(slash, bytes.substring(endIndex = lastSlash))
+      return Path(bytes.substring(endIndex = lastSlash))
     }
   }
 }
@@ -104,7 +113,8 @@ internal inline fun Path.commonParent(): Path? {
 private fun Path.lastSegmentIsDotDot(): Boolean {
   if (bytes.endsWith(DOT_DOT)) {
     if (bytes.size == 2) return true // ".." is the whole string.
-    if (bytes.rangeEquals(bytes.size - 3, slash, 0, 1)) return true // Ends with "/.." or "\..".
+    if (bytes.rangeEquals(bytes.size - 3, SLASH, 0, 1)) return true // Ends with "/..".
+    if (bytes.rangeEquals(bytes.size - 3, BACKSLASH, 0, 1)) return true // Ends with "\..".
   }
   return false
 }
@@ -118,7 +128,7 @@ internal inline fun Path.commonIsRoot(): Boolean {
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonResolve(child: String): Path {
-  return div(Buffer().writeUtf8(child).toPath(slash))
+  return div(Buffer().writeUtf8(child).toPath())
 }
 
 @ExperimentalFileSystem
@@ -126,33 +136,39 @@ internal inline fun Path.commonResolve(child: String): Path {
 internal inline fun Path.commonResolve(child: Path): Path {
   if (child.isAbsolute || child.volumeLetter != null) return child
 
+  val slash = when {
+    bytes.indexOf(SLASH) != -1 -> SLASH
+    bytes.indexOf(BACKSLASH) != -1 -> BACKSLASH
+    child.bytes.indexOf(SLASH) != -1 -> SLASH
+    child.bytes.indexOf(BACKSLASH) != -1 -> BACKSLASH
+    else -> Path.DIRECTORY_SEPARATOR.toSlash()
+  }
+
   val buffer = Buffer()
   buffer.write(bytes)
   if (buffer.size > 0) {
     buffer.write(slash)
   }
   buffer.write(child.bytes)
-  return buffer.toPath(directorySeparator = slash)
+  return buffer.toPath()
 }
 
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonCompareTo(other: Path): Int {
-  val bytesResult = bytes.compareTo(other.bytes)
-  if (bytesResult != 0) return bytesResult
-  return slash.compareTo(other.slash)
+  return bytes.compareTo(other.bytes)
 }
 
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonEquals(other: Any?): Boolean {
-  return other is Path && other.bytes == bytes && other.slash == slash
+  return other is Path && other.bytes == bytes
 }
 
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonHashCode(): Int {
-  return bytes.hashCode() xor slash.hashCode()
+  return bytes.hashCode()
 }
 
 @ExperimentalFileSystem
@@ -162,14 +178,14 @@ internal inline fun Path.commonToString(): String {
 }
 
 @ExperimentalFileSystem
-fun String.commonToPath(directorySeparator: String? = null): Path {
-  return Buffer().writeUtf8(this).toPath(directorySeparator?.toSlash())
+fun String.commonToPath(): Path {
+  return Buffer().writeUtf8(this).toPath()
 }
 
 /** Consume the buffer and return it as a path. */
 @ExperimentalFileSystem
-internal fun Buffer.toPath(directorySeparator: ByteString? = null): Path {
-  var slash = directorySeparator
+internal fun Buffer.toPath(): Path {
+  var slash: ByteString? = null
   val result = Buffer()
 
   // Consume the absolute path prefix, like `/`, `\\`, `C:`, or `C:\` and write the
@@ -238,7 +254,7 @@ internal fun Buffer.toPath(directorySeparator: ByteString? = null): Path {
     result.write(DOT)
   }
 
-  return Path(slash, result.readByteString())
+  return Path(result.readByteString())
 }
 
 private fun String.toSlash(): ByteString {
