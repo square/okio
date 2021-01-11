@@ -135,8 +135,7 @@ import okio.Path.Companion.toPath
  * </table>
  */
 @ExperimentalFileSystem
-expect class Path internal constructor(slash: ByteString, bytes: ByteString) : Comparable<Path> {
-  internal val slash: ByteString
+expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
   internal val bytes: ByteString
 
   val isAbsolute: Boolean
@@ -207,7 +206,5 @@ expect class Path internal constructor(slash: ByteString, bytes: ByteString) : C
     val DIRECTORY_SEPARATOR: String
 
     fun String.toPath(): Path
-
-    fun String.toPath(directorySeparator: String?): Path
   }
 }

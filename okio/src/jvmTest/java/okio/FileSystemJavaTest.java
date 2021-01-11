@@ -31,7 +31,7 @@ public final class FileSystemJavaTest {
     Path path = Path.get("/home/jesse/todo.txt");
 
     assertThat(Path.get("/home/jesse").resolve("todo.txt")).isEqualTo(path);
-    assertThat(Path.get("/home/jesse/todo.txt", "/")).isEqualTo(path);
+    assertThat(Path.get("/home/jesse/todo.txt")).isEqualTo(path);
     assertThat(path.isAbsolute()).isTrue();
     assertThat(path.isRelative()).isFalse();
     assertThat(path.isRoot()).isFalse();

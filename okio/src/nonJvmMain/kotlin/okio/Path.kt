@@ -31,7 +31,6 @@ import okio.internal.commonVolumeLetter
 
 @ExperimentalFileSystem
 actual class Path internal actual constructor(
-  internal actual val slash: ByteString,
   internal actual val bytes: ByteString
 ) : Comparable<Path> {
   actual val isAbsolute: Boolean
@@ -71,7 +70,5 @@ actual class Path internal actual constructor(
     actual val DIRECTORY_SEPARATOR: String = PLATFORM_DIRECTORY_SEPARATOR
 
     actual fun String.toPath(): Path = commonToPath()
-
-    actual fun String.toPath(directorySeparator: String?): Path = commonToPath(directorySeparator)
   }
 }
