@@ -22,40 +22,39 @@ import kotlin.jvm.JvmField
  * Read and write access to a hierarchical collection of files, addressed by [paths][Path]. This
  * is a natural interface to the [current computer's local file system][SYSTEM].
  *
- * Not Just the Local File System
- * ------------------------------
- *
  * Other implementations are possible:
  *
  *  * `FakeFileSystem` is an in-memory file system suitable for testing. Note that this class is
  *    included in the `okio-fakefilesystem` artifact.
  *
+ *  * [ForwardingFileSystem] is a file system decorator. Use it to apply monitoring, encryption,
+ *    compression, or filtering to another file system.
+ *
  *  * A ZIP file system could provide access to the contents of a `.zip` file.
- *
- *  * A remote file system could access files over the network.
- *
- *  * A [decorating file system][ForwardingFileSystem] could apply monitoring, encryption,
- *    compression, or filtering to another file system implementation.
  *
  * For improved capability and testability, consider structuring your classes to dependency inject
  * a `FileSystem` rather than using [SYSTEM] directly.
  *
- * Limited API
- * -----------
+ * Small API
+ * ---------
  *
- * This interface is limited in which file system features it supports. Applications that need rich
- * file system features should use another API, possibly alongside this API.
+ * This interface is deliberately limited in which features it supports.
  *
- * This class cannot create special file types like hard links, symlinks, pipes, or mounts. Reading
+ * It is not suitable for high-latency or unreliable remote file systems. It lacks support for
+ * retries, timeouts, cancellation, and bulk operations.
+ *
+ * It cannot create special file types like hard links, symlinks, pipes, or mounts. Reading
  * or writing these files works as if they were regular files.
  *
  * It cannot read or write file access control features like the UNIX `chmod` and Windows access
  * control lists. It does honor these controls and will fail with an [IOException] if privileges
  * are insufficient!
  *
- * It cannot lock files, or query which files are locked.
+ * It cannot lock files or check which files are locked.
  *
  * It cannot watch the file system for changes.
+ *
+ * Applications that need rich file system features should use another API!
  *
  * Multiplatform
  * -------------
