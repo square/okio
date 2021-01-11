@@ -20,6 +20,7 @@ import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
@@ -27,39 +28,37 @@ import kotlin.time.minutes
 @ExperimentalTime
 @ExperimentalFileSystem
 class FakeWindowsFileSystemTest : FakeFileSystemTest(
-  clock = FakeClock(),
-  emulateWindows = true,
-  temporaryDirectory = "C:\\".toPath(),
+  FakeFileSystem(clock = FakeClock()).also { it.emulateWindows() },
+  temporaryDirectory = "C:\\".toPath()
 )
 
 @ExperimentalTime
 @ExperimentalFileSystem
 class FakeUnixFileSystemTest : FakeFileSystemTest(
-  clock = FakeClock(),
-  emulateWindows = false,
-  temporaryDirectory = "/".toPath(),
+  FakeFileSystem(clock = FakeClock()).also { it.emulateUnix() },
+  temporaryDirectory = "/".toPath()
+)
+
+@ExperimentalTime
+@ExperimentalFileSystem
+class StrictFakeFileSystemTest : FakeFileSystemTest(
+  FakeFileSystem(clock = FakeClock()),
+  temporaryDirectory = "/".toPath()
 )
 
 @ExperimentalTime
 @ExperimentalFileSystem
 abstract class FakeFileSystemTest internal constructor(
-  clock: FakeClock,
-  emulateWindows: Boolean,
+  private val fakeFileSystem: FakeFileSystem,
   temporaryDirectory: Path
 ) : AbstractFileSystemTest(
-  clock = clock,
-  fileSystem = FakeFileSystem(clock = clock).apply {
-    if (emulateWindows) {
-      emulateWindows()
-    } else {
-      emulateUnix()
-    }
-  },
-  windowsLimitations = emulateWindows,
+  clock = fakeFileSystem.clock,
+  fileSystem = fakeFileSystem,
+  windowsLimitations = !fakeFileSystem.allowMovingOpenFiles,
+  allowClobberingEmptyDirectories = fakeFileSystem.allowClobberingEmptyDirectories,
   temporaryDirectory = temporaryDirectory
 ) {
-  private val fakeFileSystem: FakeFileSystem = fileSystem as FakeFileSystem
-  private val fakeClock: FakeClock = clock
+  private val fakeClock: FakeClock = fakeFileSystem.clock as FakeClock
 
   @Test
   fun openPathsIncludesOpenSink() {
@@ -83,6 +82,8 @@ abstract class FakeFileSystemTest internal constructor(
 
   @Test
   fun openPathsIsOpenOrder() {
+    if (!fakeFileSystem.allowWritesWhileWriting) return
+
     val fileA = base / "a"
     val fileB = base / "b"
     val fileC = base / "c"
@@ -306,5 +307,60 @@ abstract class FakeFileSystemTest internal constructor(
     assertTrue(fileSystem.metadata("X:\\".toPath()).isDirectory)
     assertTrue(fileSystem.metadata("/".toPath()).isDirectory)
     assertTrue(fileSystem.metadata("\\\\server".toPath()).isDirectory)
+  }
+
+  @Test
+  fun startWriteWhileWritingNotAllowedWhenStrict() {
+    val path = base / "write-write"
+    path.writeUtf8("hello world!")
+    fileSystem.sink(path).use {
+      try {
+        fileSystem.sink(path).use {
+        }
+        assertTrue(fakeFileSystem.allowWritesWhileWriting)
+      } catch (_: IOException) {
+        assertFalse(fakeFileSystem.allowWritesWhileWriting)
+      }
+    }
+  }
+
+  @Test
+  fun startReadWhileWritingNotAllowedWhenStrict() {
+    val path = base / "write-read"
+    path.writeUtf8("hello world!")
+    fileSystem.sink(path).use {
+      try {
+        fileSystem.source(path).use {
+        }
+        assertTrue(fakeFileSystem.allowReadsWhileWriting)
+      } catch (_: IOException) {
+        assertFalse(fakeFileSystem.allowReadsWhileWriting)
+      }
+    }
+  }
+
+  @Test
+  fun startWriteWhileReadingNotAllowedWhenStrict() {
+    val path = base / "read-write"
+    path.writeUtf8("hello world!")
+    fileSystem.source(path).use {
+      try {
+        fileSystem.sink(path).use {
+        }
+        assertTrue(fakeFileSystem.allowReadsWhileWriting)
+      } catch (_: IOException) {
+        assertFalse(fakeFileSystem.allowReadsWhileWriting)
+      }
+    }
+  }
+
+  @Test
+  fun startReadWhileReadingAllowedWhenStrict() {
+    val path = base / "read-read"
+    path.writeUtf8("hello world!")
+    fileSystem.source(path).use {
+      fileSystem.source(path).use {
+      }
+    }
   }
 }

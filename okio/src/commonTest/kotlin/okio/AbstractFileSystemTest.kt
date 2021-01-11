@@ -39,6 +39,7 @@ abstract class AbstractFileSystemTest(
   val clock: Clock,
   val fileSystem: FileSystem,
   val windowsLimitations: Boolean,
+  val allowClobberingEmptyDirectories: Boolean,
   temporaryDirectory: Path
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken()}"
@@ -184,6 +185,8 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun appendingSinkDoesNotImpactExistingFile() {
+    if (fileSystem is FakeFileSystem && !fileSystem.allowReadsWhileWriting) return
+
     val path = base / "appending-sink-does-not-impact-existing-file"
     path.writeUtf8("hello, world!\n")
     val sink = fileSystem.appendingSink(path)
@@ -205,6 +208,8 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun fileSinkFlush() {
+    if (fileSystem is FakeFileSystem && !fileSystem.allowReadsWhileWriting) return
+
     val path = base / "file-sink"
     val sink = fileSystem.sink(path)
 
@@ -352,8 +357,11 @@ abstract class AbstractFileSystemTest(
     fileSystem.createDirectory(source)
     val target = base / "target"
     target.writeUtf8("hello, world!")
-    expectIOExceptionOnEverythingButWindows {
+    try {
       fileSystem.atomicMove(source, target)
+      assertTrue(allowClobberingEmptyDirectories)
+    } catch (e: IOException) {
+      assertFalse(allowClobberingEmptyDirectories)
     }
   }
 
@@ -617,15 +625,6 @@ abstract class AbstractFileSystemTest(
       assertFalse(expectCrash)
     } catch (_: IOException) {
       assertTrue(expectCrash)
-    }
-  }
-
-  private fun expectIOExceptionOnEverythingButWindows(block: () -> Unit) {
-    try {
-      block()
-      assertTrue(windowsLimitations)
-    } catch (e: IOException) {
-      assertFalse(windowsLimitations)
     }
   }
 

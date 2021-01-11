@@ -31,6 +31,8 @@ import okio.Source
 import okio.Timeout
 import okio.fakefilesystem.FakeFileSystem.Element.Directory
 import okio.fakefilesystem.FakeFileSystem.Element.File
+import okio.fakefilesystem.FakeFileSystem.Operation.READ
+import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 
@@ -50,6 +52,8 @@ import kotlin.jvm.JvmName
  *  * Moving a file that is currently open for reading or writing.
  *  * Deleting a file that is currently open for reading or writing.
  *  * Moving a file to a path that currently resolves to an empty directory.
+ *  * Reading and writing the same file at the same time.
+ *  * Opening a file for writing that is already open for writing.
  *
  * Programs that do not attempt any of the above operations should work fine on both UNIX and
  * Windows systems. Relax these constraints individually or call [emulateWindows] or [emulateUnix];
@@ -96,6 +100,18 @@ class FakeFileSystem(
    * systems typically allow files to replace empty directories; UNIX file systems do not.
    */
   var allowClobberingEmptyDirectories = false
+
+  /**
+   * True to permit a file to have multiple [sinks][sink] open at the same time. Both Windows and
+   * UNIX file systems permit this but the result may be undefined.
+   */
+  var allowWritesWhileWriting = false
+
+  /**
+   * True to permit a file to have a [source] and [sink] open at the same time. Both Windows and
+   * UNIX file systems permit this but the result may be undefined.
+   */
+  var allowReadsWhileWriting = false
 
   /**
    * Canonical paths for every file and directory in this file system. This omits file system roots
@@ -162,6 +178,8 @@ class FakeFileSystem(
     allowMovingOpenFiles = false
     allowDeletingOpenFiles = false
     allowClobberingEmptyDirectories = true
+    allowWritesWhileWriting = true
+    allowReadsWhileWriting = true
   }
 
   /**
@@ -176,6 +194,8 @@ class FakeFileSystem(
     allowMovingOpenFiles = true
     allowDeletingOpenFiles = true
     allowClobberingEmptyDirectories = false
+    allowWritesWhileWriting = true
+    allowReadsWhileWriting = true
   }
 
   override fun canonicalize(path: Path): Path {
@@ -218,8 +238,13 @@ class FakeFileSystem(
     if (element !is File) {
       throw IOException("not a file: $file")
     }
+    if (!allowReadsWhileWriting) {
+      findOpenFile(canonicalPath, operation = WRITE)?.let {
+        throw IOException("file is already open for writing $file", it.backtrace)
+      }
+    }
 
-    val openFile = OpenFile(canonicalPath, Exception("file opened for reading here"))
+    val openFile = OpenFile(canonicalPath, READ, Exception("file opened for reading here"))
     openFiles += openFile
     element.access(now = clock.now())
     return FakeFileSource(openFile, Buffer().write(element.data))
@@ -241,10 +266,21 @@ class FakeFileSystem(
     if (existing is Directory) {
       throw IOException("destination is a directory: $file")
     }
+    if (!allowWritesWhileWriting) {
+      findOpenFile(canonicalPath, operation = WRITE)?.let {
+        throw IOException("file is already open for writing $file", it.backtrace)
+      }
+    }
+    if (!allowReadsWhileWriting) {
+      findOpenFile(canonicalPath, operation = READ)?.let {
+        throw IOException("file is already open for reading $file", it.backtrace)
+      }
+    }
+
     val parent = requireDirectory(canonicalPath.parent)
     parent.access(now, true)
 
-    val openFile = OpenFile(canonicalPath, Exception("file opened for writing here"))
+    val openFile = OpenFile(canonicalPath, WRITE, Exception("file opened for writing here"))
     openFiles += openFile
     val regularFile = File(createdAt = existing?.createdAt ?: now)
     val result = FakeFileSink(openFile, regularFile)
@@ -281,10 +317,10 @@ class FakeFileSystem(
     }
     requireDirectory(canonicalTarget.parent)
     if (!allowMovingOpenFiles) {
-      openFileOrNull(canonicalSource)?.let {
+      findOpenFile(canonicalSource)?.let {
         throw IOException("source is open $source", it.backtrace)
       }
-      openFileOrNull(canonicalTarget)?.let {
+      findOpenFile(canonicalTarget)?.let {
         throw IOException("target is open $target", it.backtrace)
       }
     }
@@ -307,7 +343,7 @@ class FakeFileSystem(
     }
 
     if (!allowDeletingOpenFiles) {
-      openFileOrNull(canonicalPath)?.let {
+      findOpenFile(canonicalPath)?.let {
         throw IOException("file is open $path", it.backtrace)
       }
     }
@@ -381,14 +417,22 @@ class FakeFileSystem(
     abstract val metadata: FileMetadata
   }
 
-  private fun openFileOrNull(canonicalPath: Path): OpenFile? {
-    return openFiles.firstOrNull { it.canonicalPath == canonicalPath }
+  private fun findOpenFile(canonicalPath: Path, operation: Operation? = null): OpenFile? {
+    return openFiles.firstOrNull {
+      it.canonicalPath == canonicalPath && (operation == null || operation == it.operation)
+    }
   }
 
   private class OpenFile(
     val canonicalPath: Path,
+    val operation: Operation,
     val backtrace: Throwable
   )
+
+  private enum class Operation {
+    READ,
+    WRITE
+  }
 
   /** Reads data from [buffer], removing itself from [openPathsMutable] when closed. */
   private inner class FakeFileSource(
