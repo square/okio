@@ -32,7 +32,7 @@ private val DOT_DOT = "..".encodeUtf8()
 internal inline fun Path.commonIsAbsolute(): Boolean {
   return bytes.startsWith(SLASH) ||
     bytes.startsWith(BACKSLASH) ||
-    (volumeLetter != null && bytes.size > 2 && bytes[2] == '\\'.toByte())
+    (volumeLetter != null && bytes.size > 2 && (bytes[2] == '\\'.toByte() || bytes[2] == '/'.toByte()))
 }
 
 @ExperimentalFileSystem
@@ -44,7 +44,6 @@ internal inline fun Path.commonIsRelative(): Boolean {
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonVolumeLetter(): Char? {
-  if (bytes.indexOf(SLASH) != -1) return null
   if (bytes.size < 2) return null
   if (bytes[1] != ':'.toByte()) return null
   val c = bytes[0].toChar()
