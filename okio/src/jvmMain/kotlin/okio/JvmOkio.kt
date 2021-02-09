@@ -22,6 +22,7 @@ package okio
 
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
@@ -78,7 +79,7 @@ private class OutputStreamSink(
 /** Returns a source that reads from `in`. */
 fun InputStream.source(): Source = InputStreamSource(this, Timeout())
 
-private class InputStreamSource(
+private open class InputStreamSource(
   private val input: InputStream,
   private val timeout: Timeout
 ) : Source {
@@ -113,6 +114,25 @@ private class InputStreamSource(
   override fun timeout() = timeout
 
   override fun toString() = "source($input)"
+}
+
+private class FileSource(
+  private val input: FileInputStream
+) : InputStreamSource(input, Timeout()), Cursor {
+
+  override fun cursor(): Cursor = this
+
+  override fun position(): Long {
+    return input.channel.position()
+  }
+
+  override fun size(): Long {
+    return input.channel.size()
+  }
+
+  override fun seek(position: Long) {
+    input.channel.position(position)
+  }
 }
 
 /**
@@ -178,7 +198,7 @@ fun File.appendingSink(): Sink = FileOutputStream(this, true).sink()
 
 /** Returns a source that reads from `file`. */
 @Throws(FileNotFoundException::class)
-fun File.source(): Source = inputStream().source()
+fun File.source(): Source = FileSource(inputStream())
 
 /** Returns a source that reads from `path`. */
 @Throws(IOException::class)

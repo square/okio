@@ -15,6 +15,8 @@
  */
 package okio
 
+import okio.internal.JvmDefault
+
 /**
  * Supplies a stream of bytes. Use this interface to read data from wherever it's located: from the
  * network, storage, or a buffer in memory. Sources may be layered to transform supplied data, such
@@ -57,6 +59,15 @@ interface Source : Closeable {
    */
   @Throws(IOException::class)
   fun read(sink: Buffer, byteCount: Long): Long
+
+  /**
+   * Returns a cursor to access the position and size of this source if it supports random access.
+   * This returns null if this source doesn't support random access.
+   *
+   * The returned cursor is stateful and reflects the current position and size as they change.
+   */
+  @JvmDefault
+  fun cursor(): Cursor? = null
 
   /** Returns the timeout for this source.  */
   fun timeout(): Timeout
