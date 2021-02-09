@@ -1,4 +1,4 @@
-Okio Testing (pre-release)
---------------------------
+Okio Fake File System
+---------------------
 
-This module contains test implementations of Okio types.
+This module contains an in-memory file system.

@@ -90,7 +90,7 @@ kotlin {
     }
     jvmMain {
       dependencies {
-        api deps.kotlin.stdLib.jdk6
+        api deps.kotlin.stdLib.jdk8
         compileOnly deps.animalSniffer.annotations
       }
     }
@@ -177,11 +177,6 @@ kotlin {
       dependsOn nativeTest
     }
   }
-}
-
-tasks.withType(JavaCompile) {
-  options.encoding = 'UTF-8'
-  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 // modify these lines for MANIFEST.MF properties or for specific bnd instructions

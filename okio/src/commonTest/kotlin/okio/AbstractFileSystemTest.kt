@@ -17,10 +17,8 @@ package okio
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
-import kotlin.random.Random
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -627,8 +625,6 @@ abstract class AbstractFileSystemTest(
       assertTrue(expectCrash)
     }
   }
-
-  private fun randomToken() = Random.nextBytes(16).toByteString(0, 16).hex()
 
   fun Path.readUtf8(): String {
     return fileSystem.source(this).buffer().use {

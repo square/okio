@@ -44,11 +44,6 @@ kotlin {
   }
 }
 
-tasks.withType(JavaCompile) {
-  options.encoding = 'UTF-8'
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
-
 // modify these lines for MANIFEST.MF properties or for specific bnd instructions
 project.ext.bndManifest = '''
     Export-Package: okio.fakefilesystem
