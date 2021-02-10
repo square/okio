@@ -2,9 +2,9 @@ apply plugin: 'java-library'
 apply plugin: 'ru.vyarus.animalsniffer'
 
 kotlin.targets.matching { it.platformType.name == 'jvm' }.all { target ->
-  target.project.sourceCompatibility = JavaVersion.VERSION_1_7
-  target.project.targetCompatibility = JavaVersion.VERSION_1_7
-  
+  target.project.sourceCompatibility = JavaVersion.VERSION_1_8
+  target.project.targetCompatibility = JavaVersion.VERSION_1_8
+
   tasks['jvmJar'].configure { t ->
     // the bnd task convention modifies this jar task accordingly
     def bndConvention = bndBundleTaskConventionClass.newInstance(t);

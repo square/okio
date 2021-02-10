@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.ByteString.Companion.toByteString
 import kotlin.random.Random
 import kotlin.test.assertEquals
 
@@ -92,3 +93,5 @@ fun makeSegments(source: ByteString): ByteString {
   }
   return buffer.snapshot()
 }
+
+fun randomToken() = Random.nextBytes(16).toByteString(0, 16).hex()
