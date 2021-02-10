@@ -23,6 +23,7 @@ import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.Buffer.UnsafeCursor
 import okio.ByteString
+import okio.Cursor
 import okio.EOFException
 import okio.Options
 import okio.REPLACEMENT_CODE_POINT
@@ -1685,4 +1686,24 @@ internal inline fun UnsafeCursor.commonClose() {
   data = null
   start = -1
   end = -1
+}
+
+internal class BufferedSourceCursor(
+  private val buffer: Buffer,
+  private val sourceCursor: Cursor
+) : Cursor {
+  override fun position(): Long = sourceCursor.position() - buffer.size
+
+  override fun size(): Long = sourceCursor.size()
+
+  override fun seek(position: Long) {
+    val sourcePosition = sourceCursor.position()
+    val bufferSize = buffer.size
+    if (position in (sourcePosition - bufferSize)..sourcePosition) {
+      buffer.skip(bufferSize - sourcePosition + position)
+    } else {
+      buffer.clear()
+      sourceCursor.seek(position)
+    }
+  }
 }
