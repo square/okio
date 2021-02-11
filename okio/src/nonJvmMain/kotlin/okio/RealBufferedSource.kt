@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.internal.BufferedSourceCursor
 import okio.internal.commonClose
 import okio.internal.commonExhausted
 import okio.internal.commonIndexOf
@@ -51,6 +52,9 @@ internal actual class RealBufferedSource actual constructor(
 ) : BufferedSource {
   actual var closed: Boolean = false
   override val buffer: Buffer = Buffer()
+  private val cursor: Cursor? = source.cursor()?.run {
+    BufferedSourceCursor(buffer, this)
+  }
 
   override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
   override fun exhausted(): Boolean = commonExhausted()
@@ -108,6 +112,7 @@ internal actual class RealBufferedSource actual constructor(
   ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
   override fun peek(): BufferedSource = commonPeek()
+  override fun cursor() = cursor
   override fun close(): Unit = commonClose()
   override fun timeout(): Timeout = commonTimeout()
   override fun toString(): String = commonToString()
