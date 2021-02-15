@@ -15,20 +15,31 @@
  */
 package okio
 
+import kotlinx.cinterop.ByteVar
+import kotlinx.cinterop.ByteVarOf
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import okio.Path.Companion.toPath
 import platform.posix.EACCES
 import platform.posix.ENOENT
+import platform.posix.FILE
 import platform.posix.PATH_MAX
+import platform.posix.SEEK_SET
 import platform.posix.S_IFDIR
 import platform.posix.S_IFMT
 import platform.posix.S_IFREG
+import platform.posix._fseeki64
+import platform.posix._fstat64
+import platform.posix._ftelli64
 import platform.posix._fullpath
 import platform.posix._stat64
 import platform.posix.errno
+import platform.posix.fileno
+import platform.posix.fread
 import platform.posix.free
+import platform.posix.fwrite
 import platform.posix.mkdir
 import platform.posix.remove
 import platform.posix.rmdir
@@ -95,5 +106,45 @@ internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
 internal actual fun PosixFileSystem.variantMove(source: Path, target: Path) {
   if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING) == 0) {
     throw lastErrorToIOException()
+  }
+}
+
+internal actual fun variantFread(
+  target: CPointer<ByteVarOf<Byte>>,
+  byteCount: UInt,
+  file: CPointer<FILE>
+): UInt {
+  return fread(target, 1, byteCount.toULong(), file).toUInt()
+}
+
+internal actual fun variantFwrite(
+  target: CPointer<ByteVar>,
+  byteCount: UInt,
+  file: CPointer<FILE>
+): UInt {
+  return fwrite(target, 1, byteCount.toULong(), file).toUInt()
+}
+
+internal actual fun variantFtell(file: CPointer<FILE>): Long {
+  val result = _ftelli64(file)
+  if (result == -1L) {
+    throw errnoToIOException(errno)
+  }
+  return result
+}
+
+internal actual fun variantSize(file: CPointer<FILE>): Long {
+  memScoped {
+    val stat = alloc<_stat64>()
+    if (_fstat64(fileno(file), stat.ptr) != 0) {
+      throw errnoToIOException(errno)
+    }
+    return stat.st_size
+  }
+}
+
+internal actual fun variantSeek(position: Long, file: CPointer<FILE>) {
+  if (_fseeki64(file, position, SEEK_SET) != 0) {
+    throw errnoToIOException(errno)
   }
 }

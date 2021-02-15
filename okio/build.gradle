@@ -24,7 +24,7 @@ apply plugin: 'org.jetbrains.kotlin.multiplatform'
  *               '-- mingwX64
  * ```
  *
- * Every child of `native` also includes a source set that depends on the pointer size:
+ * Every child of `unix` also includes a source set that depends on the pointer size:
  *
  *  * sizet32 for watchOS, including watchOS 64-bit architectures
  *  * sizet64 for everything else
@@ -132,7 +132,6 @@ kotlin {
       dependsOn nativeMain
     }
     mingwX64Main {
-      dependsOn sizet64Main
       dependsOn mingwMain
     }
     mingwX64Test {

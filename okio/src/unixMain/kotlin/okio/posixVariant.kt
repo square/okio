@@ -15,13 +15,21 @@
  */
 package okio
 
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import okio.internal.toPath
+import platform.posix.FILE
 import platform.posix.errno
+import platform.posix.fileno
 import platform.posix.free
+import platform.posix.fstat
 import platform.posix.mkdir
 import platform.posix.realpath
 import platform.posix.remove
 import platform.posix.rename
+import platform.posix.stat
 import platform.posix.timespec
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "/"
@@ -59,6 +67,16 @@ internal actual fun PosixFileSystem.variantMove(
   val result = rename(source.toString(), target.toString())
   if (result != 0) {
     throw errnoToIOException(errno)
+  }
+}
+
+internal actual fun variantSize(file: CPointer<FILE>): Long {
+  memScoped {
+    val stat = alloc<stat>()
+    if (fstat(fileno(file), stat.ptr) != 0) {
+      throw errnoToIOException(errno)
+    }
+    return stat.st_size
   }
 }
 
