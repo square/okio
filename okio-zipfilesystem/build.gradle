@@ -17,6 +17,7 @@ kotlin {
         implementation deps.test.junit
         implementation deps.test.assertj
         implementation deps.kotlin.test.jdk
+        implementation deps.kotlin.time
       }
     }
   }

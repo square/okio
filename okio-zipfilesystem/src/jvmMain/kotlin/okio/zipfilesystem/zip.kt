@@ -175,7 +175,7 @@ fun open(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
   // public API doesn't allow us to throw IOException except from the constructor
   // or from getInputStream.
   cursor.seek(record.centralDirOffset)
-  val entries = mutableMapOf<Path, ZipEntry>()
+  val entries = mutableListOf<ZipEntry>()
   for (i in 0 until record.numEntries) {
     val newEntry = source.readEntry(
       isZip64 = zip64EocdRecordOffset != -1L
@@ -183,14 +183,52 @@ fun open(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
     if (newEntry.localHeaderRelOffset >= record.centralDirOffset) {
       throw IOException("Local file header offset is after central directory")
     }
-    val entryName = newEntry.name
-    val path = "/".toPath().div(entryName)
-    if (entries.put(path, newEntry) != null) {
-      throw IOException("Duplicate path: $entryName")
+    entries += newEntry
+  }
+
+  val index = buildIndex(entries)
+
+  return ZipFileSystem(zipPath, fileSystem, index, comment)
+}
+
+/**
+ * Returns a map containing all of [entries], plus parent entries required so that all entries
+ * (other than the file system root `/`) have a parent.
+ */
+@ExperimentalFileSystem
+private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
+  val result = mutableMapOf<Path, ZipEntry>()
+
+  // Iterate in sorted order so each path is preceded by its parent.
+  for (entry in entries.sortedBy { it.canonicalPath }) {
+    if (result.put(entry.canonicalPath, entry) != null) {
+      throw IOException("Duplicate path: ${entry.canonicalPath}")
+    }
+
+    // Make sure this parent directories exist all the way up to the file system root.
+    var child = entry
+    while (true) {
+      val parentPath = child.canonicalPath.parent ?: break // currentEntry is '/'.
+      var parentEntry = result[parentPath]
+
+      // We've found a parent that already exists! Add the child; we're done.
+      if (parentEntry != null) {
+        parentEntry.children += child.canonicalPath
+        break
+      }
+
+      // A parent is missing! Synthesize one.
+      parentEntry = ZipEntry(
+        canonicalPath = parentPath,
+        isDirectory = true
+      )
+      result[parentPath] = parentEntry
+      parentEntry.children += child.canonicalPath
+      child = parentEntry
     }
   }
 
-  return ZipFileSystem(zipPath, fileSystem, entries, comment)
+  return result
 }
 
 @Throws(IOException::class)
@@ -227,6 +265,7 @@ private fun BufferedSource.readEocdRecord(isZip64: Boolean): EocdRecord {
 /**
  * On exit, [this@readEntry] will be positioned at the start of the next entry in the Central Directory.
  */
+@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun BufferedSource.readEntry(isZip64: Boolean): ZipEntry {
   val sig = readIntLe()
@@ -261,9 +300,12 @@ internal fun BufferedSource.readEntry(isZip64: Boolean): ZipEntry {
 
   val extra = readByteString(extraLength.toLong())
   val comment = readUtf8(commentByteCount.toLong())
+  val canonicalPath = "/".toPath() / name
+  val isDirectory = name.endsWith("/")
 
   val zipEntry = ZipEntry(
-    name = name,
+    canonicalPath = canonicalPath,
+    isDirectory = isDirectory,
     comment = comment,
     crc = crc,
     compressedSize = compressedSize,
@@ -330,8 +372,8 @@ internal fun BufferedSource.readZip64EocdRecord(commentLength: Int): EocdRecord 
   val diskWithCentralDirStart = readIntLe()
   val numEntries = readLongLe()
   val totalNumEntries = readLongLe()
-  readLong() // Ignore the size of the central directory
-  val centralDirOffset = readLong()
+  readLongLe() // Ignore the size of the central directory
+  val centralDirOffset = readLongLe()
   if (numEntries != totalNumEntries || diskNumber != 0 || diskWithCentralDirStart != 0) {
     throw IOException("spanned archives not supported")
   }
@@ -345,6 +387,7 @@ internal fun BufferedSource.readZip64EocdRecord(commentLength: Int): EocdRecord 
  * We assume we're parsing a central directory record. A central directory entry is required to be
  * complete.
  */
+@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun readZip64ExtendedInfo(zipEntry: ZipEntry): ZipEntry? {
   var size = zipEntry.size
@@ -375,16 +418,16 @@ internal fun readZip64ExtendedInfo(zipEntry: ZipEntry): ZipEntry? {
         // original and compressed size fields. We don't care too much about that.
         // The spec claims that the order of fields is fixed anyway.
         if (size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) {
-          size = source.readLong()
+          size = source.readLongLe()
         }
         if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) {
-          compressedSize = source.readLong()
+          compressedSize = source.readLongLe()
         }
 
         // The local header offset is significant only in the central directory. It makes no
         // sense within the local header itself.
         if (localHeaderRelOffset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) {
-          localHeaderRelOffset = source.readLong()
+          localHeaderRelOffset = source.readLongLe()
         }
       } catch (e: EOFException) {
         val zipException = IOException("Error parsing extended info")
@@ -434,7 +477,8 @@ internal fun readZip64ExtendedInfo(zipEntry: ZipEntry): ZipEntry? {
   extra = extrasWithoutZip64.toByteString()
 
   return ZipEntry(
-    name = zipEntry.name,
+    canonicalPath = zipEntry.canonicalPath,
+    isDirectory = zipEntry.isDirectory,
     comment = zipEntry.comment,
     crc = zipEntry.crc,
     compressedSize = compressedSize,

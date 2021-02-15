@@ -30,7 +30,35 @@ import java.io.IOException
 import java.util.zip.Inflater
 
 /**
- * Read only access to a zip file.
+ * Read only access to a [zip file][zip_format].
+ *
+ * Zip Timestamps
+ * --------------
+ *
+ * The base zip format tracks the [last modified timestamp][FileMetadata.lastModifiedAtMillis]. It
+ * does not track [created timestamps][FileMetadata.createdAtMillis] or [last accessed
+ * timestamps][FileMetadata.lastAccessedAtMillis]. This format has limitations:
+ *
+ *  * Timestamps are 16-bit values stored with 2-second precision. Some zip encoders (WinZip, PKZIP)
+ *    round up to the nearest 2 seconds; other encoders (Java) round down.
+ *
+ *  * Timestamps before 1980-01-01 cannot be represented. They cannot represent dates after
+ *    2107-12-31.
+ *
+ *  * Timestamps are stored in local time with no time zone offset. If the time zone offset changes
+ *    – due to daylight savings time or the zip file being sent to another time zone – file times
+ *    will be incorrect. The file time will be shifted by the difference in time zone offsets
+ *    between the encoder and decoder.
+ *
+ * The zip format has optional extensions for UNIX and NTFS timestamps.
+ *
+ *  * UNIX timestamps support both last-access time and last modification time. These timestamps
+ *    are stored with 1-second precision using UTC.
+ *
+ *  * NTFS timestamps support creation time, last access time, and last modified time. These
+ *    timestamps are stored with 100-millisecond precision using UTC.
+ *
+ * [zip_format]: https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE_6.2.0.txt
  */
 @ExperimentalFileSystem
 class ZipFileSystem internal constructor(
@@ -44,13 +72,24 @@ class ZipFileSystem internal constructor(
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
-    TODO()
+    val canonicalPath = canonicalize(path)
+    val entry = entries[canonicalPath] ?: return null
+    val lastModifiedAtMillis = entry.getTime()
+    // TODO(jwilson): decode NTFS and UNIX extra metadata to return better timestamps.
+    return FileMetadata(
+      isRegularFile = !entry.isDirectory,
+      isDirectory = entry.isDirectory,
+      size = if (entry.isDirectory) null else entry.size,
+      createdAtMillis = null,
+      lastModifiedAtMillis = if (lastModifiedAtMillis != -1L) lastModifiedAtMillis else null,
+      lastAccessedAtMillis = null
+    )
   }
 
   override fun list(dir: Path): List<Path> {
-    // TODO: directories might be absent in the ZIP file.
     val canonicalDir = canonicalize(dir)
-    return entries.keys.mapNotNull { if (it.parent == canonicalDir) it else null }
+    val entry = entries[canonicalDir] ?: throw IOException("not a directory: $dir")
+    return entry.children.toList()
   }
 
   @Throws(IOException::class)
