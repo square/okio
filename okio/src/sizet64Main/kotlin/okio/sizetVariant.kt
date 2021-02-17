@@ -19,7 +19,11 @@ import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
 import platform.posix.FILE
+import platform.posix.SEEK_SET
+import platform.posix.errno
 import platform.posix.fread
+import platform.posix.fseek
+import platform.posix.ftell
 import platform.posix.fwrite
 
 internal actual fun variantFread(
@@ -36,4 +40,18 @@ internal actual fun variantFwrite(
   file: CPointer<FILE>
 ): UInt {
   return fwrite(target, 1, byteCount.toULong(), file).toUInt()
+}
+
+internal actual fun variantFtell(file: CPointer<FILE>): Long {
+  val result = ftell(file)
+  if (result == -1L) {
+    throw errnoToIOException(errno)
+  }
+  return result
+}
+
+internal actual fun variantSeek(position: Long, file: CPointer<FILE>) {
+  if (fseek(file, position, SEEK_SET) != 0) {
+    throw errnoToIOException(errno)
+  }
 }

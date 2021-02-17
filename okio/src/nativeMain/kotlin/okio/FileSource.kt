@@ -28,7 +28,7 @@ import platform.posix.ferror
 /** Reads the bytes of a file as a source. */
 internal class FileSource(
   private val file: CPointer<FILE>
-) : Source {
+) : Source, Cursor {
   private val unsafeCursor = UnsafeCursor()
   private var closed = false
 
@@ -67,6 +67,16 @@ internal class FileSource(
   }
 
   override fun timeout(): Timeout = Timeout.NONE
+
+  override fun cursor() = this
+
+  override fun position() = variantFtell(file)
+
+  override fun size() = variantSize(file)
+
+  override fun seek(position: Long) {
+    variantSeek(position, file)
+  }
 
   override fun close() {
     if (closed) return

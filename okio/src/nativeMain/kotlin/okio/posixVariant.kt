@@ -15,6 +15,9 @@
  */
 package okio
 
+import kotlinx.cinterop.CPointer
+import platform.posix.FILE
+
 @ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantDelete(path: Path)
 
@@ -29,3 +32,9 @@ internal expect fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
 
 @ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantMove(source: Path, target: Path)
+
+internal expect fun variantFtell(file: CPointer<FILE>): Long
+
+internal expect fun variantSize(file: CPointer<FILE>): Long
+
+internal expect fun variantSeek(position: Long, file: CPointer<FILE>)
