@@ -23,6 +23,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -614,6 +615,170 @@ abstract class AbstractFileSystemTest(
         fileSystem.delete(parentA)
       }
     }
+  }
+
+  @Test fun fileSourceCursorHappyPath() {
+    if (isJs) return // TODO: implement cursors on Js platform.
+
+    val path = base / "file-source"
+    fileSystem.write(path) {
+      writeUtf8("abcdefghijklmnop")
+    }
+    val source = fileSystem.source(path)
+    val cursor = source.cursor()!!
+    assertEquals(16L, cursor.size())
+    val buffer = Buffer()
+
+    assertEquals(0L, cursor.position())
+    assertEquals(4L, source.read(buffer, 4L))
+    assertEquals("abcd", buffer.readUtf8())
+    assertEquals(4L, cursor.position())
+
+    cursor.seek(8L)
+    assertEquals(8L, cursor.position())
+    assertEquals(4L, source.read(buffer, 4L))
+    assertEquals("ijkl", buffer.readUtf8())
+    assertEquals(12L, cursor.position())
+
+    cursor.seek(16L)
+    assertEquals(16L, cursor.position())
+    assertEquals(-1L, source.read(buffer, 4L))
+    assertEquals("", buffer.readUtf8())
+    assertEquals(16L, cursor.position())
+  }
+
+  @Test fun fileSourceCursorSeekBackwards() {
+    if (isJs) return // TODO: implement cursors on Js platform.
+
+    val path = base / "file-source-backwards"
+    fileSystem.write(path) {
+      writeUtf8("abcdefghijklmnop")
+    }
+    val source = fileSystem.source(path)
+    val cursor = source.cursor()!!
+    assertEquals(16L, cursor.size())
+    val buffer = Buffer()
+
+    assertEquals(0L, cursor.position())
+    assertEquals(16L, source.read(buffer, 16L))
+    assertEquals("abcdefghijklmnop", buffer.readUtf8())
+    assertEquals(16L, cursor.position())
+
+    cursor.seek(0L)
+    assertEquals(0L, cursor.position())
+    assertEquals(16L, source.read(buffer, 16L))
+    assertEquals("abcdefghijklmnop", buffer.readUtf8())
+    assertEquals(16L, cursor.position())
+  }
+
+  @Test fun bufferedFileSourceCursorHappyPath() {
+    if (isJs) return // TODO: implement cursors on Js platform.
+
+    val path = base / "buffered-file-source"
+    fileSystem.write(path) {
+      writeUtf8("abcdefghijklmnop")
+    }
+    val fileSource = fileSystem.source(path)
+    val source = fileSource.buffer()
+    val cursor = source.cursor()!!
+    assertEquals(16L, cursor.size())
+
+    assertEquals(0L, cursor.position())
+    assertEquals("abcd", source.readUtf8(4L))
+    assertEquals(4L, cursor.position())
+
+    cursor.seek(8L)
+    assertEquals(8L, source.buffer.size)
+    assertEquals(8L, cursor.position())
+    assertEquals("ijkl", source.readUtf8(4L))
+    assertEquals(12L, cursor.position())
+
+    cursor.seek(16L)
+    assertEquals(0L, source.buffer.size)
+    assertEquals(16L, cursor.position())
+    assertEquals("", source.readUtf8())
+    assertEquals(16L, cursor.position())
+  }
+
+  @Test fun bufferedFileSourceCursorSeekBackwards() {
+    if (isJs) return // TODO: implement cursors on Js platform.
+
+    val path = base / "buffered-file-source-backwards"
+    fileSystem.write(path) {
+      writeUtf8("abcdefghijklmnop")
+    }
+    val fileSource = fileSystem.source(path)
+    val source = fileSource.buffer()
+    val cursor = source.cursor()!!
+    assertEquals(16L, cursor.size())
+
+    assertEquals(0L, cursor.position())
+    assertEquals("abcdefghijklmnop", source.readUtf8(16L))
+    assertEquals(16L, cursor.position())
+
+    cursor.seek(0L)
+    assertEquals(0L, source.buffer.size)
+    assertEquals(0L, cursor.position())
+    assertEquals("abcdefghijklmnop", source.readUtf8(16L))
+    assertEquals(16L, cursor.position())
+  }
+
+  @Test fun bufferedFileSourceSeekBeyondBuffer() {
+    if (isJs) return // TODO: implement cursors on Js platform.
+
+    val path = base / "buffered-file-source-backwards"
+    fileSystem.write(path) {
+      writeUtf8("a".repeat(8192 * 2))
+    }
+    val fileSource = fileSystem.source(path)
+    val source = fileSource.buffer()
+    val cursor = source.cursor()!!
+    assertEquals(8192 * 2, cursor.size())
+
+    assertEquals(0L, cursor.position())
+    assertEquals("aaaa", source.readUtf8(4L))
+    assertEquals(4L, cursor.position())
+
+    cursor.seek(8193L)
+    assertEquals(0L, source.buffer.size)
+    assertEquals(8193L, cursor.position())
+    assertEquals("aaaa", source.readUtf8(4L))
+    assertEquals(8197L, cursor.position())
+  }
+
+  @Test fun sourceCursorWhenClosed() {
+    if (isJs) return // TODO: implement cursors on Js platform.
+
+    val path = base / "file-source"
+    fileSystem.write(path) {
+      writeUtf8("abcdefghijklmnop")
+    }
+    val source = fileSystem.source(path)
+    val cursor = source.cursor()!!
+    source.close()
+
+    assertClosedFailure {
+      cursor.size()
+    }
+    assertClosedFailure {
+      cursor.position()
+    }
+    assertClosedFailure {
+      cursor.seek(0L)
+    }
+  }
+
+  private fun assertClosedFailure(block: () -> Unit) {
+    val exception = assertFails {
+      block()
+    }
+    val exceptionType = exception::class.simpleName
+    assertTrue(
+      exceptionType == "IOException" ||
+        exceptionType == "IllegalStateException" ||
+        exceptionType == "ClosedChannelException",
+      "unexpected exception: $exception"
+    )
   }
 
   private fun expectIOExceptionOnWindows(exceptJs: Boolean = false, block: () -> Unit) {

@@ -19,6 +19,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import okio.Buffer
 import okio.ByteString
+import okio.Cursor
 import okio.ExperimentalFileSystem
 import okio.FileMetadata
 import okio.FileNotFoundException
@@ -247,7 +248,7 @@ class FakeFileSystem(
     val openFile = OpenFile(canonicalPath, READ, Exception("file opened for reading here"))
     openFiles += openFile
     element.access(now = clock.now())
-    return FakeFileSource(openFile, Buffer().write(element.data))
+    return FakeFileSource(openFile, element)
   }
 
   override fun sink(file: Path): Sink {
@@ -437,9 +438,15 @@ class FakeFileSystem(
   /** Reads data from [buffer], removing itself from [openPathsMutable] when closed. */
   private inner class FakeFileSource(
     private val openFile: OpenFile,
-    private val buffer: Buffer
-  ) : Source {
+    private val file: File
+  ) : Source, Cursor {
+    private val buffer = Buffer()
+    private var size = 0L
     private var closed = false
+
+    init {
+      seek(0L)
+    }
 
     override fun read(sink: Buffer, byteCount: Long): Long {
       check(!closed) { "closed" }
@@ -447,6 +454,34 @@ class FakeFileSystem(
     }
 
     override fun timeout() = Timeout.NONE
+
+    override fun cursor(): Cursor = this
+
+    override fun position(): Long {
+      check(!closed) { "closed" }
+      return size - buffer.size
+    }
+
+    override fun size(): Long {
+      check(!closed) { "closed" }
+      return size
+    }
+
+    override fun seek(position: Long) {
+      check(!closed) { "closed" }
+
+      buffer.clear()
+      when {
+        position <= size -> {
+          buffer.write(file.data)
+          size = file.data.size.toLong()
+          buffer.skip(position)
+        }
+        else -> {
+          size = position
+        }
+      }
+    }
 
     override fun close() {
       if (closed) return
