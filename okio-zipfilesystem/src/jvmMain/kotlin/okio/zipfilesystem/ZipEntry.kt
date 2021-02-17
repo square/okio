@@ -17,6 +17,8 @@
 package okio.zipfilesystem
 
 import okio.ByteString
+import okio.ExperimentalFileSystem
+import okio.Path
 import java.util.Calendar
 import java.util.GregorianCalendar
 
@@ -27,6 +29,7 @@ import java.util.GregorianCalendar
  * of the corresponding data. An entry does not contain the data itself, but can be used as a key
  * with [ZipFileSystem.source].
  */
+@ExperimentalFileSystem
 internal class ZipEntry(
   /**
    * The name is actually a path and may contain `/` characters.
@@ -38,13 +41,20 @@ internal class ZipEntry(
    *
    * At most 0xffff bytes when encoded.
    */
-  val name: String,
+  val canonicalPath: Path,
+
+  /**
+   * Determine whether or not this `ZipEntry` is a directory.
+   *
+   * @return `true` when this `ZipEntry` is a directory, `false` otherwise.
+   */
+  val isDirectory: Boolean = false,
 
   /**
    * Returns the comment for this `ZipEntry`, or `null` if there is no comment.
    * If we're reading a zip file using `ZipInputStream`, the comment is not available.
    */
-  val comment: String,
+  val comment: String = "",
 
   /**
    * Gets the checksum for this `ZipEntry`.
@@ -55,7 +65,7 @@ internal class ZipEntry(
    *
    * @throws IllegalArgumentException if `value` is < 0 or > 0xFFFFFFFFL.
    */
-  val crc: Long,
+  val crc: Long = -1L,
 
   /**
    * Gets the compressed size of this `ZipEntry`.
@@ -63,7 +73,7 @@ internal class ZipEntry(
    * @return the compressed size, or -1 if the compressed size has not been
    * set.
    */
-  val compressedSize: Long,
+  val compressedSize: Long = -1L,
 
   /**
    * Gets the uncompressed size of this `ZipEntry`.
@@ -71,7 +81,7 @@ internal class ZipEntry(
    * @return the uncompressed size, or `-1` if the size has not been
    * set.
    */
-  val size: Long,
+  val size: Long = -1L,
 
   /**
    * Gets the compression method for this `ZipEntry`.
@@ -79,11 +89,11 @@ internal class ZipEntry(
    * @return the compression method, either `DEFLATED`, `STORED`
    * or -1 if the compression method has not been set.
    */
-  val compressionMethod: Int,
+  val compressionMethod: Int = -1,
 
-  val time: Int,
+  val time: Int = -1,
 
-  val modDate: Int,
+  val modDate: Int = -1,
 
   /**
    * Gets the extra information for this `ZipEntry`.
@@ -91,10 +101,12 @@ internal class ZipEntry(
    * @return a byte array containing the extra information, or `null` if
    * there is none.
    */
-  val extra: ByteString,
+  val extra: ByteString = ByteString.EMPTY,
 
-  val localHeaderRelOffset: Long
+  val localHeaderRelOffset: Long = -1L
 ) {
+  val children = mutableListOf<Path>()
+
   /**
    * Gets the last modification time of this `ZipEntry`.
    *
@@ -103,28 +115,20 @@ internal class ZipEntry(
    */
   fun getTime(): Long {
     if (time != -1) {
+      // Note that this inherits the local time zone.
       val cal = GregorianCalendar()
       cal.set(Calendar.MILLISECOND, 0)
-      cal.set(
-        1980 + (modDate shr 9 and 0x7f),
-        (modDate shr 5 and 0xf) - 1,
-        modDate and 0x1f,
-        time shr 11 and 0x1f,
-        time shr 5 and 0x3f,
-        time and 0x1f shl 1
-      )
+      val year = 1980 + (modDate shr 9 and 0x7f)
+      val month = modDate shr 5 and 0xf
+      val day = modDate and 0x1f
+      val hour = time shr 11 and 0x1f
+      val minute = time shr 5 and 0x3f
+      val second = time and 0x1f shl 1
+      cal.set(year, month - 1, day, hour, minute, second)
       return cal.time.time
     }
     return -1
   }
-
-  /**
-   * Determine whether or not this `ZipEntry` is a directory.
-   *
-   * @return `true` when this `ZipEntry` is a directory, `false` otherwise.
-   */
-  val isDirectory: Boolean
-    get() = name[name.length - 1] == '/'
 
   companion object {
     /** Zip entry state: Deflated. */
