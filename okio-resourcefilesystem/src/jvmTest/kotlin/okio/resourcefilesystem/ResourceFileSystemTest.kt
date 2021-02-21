@@ -148,6 +148,36 @@ class ResourceFileSystemTest {
   }
 
   @Test
+  fun testUnconstrainedResources() {
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem".toPath())).isNotNull()
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/a.txt".toPath())).isNotNull()
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/b".toPath())).isNotNull()
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/b/b.txt".toPath())).isNotNull()
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/x/x.txt".toPath())).isNotNull()
+    assertThat(fileSystem.canonicalize("LICENSE-junit.txt".toPath())).isNotNull()
+  }
+
+  @Test
+  fun testConstrainedResources() {
+    val fileSystem = ResourceFileSystem(paths = listOf("okio/resourcefilesystem".toPath()))
+
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem".toPath())).isNotNull()
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/a.txt".toPath())).isNotNull()
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/b".toPath())).isNotNull()
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/b/b.txt".toPath())).isNotNull()
+    // TODO consider whether this should fail? Is the filter a path, or the files in that path.
+    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/x/x.txt".toPath())).isNotNull()
+
+    try {
+      assertThat(fileSystem.canonicalize("LICENSE-junit.txt".toPath()))
+    } catch (ioe: IOException) {
+      assertThat(ioe.message).isEqualTo(
+        "Requested path LICENSE-junit.txt is not within resource filesystem [okio/resourcefilesystem]"
+      )
+    }
+  }
+
+  @Test
   fun packagePath() {
     val path = ResourceFileSystemTest::class.java.`package`.toPath()
 

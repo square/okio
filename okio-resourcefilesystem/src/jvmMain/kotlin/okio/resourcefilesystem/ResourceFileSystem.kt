@@ -34,9 +34,29 @@ import java.net.URL
  * Both metadata and file listings are best effort, and will work better
  * for local project paths. The file system does not handle merging of
  * multiple paths from difference resources like overlapping Jar files.
+ *
+ * TODO hook into GrallVM building such that resources remain available
  */
 @ExperimentalFileSystem
-class ResourceFileSystem : ReadOnlyFilesystem() {
+class ResourceFileSystem(val paths: List<Path>? = null) : ReadOnlyFilesystem() {
+  override fun canonicalize(path: Path): Path {
+    val cleaned = super.canonicalize(path)
+
+    if (paths != null) {
+      // TODO should this fail early on files that don't exist also
+      paths.forEach {
+        val pathBytes = path.toString()
+        if (pathBytes.startsWith(it.toString())) {
+          return cleaned
+        }
+      }
+
+      throw IOException("Requested path $path is not within resource filesystem $paths")
+    }
+
+    return cleaned
+  }
+
   override fun list(dir: Path): List<Path> {
     val systemPath = toSystemPath(dir) ?: throw IOException("not listable")
 
