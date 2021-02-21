@@ -70,11 +70,18 @@ internal class FileSource(
 
   override fun cursor() = this
 
-  override fun position() = variantFtell(file)
+  override fun position(): Long {
+    check(!closed) { "closed" }
+    return variantFtell(file)
+  }
 
-  override fun size() = variantSize(file)
+  override fun size(): Long {
+    check(!closed) { "closed" }
+    return variantSize(file)
+  }
 
   override fun seek(position: Long) {
+    check(!closed) { "closed" }
     variantSeek(position, file)
   }
 
