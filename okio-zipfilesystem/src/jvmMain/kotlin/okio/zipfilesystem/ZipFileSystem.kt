@@ -74,14 +74,12 @@ class ZipFileSystem internal constructor(
   override fun metadataOrNull(path: Path): FileMetadata? {
     val canonicalPath = canonicalize(path)
     val entry = entries[canonicalPath] ?: return null
-    val lastModifiedAtMillis = entry.getTime()
-    // TODO(jwilson): decode NTFS and UNIX extra metadata to return better timestamps.
     return FileMetadata(
       isRegularFile = !entry.isDirectory,
       isDirectory = entry.isDirectory,
       size = if (entry.isDirectory) null else entry.size,
       createdAtMillis = null,
-      lastModifiedAtMillis = if (lastModifiedAtMillis != -1L) lastModifiedAtMillis else null,
+      lastModifiedAtMillis = entry.lastModifiedAtMillis,
       lastAccessedAtMillis = null
     )
   }
@@ -94,39 +92,16 @@ class ZipFileSystem internal constructor(
 
   @Throws(IOException::class)
   override fun source(path: Path): Source {
-    // Make sure this ZipEntry is in this Zip file.  We run it through the name lookup.
     val canonicalPath = canonicalize(path)
-    val entry = entries[canonicalPath] ?: throw FileNotFoundException("no such file $path")
+    val entry = entries[canonicalPath] ?: throw FileNotFoundException("no such file: $path")
     val source = fileSystem.source(zipPath).buffer()
     val cursor = source.cursor()!!
 
-    // We don't know the entry data's start position. All we have is the
-    // position of the entry's local header.
-    // http://www.pkware.com/documents/casestudies/APPNOTE.TXT
-    cursor.seek(entry.localHeaderRelOffset)
-
-    val localMagic = source.readIntLe()
-    if (localMagic.toLong() != LOCSIG) {
-      throwZipException("Local File Header", localMagic)
-    }
-    source.skip(2)
-
-    // At position 6 we find the General Purpose Bit Flag.
-    val gpbf = source.readShortLe().toInt() and 0xffff
-    if (gpbf and GPBF_UNSUPPORTED_MASK != 0) {
-      throw IOException("Invalid General Purpose Bit Flag: $gpbf")
-    }
-
-    // Offset 26 has the file name length, and offset 28 has the extra field length.
-    // These lengths can differ from the ones in the central header.
-    source.skip(18)
-    val fileNameLength = source.readShortLe().toInt() and 0xffff
-    val extraFieldLength = source.readShortLe().toInt() and 0xffff
-    // Skip the variable-size file name and extra field data.
-    source.skip((fileNameLength + extraFieldLength).toLong())
+    cursor.seek(entry.offset)
+    source.skipLocalHeader()
 
     return when (entry.compressionMethod) {
-      ZipEntry.STORED -> {
+      COMPRESSION_METHOD_STORED -> {
         FixedLengthSource(source, entry.size, truncate = true)
       }
       else -> {
