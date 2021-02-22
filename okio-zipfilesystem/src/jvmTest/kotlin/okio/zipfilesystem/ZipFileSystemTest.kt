@@ -40,6 +40,13 @@ class ZipFileSystemTest {
 
     assertThat(zipFileSystem.read("directory/subdirectory/child.txt".toPath()) { readUtf8() })
       .isEqualTo("Another file!")
+
+    assertThat(zipFileSystem.list("/".toPath()))
+      .hasSameElementsAs(listOf("/hello.txt".toPath(), "/directory".toPath()))
+    assertThat(zipFileSystem.list("/directory".toPath()))
+      .containsExactly("/directory/subdirectory".toPath())
+    assertThat(zipFileSystem.list("/directory/subdirectory".toPath()))
+      .containsExactly("/directory/subdirectory/child.txt".toPath())
   }
 
   /**

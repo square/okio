@@ -16,176 +16,120 @@
  */
 package okio.zipfilesystem
 
-import okio.Buffer
 import okio.BufferedSource
-import okio.ByteString.Companion.toByteString
 import okio.ExperimentalFileSystem
 import okio.FileSystem
+import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.buffer
-import java.io.EOFException
-import java.io.IOException
+import java.util.Calendar
+import java.util.GregorianCalendar
 
-internal const val LOCSIG: Long = 0x4034b50
-internal const val EXTSIG: Long = 0x8074b50
-internal const val CENSIG: Long = 0x2014b50
-internal const val ENDSIG: Long = 0x6054b50
-internal const val ENDHDR = 22
-internal const val EXTSIZ = 8
-internal const val CENVER = 6
-internal const val CENSIZ = 20
-internal const val CENLEN = 24
-internal const val CENEXT = 30
-internal const val CENATT = 36
-internal const val ENDTOT = 10
-internal const val ENDSIZ = 12
-internal const val ENDCOM = 20
-
-/**
- * General Purpose Bit Flags, Bit 0.
- * If set, indicates that the file is encrypted.
- */
-internal const val GPBF_ENCRYPTED_FLAG = 1 shl 0
-
-/**
- * Supported General Purpose Bit Flags Mask.
- * Bit mask of bits not supported.
- * Note: The only bit that we will enforce at this time
- * is the encrypted bit. Although other bits are not supported,
- * we must not enforce them as this could break some legitimate
- * use cases (See http://b/8617715).
- */
-internal const val GPBF_UNSUPPORTED_MASK = GPBF_ENCRYPTED_FLAG
-
-/**
- * Open zip file for reading.
- */
-internal const val OPEN_READ = 1
-
-/**
- * Delete zip file when closed.
- */
-internal const val OPEN_DELETE = 4
-
-/**
- * The maximum supported entry / archive size for standard (non zip64) entries and archives.
- */
-internal const val MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE = 0x00000000ffffffffL
-
-/**
- * The header ID of the zip64 extended info header. This value is used to identify
- * zip64 data in the "extra" field in the file headers.
- */
-private const val ZIP64_EXTENDED_INFO_HEADER_ID: Short = 0x0001
-
-/**
- * Size (in bytes) of the zip64 end of central directory locator. This will be located
- * immediately before the end of central directory record if a given zipfile is in the
- * zip64 format.
- */
-private const val ZIP64_LOCATOR_SIZE = 20
-
-/**
- * The zip64 end of central directory locator signature (4 bytes wide).
- */
+private const val LOCAL_FILE_HEADER_SIGNATURE = 0x4034b50
+private const val CENTRAL_FILE_HEADER_SIGNATURE = 0x2014b50
+private const val END_OF_CENTRAL_DIRECTORY_SIGNATURE = 0x6054b50
 private const val ZIP64_LOCATOR_SIGNATURE = 0x07064b50
-
-/**
- * The zip64 end of central directory record singature (4 bytes wide).
- */
 private const val ZIP64_EOCD_RECORD_SIGNATURE = 0x06064b50
 
+internal const val COMPRESSION_METHOD_DEFLATED = 8
+internal const val COMPRESSION_METHOD_STORED = 0
+
+/** General Purpose Bit Flags, Bit 0. Set if the file is encrypted. */
+private const val BIT_FLAG_ENCRYPTED = 1 shl 0
+
 /**
- * Constructs a new `ZipFile` allowing access to the given file.
- *
- * UTF-8 is used to decode all comments and entry names in the file.
- *
- * Find the central directory and read the contents.
- *
- * The central directory can be followed by a variable-length comment
- * field, so we have to scan through it backwards.  The comment is at
- * most 64K, plus we have 18 bytes for the end-of-central-dir stuff
- * itself, plus apparently sometimes people throw random junk on the end
- * just for the fun of it.
- *
- * This is all a little wobbly.  If the wrong value ends up in the EOCD
- * area, we're hosed. This appears to be the way that everybody handles
- * it though, so we're in good company if this fails.
+ * General purpose bit flags that this implementation handles. Strict enforcement of additional
+ * flags may break legitimate use cases.
+ */
+private const val BIT_FLAG_UNSUPPORTED_MASK = BIT_FLAG_ENCRYPTED
+
+/** Max size of entries and archives without zip64. */
+private const val MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE = 0xffffffffL
+
+/** Extra header ID for zip64. */
+private const val ZIP64_EXTENDED_INFO_HEADER_ID = 0x1
+
+/**
+ * Opens the file at [zipPath] for use as a file system. This uses UTF-8 to comments and names in
+ * the zip file.
  */
 @Throws(IOException::class)
 @ExperimentalFileSystem
 fun open(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
-  // Scan back, looking for the End Of Central Directory field. If the zip file doesn't
-  // have an overall comment (unrelated to any per-entry comments), we'll hit the EOCD
-  // on the first try.
-  // No need to synchronize raf here -- we only do this when we first open the zip file.
   val source = fileSystem.source(zipPath).buffer()
-  val cursor = source.cursor()!!
-  var scanOffset = cursor.size() - ENDHDR
+  val cursor = source.cursor()
+    ?: throw IOException("cannot open zip: file doesn't implement a random-access cursor")
 
-  if (scanOffset < 0) {
-    throw IOException("File too short to be a zip file: " + cursor.size())
-  }
-  val headerMagic = source.readIntLe()
-  if (headerMagic.toLong() == ENDSIG) {
-    throw IOException("Empty zip archive not supported")
-  }
-  if (headerMagic.toLong() != LOCSIG) {
-    throw IOException("Not a zip archive")
-  }
-
-  var stopOffset = scanOffset - 65536
-  if (stopOffset < 0) {
-    stopOffset = 0
+  val firstFileSignature = source.readIntLe()
+  if (firstFileSignature != LOCAL_FILE_HEADER_SIGNATURE) {
+    if (firstFileSignature == END_OF_CENTRAL_DIRECTORY_SIGNATURE) {
+      throw IOException("unsupported zip: empty")
+    }
+    throw IOException(
+      "not a zip: expected ${LOCAL_FILE_HEADER_SIGNATURE.hex} but was ${firstFileSignature.hex}"
+    )
   }
 
+  // Scan backwards from the end of the file looking for the END_OF_CENTRAL_DIRECTORY_SIGNATURE. If
+  // this file has no comment we'll see it on the first attempt; otherwise we have to go backwards
+  // byte-by-byte until we reach it. (The number of bytes scanned will equal the comment size).
+  var scanOffset = cursor.size() - 22 // end of central directory record size is 22 bytes.
+  if (scanOffset < 0L) {
+    throw IOException("not a zip: size=${cursor.size()}")
+  }
+  val stopOffset = maxOf(scanOffset - 65_536L, 0L)
   val eocdOffset: Long
   while (true) {
     cursor.seek(scanOffset)
-    if (source.readIntLe().toLong() == ENDSIG) {
+    if (source.readIntLe() == END_OF_CENTRAL_DIRECTORY_SIGNATURE) {
       eocdOffset = scanOffset
       break
     }
 
     scanOffset--
     if (scanOffset < stopOffset) {
-      throw IOException("End Of Central Directory signature not found")
+      throw IOException("not a zip: end of central directory signature not found")
     }
   }
 
-  val zip64EocdRecordOffset = source.readZip64EocdRecordLocator(eocdOffset)
+  var record = source.readEocdRecord()
+  val comment = source.readUtf8(record.commentByteCount.toLong())
 
-  // Seek back past the eocd signature so that we can continue with our search. Note that we add 4
-  // bytes to the offset to skip past the signature.
-  cursor.seek(eocdOffset + 4)
-  var record = source.readEocdRecord(
-    isZip64 = zip64EocdRecordOffset != -1L
-  )
-  val comment = source.readUtf8(record.commentLength.toLong())
-
-  // We have a zip64 eocd record; use that for getting the information we need.
-  if (zip64EocdRecordOffset != -1L) {
-    cursor.seek(zip64EocdRecordOffset)
-    record = source.readZip64EocdRecord(record.commentLength)
+  // If this is a zip64, read a zip64 central directory record.
+  val zip64LocatorOffset = eocdOffset - 20 // zip64 end of central directory locator is 20 bytes.
+  if (zip64LocatorOffset > 0L) {
+    cursor.seek(zip64LocatorOffset)
+    if (source.readIntLe() == ZIP64_LOCATOR_SIGNATURE) {
+      val diskWithCentralDir = source.readIntLe()
+      val zip64EocdRecordOffset = source.readLongLe()
+      val numDisks = source.readIntLe()
+      if (numDisks != 1 || diskWithCentralDir != 0) {
+        throw IOException("unsupported zip: spanned")
+      }
+      cursor.seek(zip64EocdRecordOffset)
+      val zip64EocdSignature = source.readIntLe()
+      if (zip64EocdSignature != ZIP64_EOCD_RECORD_SIGNATURE) {
+        throw IOException(
+          "bad zip: expected ${ZIP64_EOCD_RECORD_SIGNATURE.hex} but was ${zip64EocdSignature.hex}"
+        )
+      }
+      record = source.readZip64EocdRecord(record)
+    }
   }
 
-  // Seek to the first CDE and read all entries.
-  // We have to do this now (from the constructor) rather than lazily because the
-  // public API doesn't allow us to throw IOException except from the constructor
-  // or from getInputStream.
-  cursor.seek(record.centralDirOffset)
+  // Seek to the first central directory entry and read all of the entries.
+  cursor.seek(record.centralDirectoryOffset)
   val entries = mutableListOf<ZipEntry>()
-  for (i in 0 until record.numEntries) {
-    val newEntry = source.readEntry(
-      isZip64 = zip64EocdRecordOffset != -1L
-    )
-    if (newEntry.localHeaderRelOffset >= record.centralDirOffset) {
-      throw IOException("Local file header offset is after central directory")
+  for (i in 0 until record.entryCount) {
+    val newEntry = source.readEntry()
+    if (newEntry.offset >= record.centralDirectoryOffset) {
+      throw IOException("bad zip: local file header offset >= central directory offset")
     }
     entries += newEntry
   }
 
+  // Organize the entries into a tree.
   val index = buildIndex(entries)
 
   return ZipFileSystem(zipPath, fileSystem, index, comment)
@@ -202,13 +146,13 @@ private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
   // Iterate in sorted order so each path is preceded by its parent.
   for (entry in entries.sortedBy { it.canonicalPath }) {
     if (result.put(entry.canonicalPath, entry) != null) {
-      throw IOException("Duplicate path: ${entry.canonicalPath}")
+      throw IOException("bad zip: duplicate path: ${entry.canonicalPath}")
     }
 
     // Make sure this parent directories exist all the way up to the file system root.
     var child = entry
     while (true) {
-      val parentPath = child.canonicalPath.parent ?: break // currentEntry is '/'.
+      val parentPath = child.canonicalPath.parent ?: break // child is '/'.
       var parentEntry = result[parentPath]
 
       // We've found a parent that already exists! Add the child; we're done.
@@ -231,79 +175,80 @@ private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
   return result
 }
 
-@Throws(IOException::class)
-private fun BufferedSource.readEocdRecord(isZip64: Boolean): EocdRecord {
-  val numEntries: Long
-  val centralDirOffset: Long
-
-  if (isZip64) {
-    numEntries = -1
-    centralDirOffset = -1
-
-    // If we have a zip64 end of central directory record, we skip through the regular
-    // end of central directory record and use the information from the zip64 eocd record.
-    // We're still forced to read the comment length (below) since it isn't present in the
-    // zip64 eocd record.
-    skip(16)
-  } else {
-    // If we don't have a zip64 eocd record, we read values from the "regular" eocd record.
-    val diskNumber: Int = readShortLe().toInt() and 0xffff
-    val diskWithCentralDir: Int = readShortLe().toInt() and 0xffff
-    numEntries = (readShortLe().toInt() and 0xffff).toLong()
-    val totalNumEntries: Int = readShortLe().toInt() and 0xffff
-    skip(4) // Ignore centralDirSize.
-    centralDirOffset = readIntLe().toLong() and 0xffffffffL
-    if (numEntries != totalNumEntries.toLong() || diskNumber != 0 || diskWithCentralDir != 0) {
-      throw IOException("Spanned archives not supported")
-    }
-  }
-
-  val commentLength = readShortLe().toInt() and 0xffff
-  return EocdRecord(numEntries, centralDirOffset, commentLength)
-}
-
-/**
- * On exit, [this@readEntry] will be positioned at the start of the next entry in the Central Directory.
- */
+/** When this returns, [this] will be positioned at the start of the next entry. */
 @ExperimentalFileSystem
 @Throws(IOException::class)
-internal fun BufferedSource.readEntry(isZip64: Boolean): ZipEntry {
-  val sig = readIntLe()
-  if (sig.toLong() != CENSIG) {
-    throwZipException("Central Directory Entry", sig)
+internal fun BufferedSource.readEntry(): ZipEntry {
+  val signature = readIntLe()
+  if (signature != CENTRAL_FILE_HEADER_SIGNATURE) {
+    throw IOException(
+      "bad zip: expected ${CENTRAL_FILE_HEADER_SIGNATURE.hex} but was ${signature.hex}"
+    )
   }
-  skip(4)
-  val gpbf = readShortLe().toInt() and 0xffff
-  if (gpbf and GPBF_UNSUPPORTED_MASK != 0) {
-    throw IOException("Invalid General Purpose Bit Flag: $gpbf")
+
+  skip(4) // version made by (2) + version to extract (2).
+  val bitFlag = readShortLe().toInt() and 0xffff
+  if (bitFlag and BIT_FLAG_UNSUPPORTED_MASK != 0) {
+    throw IOException("unsupported zip: general purpose bit flag=${bitFlag.hex}")
   }
 
   val compressionMethod = readShortLe().toInt() and 0xffff
   val time = readShortLe().toInt() and 0xffff
-  val modDate = readShortLe().toInt() and 0xffff
+  val date = readShortLe().toInt() and 0xffff
+  // TODO(jwilson): decode NTFS and UNIX extra metadata to return better timestamps.
+  val lastModifiedAtMillis = dosDateTimeToEpochMillis(date, time)
 
   // These are 32-bit values in the file, but 64-bit fields in this object.
   val crc = readIntLe().toLong() and 0xffffffffL
-  val compressedSize = readIntLe().toLong() and 0xffffffffL
-  val size = readIntLe().toLong() and 0xffffffffL
-  val nameLength = readShortLe().toInt() and 0xffff
-  val extraLength = readShortLe().toInt() and 0xffff
+  var compressedSize = readIntLe().toLong() and 0xffffffffL
+  var size = readIntLe().toLong() and 0xffffffffL
+  val nameSize = readShortLe().toInt() and 0xffff
+  val extraSize = readShortLe().toInt() and 0xffff
   val commentByteCount = readShortLe().toInt() and 0xffff
 
-  // This is a 32-bit value in the file, but a 64-bit field in this object.
-  skip(8)
-  val localHeaderRelOffset = readIntLe().toLong() and 0xffffffffL
-  val name = readUtf8(nameLength.toLong())
-  for (element in name) {
-    if (element == '\u0000') throw IOException("Filename contains NUL byte")
+  skip(8) // disk number start (2) + internal file attributes (2) + external file attributes (4).
+  var offset = readIntLe().toLong() and 0xffffffffL
+  val name = readUtf8(nameSize.toLong())
+  if ('\u0000' in name) throw IOException("bad zip: filename contains 0x00")
+
+  val requiredZip64ExtraSize = run {
+    var result = 0L
+    if (size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) result += 8
+    if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) result += 8
+    if (offset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) result += 8
+    return@run result
   }
 
-  val extra = readByteString(extraLength.toLong())
+  var hasZip64Extra = false
+  readExtra(extraSize) { headerId, dataSize ->
+    when (headerId) {
+      ZIP64_EXTENDED_INFO_HEADER_ID -> {
+        if (hasZip64Extra) {
+          throw IOException("bad zip: zip64 extra repeated")
+        }
+        hasZip64Extra = true
+
+        if (dataSize < requiredZip64ExtraSize) {
+          throw IOException("bad zip: zip64 extra too short")
+        }
+
+        // Read each field if it has a sentinel value in the regular header.
+        size = if (size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else size
+        compressedSize = if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else 0L
+        offset = if (offset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else 0L
+      }
+    }
+  }
+
+  if (requiredZip64ExtraSize > 0L && !hasZip64Extra) {
+    throw IOException("bad zip: zip64 extra required but absent")
+  }
+
   val comment = readUtf8(commentByteCount.toLong())
   val canonicalPath = "/".toPath() / name
   val isDirectory = name.endsWith("/")
 
-  val zipEntry = ZipEntry(
+  return ZipEntry(
     canonicalPath = canonicalPath,
     isDirectory = isDirectory,
     comment = comment,
@@ -311,218 +256,134 @@ internal fun BufferedSource.readEntry(isZip64: Boolean): ZipEntry {
     compressedSize = compressedSize,
     size = size,
     compressionMethod = compressionMethod,
-    time = time,
-    modDate = modDate,
-    extra = extra,
-    localHeaderRelOffset = localHeaderRelOffset
+    lastModifiedAtMillis = lastModifiedAtMillis,
+    offset = offset
   )
-
-  return when {
-    isZip64 -> readZip64ExtendedInfo(zipEntry) ?: zipEntry
-    else -> zipEntry
-  }
-}
-
-/**
- * Parses the zip64 end of central directory record locator. The locator
- * must be placed immediately before the end of central directory (eocd) record
- * starting at `eocdOffset`.
- *
- * The position of the file cursor for `raf` after a call to this method
- * is undefined an callers must reposition it after each call to this method.
- */
-@Throws(IOException::class)
-internal fun BufferedSource.readZip64EocdRecordLocator(eocdOffset: Long): Long {
-  // The spec stays curiously silent about whether a zip file with an EOCD record, a zip64 locator
-  // and a zip64 eocd record is considered "empty". In our implementation, we parse all records
-  // and read the counts from them instead of drawing any size or layout based information.
-  if (eocdOffset <= ZIP64_LOCATOR_SIZE) return -1L
-
-  val cursor = cursor()!!
-  cursor.seek(eocdOffset - ZIP64_LOCATOR_SIZE)
-  if (readIntLe() != ZIP64_LOCATOR_SIGNATURE) return -1L
-
-  val diskWithCentralDir = readIntLe()
-  val result = readLongLe()
-  val numDisks = readIntLe()
-  if (numDisks != 1 || diskWithCentralDir != 0) {
-    throw IOException("Spanned archives not supported")
-  }
-  return result
 }
 
 @Throws(IOException::class)
-internal fun BufferedSource.readZip64EocdRecord(commentLength: Int): EocdRecord {
-  val signature = readIntLe()
-  if (signature != ZIP64_EOCD_RECORD_SIGNATURE) {
-    throw IOException("Invalid zip64 eocd record offset")
+private fun BufferedSource.readEocdRecord(): EocdRecord {
+  val diskNumber = readShortLe().toInt() and 0xffff
+  val diskWithCentralDir = readShortLe().toInt() and 0xffff
+  val entryCount = (readShortLe().toInt() and 0xffff).toLong()
+  val totalEntryCount = (readShortLe().toInt() and 0xffff).toLong()
+  if (entryCount != totalEntryCount || diskNumber != 0 || diskWithCentralDir != 0) {
+    throw IOException("unsupported zip: spanned")
   }
+  skip(4) // central directory size.
+  val centralDirectoryOffset = readIntLe().toLong() and 0xffffffffL
+  val commentByteCount = readShortLe().toInt() and 0xffff
 
-  // The zip64 eocd record specifies its own size as an 8 byte integral type. It is variable
-  // length because of the "zip64 extensible data sector" but that field is reserved for
-  // pkware's proprietary use. We therefore disregard it altogether and treat the end of
-  // central directory structure as fixed length.
-  //
-  // We also skip "version made by" (2 bytes) and "version needed to extract" (2 bytes)
-  // fields. We perform additional validation at the ZipEntry level, where applicable.
-  //
-  // That's a total of 12 bytes to skip
-  skip(12)
+  return EocdRecord(
+    entryCount = entryCount,
+    centralDirectoryOffset = centralDirectoryOffset,
+    commentByteCount = commentByteCount
+  )
+}
+
+@Throws(IOException::class)
+internal fun BufferedSource.readZip64EocdRecord(regularRecord: EocdRecord): EocdRecord {
+  skip(12) // size of central directory record (8) + version made by (2) + version to extract (2).
   val diskNumber = readIntLe()
   val diskWithCentralDirStart = readIntLe()
-  val numEntries = readLongLe()
-  val totalNumEntries = readLongLe()
-  readLongLe() // Ignore the size of the central directory
-  val centralDirOffset = readLongLe()
-  if (numEntries != totalNumEntries || diskNumber != 0 || diskWithCentralDirStart != 0) {
-    throw IOException("spanned archives not supported")
+  val entryCount = readLongLe()
+  val totalEntryCount = readLongLe()
+  if (entryCount != totalEntryCount || diskNumber != 0 || diskWithCentralDirStart != 0) {
+    throw IOException("unsupported zip: spanned")
   }
+  skip(8) // central directory size.
+  val centralDirectoryOffset = readLongLe()
 
-  return EocdRecord(numEntries, centralDirOffset, commentLength)
+  return EocdRecord(
+    entryCount = entryCount,
+    centralDirectoryOffset = centralDirectoryOffset,
+    commentByteCount = regularRecord.commentByteCount
+  )
 }
 
 /**
- * Parse the zip64 extended info record from the extras present in [zipEntry].
+ * Read a sequence of 0 or more extra fields. Each field has this structure:
  *
- * We assume we're parsing a central directory record. A central directory entry is required to be
- * complete.
+ *  * 2-byte header ID
+ *  * 2-byte data size
+ *  * variable-byte data value
+ *
+ * This reads each extra field and calls [block] for each. The parameters are the header ID and
+ * data size. It is an error for [block] to process more bytes than the data size.
  */
-@ExperimentalFileSystem
-@Throws(IOException::class)
-internal fun readZip64ExtendedInfo(zipEntry: ZipEntry): ZipEntry? {
-  var size = zipEntry.size
-  var compressedSize = zipEntry.compressedSize
-  var localHeaderRelOffset = zipEntry.localHeaderRelOffset
-  var extra = zipEntry.extra
-
-  var extendedInfoSize = -1
-  var extendedInfoStart = -1
-
-  // If this file contains a zip64 central directory locator, entries might
-  // optionally contain a zip64 extended information extra entry.
-  if (extra.size > 0) {
-    // Extensible data fields are of the form header1+data1 + header2+data2 and so
-    // on, where each header consists of a 2 byte header ID followed by a 2 byte size.
-    // We need to iterate through the entire list of headers to find the header ID
-    // for the zip64 extended information extra field (0x0001).
-    val source = Buffer().write(extra)
-    extendedInfoSize = source.readZip64ExtendedInfoSize()
-    if (extendedInfoSize != -1) {
-      extendedInfoStart = (extra.size - source.size).toInt()
-      try {
-        // The size & compressed size only make sense in the central directory *or* if
-        // we know them beforehand. If we don't know them beforehand, they're stored in
-        // the data descriptor and should be read from there.
-        //
-        // Note that the spec says that the local file header "MUST" contain the
-        // original and compressed size fields. We don't care too much about that.
-        // The spec claims that the order of fields is fixed anyway.
-        if (size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) {
-          size = source.readLongLe()
-        }
-        if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) {
-          compressedSize = source.readLongLe()
-        }
-
-        // The local header offset is significant only in the central directory. It makes no
-        // sense within the local header itself.
-        if (localHeaderRelOffset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) {
-          localHeaderRelOffset = source.readLongLe()
-        }
-      } catch (e: EOFException) {
-        val zipException = IOException("Error parsing extended info")
-        zipException.initCause(e)
-        throw zipException
+private fun BufferedSource.readExtra(extraSize: Int, block: (Int, Long) -> Unit) {
+  var remaining = extraSize.toLong()
+  while (remaining != 0L) {
+    if (remaining < 4) {
+      throw IOException("bad zip: truncated header in extra field")
+    }
+    val headerId = readShortLe().toInt() and 0xffff
+    val dataSize = readShortLe().toLong() and 0xffff
+    remaining -= 4
+    if (remaining < dataSize) {
+      throw IOException("bad zip: truncated value in extra field")
+    }
+    require(dataSize)
+    val sizeBefore = buffer.size
+    block(headerId, dataSize)
+    val fieldRemaining = dataSize + buffer.size - sizeBefore
+    when {
+      fieldRemaining < 0 -> {
+        throw IOException("unsupported zip: too many bytes processed for $headerId")
+      }
+      fieldRemaining > 0 -> {
+        buffer.skip(fieldRemaining)
       }
     }
+    remaining -= dataSize
   }
+}
 
-  // This entry doesn't contain a zip64 extended information data entry header.
-  // We have to check that the compressedSize / size / localHeaderRelOffset values
-  // are valid and don't require the presence of the extended header.
-  if (extendedInfoSize == -1) {
-    if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE ||
-      size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE ||
-      localHeaderRelOffset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE
-    ) {
-      throw IOException("File contains no zip64 extended information")
-    }
+internal fun BufferedSource.skipLocalHeader() {
+  val signature = readIntLe()
+  if (signature != LOCAL_FILE_HEADER_SIGNATURE) {
+    throw IOException(
+      "bad zip: expected ${LOCAL_FILE_HEADER_SIGNATURE.hex} but was ${signature.hex}"
+    )
+  }
+  skip(2) // version to extract.
+  val bitFlag = readShortLe().toInt() and 0xffff
+  if (bitFlag and BIT_FLAG_UNSUPPORTED_MASK != 0) {
+    throw IOException("unsupported zip: general purpose bit flag=${bitFlag.hex}")
+  }
+  skip(18) // compression method (2) + time+date (4) + crc32 (4) + compressed size (4) + size (4).
+  val fileNameLength = readShortLe().toLong() and 0xffff
+  val extraFieldLength = readShortLe().toLong() and 0xffff
+  skip(fileNameLength + extraFieldLength)
+}
+
+/**
+ * Converts a 32-bit DOS date+time to milliseconds since epoch. Note that this function interprets
+ * a value with no time zone as a value with the local time zone.
+ */
+internal fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
+  if (time == -1) {
     return null
   }
 
-  // If we're parsed the zip64 extended info header, we remove it from the extras
-  // so that applications that set their own extras will see the data they set.
-
-  // This is an unfortunate workaround needed due to a gap in the spec. The spec demands
-  // that extras are present in the "extensible" format, which means that each extra field
-  // must be prefixed with a header ID and a length. However, earlier versions of the spec
-  // made no mention of this, nor did any existing API enforce it. This means users could
-  // set "free form" extras without caring very much whether the implementation wanted to
-  // extend or add to them.
-
-  // The start of the extended info header.
-  val extendedInfoHeaderStart = extendedInfoStart - 4
-  // The total size of the extended info, including the header.
-  val extendedInfoTotalSize = extendedInfoSize + 4
-  val extrasLen = extra.size - extendedInfoTotalSize
-  val extrasWithoutZip64 = ByteArray(extrasLen)
-  System.arraycopy(extra, 0, extrasWithoutZip64, 0, extendedInfoHeaderStart)
-  System.arraycopy(
-    extra,
-    extendedInfoHeaderStart + extendedInfoTotalSize,
-    extrasWithoutZip64,
-    extendedInfoHeaderStart,
-    extrasLen - extendedInfoHeaderStart
-  )
-  extra = extrasWithoutZip64.toByteString()
-
-  return ZipEntry(
-    canonicalPath = zipEntry.canonicalPath,
-    isDirectory = zipEntry.isDirectory,
-    comment = zipEntry.comment,
-    crc = zipEntry.crc,
-    compressedSize = compressedSize,
-    size = size,
-    compressionMethod = zipEntry.compressionMethod,
-    time = zipEntry.time,
-    modDate = zipEntry.modDate,
-    extra = extra,
-    localHeaderRelOffset = localHeaderRelOffset
-  )
-}
-
-/**
- * Returns the size of the extended info record if `extras` contains a zip64 extended info
- * record, `-1` otherwise. The buffer will be positioned at the start of the extended info
- * record.
- */
-private fun Buffer.readZip64ExtendedInfoSize(): Int {
-  try {
-    while (!exhausted()) {
-      val headerId = readShortLe().toInt() and 0xffff
-      val length = readShortLe().toInt() and 0xffff
-      if (headerId == ZIP64_EXTENDED_INFO_HEADER_ID.toInt()) {
-        return when {
-          size >= length -> length
-          else -> -1
-        }
-      } else {
-        skip(length.toLong())
-      }
-    }
-    return -1
-  } catch (_: EOFException) {
-    return -1 // Incomplete header or an invalid length.
-  }
-}
-
-@Throws(IOException::class)
-internal fun throwZipException(msg: String, magic: Int) {
-  throw IOException(String.format("%s signature not found; was %08x$msg", magic))
+  // Note that this inherits the local time zone.
+  val cal = GregorianCalendar()
+  cal.set(Calendar.MILLISECOND, 0)
+  val year = 1980 + (date shr 9 and 0x7f)
+  val month = date shr 5 and 0xf
+  val day = date and 0x1f
+  val hour = time shr 11 and 0x1f
+  val minute = time shr 5 and 0x3f
+  val second = time and 0x1f shl 1
+  cal.set(year, month - 1, day, hour, minute, second)
+  return cal.time.time
 }
 
 class EocdRecord(
-  val numEntries: Long,
-  val centralDirOffset: Long,
-  val commentLength: Int
+  val entryCount: Long,
+  val centralDirectoryOffset: Long,
+  val commentByteCount: Int
 )
+
+private val Int.hex: String
+  get() = "0x${this.toString(16)}"

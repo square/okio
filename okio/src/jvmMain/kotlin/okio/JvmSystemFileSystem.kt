@@ -61,7 +61,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
     val file = dir.toFile()
     val entries = file.list()
     if (entries == null) {
-      if (!file.exists()) throw FileNotFoundException("no such file $dir")
+      if (!file.exists()) throw FileNotFoundException("no such file: $dir")
       throw IOException("failed to list $dir")
     }
     val result = entries.mapTo(mutableListOf()) { dir / it }
@@ -82,7 +82,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
   }
 
   override fun createDirectory(dir: Path) {
-    if (!dir.toFile().mkdir()) throw IOException("failed to create directory $dir")
+    if (!dir.toFile().mkdir()) throw IOException("failed to create directory: $dir")
   }
 
   override fun atomicMove(source: Path, target: Path) {
@@ -94,7 +94,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
     val file = path.toFile()
     val deleted = file.delete()
     if (!deleted) {
-      if (!file.exists()) throw FileNotFoundException("no such file $path")
+      if (!file.exists()) throw FileNotFoundException("no such file: $path")
       else throw IOException("failed to delete $path")
     }
   }

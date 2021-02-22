@@ -15,8 +15,6 @@
  */
 package okio
 
-import okio.internal.JvmDefault
-
 /**
  * Supplies a stream of bytes. Use this interface to read data from wherever it's located: from the
  * network, storage, or a buffer in memory. Sources may be layered to transform supplied data, such
@@ -66,7 +64,6 @@ interface Source : Closeable {
    *
    * The returned cursor is stateful and reflects the current position and size as they change.
    */
-  @JvmDefault
   fun cursor(): Cursor? = null
 
   /** Returns the timeout for this source.  */
