@@ -211,9 +211,13 @@ internal fun BufferedSource.readEntry(): ZipEntry {
   val name = readUtf8(nameSize.toLong())
   if ('\u0000' in name) throw IOException("bad zip: filename contains 0x00")
 
-  val requiredZip64ExtraSize = (if (size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) 8L else 0L) +
-    (if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) 8L else 0L) +
-    (if (offset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) 8L else 0L)
+  val requiredZip64ExtraSize = run {
+    var result = 0L
+    if (size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) result += 8
+    if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) result += 8
+    if (offset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) result += 8
+    return@run result
+  }
 
   var hasZip64Extra = false
   readExtra(extraSize) { headerId, dataSize ->
