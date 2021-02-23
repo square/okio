@@ -29,13 +29,28 @@ import java.io.InputStream
 import java.net.URL
 
 /**
- * A file system exposing the traditional java style resource paths.
+ * A file system exposing something similar to the traditional java style resources.
  *
  * Both metadata and file listings are best effort, and will work better
  * for local project paths. The file system does not handle merging of
  * multiple paths from difference resources like overlapping Jar files.
  *
- * TODO hook into GrallVM building such that resources remain available
+ * While a single `val everything = ResourceFileSystem()` close to the callsite would allow
+ * code requiring classpath resources to access the implicit process classpath, this should be
+ * avoided.
+ *
+ * Instead each module should provide a scoped and potentially restricted access to a subset that
+ * it guarantees to provide. This allows individual modules flexibilities in how they provide their
+ * resources, for example using a configured override over the defaults shipped inside the jars.
+ *
+ * ```
+ * internal val OkHttpResources = ResourceFileSystem(paths = listOf("/okhttp3/internal".toPath()))
+ * ...
+ * val PUBLIC_SUFFIX_RESOURCE = "/okhttp3/internal/publicsuffixes/publicsuffixes.gz".toPath()
+ * val resource = OkHttpResources.source(PUBLIC_SUFFIX_RESOURCE)
+ * ```
+ *
+ * TODO hook into GraalVM building such that resources remain available
  */
 @ExperimentalFileSystem
 class ResourceFileSystem(val paths: List<Path>? = null) : ReadOnlyFilesystem() {
@@ -80,7 +95,9 @@ class ResourceFileSystem(val paths: List<Path>? = null) : ReadOnlyFilesystem() {
   }
 
   /**
-   * Return the [SYSTEM] path for a file if it is available.
+   * Return the [SYSTEM] path for a file if it is available. This should always be treated as best
+   * effort since the FileSystem abstraction is designed to hide the specifics of where files
+   * are loaded from e.g. from within a Zip file.
    */
   fun toSystemPath(path: Path): Path? {
     val resourceName = canonicalize(path).toString().substring(1)
@@ -92,5 +109,9 @@ class ResourceFileSystem(val paths: List<Path>? = null) : ReadOnlyFilesystem() {
     } else {
       null
     }
+  }
+
+  companion object {
+    val CLASSPATH = ResourceFileSystem()
   }
 }
