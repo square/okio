@@ -30,7 +30,7 @@ import java.io.IOException
 import java.util.zip.Inflater
 
 /**
- * Read only access to a [zip file][zip_format].
+ * Read only access to a [zip file][zip_format] and common [extra fields][extra_fields].
  *
  * Zip Timestamps
  * --------------
@@ -50,15 +50,21 @@ import java.util.zip.Inflater
  *    will be incorrect. The file time will be shifted by the difference in time zone offsets
  *    between the encoder and decoder.
  *
- * The zip format has optional extensions for UNIX and NTFS timestamps.
+ * The zip format has optional extensions for timestamps.
  *
- *  * UNIX timestamps support both last-access time and last modification time. These timestamps
- *    are stored with 1-second precision using UTC.
+ *  * UNIX timestamps (0x000d) support both last-access time and last modification time. These
+ *    timestamps are stored with 1-second precision using UTC.
  *
- *  * NTFS timestamps support creation time, last access time, and last modified time. These
- *    timestamps are stored with 100-millisecond precision using UTC.
+ *  * NTFS timestamps (0x000a) support creation time, last access time, and last modified time.
+ *    These timestamps are stored with 100-millisecond precision using UTC.
+ *
+ *  * Extended timestamps (0x5455) are stored as signed 32-bit timestamps with 1-second precision.
+ *    These cannot express dates beyond 2038-01-19.
+ *
+ * This class currently supports base timestamps and extended timestamps.
  *
  * [zip_format]: https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE_6.2.0.txt
+ * [extra_fields]: https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld
  */
 @ExperimentalFileSystem
 class ZipFileSystem internal constructor(
@@ -74,7 +80,8 @@ class ZipFileSystem internal constructor(
   override fun metadataOrNull(path: Path): FileMetadata? {
     val canonicalPath = canonicalize(path)
     val entry = entries[canonicalPath] ?: return null
-    return FileMetadata(
+
+    val basicMetadata = FileMetadata(
       isRegularFile = !entry.isDirectory,
       isDirectory = entry.isDirectory,
       size = if (entry.isDirectory) null else entry.size,
@@ -82,6 +89,15 @@ class ZipFileSystem internal constructor(
       lastModifiedAtMillis = entry.lastModifiedAtMillis,
       lastAccessedAtMillis = null
     )
+
+    if (entry.offset == -1L) {
+      return basicMetadata
+    }
+
+    val source = fileSystem.source(zipPath).buffer()
+    val cursor = source.cursor()!!
+    cursor.seek(entry.offset)
+    return source.readLocalHeader(basicMetadata)
   }
 
   override fun list(dir: Path): List<Path> {

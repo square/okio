@@ -18,6 +18,7 @@ package okio.zipfilesystem
 
 import okio.BufferedSource
 import okio.ExperimentalFileSystem
+import okio.FileMetadata
 import okio.FileSystem
 import okio.IOException
 import okio.Path
@@ -47,8 +48,8 @@ private const val BIT_FLAG_UNSUPPORTED_MASK = BIT_FLAG_ENCRYPTED
 /** Max size of entries and archives without zip64. */
 private const val MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE = 0xffffffffL
 
-/** Extra header ID for zip64. */
-private const val ZIP64_EXTENDED_INFO_HEADER_ID = 0x1
+private const val HEADER_ID_ZIP64_EXTENDED_INFO = 0x1
+private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
 
 /**
  * Opens the file at [zipPath] for use as a file system. This uses UTF-8 to comments and names in
@@ -222,7 +223,7 @@ internal fun BufferedSource.readEntry(): ZipEntry {
   var hasZip64Extra = false
   readExtra(extraSize) { headerId, dataSize ->
     when (headerId) {
-      ZIP64_EXTENDED_INFO_HEADER_ID -> {
+      HEADER_ID_ZIP64_EXTENDED_INFO -> {
         if (hasZip64Extra) {
           throw IOException("bad zip: zip64 extra repeated")
         }
@@ -339,7 +340,26 @@ private fun BufferedSource.readExtra(extraSize: Int, block: (Int, Long) -> Unit)
   }
 }
 
+@ExperimentalFileSystem
 internal fun BufferedSource.skipLocalHeader() {
+  readOrSkipLocalHeader(null)
+}
+
+@ExperimentalFileSystem
+internal fun BufferedSource.readLocalHeader(basicMetadata: FileMetadata): FileMetadata {
+  return readOrSkipLocalHeader(basicMetadata)!!
+}
+
+/**
+ * If [basicMetadata] is null this will return null. Otherwise it will return a new header which
+ * updates [basicMetadata] with information from the local header.
+ */
+@ExperimentalFileSystem
+private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): FileMetadata? {
+  var lastModifiedAtMillis = basicMetadata?.lastModifiedAtMillis
+  var lastAccessedAtMillis: Long? = null
+  var createdAtMillis: Long? = null
+
   val signature = readIntLe()
   if (signature != LOCAL_FILE_HEADER_SIGNATURE) {
     throw IOException(
@@ -353,8 +373,51 @@ internal fun BufferedSource.skipLocalHeader() {
   }
   skip(18) // compression method (2) + time+date (4) + crc32 (4) + compressed size (4) + size (4).
   val fileNameLength = readShortLe().toLong() and 0xffff
-  val extraFieldLength = readShortLe().toLong() and 0xffff
-  skip(fileNameLength + extraFieldLength)
+  val extraSize = readShortLe().toInt() and 0xffff
+  skip(fileNameLength)
+
+  if (basicMetadata == null) {
+    skip(extraSize.toLong())
+    return null
+  }
+
+  readExtra(extraSize) { headerId, dataSize ->
+    when (headerId) {
+      HEADER_ID_EXTENDED_TIMESTAMP -> {
+        if (dataSize < 1) {
+          throw IOException("bad zip: extended timestamp extra too short")
+        }
+        val flags = readByte().toInt() and 0xff
+
+        val hasLastModifiedAtMillis = (flags and 0x1) == 0x1
+        val hasLastAccessedAtMillis = (flags and 0x2) == 0x2
+        val hasCreatedAtMillis = (flags and 0x4) == 0x4
+        val requiredSize = run {
+          var result = 1L
+          if (hasLastModifiedAtMillis) result += 4L
+          if (hasLastAccessedAtMillis) result += 4L
+          if (hasCreatedAtMillis) result += 4L
+          return@run result
+        }
+        if (dataSize < requiredSize) {
+          throw IOException("bad zip: extended timestamp extra too short")
+        }
+
+        if (hasLastModifiedAtMillis) lastModifiedAtMillis = readIntLe() * 1000L
+        if (hasLastAccessedAtMillis) lastAccessedAtMillis = readIntLe() * 1000L
+        if (hasCreatedAtMillis) createdAtMillis = readIntLe() * 1000L
+      }
+    }
+  }
+
+  return FileMetadata(
+    isRegularFile = basicMetadata.isRegularFile,
+    isDirectory = basicMetadata.isDirectory,
+    size = basicMetadata.size,
+    createdAtMillis = createdAtMillis,
+    lastModifiedAtMillis = lastModifiedAtMillis,
+    lastAccessedAtMillis = lastAccessedAtMillis
+  )
 }
 
 /**

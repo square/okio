@@ -81,12 +81,10 @@ class ZipBuilder(
         }
 
         if (entry.modifiedAt != null) {
-          val exitCode = ProcessBuilder()
-            .command("touch", "-m", "-t", entry.modifiedAt, absolutePath.toString())
-            .apply { environment()["TZ"] = "UTC" }
-            .start()
-            .waitFor()
-          require(exitCode == 0)
+          touch("-m", absolutePath, entry.modifiedAt)
+        }
+        if (entry.accessedAt != null) {
+          touch("-a", absolutePath, entry.accessedAt)
         }
       }
       command += entry.path
@@ -119,12 +117,22 @@ class ZipBuilder(
     return archive
   }
 
+  private fun touch(option: String, absolutePath: Path, date: String) {
+    val exitCode = ProcessBuilder()
+      .command("touch", option, "-t", date, absolutePath.toString())
+      .apply { environment()["TZ"] = "UTC" }
+      .start()
+      .waitFor()
+    require(exitCode == 0)
+  }
+
   class Entry(
     val path: String,
     val content: String? = null,
     val directory: Boolean = false,
     val comment: String = "",
     val modifiedAt: String? = null,
+    val accessedAt: String? = null,
     val zip64: Boolean = false
   ) {
     init {

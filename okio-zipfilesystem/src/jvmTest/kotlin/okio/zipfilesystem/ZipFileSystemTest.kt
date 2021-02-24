@@ -1,9 +1,6 @@
 package okio.zipfilesystem
 
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone.Companion.currentSystemDefault
-import kotlinx.datetime.toInstant
 import okio.ByteString.Companion.toByteString
 import okio.ExperimentalFileSystem
 import okio.FileSystem
@@ -112,8 +109,18 @@ class ZipFileSystemTest {
   fun zipWithFileModifiedDate() {
     val zipPath = ZipBuilder(base)
       .apply {
-        entries += ZipBuilder.Entry("a.txt", "Android", modifiedAt = "200102030405.06")
-        entries += ZipBuilder.Entry("b.txt", "Banana", modifiedAt = "200908070605.04")
+        entries += ZipBuilder.Entry(
+          path = "a.txt",
+          content = "Android",
+          modifiedAt = "200102030405.06",
+          accessedAt = "200102030405.07"
+        )
+        entries += ZipBuilder.Entry(
+          path = "b.txt",
+          content = "Banana",
+          modifiedAt = "200908070605.04",
+          accessedAt = "200908070605.03"
+        )
       }
       .build()
     val zipFileSystem = open(zipPath, fileSystem)
@@ -125,7 +132,7 @@ class ZipFileSystemTest {
         assertThat(size).isEqualTo(7L)
         assertThat(createdAtMillis).isNull()
         assertThat(lastModifiedAtMillis).isEqualTo("2001-02-03T04:05:06Z".toEpochMillis())
-        assertThat(lastAccessedAtMillis).isNull()
+        assertThat(lastAccessedAtMillis).isEqualTo("2001-02-03T04:05:07Z".toEpochMillis())
       }
 
     zipFileSystem.metadata("b.txt".toPath())
@@ -135,45 +142,52 @@ class ZipFileSystemTest {
         assertThat(size).isEqualTo(6L)
         assertThat(createdAtMillis).isNull()
         assertThat(lastModifiedAtMillis).isEqualTo("2009-08-07T06:05:04Z".toEpochMillis())
-        assertThat(lastAccessedAtMillis).isNull()
+        assertThat(lastAccessedAtMillis).isEqualTo("2009-08-07T06:05:03Z".toEpochMillis())
       }
   }
 
-  /**
-   * Confirm handling the limitations of DOS dates as they're stored in zip files. The dates printed
-   * by the 'unzip' command don't have these limitations! When we implement support for NTFS and
-   * UNIX extensions neither should we.
-   */
+  /** Confirm we suffer UNIX limitations on our date format. */
   @Test
   fun zipWithFileOutOfBoundsModifiedDate() {
     val zipPath = ZipBuilder(base)
       .apply {
-        entries += ZipBuilder.Entry("a.txt", "Android", modifiedAt = "197912310000.00")
-        entries += ZipBuilder.Entry("b.txt", "Banana", modifiedAt = "210801020000.00")
+        entries += ZipBuilder.Entry(
+          path = "a.txt",
+          content = "Android",
+          modifiedAt = "196912310000.00",
+          accessedAt = "196912300000.00"
+        )
+        entries += ZipBuilder.Entry(
+          path = "b.txt",
+          content = "Banana",
+          modifiedAt = "203801190314.07", // Last UNIX date representable in 31 bits.
+          accessedAt = "203801190314.08" // Overflows!
+        )
       }
       .build()
     val zipFileSystem = open(zipPath, fileSystem)
 
-    // Lower than the lower bound (1980-01-01) returns the lower bound.
+    println(Instant.fromEpochMilliseconds(-2147483648000L))
+
     zipFileSystem.metadata("a.txt".toPath())
       .apply {
         assertThat(isRegularFile).isTrue()
         assertThat(isDirectory).isFalse()
         assertThat(size).isEqualTo(7L)
         assertThat(createdAtMillis).isNull()
-        assertThat(lastModifiedAtMillis).isEqualTo("1980-01-01T00:00:00".toLocalEpochMillis())
-        assertThat(lastAccessedAtMillis).isNull()
+        assertThat(lastModifiedAtMillis).isEqualTo("1969-12-31T00:00:00Z".toEpochMillis())
+        assertThat(lastAccessedAtMillis).isEqualTo("1969-12-30T00:00:00Z".toEpochMillis())
       }
 
-    // Greater than the upper bound (2108-01-01) wraps around.
+    // Greater than the upper bound wraps around.
     zipFileSystem.metadata("b.txt".toPath())
       .apply {
         assertThat(isRegularFile).isTrue()
         assertThat(isDirectory).isFalse()
         assertThat(size).isEqualTo(6L)
         assertThat(createdAtMillis).isNull()
-        assertThat(lastModifiedAtMillis).isEqualTo("1980-01-02T00:00:00Z".toEpochMillis())
-        assertThat(lastAccessedAtMillis).isNull()
+        assertThat(lastModifiedAtMillis).isEqualTo("2038-01-19T03:14:07Z".toEpochMillis())
+        assertThat(lastAccessedAtMillis).isEqualTo("1901-12-13T20:45:52Z".toEpochMillis())
       }
   }
 
@@ -187,9 +201,19 @@ class ZipFileSystemTest {
     val zipPath = ZipBuilder(base)
       .apply {
         entries += ZipBuilder.Entry("a/a.txt", "Android")
-        entries += ZipBuilder.Entry("a", directory = true, modifiedAt = "200102030405.06")
+        entries += ZipBuilder.Entry(
+          path = "a",
+          directory = true,
+          modifiedAt = "200102030405.06",
+          accessedAt = "200102030405.07"
+        )
         entries += ZipBuilder.Entry("b/b.txt", "Android")
-        entries += ZipBuilder.Entry("b", directory = true, modifiedAt = "200908070605.04")
+        entries += ZipBuilder.Entry(
+          path = "b",
+          directory = true,
+          modifiedAt = "200908070605.04",
+          accessedAt = "200908070605.03"
+        )
       }
       .build()
     val zipFileSystem = open(zipPath, fileSystem)
@@ -201,7 +225,7 @@ class ZipFileSystemTest {
         assertThat(size).isNull()
         assertThat(createdAtMillis).isNull()
         assertThat(lastModifiedAtMillis).isEqualTo("2001-02-03T04:05:06Z".toEpochMillis())
-        assertThat(lastAccessedAtMillis).isNull()
+        assertThat(lastAccessedAtMillis).isEqualTo("2001-02-03T04:05:07Z".toEpochMillis())
       }
     assertThat(zipFileSystem.list("a".toPath())).containsExactly("/a/a.txt".toPath())
 
@@ -212,9 +236,31 @@ class ZipFileSystemTest {
         assertThat(size).isNull()
         assertThat(createdAtMillis).isNull()
         assertThat(lastModifiedAtMillis).isEqualTo("2009-08-07T06:05:04Z".toEpochMillis())
-        assertThat(lastAccessedAtMillis).isNull()
+        assertThat(lastAccessedAtMillis).isEqualTo("2009-08-07T06:05:03Z".toEpochMillis())
       }
     assertThat(zipFileSystem.list("b".toPath())).containsExactly("/b/b.txt".toPath())
+  }
+
+  @Test
+  fun zipWithModifiedDate() {
+    val zipPath = ZipBuilder(base)
+      .apply {
+        entries += ZipBuilder.Entry(
+          "a/a.txt",
+          modifiedAt = "197001010001.00",
+          accessedAt = "197001010002.00",
+          content = "Android"
+        )
+      }
+      .build()
+    val zipFileSystem = open(zipPath, fileSystem)
+
+    zipFileSystem.metadata("a/a.txt".toPath())
+      .apply {
+        assertThat(createdAtMillis).isNull()
+        assertThat(lastModifiedAtMillis).isEqualTo("1970-01-01T00:01:00Z".toEpochMillis())
+        assertThat(lastAccessedAtMillis).isEqualTo("1970-01-01T00:02:00Z".toEpochMillis())
+      }
   }
 
   /** Build a very small zip file with just a single empty directory. */
@@ -222,7 +268,12 @@ class ZipFileSystemTest {
   fun zipWithEmptyDirectory() {
     val zipPath = ZipBuilder(base)
       .apply {
-        entries += ZipBuilder.Entry("a", directory = true, modifiedAt = "200102030405.06")
+        entries += ZipBuilder.Entry(
+          path = "a",
+          directory = true,
+          modifiedAt = "200102030405.06",
+          accessedAt = "200102030405.07"
+        )
       }
       .build()
     val zipFileSystem = open(zipPath, fileSystem)
@@ -234,7 +285,7 @@ class ZipFileSystemTest {
         assertThat(size).isNull()
         assertThat(createdAtMillis).isNull()
         assertThat(lastModifiedAtMillis).isEqualTo("2001-02-03T04:05:06Z".toEpochMillis())
-        assertThat(lastAccessedAtMillis).isNull()
+        assertThat(lastAccessedAtMillis).isEqualTo("2001-02-03T04:05:07Z".toEpochMillis())
       }
     assertThat(zipFileSystem.list("a".toPath())).isEmpty()
   }
@@ -248,9 +299,9 @@ class ZipFileSystemTest {
     val zipPath = ZipBuilder(base)
       .apply {
         entries += ZipBuilder.Entry("a/a.txt", "Android")
-        entries += ZipBuilder.Entry("a", directory = true, modifiedAt = "200102030405.06")
+        entries += ZipBuilder.Entry("a", directory = true)
         entries += ZipBuilder.Entry("b/b.txt", "Android")
-        entries += ZipBuilder.Entry("b", directory = true, modifiedAt = "200908070605.04")
+        entries += ZipBuilder.Entry("b", directory = true)
         options += "--no-dir-entries"
       }
       .build()
@@ -363,12 +414,5 @@ class ZipFileSystemTest {
 
 /** Decodes this ISO8601 time string. */
 fun String.toEpochMillis() = Instant.parse(this).toEpochMilliseconds()
-
-/** Decodes this ISO8601 local time string using the machine's time zone. */
-fun String.toLocalEpochMillis(): Long {
-  val localDateTime = LocalDateTime.parse(this)
-  val localInstant = localDateTime.toInstant(currentSystemDefault())
-  return localInstant.toEpochMilliseconds()
-}
 
 fun randomToken(length: Int = 16) = Random.nextBytes(length).toByteString().hex()
