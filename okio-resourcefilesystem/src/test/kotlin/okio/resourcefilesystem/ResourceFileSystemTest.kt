@@ -27,7 +27,7 @@ import kotlin.test.fail
 
 @ExperimentalFileSystem
 class ResourceFileSystemTest {
-  val fileSystem = ResourceFileSystem.SYSTEM_RESOURCES
+  private val fileSystem = ResourceFileSystem.SYSTEM_RESOURCES
 
   @Test
   fun testResourceA() {
@@ -63,14 +63,11 @@ class ResourceFileSystemTest {
   fun testResourceMissing() {
     val path = "okio/resourcefilesystem/b/c.txt".toPath()
 
-    try {
-      fileSystem.metadataOrNull(path)
-    } catch (ioe: IOException) {
-      assertThat(ioe.message).matches("metadata for .* not supported")
-    }
+    assertThat(fileSystem.metadataOrNull(path)).isNull()
 
     try {
       fileSystem.read(path) { readUtf8() }
+      fail()
     } catch (ioe: IOException) {
       assertThat(ioe.message).isEqualTo("file not found: okio/resourcefilesystem/b/c.txt")
     }
@@ -85,11 +82,7 @@ class ResourceFileSystemTest {
     assertThat(metadata.isDirectory).isTrue()
     assertThat(metadata.createdAtMillis).isGreaterThan(1L)
 
-    try {
-      fileSystem.list(path)
-    } catch (ioe: IOException) {
-      assertThat(ioe.message).isEqualTo("file not found: b/c.txt")
-    }
+    assertThat(fileSystem.list(path).map { it.name }).containsExactly("b.txt")
   }
 
   @Test
@@ -132,17 +125,12 @@ class ResourceFileSystemTest {
   fun testDirectoryFromJar() {
     val path = "org/junit/".toPath()
 
-    try {
-      fileSystem.metadataOrNull(path)
-    } catch (ioe: IOException) {
-      assertThat(ioe.message).matches("metadata for .* not supported")
-    }
+    val metadata = fileSystem.metadataOrNull(path)
+    assertThat(metadata?.isDirectory).isTrue()
 
-    try {
-      fileSystem.list(path)
-    } catch (ioe: IOException) {
-      assertThat(ioe.message).isEqualTo("not listable")
-    }
+    val files = fileSystem.list(path).map { it.name }
+    assertThat(files).contains("matchers", "rules")
+    assertThat(files.filter { it.endsWith(".class") }).isEmpty()
   }
 
   @Test

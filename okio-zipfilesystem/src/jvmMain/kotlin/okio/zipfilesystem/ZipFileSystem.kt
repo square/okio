@@ -21,6 +21,7 @@ import okio.FileMetadata
 import okio.FileSystem
 import okio.InflaterSource
 import okio.Path
+import okio.Path.Companion.toPath
 import okio.Source
 import okio.buffer
 import okio.internal.ReadOnlyFilesystem
@@ -72,6 +73,10 @@ class ZipFileSystem internal constructor(
   private val entries: Map<Path, ZipEntry>,
   private val comment: String?
 ) : ReadOnlyFilesystem() {
+  override fun canonicalize(path: Path): Path {
+    return "/".toPath() / path
+  }
+
   override fun metadataOrNull(path: Path): FileMetadata? {
     val canonicalPath = canonicalize(path)
     val entry = entries[canonicalPath] ?: return null

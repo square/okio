@@ -49,7 +49,7 @@ class ResourceFileSystem internal constructor(private val classLoader: ClassLoad
 
   override fun list(dir: Path): List<Path> {
     return toSystemPath(dir)?.let { (fileSystem, path) ->
-      fileSystem.list(path).filterNot { path.name.endsWith(".class") }
+      fileSystem.list(path).filterNot { it.name.endsWith(".class") }
     }.orEmpty()
   }
 
