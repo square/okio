@@ -19,7 +19,6 @@ import okio.ExperimentalFileSystem
 import okio.FileSystem
 import okio.IOException
 import okio.Path
-import okio.Path.Companion.toPath
 import okio.Sink
 
 @ExperimentalFileSystem
