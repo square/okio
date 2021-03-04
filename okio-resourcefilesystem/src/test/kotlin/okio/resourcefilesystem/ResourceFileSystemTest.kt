@@ -27,7 +27,7 @@ import kotlin.test.fail
 
 @ExperimentalFileSystem
 class ResourceFileSystemTest {
-  private val fileSystem = ResourceFileSystem.SYSTEM_RESOURCES
+  private val fileSystem = ResourceFileSystem.SYSTEM_RESOURCES as ResourceFileSystem
 
   @Test
   fun testResourceA() {
