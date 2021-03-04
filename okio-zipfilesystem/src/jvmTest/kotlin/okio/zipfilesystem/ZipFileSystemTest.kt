@@ -23,19 +23,6 @@ class ZipFileSystemTest {
   }
 
   @Test
-  fun testToString() {
-    val zipPath = base / "file.zip"
-    writeZipFile(
-      zipPath = zipPath,
-      "hello.txt" to "Hello World",
-      "directory/subdirectory/child.txt" to "Another file!",
-    )
-    val zipFileSystem = open(zipPath, fileSystem)
-
-    assertThat(zipFileSystem.toString()).isEqualTo("ZipFileSystem[$zipPath]")
-  }
-
-  @Test
   fun zipWithFiles() {
     val zipPath = ZipBuilder(base)
       .apply {

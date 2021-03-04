@@ -16,18 +16,17 @@
 package okio.resourcefilesystem
 
 import okio.ExperimentalFileSystem
+import okio.FileSystem
 import okio.IOException
-import okio.Path
 import okio.Path.Companion.toPath
+import okio.zipfilesystem.ZipFileSystem
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.io.File
-import kotlin.reflect.KClass
-
 
 @ExperimentalFileSystem
 class ResourceFileSystemTest {
-  val fileSystem = ResourceFileSystem()
+  val fileSystem = ResourceFileSystem.SYSTEM_RESOURCES
 
   @Test
   fun testResourceA() {
@@ -96,16 +95,21 @@ class ResourceFileSystemTest {
   fun testSystemPath() {
     val pwd = File(".").absolutePath
 
-    assertThat(fileSystem.toSystemPath("okio/resourcefilesystem/a.txt".toPath()).toString()).matches(
-      "$pwd.*/resourcefilesystem/a.txt"
-    )
-    assertThat(fileSystem.toSystemPath("okio/resourcefilesystem/b/".toPath()).toString()).matches(
-      "$pwd.*/resourcefilesystem/b"
-    )
-    assertThat(fileSystem.toSystemPath("okio/resourcefilesystem/b/b.txt".toPath()).toString()).matches(
-      "$pwd.*/resourcefilesystem/b/b.txt"
-    )
-    assertThat(fileSystem.toSystemPath("LICENSE-junit.txt".toPath())).isNull()
+    val (aTxtFs, aTxtPath) = fileSystem.toSystemPath("okio/resourcefilesystem/a.txt".toPath())!!
+    assertThat(aTxtFs).isSameAs(FileSystem.SYSTEM)
+    assertThat(aTxtPath.toString()).matches("$pwd.*/resourcefilesystem/a.txt")
+
+    val (bDirFs, bDirPath) = fileSystem.toSystemPath("okio/resourcefilesystem/b/".toPath())!!
+    assertThat(bDirFs).isSameAs(FileSystem.SYSTEM)
+    assertThat(bDirPath.toString()).matches("$pwd.*/resourcefilesystem/b")
+
+    val (bTxtFs, bTxtPath) = fileSystem.toSystemPath("okio/resourcefilesystem/b/b.txt".toPath())!!
+    assertThat(bTxtFs).isSameAs(FileSystem.SYSTEM)
+    assertThat(bTxtPath.toString()).matches("$pwd.*/resourcefilesystem/b/b.txt")
+
+    val (junitJar, licensePath) = fileSystem.toSystemPath("LICENSE-junit.txt".toPath())!!
+    assertThat(junitJar).isInstanceOf(ZipFileSystem::class.java)
+    assertThat(licensePath.toString()).matches("/LICENSE-junit.txt")
   }
 
   @Test
@@ -144,36 +148,6 @@ class ResourceFileSystemTest {
       fileSystem.list(path)
     } catch (ioe: IOException) {
       assertThat(ioe.message).isEqualTo("not listable")
-    }
-  }
-
-  @Test
-  fun testUnconstrainedResources() {
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem".toPath())).isNotNull()
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/a.txt".toPath())).isNotNull()
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/b".toPath())).isNotNull()
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/b/b.txt".toPath())).isNotNull()
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/x/x.txt".toPath())).isNotNull()
-    assertThat(fileSystem.canonicalize("LICENSE-junit.txt".toPath())).isNotNull()
-  }
-
-  @Test
-  fun testConstrainedResources() {
-    val fileSystem = ResourceFileSystem(paths = listOf("okio/resourcefilesystem".toPath()))
-
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem".toPath())).isNotNull()
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/a.txt".toPath())).isNotNull()
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/b".toPath())).isNotNull()
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/b/b.txt".toPath())).isNotNull()
-    // TODO consider whether this should fail? Is the filter a path, or the files in that path.
-    assertThat(fileSystem.canonicalize("okio/resourcefilesystem/x/x.txt".toPath())).isNotNull()
-
-    try {
-      assertThat(fileSystem.canonicalize("LICENSE-junit.txt".toPath()))
-    } catch (ioe: IOException) {
-      assertThat(ioe.message).isEqualTo(
-        "Requested path LICENSE-junit.txt is not within resource filesystem [okio/resourcefilesystem]"
-      )
     }
   }
 

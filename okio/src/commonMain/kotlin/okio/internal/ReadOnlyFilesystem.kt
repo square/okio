@@ -24,10 +24,6 @@ import okio.Sink
 
 @ExperimentalFileSystem
 abstract class ReadOnlyFilesystem : FileSystem() {
-  override fun canonicalize(path: Path): Path {
-    return "/".toPath() / path
-  }
-
   override fun sink(file: Path): Sink = throw IOException("$this is read-only")
 
   override fun appendingSink(file: Path): Sink =

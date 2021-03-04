@@ -1,26 +1,4 @@
-apply plugin: 'org.jetbrains.kotlin.multiplatform'
-
-kotlin {
-  jvm {
-    withJava()
-  }
-  sourceSets {
-    commonMain {
-      dependencies {
-        api deps.kotlin.stdLib.common
-        api deps.kotlin.time
-        api project(":okio")
-      }
-    }
-    jvmTest {
-      dependencies {
-        implementation deps.test.junit
-        implementation deps.test.assertj
-        implementation deps.kotlin.test.jdk
-      }
-    }
-  }
-}
+apply plugin: 'org.jetbrains.kotlin.jvm'
 
 // modify these lines for MANIFEST.MF properties or for specific bnd instructions
 project.ext.bndManifest = '''
@@ -29,5 +7,11 @@ project.ext.bndManifest = '''
     Bundle-SymbolicName: com.squareup.okio.resourcefilesystem
     '''
 
-apply from: "$rootDir/okio/jvm/jvm.gradle"
-apply from: "$rootDir/gradle/gradle-mvn-mpp-push.gradle"
+dependencies {
+  implementation project(":okio")
+  implementation project(":okio-zipfilesystem")
+
+  implementation deps.test.junit
+  implementation deps.test.assertj
+  implementation deps.kotlin.test.jdk
+}

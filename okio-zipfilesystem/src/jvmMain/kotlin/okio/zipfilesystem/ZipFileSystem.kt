@@ -21,9 +21,10 @@ import okio.FileMetadata
 import okio.FileSystem
 import okio.InflaterSource
 import okio.Path
+import okio.Path.Companion.toPath
+import okio.Sink
 import okio.Source
 import okio.buffer
-import okio.internal.ReadOnlyFilesystem
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.zip.Inflater
@@ -71,7 +72,11 @@ class ZipFileSystem internal constructor(
   private val fileSystem: FileSystem,
   private val entries: Map<Path, ZipEntry>,
   private val comment: String?
-) : ReadOnlyFilesystem() {
+) : FileSystem() {
+  override fun canonicalize(path: Path): Path {
+    return "/".toPath() / path
+  }
+
   override fun metadataOrNull(path: Path): FileMetadata? {
     val canonicalPath = canonicalize(path)
     val entry = entries[canonicalPath] ?: return null
@@ -125,7 +130,16 @@ class ZipFileSystem internal constructor(
     }
   }
 
-  override fun toString(): String {
-    return javaClass.simpleName + "[" + zipPath + "]"
-  }
+  override fun sink(file: Path): Sink = throw IOException("zip file systems are read-only")
+
+  override fun appendingSink(file: Path): Sink =
+    throw IOException("zip file systems are read-only")
+
+  override fun createDirectory(dir: Path): Unit =
+    throw IOException("zip file systems are read-only")
+
+  override fun atomicMove(source: Path, target: Path): Unit =
+    throw IOException("zip file systems are read-only")
+
+  override fun delete(path: Path): Unit = throw IOException("zip file systems are read-only")
 }
