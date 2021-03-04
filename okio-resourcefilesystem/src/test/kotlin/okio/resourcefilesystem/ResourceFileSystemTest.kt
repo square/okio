@@ -23,6 +23,7 @@ import okio.zipfilesystem.ZipFileSystem
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.io.File
+import kotlin.test.fail
 
 @ExperimentalFileSystem
 class ResourceFileSystemTest {
@@ -116,18 +117,11 @@ class ResourceFileSystemTest {
   fun testResourceFromJar() {
     val path = "LICENSE-junit.txt".toPath()
 
-    try {
-      fileSystem.metadataOrNull(path)
-    } catch (ioe: IOException) {
-      assertThat(ioe.message).matches("metadata for .* not supported")
-    }
+    val metadata = fileSystem.metadataOrNull(path)!!
 
-    // TODO supported in theory but unable to determine files and directories
-    // val metadata = fileSystem.metadataOrNull(path)!!
-    //
-    // assertThat(metadata.size).isGreaterThan(10000L)
-    // assertThat(metadata.isRegularFile).isTrue()
-    // assertThat(metadata.isDirectory).isFalse()
+    assertThat(metadata.size).isGreaterThan(10000L)
+    assertThat(metadata.isRegularFile).isTrue()
+    assertThat(metadata.isDirectory).isFalse()
 
     val content = fileSystem.read(path) { readUtf8Line() }
 

@@ -19,16 +19,14 @@ import okio.ExperimentalFileSystem
 import okio.FileMetadata
 import okio.FileNotFoundException
 import okio.FileSystem
-import okio.FileSystem.Companion.SYSTEM
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
 import okio.Source
 import okio.internal.ReadOnlyFilesystem
-import okio.source
 import okio.zipfilesystem.ZipFileSystem
 import java.io.File
-import java.io.InputStream
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * A file system exposing the traditional java classpath resources.
@@ -36,10 +34,15 @@ import java.io.InputStream
  * Both metadata and file listings are best effort, and will work better
  * for local project paths. The file system does not handle merging of
  * multiple paths from difference resources like overlapping Jar files.
+ *
+ * ResourceFileSystem does not list classes, but will allow them to be read if specifically
+ * fetched.
  */
 @ExperimentalFileSystem
 class ResourceFileSystem internal constructor(private val classLoader: ClassLoader) :
   ReadOnlyFilesystem() {
+  var jarCache = ConcurrentHashMap<Path, ZipFileSystem>()
+
   override fun canonicalize(path: Path): Path {
     return "/".toPath() / path
   }
@@ -48,30 +51,6 @@ class ResourceFileSystem internal constructor(private val classLoader: ClassLoad
     return toSystemPath(dir)?.let { (fileSystem, path) ->
       fileSystem.list(path).filterNot { path.name.endsWith(".class") }
     }.orEmpty()
-
-//     val resourceName = canonicalize(dir).toString().substring(1)
-//
-//     val result = mutableSetOf<String>()
-//     for (url in classLoader.getResources(resourceName)) {
-//       val urlString = url.toString()
-//       when {
-//         urlString.startsWith("file:") -> {
-//           val file = File(url.toURI())
-//           result += file.list() ?: arrayOf()
-//         }
-//         urlString.startsWith("jar:file:") -> {
-//           val file = jarFile(urlString)
-//           result += jarFileChildren(file, "$resourceName/")
-//         }
-//         else -> {
-// // Silently ignore unexpected URLs.
-//         }
-//       }
-//     }
-//
-//     return result
-//       .filter { !it.endsWith(".class") }
-//       .map { dir / it }
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
@@ -81,18 +60,14 @@ class ResourceFileSystem internal constructor(private val classLoader: ClassLoad
   }
 
   override fun source(file: Path): Source {
-    val resourceName = canonicalize(file).toString().substring(1)
-
-    val stream: InputStream = this.javaClass.classLoader.getResourceAsStream(resourceName)
-      ?: throw FileNotFoundException("file not found: $file")
-
-    return stream.source()
+    return toSystemPath(file)?.let { (fileSystem, path) ->
+      fileSystem.source(path)
+    } ?: throw FileNotFoundException("file not found: $file")
   }
 
   /**
-   * Return the [SYSTEM] path for a file if it is available. This should always be treated as best
-   * effort since the FileSystem abstraction is designed to hide the specifics of where files
-   * are loaded from e.g. from within a Zip file.
+   * Return the file system and path for a file if it is available. The FileSystem abstraction is
+   * designed to hide the specifics of where files are loaded from e.g. from within a Zip file.
    */
   internal fun toSystemPath(path: Path): Pair<FileSystem, Path>? {
     val resourceName = canonicalize(path).toString().substring(1)
@@ -107,8 +82,7 @@ class ResourceFileSystem internal constructor(private val classLoader: ClassLoad
       }
       urlString.startsWith("jar:file:") -> {
         val (jarPath, resourcePath) = jarFilePaths(urlString)
-        val zipFileSystem = zip(jarPath)
-        return Pair(zipFileSystem, resourcePath)
+        return Pair(jarPath.openZip(), resourcePath)
       }
       else -> {
         // Silently ignore unexpected URLs.
@@ -130,34 +104,10 @@ class ResourceFileSystem internal constructor(private val classLoader: ClassLoad
     return Pair(jarPath, resourcePath)
   }
 
-  /**
-   * Returns the contents of a directory inside the JAR file [file].
-   *
-   * @param pathPrefix a string like `misk/resources/` that ends in a slash. This will return the
-   *     simple names of the files and directories that are direct descendants of this path.
-   */
-  private fun jarFileChildren(file: File, pathPrefix: String): Set<String> {
-// If we're looking for the children of `misk/resources/`, there's a few cases to cover:
-//  * Unrelated paths like `META-INF/MANIFEST.MF`. Ignore these.
-//  * Equal paths like `misk/resources/`. Ignore these; we're only collecting children.
-//  * Child file paths like `misk/resources/child.txt`. We collect the `child.txt` substring.
-//  * Child directory paths like `misk/resources/nested/child.txt`. We collect the `nexted`
-//    substring for the child directory.
-    val result = mutableSetOf<String>()
-    val jarFile = zip(file.toOkioPath())
-
-    for (entry in jarFile.list(pathPrefix.toPath())) {
-      if (!entry.name.startsWith(pathPrefix) || entry.name == pathPrefix) continue
-      var endIndex = entry.name.indexOf("/", pathPrefix.length)
-      if (endIndex == -1) endIndex = entry.name.length
-      result += entry.name.substring(pathPrefix.length, endIndex)
+  private fun Path.openZip(): ZipFileSystem {
+    return jarCache.computeIfAbsent(this) {
+      okio.zipfilesystem.open(it, SYSTEM)
     }
-
-    return result
-  }
-
-  fun zip(file: Path): ZipFileSystem {
-    return okio.zipfilesystem.open(file, SYSTEM)
   }
 
   companion object {
