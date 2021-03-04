@@ -116,6 +116,7 @@ class ResourceFileSystem internal constructor(private val classLoader: ClassLoad
      *
      * More involved classloader scenarios like in a container should be handled separately.
      */
-    val SYSTEM_RESOURCES = ResourceFileSystem(ResourceFileSystem.javaClass.classLoader)
+    val SYSTEM_RESOURCES: FileSystem =
+      ResourceFileSystem(ResourceFileSystem::class.java.classLoader)
   }
 }

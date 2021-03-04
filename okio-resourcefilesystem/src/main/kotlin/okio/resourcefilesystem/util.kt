@@ -16,6 +16,7 @@
 package okio.resourcefilesystem
 
 import okio.ExperimentalFileSystem
+import okio.FileSystem
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.reflect.KClass
@@ -24,3 +25,6 @@ import kotlin.reflect.KClass
 
 @ExperimentalFileSystem val KClass<*>.packagePath: Path?
   get() = qualifiedName?.replace(".", "/")?.toPath()?.parent
+
+@ExperimentalFileSystem val ClassLoader.fileSystem: FileSystem
+  get() = ResourceFileSystem(this)
