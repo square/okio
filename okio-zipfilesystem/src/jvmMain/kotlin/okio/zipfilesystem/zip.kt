@@ -57,7 +57,7 @@ private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
  */
 @Throws(IOException::class)
 @ExperimentalFileSystem
-fun open(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
+internal fun open(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
   val source = fileSystem.source(zipPath).buffer()
   val cursor = source.cursor()
     ?: throw IOException("cannot open zip: file doesn't implement a random-access cursor")
@@ -283,7 +283,7 @@ private fun BufferedSource.readEocdRecord(): EocdRecord {
 }
 
 @Throws(IOException::class)
-internal fun BufferedSource.readZip64EocdRecord(regularRecord: EocdRecord): EocdRecord {
+private fun BufferedSource.readZip64EocdRecord(regularRecord: EocdRecord): EocdRecord {
   skip(12) // size of central directory record (8) + version made by (2) + version to extract (2).
   val diskNumber = readIntLe()
   val diskWithCentralDirStart = readIntLe()
@@ -424,7 +424,7 @@ private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): 
  * Converts a 32-bit DOS date+time to milliseconds since epoch. Note that this function interprets
  * a value with no time zone as a value with the local time zone.
  */
-internal fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
+private fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
   if (time == -1) {
     return null
   }
@@ -442,7 +442,7 @@ internal fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
   return cal.time.time
 }
 
-class EocdRecord(
+private class EocdRecord(
   val entryCount: Long,
   val centralDirectoryOffset: Long,
   val commentByteCount: Int

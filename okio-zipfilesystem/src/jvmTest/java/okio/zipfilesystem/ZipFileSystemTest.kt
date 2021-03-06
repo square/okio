@@ -6,6 +6,7 @@ import okio.ExperimentalFileSystem
 import okio.FileSystem
 import okio.IOException
 import okio.Path.Companion.toPath
+import okio.zipfilesystem.ZipFileSystem.Companion.openZip
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -25,12 +26,10 @@ class ZipFileSystemTest {
   @Test
   fun zipWithFiles() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("hello.txt", "Hello World")
-        entries += ZipBuilder.Entry("directory/subdirectory/child.txt", "Another file!")
-      }
+      .addEntry("hello.txt", "Hello World")
+      .addEntry("directory/subdirectory/child.txt", "Another file!")
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("hello.txt".toPath()) { readUtf8() })
       .isEqualTo("Hello World")
@@ -54,14 +53,12 @@ class ZipFileSystemTest {
   fun zipWithDeflate() {
     val content = "Android\n".repeat(1000)
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("a.txt", content)
-        options += "--compression-method"
-        options += "deflate"
-      }
+      .addEntry("a.txt", content)
+      .addOption("--compression-method")
+      .addOption("deflate")
       .build()
     assertThat(fileSystem.metadata(zipPath).size).isLessThan(content.length.toLong())
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("a.txt".toPath()) { readUtf8() })
       .isEqualTo(content)
@@ -71,14 +68,12 @@ class ZipFileSystemTest {
   fun zipWithStore() {
     val content = "Android\n".repeat(1000)
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("a.txt", content)
-        options += "--compression-method"
-        options += "store"
-      }
+      .addEntry("a.txt", content)
+      .addOption("--compression-method")
+      .addOption("store")
       .build()
     assertThat(fileSystem.metadata(zipPath).size).isGreaterThan(content.length.toLong())
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("a.txt".toPath()) { readUtf8() })
       .isEqualTo(content)
@@ -91,12 +86,10 @@ class ZipFileSystemTest {
   @Test
   fun zipWithFileComments() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("a.txt", "Android", comment = "A is for Android")
-        entries += ZipBuilder.Entry("b.txt", "Banana", comment = "B or not to Be")
-      }
+      .addEntry("a.txt", "Android", comment = "A is for Android")
+      .addEntry("b.txt", "Banana", comment = "B or not to Be")
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("a.txt".toPath()) { readUtf8() })
       .isEqualTo("Android")
@@ -108,22 +101,20 @@ class ZipFileSystemTest {
   @Test
   fun zipWithFileModifiedDate() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry(
-          path = "a.txt",
-          content = "Android",
-          modifiedAt = "200102030405.06",
-          accessedAt = "200102030405.07"
-        )
-        entries += ZipBuilder.Entry(
-          path = "b.txt",
-          content = "Banana",
-          modifiedAt = "200908070605.04",
-          accessedAt = "200908070605.03"
-        )
-      }
+      .addEntry(
+        path = "a.txt",
+        content = "Android",
+        modifiedAt = "200102030405.06",
+        accessedAt = "200102030405.07"
+      )
+      .addEntry(
+        path = "b.txt",
+        content = "Banana",
+        modifiedAt = "200908070605.04",
+        accessedAt = "200908070605.03"
+      )
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a.txt".toPath())
       .apply {
@@ -150,22 +141,20 @@ class ZipFileSystemTest {
   @Test
   fun zipWithFileOutOfBoundsModifiedDate() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry(
-          path = "a.txt",
-          content = "Android",
-          modifiedAt = "196912310000.00",
-          accessedAt = "196912300000.00"
-        )
-        entries += ZipBuilder.Entry(
-          path = "b.txt",
-          content = "Banana",
-          modifiedAt = "203801190314.07", // Last UNIX date representable in 31 bits.
-          accessedAt = "203801190314.08" // Overflows!
-        )
-      }
+      .addEntry(
+        path = "a.txt",
+        content = "Android",
+        modifiedAt = "196912310000.00",
+        accessedAt = "196912300000.00"
+      )
+      .addEntry(
+        path = "b.txt",
+        content = "Banana",
+        modifiedAt = "203801190314.07", // Last UNIX date representable in 31 bits.
+        accessedAt = "203801190314.08" // Overflows!
+      )
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     println(Instant.fromEpochMilliseconds(-2147483648000L))
 
@@ -199,24 +188,22 @@ class ZipFileSystemTest {
   @Test
   fun zipWithDirectoryModifiedDate() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("a/a.txt", "Android")
-        entries += ZipBuilder.Entry(
-          path = "a",
-          directory = true,
-          modifiedAt = "200102030405.06",
-          accessedAt = "200102030405.07"
-        )
-        entries += ZipBuilder.Entry("b/b.txt", "Android")
-        entries += ZipBuilder.Entry(
-          path = "b",
-          directory = true,
-          modifiedAt = "200908070605.04",
-          accessedAt = "200908070605.03"
-        )
-      }
+      .addEntry("a/a.txt", "Android")
+      .addEntry(
+        path = "a",
+        directory = true,
+        modifiedAt = "200102030405.06",
+        accessedAt = "200102030405.07"
+      )
+      .addEntry("b/b.txt", "Android")
+      .addEntry(
+        path = "b",
+        directory = true,
+        modifiedAt = "200908070605.04",
+        accessedAt = "200908070605.03"
+      )
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a".toPath())
       .apply {
@@ -244,16 +231,14 @@ class ZipFileSystemTest {
   @Test
   fun zipWithModifiedDate() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry(
-          "a/a.txt",
-          modifiedAt = "197001010001.00",
-          accessedAt = "197001010002.00",
-          content = "Android"
-        )
-      }
+      .addEntry(
+        "a/a.txt",
+        modifiedAt = "197001010001.00",
+        accessedAt = "197001010002.00",
+        content = "Android"
+      )
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a/a.txt".toPath())
       .apply {
@@ -267,16 +252,14 @@ class ZipFileSystemTest {
   @Test
   fun zipWithEmptyDirectory() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry(
-          path = "a",
-          directory = true,
-          modifiedAt = "200102030405.06",
-          accessedAt = "200102030405.07"
-        )
-      }
+      .addEntry(
+        path = "a",
+        directory = true,
+        modifiedAt = "200102030405.06",
+        accessedAt = "200102030405.07"
+      )
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a".toPath())
       .apply {
@@ -297,15 +280,13 @@ class ZipFileSystemTest {
   @Test
   fun zipWithSyntheticDirectory() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("a/a.txt", "Android")
-        entries += ZipBuilder.Entry("a", directory = true)
-        entries += ZipBuilder.Entry("b/b.txt", "Android")
-        entries += ZipBuilder.Entry("b", directory = true)
-        options += "--no-dir-entries"
-      }
+      .addEntry("a/a.txt", "Android")
+      .addEntry("a", directory = true)
+      .addEntry("b/b.txt", "Android")
+      .addEntry("b", directory = true)
+      .addOption("--no-dir-entries")
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a".toPath())
       .apply {
@@ -337,11 +318,9 @@ class ZipFileSystemTest {
   @Test
   fun zip64() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("-", "Android", zip64 = true)
-      }
+      .addEntry("-", "Android", zip64 = true)
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("-".toPath()) { readUtf8() })
       .isEqualTo("Android")
@@ -354,12 +333,10 @@ class ZipFileSystemTest {
   @Test
   fun zipWithArchiveComment() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("a.txt", "Android")
-        archiveComment = "this comment applies to the entire archive"
-      }
+      .addEntry("a.txt", "Android")
+      .archiveComment("this comment applies to the entire archive")
       .build()
-    val zipFileSystem = open(zipPath, fileSystem)
+    val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("a.txt".toPath()) { readUtf8() })
       .isEqualTo("Android")
@@ -370,44 +347,38 @@ class ZipFileSystemTest {
     // Spanned archives must be at least 64 KiB.
     val largeFile = randomToken(length = 128 * 1024)
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("large_file.txt", largeFile)
-        options += "--split-size"
-        options += "64k"
-      }
+      .addEntry("large_file.txt", largeFile)
+      .addOption("--split-size")
+      .addOption("64k")
       .build()
     assertFailsWith<IOException> {
-      open(zipPath, fileSystem)
+      fileSystem.openZip(zipPath)
     }
   }
 
   @Test
   fun cannotReadZipWithEncryption() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("a.txt", "Android")
-        options += "--password"
-        options += "secret"
-      }
+      .addEntry("a.txt", "Android")
+      .addOption("--password")
+      .addOption("secret")
       .build()
     assertFailsWith<IOException> {
-      open(zipPath, fileSystem)
+      fileSystem.openZip(zipPath)
     }
   }
 
   @Test
   fun zipTooShort() {
     val zipPath = ZipBuilder(base)
-      .apply {
-        entries += ZipBuilder.Entry("a.txt", "Android")
-      }
+      .addEntry("a.txt", "Android")
       .build()
 
     val prefix = fileSystem.read(zipPath) { readByteString(20) }
     fileSystem.write(zipPath) { write(prefix) }
 
     assertFailsWith<IOException> {
-      open(zipPath, fileSystem)
+      fileSystem.openZip(zipPath)
     }
   }
 }
@@ -415,4 +386,5 @@ class ZipFileSystemTest {
 /** Decodes this ISO8601 time string. */
 fun String.toEpochMillis() = Instant.parse(this).toEpochMilliseconds()
 
+@JvmOverloads
 fun randomToken(length: Int = 16) = Random.nextBytes(length).toByteString().hex()

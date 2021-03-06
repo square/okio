@@ -37,9 +37,26 @@ class ZipBuilder(
 ) {
   private val fileSystem = FileSystem.SYSTEM
 
-  val options = mutableListOf<String>()
-  val entries = mutableListOf<Entry>()
-  var archiveComment: String = ""
+  private val entries = mutableListOf<Entry>()
+  private val options = mutableListOf<String>()
+  private var archiveComment: String = ""
+
+  @JvmOverloads
+  fun addEntry(
+    path: String,
+    content: String? = null,
+    directory: Boolean = false,
+    comment: String = "",
+    modifiedAt: String? = null,
+    accessedAt: String? = null,
+    zip64: Boolean = false
+  ) = apply {
+    entries += Entry(path, content, directory, comment, modifiedAt, accessedAt, zip64)
+  }
+
+  fun addOption(option: String) = apply { options += option }
+
+  fun archiveComment(archiveComment: String) = apply { this.archiveComment = archiveComment }
 
   fun build(): Path {
     assumeTrue("ZipBuilder doesn't work on Windows", Path.DIRECTORY_SEPARATOR == "/")
@@ -126,14 +143,14 @@ class ZipBuilder(
     require(exitCode == 0)
   }
 
-  class Entry(
+  private class Entry(
     val path: String,
-    val content: String? = null,
-    val directory: Boolean = false,
-    val comment: String = "",
-    val modifiedAt: String? = null,
-    val accessedAt: String? = null,
-    val zip64: Boolean = false
+    val content: String?,
+    val directory: Boolean,
+    val comment: String,
+    val modifiedAt: String?,
+    val accessedAt: String?,
+    val zip64: Boolean
   ) {
     init {
       require(directory != (content != null)) { "must be a directory or have content" }

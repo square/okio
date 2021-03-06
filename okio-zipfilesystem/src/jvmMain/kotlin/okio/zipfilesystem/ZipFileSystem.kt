@@ -142,4 +142,11 @@ class ZipFileSystem internal constructor(
     throw IOException("zip file systems are read-only")
 
   override fun delete(path: Path): Unit = throw IOException("zip file systems are read-only")
+
+  companion object {
+    @Throws(IOException::class)
+    @ExperimentalFileSystem
+    @JvmStatic @JvmName("open")
+    fun FileSystem.openZip(zipPath: Path): ZipFileSystem = open(zipPath, this)
+  }
 }
