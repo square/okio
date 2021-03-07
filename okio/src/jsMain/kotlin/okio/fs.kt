@@ -94,6 +94,8 @@ internal external fun rmdirSync(path: String)
 
 internal external fun statSync(path: String): Stats
 
+internal external fun fstatSync(fd: Number): Stats
+
 internal external fun unlinkSync(path: String)
 
 internal external fun writeSync(fd: Number, buffer: Uint8Array): Number
