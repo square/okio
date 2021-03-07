@@ -228,6 +228,11 @@ class FakeFileSystem(
 
     element.access(now = clock.now())
     val paths = elements.keys.filterTo(mutableListOf()) { it.parent == canonicalPath }
+    if (dir.isRelative) {
+      for (i in paths.indices) {
+        paths[i] = dir / paths[i].name
+      }
+    }
     paths.sort()
     return paths
   }

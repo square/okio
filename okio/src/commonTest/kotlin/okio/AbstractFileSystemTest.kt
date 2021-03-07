@@ -85,6 +85,22 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun listOnRelativePathReturnsRelativePaths() {
+    // Make sure there's always at least one file so our assertion is useful.
+    if (fileSystem is FakeFileSystem) {
+      val workingDirectory = "/directory".toPath()
+      fileSystem.createDirectory(workingDirectory)
+      fileSystem.workingDirectory = workingDirectory
+      fileSystem.write("a.txt".toPath()) {
+        writeUtf8("hello, world!")
+      }
+    }
+
+    val entries = fileSystem.list(".".toPath())
+    assertTrue(entries.toString()) { entries.isNotEmpty() && entries.all { it.isRelative } }
+  }
+
+  @Test
   fun listResultsAreSorted() {
     val fileA = base / "a"
     val fileB = base / "b"
