@@ -63,6 +63,13 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun currentWorkingDirectoryIsADirectory() {
+    val metadata = fileSystem.metadata(".".toPath())
+    assertTrue(metadata.isDirectory)
+    assertFalse(metadata.isRegularFile)
+  }
+
+  @Test
   fun canonicalizeNoSuchFile() {
     assertFailsWith<FileNotFoundException> {
       fileSystem.canonicalize(base / "no-such-file")

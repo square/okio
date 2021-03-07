@@ -214,9 +214,9 @@ class FakeFileSystem(
     var element = elements[canonicalPath]
 
     // If the path is a root, create it on demand.
-    if (element == null && path.isRoot) {
+    if (element == null && canonicalPath.isRoot) {
       element = Directory(createdAt = clock.now())
-      elements[path] = element
+      elements[canonicalPath] = element
     }
 
     return element?.metadata
