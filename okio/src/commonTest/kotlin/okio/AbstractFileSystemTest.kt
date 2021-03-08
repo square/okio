@@ -641,8 +641,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileSourceCursorHappyPath() {
-    if (isJs) return // TODO: implement cursors on Js platform.
-
     val path = base / "file-source"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -671,8 +669,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileSourceCursorSeekBackwards() {
-    if (isJs) return // TODO: implement cursors on Js platform.
-
     val path = base / "file-source-backwards"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -695,8 +691,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun bufferedFileSourceCursorHappyPath() {
-    if (isJs) return // TODO: implement cursors on Js platform.
-
     val path = base / "buffered-file-source"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -724,8 +718,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun bufferedFileSourceCursorSeekBackwards() {
-    if (isJs) return // TODO: implement cursors on Js platform.
-
     val path = base / "buffered-file-source-backwards"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -747,8 +739,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun bufferedFileSourceSeekBeyondBuffer() {
-    if (isJs) return // TODO: implement cursors on Js platform.
-
     val path = base / "buffered-file-source-backwards"
     fileSystem.write(path) {
       writeUtf8("a".repeat(8192 * 2))
@@ -770,8 +760,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun sourceCursorWhenClosed() {
-    if (isJs) return // TODO: implement cursors on Js platform.
-
     val path = base / "file-source"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
