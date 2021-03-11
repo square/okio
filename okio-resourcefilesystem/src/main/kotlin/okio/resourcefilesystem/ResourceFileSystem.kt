@@ -25,6 +25,7 @@ import okio.Path.Companion.toPath
 import okio.Source
 import okio.internal.ReadOnlyFilesystem
 import okio.zipfilesystem.ZipFileSystem
+import okio.zipfilesystem.open
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -104,11 +105,7 @@ class ResourceFileSystem internal constructor(private val classLoader: ClassLoad
     return Pair(jarPath, resourcePath)
   }
 
-  private fun Path.openZip(): ZipFileSystem {
-    return jarCache.computeIfAbsent(this) {
-      okio.zipfilesystem.open(it, SYSTEM)
-    }
-  }
+  private fun Path.openZip(): ZipFileSystem = jarCache.computeIfAbsent(this) { open(it, SYSTEM) }
 
   companion object {
     /**
