@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.2
+
+_2021-03-24_
+
+ * New: Require Java 8+ for Okio 3.x.
+ * New: `Cursor` supports random access reads on a `Source`.
+ * New: `FileSystem.openZip(path)` returns a file system backed by a `.zip` file. This is in the
+   `okio-zipfilesystem` artifact.
+
+
 ## Version 3.0.0-alpha.1
 
 _2021-01-07_

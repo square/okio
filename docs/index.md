@@ -81,7 +81,9 @@ Okio’s implementation language from Java to Kotlin.
 Requirements
 ------------
 
-Okio supports Android 4.0.3+ (API level 15+) and Java 7+.
+Okio 2.x supports Android 4.0.3+ (API level 15+) and Java 7+.
+
+Okio 3.x supports Android 4.0.3+ (API level 15+) and Java 8+.
 
 Okio depends on the [Kotlin standard library][kotlin]. It is a small library with strong
 backward-compatibility.
