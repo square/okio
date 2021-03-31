@@ -7,27 +7,28 @@ apply plugin: 'org.jetbrains.kotlin.multiplatform'
  * ```
  *   common
  *   |-- jvm
- *   '-- nonJvm
- *       |-- js
- *       '-- native
- *           |- unix
- *           |   |-- apple
- *           |   |   |-- iosArm64
- *           |   |   |-- iosX64
- *           |   |   |-- macosX64
- *           |   |   |-- watchosArm32
- *           |   |   |-- watchosArm64
- *           |   |   '-- watchosX86
- *           |   '-- linux
- *           |       '-- linuxX64
- *           '-- mingw
- *               '-- mingwX64
+ *   |-- js
+ *   '-- native
+ *       |- unix
+ *       |   |-- apple
+ *       |   |   |-- iosArm64
+ *       |   |   |-- iosX64
+ *       |   |   |-- macosX64
+ *       |   |   |-- watchosArm32
+ *       |   |   |-- watchosArm64
+ *       |   |   '-- watchosX86
+ *       |   '-- linux
+ *       |       '-- linuxX64
+ *       '-- mingw
+ *           '-- mingwX64
  * ```
  *
  * Every child of `unix` also includes a source set that depends on the pointer size:
  *
- *  * sizet32 for watchOS, including watchOS 64-bit architectures
- *  * sizet64 for everything else
+ *  * `sizet32` for watchOS, including watchOS 64-bit architectures
+ *  * `sizet64` for everything else
+ *
+ * The `nonJvm` and `nonJs` source sets exist and exclude a platform.
  *
  * The `hashFunctions` source set builds on all platforms. It ships as a main source set on non-JVM
  * platforms and as a test source set on the JVM platform.
@@ -85,10 +86,13 @@ kotlin {
         implementation project(":okio-fakefilesystem")
       }
     }
+    nonJsMain {
+    }
     nonJvmMain {
       kotlin.srcDirs += 'src/hashFunctions/kotlin'
     }
     jvmMain {
+      dependsOn nonJsMain
       dependencies {
         api deps.kotlin.stdLib.jdk8
         compileOnly deps.animalSniffer.annotations
@@ -105,18 +109,18 @@ kotlin {
     jsMain {
       dependsOn nonJvmMain
       dependencies {
-        // Uncomment this to generate fs.fs.module_node.kt. Use it when updating fs.kt.
-        // implementation(npm("@types/node", "14.14.16", true))
         api deps.kotlin.stdLib.js
       }
     }
     jsTest {
       dependencies {
         implementation deps.kotlin.test.js
+        implementation project(":okio-nodefilesystem")
       }
     }
 
     nativeMain {
+      dependsOn nonJsMain
       dependsOn nonJvmMain
     }
     nativeTest {

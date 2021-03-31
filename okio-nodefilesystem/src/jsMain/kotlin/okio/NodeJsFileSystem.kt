@@ -26,7 +26,7 @@ import okio.Path.Companion.toPath
  * [node_fs]: https://nodejs.org/dist/latest-v14.x/docs/api/fs.html
  */
 @ExperimentalFileSystem
-internal object NodeJsFileSystem : FileSystem() {
+object NodeJsFileSystem : FileSystem() {
   private var S_IFMT = 0xf000 // fs.constants.S_IFMT
   private var S_IFREG = 0x8000 // fs.constants.S_IFREG
   private var S_IFDIR = 0x4000 // fs.constants.S_IFDIR

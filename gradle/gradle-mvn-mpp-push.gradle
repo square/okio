@@ -109,8 +109,9 @@ publishing {
     kotlinMultiplatform {
       artifactId = POM_ARTIFACT_ID + '-multiplatform'
     }
-    jvm {
-      artifactId = POM_ARTIFACT_ID
+    def jvm = findByName("jvm")
+    if (jvm != null) {
+      jvm.artifactId = POM_ARTIFACT_ID
     }
   }
 

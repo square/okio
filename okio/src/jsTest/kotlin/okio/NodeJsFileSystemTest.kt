@@ -15,11 +15,15 @@
  */
 package okio
 
-internal actual val PLATFORM_DIRECTORY_SEPARATOR: String
-  get() {
-    // TODO(swankjesse): return path.path.sep instead, once it has @JsNonModule
-    return when (platform()) {
-      "win32" -> "\\"
-      else -> "/"
-    }
-  }
+import kotlinx.datetime.Clock
+import kotlin.time.ExperimentalTime
+
+@ExperimentalTime
+@ExperimentalFileSystem
+class NodeJsFileSystemTest : AbstractFileSystemTest(
+  clock = Clock.System,
+  fileSystem = NodeJsFileSystem,
+  windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
+  allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY
+)
