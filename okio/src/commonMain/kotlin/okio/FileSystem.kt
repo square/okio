@@ -15,9 +15,6 @@
  */
 package okio
 
-import okio.FileSystem.Companion.SYSTEM
-import kotlin.jvm.JvmField
-
 /**
  * Read and write access to a hierarchical collection of files, addressed by [paths][Path]. This
  * is a natural interface to the [current computer's local file system][SYSTEM].
@@ -84,7 +81,8 @@ import kotlin.jvm.JvmField
  * I/O with.
  */
 @ExperimentalFileSystem
-abstract class FileSystem {
+expect abstract class FileSystem() {
+
   /**
    * Resolves [path] against the current working directory and symlinks in this file system. The
    * returned path identifies the same file as [path], but with an absolute path that does not
@@ -106,9 +104,7 @@ abstract class FileSystem {
    * @throws IOException if [path] does not exist or its metadata cannot be read.
    */
   @Throws(IOException::class)
-  fun metadata(path: Path): FileMetadata {
-    return metadataOrNull(path) ?: throw FileNotFoundException("no such file: $path")
-  }
+  fun metadata(path: Path): FileMetadata
 
   /**
    * Returns metadata of the file, directory, or object identified by [path]. This returns null if
@@ -127,9 +123,7 @@ abstract class FileSystem {
    *     problem, or other issue.
    */
   @Throws(IOException::class)
-  fun exists(path: Path): Boolean {
-    return metadataOrNull(path) != null
-  }
+  fun exists(path: Path): Boolean
 
   /**
    * Returns the children of the directory identified by [dir]. The returned list is sorted using
@@ -158,11 +152,7 @@ abstract class FileSystem {
    * source. This is a compact way to read the contents of a file.
    */
   @Throws(IOException::class)
-  inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
-    return source(file).buffer().use {
-      it.readerAction()
-    }
-  }
+  inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T
 
   /**
    * Returns a sink that writes bytes to [file] from beginning to end. If [file] already exists it
@@ -180,11 +170,7 @@ abstract class FileSystem {
    * This is a compact way to write a file.
    */
   @Throws(IOException::class)
-  inline fun <T> write(file: Path, writerAction: BufferedSink.() -> T): T {
-    return sink(file).buffer().use {
-      it.writerAction()
-    }
-  }
+  inline fun <T> write(file: Path, writerAction: BufferedSink.() -> T): T
 
   /**
    * Returns a sink that appends bytes to the end of [file], creating it if it doesn't already
@@ -214,20 +200,7 @@ abstract class FileSystem {
    * @throws IOException if any [metadata] or [createDirectory] operation fails.
    */
   @Throws(IOException::class)
-  fun createDirectories(dir: Path) {
-    // Compute the sequence of directories to create.
-    val directories = ArrayDeque<Path>()
-    var path: Path? = dir
-    while (path != null && !exists(path)) {
-      directories.addFirst(path)
-      path = path.parent
-    }
-
-    // Create them.
-    for (toCreate in directories) {
-      createDirectory(toCreate)
-    }
-  }
+  fun createDirectories(dir: Path)
 
   /**
    * Moves [source] to [target] in-place if the underlying file system supports it. If [target]
@@ -290,13 +263,7 @@ abstract class FileSystem {
    * @throws IOException if [source] cannot be read or if [target] cannot be written.
    */
   @Throws(IOException::class)
-  open fun copy(source: Path, target: Path) {
-    source(source).use { bytesIn ->
-      sink(target).buffer().use { bytesOut ->
-        bytesOut.writeAll(bytesIn)
-      }
-    }
-  }
+  open fun copy(source: Path, target: Path)
 
   /**
    * Deletes the file or directory at [path].
@@ -320,33 +287,9 @@ abstract class FileSystem {
    * @throws IOException if any [metadata], [list], or [delete] operation fails.
    */
   @Throws(IOException::class)
-  open fun deleteRecursively(fileOrDirectory: Path) {
-    val stack = ArrayDeque<Path>()
-    stack += fileOrDirectory
-
-    while (stack.isNotEmpty()) {
-      val toDelete = stack.removeLast()
-
-      val metadata = metadata(toDelete)
-      val children = if (metadata.isDirectory) list(toDelete) else listOf()
-
-      if (children.isNotEmpty()) {
-        stack += toDelete
-        stack += children
-      } else {
-        delete(toDelete)
-      }
-    }
-  }
+  open fun deleteRecursively(fileOrDirectory: Path)
 
   companion object {
-    /**
-     * The current process's host file system. Use this instance directly, or dependency inject a
-     * [FileSystem] to make code testable.
-     */
-    @JvmField
-    val SYSTEM: FileSystem = PLATFORM_FILE_SYSTEM
-
     /**
      * Returns a writable temporary directory on [SYSTEM].
      *
@@ -356,7 +299,6 @@ abstract class FileSystem {
      *  * **Linux, iOS, and macOS**: the path in the `TMPDIR` environment variable.
      *  * **Windows**: the first non-null of `TEMP`, `TMP`, and `USERPROFILE` environment variables.
      */
-    @JvmField
-    val SYSTEM_TEMPORARY_DIRECTORY: Path = PLATFORM_TEMPORARY_DIRECTORY
+    val SYSTEM_TEMPORARY_DIRECTORY: Path
   }
 }

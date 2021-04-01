@@ -16,12 +16,6 @@
 
 package okio
 
-@ExperimentalFileSystem
-internal expect val PLATFORM_FILE_SYSTEM: FileSystem
-
-@ExperimentalFileSystem
-internal expect val PLATFORM_TEMPORARY_DIRECTORY: Path
-
 internal expect fun ByteArray.toUtf8String(): String
 
 internal expect fun String.asUtf8ToByteArray(): ByteArray

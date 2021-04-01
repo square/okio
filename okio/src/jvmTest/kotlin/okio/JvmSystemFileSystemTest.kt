@@ -20,7 +20,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 @ExperimentalFileSystem
-class SystemFileSystemTest : AbstractFileSystemTest(
+class JvmSystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileSystem.SYSTEM,
   windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",

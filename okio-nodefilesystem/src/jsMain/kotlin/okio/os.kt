@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * See `fs.kt` for information on what this file does and how to keep it up-to-date.
+ */
+@file:JsModule("os")
+@file:JsNonModule
 package okio
 
-internal actual val PLATFORM_DIRECTORY_SEPARATOR: String
-  get() {
-    // TODO(swankjesse): return path.path.sep instead, once it has @JsNonModule
-    return when (platform()) {
-      "win32" -> "\\"
-      else -> "/"
-    }
-  }
+internal external fun tmpdir(): String
