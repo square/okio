@@ -69,6 +69,10 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return result
   }
 
+  override fun open(file: Path): FileHandle {
+    throw UnsupportedOperationException("not implemented yet!")
+  }
+
   override fun source(file: Path): Source {
     return file.toFile().source()
   }

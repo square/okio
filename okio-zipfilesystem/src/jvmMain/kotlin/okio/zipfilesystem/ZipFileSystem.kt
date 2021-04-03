@@ -17,6 +17,7 @@
 package okio.zipfilesystem
 
 import okio.ExperimentalFileSystem
+import okio.FileHandle
 import okio.FileMetadata
 import okio.FileSystem
 import okio.InflaterSource
@@ -98,6 +99,10 @@ class ZipFileSystem internal constructor(
     val cursor = source.cursor()!!
     cursor.seek(entry.offset)
     return source.readLocalHeader(basicMetadata)
+  }
+
+  override fun open(file: Path): FileHandle {
+    throw UnsupportedOperationException("not implemented yet!")
   }
 
   override fun list(dir: Path): List<Path> {

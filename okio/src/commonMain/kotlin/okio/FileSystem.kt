@@ -138,6 +138,16 @@ expect abstract class FileSystem() {
   abstract fun list(dir: Path): List<Path>
 
   /**
+   * Returns a handle to operate on [file].
+   *
+   * @throws IOException if [file] does not exist, is not a file, or cannot be accessed. A file
+   *     cannot be accessed if the current process doesn't have sufficient permissions for [file],
+   *     if there's a loop of symbolic links, or if any name is too long.
+   */
+  @Throws(IOException::class)
+  abstract fun open(file: Path): FileHandle
+
+  /**
    * Returns a source that reads the bytes of [file] from beginning to end.
    *
    * @throws IOException if [file] does not exist, is not a file, or cannot be read. A file cannot
