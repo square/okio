@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.3
+
+_2021-04-06_
+
+ * New: Move `NodeJsFileSystem` into its own module. Having it built-in prevented Okio from working
+   in a browser where there's no synchronous file system API. This is in the `okio-nodefilesystem`
+   artifact.
+
+
 ## Version 3.0.0-alpha.2
 
 _2021-03-24_
