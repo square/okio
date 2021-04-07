@@ -18,11 +18,11 @@ package okio.resourcefilesystem
 import okio.ExperimentalFileSystem
 import okio.FileSystem
 import okio.IOException
+import okio.Path
 import okio.Path.Companion.toPath
 import okio.zipfilesystem.ZipFileSystem
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.io.File
 import kotlin.test.fail
 
 @ExperimentalFileSystem
@@ -87,19 +87,23 @@ class ResourceFileSystemTest {
 
   @Test
   fun testSystemPath() {
-    val pwd = File(".").absolutePath
+    val pwd = FileSystem.SYSTEM.canonicalize(".".toPath())
+    val slash = Path.DIRECTORY_SEPARATOR
 
     val (aTxtFs, aTxtPath) = fileSystem.toSystemPath("okio/resourcefilesystem/a.txt".toPath())!!
     assertThat(aTxtFs).isSameAs(FileSystem.SYSTEM)
-    assertThat(aTxtPath.toString()).matches("$pwd.*/resourcefilesystem/a.txt")
+    assertThat(aTxtPath.toString()).startsWith(pwd.toString())
+    assertThat(aTxtPath.toString()).endsWith("resourcefilesystem${slash}a.txt")
 
     val (bDirFs, bDirPath) = fileSystem.toSystemPath("okio/resourcefilesystem/b/".toPath())!!
     assertThat(bDirFs).isSameAs(FileSystem.SYSTEM)
-    assertThat(bDirPath.toString()).matches("$pwd.*/resourcefilesystem/b")
+    assertThat(bDirPath.toString()).startsWith(pwd.toString())
+    assertThat(bDirPath.toString()).endsWith("resourcefilesystem${slash}b")
 
     val (bTxtFs, bTxtPath) = fileSystem.toSystemPath("okio/resourcefilesystem/b/b.txt".toPath())!!
     assertThat(bTxtFs).isSameAs(FileSystem.SYSTEM)
-    assertThat(bTxtPath.toString()).matches("$pwd.*/resourcefilesystem/b/b.txt")
+    assertThat(bTxtPath.toString()).startsWith(pwd.toString())
+    assertThat(bTxtPath.toString()).endsWith("resourcefilesystem${slash}b${slash}b.txt")
 
     val (junitJar, licensePath) = fileSystem.toSystemPath("LICENSE-junit.txt".toPath())!!
     assertThat(junitJar).isInstanceOf(ZipFileSystem::class.java)

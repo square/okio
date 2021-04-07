@@ -16,54 +16,62 @@
 package okio.resourcefilesystem
 
 import okio.ExperimentalFileSystem
+import okio.FileHandle
 import okio.FileMetadata
 import okio.FileNotFoundException
 import okio.FileSystem
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
+import okio.Sink
 import okio.Source
-import okio.internal.ReadOnlyFilesystem
 import okio.zipfilesystem.ZipFileSystem
-import okio.zipfilesystem.open
+import okio.zipfilesystem.ZipFileSystem.Companion.openZip
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * A file system exposing the traditional java classpath resources.
+ * A file system exposing Java classpath resources. It is equivalent to the files returned by
+ * [ClassLoader.getResource].
  *
- * Both metadata and file listings are best effort, and will work better
- * for local project paths. The file system does not handle merging of
- * multiple paths from difference resources like overlapping Jar files.
+ * Both metadata and file listings are best effort, and will work better for local project paths.
+ * The file system does not handle merging of multiple paths from difference resources like
+ * overlapping `.jar` files.
  *
- * ResourceFileSystem does not list classes, but will allow them to be read if specifically
- * fetched.
+ * ResourceFileSystem excludes `.class` files from calls to [list], but can read them in calls to
+ * [read] and [source].
  */
 @ExperimentalFileSystem
-class ResourceFileSystem internal constructor(private val classLoader: ClassLoader) :
-  ReadOnlyFilesystem() {
-  var jarCache = ConcurrentHashMap<Path, ZipFileSystem>()
+class ResourceFileSystem internal constructor(
+  private val classLoader: ClassLoader
+) : FileSystem() {
+  private var jarCache = ConcurrentHashMap<Path, ZipFileSystem>()
 
   override fun canonicalize(path: Path): Path {
     return "/".toPath() / path
   }
 
   override fun list(dir: Path): List<Path> {
-    return toSystemPath(dir)?.let { (fileSystem, path) ->
-      fileSystem.list(path).filterNot { it.name.endsWith(".class") }
-    }.orEmpty()
+    val (fileSystem, fileSystemPath) = toSystemPath(dir) ?: return listOf()
+    return fileSystem.list(fileSystemPath).filterNot { it.name.endsWith(".class") }
+  }
+
+  override fun open(file: Path): FileHandle {
+    val (fileSystem, fileSystemPath) = toSystemPath(file)
+      ?: throw FileNotFoundException("file not found: $file")
+    return fileSystem.open(fileSystemPath)
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
-    return toSystemPath(path)?.let { (fileSystem, path) ->
-      fileSystem.metadataOrNull(path)
-    }
+    val (fileSystem, fileSystemPath) = toSystemPath(path) ?: return null
+    return fileSystem.metadataOrNull(fileSystemPath)
   }
 
   override fun source(file: Path): Source {
-    return toSystemPath(file)?.let { (fileSystem, path) ->
-      fileSystem.source(path)
-    } ?: throw FileNotFoundException("file not found: $file")
+    val (fileSystem, fileSystemPath) = toSystemPath(file)
+      ?: throw FileNotFoundException("file not found: $file")
+    return fileSystem.source(fileSystemPath)
   }
 
   /**
@@ -99,13 +107,26 @@ class ResourceFileSystem internal constructor(private val classLoader: ClassLoad
    */
   private fun jarFilePaths(jarFileUrl: String): Pair<Path, Path> {
     val suffixStart = jarFileUrl.lastIndexOf("!")
-    if (suffixStart == -1) throw IllegalStateException("Not a complete JAR path: $jarFileUrl")
+    require(suffixStart != -1) { "Not a complete JAR path: $jarFileUrl" }
     val jarPath = jarFileUrl.substring("jar:file:".length, suffixStart).toPath()
     val resourcePath = jarFileUrl.substring(suffixStart + 1).toPath()
-    return Pair(jarPath, resourcePath)
+    return jarPath to resourcePath
   }
 
-  private fun Path.openZip(): ZipFileSystem = jarCache.computeIfAbsent(this) { open(it, SYSTEM) }
+  private fun Path.openZip(): ZipFileSystem = jarCache.computeIfAbsent(this) { SYSTEM.openZip(it) }
+
+  override fun sink(file: Path): Sink = throw IOException("$this is read-only")
+
+  override fun appendingSink(file: Path): Sink =
+    throw IOException("$this is read-only")
+
+  override fun createDirectory(dir: Path): Unit =
+    throw IOException("$this is read-only")
+
+  override fun atomicMove(source: Path, target: Path): Unit =
+    throw IOException("$this is read-only")
+
+  override fun delete(path: Path): Unit = throw IOException("$this is read-only")
 
   companion object {
     /**
