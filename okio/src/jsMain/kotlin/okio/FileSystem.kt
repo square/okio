@@ -34,6 +34,8 @@ actual abstract class FileSystem {
 
   actual abstract fun list(dir: Path): List<Path>
 
+  actual abstract fun open(file: Path): FileHandle
+
   actual abstract fun source(file: Path): Source
 
   actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {

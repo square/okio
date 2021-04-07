@@ -86,6 +86,10 @@ object NodeJsFileSystem : FileSystem() {
     }
   }
 
+  override fun open(file: Path): FileHandle {
+    throw UnsupportedOperationException("not implemented yet!")
+  }
+
   override fun source(file: Path): Source {
     try {
       val fd = openSync(file.toString(), flags = "r")

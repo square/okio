@@ -21,6 +21,7 @@ import okio.Buffer
 import okio.ByteString
 import okio.Cursor
 import okio.ExperimentalFileSystem
+import okio.FileHandle
 import okio.FileMetadata
 import okio.FileNotFoundException
 import okio.FileSystem
@@ -235,6 +236,10 @@ class FakeFileSystem(
     }
     paths.sort()
     return paths
+  }
+
+  override fun open(file: Path): FileHandle {
+    throw UnsupportedOperationException("not implemented yet!")
   }
 
   override fun source(file: Path): Source {
