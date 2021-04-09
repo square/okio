@@ -1,0 +1,17 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+
+// modify these lines for MANIFEST.MF properties or for specific bnd instructions
+project.ext.bndManifest = '''
+    Export-Package: okio.resourcefilesystem
+    Automatic-Module-Name: okio.resourcefilesystem
+    Bundle-SymbolicName: com.squareup.okio.resourcefilesystem
+    '''
+
+dependencies {
+  implementation project(":okio")
+  implementation project(":okio-zipfilesystem")
+
+  implementation deps.test.junit
+  implementation deps.test.assertj
+  implementation deps.kotlin.test.jdk
+}

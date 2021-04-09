@@ -1,0 +1,140 @@
+/*
+ * Copyright (C) 2021 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package okio.resourcefilesystem
+
+import okio.ExperimentalFileSystem
+import okio.FileHandle
+import okio.FileMetadata
+import okio.FileNotFoundException
+import okio.FileSystem
+import okio.Path
+import okio.Path.Companion.toOkioPath
+import okio.Path.Companion.toPath
+import okio.Sink
+import okio.Source
+import okio.zipfilesystem.ZipFileSystem
+import okio.zipfilesystem.ZipFileSystem.Companion.openZip
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * A file system exposing Java classpath resources. It is equivalent to the files returned by
+ * [ClassLoader.getResource].
+ *
+ * Both metadata and file listings are best effort, and will work better for local project paths.
+ * The file system does not handle merging of multiple paths from difference resources like
+ * overlapping `.jar` files.
+ *
+ * ResourceFileSystem excludes `.class` files from calls to [list], but can read them in calls to
+ * [read] and [source].
+ */
+@ExperimentalFileSystem
+class ResourceFileSystem internal constructor(
+  private val classLoader: ClassLoader
+) : FileSystem() {
+  private var jarCache = ConcurrentHashMap<Path, ZipFileSystem>()
+
+  override fun canonicalize(path: Path): Path {
+    return "/".toPath() / path
+  }
+
+  override fun list(dir: Path): List<Path> {
+    val (fileSystem, fileSystemPath) = toSystemPath(dir) ?: return listOf()
+    return fileSystem.list(fileSystemPath).filterNot { it.name.endsWith(".class") }
+  }
+
+  override fun open(file: Path): FileHandle {
+    val (fileSystem, fileSystemPath) = toSystemPath(file)
+      ?: throw FileNotFoundException("file not found: $file")
+    return fileSystem.open(fileSystemPath)
+  }
+
+  override fun metadataOrNull(path: Path): FileMetadata? {
+    val (fileSystem, fileSystemPath) = toSystemPath(path) ?: return null
+    return fileSystem.metadataOrNull(fileSystemPath)
+  }
+
+  override fun source(file: Path): Source {
+    val (fileSystem, fileSystemPath) = toSystemPath(file)
+      ?: throw FileNotFoundException("file not found: $file")
+    return fileSystem.source(fileSystemPath)
+  }
+
+  /**
+   * Return the file system and path for a file if it is available. The FileSystem abstraction is
+   * designed to hide the specifics of where files are loaded from e.g. from within a Zip file.
+   */
+  internal fun toSystemPath(path: Path): Pair<FileSystem, Path>? {
+    val resourceName = canonicalize(path).toString().substring(1)
+
+    val url = classLoader.getResource(resourceName)
+    val urlString = url?.toString() ?: return null
+
+    return when {
+      urlString.startsWith("file:") -> {
+        val file = File(url.toURI()).toOkioPath()
+        Pair(SYSTEM, file)
+      }
+      urlString.startsWith("jar:file:") -> {
+        val (jarPath, resourcePath) = jarFilePaths(urlString)
+        return Pair(jarPath.openZip(), resourcePath)
+      }
+      else -> {
+        // Silently ignore unexpected URLs.
+        null
+      }
+    }
+  }
+
+  /**
+   * Returns a string like `/tmp/foo.jar` from a URL string like
+   * `jar:file:/tmp/foo.jar!/META-INF/MANIFEST.MF`. This strips the scheme prefix `jar:file:` and an
+   * optional path suffix like `!/META-INF/MANIFEST.MF`.
+   */
+  private fun jarFilePaths(jarFileUrl: String): Pair<Path, Path> {
+    val suffixStart = jarFileUrl.lastIndexOf("!")
+    require(suffixStart != -1) { "Not a complete JAR path: $jarFileUrl" }
+    val jarPath = jarFileUrl.substring("jar:file:".length, suffixStart).toPath()
+    val resourcePath = jarFileUrl.substring(suffixStart + 1).toPath()
+    return jarPath to resourcePath
+  }
+
+  private fun Path.openZip(): ZipFileSystem = jarCache.computeIfAbsent(this) { SYSTEM.openZip(it) }
+
+  override fun sink(file: Path): Sink = throw IOException("$this is read-only")
+
+  override fun appendingSink(file: Path): Sink =
+    throw IOException("$this is read-only")
+
+  override fun createDirectory(dir: Path): Unit =
+    throw IOException("$this is read-only")
+
+  override fun atomicMove(source: Path, target: Path): Unit =
+    throw IOException("$this is read-only")
+
+  override fun delete(path: Path): Unit = throw IOException("$this is read-only")
+
+  companion object {
+    /**
+     * A flat view of a presumed typical non-container classpath.
+     *
+     * More involved classloader scenarios like in a container should be handled separately.
+     */
+    val SYSTEM_RESOURCES: FileSystem =
+      ResourceFileSystem(ResourceFileSystem::class.java.classLoader)
+  }
+}
