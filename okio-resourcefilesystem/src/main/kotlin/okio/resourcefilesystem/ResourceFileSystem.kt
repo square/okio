@@ -85,18 +85,12 @@ class ResourceFileSystem internal constructor(
     val urlString = url?.toString() ?: return null
 
     return when {
-      urlString.startsWith("file:") -> {
-        val file = File(url.toURI()).toOkioPath()
-        Pair(SYSTEM, file)
-      }
+      urlString.startsWith("file:") -> Pair(SYSTEM, File(url.toURI()).toOkioPath())
       urlString.startsWith("jar:file:") -> {
         val (jarPath, resourcePath) = jarFilePaths(urlString)
-        return Pair(jarPath.openZip(), resourcePath)
+        Pair(jarPath.openZip(), resourcePath)
       }
-      else -> {
-        // Silently ignore unexpected URLs.
-        null
-      }
+      else -> null // Silently ignore unexpected URLs.
     }
   }
 
