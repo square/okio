@@ -107,7 +107,18 @@ class ResourceFileSystem internal constructor(
     return jarPath to resourcePath
   }
 
-  private fun Path.openZip(): ZipFileSystem = jarCache.computeIfAbsent(this) { SYSTEM.openZip(it) }
+  private fun Path.openZip(): ZipFileSystem {
+    val existing = jarCache[this]
+    if (existing != null) return existing
+
+    val created = SYSTEM.openZip(this)
+
+    // Recover from a race if two threads open the same zip at the same time.
+    val replaced = jarCache.putIfAbsent(this, created) ?: return created
+
+    // TODO: close created.
+    return replaced
+  }
 
   override fun sink(file: Path): Sink = throw IOException("$this is read-only")
 
