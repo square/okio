@@ -19,6 +19,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -90,7 +91,8 @@ public final class SocketTimeoutTest {
    * for 5 seconds when the required data has been read and written.
    */
   static Socket socket(final int readableByteCount, final int writableByteCount) throws IOException {
-    final ServerSocket serverSocket = new ServerSocket(0);
+    InetAddress inetAddress = InetAddress.getByName("localhost");
+    final ServerSocket serverSocket = new ServerSocket(0, 50, inetAddress);
     serverSocket.setReuseAddress(true);
     serverSocket.setReceiveBufferSize(SOCKET_BUFFER_SIZE);
 
