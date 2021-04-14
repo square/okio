@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-@file:JvmName("-Util")
-
 package okio
 
 import okio.internal.HEX_DIGIT_CHARS
-import kotlin.jvm.JvmName
 
 internal fun checkOffsetAndCount(size: Long, offset: Long, byteCount: Long) {
   if (offset or byteCount < 0 || offset > size || size - offset < byteCount) {

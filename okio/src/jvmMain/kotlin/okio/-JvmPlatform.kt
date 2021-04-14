@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-@file:JvmName("-Platform")
 package okio
 
 import okio.Path.Companion.toPath
