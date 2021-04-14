@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.4
+
+_2021-04-14_
+
+ * Fix: Rename internal classes to avoid name collisions. We were seeing problems due to having
+   multiple files named `-Platform.kt`.
+
+
 ## Version 3.0.0-alpha.3
 
 _2021-04-06_
