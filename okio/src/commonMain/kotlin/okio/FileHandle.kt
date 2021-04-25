@@ -82,6 +82,13 @@ abstract class FileHandle : Closeable {
   @Throws(IOException::class)
   abstract fun size(): Long
 
+  /**
+   * Changes the number of bytes in this file to [size]. This will remove bytes from the end if the
+   * new size is smaller, and add bytes to the end if it is larger.
+   */
+  @Throws(IOException::class)
+  abstract fun resize(size: Long)
+
   /** Reads [byteCount] bytes from [array] and writes them to this at [fileOffset]. */
   fun write(
     fileOffset: Long,
@@ -193,7 +200,7 @@ abstract class FileHandle : Closeable {
   }
 
   @Throws(IOException::class)
-  override fun close() {
+  final override fun close() {
     synchronized(this) {
       if (closed) return@close
       closed = true
@@ -257,7 +264,9 @@ abstract class FileHandle : Closeable {
         break
       }
 
+      tail.limit += readByteCount
       currentOffset += readByteCount
+      sink.size += readByteCount
     }
 
     return currentOffset - fileOffset

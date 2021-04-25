@@ -15,6 +15,10 @@
  */
 package okio
 
+import java.nio.channels.FileChannel
+import java.nio.file.NoSuchFileException
+import java.nio.file.OpenOption
+import java.nio.file.StandardOpenOption
 import okio.Path.Companion.toOkioPath
 
 /**
@@ -69,8 +73,26 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return result
   }
 
-  override fun open(file: Path): FileHandle {
-    throw UnsupportedOperationException("not implemented yet!")
+  override fun open(
+    file: Path,
+    read: Boolean,
+    write: Boolean
+  ): FileHandle {
+    val openOptions = mutableSetOf<OpenOption>()
+    if (read) {
+      openOptions += StandardOpenOption.READ
+    }
+    if (write) {
+      openOptions += StandardOpenOption.WRITE
+      openOptions += StandardOpenOption.CREATE
+    }
+    try {
+      val fileChannel = FileChannel.open(file.toNioPath(), openOptions)
+      return JvmFileHandle(fileChannel)
+    } catch (e: NoSuchFileException) {
+      throw FileNotFoundException()
+        .apply { initCause(e) }
+    }
   }
 
   override fun source(file: Path): Source {

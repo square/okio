@@ -15,11 +15,13 @@
  */
 package okio.fakefilesystem
 
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.ByteString
-import okio.Cursor
 import okio.ExperimentalFileSystem
 import okio.FileHandle
 import okio.FileMetadata
@@ -30,13 +32,10 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.Sink
 import okio.Source
-import okio.Timeout
 import okio.fakefilesystem.FakeFileSystem.Element.Directory
 import okio.fakefilesystem.FakeFileSystem.Element.File
 import okio.fakefilesystem.FakeFileSystem.Operation.READ
 import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmName
 
 /**
  * A fully in-memory file system useful for testing. It includes features to support writing
@@ -238,70 +237,82 @@ class FakeFileSystem(
     return paths
   }
 
-  override fun open(file: Path): FileHandle {
-    throw UnsupportedOperationException("not implemented yet!")
-  }
-
   override fun source(file: Path): Source {
-    val canonicalPath = workingDirectory / file
-    val element = elements[canonicalPath] ?: throw FileNotFoundException("no such file: $file")
-
-    if (element !is File) {
-      throw IOException("not a file: $file")
-    }
-    if (!allowReadsWhileWriting) {
-      findOpenFile(canonicalPath, operation = WRITE)?.let {
-        throw IOException("file is already open for writing $file", it.backtrace)
-      }
-    }
-
-    val openFile = OpenFile(canonicalPath, READ, Exception("file opened for reading here"))
-    openFiles += openFile
-    element.access(now = clock.now())
-    return FakeFileSource(openFile, element)
+    val fileHandle = open(file, read = true)
+    return fileHandle.source()
+      .also { fileHandle.close() }
   }
 
   override fun sink(file: Path): Sink {
-    return newSink(file, append = false)
+    val fileHandle = open(file, write = true)
+    fileHandle.resize(0L) // If the file already has data, get rid of it.
+    return fileHandle.sink()
+      .also { fileHandle.close() }
   }
 
   override fun appendingSink(file: Path): Sink {
-    return newSink(file, append = true)
+    val fileHandle = open(file, write = true)
+    return fileHandle.appendingSink()
+      .also { fileHandle.close() }
   }
 
-  private fun newSink(file: Path, append: Boolean): Sink {
+  override fun open(
+    file: Path,
+    read: Boolean,
+    write: Boolean
+  ): FileHandle {
     val canonicalPath = workingDirectory / file
-    val now = clock.now()
-
     val existing = elements[canonicalPath]
-    if (existing is Directory) {
-      throw IOException("destination is a directory: $file")
-    }
-    if (!allowWritesWhileWriting) {
+    val now = clock.now()
+    val element: File
+    val operation: Operation
+
+    if (write) {
+      // Note that this case is used for both write and read/write.
+      if (existing is Directory) {
+        throw IOException("destination is a directory: $file")
+      }
+      if (!allowWritesWhileWriting) {
+        findOpenFile(canonicalPath, operation = WRITE)?.let {
+          throw IOException("file is already open for writing $file", it.backtrace)
+        }
+      }
+      if (!allowReadsWhileWriting) {
+        findOpenFile(canonicalPath, operation = READ)?.let {
+          throw IOException("file is already open for reading $file", it.backtrace)
+        }
+      }
+
+      val parent = requireDirectory(canonicalPath.parent)
+      parent.access(now, true)
+
+      element = File(createdAt = existing?.createdAt ?: now)
+      elements[canonicalPath] = element
+      operation = WRITE
+
+      if (existing is File) {
+        element.data = existing.data
+      }
+
+    } else if (read) {
+      if (existing == null) throw FileNotFoundException("no such file: $file")
+      element = existing as? File ?: throw IOException("not a file: $file")
+      operation = READ
+
       findOpenFile(canonicalPath, operation = WRITE)?.let {
         throw IOException("file is already open for writing $file", it.backtrace)
       }
-    }
-    if (!allowReadsWhileWriting) {
-      findOpenFile(canonicalPath, operation = READ)?.let {
-        throw IOException("file is already open for reading $file", it.backtrace)
-      }
+
+    } else {
+      throw IllegalArgumentException("unexpected open options read=$read write=$write")
     }
 
-    val parent = requireDirectory(canonicalPath.parent)
-    parent.access(now, true)
+    element.access(now = clock.now(), modified = write)
 
-    val openFile = OpenFile(canonicalPath, WRITE, Exception("file opened for writing here"))
+    val openFile = OpenFile(canonicalPath, operation, Exception("file opened for $operation here"))
     openFiles += openFile
-    val regularFile = File(createdAt = existing?.createdAt ?: now)
-    val result = FakeFileSink(openFile, regularFile)
-    if (append && existing is File) {
-      result.buffer.write(existing.data)
-      regularFile.data = existing.data
-    }
-    elements[canonicalPath] = regularFile
-    regularFile.access(now = now, modified = true)
-    return result
+
+    return FakeFileHandle(read, write, openFile, element)
   }
 
   override fun createDirectory(dir: Path) {
@@ -434,6 +445,12 @@ class FakeFileSystem(
     }
   }
 
+  private fun checkOffsetAndCount(size: Long, offset: Long, byteCount: Long) {
+    if (offset or byteCount < 0 || offset > size || size - offset < byteCount) {
+      throw ArrayIndexOutOfBoundsException("size=$size offset=$offset byteCount=$byteCount")
+    }
+  }
+
   private class OpenFile(
     val canonicalPath: Path,
     val operation: Operation,
@@ -445,93 +462,90 @@ class FakeFileSystem(
     WRITE
   }
 
-  /** Reads data from [buffer], removing itself from [openPathsMutable] when closed. */
-  private inner class FakeFileSource(
+  private inner class FakeFileHandle(
+    private val readAccess: Boolean,
+    private val writeAccess: Boolean,
     private val openFile: OpenFile,
     private val file: File
-  ) : Source, Cursor {
-    private val buffer = Buffer()
-    private var size = 0L
+  ) : FileHandle() {
     private var closed = false
 
-    init {
-      seek(0L)
-    }
-
-    override fun read(sink: Buffer, byteCount: Long): Long {
+    override fun resize(size: Long) {
       check(!closed) { "closed" }
-      return buffer.read(sink, byteCount)
-    }
 
-    override fun timeout() = Timeout.NONE
+      val delta = size - file.data.size
+      if (delta > 0) {
+        file.data = Buffer()
+          .write(file.data)
+          .write(ByteArray(delta.toInt()))
+          .readByteString()
+      } else {
+        file.data = file.data.substring(0, size.toInt())
+      }
 
-    override fun cursor(): Cursor = this
-
-    override fun position(): Long {
-      check(!closed) { "closed" }
-      return size - buffer.size
+      file.access(now = clock.now(), modified = true)
     }
 
     override fun size(): Long {
       check(!closed) { "closed" }
-      return size
+      return file.data.size.toLong()
     }
 
-    override fun seek(position: Long) {
+    override fun protectedRead(
+      fileOffset: Long,
+      array: ByteArray,
+      arrayOffset: Int,
+      byteCount: Int
+    ): Int {
       check(!closed) { "closed" }
+      check(readAccess) { "not opened for read" }
+      checkOffsetAndCount(array.size.toLong(), arrayOffset.toLong(), byteCount.toLong())
 
-      buffer.clear()
-      when {
-        position <= size -> {
-          buffer.write(file.data)
-          size = file.data.size.toLong()
-          buffer.skip(position)
-        }
-        else -> {
-          size = position
-        }
+      val fileOffsetInt = fileOffset.toInt()
+      val toCopy = minOf(file.data.size - fileOffsetInt, byteCount)
+      if (toCopy <= 0) return -1
+      for (i in 0 until toCopy) {
+        array[i + arrayOffset] = file.data[i + fileOffsetInt]
       }
+      return toCopy
     }
 
-    override fun close() {
-      if (closed) return
-      closed = true
-      openFiles -= openFile
-    }
-
-    override fun toString() = "source(${openFile.canonicalPath})"
-  }
-
-  /** Writes data to [path]. */
-  private inner class FakeFileSink(
-    private val openFile: OpenFile,
-    private val file: File
-  ) : Sink {
-    val buffer = Buffer()
-    private var closed = false
-
-    override fun write(source: Buffer, byteCount: Long) {
+    override fun protectedWrite(
+      fileOffset: Long,
+      array: ByteArray,
+      arrayOffset: Int,
+      byteCount: Int
+    ) {
       check(!closed) { "closed" }
-      buffer.write(source, byteCount)
-    }
+      check(writeAccess) { "not opened for write" }
+      checkOffsetAndCount(array.size.toLong(), arrayOffset.toLong(), byteCount.toLong())
 
-    override fun flush() {
-      check(!closed) { "closed" }
+      val buffer = Buffer()
+      buffer.write(file.data, 0, minOf(fileOffset.toInt(), file.data.size))
+      while (buffer.size < fileOffset) {
+        buffer.writeByte(0)
+      }
+      buffer.write(array, arrayOffset, byteCount)
+      if (buffer.size < file.data.size) {
+        buffer.write(file.data, buffer.size.toInt(), file.data.size - buffer.size.toInt())
+      }
       file.data = buffer.snapshot()
       file.access(now = clock.now(), modified = true)
     }
 
-    override fun timeout() = Timeout.NONE
+    override fun protectedFlush() {
+      check(!closed) { "closed" }
+      check(writeAccess) { "not opened for write" }
+    }
 
-    override fun close() {
+    override fun protectedClose() {
       if (closed) return
       closed = true
-      file.data = buffer.snapshot()
-      file.access(now = clock.now(), modified = true)
+      file.access(now = clock.now(), modified = writeAccess)
       openFiles -= openFile
     }
 
-    override fun toString() = "sink(${openFile.canonicalPath})"
+    override fun toString() = "FileHandler(${openFile.canonicalPath})"
   }
 
   override fun toString() = "FakeFileSystem"

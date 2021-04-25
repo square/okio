@@ -16,6 +16,9 @@
  */
 package okio.zipfilesystem
 
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.util.zip.Inflater
 import okio.ExperimentalFileSystem
 import okio.FileHandle
 import okio.FileMetadata
@@ -26,9 +29,6 @@ import okio.Path.Companion.toPath
 import okio.Sink
 import okio.Source
 import okio.buffer
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.util.zip.Inflater
 
 /**
  * Read only access to a [zip file][zip_format] and common [extra fields][extra_fields].
@@ -101,7 +101,11 @@ class ZipFileSystem internal constructor(
     return source.readLocalHeader(basicMetadata)
   }
 
-  override fun open(file: Path): FileHandle {
+  override fun open(
+    file: Path,
+    read: Boolean,
+    write: Boolean
+  ): FileHandle {
     throw UnsupportedOperationException("not implemented yet!")
   }
 

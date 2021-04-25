@@ -15,6 +15,9 @@
  */
 package okio.resourcefilesystem
 
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 import okio.ExperimentalFileSystem
 import okio.FileHandle
 import okio.FileMetadata
@@ -27,9 +30,6 @@ import okio.Sink
 import okio.Source
 import okio.zipfilesystem.ZipFileSystem
 import okio.zipfilesystem.ZipFileSystem.Companion.openZip
-import java.io.File
-import java.io.IOException
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * A file system exposing Java classpath resources. It is equivalent to the files returned by
@@ -57,10 +57,21 @@ class ResourceFileSystem internal constructor(
     return fileSystem.list(fileSystemPath).filterNot { it.name.endsWith(".class") }
   }
 
-  override fun open(file: Path): FileHandle {
+  override fun open(
+    file: Path,
+    read: Boolean,
+    write: Boolean
+  ): FileHandle {
     val (fileSystem, fileSystemPath) = toSystemPath(file)
       ?: throw FileNotFoundException("file not found: $file")
-    return fileSystem.open(fileSystemPath)
+    return fileSystem.open(
+      file = fileSystemPath,
+      read = read,
+      write = write,
+      createIfAbsent = createIfAbsent,
+      createRequireAbsent = createRequireAbsent,
+      truncateExisting = truncateExisting
+    )
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
