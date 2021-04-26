@@ -95,9 +95,9 @@ class ZipFileSystem internal constructor(
       return basicMetadata
     }
 
-    val source = fileSystem.source(zipPath).buffer()
-    val cursor = source.cursor()!!
-    cursor.seek(entry.offset)
+    val source = fileSystem.open(zipPath, read = true).use { fileHandle ->
+      fileHandle.source(entry.offset).buffer()
+    }
     return source.readLocalHeader(basicMetadata)
   }
 
@@ -119,10 +119,9 @@ class ZipFileSystem internal constructor(
   override fun source(path: Path): Source {
     val canonicalPath = canonicalize(path)
     val entry = entries[canonicalPath] ?: throw FileNotFoundException("no such file: $path")
-    val source = fileSystem.source(zipPath).buffer()
-    val cursor = source.cursor()!!
-
-    cursor.seek(entry.offset)
+    val source = fileSystem.open(zipPath, read = true).use { fileHandle ->
+      fileHandle.source(entry.offset).buffer()
+    }
     source.skipLocalHeader()
 
     return when (entry.compressionMethod) {

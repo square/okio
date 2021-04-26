@@ -51,7 +51,6 @@ task japicmp(type: JapicmpTask, dependsOn: 'jar') {
   methodExcludes = [
       'okio.ByteString#getByte(int)', // Became 'final' in 1.15.0.
       'okio.ByteString#size()', // Became 'final' in 1.15.0.
-      'okio.Source#cursor()', // Introduced in 3.0.0
   ]
 }
 check.dependsOn japicmp

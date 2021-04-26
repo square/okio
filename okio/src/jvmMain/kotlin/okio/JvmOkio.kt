@@ -20,9 +20,7 @@
 
 package okio
 
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
@@ -38,6 +36,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -116,25 +115,6 @@ private open class InputStreamSource(
   override fun toString() = "source($input)"
 }
 
-private class FileSource(
-  private val input: FileInputStream
-) : InputStreamSource(input, Timeout()), Cursor {
-
-  override fun cursor(): Cursor = this
-
-  override fun position(): Long {
-    return input.channel.position()
-  }
-
-  override fun size(): Long {
-    return input.channel.size()
-  }
-
-  override fun seek(position: Long) {
-    input.channel.position(position)
-  }
-}
-
 /**
  * Returns a sink that writes to `socket`. Prefer this over [sink]
  * because this method honors timeouts. When the socket
@@ -198,7 +178,7 @@ fun File.appendingSink(): Sink = FileOutputStream(this, true).sink()
 
 /** Returns a source that reads from `file`. */
 @Throws(FileNotFoundException::class)
-fun File.source(): Source = FileSource(inputStream())
+fun File.source(): Source = InputStreamSource(inputStream(), Timeout.NONE)
 
 /** Returns a source that reads from `path`. */
 @Throws(IOException::class)

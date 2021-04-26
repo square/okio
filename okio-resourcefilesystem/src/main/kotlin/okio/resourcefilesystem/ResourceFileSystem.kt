@@ -67,10 +67,7 @@ class ResourceFileSystem internal constructor(
     return fileSystem.open(
       file = fileSystemPath,
       read = read,
-      write = write,
-      createIfAbsent = createIfAbsent,
-      createRequireAbsent = createRequireAbsent,
-      truncateExisting = truncateExisting
+      write = write
     )
   }
 

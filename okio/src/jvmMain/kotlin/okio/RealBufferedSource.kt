@@ -15,7 +15,10 @@
  */
 package okio
 
-import okio.internal.BufferedSourceCursor
+import java.io.IOException
+import java.io.InputStream
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import okio.internal.commonClose
 import okio.internal.commonExhausted
 import okio.internal.commonIndexOf
@@ -46,19 +49,12 @@ import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonTimeout
 import okio.internal.commonToString
-import java.io.IOException
-import java.io.InputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
 
 internal actual class RealBufferedSource actual constructor(
   @JvmField actual val source: Source
 ) : BufferedSource {
   @JvmField val bufferField = Buffer()
   @JvmField actual var closed: Boolean = false
-  private val cursor: Cursor? = source.cursor()?.run {
-    BufferedSourceCursor(bufferField, this)
-  }
 
   @Suppress("OVERRIDE_BY_INLINE") // Prevent internal code from calling the getter.
   override val buffer: Buffer
@@ -178,7 +174,6 @@ internal actual class RealBufferedSource actual constructor(
   }
 
   override fun isOpen() = !closed
-  override fun cursor() = cursor
 
   override fun close(): Unit = commonClose()
   override fun timeout(): Timeout = commonTimeout()
