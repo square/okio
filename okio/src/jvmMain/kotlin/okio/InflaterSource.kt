@@ -88,7 +88,7 @@ internal constructor(private val source: BufferedSource, private val inflater: I
         return bytesInflated.toLong()
       }
 
-      // We allocated a tail segment but didn't end up needing it. Recycle!
+      // We allocated a tail segment, but didn't end up needing it. Recycle!
       if (tail.pos == tail.limit) {
         sink.head = tail.pop()
         SegmentPool.recycle(tail)

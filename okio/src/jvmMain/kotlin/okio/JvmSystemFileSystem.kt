@@ -16,6 +16,7 @@
 package okio
 
 import okio.Path.Companion.toOkioPath
+import java.io.RandomAccessFile
 
 /**
  * A file system that adapts `java.io`.
@@ -69,8 +70,17 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return result
   }
 
-  override fun open(file: Path): FileHandle {
-    throw UnsupportedOperationException("not implemented yet!")
+  override fun open(
+    file: Path,
+    read: Boolean,
+    write: Boolean
+  ): FileHandle {
+    val mode = when {
+      write -> "rw"
+      read -> "r"
+      else -> throw IllegalArgumentException("unexpected open options read=$read write=$write")
+    }
+    return JvmFileHandle(RandomAccessFile(file.toFile(), mode))
   }
 
   override fun source(file: Path): Source {

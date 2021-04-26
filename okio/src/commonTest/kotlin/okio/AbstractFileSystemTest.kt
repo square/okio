@@ -640,142 +640,127 @@ abstract class AbstractFileSystemTest(
     }
   }
 
-  @Test fun fileSourceCursorHappyPath() {
-    val path = base / "file-source"
+  @Test fun fileHandleSourceHappyPath() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
     }
-    val source = fileSystem.source(path)
-    val cursor = source.cursor()!!
-    assertEquals(16L, cursor.size())
-    val buffer = Buffer()
 
-    assertEquals(0L, cursor.position())
-    assertEquals(4L, source.read(buffer, 4L))
-    assertEquals("abcd", buffer.readUtf8())
-    assertEquals(4L, cursor.position())
+    fileSystem.open(path, read = true).use { handle ->
+      assertEquals(16L, handle.size())
+      val buffer = Buffer()
 
-    cursor.seek(8L)
-    assertEquals(8L, cursor.position())
-    assertEquals(4L, source.read(buffer, 4L))
-    assertEquals("ijkl", buffer.readUtf8())
-    assertEquals(12L, cursor.position())
+      handle.source().use { source ->
+        assertEquals(0L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals("abcd", buffer.readUtf8())
+        assertEquals(4L, handle.position(source))
+      }
 
-    cursor.seek(16L)
-    assertEquals(16L, cursor.position())
-    assertEquals(-1L, source.read(buffer, 4L))
-    assertEquals("", buffer.readUtf8())
-    assertEquals(16L, cursor.position())
+      handle.source(fileOffset = 8L).use { source ->
+        assertEquals(8L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals("ijkl", buffer.readUtf8())
+        assertEquals(12L, handle.position(source))
+      }
+
+      handle.source(fileOffset = 16L).use { source ->
+        assertEquals(16L, handle.position(source))
+        assertEquals(-1L, source.read(buffer, 4L))
+        assertEquals("", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+      }
+    }
   }
 
-  @Test fun fileSourceCursorSeekBackwards() {
-    val path = base / "file-source-backwards"
+  @Test fun fileHandleSourceSeekBackwards() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source-backwards"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
     }
-    val source = fileSystem.source(path)
-    val cursor = source.cursor()!!
-    assertEquals(16L, cursor.size())
-    val buffer = Buffer()
+    fileSystem.open(path, read = true).use { handle ->
+      assertEquals(16L, handle.size())
+      val buffer = Buffer()
 
-    assertEquals(0L, cursor.position())
-    assertEquals(16L, source.read(buffer, 16L))
-    assertEquals("abcdefghijklmnop", buffer.readUtf8())
-    assertEquals(16L, cursor.position())
+      handle.source().use { source ->
+        assertEquals(0L, handle.position(source))
+        assertEquals(16L, source.read(buffer, 16L))
+        assertEquals("abcdefghijklmnop", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+      }
 
-    cursor.seek(0L)
-    assertEquals(0L, cursor.position())
-    assertEquals(16L, source.read(buffer, 16L))
-    assertEquals("abcdefghijklmnop", buffer.readUtf8())
-    assertEquals(16L, cursor.position())
+      handle.source(0L).use { source ->
+        assertEquals(0L, handle.position(source))
+        assertEquals(16L, source.read(buffer, 16L))
+        assertEquals("abcdefghijklmnop", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+      }
+    }
   }
 
-  @Test fun bufferedFileSourceCursorHappyPath() {
-    val path = base / "buffered-file-source"
+  @Test fun bufferedFileHandleSourceHappyPath() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
     }
-    val fileSource = fileSystem.source(path)
-    val source = fileSource.buffer()
-    val cursor = source.cursor()!!
-    assertEquals(16L, cursor.size())
 
-    assertEquals(0L, cursor.position())
-    assertEquals("abcd", source.readUtf8(4L))
-    assertEquals(4L, cursor.position())
+    fileSystem.open(path, read = true).use { handle ->
+      assertEquals(16L, handle.size())
+      val buffer = Buffer()
 
-    cursor.seek(8L)
-    assertEquals(8L, source.buffer.size)
-    assertEquals(8L, cursor.position())
-    assertEquals("ijkl", source.readUtf8(4L))
-    assertEquals(12L, cursor.position())
+      handle.source().buffer().use { source ->
+        assertEquals(0L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals("abcd", buffer.readUtf8())
+        assertEquals(4L, handle.position(source))
+      }
 
-    cursor.seek(16L)
-    assertEquals(0L, source.buffer.size)
-    assertEquals(16L, cursor.position())
-    assertEquals("", source.readUtf8())
-    assertEquals(16L, cursor.position())
+      handle.source(fileOffset = 8L).buffer().use { source ->
+        assertEquals(8L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals("ijkl", buffer.readUtf8())
+        assertEquals(12L, handle.position(source))
+      }
+
+      handle.source(fileOffset = 16L).buffer().use { source ->
+        assertEquals(16L, handle.position(source))
+        assertEquals(-1L, source.read(buffer, 4L))
+        assertEquals("", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+      }
+    }
   }
 
-  @Test fun bufferedFileSourceCursorSeekBackwards() {
-    val path = base / "buffered-file-source-backwards"
+  @Test fun bufferedFileHandleSourceSeekBackwards() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source-backwards"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
     }
-    val fileSource = fileSystem.source(path)
-    val source = fileSource.buffer()
-    val cursor = source.cursor()!!
-    assertEquals(16L, cursor.size())
+    fileSystem.open(path, read = true).use { handle ->
+      assertEquals(16L, handle.size())
+      val buffer = Buffer()
 
-    assertEquals(0L, cursor.position())
-    assertEquals("abcdefghijklmnop", source.readUtf8(16L))
-    assertEquals(16L, cursor.position())
+      handle.source().buffer().use { source ->
+        assertEquals(0L, handle.position(source))
+        assertEquals(16L, source.read(buffer, 16L))
+        assertEquals("abcdefghijklmnop", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+      }
 
-    cursor.seek(0L)
-    assertEquals(0L, source.buffer.size)
-    assertEquals(0L, cursor.position())
-    assertEquals("abcdefghijklmnop", source.readUtf8(16L))
-    assertEquals(16L, cursor.position())
-  }
-
-  @Test fun bufferedFileSourceSeekBeyondBuffer() {
-    val path = base / "buffered-file-source-backwards"
-    fileSystem.write(path) {
-      writeUtf8("a".repeat(8192 * 2))
-    }
-    val fileSource = fileSystem.source(path)
-    val source = fileSource.buffer()
-    val cursor = source.cursor()!!
-    assertEquals(8192 * 2, cursor.size())
-
-    assertEquals(0L, cursor.position())
-    assertEquals("aaaa", source.readUtf8(4L))
-    assertEquals(4L, cursor.position())
-
-    cursor.seek(8193L)
-    assertEquals(0L, source.buffer.size)
-    assertEquals(8193L, cursor.position())
-    assertEquals("aaaa", source.readUtf8(4L))
-    assertEquals(8197L, cursor.position())
-  }
-
-  @Test fun sourceCursorWhenClosed() {
-    val path = base / "file-source"
-    fileSystem.write(path) {
-      writeUtf8("abcdefghijklmnop")
-    }
-    val source = fileSystem.source(path)
-    val cursor = source.cursor()!!
-    source.close()
-
-    assertClosedFailure {
-      cursor.size()
-    }
-    assertClosedFailure {
-      cursor.position()
-    }
-    assertClosedFailure {
-      cursor.seek(0L)
+      handle.source(0L).buffer().use { source ->
+        assertEquals(0L, handle.position(source))
+        assertEquals(16L, source.read(buffer, 16L))
+        assertEquals("abcdefghijklmnop", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+      }
     }
   }
 
@@ -790,6 +775,13 @@ abstract class AbstractFileSystemTest(
         exceptionType == "ClosedChannelException",
       "unexpected exception: $exception"
     )
+  }
+
+  private fun supportsFileHandle(): Boolean {
+    return when (fileSystem::class.simpleName) {
+      "JvmSystemFileSystem", "FakeFileSystem" -> true
+      else -> false
+    }
   }
 
   private fun expectIOExceptionOnWindows(exceptJs: Boolean = false, block: () -> Unit) {

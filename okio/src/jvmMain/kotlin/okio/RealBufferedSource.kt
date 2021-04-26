@@ -15,7 +15,6 @@
  */
 package okio
 
-import okio.internal.BufferedSourceCursor
 import okio.internal.commonClose
 import okio.internal.commonExhausted
 import okio.internal.commonIndexOf
@@ -56,9 +55,6 @@ internal actual class RealBufferedSource actual constructor(
 ) : BufferedSource {
   @JvmField val bufferField = Buffer()
   @JvmField actual var closed: Boolean = false
-  private val cursor: Cursor? = source.cursor()?.run {
-    BufferedSourceCursor(bufferField, this)
-  }
 
   @Suppress("OVERRIDE_BY_INLINE") // Prevent internal code from calling the getter.
   override val buffer: Buffer
@@ -178,7 +174,6 @@ internal actual class RealBufferedSource actual constructor(
   }
 
   override fun isOpen() = !closed
-  override fun cursor() = cursor
 
   override fun close(): Unit = commonClose()
   override fun timeout(): Timeout = commonTimeout()

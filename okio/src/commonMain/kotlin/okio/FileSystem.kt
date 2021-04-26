@@ -145,7 +145,11 @@ expect abstract class FileSystem() {
    *     if there's a loop of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun open(file: Path): FileHandle
+  abstract fun open(
+    file: Path,
+    read: Boolean = false,
+    write: Boolean = false
+  ): FileHandle
 
   /**
    * Returns a source that reads the bytes of [file] from beginning to end.

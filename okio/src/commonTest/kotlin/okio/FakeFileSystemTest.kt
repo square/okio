@@ -224,7 +224,7 @@ abstract class FakeFileSystemTest internal constructor(
       """.trimMargin(),
       exception.message
     )
-    assertEquals("file opened for reading here", exception.cause?.message)
+    assertEquals("file opened for READ here", exception.cause?.message)
 
     // Now that the source is closed this is safe.
     fakeFileSystem.checkNoOpenFiles()
@@ -246,7 +246,7 @@ abstract class FakeFileSystemTest internal constructor(
       """.trimMargin(),
       exception.message
     )
-    assertEquals("file opened for writing here", exception.cause?.message)
+    assertEquals("file opened for WRITE here", exception.cause?.message)
 
     // Now that the source is closed this is safe.
     fakeFileSystem.checkNoOpenFiles()
