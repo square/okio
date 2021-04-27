@@ -32,12 +32,12 @@ import java.net.Socket
 import java.net.SocketTimeoutException
 import java.nio.file.Files
 import java.nio.file.OpenOption
-import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
+import java.nio.file.Path as NioPath
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -203,13 +203,13 @@ fun File.source(): Source = FileSource(inputStream())
 /** Returns a source that reads from `path`. */
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
-fun Path.sink(vararg options: OpenOption): Sink =
+fun NioPath.sink(vararg options: OpenOption): Sink =
   Files.newOutputStream(this, *options).sink()
 
 /** Returns a sink that writes to `path`. */
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
-fun Path.source(vararg options: OpenOption): Source =
+fun NioPath.source(vararg options: OpenOption): Source =
   Files.newInputStream(this, *options).source()
 
 /**
@@ -245,6 +245,13 @@ fun Sink.hashingSink(digest: MessageDigest): HashingSink = HashingSink(this, dig
  * Returns a source that uses [digest] to hash [this].
  */
 fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
+
+@Throws(IOException::class)
+@ExperimentalFileSystem
+fun FileSystem.openZip(zipPath: okio.Path): FileSystem = okio.internal.openZip(zipPath, this)
+
+@ExperimentalFileSystem
+fun ClassLoader.asResourceFileSystem(): FileSystem = ResourceFileSystem(this)
 
 /**
  * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.

@@ -20,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -70,7 +69,7 @@ public final class OkioTest {
   }
 
   @Test public void readWritePath() throws Exception {
-    Path path = temporaryFolder.newFile().toPath();
+    java.nio.file.Path path = temporaryFolder.newFile().toPath();
 
     BufferedSink sink = Okio.buffer(Okio.sink(path));
     sink.writeUtf8("Hello, java.nio file!");

@@ -13,20 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.resourcefilesystem
+package okio
 
-import okio.ExperimentalFileSystem
-import okio.FileHandle
-import okio.FileMetadata
-import okio.FileNotFoundException
-import okio.FileSystem
-import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
-import okio.Sink
-import okio.Source
-import okio.zipfilesystem.ZipFileSystem
-import okio.zipfilesystem.ZipFileSystem.Companion.openZip
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
@@ -46,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap
 class ResourceFileSystem internal constructor(
   private val classLoader: ClassLoader
 ) : FileSystem() {
-  private var jarCache = ConcurrentHashMap<Path, ZipFileSystem>()
+  private var jarCache = ConcurrentHashMap<Path, FileSystem>()
 
   override fun canonicalize(path: Path): Path {
     return "/".toPath() / path
@@ -107,7 +97,7 @@ class ResourceFileSystem internal constructor(
     return jarPath to resourcePath
   }
 
-  private fun Path.openZip(): ZipFileSystem {
+  private fun Path.openZip(): FileSystem {
     val existing = jarCache[this]
     if (existing != null) return existing
 

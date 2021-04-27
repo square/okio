@@ -21,7 +21,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
 import java.nio.file.OpenOption
-import java.nio.file.Path
+import java.nio.file.Path as NioPath
 
 @Deprecated(message = "changed in Okio 2.x")
 object `-DeprecatedOkio` {
@@ -83,7 +83,7 @@ object `-DeprecatedOkio` {
     ),
     level = DeprecationLevel.ERROR
   )
-  fun sink(path: Path, vararg options: OpenOption) = path.sink(*options)
+  fun sink(path: NioPath, vararg options: OpenOption) = path.sink(*options)
 
   @Deprecated(
     message = "moved to extension function",
@@ -123,7 +123,7 @@ object `-DeprecatedOkio` {
     ),
     level = DeprecationLevel.ERROR
   )
-  fun source(path: Path, vararg options: OpenOption) = path.source(*options)
+  fun source(path: NioPath, vararg options: OpenOption) = path.source(*options)
 
   @Deprecated(
     message = "moved to extension function",
