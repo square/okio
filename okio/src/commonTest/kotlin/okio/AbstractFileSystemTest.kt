@@ -41,7 +41,7 @@ abstract class AbstractFileSystemTest(
   val allowClobberingEmptyDirectories: Boolean,
   temporaryDirectory: Path
 ) {
-  val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken()}"
+  val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
   private val isJs = fileSystem::class.simpleName?.startsWith("NodeJs") ?: false
 
   @BeforeTest

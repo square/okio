@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.resourcefilesystem
+package okio
 
-import okio.ExperimentalFileSystem
-import okio.FileSystem
-import okio.IOException
-import okio.Path
 import okio.Path.Companion.toPath
-import okio.zipfilesystem.ZipFileSystem
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import kotlin.reflect.KClass
 import kotlin.test.fail
 
 @ExperimentalFileSystem
@@ -141,13 +137,20 @@ class ResourceFileSystemTest {
   fun packagePath() {
     val path = ResourceFileSystemTest::class.java.`package`.toPath()
 
-    assertThat((path / "a.txt").toString()).isEqualTo("okio/resourcefilesystem/a.txt")
+    assertThat((path / "a.txt").toString())
+      .isEqualTo("okio${Path.DIRECTORY_SEPARATOR}a.txt")
   }
 
   @Test
   fun classResource() {
     val path = ResourceFileSystemTest::class.packagePath!!
 
-    assertThat((path / "a.txt").toString()).isEqualTo("okio/resourcefilesystem/a.txt")
+    assertThat((path / "a.txt").toString())
+      .isEqualTo("okio${Path.DIRECTORY_SEPARATOR}a.txt")
   }
+
+  private fun Package.toPath(): Path = name.replace(".", "/").toPath()
+
+  private val KClass<*>.packagePath: Path?
+    get() = qualifiedName?.replace(".", "/")?.toPath()?.parent
 }

@@ -94,4 +94,4 @@ fun makeSegments(source: ByteString): ByteString {
   return buffer.snapshot()
 }
 
-fun randomToken() = Random.nextBytes(16).toByteString(0, 16).hex()
+fun randomToken(length: Int) = Random.nextBytes(length).toByteString(0, length).hex()

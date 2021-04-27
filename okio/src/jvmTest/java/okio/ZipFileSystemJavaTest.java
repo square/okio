@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.zipfilesystem;
+package okio;
 
 import java.io.IOException;
-import okio.FileSystem;
-import okio.Path;
 import org.junit.Before;
 import org.junit.Test;
 
-import static okio.zipfilesystem.ZipFileSystemTestKt.randomToken;
+import static okio.UtilKt.randomToken;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ZipFileSystemJavaTest {
   private FileSystem fileSystem = FileSystem.SYSTEM;
-  private Path base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve(randomToken());
+  private Path base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve(randomToken(16));
 
   @Before
   public void setUp() throws Exception {
@@ -38,7 +36,7 @@ public final class ZipFileSystemJavaTest {
     Path zipPath = new ZipBuilder(base)
         .addEntry("hello.txt", "Hello World")
         .build();
-    ZipFileSystem zipFileSystem = ZipFileSystem.open(fileSystem, zipPath);
+    FileSystem zipFileSystem = Okio.openZip(fileSystem, zipPath);
 
     String content = zipFileSystem.read(Path.get("hello.txt"), source -> {
       try {

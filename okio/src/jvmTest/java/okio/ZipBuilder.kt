@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.zipfilesystem
+package okio
 
-import okio.ExperimentalFileSystem
-import okio.FileSystem
-import okio.Path
-import okio.buffer
-import okio.sink
 import org.junit.Assume.assumeTrue
 
 /**
@@ -61,7 +56,7 @@ class ZipBuilder(
   fun build(): Path {
     assumeTrue("ZipBuilder doesn't work on Windows", Path.DIRECTORY_SEPARATOR == "/")
 
-    val archive = directory / "${randomToken()}.zip"
+    val archive = directory / "${randomToken(16)}.zip"
     val anyZip64 = entries.any { it.zip64 }
 
     require(!anyZip64 || entries.size == 1) {

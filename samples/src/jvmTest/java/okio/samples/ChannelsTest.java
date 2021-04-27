@@ -18,7 +18,6 @@ package okio.samples;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
 import java.util.Set;
@@ -84,7 +83,7 @@ public final class ChannelsTest {
   }
 
   @Test public void testReadWriteFile() throws Exception {
-    Path path = temporaryFolder.newFile().toPath();
+    java.nio.file.Path path = temporaryFolder.newFile().toPath();
 
     Sink sink = new FileChannelSink(FileChannel.open(path, w), Timeout.NONE);
     sink.write(new Buffer().writeUtf8(quote), 317);
@@ -105,7 +104,7 @@ public final class ChannelsTest {
   }
 
   @Test public void testAppend() throws Exception {
-    Path path = temporaryFolder.newFile().toPath();
+    java.nio.file.Path path = temporaryFolder.newFile().toPath();
 
     Buffer buffer = new Buffer().writeUtf8(quote);
     Sink sink;

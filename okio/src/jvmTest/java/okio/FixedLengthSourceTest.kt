@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.zipfilesystem
+package okio
 
-import okio.Buffer
-import okio.IOException
+import okio.internal.FixedLengthSource
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import kotlin.test.fail

@@ -1,22 +1,31 @@
-package okio.zipfilesystem
+/*
+ * Copyright (C) 2021 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package okio
 
 import kotlinx.datetime.Instant
-import okio.ByteString.Companion.toByteString
-import okio.ExperimentalFileSystem
-import okio.FileSystem
-import okio.IOException
 import okio.Path.Companion.toPath
-import okio.zipfilesystem.ZipFileSystem.Companion.openZip
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import kotlin.random.Random
 import kotlin.test.assertFailsWith
 
 @ExperimentalFileSystem
 class ZipFileSystemTest {
   private val fileSystem = FileSystem.SYSTEM
-  private var base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken()
+  private var base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)
 
   @Before
   fun setUp() {
@@ -385,6 +394,3 @@ class ZipFileSystemTest {
 
 /** Decodes this ISO8601 time string. */
 fun String.toEpochMillis() = Instant.parse(this).toEpochMilliseconds()
-
-@JvmOverloads
-fun randomToken(length: Int = 16) = Random.nextBytes(length).toByteString().hex()

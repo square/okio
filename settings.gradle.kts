@@ -5,8 +5,6 @@ include(":okio-fakefilesystem")
 if (System.getProperty("kjs", "true").toBoolean()) {
   include(":okio-nodefilesystem")
 }
-include(":okio-zipfilesystem")
-include(":okio-resourcefilesystem")
 include(":okio:jvm:japicmp")
 include(":okio:jvm:jmh")
 include(":samples")

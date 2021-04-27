@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio.zipfilesystem
+package okio.internal
 
 import okio.BufferedSource
 import okio.ExperimentalFileSystem
@@ -23,6 +23,7 @@ import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
+import okio.ZipFileSystem
 import okio.buffer
 import java.util.Calendar
 import java.util.GregorianCalendar
@@ -57,7 +58,7 @@ private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
  */
 @Throws(IOException::class)
 @ExperimentalFileSystem
-internal fun open(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
+internal fun openZip(zipPath: Path, fileSystem: FileSystem): FileSystem {
   val source = fileSystem.source(zipPath).buffer()
   val cursor = source.cursor()
     ?: throw IOException("cannot open zip: file doesn't implement a random-access cursor")
