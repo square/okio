@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.5
+
+_2021-04-27_
+
+ * New: Promote the `ZipFileSystem` and `ResourceFileSystem` to the main Okio module. These are
+   currently JVM-only. The `okio-zipfilesystem` module is no longer published.
+
+
 ## Version 3.0.0-alpha.4
 
 _2021-04-14_
