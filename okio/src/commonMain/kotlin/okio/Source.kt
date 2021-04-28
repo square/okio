@@ -58,14 +58,6 @@ interface Source : Closeable {
   @Throws(IOException::class)
   fun read(sink: Buffer, byteCount: Long): Long
 
-  /**
-   * Returns a cursor to access the position and size of this source if it supports random access.
-   * This returns null if this source doesn't support random access.
-   *
-   * The returned cursor is stateful and reflects the current position and size as they change.
-   */
-  fun cursor(): Cursor? = null
-
   /** Returns the timeout for this source.  */
   fun timeout(): Timeout
 

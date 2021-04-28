@@ -20,7 +20,7 @@ import org.khronos.webgl.get
 
 internal class FileSource(
   private val fd: Number
-) : Source, Cursor {
+) : Source {
   private var position_ = 0L
   private var closed = false
 
@@ -49,24 +49,6 @@ internal class FileSource(
   }
 
   override fun timeout(): Timeout = Timeout.NONE
-
-  override fun cursor() = this
-
-  override fun position(): Long {
-    check(!closed) { "closed" }
-    return position_
-  }
-
-  override fun size(): Long {
-    check(!closed) { "closed" }
-    val stats = fstatSync(fd)
-    return stats.size.toLong()
-  }
-
-  override fun seek(position: Long) {
-    check(!closed) { "closed" }
-    position_ = position
-  }
 
   override fun close() {
     if (closed) return

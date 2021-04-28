@@ -71,7 +71,11 @@ internal object PosixFileSystem : FileSystem() {
     }
   }
 
-  override fun open(file: Path): FileHandle {
+  override fun open(
+    file: Path,
+    read: Boolean,
+    write: Boolean
+  ): FileHandle {
     throw UnsupportedOperationException("not implemented yet!")
   }
 

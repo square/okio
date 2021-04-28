@@ -166,9 +166,13 @@ abstract class ForwardingFileSystem(
   }
 
   @Throws(IOException::class)
-  override fun open(file: Path): FileHandle {
+  override fun open(
+    file: Path,
+    read: Boolean,
+    write: Boolean
+  ): FileHandle {
     val file = onPathParameter(file, "open", "file")
-    return delegate.open(file)
+    return delegate.open(file, read, write)
   }
 
   @Throws(IOException::class)
