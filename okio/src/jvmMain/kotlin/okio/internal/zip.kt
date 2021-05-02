@@ -59,7 +59,7 @@ private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
 @Throws(IOException::class)
 @ExperimentalFileSystem
 internal fun openZip(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
-  fileSystem.open(zipPath, read = true).use { fileHandle ->
+  fileSystem.openReadOnly(zipPath).use { fileHandle ->
 
     fileHandle.source().buffer().use { source ->
       val firstFileSignature = source.readIntLe()

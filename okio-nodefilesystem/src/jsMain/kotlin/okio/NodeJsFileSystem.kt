@@ -86,11 +86,11 @@ object NodeJsFileSystem : FileSystem() {
     }
   }
 
-  override fun open(
-    file: Path,
-    read: Boolean,
-    write: Boolean
-  ): FileHandle {
+  override fun openReadOnly(file: Path): FileHandle {
+    throw UnsupportedOperationException("not implemented yet!")
+  }
+
+  override fun openReadWrite(file: Path): FileHandle {
     throw UnsupportedOperationException("not implemented yet!")
   }
 

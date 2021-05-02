@@ -23,7 +23,6 @@ import okio.internal.ZipEntry
 import okio.internal.readLocalHeader
 import okio.internal.skipLocalHeader
 import java.io.FileNotFoundException
-import java.io.IOException
 import java.util.zip.Inflater
 
 /**
@@ -91,18 +90,18 @@ class ZipFileSystem internal constructor(
       return basicMetadata
     }
 
-    val source = fileSystem.open(zipPath, read = true).use { fileHandle ->
+    val source = fileSystem.openReadOnly(zipPath).use { fileHandle ->
       fileHandle.source(entry.offset).buffer()
     }
     return source.readLocalHeader(basicMetadata)
   }
 
-  override fun open(
-    file: Path,
-    read: Boolean,
-    write: Boolean
-  ): FileHandle {
+  override fun openReadOnly(file: Path): FileHandle {
     throw UnsupportedOperationException("not implemented yet!")
+  }
+
+  override fun openReadWrite(file: Path): FileHandle {
+    throw IOException("zip entries are not writable")
   }
 
   override fun list(dir: Path): List<Path> {
@@ -115,7 +114,7 @@ class ZipFileSystem internal constructor(
   override fun source(path: Path): Source {
     val canonicalPath = canonicalize(path)
     val entry = entries[canonicalPath] ?: throw FileNotFoundException("no such file: $path")
-    val source = fileSystem.open(zipPath, read = true).use { fileHandle ->
+    val source = fileSystem.openReadOnly(zipPath).use { fileHandle ->
       fileHandle.source(entry.offset).buffer()
     }
     source.skipLocalHeader()
