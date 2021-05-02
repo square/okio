@@ -40,11 +40,10 @@ actual abstract class FileSystem {
   actual abstract fun list(dir: Path): List<Path>
 
   @Throws(IOException::class)
-  actual abstract fun open(
-    file: Path,
-    read: Boolean,
-    write: Boolean
-  ): FileHandle
+  actual abstract fun openReadOnly(file: Path): FileHandle
+
+  @Throws(IOException::class)
+  actual abstract fun openReadWrite(file: Path): FileHandle
 
   @Throws(IOException::class)
   actual abstract fun source(file: Path): Source

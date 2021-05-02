@@ -33,7 +33,14 @@ package okio
  * produced by a file handle are not safe for concurrent use.
  */
 @ExperimentalFileSystem
-abstract class FileHandle : Closeable {
+abstract class FileHandle(
+  /**
+   * True if this handle supports both reading and writing. If this is false all write operations
+   * including [write], [sink], [resize], and [flush] will all throw [IllegalStateException] if
+   * called.
+   */
+  val readWrite: Boolean
+) : Closeable {
   /**
    * True once the file handle is closed. Resources should be released with [protectedClose] once
    * this is true and [openStreamCount] is 0.
@@ -87,7 +94,13 @@ abstract class FileHandle : Closeable {
    * new size is smaller. It will add `0` bytes to the end if it is larger.
    */
   @Throws(IOException::class)
-  abstract fun resize(size: Long)
+  fun resize(size: Long) {
+    check(readWrite) { "file handle is read-only" }
+    synchronized(this) {
+      check(!closed) { "closed" }
+    }
+    return protectedResize(size)
+  }
 
   /** Reads [byteCount] bytes from [array] and writes them to this at [fileOffset]. */
   fun write(
@@ -96,6 +109,7 @@ abstract class FileHandle : Closeable {
     arrayOffset: Int,
     byteCount: Int
   ) {
+    check(readWrite) { "file handle is read-only" }
     synchronized(this) {
       check(!closed) { "closed" }
     }
@@ -105,6 +119,7 @@ abstract class FileHandle : Closeable {
   /** Removes [byteCount] bytes from [source] and writes them to this at [fileOffset]. */
   @Throws(IOException::class)
   fun write(fileOffset: Long, source: Buffer, byteCount: Long) {
+    check(readWrite) { "file handle is read-only" }
     synchronized(this) {
       check(!closed) { "closed" }
     }
@@ -114,6 +129,7 @@ abstract class FileHandle : Closeable {
   /** Pushes all buffered bytes to their final destination. */
   @Throws(IOException::class)
   fun flush() {
+    check(readWrite) { "file handle is read-only" }
     synchronized(this) {
       check(!closed) { "closed" }
     }
@@ -161,6 +177,7 @@ abstract class FileHandle : Closeable {
    */
   @Throws(IOException::class)
   fun sink(fileOffset: Long = 0L): Sink {
+    check(readWrite) { "file handle is read-only" }
     synchronized(this) {
       check(!closed) { "closed" }
       openStreamCount++
@@ -230,6 +247,10 @@ abstract class FileHandle : Closeable {
   /** Like [flush] but not performing any close check. */
   @Throws(IOException::class)
   protected abstract fun protectedFlush()
+
+  /** Like [resize] but not performing any close check. */
+  @Throws(IOException::class)
+  protected abstract fun protectedResize(size: Long)
 
   /**
    * Subclasses should implement this to release resources held by this file handle. It is invoked

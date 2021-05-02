@@ -47,18 +47,14 @@ class ResourceFileSystem internal constructor(
     return fileSystem.list(fileSystemPath).filterNot { it.name.endsWith(".class") }
   }
 
-  override fun open(
-    file: Path,
-    read: Boolean,
-    write: Boolean
-  ): FileHandle {
+  override fun openReadOnly(file: Path): FileHandle {
     val (fileSystem, fileSystemPath) = toSystemPath(file)
       ?: throw FileNotFoundException("file not found: $file")
-    return fileSystem.open(
-      file = fileSystemPath,
-      read = read,
-      write = write
-    )
+    return fileSystem.openReadOnly(file = fileSystemPath)
+  }
+
+  override fun openReadWrite(file: Path): FileHandle {
+    throw IOException("resources are not writable")
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {

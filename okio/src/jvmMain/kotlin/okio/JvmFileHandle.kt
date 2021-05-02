@@ -19,10 +19,11 @@ import java.io.RandomAccessFile
 
 @ExperimentalFileSystem
 internal class JvmFileHandle(
+  readWrite: Boolean,
   private val randomAccessFile: RandomAccessFile
-) : FileHandle() {
+) : FileHandle(readWrite) {
   @Synchronized
-  override fun resize(size: Long) {
+  override fun protectedResize(size: Long) {
     val currentSize = size()
     val delta = size - currentSize
     if (delta > 0) {

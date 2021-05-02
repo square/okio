@@ -70,17 +70,12 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return result
   }
 
-  override fun open(
-    file: Path,
-    read: Boolean,
-    write: Boolean
-  ): FileHandle {
-    val mode = when {
-      write -> "rw"
-      read -> "r"
-      else -> throw IllegalArgumentException("unexpected open options read=$read write=$write")
-    }
-    return JvmFileHandle(RandomAccessFile(file.toFile(), mode))
+  override fun openReadOnly(file: Path): FileHandle {
+    return JvmFileHandle(readWrite = false, randomAccessFile = RandomAccessFile(file.toFile(), "r"))
+  }
+
+  override fun openReadWrite(file: Path): FileHandle {
+    return JvmFileHandle(readWrite = true, randomAccessFile = RandomAccessFile(file.toFile(), "rw"))
   }
 
   override fun source(file: Path): Source {

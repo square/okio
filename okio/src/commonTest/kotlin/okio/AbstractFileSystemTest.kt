@@ -28,6 +28,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
@@ -648,7 +649,7 @@ abstract class AbstractFileSystemTest(
       writeUtf8("abcdefghijklmnop")
     }
 
-    fileSystem.open(path, read = true).use { handle ->
+    fileSystem.openReadOnly(path).use { handle ->
       assertEquals(16L, handle.size())
       val buffer = Buffer()
 
@@ -682,7 +683,7 @@ abstract class AbstractFileSystemTest(
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
     }
-    fileSystem.open(path, read = true).use { handle ->
+    fileSystem.openReadOnly(path).use { handle ->
       assertEquals(16L, handle.size())
       val buffer = Buffer()
 
@@ -710,7 +711,7 @@ abstract class AbstractFileSystemTest(
       writeUtf8("abcdefghijklmnop")
     }
 
-    fileSystem.open(path, read = true).use { handle ->
+    fileSystem.openReadOnly(path).use { handle ->
       assertEquals(16L, handle.size())
       val buffer = Buffer()
 
@@ -744,7 +745,7 @@ abstract class AbstractFileSystemTest(
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
     }
-    fileSystem.open(path, read = true).use { handle ->
+    fileSystem.openReadOnly(path).use { handle ->
       assertEquals(16L, handle.size())
       val buffer = Buffer()
 
@@ -764,6 +765,64 @@ abstract class AbstractFileSystemTest(
     }
   }
 
+  @Test fun openReadOnlyThrowsOnAttemptToWrite() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source"
+    fileSystem.write(path) {
+      writeUtf8("abcdefghijklmnop")
+    }
+
+    fileSystem.openReadOnly(path).use { handle ->
+      try {
+        handle.sink()
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+
+      try {
+        handle.flush()
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+
+      try {
+        handle.resize(0L)
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+
+      try {
+        handle.write(0L, Buffer().writeUtf8("hello"), 5L)
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+    }
+  }
+
+  @Test fun openReadOnlyFailsOnAbsentFile() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source"
+
+    try {
+      fileSystem.openReadOnly(path)
+      fail()
+    } catch (_: IOException) {
+    }
+  }
+
+  @Test fun openReadWriteCreatesAbsentFile() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source"
+
+    fileSystem.openReadWrite(path).use {
+    }
+
+    assertEquals("", path.readUtf8())
+  }
+
   private fun assertClosedFailure(block: () -> Unit) {
     val exception = assertFails {
       block()
@@ -779,7 +838,7 @@ abstract class AbstractFileSystemTest(
 
   private fun supportsFileHandle(): Boolean {
     return when (fileSystem::class.simpleName) {
-      "JvmSystemFileSystem", "FakeFileSystem" -> true
+      "JvmSystemFileSystem", "NioSystemFileSystem", "FakeFileSystem" -> true
       else -> false
     }
   }

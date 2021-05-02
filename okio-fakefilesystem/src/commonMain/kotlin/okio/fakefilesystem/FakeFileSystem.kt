@@ -238,28 +238,35 @@ class FakeFileSystem(
   }
 
   override fun source(file: Path): Source {
-    val fileHandle = open(file, read = true)
+    val fileHandle = openReadOnly(file)
     return fileHandle.source()
       .also { fileHandle.close() }
   }
 
   override fun sink(file: Path): Sink {
-    val fileHandle = open(file, write = true)
+    val fileHandle = open(file, readWrite = true)
     fileHandle.resize(0L) // If the file already has data, get rid of it.
     return fileHandle.sink()
       .also { fileHandle.close() }
   }
 
   override fun appendingSink(file: Path): Sink {
-    val fileHandle = open(file, write = true)
+    val fileHandle = open(file, readWrite = true)
     return fileHandle.appendingSink()
       .also { fileHandle.close() }
   }
 
-  override fun open(
+  override fun openReadOnly(file: Path): FileHandle {
+    return open(file, readWrite = false)
+  }
+
+  override fun openReadWrite(file: Path): FileHandle {
+    return open(file, readWrite = true)
+  }
+
+  private fun open(
     file: Path,
-    read: Boolean,
-    write: Boolean
+    readWrite: Boolean
   ): FileHandle {
     val canonicalPath = workingDirectory / file
     val existing = elements[canonicalPath]
@@ -267,7 +274,7 @@ class FakeFileSystem(
     val element: File
     val operation: Operation
 
-    if (write) {
+    if (readWrite) {
       // Note that this case is used for both write and read/write.
       if (existing is Directory) {
         throw IOException("destination is a directory: $file")
@@ -293,7 +300,7 @@ class FakeFileSystem(
       if (existing is File) {
         element.data = existing.data
       }
-    } else if (read) {
+    } else {
       if (existing == null) throw FileNotFoundException("no such file: $file")
       element = existing as? File ?: throw IOException("not a file: $file")
       operation = READ
@@ -303,16 +310,18 @@ class FakeFileSystem(
           throw IOException("file is already open for writing $file", it.backtrace)
         }
       }
-    } else {
-      throw IllegalArgumentException("unexpected open options read=$read write=$write")
     }
 
-    element.access(now = clock.now(), modified = write)
+    element.access(now = clock.now(), modified = readWrite)
 
     val openFile = OpenFile(canonicalPath, operation, Exception("file opened for $operation here"))
     openFiles += openFile
 
-    return FakeFileHandle(read, write, openFile, element)
+    return FakeFileHandle(
+      readWrite = readWrite,
+      openFile = openFile,
+      file = element
+    )
   }
 
   override fun createDirectory(dir: Path) {
@@ -463,14 +472,13 @@ class FakeFileSystem(
   }
 
   private inner class FakeFileHandle(
-    private val readAccess: Boolean,
-    private val writeAccess: Boolean,
+    readWrite: Boolean,
     private val openFile: OpenFile,
     private val file: File
-  ) : FileHandle() {
+  ) : FileHandle(readWrite) {
     private var closed = false
 
-    override fun resize(size: Long) {
+    override fun protectedResize(size: Long) {
       check(!closed) { "closed" }
 
       val delta = size - file.data.size
@@ -498,7 +506,6 @@ class FakeFileSystem(
       byteCount: Int
     ): Int {
       check(!closed) { "closed" }
-      check(readAccess) { "not opened for read" }
       checkOffsetAndCount(array.size.toLong(), arrayOffset.toLong(), byteCount.toLong())
 
       val fileOffsetInt = fileOffset.toInt()
@@ -517,7 +524,6 @@ class FakeFileSystem(
       byteCount: Int
     ) {
       check(!closed) { "closed" }
-      check(writeAccess) { "not opened for write" }
       checkOffsetAndCount(array.size.toLong(), arrayOffset.toLong(), byteCount.toLong())
 
       val buffer = Buffer()
@@ -535,13 +541,12 @@ class FakeFileSystem(
 
     override fun protectedFlush() {
       check(!closed) { "closed" }
-      check(writeAccess) { "not opened for write" }
     }
 
     override fun protectedClose() {
       if (closed) return
       closed = true
-      file.access(now = clock.now(), modified = writeAccess)
+      file.access(now = clock.now(), modified = readWrite)
       openFiles -= openFile
     }
 

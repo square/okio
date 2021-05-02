@@ -138,18 +138,25 @@ expect abstract class FileSystem() {
   abstract fun list(dir: Path): List<Path>
 
   /**
-   * Returns a handle to operate on [file].
+   * Returns a handle to read [file]. This will fail if the file doesn't already exist.
    *
    * @throws IOException if [file] does not exist, is not a file, or cannot be accessed. A file
    *     cannot be accessed if the current process doesn't have sufficient permissions for [file],
    *     if there's a loop of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun open(
-    file: Path,
-    read: Boolean = false,
-    write: Boolean = false
-  ): FileHandle
+  abstract fun openReadOnly(file: Path): FileHandle
+
+  /**
+   * Returns a handle to read and write [file]. This will create the file if it doesn't already
+   * exist.
+   *
+   * @throws IOException if [file] is not a file, or cannot be accessed. A file cannot be accessed
+   *     if the current process doesn't have sufficient reading and writing permissions for [file],
+   *     if there's a loop of symbolic links, or if any name is too long.
+   */
+  @Throws(IOException::class)
+  abstract fun openReadWrite(file: Path): FileHandle
 
   /**
    * Returns a source that reads the bytes of [file] from beginning to end.
