@@ -1,4 +1,7 @@
 import aQute.bnd.gradle.BundleTaskConvention
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 
 plugins {
@@ -207,6 +210,20 @@ kotlin {
       }
       val linuxX64Test by getting {
         dependsOn(nativeTest)
+      }
+    }
+  }
+
+  targets.withType<KotlinNativeTargetWithTests<*>> {
+    binaries {
+      // Configure a separate test where code runs in background
+      test("background", setOf(NativeBuildType.DEBUG)) {
+        freeCompilerArgs += "-trw"
+      }
+    }
+    testRuns {
+      val background by creating {
+        setExecutionSourceFrom(binaries.getByName("backgroundDebugTest") as TestExecutable)
       }
     }
   }
