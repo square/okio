@@ -20,11 +20,17 @@ import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import okio.ExperimentalFileSystem
 import okio.Path
+import kotlin.native.concurrent.SharedImmutable
 
+@SharedImmutable
 private val SLASH = "/".encodeUtf8()
+@SharedImmutable
 private val BACKSLASH = "\\".encodeUtf8()
+@SharedImmutable
 private val ANY_SLASH = "/\\".encodeUtf8()
+@SharedImmutable
 private val DOT = ".".encodeUtf8()
+@SharedImmutable
 private val DOT_DOT = "..".encodeUtf8()
 
 @ExperimentalFileSystem

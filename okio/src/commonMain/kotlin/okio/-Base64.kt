@@ -18,11 +18,14 @@
 package okio
 
 import okio.ByteString.Companion.encodeUtf8
+import kotlin.native.concurrent.SharedImmutable
 
 /** @author Alexander Y. Kleymenov */
 
+@SharedImmutable
 internal val BASE64 =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".encodeUtf8().data
+@SharedImmutable
 internal val BASE64_URL_SAFE =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".encodeUtf8().data
 
