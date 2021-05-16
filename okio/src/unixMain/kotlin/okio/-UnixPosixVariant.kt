@@ -25,6 +25,7 @@ import platform.posix.errno
 import platform.posix.fileno
 import platform.posix.free
 import platform.posix.fstat
+import platform.posix.ftruncate
 import platform.posix.mkdir
 import platform.posix.realpath
 import platform.posix.remove
@@ -77,6 +78,12 @@ internal actual fun variantSize(file: CPointer<FILE>): Long {
       throw errnoToIOException(errno)
     }
     return stat.st_size
+  }
+}
+
+internal actual fun variantResize(file: CPointer<FILE>, size: Long) {
+  if (ftruncate(fileno(file), size) == -1) {
+    throw errnoToIOException(errno)
   }
 }
 
