@@ -38,3 +38,28 @@ Okio uses the built-in implementations of these functions on the JVM.
 [kotlin_multiplatform]: https://kotlinlang.org/docs/reference/multiplatform.html
 [mingw]: http://www.mingw.org/
 [node_js]: https://nodejs.org/api/fs.html
+
+## Gradle configuration
+
+```kotlin
+// build.gradle.kts
+kotlin {
+    sourceSets {
+        all {
+            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+        }
+
+        val okioVersion = "3.XXX"
+        val commonMain by getting {
+            dependencies {
+                implementation("com.squareup.okio:okio-multiplatform:$okioVersion")
+            }
+        }
+        val jsMain by getting {
+            dependencies {
+                implementation("com.squareup.okio:okio-nodefilesystem-js:$okioVersion")
+            }
+        }
+    }
+}
+```
