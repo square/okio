@@ -72,11 +72,15 @@ internal object PosixFileSystem : FileSystem() {
   }
 
   override fun openReadOnly(file: Path): FileHandle {
-    throw UnsupportedOperationException("not implemented yet!")
+    val openFile: CPointer<FILE> = fopen(file.toString(), "r")
+      ?: throw errnoToIOException(errno)
+    return PosixFileHandle(false, openFile)
   }
 
   override fun openReadWrite(file: Path): FileHandle {
-    throw UnsupportedOperationException("not implemented yet!")
+    val openFile: CPointer<FILE> = fopen(file.toString(), "a+")
+      ?: throw errnoToIOException(errno)
+    return PosixFileHandle(true, openFile)
   }
 
   override fun source(file: Path): Source {

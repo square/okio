@@ -18,21 +18,22 @@ package okio
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CValuesRef
+import kotlinx.cinterop.UIntVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
 import okio.Path.Companion.toPath
 import platform.posix.EACCES
 import platform.posix.ENOENT
 import platform.posix.FILE
 import platform.posix.PATH_MAX
-import platform.posix.SEEK_SET
 import platform.posix.S_IFDIR
 import platform.posix.S_IFMT
 import platform.posix.S_IFREG
-import platform.posix._fseeki64
+import platform.posix._chsize_s
 import platform.posix._fstat64
-import platform.posix._ftelli64
 import platform.posix._fullpath
 import platform.posix._stat64
 import platform.posix.errno
@@ -45,6 +46,9 @@ import platform.posix.remove
 import platform.posix.rmdir
 import platform.windows.MOVEFILE_REPLACE_EXISTING
 import platform.windows.MoveFileExA
+import platform.windows.ReadFile
+import platform.windows.WriteFile
+import platform.windows._OVERLAPPED
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "\\"
 
@@ -118,19 +122,47 @@ internal actual fun variantFread(
 }
 
 internal actual fun variantFwrite(
-  target: CPointer<ByteVar>,
+  source: CPointer<ByteVar>,
   byteCount: UInt,
   file: CPointer<FILE>
 ): UInt {
-  return fwrite(target, 1, byteCount.toULong(), file).toUInt()
+  return fwrite(source, 1, byteCount.toULong(), file).toUInt()
 }
 
-internal actual fun variantFtell(file: CPointer<FILE>): Long {
-  val result = _ftelli64(file)
-  if (result == -1L) {
-    throw errnoToIOException(errno)
+internal actual fun variantPread(
+  file: CPointer<FILE>,
+  target: CValuesRef<*>,
+  byteCount: Int,
+  offset: Long
+): Int {
+  memScoped {
+    val overlapped = alloc<_OVERLAPPED>()
+    overlapped.Offset = offset.toUInt()
+    overlapped.OffsetHigh = (offset ushr 32).toUInt()
+    val bytesRead = alloc<UIntVar>()
+    if (ReadFile(file, target.getPointer(this), byteCount.toUInt(), bytesRead.ptr, overlapped.ptr) == 0) {
+      throw lastErrorToIOException()
+    }
+    return bytesRead.value.toInt()
   }
-  return result
+}
+
+internal actual fun variantPwrite(
+  file: CPointer<FILE>,
+  source: CValuesRef<*>,
+  byteCount: Int,
+  offset: Long
+): Int {
+  memScoped {
+    val overlapped = alloc<_OVERLAPPED>()
+    overlapped.Offset = offset.toUInt()
+    overlapped.OffsetHigh = (offset ushr 32).toUInt()
+    val bytesWritten = alloc<UIntVar>()
+    if (WriteFile(file, source.getPointer(this), byteCount.toUInt(), bytesWritten.ptr, overlapped.ptr) == 0) {
+      throw lastErrorToIOException()
+    }
+    return bytesWritten.value.toInt()
+  }
 }
 
 internal actual fun variantSize(file: CPointer<FILE>): Long {
@@ -143,8 +175,8 @@ internal actual fun variantSize(file: CPointer<FILE>): Long {
   }
 }
 
-internal actual fun variantSeek(position: Long, file: CPointer<FILE>) {
-  if (_fseeki64(file, position, SEEK_SET) != 0) {
+internal actual fun variantResize(file: CPointer<FILE>, size: Long) {
+  if (_chsize_s(fileno(file), size) != 0) {
     throw errnoToIOException(errno)
   }
 }
