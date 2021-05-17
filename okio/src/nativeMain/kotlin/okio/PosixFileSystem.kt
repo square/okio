@@ -36,9 +36,7 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun canonicalize(path: Path) = variantCanonicalize(path)
 
-  override fun metadataOrNull(path: Path): FileMetadata? {
-    return variantMetadataOrNull(path)
-  }
+  override fun metadataOrNull(path: Path) = variantMetadataOrNull(path)
 
   override fun list(dir: Path): List<Path> {
     val opendir: CPointer<DIR> = opendir(dir.toString())
@@ -71,17 +69,9 @@ internal object PosixFileSystem : FileSystem() {
     }
   }
 
-  override fun openReadOnly(file: Path): FileHandle {
-    val openFile: CPointer<FILE> = fopen(file.toString(), "r")
-      ?: throw errnoToIOException(errno)
-    return PosixFileHandle(false, openFile)
-  }
+  override fun openReadOnly(file: Path) = variantOpenReadOnly(file)
 
-  override fun openReadWrite(file: Path): FileHandle {
-    val openFile: CPointer<FILE> = fopen(file.toString(), "a+")
-      ?: throw errnoToIOException(errno)
-    return PosixFileHandle(true, openFile)
-  }
+  override fun openReadWrite(file: Path) = variantOpenReadWrite(file)
 
   override fun source(file: Path): Source {
     val openFile: CPointer<FILE> = fopen(file.toString(), "r")

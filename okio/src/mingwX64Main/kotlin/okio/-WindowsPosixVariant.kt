@@ -18,12 +18,9 @@ package okio
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.CValuesRef
-import kotlinx.cinterop.UIntVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
-import kotlinx.cinterop.value
 import okio.Path.Companion.toPath
 import platform.posix.EACCES
 import platform.posix.ENOENT
@@ -32,23 +29,25 @@ import platform.posix.PATH_MAX
 import platform.posix.S_IFDIR
 import platform.posix.S_IFMT
 import platform.posix.S_IFREG
-import platform.posix._chsize_s
-import platform.posix._fstat64
 import platform.posix._fullpath
 import platform.posix._stat64
 import platform.posix.errno
-import platform.posix.fileno
 import platform.posix.fread
 import platform.posix.free
 import platform.posix.fwrite
 import platform.posix.mkdir
 import platform.posix.remove
 import platform.posix.rmdir
+import platform.windows.CreateFileA
+import platform.windows.FILE_ATTRIBUTE_NORMAL
+import platform.windows.FILE_SHARE_WRITE
+import platform.windows.GENERIC_READ
+import platform.windows.GENERIC_WRITE
+import platform.windows.INVALID_HANDLE_VALUE
 import platform.windows.MOVEFILE_REPLACE_EXISTING
 import platform.windows.MoveFileExA
-import platform.windows.ReadFile
-import platform.windows.WriteFile
-import platform.windows._OVERLAPPED
+import platform.windows.OPEN_ALWAYS
+import platform.windows.OPEN_EXISTING
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "\\"
 
@@ -129,54 +128,36 @@ internal actual fun variantFwrite(
   return fwrite(source, 1, byteCount.toULong(), file).toUInt()
 }
 
-internal actual fun variantPread(
-  file: CPointer<FILE>,
-  target: CValuesRef<*>,
-  byteCount: Int,
-  offset: Long
-): Int {
-  memScoped {
-    val overlapped = alloc<_OVERLAPPED>()
-    overlapped.Offset = offset.toUInt()
-    overlapped.OffsetHigh = (offset ushr 32).toUInt()
-    val bytesRead = alloc<UIntVar>()
-    if (ReadFile(file, target.getPointer(this), byteCount.toUInt(), bytesRead.ptr, overlapped.ptr) == 0) {
-      throw lastErrorToIOException()
-    }
-    return bytesRead.value.toInt()
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle {
+  val openFile = CreateFileA(
+    lpFileName = file.toString(),
+    dwDesiredAccess = GENERIC_READ,
+    dwShareMode = FILE_SHARE_WRITE,
+    lpSecurityAttributes = null,
+    dwCreationDisposition = OPEN_EXISTING,
+    dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
+    hTemplateFile = null
+  )
+  if (openFile == INVALID_HANDLE_VALUE) {
+    throw lastErrorToIOException()
   }
+  return WindowsFileHandle(false, openFile)
 }
 
-internal actual fun variantPwrite(
-  file: CPointer<FILE>,
-  source: CValuesRef<*>,
-  byteCount: Int,
-  offset: Long
-): Int {
-  memScoped {
-    val overlapped = alloc<_OVERLAPPED>()
-    overlapped.Offset = offset.toUInt()
-    overlapped.OffsetHigh = (offset ushr 32).toUInt()
-    val bytesWritten = alloc<UIntVar>()
-    if (WriteFile(file, source.getPointer(this), byteCount.toUInt(), bytesWritten.ptr, overlapped.ptr) == 0) {
-      throw lastErrorToIOException()
-    }
-    return bytesWritten.value.toInt()
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantOpenReadWrite(file: Path): FileHandle {
+  val openFile = CreateFileA(
+    lpFileName = file.toString(),
+    dwDesiredAccess = GENERIC_READ or GENERIC_WRITE.toUInt(),
+    dwShareMode = FILE_SHARE_WRITE,
+    lpSecurityAttributes = null,
+    dwCreationDisposition = OPEN_ALWAYS,
+    dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
+    hTemplateFile = null
+  )
+  if (openFile == INVALID_HANDLE_VALUE) {
+    throw lastErrorToIOException()
   }
-}
-
-internal actual fun variantSize(file: CPointer<FILE>): Long {
-  memScoped {
-    val stat = alloc<_stat64>()
-    if (_fstat64(fileno(file), stat.ptr) != 0) {
-      throw errnoToIOException(errno)
-    }
-    return stat.st_size
-  }
-}
-
-internal actual fun variantResize(file: CPointer<FILE>, size: Long) {
-  if (_chsize_s(fileno(file), size) != 0) {
-    throw errnoToIOException(errno)
-  }
+  return WindowsFileHandle(true, openFile)
 }

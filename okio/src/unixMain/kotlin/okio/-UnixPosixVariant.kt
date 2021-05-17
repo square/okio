@@ -16,21 +16,16 @@
 package okio
 
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
+import kotlinx.cinterop.CValuesRef
 import okio.internal.toPath
 import platform.posix.FILE
 import platform.posix.errno
-import platform.posix.fileno
+import platform.posix.fopen
 import platform.posix.free
-import platform.posix.fstat
-import platform.posix.ftruncate
 import platform.posix.mkdir
 import platform.posix.realpath
 import platform.posix.remove
 import platform.posix.rename
-import platform.posix.stat
 import platform.posix.timespec
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "/"
@@ -71,21 +66,33 @@ internal actual fun PosixFileSystem.variantMove(
   }
 }
 
-internal actual fun variantSize(file: CPointer<FILE>): Long {
-  memScoped {
-    val stat = alloc<stat>()
-    if (fstat(fileno(file), stat.ptr) != 0) {
-      throw errnoToIOException(errno)
-    }
-    return stat.st_size
-  }
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle {
+  val openFile: CPointer<FILE> = fopen(file.toString(), "r")
+    ?: throw errnoToIOException(errno)
+  return UnixFileHandle(false, openFile)
 }
 
-internal actual fun variantResize(file: CPointer<FILE>, size: Long) {
-  if (ftruncate(fileno(file), size) == -1) {
-    throw errnoToIOException(errno)
-  }
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantOpenReadWrite(file: Path): FileHandle {
+  val openFile: CPointer<FILE> = fopen(file.toString(), "a+")
+    ?: throw errnoToIOException(errno)
+  return UnixFileHandle(true, openFile)
 }
+
+internal expect fun variantPread(
+  file: CPointer<FILE>,
+  target: CValuesRef<*>,
+  byteCount: Int,
+  offset: Long
+): Int
+
+internal expect fun variantPwrite(
+  file: CPointer<FILE>,
+  source: CValuesRef<*>,
+  byteCount: Int,
+  offset: Long
+): Int
 
 internal val timespec.epochMillis: Long
   get() = tv_sec * 1000L + tv_sec / 1_000_000L

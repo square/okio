@@ -838,8 +838,10 @@ abstract class AbstractFileSystemTest(
 
   private fun supportsFileHandle(): Boolean {
     return when (fileSystem::class.simpleName) {
-      "JvmSystemFileSystem", "NioSystemFileSystem", "FakeFileSystem" -> true
-      "PosixFileSystem" -> !windowsLimitations
+      "FakeFileSystem",
+      "JvmSystemFileSystem",
+      "NioSystemFileSystem",
+      "PosixFileSystem" -> true
       else -> false
     }
   }
