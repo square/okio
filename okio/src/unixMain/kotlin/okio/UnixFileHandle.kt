@@ -17,18 +17,33 @@ package okio
 
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
 import platform.posix.FILE
 import platform.posix.errno
 import platform.posix.fclose
 import platform.posix.fflush
+import platform.posix.fileno
+import platform.posix.fstat
+import platform.posix.ftruncate
+import platform.posix.stat
 
 @ExperimentalFileSystem
-internal class PosixFileHandle(
+internal class UnixFileHandle(
   readWrite: Boolean,
   private val file: CPointer<FILE>
 ) : FileHandle(readWrite) {
-  override fun size() = variantSize(file)
+  override fun size(): Long {
+    memScoped {
+      val stat = alloc<stat>()
+      if (fstat(fileno(file), stat.ptr) != 0) {
+        throw errnoToIOException(errno)
+      }
+      return stat.st_size
+    }
+  }
 
   override fun protectedRead(
     fileOffset: Long,
@@ -63,7 +78,9 @@ internal class PosixFileHandle(
   }
 
   override fun protectedResize(size: Long) {
-    variantResize(file, size)
+    if (ftruncate(fileno(file), size) == -1) {
+      throw errnoToIOException(errno)
+    }
   }
 
   override fun protectedClose() {

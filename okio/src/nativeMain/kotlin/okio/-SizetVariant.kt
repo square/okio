@@ -18,7 +18,6 @@ package okio
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.CValuesRef
 import platform.posix.FILE
 
 internal expect fun variantFread(
@@ -32,17 +31,3 @@ internal expect fun variantFwrite(
   byteCount: UInt,
   file: CPointer<FILE>
 ): UInt
-
-internal expect fun variantPread(
-  file: CPointer<FILE>,
-  target: CValuesRef<*>,
-  byteCount: Int,
-  offset: Long
-): Int
-
-internal expect fun variantPwrite(
-  file: CPointer<FILE>,
-  source: CValuesRef<*>,
-  byteCount: Int,
-  offset: Long
-): Int
