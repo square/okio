@@ -36,7 +36,9 @@ import okio.asUtf8ToByteArray
 import okio.checkOffsetAndCount
 import okio.minOf
 import okio.toHexString
+import kotlin.native.concurrent.SharedImmutable
 
+@SharedImmutable
 internal val HEX_DIGIT_BYTES = "0123456789abcdef".asUtf8ToByteArray()
 
 // Threshold determined empirically via ReadByteStringBenchmark
