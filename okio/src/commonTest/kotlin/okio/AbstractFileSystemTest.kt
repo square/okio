@@ -17,6 +17,7 @@ package okio
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.BeforeTest
@@ -637,6 +638,198 @@ abstract class AbstractFileSystemTest(
         fileSystem.delete(parentABC)
         fileSystem.delete(parentAB)
         fileSystem.delete(parentA)
+      }
+    }
+  }
+
+  @Test fun fileHandleWriteAndRead() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-write-and-read"
+    fileSystem.openReadWrite(path).use { handle ->
+
+      handle.sink().buffer().use { sink ->
+        sink.writeUtf8("abcdefghijklmnop")
+      }
+
+      handle.source().buffer().use { source ->
+        assertEquals("abcde", source.readUtf8(5))
+        assertEquals("fghijklmnop", source.readUtf8())
+      }
+    }
+  }
+
+  @Test fun fileHandleWriteAndOverwrite() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-write-and-overwrite"
+    fileSystem.openReadWrite(path).use { handle ->
+
+      handle.sink().buffer().use { sink ->
+        sink.writeUtf8("abcdefghij")
+      }
+
+      handle.sink(fileOffset = handle.size() - 3).buffer().use { sink ->
+        sink.writeUtf8("HIJKLMNOP")
+      }
+
+      handle.source().buffer().use { source ->
+        assertEquals("abcdefgHIJKLMNOP", source.readUtf8())
+      }
+    }
+  }
+
+  @Test fun fileHandleWriteBeyondEnd() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-write-beyond-end"
+    fileSystem.openReadWrite(path).use { handle ->
+
+      handle.sink(fileOffset = 10).buffer().use { sink ->
+        sink.writeUtf8("klmnop")
+      }
+
+      handle.source().buffer().use { source ->
+        assertEquals("00000000000000000000", source.readByteString(10).hex())
+        assertEquals("klmnop", source.readUtf8())
+      }
+    }
+  }
+
+  @Test fun fileHandleResizeSmaller() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-resize-smaller"
+    fileSystem.openReadWrite(path).use { handle ->
+
+      handle.sink().buffer().use { sink ->
+        sink.writeUtf8("abcdefghijklmnop")
+      }
+
+      handle.resize(10)
+
+      handle.source().buffer().use { source ->
+        assertEquals("abcdefghij", source.readUtf8())
+      }
+    }
+  }
+
+  @Test fun fileHandleResizeLarger() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-resize-larger"
+    fileSystem.openReadWrite(path).use { handle ->
+
+      handle.sink().buffer().use { sink ->
+        sink.writeUtf8("abcde")
+      }
+
+      handle.resize(15)
+
+      handle.source().buffer().use { source ->
+        assertEquals("abcde", source.readUtf8(5))
+        assertEquals("00000000000000000000", source.readByteString().hex())
+      }
+    }
+  }
+
+  @Test fun fileHandleFlush() {
+    if (!supportsFileHandle()) return
+    if (windowsLimitations) return // Open for reading and writing simultaneously.
+
+    val path = base / "file-handle-flush"
+    fileSystem.openReadWrite(path).use { handleA ->
+      handleA.sink().buffer().use { sink ->
+        sink.writeUtf8("abcde")
+      }
+      handleA.flush()
+
+      fileSystem.openReadWrite(path).use { handleB ->
+        handleB.source().buffer().use { source ->
+          assertEquals("abcde", source.readUtf8())
+        }
+      }
+    }
+  }
+
+  @Test fun fileHandleLargeBufferedWriteAndRead() {
+    if (!supportsFileHandle()) return
+
+    val data = randomBytes(1024 * 1024 * 8)
+
+    val path = base / "file-handle-large-buffered-write-and-read"
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.sink().buffer().use { sink ->
+        sink.write(data)
+      }
+    }
+
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.source().buffer().use { source ->
+        assertEquals(data, source.readByteString())
+      }
+    }
+  }
+
+  @Test fun fileHandleLargeArrayWriteAndRead() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-large-array-write-and-read"
+
+    val writtenBytes = randomBytes(1024 * 1024 * 8)
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.write(0, writtenBytes.toByteArray(), 0, writtenBytes.size)
+    }
+
+    val readBytes = fileSystem.openReadWrite(path).use { handle ->
+      val byteArray = ByteArray(writtenBytes.size)
+      handle.read(0, byteArray, 0, byteArray.size)
+      return@use byteArray.toByteString(0, byteArray.size) // Parameters necessary for issue 910.
+    }
+
+    assertEquals(writtenBytes, readBytes)
+  }
+
+  @Test fun fileHandleSinkPosition() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-sink-position"
+
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.sink().use { sink ->
+        sink.write(Buffer().writeUtf8("abcde"), 5)
+        assertEquals(5, handle.position(sink))
+        sink.write(Buffer().writeUtf8("fghijklmno"), 10)
+        assertEquals(15, handle.position(sink))
+      }
+
+      handle.sink(200).use { sink ->
+        sink.write(Buffer().writeUtf8("abcde"), 5)
+        assertEquals(205, handle.position(sink))
+        sink.write(Buffer().writeUtf8("fghijklmno"), 10)
+        assertEquals(215, handle.position(sink))
+      }
+    }
+  }
+
+  @Test fun fileHandleBufferedSinkPosition() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-buffered-sink-position"
+
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.sink().buffer().use { sink ->
+        sink.writeUtf8("abcde")
+        assertEquals(5, handle.position(sink))
+        sink.writeUtf8("fghijklmno")
+        assertEquals(15, handle.position(sink))
+      }
+
+      handle.sink(200).buffer().use { sink ->
+        sink.writeUtf8("abcde")
+        assertEquals(205, handle.position(sink))
+        sink.writeUtf8("fghijklmno")
+        assertEquals(215, handle.position(sink))
       }
     }
   }

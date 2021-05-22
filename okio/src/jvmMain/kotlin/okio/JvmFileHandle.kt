@@ -71,7 +71,7 @@ internal class JvmFileHandle(
 
   @Synchronized
   override fun protectedFlush() {
-    // TODO: call channel.force(false)
+    randomAccessFile.fd.sync()
   }
 
   @Synchronized
