@@ -55,10 +55,17 @@ private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
 /**
  * Opens the file at [zipPath] for use as a file system. This uses UTF-8 to comments and names in
  * the zip file.
+ *
+ * @param predicate a function that returns false for entries that should be omitted from the file
+ *     system.
  */
 @Throws(IOException::class)
 @ExperimentalFileSystem
-internal fun openZip(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
+internal fun openZip(
+  zipPath: Path,
+  fileSystem: FileSystem,
+  predicate: (ZipEntry) -> Boolean = { true }
+): ZipFileSystem {
   fileSystem.openReadOnly(zipPath).use { fileHandle ->
 
     fileHandle.source().buffer().use { source ->
@@ -133,11 +140,13 @@ internal fun openZip(zipPath: Path, fileSystem: FileSystem): ZipFileSystem {
     val entries = mutableListOf<ZipEntry>()
     fileHandle.source(record.centralDirectoryOffset).buffer().use { source ->
       for (i in 0 until record.entryCount) {
-        val newEntry = source.readEntry()
-        if (newEntry.offset >= record.centralDirectoryOffset) {
+        val entry = source.readEntry()
+        if (entry.offset >= record.centralDirectoryOffset) {
           throw IOException("bad zip: local file header offset >= central directory offset")
         }
-        entries += newEntry
+        if (predicate(entry)) {
+          entries += entry
+        }
       }
     }
 

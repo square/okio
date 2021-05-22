@@ -44,7 +44,7 @@ class ResourceFileSystem internal constructor(
 
   override fun list(dir: Path): List<Path> {
     val (fileSystem, fileSystemPath) = toSystemPath(dir) ?: return listOf()
-    return fileSystem.list(fileSystemPath).filterNot { it.name.endsWith(".class") }
+    return fileSystem.list(fileSystemPath)
   }
 
   override fun openReadOnly(file: Path): FileHandle {
@@ -105,7 +105,11 @@ class ResourceFileSystem internal constructor(
     val existing = jarCache[this]
     if (existing != null) return existing
 
-    val created = SYSTEM.openZip(this)
+    val created = okio.internal.openZip(
+      zipPath = this,
+      fileSystem = SYSTEM,
+      predicate = { zipEntry -> !zipEntry.canonicalPath.name.endsWith(".class", ignoreCase = true) }
+    )
 
     // Recover from a race if two threads open the same zip at the same time.
     val replaced = jarCache.putIfAbsent(this, created) ?: return created
