@@ -89,7 +89,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
    * `beginIndex` and ends at the specified `endIndex`. Returns this byte string if `beginIndex` is
    * 0 and `endIndex` is the length of this byte string.
    */
-  fun substring(beginIndex: Int = 0, endIndex: Int = size): ByteString
+  fun substring(beginIndex: Int = 0, endIndex: Int = DEFAULT__ByteString_size): ByteString
 
   /**
    * Returns a byte string equal to this byte string, but with the bytes 'a' through 'z' replaced
@@ -147,9 +147,9 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   @JvmOverloads
   fun indexOf(other: ByteArray, fromIndex: Int = 0): Int
 
-  fun lastIndexOf(other: ByteString, fromIndex: Int = size): Int
+  fun lastIndexOf(other: ByteString, fromIndex: Int = DEFAULT__ByteString_size): Int
 
-  fun lastIndexOf(other: ByteArray, fromIndex: Int = size): Int
+  fun lastIndexOf(other: ByteArray, fromIndex: Int = DEFAULT__ByteString_size): Int
 
   override fun equals(other: Any?): Boolean
 

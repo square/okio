@@ -17,6 +17,7 @@
 package okio
 
 import okio.internal.HEX_DIGIT_CHARS
+import kotlin.native.concurrent.SharedImmutable
 
 internal fun checkOffsetAndCount(size: Long, offset: Long, byteCount: Long) {
   if (offset or byteCount < 0 || offset > size || size - offset < byteCount) {
@@ -102,7 +103,7 @@ internal fun Byte.toHexString(): String {
   val result = CharArray(2)
   result[0] = HEX_DIGIT_CHARS[this shr 4 and 0xf]
   result[1] = HEX_DIGIT_CHARS[this       and 0xf] // ktlint-disable no-multi-spaces
-  return String(result)
+  return result.concatToString()
 }
 
 internal fun Int.toHexString(): String {
@@ -125,7 +126,7 @@ internal fun Int.toHexString(): String {
     i++
   }
 
-  return String(result, i, result.size - i)
+  return result.concatToString(i, result.size)
 }
 
 internal fun Long.toHexString(): String {
@@ -156,5 +157,23 @@ internal fun Long.toHexString(): String {
     i++
   }
 
-  return String(result, i, result.size - i)
+  return result.concatToString(i, result.size)
+}
+
+// Work around a problem where Kotlin/JS IR can't handle default parameters on expect functions
+// that depend on the receiver. We use well-known, otherwise-impossible values here and must check
+// for them in the receiving function, then swap in the true default value.
+// https://youtrack.jetbrains.com/issue/KT-45542
+
+@SharedImmutable
+internal val DEFAULT__new_UnsafeCursor = Buffer.UnsafeCursor()
+internal fun resolveDefaultParameter(unsafeCursor: Buffer.UnsafeCursor): Buffer.UnsafeCursor {
+  if (unsafeCursor === DEFAULT__new_UnsafeCursor) return Buffer.UnsafeCursor()
+  return unsafeCursor
+}
+
+internal val DEFAULT__ByteString_size = -1234567890
+internal fun ByteString.resolveDefaultParameter(position: Int): Int {
+  if (position == DEFAULT__ByteString_size) return size
+  return position
 }
