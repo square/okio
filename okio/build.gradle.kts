@@ -49,7 +49,7 @@ kotlin {
     withJava()
   }
   if (kmpJsEnabled) {
-    js {
+    js(BOTH) {
       compilations.all {
         kotlinOptions {
           moduleKind = "umd"

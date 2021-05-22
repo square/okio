@@ -3,7 +3,7 @@ plugins {
 }
 
 kotlin {
-  js {
+  js(BOTH) {
     configure(listOf(compilations.getByName("main"), compilations.getByName("test"))) {
       tasks.getByName(compileKotlinTaskName) {
         kotlinOptions {
