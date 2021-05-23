@@ -15,8 +15,6 @@
  */
 package okio
 
-import org.khronos.webgl.Uint8Array
-
 internal class FileSink(
   private val fd: Number
 ) : Sink {
@@ -27,8 +25,7 @@ internal class FileSink(
     require(source.size >= byteCount) { "source.size=${source.size} < byteCount=$byteCount" }
     check(!closed) { "closed" }
 
-    val data = Uint8Array(byteCount.toInt())
-    data.set(source.readByteArray().toTypedArray())
+    val data = source.readByteArray(byteCount)
     val writtenByteCount = writeSync(fd, data)
     if (writtenByteCount.toLong() != byteCount) {
       throw IOException("expected $byteCount but was $writtenByteCount")

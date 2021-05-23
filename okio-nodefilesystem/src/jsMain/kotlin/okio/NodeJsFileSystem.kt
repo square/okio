@@ -87,35 +87,49 @@ object NodeJsFileSystem : FileSystem() {
   }
 
   override fun openReadOnly(file: Path): FileHandle {
-    throw UnsupportedOperationException("not implemented yet!")
+    val fd = openFd(file, flags = "r")
+    return NodeJsFileHandle(fd, readWrite = false)
   }
 
   override fun openReadWrite(file: Path): FileHandle {
-    throw UnsupportedOperationException("not implemented yet!")
+    val fd = if (Path.DIRECTORY_SEPARATOR == "\\") {
+      // On NodeJS on Windows there's no file system flag that does all of the following:
+      //  - open a file for reading, writing, seeking, and resizing
+      //  - create it doesn't exist
+      //  - do not truncate it if it does exist
+      // Work around this by attempting to open a file that does exist (r+), falling back to
+      // creating a file that does not exist (wx+) if that throws. This is not atomic.
+      // https://nodejs.org/api/fs.html#fs_file_system_flags
+      try {
+        openFd(file, "r+")
+      } catch (e: FileNotFoundException) {
+        openFd(file, "wx+")
+      }
+    } else {
+      // On other platforms 'a+' does everything that we need.
+      openFd(file, "a+")
+    }
+    return NodeJsFileHandle(fd, readWrite = true)
   }
 
   override fun source(file: Path): Source {
-    try {
-      val fd = openSync(file.toString(), flags = "r")
-      return FileSource(fd)
-    } catch (e: Throwable) {
-      throw e.toIOException()
-    }
+    val fd = openFd(file, flags = "r")
+    return FileSource(fd)
   }
 
   override fun sink(file: Path): Sink {
-    try {
-      val fd = openSync(file.toString(), flags = "w")
-      return FileSink(fd)
-    } catch (e: Throwable) {
-      throw e.toIOException()
-    }
+    val fd = openFd(file, flags = "w")
+    return FileSink(fd)
   }
 
   override fun appendingSink(file: Path): Sink {
+    val fd = openFd(file, flags = "a")
+    return FileSink(fd)
+  }
+
+  private fun openFd(file: Path, flags: String): Double {
     try {
-      val fd = openSync(file.toString(), flags = "a")
-      return FileSink(fd)
+      return openSync(file.toString(), flags = flags)
     } catch (e: Throwable) {
       throw e.toIOException()
     }
