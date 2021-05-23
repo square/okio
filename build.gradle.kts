@@ -1,5 +1,10 @@
 import aQute.bnd.gradle.BundleTaskConvention
 import com.diffplug.gradle.spotless.SpotlessExtension
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -67,5 +72,13 @@ subprojects {
     options.encoding = "UTF-8"
     sourceCompatibility = JavaVersion.VERSION_1_8.toString()
     targetCompatibility = JavaVersion.VERSION_1_8.toString()
+  }
+
+  tasks.withType<Test> {
+    testLogging {
+      events(STARTED, PASSED, SKIPPED, FAILED)
+      exceptionFormat = TestExceptionFormat.FULL
+      showStandardStreams = false
+    }
   }
 }
