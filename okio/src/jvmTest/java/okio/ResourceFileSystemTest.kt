@@ -122,6 +122,12 @@ class ResourceFileSystemTest {
   }
 
   @Test
+  fun testClassFilesOmittedFromJar() {
+    assertThat(fileSystem.list("/org/junit/rules".toPath())).isEmpty()
+    assertThat(fileSystem.metadataOrNull("/org/junit/Test.class".toPath())).isNull()
+  }
+
+  @Test
   fun testDirectoryFromJar() {
     val path = "org/junit/".toPath()
 
