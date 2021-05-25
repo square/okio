@@ -57,7 +57,9 @@ abstract class AbstractFileSystemTest(
     val cwdString = cwd.toString()
     assertTrue(cwdString) {
       cwdString.endsWith("okio${Path.DIRECTORY_SEPARATOR}okio") ||
-        cwdString.endsWith("${Path.DIRECTORY_SEPARATOR}okio-parent-okio-test") || // JS
+        cwdString.endsWith("${Path.DIRECTORY_SEPARATOR}okio-parent-okio-jsLegacy-test") ||
+        cwdString.endsWith("${Path.DIRECTORY_SEPARATOR}okio-parent-okio-js-ir-test") ||
+        cwdString.endsWith("${Path.DIRECTORY_SEPARATOR}okio-parent-okio-jsIr-test") ||
         cwdString.contains("/CoreSimulator/Devices/") || // iOS simulator.
         cwdString == "/" // Android emulator.
     }

@@ -18,7 +18,6 @@ package okio
 
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
-import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -222,21 +221,55 @@ abstract class AbstractBufferedSinkTest internal constructor(
     assertEquals('a', data.readByte().toChar())
   }
 
+  /**
+   * This test hard codes the results of Long.toString() because that function rounds large values
+   * when using Kotlin/JS IR. https://youtrack.jetbrains.com/issue/KT-39891
+   */
   @Test fun longDecimalString() {
-    assertLongDecimalString(0)
-    assertLongDecimalString(Long.MIN_VALUE)
-    assertLongDecimalString(Long.MAX_VALUE)
-
-    for (i in 1..19) {
-      val value = 10.0.pow(i).toLong()
-      assertLongDecimalString(value - 1)
-      assertLongDecimalString(value)
-    }
+    assertLongDecimalString("0", 0)
+    assertLongDecimalString("-9223372036854775808", Long.MIN_VALUE)
+    assertLongDecimalString("9223372036854775807", Long.MAX_VALUE)
+    assertLongDecimalString("9", 9L)
+    assertLongDecimalString("99", 99L)
+    assertLongDecimalString("999", 999L)
+    assertLongDecimalString("9999", 9999L)
+    assertLongDecimalString("99999", 99999L)
+    assertLongDecimalString("999999", 999999L)
+    assertLongDecimalString("9999999", 9999999L)
+    assertLongDecimalString("99999999", 99999999L)
+    assertLongDecimalString("999999999", 999999999L)
+    assertLongDecimalString("9999999999", 9999999999L)
+    assertLongDecimalString("99999999999", 99999999999L)
+    assertLongDecimalString("999999999999", 999999999999L)
+    assertLongDecimalString("9999999999999", 9999999999999L)
+    assertLongDecimalString("99999999999999", 99999999999999L)
+    assertLongDecimalString("999999999999999", 999999999999999L)
+    assertLongDecimalString("9999999999999999", 9999999999999999L)
+    assertLongDecimalString("99999999999999999", 99999999999999999L)
+    assertLongDecimalString("999999999999999999", 999999999999999999L)
+    assertLongDecimalString("10", 10L)
+    assertLongDecimalString("100", 100L)
+    assertLongDecimalString("1000", 1000L)
+    assertLongDecimalString("10000", 10000L)
+    assertLongDecimalString("100000", 100000L)
+    assertLongDecimalString("1000000", 1000000L)
+    assertLongDecimalString("10000000", 10000000L)
+    assertLongDecimalString("100000000", 100000000L)
+    assertLongDecimalString("1000000000", 1000000000L)
+    assertLongDecimalString("10000000000", 10000000000L)
+    assertLongDecimalString("100000000000", 100000000000L)
+    assertLongDecimalString("1000000000000", 1000000000000L)
+    assertLongDecimalString("10000000000000", 10000000000000L)
+    assertLongDecimalString("100000000000000", 100000000000000L)
+    assertLongDecimalString("1000000000000000", 1000000000000000L)
+    assertLongDecimalString("10000000000000000", 10000000000000000L)
+    assertLongDecimalString("100000000000000000", 100000000000000000L)
+    assertLongDecimalString("1000000000000000000", 1000000000000000000L)
   }
 
-  private fun assertLongDecimalString(value: Long) {
+  private fun assertLongDecimalString(string: String, value: Long) {
     sink.writeDecimalLong(value).writeUtf8("zzz").flush()
-    val expected = "${value}zzz"
+    val expected = "${string}zzz"
     val actual = data.readUtf8()
     assertEquals(expected, actual, "$value expected $expected but was $actual")
   }

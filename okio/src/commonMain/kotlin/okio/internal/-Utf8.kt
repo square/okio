@@ -35,7 +35,7 @@ fun ByteArray.commonToUtf8String(beginIndex: Int = 0, endIndex: Int = size): Str
     chars[length++] = c
   }
 
-  return String(chars, 0, length)
+  return chars.concatToString(0, length)
 }
 
 fun String.commonAsUtf8ToByteArray(): ByteArray {
