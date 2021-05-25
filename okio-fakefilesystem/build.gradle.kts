@@ -30,6 +30,8 @@ kotlin {
   if (kmpNativeEnabled) {
     iosX64()
     iosArm64()
+    tvosX64()
+    tvosArm64()
     watchosArm32()
     watchosArm64()
     watchosX86()

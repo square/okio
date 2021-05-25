@@ -23,6 +23,8 @@ plugins {
  *       |   |   |-- iosArm64
  *       |   |   |-- iosX64
  *       |   |   |-- macosX64
+ *       |   |   |-- tvosArm64
+ *       |   |   |-- tvosX64
  *       |   |   |-- watchosArm32
  *       |   |   |-- watchosArm64
  *       |   |   '-- watchosX86
@@ -67,6 +69,8 @@ kotlin {
   if (kmpNativeEnabled) {
     iosX64()
     iosArm64()
+    tvosX64()
+    tvosArm64()
     watchosArm32()
     watchosArm64()
     watchosX86()
@@ -172,7 +176,9 @@ kotlin {
       val iosX64Main by getting {}
       val iosArm64Main by getting {}
       val macosX64Main by getting {}
-      for (it in listOf(iosX64Main, iosArm64Main, macosX64Main)) {
+      val tvosX64Main by getting {}
+      val tvosArm64Main by getting {}
+      for (it in listOf(iosX64Main, iosArm64Main, macosX64Main, tvosX64Main, tvosArm64Main)) {
         it.dependsOn(sizet64Main)
         it.dependsOn(appleMain)
       }
@@ -180,7 +186,9 @@ kotlin {
       val iosX64Test by getting {}
       val iosArm64Test by getting {}
       val macosX64Test by getting {}
-      for (it in listOf(iosX64Test, iosArm64Test, macosX64Test)) {
+      val tvosX64Test by getting {}
+      val tvosArm64Test by getting {}
+      for (it in listOf(iosX64Test, iosArm64Test, macosX64Test, tvosX64Test, tvosArm64Test)) {
         it.dependsOn(appleTest)
       }
 
