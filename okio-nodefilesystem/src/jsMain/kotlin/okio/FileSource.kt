@@ -15,9 +15,6 @@
  */
 package okio
 
-import org.khronos.webgl.Uint8Array
-import org.khronos.webgl.get
-
 internal class FileSource(
   private val fd: Number
 ) : Source {
@@ -28,12 +25,12 @@ internal class FileSource(
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
 
-    val data = Uint8Array(byteCount.toInt())
+    val data = ByteArray(byteCount.toInt())
     val readByteCount = readSync(
       fd = fd,
       buffer = data,
-      length = byteCount,
-      offset = 0,
+      length = byteCount.toDouble(),
+      offset = 0.0,
       position = position_.toDouble()
     ).toInt()
 
@@ -41,9 +38,7 @@ internal class FileSource(
 
     position_ += readByteCount
 
-    for (i in 0 until readByteCount) {
-      sink.writeByte(data[i].toInt())
-    }
+    sink.write(data, offset = 0, byteCount = readByteCount)
 
     return readByteCount.toLong()
   }

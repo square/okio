@@ -73,18 +73,17 @@
 @file:JsNonModule
 package okio
 
-import org.khronos.webgl.Uint8Array
 import kotlin.js.Date
 
 internal external fun closeSync(fd: Number)
 
 internal external fun mkdirSync(path: String): String?
 
-internal external fun openSync(path: String, flags: String): Number
+internal external fun openSync(path: String, flags: String): Double
 
 internal external fun opendirSync(path: String): Dir
 
-internal external fun readSync(fd: Number, buffer: Uint8Array, offset: Number, length: Number, position: Number?): Number
+internal external fun readSync(fd: Number, buffer: ByteArray, offset: Double, length: Double, position: Double?): Double
 
 internal external fun realpathSync(path: String): dynamic /* String | Buffer */
 
@@ -98,7 +97,11 @@ internal external fun fstatSync(fd: Number): Stats
 
 internal external fun unlinkSync(path: String)
 
-internal external fun writeSync(fd: Number, buffer: Uint8Array): Number
+internal external fun writeSync(fd: Number, buffer: ByteArray): Double
+
+internal external fun writeSync(fd: Number, buffer: ByteArray, offset: Double, length: Double, position: Double): Double
+
+internal external fun ftruncateSync(fd: Number, len: Double)
 
 internal open external class Dir {
   open var path: String
