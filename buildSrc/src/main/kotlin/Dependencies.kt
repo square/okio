@@ -1,5 +1,3 @@
-import java.awt.dnd.DropTarget
-
 // If false - JS targets will not be configured in multiplatform projects.
 val kmpJsEnabled = System.getProperty("kjs", "true").toBoolean()
 

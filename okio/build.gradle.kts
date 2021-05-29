@@ -266,4 +266,4 @@ dependencies {
   signature(deps.animalSniffer.javaSignature)
 }
 
-apply(from = "$rootDir/gradle/gradle-mvn-mpp-push.gradle")
+apply(plugin = "okio-publishing")
