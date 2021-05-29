@@ -510,10 +510,10 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun fileMetadata() {
-    val minTime = clock.now().minFileSystemTime()
+    val minTime = clock.now()
     val path = base / "file-metadata"
     path.writeUtf8("hello, world!")
-    val maxTime = clock.now().maxFileSystemTime()
+    val maxTime = clock.now()
 
     val metadata = fileSystem.metadata(path)
     assertTrue(metadata.isRegularFile)
@@ -526,10 +526,10 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun directoryMetadata() {
-    val minTime = clock.now().minFileSystemTime()
+    val minTime = clock.now()
     val path = base / "directory-metadata"
     fileSystem.createDirectory(path)
-    val maxTime = clock.now().maxFileSystemTime()
+    val maxTime = clock.now()
 
     val metadata = fileSystem.metadata(path)
     assertFalse(metadata.isRegularFile)
@@ -1085,6 +1085,10 @@ abstract class AbstractFileSystemTest(
 
   private fun assertInRange(sampled: Instant?, minTime: Instant, maxTime: Instant) {
     if (sampled == null) return
-    assertTrue("expected $sampled in $minTime..$maxTime") { sampled in minTime..maxTime }
+    val minFsTime = minTime.minFileSystemTime()
+    val maxFsTime = maxTime.maxFileSystemTime()
+    assertTrue("expected $sampled in $minFsTime..$maxFsTime (relaxed from $minTime..$maxTime)") {
+      sampled in minFsTime..maxFsTime
+    }
   }
 }
