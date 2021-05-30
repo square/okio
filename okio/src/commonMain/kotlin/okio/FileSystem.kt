@@ -17,7 +17,7 @@ package okio
 
 /**
  * Read and write access to a hierarchical collection of files, addressed by [paths][Path]. This
- * is a natural interface to the [current computer's local file system][SYSTEM].
+ * is a natural interface to the current computer's local file system.
  *
  * Other implementations are possible:
  *
@@ -30,7 +30,7 @@ package okio
  *  * A ZIP file system could provide access to the contents of a `.zip` file.
  *
  * For improved capability and testability, consider structuring your classes to dependency inject
- * a `FileSystem` rather than using [SYSTEM] directly.
+ * a `FileSystem` rather than using `FileSystem.SYSTEM` directly.
  *
  * Small API
  * ---------
@@ -71,8 +71,8 @@ package okio
  *
  * The `java.io.File` class is Java's original file system API. The `delete` and `renameTo` methods
  * return false if the operation failed. The `list` method returns null if the file isn't a
- * directory or could not be listed. This class always throws `IOExceptions` when operations don't
- * succeed.
+ * directory or could not be listed. This class always throws an [IOException] when an operation
+ * doesn't succeed.
  *
  * The `java.nio.Path` and `java.nio.Files` classes are the entry points of Java's new file system
  * API. Each `Path` instance is scoped to a particular file system, though that is often implicit

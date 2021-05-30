@@ -16,6 +16,9 @@
 package okio
 
 @ExperimentalFileSystem
+internal expect val PLATFORM_TEMPORARY_DIRECTORY: Path
+
+@ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantDelete(path: Path)
 
 @ExperimentalFileSystem

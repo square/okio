@@ -17,16 +17,28 @@ package okio
 
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValuesRef
+import kotlinx.cinterop.toKString
+import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.FILE
 import platform.posix.errno
 import platform.posix.fopen
 import platform.posix.free
+import platform.posix.getenv
 import platform.posix.mkdir
 import platform.posix.realpath
 import platform.posix.remove
 import platform.posix.rename
 import platform.posix.timespec
+
+@ExperimentalFileSystem
+internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
+  get() {
+    val tmpdir = getenv("TMPDIR")
+    if (tmpdir != null) return tmpdir.toKString().toPath()
+
+    return "/tmp".toPath()
+  }
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "/"
 
