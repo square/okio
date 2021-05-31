@@ -39,7 +39,7 @@ plugins {
  *  * `sizet32` for watchOS, including watchOS 64-bit architectures
  *  * `sizet64` for everything else
  *
- * The `nonJvm` and `nonJs` source sets exist and exclude a platform.
+ * The `nonJvm` source set excludes that platform.
  *
  * The `hashFunctions` source set builds on all platforms. It ships as a main source set on non-JVM
  * platforms and as a test source set on the JVM platform.
@@ -100,14 +100,11 @@ kotlin {
         implementation(project(":okio-fakefilesystem"))
       }
     }
-    val nonJsMain by creating {
-    }
     val nonJvmMain by creating {
       kotlin.srcDir("src/hashFunctions/kotlin")
     }
 
     val jvmMain by getting {
-      dependsOn(nonJsMain)
       dependencies {
         api(deps.kotlin.stdLib.jdk8)
         compileOnly(deps.animalSniffer.annotations)
@@ -139,7 +136,6 @@ kotlin {
 
     if (kmpNativeEnabled) {
       val nativeMain by creating {
-        dependsOn(nonJsMain)
         dependsOn(nonJvmMain)
       }
       val nativeTest by creating {

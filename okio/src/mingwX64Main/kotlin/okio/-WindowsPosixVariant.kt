@@ -21,6 +21,7 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
 import platform.posix.EACCES
 import platform.posix.ENOENT
@@ -35,6 +36,7 @@ import platform.posix.errno
 import platform.posix.fread
 import platform.posix.free
 import platform.posix.fwrite
+import platform.posix.getenv
 import platform.posix.mkdir
 import platform.posix.remove
 import platform.posix.rmdir
@@ -48,6 +50,23 @@ import platform.windows.MOVEFILE_REPLACE_EXISTING
 import platform.windows.MoveFileExA
 import platform.windows.OPEN_ALWAYS
 import platform.windows.OPEN_EXISTING
+
+@ExperimentalFileSystem
+internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
+  get() {
+    // Windows' built-in APIs check the TEMP, TMP, and USERPROFILE environment variables in order.
+    // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-gettemppatha?redirectedfrom=MSDN
+    val temp = getenv("TEMP")
+    if (temp != null) return temp.toKString().toPath()
+
+    val tmp = getenv("TMP")
+    if (tmp != null) return tmp.toKString().toPath()
+
+    val userProfile = getenv("USERPROFILE")
+    if (userProfile != null) return userProfile.toKString().toPath()
+
+    return "\\Windows\\TEMP".toPath()
+  }
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "\\"
 

@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.Path.Companion.toPath
 import okio.internal.commonCopy
 import okio.internal.commonCreateDirectories
 import okio.internal.commonDeleteRecursively
@@ -93,9 +94,16 @@ actual abstract class FileSystem {
      * [FileSystem] to make code testable.
      */
     @JvmField
-    val SYSTEM: FileSystem = PLATFORM_FILE_SYSTEM
+    val SYSTEM: FileSystem = run {
+      try {
+        Class.forName("java.nio.file.Files")
+        return@run NioSystemFileSystem()
+      } catch (e: ClassNotFoundException) {
+        return@run JvmSystemFileSystem()
+      }
+    }
 
     @JvmField
-    actual val SYSTEM_TEMPORARY_DIRECTORY: Path = PLATFORM_TEMPORARY_DIRECTORY
+    actual val SYSTEM_TEMPORARY_DIRECTORY: Path = System.getProperty("java.io.tmpdir").toPath()
   }
 }
