@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.6
+
+_2021-06-01_
+
+ * New: `FileHandle` supports random access reads, writes, and resizes on files. Create an instance
+   with `FileSystem.openReadOnly()` or `FileSystem.openReadWrite()`.
+ * New: Remove `Cursor` which is obsoleted by `FileHandle`. (`UnsafeCursor` is still around!)
+ * New: Add support for the new intermediate representation (IR) artifacts in Kotlin/JS. We still
+   support the legacy artifact format.
+ * New: Support tvOS (tvosArm64, tvosX64) in multiplatform.
+ * New: Change `ResourceFileSystem` to omit `.class` files when indexing `.zip` files. We expect
+   this to lower the memory footprint of `ResourceFileSystem`. 
+ * Fix: Don't crash on background thread access in Kotlin/Native. We had to apply `@SharedImmutable`
+   and run our test suite on a background thread.
+
+
 ## Version 3.0.0-alpha.5
 
 _2021-04-27_
