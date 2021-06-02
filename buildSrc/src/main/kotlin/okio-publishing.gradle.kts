@@ -27,34 +27,32 @@ fun DokkaTask.dokkaConfiguration() {
   }
 }
 
-tasks {
-  val dokkaHtml by getting(DokkaTask::class) {
-    dokkaConfiguration()
-    pluginsMapConfiguration.set(
-      mapOf(
-        "org.jetbrains.dokka.base.DokkaBase" to """
-        {
-          "customStyleSheets": [
-            "${rootRelativePath("docs/css/dokka-logo.css")}"
-          ],
-          "customAssets" : [
-            "${rootRelativePath("docs/images/logo-square.png")}"
-          ]
-        }
-        """.trimIndent()
-      )
+val dokkaHtml by tasks.getting(DokkaTask::class) {
+  dokkaConfiguration()
+  pluginsMapConfiguration.set(
+    mapOf(
+      "org.jetbrains.dokka.base.DokkaBase" to """
+      {
+        "customStyleSheets": [
+          "${rootRelativePath("docs/css/dokka-logo.css")}"
+        ],
+        "customAssets" : [
+          "${rootRelativePath("docs/images/logo-square.png")}"
+        ]
+      }
+      """.trimIndent()
     )
-  }
+  )
+}
 
-  val dokkaGfm by getting(DokkaTask::class) {
-    dokkaConfiguration()
-  }
+val dokkaGfm by tasks.getting(DokkaTask::class) {
+  dokkaConfiguration()
+}
 
-  val javadocsJar by creating(Jar::class) {
-    dependsOn(dokkaGfm)
-    classifier = "javadoc"
-    from(dokkaGfm.outputDirectory)
-  }
+val javadocsJar by tasks.creating(Jar::class) {
+  dependsOn(dokkaGfm)
+  classifier = "javadoc"
+  from(dokkaGfm.outputDirectory)
 }
 
 fun rootRelativePath(path: String): String {
@@ -98,7 +96,7 @@ publishing.apply {
     all {
       if (this !is MavenPublication) return@all
 
-      artifact("javadocsJar")
+      artifact(javadocsJar)
       pom {
         this.description.set("A modern I/O API for Java")
         this.name.set(POM_NAME)
