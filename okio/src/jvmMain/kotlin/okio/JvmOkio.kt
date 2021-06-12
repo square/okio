@@ -20,6 +20,7 @@
 
 package okio
 
+import okio.internal.ResourceFileSystem
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.io.File
 import java.io.FileNotFoundException
@@ -228,7 +229,7 @@ fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(t
 
 @Throws(IOException::class)
 @ExperimentalFileSystem
-fun FileSystem.openZip(zipPath: okio.Path): FileSystem = okio.internal.openZip(zipPath, this)
+fun FileSystem.openZip(zipPath: Path): FileSystem = okio.internal.openZip(zipPath, this)
 
 @ExperimentalFileSystem
 fun ClassLoader.asResourceFileSystem(): FileSystem = ResourceFileSystem(this)

@@ -13,10 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio
+package okio.internal
 
+import okio.ExperimentalFileSystem
+import okio.FileHandle
+import okio.FileMetadata
+import okio.FileNotFoundException
+import okio.FileSystem
+import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
+import okio.Sink
+import okio.Source
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
@@ -25,15 +33,13 @@ import java.util.concurrent.ConcurrentHashMap
  * A file system exposing Java classpath resources. It is equivalent to the files returned by
  * [ClassLoader.getResource].
  *
- * Both metadata and file listings are best effort, and will work better for local project paths.
- * The file system does not handle merging of multiple paths from difference resources like
+ * This file system does not implement merging of multiple paths from difference resources like
  * overlapping `.jar` files.
  *
- * ResourceFileSystem excludes `.class` files from calls to [list], but can read them in calls to
- * [read] and [source].
+ * ResourceFileSystem excludes `.class` files.
  */
 @ExperimentalFileSystem
-class ResourceFileSystem internal constructor(
+internal class ResourceFileSystem internal constructor(
   private val classLoader: ClassLoader
 ) : FileSystem() {
   private var jarCache = ConcurrentHashMap<Path, FileSystem>()
@@ -105,7 +111,7 @@ class ResourceFileSystem internal constructor(
     val existing = jarCache[this]
     if (existing != null) return existing
 
-    val created = okio.internal.openZip(
+    val created = openZip(
       zipPath = this,
       fileSystem = SYSTEM,
       predicate = { zipEntry -> !zipEntry.canonicalPath.name.endsWith(".class", ignoreCase = true) }
@@ -114,7 +120,7 @@ class ResourceFileSystem internal constructor(
     // Recover from a race if two threads open the same zip at the same time.
     val replaced = jarCache.putIfAbsent(this, created) ?: return created
 
-    // TODO: close created.
+    // TODO: close created?
     return replaced
   }
 
@@ -130,14 +136,4 @@ class ResourceFileSystem internal constructor(
     throw IOException("$this is read-only")
 
   override fun delete(path: Path): Unit = throw IOException("$this is read-only")
-
-  companion object {
-    /**
-     * A flat view of a presumed typical non-container classpath.
-     *
-     * More involved classloader scenarios like in a container should be handled separately.
-     */
-    val SYSTEM_RESOURCES: FileSystem =
-      ResourceFileSystem(ResourceFileSystem::class.java.classLoader)
-  }
 }
