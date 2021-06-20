@@ -167,8 +167,42 @@ abstract class FileHandle(
     require(source is FileHandleSource && source.fileHandle === this) {
       "source was not created by this FileHandle"
     }
+    check(!source.closed) { "closed" }
 
     return source.position - bufferSize
+  }
+
+  /**
+   * Change the position of [source] in the file to [position]. The argument [source] must be either
+   * a source produced by this file handle, or a [BufferedSource] that directly wraps such a source.
+   * If the parameter is a [BufferedSource], it will skip or clear buffered bytes.
+   */
+  @Throws(IOException::class)
+  fun reposition(source: Source, position: Long) {
+    if (source is RealBufferedSource) {
+      val fileHandleSource = source.source
+      require(fileHandleSource is FileHandleSource && fileHandleSource.fileHandle === this) {
+        "source was not created by this FileHandle"
+      }
+      check(!fileHandleSource.closed) { "closed" }
+
+      val bufferSize = source.buffer.size
+      val toSkip = position - (fileHandleSource.position - bufferSize)
+      if (toSkip in 0L until bufferSize) {
+        // The new position requires only a buffer change.
+        source.skip(toSkip)
+      } else {
+        // The new position doesn't share data with the current buffer.
+        source.buffer.clear()
+        fileHandleSource.position = position
+      }
+    } else {
+      require(source is FileHandleSource && source.fileHandle === this) {
+        "source was not created by this FileHandle"
+      }
+      check(!source.closed) { "closed" }
+      source.position = position
+    }
   }
 
   /**
@@ -212,8 +246,34 @@ abstract class FileHandle(
     require(sink is FileHandleSink && sink.fileHandle === this) {
       "sink was not created by this FileHandle"
     }
+    check(!sink.closed) { "closed" }
 
     return sink.position + bufferSize
+  }
+
+  /**
+   * Change the position of [sink] in the file to [position]. The argument [sink] must be either a
+   * sink produced by this file handle, or a [BufferedSink] that directly wraps such a sink. If the
+   * parameter is a [BufferedSink], it emits for buffered bytes.
+   */
+  @Throws(IOException::class)
+  fun reposition(sink: Sink, position: Long) {
+    if (sink is RealBufferedSink) {
+      val fileHandleSink = sink.sink
+      require(fileHandleSink is FileHandleSink && fileHandleSink.fileHandle === this) {
+        "sink was not created by this FileHandle"
+      }
+      check(!fileHandleSink.closed) { "closed" }
+
+      sink.emit()
+      fileHandleSink.position = position
+    } else {
+      require(sink is FileHandleSink && sink.fileHandle === this) {
+        "sink was not created by this FileHandle"
+      }
+      check(!sink.closed) { "closed" }
+      sink.position = position
+    }
   }
 
   @Throws(IOException::class)
