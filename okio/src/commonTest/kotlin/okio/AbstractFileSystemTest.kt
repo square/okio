@@ -835,6 +835,72 @@ abstract class AbstractFileSystemTest(
     }
   }
 
+  @Test fun fileHandleSinkReposition() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-sink-reposition"
+
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.sink().use { sink ->
+        sink.write(Buffer().writeUtf8("abcdefghij"), 10)
+        handle.reposition(sink, 5)
+        assertEquals(5, handle.position(sink))
+        sink.write(Buffer().writeUtf8("KLM"), 3)
+        assertEquals(8, handle.position(sink))
+
+        handle.reposition(sink, 200)
+        sink.write(Buffer().writeUtf8("ABCDEFGHIJ"), 10)
+        handle.reposition(sink, 205)
+        assertEquals(205, handle.position(sink))
+        sink.write(Buffer().writeUtf8("klm"), 3)
+        assertEquals(208, handle.position(sink))
+      }
+
+      Buffer().also {
+        handle.read(fileOffset = 0, sink = it, byteCount = 10)
+        assertEquals("abcdeKLMij", it.readUtf8())
+      }
+
+      Buffer().also {
+        handle.read(fileOffset = 200, sink = it, byteCount = 15)
+        assertEquals("ABCDEklmIJ", it.readUtf8())
+      }
+    }
+  }
+
+  @Test fun fileHandleBufferedSinkReposition() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-buffered-sink-reposition"
+
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.sink().buffer().use { sink ->
+        sink.write(Buffer().writeUtf8("abcdefghij"), 10)
+        handle.reposition(sink, 5)
+        assertEquals(5, handle.position(sink))
+        sink.write(Buffer().writeUtf8("KLM"), 3)
+        assertEquals(8, handle.position(sink))
+
+        handle.reposition(sink, 200)
+        sink.write(Buffer().writeUtf8("ABCDEFGHIJ"), 10)
+        handle.reposition(sink, 205)
+        assertEquals(205, handle.position(sink))
+        sink.write(Buffer().writeUtf8("klm"), 3)
+        assertEquals(208, handle.position(sink))
+      }
+
+      Buffer().also {
+        handle.read(fileOffset = 0, sink = it, byteCount = 10)
+        assertEquals("abcdeKLMij", it.readUtf8())
+      }
+
+      Buffer().also {
+        handle.read(fileOffset = 200, sink = it, byteCount = 15)
+        assertEquals("ABCDEklmIJ", it.readUtf8())
+      }
+    }
+  }
+
   @Test fun fileHandleSourceHappyPath() {
     if (!supportsFileHandle()) return
 
@@ -864,6 +930,98 @@ abstract class AbstractFileSystemTest(
       handle.source(fileOffset = 16L).use { source ->
         assertEquals(16L, handle.position(source))
         assertEquals(-1L, source.read(buffer, 4L))
+        assertEquals("", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+      }
+    }
+  }
+
+  @Test fun fileHandleSourceReposition() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source-reposition"
+    fileSystem.write(path) {
+      writeUtf8("abcdefghijklmnop")
+    }
+
+    fileSystem.openReadOnly(path).use { handle ->
+      assertEquals(16L, handle.size())
+      val buffer = Buffer()
+
+      handle.source().use { source ->
+        handle.reposition(source, 12L)
+        assertEquals(12L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals("mnop", buffer.readUtf8())
+        assertEquals(-1L, source.read(buffer, 4L))
+        assertEquals("", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+
+        handle.reposition(source, 0L)
+        assertEquals(0L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals("abcd", buffer.readUtf8())
+        assertEquals(4L, handle.position(source))
+
+        handle.reposition(source, 8L)
+        assertEquals(8L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals("ijkl", buffer.readUtf8())
+        assertEquals(12L, handle.position(source))
+
+        handle.reposition(source, 16L)
+        assertEquals(16L, handle.position(source))
+        assertEquals(-1L, source.read(buffer, 4L))
+        assertEquals("", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+      }
+    }
+  }
+
+  @Test fun fileHandleBufferedSourceReposition() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-buffered-source-reposition"
+    fileSystem.write(path) {
+      writeUtf8("abcdefghijklmnop")
+    }
+
+    fileSystem.openReadOnly(path).use { handle ->
+      assertEquals(16L, handle.size())
+      val buffer = Buffer()
+
+      handle.source().buffer().use { source ->
+        handle.reposition(source, 12L)
+        assertEquals(0L, source.buffer.size)
+        assertEquals(12L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals(0L, source.buffer.size)
+        assertEquals("mnop", buffer.readUtf8())
+        assertEquals(-1L, source.read(buffer, 4L))
+        assertEquals("", buffer.readUtf8())
+        assertEquals(16L, handle.position(source))
+
+        handle.reposition(source, 0L)
+        assertEquals(0L, source.buffer.size)
+        assertEquals(0L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals(12L, source.buffer.size) // Buffered bytes accumulated.
+        assertEquals("abcd", buffer.readUtf8())
+        assertEquals(4L, handle.position(source))
+
+        handle.reposition(source, 8L)
+        assertEquals(8L, source.buffer.size) // Buffered bytes preserved.
+        assertEquals(8L, handle.position(source))
+        assertEquals(4L, source.read(buffer, 4L))
+        assertEquals(4L, source.buffer.size)
+        assertEquals("ijkl", buffer.readUtf8())
+        assertEquals(12L, handle.position(source))
+
+        handle.reposition(source, 16L)
+        assertEquals(0L, source.buffer.size)
+        assertEquals(16L, handle.position(source))
+        assertEquals(-1L, source.read(buffer, 4L))
+        assertEquals(0L, source.buffer.size)
         assertEquals("", buffer.readUtf8())
         assertEquals(16L, handle.position(source))
       }
@@ -1015,6 +1173,90 @@ abstract class AbstractFileSystemTest(
     }
 
     assertEquals("", path.readUtf8())
+  }
+
+  @Test fun sinkPositionFailsAfterClose() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "sink-position-fails-after-close"
+
+    fileSystem.openReadWrite(path).use { handle ->
+      val sink = handle.sink()
+      sink.close()
+      try {
+        handle.position(sink)
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+      try {
+        handle.position(sink.buffer())
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+    }
+  }
+
+  @Test fun sinkRepositionFailsAfterClose() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "sink-reposition-fails-after-close"
+
+    fileSystem.openReadWrite(path).use { handle ->
+      val sink = handle.sink()
+      sink.close()
+      try {
+        handle.reposition(sink, 1L)
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+      try {
+        handle.reposition(sink.buffer(), 1L)
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+    }
+  }
+
+  @Test fun sourcePositionFailsAfterClose() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "source-position-fails-after-close"
+
+    fileSystem.openReadWrite(path).use { handle ->
+      val source = handle.source()
+      source.close()
+      try {
+        handle.position(source)
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+      try {
+        handle.position(source.buffer())
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+    }
+  }
+
+  @Test fun sourceRepositionFailsAfterClose() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "source-reposition-fails-after-close"
+
+    fileSystem.openReadWrite(path).use { handle ->
+      val source = handle.source()
+      source.close()
+      try {
+        handle.reposition(source, 1L)
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+      try {
+        handle.reposition(source.buffer(), 1L)
+        fail()
+      } catch (_: IllegalStateException) {
+      }
+    }
   }
 
   private fun assertClosedFailure(block: () -> Unit) {
