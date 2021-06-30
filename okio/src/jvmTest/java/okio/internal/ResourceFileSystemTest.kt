@@ -21,15 +21,19 @@ import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
+import okio.ZipBuilder
 import okio.ZipFileSystem
+import okio.randomToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.net.URLClassLoader
 import kotlin.reflect.KClass
 import kotlin.test.fail
 
 @ExperimentalFileSystem
 class ResourceFileSystemTest {
   private val fileSystem = FileSystem.RESOURCES as ResourceFileSystem
+  private var base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)
 
   @Test
   fun testResourceA() {
@@ -59,6 +63,33 @@ class ResourceFileSystemTest {
     val content = fileSystem.read(path) { readUtf8() }
 
     assertThat(content).isEqualTo("b/b")
+  }
+
+  @Test
+  fun testSingleArchive() {
+    val zipPath = ZipBuilder(base)
+      .addEntry("hello.txt", "Hello World")
+      .addEntry("directory/subdirectory/child.txt", "Another file!")
+      .build()
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(arrayOf(zipPath.toFile().toURI().toURL()), null)
+    )
+
+    assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
+      .isEqualTo("Hello World")
+
+    assertThat(resourceFileSystem.read("directory/subdirectory/child.txt".toPath()) { readUtf8() })
+      .isEqualTo("Another file!")
+
+    assertThat(resourceFileSystem.list("/".toPath()))
+      .hasSameElementsAs(listOf("/hello.txt".toPath(), "/directory".toPath()))
+    assertThat(resourceFileSystem.list("/directory".toPath()))
+      .containsExactly("/directory/subdirectory".toPath())
+    assertThat(resourceFileSystem.list("/directory/subdirectory".toPath()))
+      .containsExactly("/directory/subdirectory/child.txt".toPath())
+
+    val metadata = resourceFileSystem.metadata(".".toPath())
+    assertThat(metadata.isDirectory).isTrue()
   }
 
   @Test
