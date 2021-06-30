@@ -5,7 +5,7 @@ val kmpJsEnabled = System.getProperty("kjs", "true").toBoolean()
 val kmpNativeEnabled = System.getProperty("knative", "true").toBoolean()
 
 object versions {
-  val kotlin = "1.4.20"
+  val kotlin = "1.5.20"
   val jmhPlugin = "0.5.0"
   val animalSnifferPlugin = "1.5.0"
   val dokka = "1.4.20"
@@ -46,7 +46,7 @@ object deps {
       val js = "org.jetbrains.kotlin:kotlin-test-js"
     }
 
-    val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.1.1"
+    val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.2.1"
   }
 
   object jmh {
