@@ -21,15 +21,18 @@ import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
-import okio.ZipFileSystem
+import okio.ZipBuilder
+import okio.randomToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.net.URLClassLoader
 import kotlin.reflect.KClass
 import kotlin.test.fail
 
 @ExperimentalFileSystem
 class ResourceFileSystemTest {
   private val fileSystem = FileSystem.RESOURCES as ResourceFileSystem
+  private var base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)
 
   @Test
   fun testResourceA() {
@@ -62,6 +65,162 @@ class ResourceFileSystemTest {
   }
 
   @Test
+  fun testSingleArchive() {
+    val zipPath = ZipBuilder(base)
+      .addEntry("hello.txt", "Hello World")
+      .addEntry("directory/subdirectory/child.txt", "Another file!")
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .build()
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(arrayOf(zipPath.toFile().toURI().toURL()), null)
+    )
+
+    assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
+      .isEqualTo("Hello World")
+
+    assertThat(resourceFileSystem.read("directory/subdirectory/child.txt".toPath()) { readUtf8() })
+      .isEqualTo("Another file!")
+
+    assertThat(resourceFileSystem.list("/".toPath()))
+      .hasSameElementsAs(listOf("/META-INF".toPath(), "/hello.txt".toPath(), "/directory".toPath()))
+    assertThat(resourceFileSystem.list("/directory".toPath()))
+      .containsExactly("/directory/subdirectory".toPath())
+    assertThat(resourceFileSystem.list("/directory/subdirectory".toPath()))
+      .containsExactly("/directory/subdirectory/child.txt".toPath())
+
+    val metadata = resourceFileSystem.metadata(".".toPath())
+    assertThat(metadata.isDirectory).isTrue()
+  }
+
+  @Test
+  fun testDirectoryAndJarOverlap() {
+    val filesAPath = base / "filesA"
+    FileSystem.SYSTEM.createDirectories(filesAPath / "colors")
+    FileSystem.SYSTEM.write(filesAPath / "colors" / "red.txt") { writeUtf8("Apples are red") }
+    FileSystem.SYSTEM.write(filesAPath / "colors" / "green.txt") { writeUtf8("Grass is green") }
+    val zipBPath = ZipBuilder(base)
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .addEntry("colors/blue.txt", "The sky is blue")
+      .addEntry("colors/green.txt", "Limes are green")
+      .build()
+
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(
+        arrayOf(
+          filesAPath.toFile().toURI().toURL(),
+          zipBPath.toFile().toURI().toURL(),
+        ),
+        null
+      )
+    )
+
+    assertThat(resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() })
+      .isEqualTo("Apples are red")
+    assertThat(resourceFileSystem.read("/colors/green.txt".toPath()) { readUtf8() })
+      .isEqualTo("Grass is green")
+    assertThat(resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() })
+      .isEqualTo("The sky is blue")
+
+    assertThat(resourceFileSystem.list("/".toPath()))
+      .hasSameElementsAs(listOf("/META-INF".toPath(), "/colors".toPath()))
+    assertThat(resourceFileSystem.list("/colors".toPath())).hasSameElementsAs(
+      listOf(
+        "/colors/red.txt".toPath(),
+        "/colors/green.txt".toPath(),
+        "/colors/blue.txt".toPath()
+      )
+    )
+
+    assertThat(resourceFileSystem.metadata("/".toPath()).isDirectory).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors".toPath()).isDirectory).isTrue()
+  }
+
+  @Test
+  fun testDirectoryAndDirectoryOverlap() {
+    val filesAPath = base / "filesA"
+    FileSystem.SYSTEM.createDirectories(filesAPath / "colors")
+    FileSystem.SYSTEM.write(filesAPath / "colors" / "red.txt") { writeUtf8("Apples are red") }
+    FileSystem.SYSTEM.write(filesAPath / "colors" / "green.txt") { writeUtf8("Grass is green") }
+    val filesBPath = base / "filesB"
+    FileSystem.SYSTEM.createDirectories(filesBPath / "colors")
+    FileSystem.SYSTEM.write(filesBPath / "colors" / "blue.txt") { writeUtf8("The sky is blue") }
+    FileSystem.SYSTEM.write(filesBPath / "colors" / "green.txt") { writeUtf8("Limes are green") }
+
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(
+        arrayOf(
+          filesAPath.toFile().toURI().toURL(),
+          filesBPath.toFile().toURI().toURL(),
+        ),
+        null
+      )
+    )
+
+    assertThat(resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() })
+      .isEqualTo("Apples are red")
+    assertThat(resourceFileSystem.read("/colors/green.txt".toPath()) { readUtf8() })
+      .isEqualTo("Grass is green")
+    assertThat(resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() })
+      .isEqualTo("The sky is blue")
+
+    assertThat(resourceFileSystem.list("/".toPath()))
+      .hasSameElementsAs(listOf("/colors".toPath()))
+    assertThat(resourceFileSystem.list("/colors".toPath())).hasSameElementsAs(
+      listOf(
+        "/colors/red.txt".toPath(),
+        "/colors/green.txt".toPath(),
+        "/colors/blue.txt".toPath()
+      )
+    )
+
+    assertThat(resourceFileSystem.metadata("/".toPath()).isDirectory).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors".toPath()).isDirectory).isTrue()
+  }
+
+  @Test
+  fun testJarAndJarOverlap() {
+    val zipAPath = ZipBuilder(base)
+      .addEntry("colors/red.txt", "Apples are red")
+      .addEntry("colors/green.txt", "Grass is green")
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .build()
+    val zipBPath = ZipBuilder(base)
+      .addEntry("colors/blue.txt", "The sky is blue")
+      .addEntry("colors/green.txt", "Limes are green")
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .build()
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(
+        arrayOf(
+          zipAPath.toFile().toURI().toURL(),
+          zipBPath.toFile().toURI().toURL(),
+        ),
+        null
+      )
+    )
+
+    assertThat(resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() })
+      .isEqualTo("Apples are red")
+    assertThat(resourceFileSystem.read("/colors/green.txt".toPath()) { readUtf8() })
+      .isEqualTo("Grass is green")
+    assertThat(resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() })
+      .isEqualTo("The sky is blue")
+
+    assertThat(resourceFileSystem.list("/".toPath()))
+      .hasSameElementsAs(listOf("/META-INF".toPath(), "/colors".toPath()))
+    assertThat(resourceFileSystem.list("/colors".toPath())).hasSameElementsAs(
+      listOf(
+        "/colors/red.txt".toPath(),
+        "/colors/green.txt".toPath(),
+        "/colors/blue.txt".toPath()
+      )
+    )
+
+    assertThat(resourceFileSystem.metadata("/".toPath()).isDirectory).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors".toPath()).isDirectory).isTrue()
+  }
+
+  @Test
   fun testResourceMissing() {
     val path = "okio/resourcefilesystem/b/c.txt".toPath()
 
@@ -85,31 +244,6 @@ class ResourceFileSystemTest {
     assertThat(metadata.createdAtMillis).isGreaterThan(1L)
 
     assertThat(fileSystem.list(path).map { it.name }).containsExactly("b.txt")
-  }
-
-  @Test
-  fun testSystemPath() {
-    val pwd = FileSystem.SYSTEM.canonicalize(".".toPath())
-    val slash = Path.DIRECTORY_SEPARATOR
-
-    val (aTxtFs, aTxtPath) = fileSystem.toSystemPath("okio/resourcefilesystem/a.txt".toPath())!!
-    assertThat(aTxtFs).isSameAs(FileSystem.SYSTEM)
-    assertThat(aTxtPath.toString()).startsWith(pwd.toString())
-    assertThat(aTxtPath.toString()).endsWith("resourcefilesystem${slash}a.txt")
-
-    val (bDirFs, bDirPath) = fileSystem.toSystemPath("okio/resourcefilesystem/b/".toPath())!!
-    assertThat(bDirFs).isSameAs(FileSystem.SYSTEM)
-    assertThat(bDirPath.toString()).startsWith(pwd.toString())
-    assertThat(bDirPath.toString()).endsWith("resourcefilesystem${slash}b")
-
-    val (bTxtFs, bTxtPath) = fileSystem.toSystemPath("okio/resourcefilesystem/b/b.txt".toPath())!!
-    assertThat(bTxtFs).isSameAs(FileSystem.SYSTEM)
-    assertThat(bTxtPath.toString()).startsWith(pwd.toString())
-    assertThat(bTxtPath.toString()).endsWith("resourcefilesystem${slash}b${slash}b.txt")
-
-    val (junitJar, licensePath) = fileSystem.toSystemPath("LICENSE-junit.txt".toPath())!!
-    assertThat(junitJar).isInstanceOf(ZipFileSystem::class.java)
-    assertThat(licensePath.toString()).matches("/LICENSE-junit.txt")
   }
 
   @Test
