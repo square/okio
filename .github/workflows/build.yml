@@ -149,8 +149,11 @@ jobs:
 
       - name: Build mkdocs
         run: |
-          pip3 install mkdocs-macros-plugin
+          pip3 install mkdocs-material mkdocs-macros-plugin
           mkdocs build
+
+      - name: Restore 1.x docs
+        run: .buildscript/restore_v1_docs.sh
 
       - name: Deploy docs
         if: success()
