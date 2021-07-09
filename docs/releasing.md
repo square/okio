@@ -70,8 +70,8 @@ Cutting a Release
 3. Set environment variables with your [Sonatype credentials][sonatype_issues].
 
     ```
-    export SONATYPE_NEXUS_USERNAME=johnbarber
-    export SONATYPE_NEXUS_PASSWORD=`pbpaste`
+    export ORG_GRADLE_PROJECT_mavenCentralRepositoryUsername=johnbarber
+    export ORG_GRADLE_PROJECT_mavenCentralRepositoryPassword=`pbpaste`
     ```
 
 4. Update, build, and upload:

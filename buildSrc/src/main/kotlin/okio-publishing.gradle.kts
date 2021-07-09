@@ -78,20 +78,7 @@ val SNAPSHOT_REPOSITORY_URL: String
   get() = findProperty("SNAPSHOT_REPOSITORY_URL") as String?
     ?: "https://oss.sonatype.org/content/repositories/snapshots/"
 
-val SONATYPE_NEXUS_USERNAME: String
-  get() = findProperty("SONATYPE_NEXUS_USERNAME") as String? ?: ""
-
-val SONATYPE_NEXUS_PASSWORD: String
-  get() = findProperty("SONATYPE_NEXUS_PASSWORD") as String? ?: ""
-
-val emptySourcesJar by tasks.creating(Jar::class) {
-  classifier = "sources"
-}
-
-val publishing = extensions.getByType<PublishingExtension>()
-val signing = extensions.getByType<SigningExtension>()
-
-publishing.apply {
+extensions.getByType<PublishingExtension>().apply {
   publications {
     all {
       if (this !is MavenPublication) return@all
@@ -133,20 +120,12 @@ publishing.apply {
     }
   }
 
-  afterEvaluate {
-    val kotlinMultiplatform by publications.getting {
-      // Source jars are only created for platforms, not the common artifact.
-      if (this !is MavenPublication) return@getting
-      artifact(emptySourcesJar)
-    }
-  }
-
   repositories {
     maven {
       setUrl(if (isReleaseBuild()) RELEASE_REPOSITORY_URL else SNAPSHOT_REPOSITORY_URL)
       credentials {
-        username = SONATYPE_NEXUS_USERNAME
-        password = SONATYPE_NEXUS_PASSWORD
+        username = findProperty("mavenCentralRepositoryUsername") as String? ?: ""
+        password = findProperty("mavenCentralRepositoryPassword") as String? ?: ""
       }
     }
     maven {
@@ -156,7 +135,11 @@ publishing.apply {
   }
 }
 
-signing.apply {
-  setRequired { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
-  sign(publishing.publications)
+extensions.getByType<SigningExtension>().apply {
+  val signingKey = findProperty("signingKey") as String? ?: ""
+  if (signingKey.isNotEmpty()) {
+    useInMemoryPgpKeys(signingKey, "")
+  }
+  setRequired { isReleaseBuild() }
+  sign(extensions.getByType<PublishingExtension>().publications)
 }
