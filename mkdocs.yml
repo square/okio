@@ -1,4 +1,5 @@
 site_name: Okio
+site_url: https://square.github.io/okio
 repo_name: Okio
 repo_url: https://github.com/square/okio
 site_description: "A modern I/O library for Android, Kotlin, and Java."
@@ -50,7 +51,7 @@ markdown_extensions:
 nav:
   - 'Overview': index.md
   - 'Stack Overflow ⏏': https://stackoverflow.com/questions/tagged/okio?sort=active
-  - '2.x API': 2.x/okio/okio/index.html
+  - '2.x API': 2.x/okio/okio/index.md
   - '1.x API ⏏': https://square.github.io/okio/1.x/okio/
   - 'Change Log': changelog.md
   - 'Multiplatform': multiplatform.md
