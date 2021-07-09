@@ -1,62 +1,14 @@
 // Working in this file? If IntelliJ doesn't syntax-highlight it properly you can cut&paste it into
 // one of the build.gradle.kts files that consume it, make edits there, and then move it back.
 
-import org.jetbrains.dokka.gradle.DokkaTask
-
 apply(plugin = "maven-publish")
 apply(plugin = "signing")
-apply(plugin = "org.jetbrains.dokka")
-
-fun DokkaTask.dokkaConfiguration() {
-  outputDirectory.set(file("${rootDir}/docs/2.x"))
-
-  this.dokkaSourceSets {
-    configureEach {
-      reportUndocumented.set(false)
-      skipDeprecated.set(true)
-      jdkVersion.set(8)
-      perPackageOption {
-        matchingRegex.set("com\\.squareup.okio.*")
-        suppress.set(true)
-      }
-      perPackageOption {
-        matchingRegex.set("okio\\.internal.*")
-        suppress.set(true)
-      }
-    }
-  }
-}
-
-val dokkaHtml by tasks.getting(DokkaTask::class) {
-  dokkaConfiguration()
-  pluginsMapConfiguration.set(
-    mapOf(
-      "org.jetbrains.dokka.base.DokkaBase" to """
-      {
-        "customStyleSheets": [
-          "${rootRelativePath("docs/css/dokka-logo.css")}"
-        ],
-        "customAssets" : [
-          "${rootRelativePath("docs/images/logo-square.png")}"
-        ]
-      }
-      """.trimIndent()
-    )
-  )
-}
-
-val dokkaGfm by tasks.getting(DokkaTask::class) {
-  dokkaConfiguration()
-}
 
 val javadocsJar by tasks.creating(Jar::class) {
+  val dokkaGfm by tasks.getting {}
   dependsOn(dokkaGfm)
   classifier = "javadoc"
-  from(dokkaGfm.outputDirectory)
-}
-
-fun rootRelativePath(path: String): String {
-  return rootProject.file(path).toString().replace('\\', '/')
+  from("${buildDir}/dokka/gfm")
 }
 
 fun isReleaseBuild(): Boolean = VERSION_NAME?.contains("SNAPSHOT") == false

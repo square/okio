@@ -1,6 +1,3 @@
 #logo {
-    background-image: url(../images/logo-square.png);
-    background-size: auto;
-    padding-top: unset;
-    height: 60px;
+  display: none;
 }

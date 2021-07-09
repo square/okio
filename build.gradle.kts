@@ -5,6 +5,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -79,6 +80,41 @@ subprojects {
       events(STARTED, PASSED, SKIPPED, FAILED)
       exceptionFormat = TestExceptionFormat.FULL
       showStandardStreams = false
+    }
+  }
+
+  // This can't be in buildSrc due to a Dokka issue. https://github.com/Kotlin/dokka/issues/1463
+  tasks.withType<DokkaTask>().configureEach {
+    dokkaSourceSets.configureEach {
+      reportUndocumented.set(false)
+      skipDeprecated.set(true)
+      jdkVersion.set(8)
+      perPackageOption {
+        matchingRegex.set("com\\.squareup.okio.*")
+        suppress.set(true)
+      }
+      perPackageOption {
+        matchingRegex.set("okio\\.internal.*")
+        suppress.set(true)
+      }
+    }
+
+    if (name == "dokkaHtml") {
+      outputDirectory.set(file("${rootDir}/docs/2.x"))
+      pluginsMapConfiguration.set(
+        mapOf(
+          "org.jetbrains.dokka.base.DokkaBase" to """
+          {
+            "customStyleSheets": [
+              "${rootDir.toString().replace('\\', '/')}/docs/css/dokka-logo.css"
+            ],
+            "customAssets" : [
+              "${rootDir.toString().replace('\\', '/')}/docs/images/icon-square.png"
+            ]
+          }
+          """.trimIndent()
+        )
+      )
     }
   }
 }
