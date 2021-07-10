@@ -7,6 +7,7 @@ import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 plugins {
   kotlin("multiplatform")
   id("ru.vyarus.animalsniffer")
+  id("org.jetbrains.dokka")
 }
 
 /*
