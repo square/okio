@@ -1,0 +1,551 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ForwardingFileSystem</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+    <link href="../../../styles/style.css" rel="Stylesheet">
+    <link href="../../../styles/logo-styles.css" rel="Stylesheet">
+    <link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+    <link href="../../../styles/main.css" rel="Stylesheet">
+    <script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+    <script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+    <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+    <script type="text/javascript" src="../../../scripts/main.js" async="async"></script>
+    <link href="../../../images/icon-square.png">
+    <link href="../../../styles/dokka-logo.css" rel="Stylesheet">
+  </head>
+  <body>
+    <div id="container">
+      <div id="leftColumn">
+        <div id="logo"></div>
+        <div id="paneSearch"></div>
+        <div id="sideMenu"></div>
+      </div>
+      <div id="main">
+        <div id="leftToggler"><span class="icon-toggler"></span></div>
+        <script type="text/javascript" src="../../../scripts/pages.js"></script>
+        <script type="text/javascript" src="../../../scripts/main.js"></script>
+        <div class="main-content" id="content" pageIds="okio/ForwardingFileSystem///PointingToDeclaration//-716965300">
+          <div class="navigation-wrapper" id="navigation-wrapper">
+            <div class="breadcrumbs"><a href="../../index.html">okio</a>/<a href="../index.html">okio</a>/<a href="index.html">ForwardingFileSystem</a></div>
+            <div class="pull-right d-flex">
+              <div class="filter-section" id="filter-section"><button class="platform-tag platform-selector common-like" data-active="" data-filter=":okio:dokkaHtml/commonMain">common</button></div>
+              <div id="searchBar"></div>
+            </div>
+          </div>
+          <div class="cover ">
+            <h1 class="cover"><span>Forwarding</span><wbr></wbr><span>File</span><wbr></wbr><span>System</span></h1>
+            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">abstract class <a href="index.html">ForwardingFileSystem</a>(delegate: <a href="../-file-system/index.html">FileSystem</a>) : <a href="../-file-system/index.html">FileSystem</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">A <a href="../-file-system/index.html">FileSystem</a> that forwards calls to another, intended for subclassing.</p><h3 class=""> Fault Injection</h3><p class="paragraph">You can use this to deterministically trigger file system failures in tests. This is useful to confirm that your program behaves correctly even if its file system operations fail. For example, this subclass fails every access of files named <code>unlucky.txt</code>:</p><div class="sample-container"><code class="" theme="idea"><pre>val faultyFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {<br>  override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {<br>    if (path.name == &quot;unlucky.txt&quot;) throw IOException(&quot;synthetic failure!&quot;)<br>    return path<br>  }<br>}</pre></code></div><p class="paragraph">You can fail specific operations by overriding them directly:</p><div class="sample-container"><code class="" theme="idea"><pre>val faultyFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {<br>  override fun delete(path: Path) {<br>    throw IOException(&quot;synthetic failure!&quot;)<br>  }<br>}</pre></code></div><h3 class=""> Observability</h3><p class="paragraph">You can extend this to verify which files your program accesses. This is a testing file system that records accesses as they happen:</p><div class="sample-container"><code class="" theme="idea"><pre>class LoggingFileSystem : ForwardingFileSystem(FileSystem.SYSTEM) {<br>  val log = mutableListOf&lt;String&gt;()<br><br>  override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {<br>    log += &quot;$functionName($parameterName=$path)&quot;<br>    return path<br>  }<br>}</pre></code></div><p class="paragraph">This makes it easy for tests to assert exactly which files were accessed.</p><div class="sample-container"><code class="" theme="idea"><pre>@Test<br>fun testMergeJsonReports() {<br>  createSampleJsonReports()<br>  loggingFileSystem.log.clear()<br><br>  mergeJsonReports()<br><br>  assertThat(loggingFileSystem.log).containsExactly(<br>    &quot;list(dir=json_reports)&quot;,<br>    &quot;source(file=json_reports/2020-10.json)&quot;,<br>    &quot;source(file=json_reports/2020-12.json)&quot;,<br>    &quot;source(file=json_reports/2020-11.json)&quot;,<br>    &quot;sink(file=json_reports/2020-all.json)&quot;<br>  )<br>}</pre></code></div><h3 class=""> Transformations</h3><p class="paragraph">Subclasses can transform file names and content.</p><p class="paragraph">For example, your program may be written to operate on a well-known directory like <code>/etc/</code> or <code>/System</code>. You can rewrite paths to make such operations safer to test.</p><p class="paragraph">You may also transform file content to apply application-layer encryption or compression. This is particularly useful in situations where it's difficult or impossible to enable those features in the underlying file system.</p><h3 class=""> Abstract Functions Only</h3><p class="paragraph">Some file system functions like <span data-unresolved-link="okio/ForwardingFileSystem/copy/#okio.Path#okio.Path/PointingToDeclaration/">copy</span> are implemented by using other features. These are the non-abstract functions in the <a href="../-file-system/index.html">FileSystem</a> interface.</p><p class="paragraph">This class forwards only the abstract functions; non-abstract functions delegate to the other functions of this class. If desired, subclasses may override non-abstract functions to forward them.</p></div></div>
+          </div>
+          <div class="tabbedcontent">
+            <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button><button class="section-tab" data-togglable="Properties">Properties</button></div>
+            <div class="tabs-section-body">
+              <h2 class="tabbedcontent">Constructors</h2>
+              <div class="table" data-togglable="Constructors"><a data-name="%5Bokio%2FForwardingFileSystem%2FForwardingFileSystem%2F%23okio.FileSystem%2FPointingToDeclaration%2F%5D%2FConstructors%2F-716965300" anchor-label="ForwardingFileSystem" id="%5Bokio%2FForwardingFileSystem%2FForwardingFileSystem%2F%23okio.FileSystem%2FPointingToDeclaration%2F%5D%2FConstructors%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue TabbedContent">
+                    <div class=""><span class="inline-flex"><a href="-forwarding-file-system.html">ForwardingFileSystem</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FForwardingFileSystem%2F%23okio.FileSystem%2FPointingToDeclaration%2F%5D%2FConstructors%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">fun <a href="-forwarding-file-system.html">ForwardingFileSystem</a>(delegate: <a href="../-file-system/index.html">FileSystem</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Functions</h2>
+              <div class="table" data-togglable="Functions"><a data-name="%5Bokio%2FForwardingFileSystem%2FappendingSink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="appendingSink" id="%5Bokio%2FForwardingFileSystem%2FappendingSink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="appending-sink.html">appendingSink</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FappendingSink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="appending-sink.html">appendingSink</a>(file: <a href="../-path/index.html">Path</a>): <a href="../-sink/index.html">Sink</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FappendingSink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="appendingSink" id="%5Bokio%2FForwardingFileSystem%2FappendingSink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2FappendingSink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="appendingSink" id="%5Bokio%2FForwardingFileSystem%2FappendingSink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns a sink that appends bytes to the end of <span data-unresolved-link="okio/ForwardingFileSystem/file/#/PointingToCallableParameters(-1)/">file</span>, creating it if it doesn't already exist.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FatomicMove%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="atomicMove" id="%5Bokio%2FForwardingFileSystem%2FatomicMove%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="atomic-move.html">atomicMove</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FatomicMove%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="atomic-move.html">atomicMove</a>(source: <a href="../-path/index.html">Path</a>, target: <a href="../-path/index.html">Path</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FatomicMove%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="atomicMove" id="%5Bokio%2FForwardingFileSystem%2FatomicMove%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2FatomicMove%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="atomicMove" id="%5Bokio%2FForwardingFileSystem%2FatomicMove%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Moves <span data-unresolved-link="okio/ForwardingFileSystem/source/#/PointingToCallableParameters(-1)/">source</span> to <span data-unresolved-link="okio/ForwardingFileSystem/target/#/PointingToCallableParameters(-1)/">target</span> in-place if the underlying file system supports it.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Fcanonicalize%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="canonicalize" id="%5Bokio%2FForwardingFileSystem%2Fcanonicalize%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="canonicalize.html">canonicalize</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2Fcanonicalize%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="canonicalize.html">canonicalize</a>(path: <a href="../-path/index.html">Path</a>): <a href="../-path/index.html">Path</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Fcanonicalize%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="canonicalize" id="%5Bokio%2FForwardingFileSystem%2Fcanonicalize%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2Fcanonicalize%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="canonicalize" id="%5Bokio%2FForwardingFileSystem%2Fcanonicalize%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Resolves <span data-unresolved-link="okio/ForwardingFileSystem/path/#/PointingToCallableParameters(-1)/">path</span> against the current working directory and symlinks in this file system.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FFileSystem%2Fcopy%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="copy" id="%5Bokio%2FFileSystem%2Fcopy%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-file-system/copy.html">copy</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FFileSystem%2Fcopy%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open fun <a href="../-file-system/copy.html">copy</a>(source: <a href="../-path/index.html">Path</a>, target: <a href="../-path/index.html">Path</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FFileSystem%2Fcopy%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="copy" id="%5Bokio%2FFileSystem%2Fcopy%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FFileSystem%2Fcopy%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="copy" id="%5Bokio%2FFileSystem%2Fcopy%2F%23okio.Path%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Copies all of the bytes from the file at <span data-unresolved-link="okio/FileSystem/source/#/PointingToCallableParameters(-1)/">source</span> to the file at <span data-unresolved-link="okio/FileSystem/target/#/PointingToCallableParameters(-1)/">target</span>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FFileSystem%2FcreateDirectories%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="createDirectories" id="%5Bokio%2FFileSystem%2FcreateDirectories%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-file-system/create-directories.html">createDirectories</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FFileSystem%2FcreateDirectories%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">fun <a href="../-file-system/create-directories.html">createDirectories</a>(dir: <a href="../-path/index.html">Path</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FFileSystem%2FcreateDirectories%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="createDirectories" id="%5Bokio%2FFileSystem%2FcreateDirectories%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FFileSystem%2FcreateDirectories%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="createDirectories" id="%5Bokio%2FFileSystem%2FcreateDirectories%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Creates a directory at the path identified by <span data-unresolved-link="okio/FileSystem/dir/#/PointingToCallableParameters(-1)/">dir</span>, and any enclosing parent path directories, recursively.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FcreateDirectory%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="createDirectory" id="%5Bokio%2FForwardingFileSystem%2FcreateDirectory%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="create-directory.html">createDirectory</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FcreateDirectory%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="create-directory.html">createDirectory</a>(dir: <a href="../-path/index.html">Path</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FcreateDirectory%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="createDirectory" id="%5Bokio%2FForwardingFileSystem%2FcreateDirectory%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2FcreateDirectory%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="createDirectory" id="%5Bokio%2FForwardingFileSystem%2FcreateDirectory%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Creates a directory at the path identified by <span data-unresolved-link="okio/ForwardingFileSystem/dir/#/PointingToCallableParameters(-1)/">dir</span>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Fdelete%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="delete" id="%5Bokio%2FForwardingFileSystem%2Fdelete%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="delete.html">delete</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2Fdelete%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="delete.html">delete</a>(path: <a href="../-path/index.html">Path</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Fdelete%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="delete" id="%5Bokio%2FForwardingFileSystem%2Fdelete%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2Fdelete%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="delete" id="%5Bokio%2FForwardingFileSystem%2Fdelete%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Deletes the file or directory at <span data-unresolved-link="okio/ForwardingFileSystem/path/#/PointingToCallableParameters(-1)/">path</span>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FFileSystem%2FdeleteRecursively%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="deleteRecursively" id="%5Bokio%2FFileSystem%2FdeleteRecursively%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-file-system/delete-recursively.html">deleteRecursively</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FFileSystem%2FdeleteRecursively%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open fun <a href="../-file-system/delete-recursively.html">deleteRecursively</a>(fileOrDirectory: <a href="../-path/index.html">Path</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FFileSystem%2FdeleteRecursively%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="deleteRecursively" id="%5Bokio%2FFileSystem%2FdeleteRecursively%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FFileSystem%2FdeleteRecursively%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="deleteRecursively" id="%5Bokio%2FFileSystem%2FdeleteRecursively%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Recursively deletes all children of <span data-unresolved-link="okio/FileSystem/fileOrDirectory/#/PointingToCallableParameters(-1)/">fileOrDirectory</span> if it is a directory, then deletes <span data-unresolved-link="okio/FileSystem/fileOrDirectory/#/PointingToCallableParameters(-1)/">fileOrDirectory</span> itself.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bkotlin%2FAny%2Fequals%2F%23kotlin.Any%3F%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="equals" id="%5Bkotlin%2FAny%2Fequals%2F%23kotlin.Any%3F%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-timeout/-companion/index.html#%5Bkotlin%2FAny%2Fequals%2F%23kotlin.Any%3F%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300">equals</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bkotlin%2FAny%2Fequals%2F%23kotlin.Any%3F%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open operator fun <a href="../-timeout/-companion/index.html#%5Bkotlin%2FAny%2Fequals%2F%23kotlin.Any%3F%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300">equals</a>(other: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+</div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FFileSystem%2Fexists%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="exists" id="%5Bokio%2FFileSystem%2Fexists%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-file-system/exists.html">exists</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FFileSystem%2Fexists%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">fun <a href="../-file-system/exists.html">exists</a>(path: <a href="../-path/index.html">Path</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FFileSystem%2Fexists%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="exists" id="%5Bokio%2FFileSystem%2Fexists%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FFileSystem%2Fexists%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="exists" id="%5Bokio%2FFileSystem%2Fexists%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns true if <span data-unresolved-link="okio/FileSystem/path/#/PointingToCallableParameters(-1)/">path</span> identifies an object on this file system.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bkotlin%2FAny%2FhashCode%2F%23%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="hashCode" id="%5Bkotlin%2FAny%2FhashCode%2F%23%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-timeout/-companion/index.html#%5Bkotlin%2FAny%2FhashCode%2F%23%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300">hashCode</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bkotlin%2FAny%2FhashCode%2F%23%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open fun <a href="../-timeout/-companion/index.html#%5Bkotlin%2FAny%2FhashCode%2F%23%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300">hashCode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+</div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Flist%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="list" id="%5Bokio%2FForwardingFileSystem%2Flist%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="list.html">list</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2Flist%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="list.html">list</a>(dir: <a href="../-path/index.html">Path</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-path/index.html">Path</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Flist%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="list" id="%5Bokio%2FForwardingFileSystem%2Flist%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2Flist%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="list" id="%5Bokio%2FForwardingFileSystem%2Flist%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns the children of the directory identified by <span data-unresolved-link="okio/ForwardingFileSystem/dir/#/PointingToCallableParameters(-1)/">dir</span>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FFileSystem%2Fmetadata%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="metadata" id="%5Bokio%2FFileSystem%2Fmetadata%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-file-system/metadata.html">metadata</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FFileSystem%2Fmetadata%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">fun <a href="../-file-system/metadata.html">metadata</a>(path: <a href="../-path/index.html">Path</a>): <a href="../-file-metadata/index.html">FileMetadata</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FFileSystem%2Fmetadata%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="metadata" id="%5Bokio%2FFileSystem%2Fmetadata%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FFileSystem%2Fmetadata%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="metadata" id="%5Bokio%2FFileSystem%2Fmetadata%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns metadata of the file, directory, or object identified by <span data-unresolved-link="okio/FileSystem/path/#/PointingToCallableParameters(-1)/">path</span>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FmetadataOrNull%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="metadataOrNull" id="%5Bokio%2FForwardingFileSystem%2FmetadataOrNull%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="metadata-or-null.html">metadataOrNull</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FmetadataOrNull%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="metadata-or-null.html">metadataOrNull</a>(path: <a href="../-path/index.html">Path</a>): <a href="../-file-metadata/index.html">FileMetadata</a>?<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FmetadataOrNull%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="metadataOrNull" id="%5Bokio%2FForwardingFileSystem%2FmetadataOrNull%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2FmetadataOrNull%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="metadataOrNull" id="%5Bokio%2FForwardingFileSystem%2FmetadataOrNull%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns metadata of the file, directory, or object identified by <span data-unresolved-link="okio/ForwardingFileSystem/path/#/PointingToCallableParameters(-1)/">path</span>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FonPathParameter%2F%23okio.Path%23kotlin.String%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="onPathParameter" id="%5Bokio%2FForwardingFileSystem%2FonPathParameter%2F%23okio.Path%23kotlin.String%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="on-path-parameter.html">onPathParameter</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FonPathParameter%2F%23okio.Path%23kotlin.String%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open fun <a href="on-path-parameter.html">onPathParameter</a>(path: <a href="../-path/index.html">Path</a>, functionName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, parameterName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../-path/index.html">Path</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FonPathParameter%2F%23okio.Path%23kotlin.String%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="onPathParameter" id="%5Bokio%2FForwardingFileSystem%2FonPathParameter%2F%23okio.Path%23kotlin.String%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2FonPathParameter%2F%23okio.Path%23kotlin.String%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="onPathParameter" id="%5Bokio%2FForwardingFileSystem%2FonPathParameter%2F%23okio.Path%23kotlin.String%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Invoked each time a path is passed as a parameter to this file system.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FonPathResult%2F%23okio.Path%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="onPathResult" id="%5Bokio%2FForwardingFileSystem%2FonPathResult%2F%23okio.Path%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="on-path-result.html">onPathResult</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FonPathResult%2F%23okio.Path%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open fun <a href="on-path-result.html">onPathResult</a>(path: <a href="../-path/index.html">Path</a>, functionName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../-path/index.html">Path</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FonPathResult%2F%23okio.Path%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="onPathResult" id="%5Bokio%2FForwardingFileSystem%2FonPathResult%2F%23okio.Path%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2FonPathResult%2F%23okio.Path%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="onPathResult" id="%5Bokio%2FForwardingFileSystem%2FonPathResult%2F%23okio.Path%23kotlin.String%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Invoked each time a path is returned by <a href="delegate.html">delegate</a>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FopenReadOnly%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="openReadOnly" id="%5Bokio%2FForwardingFileSystem%2FopenReadOnly%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="open-read-only.html">openReadOnly</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FopenReadOnly%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="open-read-only.html">openReadOnly</a>(file: <a href="../-path/index.html">Path</a>): <a href="../-file-handle/index.html">FileHandle</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FopenReadOnly%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="openReadOnly" id="%5Bokio%2FForwardingFileSystem%2FopenReadOnly%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2FopenReadOnly%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="openReadOnly" id="%5Bokio%2FForwardingFileSystem%2FopenReadOnly%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns a handle to read <span data-unresolved-link="okio/ForwardingFileSystem/file/#/PointingToCallableParameters(-1)/">file</span>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FopenReadWrite%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="openReadWrite" id="%5Bokio%2FForwardingFileSystem%2FopenReadWrite%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="open-read-write.html">openReadWrite</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FopenReadWrite%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="open-read-write.html">openReadWrite</a>(file: <a href="../-path/index.html">Path</a>): <a href="../-file-handle/index.html">FileHandle</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FopenReadWrite%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="openReadWrite" id="%5Bokio%2FForwardingFileSystem%2FopenReadWrite%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2FopenReadWrite%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="openReadWrite" id="%5Bokio%2FForwardingFileSystem%2FopenReadWrite%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns a handle to read and write <span data-unresolved-link="okio/ForwardingFileSystem/file/#/PointingToCallableParameters(-1)/">file</span>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FFileSystem%2Fread%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSource%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="read" id="%5Bokio%2FFileSystem%2Fread%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSource%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-file-system/read.html">read</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FFileSystem%2Fread%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSource%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">inline fun &lt;<a href="../-file-system/read.html">T</a>&gt; <a href="../-file-system/read.html">read</a>(file: <a href="../-path/index.html">Path</a>, readerAction: <a href="../-buffered-source/index.html">BufferedSource</a>.() -&gt; <a href="../-file-system/read.html">T</a>): <a href="../-file-system/read.html">T</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FFileSystem%2Fread%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSource%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="read" id="%5Bokio%2FFileSystem%2Fread%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSource%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FFileSystem%2Fread%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSource%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="read" id="%5Bokio%2FFileSystem%2Fread%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSource%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Creates a source to read <span data-unresolved-link="okio/FileSystem/file/#/PointingToCallableParameters(-1)/">file</span>, executes <span data-unresolved-link="okio/FileSystem/readerAction/#/PointingToCallableParameters(-1)/">readerAction</span> to read it, and then closes the source.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Fsink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="sink" id="%5Bokio%2FForwardingFileSystem%2Fsink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="sink.html">sink</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2Fsink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="sink.html">sink</a>(file: <a href="../-path/index.html">Path</a>): <a href="../-sink/index.html">Sink</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Fsink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="sink" id="%5Bokio%2FForwardingFileSystem%2Fsink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2Fsink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="sink" id="%5Bokio%2FForwardingFileSystem%2Fsink%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns a sink that writes bytes to <span data-unresolved-link="okio/ForwardingFileSystem/file/#/PointingToCallableParameters(-1)/">file</span> from beginning to end.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Fsource%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="source" id="%5Bokio%2FForwardingFileSystem%2Fsource%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="source.html">source</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2Fsource%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="source.html">source</a>(file: <a href="../-path/index.html">Path</a>): <a href="../-source/index.html">Source</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2Fsource%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="source" id="%5Bokio%2FForwardingFileSystem%2Fsource%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2Fsource%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="source" id="%5Bokio%2FForwardingFileSystem%2Fsource%2F%23okio.Path%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Returns a source that reads the bytes of <span data-unresolved-link="okio/ForwardingFileSystem/file/#/PointingToCallableParameters(-1)/">file</span> from beginning to end.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FForwardingFileSystem%2FtoString%2F%23%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="toString" id="%5Bokio%2FForwardingFileSystem%2FtoString%2F%23%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="to-string.html">toString</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2FtoString%2F%23%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">open override fun <a href="to-string.html">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+</div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="%5Bokio%2FFileSystem%2Fwrite%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSink%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="write" id="%5Bokio%2FFileSystem%2Fwrite%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSink%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-file-system/write.html">write</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FFileSystem%2Fwrite%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSink%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><div class="symbol monospace">inline fun &lt;<a href="../-file-system/write.html">T</a>&gt; <a href="../-file-system/write.html">write</a>(file: <a href="../-path/index.html">Path</a>, writerAction: <a href="../-buffered-sink/index.html">BufferedSink</a>.() -&gt; <a href="../-file-system/write.html">T</a>): <a href="../-file-system/write.html">T</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="%5Bokio%2FFileSystem%2Fwrite%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSink%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="write" id="%5Bokio%2FFileSystem%2Fwrite%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSink%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="brief "><a data-name="%5Bokio%2FFileSystem%2Fwrite%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSink%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" anchor-label="write" id="%5Bokio%2FFileSystem%2Fwrite%2F%23okio.Path%23kotlin.Function1%5Bokio.BufferedSink%2CTypeParam%28bounds%3D%5Bkotlin.Any%3F%5D%29%5D%2FPointingToDeclaration%2F%5D%2FFunctions%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>Creates a sink to write <span data-unresolved-link="okio/FileSystem/file/#/PointingToCallableParameters(-1)/">file</span>, executes <span data-unresolved-link="okio/FileSystem/writerAction/#/PointingToCallableParameters(-1)/">writerAction</span> to write it, and then closes the sink.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Properties</h2>
+              <div class="table" data-togglable="Properties"><a data-name="%5Bokio%2FForwardingFileSystem%2Fdelegate%2F%23%2FPointingToDeclaration%2F%5D%2FProperties%2F-716965300" anchor-label="delegate" id="%5Bokio%2FForwardingFileSystem%2Fdelegate%2F%23%2FPointingToDeclaration%2F%5D%2FProperties%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a>
+                <div class="table-row" data-filterable-current=":okio:dokkaHtml/commonMain" data-filterable-set=":okio:dokkaHtml/commonMain">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="delegate.html">delegate</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="%5Bokio%2FForwardingFileSystem%2Fdelegate%2F%23%2FPointingToDeclaration%2F%5D%2FProperties%2F-716965300"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="platform-tags ">
+                        <div class="platform-tag common-like">common</div>
+                      </div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":okio:dokkaHtml/commonMain"><a data-name="%5Bokio%2FForwardingFileSystem%2Fdelegate%2F%23%2FPointingToDeclaration%2F%5D%2FProperties%2F-716965300" anchor-label="delegate" id="%5Bokio%2FForwardingFileSystem%2Fdelegate%2F%23%2FPointingToDeclaration%2F%5D%2FProperties%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><div class="symbol monospace">val <a href="delegate.html">delegate</a>: <a href="../-file-system/index.html">FileSystem</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="%5Bokio%2FForwardingFileSystem%2Fdelegate%2F%23%2FPointingToDeclaration%2F%5D%2FProperties%2F-716965300" anchor-label="delegate" id="%5Bokio%2FForwardingFileSystem%2Fdelegate%2F%23%2FPointingToDeclaration%2F%5D%2FProperties%2F-716965300" data-filterable-set=":okio:dokkaHtml/commonMain"></a><a href="../-file-system/index.html">FileSystem</a> to which this instance is delegating.</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content"></a></span><span>© 2020 Copyright</span><span class="pull-right"><span>Sponsored and developed by dokka</span><a href="https://github.com/Kotlin/dokka"><span class="padded-icon"></span></a></span></div>
+      </div>
+    </div>
+  </body>
+</html>
+
