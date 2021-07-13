@@ -16,6 +16,7 @@
 package okio
 
 import kotlinx.datetime.Instant
+import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -390,6 +391,54 @@ class ZipFileSystemTest {
       fileSystem.openZip(zipPath)
     }
   }
+
+  /**
+   * The zip format permits multiple files with the same names. For example,
+   * `kotlin-gradle-plugin-1.5.20.jar` contains two copies of
+   * `META-INF/kotlin-gradle-statistics.kotlin_module`.
+   *
+   * We used to crash on duplicates, but they are common in practice so now we prefer the last
+   * entry. This behavior is consistent with both [java.util.zip.ZipFile] and
+   * [java.nio.file.FileSystem].
+   */
+  @Test
+  fun filesOverlap() {
+    val zipPath = ZipBuilder(base)
+      .addEntry("hello.txt", "This is the first hello.txt")
+      .addEntry("xxxxx.xxx", "This is the second hello.txt")
+      .build()
+    val original = fileSystem.read(zipPath) { readByteString() }
+    val rewritten = original.replaceAll("xxxxx.xxx".encodeUtf8(), "hello.txt".encodeUtf8())
+    fileSystem.write(zipPath) { write(rewritten) }
+
+    val zipFileSystem = fileSystem.openZip(zipPath)
+    assertThat(zipFileSystem.read("hello.txt".toPath()) { readUtf8() })
+      .isEqualTo("This is the second hello.txt")
+    assertThat(zipFileSystem.list("/".toPath()))
+      .containsExactly("/hello.txt".toPath())
+  }
+}
+
+private fun ByteString.replaceAll(a: ByteString, b: ByteString): ByteString {
+  val buffer = Buffer()
+  buffer.write(this)
+  buffer.replace(a, b)
+  return buffer.readByteString()
+}
+
+private fun Buffer.replace(a: ByteString, b: ByteString) {
+  val result = Buffer()
+  while (!exhausted()) {
+    val index = indexOf(a)
+    if (index == -1L) {
+      result.writeAll(this)
+    } else {
+      result.write(this, index)
+      result.write(b)
+      skip(a.size.toLong())
+    }
+  }
+  writeAll(result)
 }
 
 /** Decodes this ISO8601 time string. */
