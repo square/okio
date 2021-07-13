@@ -25,8 +25,11 @@ import okio.ZipBuilder
 import okio.randomToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.net.URL
 import java.net.URLClassLoader
+import java.util.Enumeration
 import kotlin.reflect.KClass
+import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
 @ExperimentalFileSystem
@@ -72,7 +75,8 @@ class ResourceFileSystemTest {
       .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
       .build()
     val resourceFileSystem = ResourceFileSystem(
-      classLoader = URLClassLoader(arrayOf(zipPath.toFile().toURI().toURL()), null)
+      classLoader = URLClassLoader(arrayOf(zipPath.toFile().toURI().toURL()), null),
+      indexEagerly = false,
     )
 
     assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
@@ -111,7 +115,8 @@ class ResourceFileSystemTest {
           zipBPath.toFile().toURI().toURL(),
         ),
         null
-      )
+      ),
+      indexEagerly = false,
     )
 
     assertThat(resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() })
@@ -153,7 +158,8 @@ class ResourceFileSystemTest {
           filesBPath.toFile().toURI().toURL(),
         ),
         null
-      )
+      ),
+      indexEagerly = false,
     )
 
     assertThat(resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() })
@@ -196,7 +202,8 @@ class ResourceFileSystemTest {
           zipBPath.toFile().toURI().toURL(),
         ),
         null
-      )
+      ),
+      indexEagerly = false,
     )
 
     assertThat(resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() })
@@ -268,6 +275,26 @@ class ResourceFileSystemTest {
   }
 
   @Test
+  fun testClassFilesOmittedFromDirectory() {
+    val filesPath = base / "files"
+    val packagePath = filesPath / "com" / "example" / "project"
+    FileSystem.SYSTEM.createDirectories(packagePath)
+    FileSystem.SYSTEM.write(packagePath / "Hello.class") { writeUtf8("cafebabe") }
+
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(
+        arrayOf(filesPath.toFile().toURI().toURL()),
+        null
+      ),
+      indexEagerly = false,
+    )
+
+    assertThat(resourceFileSystem.list("/com/example/project".toPath())).isEmpty()
+    assertThat(resourceFileSystem.metadataOrNull("/com/example/project/Hello.class".toPath()))
+      .isNull()
+  }
+
+  @Test
   fun testDirectoryFromJar() {
     val path = "org/junit/".toPath()
 
@@ -293,6 +320,48 @@ class ResourceFileSystemTest {
 
     assertThat((path / "a.txt").toString())
       .isEqualTo("okio${Path.DIRECTORY_SEPARATOR}a.txt")
+  }
+
+  /**
+   * Confirm that class loaders aren't accessed until the file system is used. This should save
+   * resources so that zip files aren't decoded if they're unused.
+   */
+  @Test
+  fun testIndexLazily() {
+    val classLoader = object : ClassLoader() {
+      override fun findResources(name: String?): Enumeration<URL> {
+        throw Exception("finding a resource")
+      }
+    }
+
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = classLoader,
+      indexEagerly = false
+    )
+
+    assertThat(
+      assertFailsWith<Exception> {
+        resourceFileSystem.list("/".toPath())
+      }
+    ).hasMessage("finding a resource")
+  }
+
+  @Test
+  fun testIndexEagerly() {
+    val classLoader = object : ClassLoader() {
+      override fun findResources(name: String?): Enumeration<URL> {
+        throw Exception("finding a resource")
+      }
+    }
+
+    assertThat(
+      assertFailsWith<Exception> {
+        ResourceFileSystem(
+          classLoader = classLoader,
+          indexEagerly = true
+        )
+      }
+    ).hasMessage("finding a resource")
   }
 
   private fun Package.toPath(): Path = name.replace(".", "/").toPath()

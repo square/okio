@@ -232,7 +232,7 @@ fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(t
 fun FileSystem.openZip(zipPath: Path): FileSystem = okio.internal.openZip(zipPath, this)
 
 @ExperimentalFileSystem
-fun ClassLoader.asResourceFileSystem(): FileSystem = ResourceFileSystem(this)
+fun ClassLoader.asResourceFileSystem(): FileSystem = ResourceFileSystem(this, indexEagerly = true)
 
 /**
  * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.
