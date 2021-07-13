@@ -42,9 +42,16 @@ import java.net.URL
  */
 @ExperimentalFileSystem
 internal class ResourceFileSystem internal constructor(
-  classLoader: ClassLoader
+  classLoader: ClassLoader,
+  indexEagerly: Boolean,
 ) : FileSystem() {
-  private var roots: List<Pair<FileSystem, Path>> = classLoader.toClasspathRoots()
+  private val roots: List<Pair<FileSystem, Path>> by lazy { classLoader.toClasspathRoots() }
+
+  init {
+    if (indexEagerly) {
+      roots.size
+    }
+  }
 
   override fun canonicalize(path: Path): Path {
     return ROOT / path
@@ -57,6 +64,7 @@ internal class ResourceFileSystem internal constructor(
     for ((fileSystem, base) in roots) {
       try {
         result += fileSystem.list(base / relativePath)
+          .filter { keepPath(it) }
           .map { it.removeBase(base) }
         foundAny = true
       } catch (_: IOException) {
@@ -67,6 +75,7 @@ internal class ResourceFileSystem internal constructor(
   }
 
   override fun openReadOnly(file: Path): FileHandle {
+    if (!keepPath(file)) throw FileNotFoundException("file not found: $file")
     val relativePath = file.toRelativePath()
     for ((fileSystem, base) in roots) {
       try {
@@ -82,6 +91,7 @@ internal class ResourceFileSystem internal constructor(
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
+    if (!keepPath(path)) return null
     val relativePath = path.toRelativePath()
     for ((fileSystem, base) in roots) {
       return fileSystem.metadataOrNull(base / relativePath) ?: continue
@@ -90,6 +100,7 @@ internal class ResourceFileSystem internal constructor(
   }
 
   override fun source(file: Path): Source {
+    if (!keepPath(file)) throw FileNotFoundException("file not found: $file")
     val relativePath = file.toRelativePath()
     for ((fileSystem, base) in roots) {
       try {
@@ -159,9 +170,11 @@ internal class ResourceFileSystem internal constructor(
       val zip = openZip(
         zipPath = path,
         fileSystem = SYSTEM,
-        predicate = { entry -> !entry.canonicalPath.name.endsWith(".class", ignoreCase = true) }
+        predicate = { entry -> keepPath(entry.canonicalPath) }
       )
       return zip to ROOT
     }
+
+    private fun keepPath(path: Path) = !path.name.endsWith(".class", ignoreCase = true)
   }
 }

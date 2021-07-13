@@ -115,6 +115,9 @@ actual abstract class FileSystem {
      * resources of a specific class loader.
      */
     @JvmField
-    val RESOURCES: FileSystem = ResourceFileSystem(ResourceFileSystem::class.java.classLoader)
+    val RESOURCES: FileSystem = ResourceFileSystem(
+      classLoader = ResourceFileSystem::class.java.classLoader,
+      indexEagerly = false,
+    )
   }
 }
