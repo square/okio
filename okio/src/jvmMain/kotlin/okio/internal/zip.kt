@@ -167,9 +167,10 @@ private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
 
   // Iterate in sorted order so each path is preceded by its parent.
   for (entry in entries.sortedBy { it.canonicalPath }) {
-    if (result.put(entry.canonicalPath, entry) != null) {
-      throw IOException("bad zip: duplicate path: ${entry.canonicalPath}")
-    }
+    // Note that this may clobber an existing element in the map. For consistency with java.util.zip
+    // and java.nio.file.FileSystem, this prefers the last-encountered element.
+    val replaced = result.put(entry.canonicalPath, entry)
+    if (replaced != null) continue
 
     // Make sure this parent directories exist all the way up to the file system root.
     var child = entry
