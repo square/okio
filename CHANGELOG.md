@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.8
+
+_2021-07-13_
+
+ * Fix: Don't crash on duplicate entries in a .zip file.
+ * Fix: Change `FileSystem.RESOURCES` to initialize itself lazily.
+
+
 ## Version 3.0.0-alpha.7
 
 _2021-07-12_
