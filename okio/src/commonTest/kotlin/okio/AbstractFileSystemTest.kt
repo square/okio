@@ -17,6 +17,7 @@ package okio
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
@@ -182,6 +183,69 @@ abstract class AbstractFileSystemTest(
     assertTrue(path in fileSystem.list(base))
     assertEquals(0, buffer.size)
     assertEquals("hello, world!", path.readUtf8())
+  }
+
+  /**
+   * Write a file by concatenating three mechanisms, then read it in its entirety using three other
+   * mechanisms. This is attempting to defend against unwanted use of Windows text mode.
+   *
+   * https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen?view=msvc-160
+   */
+  @Test
+  fun fileSinkSpecialCharacters() {
+    val path = base / "file-sink-special-characters"
+    val content = "[ctrl-z: \u001A][newline: \n][crlf: \r\n]".encodeUtf8()
+
+    fileSystem.write(path) {
+      writeUtf8("FileSystem.write()\n")
+      write(content)
+    }
+
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.sink(fileOffset = handle.size()).buffer().use { sink ->
+        sink.writeUtf8("FileSystem.openReadWrite()\n")
+        sink.write(content)
+      }
+    }
+
+    fileSystem.appendingSink(path).buffer().use { sink ->
+      sink.writeUtf8("FileSystem.appendingSink()\n")
+      sink.write(content)
+    }
+
+    fileSystem.read(path) {
+      assertEquals("FileSystem.write()", readUtf8LineStrict())
+      assertEquals(content, readByteString(content.size.toLong()))
+      assertEquals("FileSystem.openReadWrite()", readUtf8LineStrict())
+      assertEquals(content, readByteString(content.size.toLong()))
+      assertEquals("FileSystem.appendingSink()", readUtf8LineStrict())
+      assertEquals(content, readByteString(content.size.toLong()))
+      assertTrue(exhausted())
+    }
+
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.source().buffer().use { source ->
+        assertEquals("FileSystem.write()", source.readUtf8LineStrict())
+        assertEquals(content, source.readByteString(content.size.toLong()))
+        assertEquals("FileSystem.openReadWrite()", source.readUtf8LineStrict())
+        assertEquals(content, source.readByteString(content.size.toLong()))
+        assertEquals("FileSystem.appendingSink()", source.readUtf8LineStrict())
+        assertEquals(content, source.readByteString(content.size.toLong()))
+        assertTrue(source.exhausted())
+      }
+    }
+
+    fileSystem.openReadOnly(path).use { handle ->
+      handle.source().buffer().use { source ->
+        assertEquals("FileSystem.write()", source.readUtf8LineStrict())
+        assertEquals(content, source.readByteString(content.size.toLong()))
+        assertEquals("FileSystem.openReadWrite()", source.readUtf8LineStrict())
+        assertEquals(content, source.readByteString(content.size.toLong()))
+        assertEquals("FileSystem.appendingSink()", source.readUtf8LineStrict())
+        assertEquals(content, source.readByteString(content.size.toLong()))
+        assertTrue(source.exhausted())
+      }
+    }
   }
 
   @Test

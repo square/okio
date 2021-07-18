@@ -20,11 +20,9 @@ import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.DIR
-import platform.posix.FILE
 import platform.posix.closedir
 import platform.posix.dirent
 import platform.posix.errno
-import platform.posix.fopen
 import platform.posix.opendir
 import platform.posix.readdir
 import platform.posix.set_posix_errno
@@ -73,23 +71,11 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun openReadWrite(file: Path) = variantOpenReadWrite(file)
 
-  override fun source(file: Path): Source {
-    val openFile: CPointer<FILE> = fopen(file.toString(), "r")
-      ?: throw errnoToIOException(errno)
-    return FileSource(openFile)
-  }
+  override fun source(file: Path) = variantSource(file)
 
-  override fun sink(file: Path): Sink {
-    val openFile: CPointer<FILE> = fopen(file.toString(), "w")
-      ?: throw errnoToIOException(errno)
-    return FileSink(openFile)
-  }
+  override fun sink(file: Path) = variantSink(file)
 
-  override fun appendingSink(file: Path): Sink {
-    val openFile: CPointer<FILE> = fopen(file.toString(), "a")
-      ?: throw errnoToIOException(errno)
-    return FileSink(openFile)
-  }
+  override fun appendingSink(file: Path) = variantAppendingSink(file)
 
   override fun createDirectory(dir: Path) {
     val result = variantMkdir(dir)

@@ -33,6 +33,7 @@ import platform.posix.S_IFREG
 import platform.posix._fullpath
 import platform.posix._stat64
 import platform.posix.errno
+import platform.posix.fopen
 import platform.posix.fread
 import platform.posix.free
 import platform.posix.fwrite
@@ -145,6 +146,27 @@ internal actual fun variantFwrite(
   file: CPointer<FILE>
 ): UInt {
   return fwrite(source, 1, byteCount.toULong(), file).toUInt()
+}
+
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantSource(file: Path): Source {
+  val openFile: CPointer<FILE> = fopen(file.toString(), "rb")
+    ?: throw errnoToIOException(errno)
+  return FileSource(openFile)
+}
+
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantSink(file: Path): Sink {
+  val openFile: CPointer<FILE> = fopen(file.toString(), "wb")
+    ?: throw errnoToIOException(errno)
+  return FileSink(openFile)
+}
+
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantAppendingSink(file: Path): Sink {
+  val openFile: CPointer<FILE> = fopen(file.toString(), "ab")
+    ?: throw errnoToIOException(errno)
+  return FileSink(openFile)
 }
 
 @ExperimentalFileSystem

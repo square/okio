@@ -203,6 +203,13 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
   override fun toString(): String
 
   companion object {
+    /**
+     * Either `/` (on UNIX-like systems including Android, iOS, and Linux) or `\` (on Windows
+     * systems).
+     *
+     * This separator is used by `FileSystem.SYSTEM` and possibly other file systems on the host
+     * system. Some file system implementations may not use this separator.
+     */
     val DIRECTORY_SEPARATOR: String
 
     fun String.toPath(): Path

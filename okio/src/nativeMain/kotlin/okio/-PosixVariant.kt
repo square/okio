@@ -34,6 +34,15 @@ internal expect fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
 internal expect fun PosixFileSystem.variantMove(source: Path, target: Path)
 
 @ExperimentalFileSystem
+internal expect fun PosixFileSystem.variantSource(file: Path): Source
+
+@ExperimentalFileSystem
+internal expect fun PosixFileSystem.variantSink(file: Path): Sink
+
+@ExperimentalFileSystem
+internal expect fun PosixFileSystem.variantAppendingSink(file: Path): Sink
+
+@ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle
 
 @ExperimentalFileSystem

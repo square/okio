@@ -79,6 +79,27 @@ internal actual fun PosixFileSystem.variantMove(
 }
 
 @ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantSource(file: Path): Source {
+  val openFile: CPointer<FILE> = fopen(file.toString(), "r")
+    ?: throw errnoToIOException(errno)
+  return FileSource(openFile)
+}
+
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantSink(file: Path): Sink {
+  val openFile: CPointer<FILE> = fopen(file.toString(), "w")
+    ?: throw errnoToIOException(errno)
+  return FileSink(openFile)
+}
+
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantAppendingSink(file: Path): Sink {
+  val openFile: CPointer<FILE> = fopen(file.toString(), "a")
+    ?: throw errnoToIOException(errno)
+  return FileSink(openFile)
+}
+
+@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle {
   val openFile: CPointer<FILE> = fopen(file.toString(), "r")
     ?: throw errnoToIOException(errno)
