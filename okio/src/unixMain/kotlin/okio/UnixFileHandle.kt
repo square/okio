@@ -35,7 +35,7 @@ internal class UnixFileHandle(
   readWrite: Boolean,
   private val file: CPointer<FILE>
 ) : FileHandle(readWrite) {
-  override fun size(): Long {
+  override fun protectedSize(): Long {
     memScoped {
       val stat = alloc<stat>()
       if (fstat(fileno(file), stat.ptr) != 0) {

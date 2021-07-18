@@ -20,7 +20,7 @@ internal class NodeJsFileHandle(
   private val fd: Number,
   readWrite: Boolean
 ) : FileHandle(readWrite) {
-  override fun size(): Long {
+  override fun protectedSize(): Long {
     val stats = fstatSync(fd)
     return stats.size.toLong()
   }

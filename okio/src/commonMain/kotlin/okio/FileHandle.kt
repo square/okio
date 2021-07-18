@@ -87,7 +87,12 @@ abstract class FileHandle(
    * Returns the total number of bytes in the file. This will change if the file size changes.
    */
   @Throws(IOException::class)
-  abstract fun size(): Long
+  fun size(): Long {
+    synchronized(this) {
+      check(!closed) { "closed" }
+    }
+    return protectedSize()
+  }
 
   /**
    * Changes the number of bytes in this file to [size]. This will remove bytes from the end if the
@@ -311,6 +316,10 @@ abstract class FileHandle(
   /** Like [resize] but not performing any close check. */
   @Throws(IOException::class)
   protected abstract fun protectedResize(size: Long)
+
+  /** Like [size] but not performing any close check. */
+  @Throws(IOException::class)
+  protected abstract fun protectedSize(): Long
 
   /**
    * Subclasses should implement this to release resources held by this file handle. It is invoked

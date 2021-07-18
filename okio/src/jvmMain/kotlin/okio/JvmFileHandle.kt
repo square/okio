@@ -34,7 +34,7 @@ internal class JvmFileHandle(
   }
 
   @Synchronized
-  override fun size(): Long {
+  override fun protectedSize(): Long {
     return randomAccessFile.length()
   }
 

@@ -494,7 +494,7 @@ class FakeFileSystem(
       file.access(now = clock.now(), modified = true)
     }
 
-    override fun size(): Long {
+    override fun protectedSize(): Long {
       check(!closed) { "closed" }
       return file.data.size.toLong()
     }
