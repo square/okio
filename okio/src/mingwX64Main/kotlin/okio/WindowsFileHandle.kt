@@ -42,7 +42,7 @@ internal class WindowsFileHandle(
   readWrite: Boolean,
   private val file: HANDLE?
 ) : FileHandle(readWrite) {
-  override fun size(): Long {
+  override fun protectedSize(): Long {
     memScoped {
       val result = alloc<LARGE_INTEGER>()
       if (GetFileSizeEx(file, result.ptr) == 0) {

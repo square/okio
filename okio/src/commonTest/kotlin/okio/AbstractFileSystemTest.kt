@@ -1323,6 +1323,20 @@ abstract class AbstractFileSystemTest(
     }
   }
 
+  @Test fun sizeFailsAfterClose() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "size-fails-after-close"
+
+    val handle = fileSystem.openReadWrite(path)
+    handle.close()
+    try {
+      handle.size()
+      fail()
+    } catch (_: IllegalStateException) {
+    }
+  }
+
   private fun assertClosedFailure(block: () -> Unit) {
     val exception = assertFails {
       block()
