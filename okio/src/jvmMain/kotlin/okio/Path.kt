@@ -82,10 +82,6 @@ actual class Path internal actual constructor(
   actual override fun toString() = commonToString()
 
   actual companion object {
-    /**
-     * Either `/` (on UNIX-like systems including Android, iOS, and Linux) or `\` (on Windows
-     * systems).
-     */
     @JvmField
     actual val DIRECTORY_SEPARATOR: String = File.separator
 
