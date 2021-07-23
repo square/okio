@@ -16,7 +16,6 @@
 
 package okio.internal
 
-import okio.ArrayIndexOutOfBoundsException
 import okio.processUtf16Chars
 import okio.processUtf8Bytes
 

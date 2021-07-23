@@ -17,7 +17,6 @@ package okio.fakefilesystem
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.ByteString
 import okio.ExperimentalFileSystem

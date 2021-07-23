@@ -19,7 +19,6 @@
 
 package okio.internal
 
-import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.Buffer.UnsafeCursor
 import okio.ByteString
