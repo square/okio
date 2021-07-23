@@ -174,6 +174,16 @@ internal inline fun ByteString.commonRangeEquals(
 }
 
 @Suppress("NOTHING_TO_INLINE")
+internal inline fun ByteString.commonCopyInto(
+  offset: Int,
+  target: ByteArray,
+  targetOffset: Int,
+  byteCount: Int
+) {
+  data.copyInto(target, targetOffset, offset, offset + byteCount)
+}
+
+@Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonStartsWith(prefix: ByteString) =
   rangeEquals(0, prefix, 0, prefix.size)
 

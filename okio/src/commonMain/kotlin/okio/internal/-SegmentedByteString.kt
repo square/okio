@@ -201,6 +201,22 @@ internal inline fun SegmentedByteString.commonRangeEquals(
   return true
 }
 
+internal inline fun SegmentedByteString.commonCopyInto(
+  offset: Int,
+  target: ByteArray,
+  targetOffset: Int,
+  byteCount: Int
+) {
+  checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
+  checkOffsetAndCount(target.size.toLong(), targetOffset.toLong(), byteCount.toLong())
+  // Go segment-by-segment through this, copying ranges of arrays.
+  var targetOffset = targetOffset
+  forEachSegment(offset, offset + byteCount) { data, offset, byteCount ->
+    data.copyInto(target, targetOffset, offset, offset + byteCount)
+    targetOffset += byteCount
+  }
+}
+
 internal inline fun SegmentedByteString.commonEquals(other: Any?): Boolean {
   return when {
     other === this -> true

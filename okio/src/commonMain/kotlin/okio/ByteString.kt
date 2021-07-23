@@ -133,6 +133,14 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
    */
   fun rangeEquals(offset: Int, other: ByteArray, otherOffset: Int, byteCount: Int): Boolean
 
+  /**
+   * Copies bytes of this in `[offset..offset+byteCount]` to other in
+   * `[targetOffset..targetOffset+byteCount]`.
+   *
+   * @throws IndexOutOfBoundsException if either range is out of bounds.
+   */
+  fun copyInto(offset: Int = 0, target: ByteArray, targetOffset: Int = 0, byteCount: Int)
+
   fun startsWith(prefix: ByteString): Boolean
 
   fun startsWith(prefix: ByteArray): Boolean
