@@ -496,4 +496,73 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals("0e4dd66217fc8d2e298b78c8cd9392870dcd065d0ff675d0edff5bcd227837e9", sha256().hex())
     assertEquals("483676b93c4417198b465083d196ec6a9fab8d004515874b8ff47e041f5f56303cc08179625030b8b5b721c09149a18f0f59e64e7ae099518cea78d3d83167e1", sha512().hex())
   }
+
+  @Test fun copyInto() {
+    val byteString = factory.encodeUtf8("abcdefgh")
+    val byteArray = "WwwwXxxxYyyyZzzz".encodeToByteArray()
+    byteString.copyInto(target = byteArray, byteCount = 5)
+    assertEquals("abcdexxxYyyyZzzz", byteArray.decodeToString())
+  }
+
+  @Test fun copyIntoFullRange() {
+    val byteString = factory.encodeUtf8("abcdefghijklmnop")
+    val byteArray = "WwwwXxxxYyyyZzzz".encodeToByteArray()
+    byteString.copyInto(target = byteArray, byteCount = 16)
+    assertEquals("abcdefghijklmnop", byteArray.decodeToString())
+  }
+
+  @Test fun copyIntoWithTargetOffset() {
+    val byteString = factory.encodeUtf8("abcdefgh")
+    val byteArray = "WwwwXxxxYyyyZzzz".encodeToByteArray()
+    byteString.copyInto(target = byteArray, targetOffset = 11, byteCount = 5)
+    assertEquals("WwwwXxxxYyyabcde", byteArray.decodeToString())
+  }
+
+  @Test fun copyIntoWithSourceOffset() {
+    val byteString = factory.encodeUtf8("abcdefgh")
+    val byteArray = "WwwwXxxxYyyyZzzz".encodeToByteArray()
+    byteString.copyInto(offset = 3, target = byteArray, byteCount = 5)
+    assertEquals("defghxxxYyyyZzzz", byteArray.decodeToString())
+  }
+
+  @Test fun copyIntoWithAllParameters() {
+    val byteString = factory.encodeUtf8("abcdefgh")
+    val byteArray = "WwwwXxxxYyyyZzzz".encodeToByteArray()
+    byteString.copyInto(offset = 3, target = byteArray, targetOffset = 11, byteCount = 5)
+    assertEquals("WwwwXxxxYyydefgh", byteArray.decodeToString())
+  }
+
+  @Test fun copyIntoBoundsChecks() {
+    val byteString = factory.encodeUtf8("abcdefgh")
+    val byteArray = "WwwwXxxxYyyyZzzz".encodeToByteArray()
+    assertFailsWith<IndexOutOfBoundsException> {
+      byteString.copyInto(offset = -1, target = byteArray, targetOffset = 1, byteCount = 1)
+    }
+    assertFailsWith<IndexOutOfBoundsException> {
+      byteString.copyInto(offset = 9, target = byteArray, targetOffset = 0, byteCount = 0)
+    }
+    assertFailsWith<IndexOutOfBoundsException> {
+      byteString.copyInto(offset = 1, target = byteArray, targetOffset = -1, byteCount = 1)
+    }
+    assertFailsWith<IndexOutOfBoundsException> {
+      byteString.copyInto(offset = 1, target = byteArray, targetOffset = 17, byteCount = 1)
+    }
+    assertFailsWith<IndexOutOfBoundsException> {
+      byteString.copyInto(offset = 7, target = byteArray, targetOffset = 1, byteCount = 2)
+    }
+    assertFailsWith<IndexOutOfBoundsException> {
+      byteString.copyInto(offset = 1, target = byteArray, targetOffset = 15, byteCount = 2)
+    }
+  }
+
+  @Test fun copyEmptyAtBounds() {
+    val byteString = factory.encodeUtf8("abcdefgh")
+    val byteArray = "WwwwXxxxYyyyZzzz".encodeToByteArray()
+    byteString.copyInto(offset = 0, target = byteArray, targetOffset = 0, byteCount = 0)
+    assertEquals("WwwwXxxxYyyyZzzz", byteArray.decodeToString())
+    byteString.copyInto(offset = 0, target = byteArray, targetOffset = 16, byteCount = 0)
+    assertEquals("WwwwXxxxYyyyZzzz", byteArray.decodeToString())
+    byteString.copyInto(offset = 8, target = byteArray, targetOffset = 0, byteCount = 0)
+    assertEquals("WwwwXxxxYyyyZzzz", byteArray.decodeToString())
+  }
 }

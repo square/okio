@@ -18,6 +18,7 @@ package okio
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
+import okio.internal.commonCopyInto
 import okio.internal.commonDecodeBase64
 import okio.internal.commonDecodeHex
 import okio.internal.commonEncodeUtf8
@@ -155,6 +156,13 @@ internal actual constructor(
     otherOffset: Int,
     byteCount: Int
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
+
+  actual open fun copyInto(
+    offset: Int,
+    target: ByteArray,
+    targetOffset: Int,
+    byteCount: Int
+  ) = commonCopyInto(offset, target, targetOffset, byteCount)
 
   actual fun startsWith(prefix: ByteString) = commonStartsWith(prefix)
 

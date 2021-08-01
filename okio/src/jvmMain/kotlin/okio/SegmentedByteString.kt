@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.internal.commonCopyInto
 import okio.internal.commonEquals
 import okio.internal.commonGetSize
 import okio.internal.commonHashCode
@@ -107,6 +108,13 @@ internal actual class SegmentedByteString internal actual constructor(
     otherOffset: Int,
     byteCount: Int
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
+
+  override fun copyInto(
+    offset: Int,
+    target: ByteArray,
+    targetOffset: Int,
+    byteCount: Int
+  ) = commonCopyInto(offset, target, targetOffset, byteCount)
 
   override fun indexOf(other: ByteArray, fromIndex: Int) = toByteString().indexOf(other, fromIndex)
 
