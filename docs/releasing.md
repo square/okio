@@ -30,22 +30,30 @@ Cutting a Release
       `find . -name "index.md"`
     ```
 
-4. Tag the release, prepare for the next one, and push to GitHub.
+4. Tag the release and push to GitHub. 
 
     ```
     git commit -am "Prepare for release $RELEASE_VERSION."
     git tag -a parent-$RELEASE_VERSION -m "Version $RELEASE_VERSION"
+    git push && git push --tags
+    ```
+
+5. Wait for [GitHub Actions][github_actions] to start building the release.
+
+6. Prepare for ongoing development and push to GitHub.
+
+    ```
     sed -i "" \
       "s/VERSION_NAME=.*/VERSION_NAME=$NEXT_VERSION/g" \
       gradle.properties
     git commit -am "Prepare next development version."
-    git push && git push --tags
+    git push
     ```
 
-5. Wait for [GitHub Actions][github_actions] to build and publish releases for both Windows and
+7. Wait for [GitHub Actions][github_actions] to build and publish releases for both Windows and
    Non-Windows.
 
-6. Visit [Sonatype Nexus][sonatype_nexus] to promote (close then release) the releases. Or drop it
+8. Visit [Sonatype Nexus][sonatype_nexus] to promote (close then release) the releases. Or drop it
    if there is a problem!
 
  [github_actions]: https://github.com/square/okio/actions
