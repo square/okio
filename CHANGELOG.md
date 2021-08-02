@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.9
+
+_2021-08-01_
+
+ * New: `ByteString.copyInto()` saves an allocation when extracting data from a `ByteString`.
+ * Fix: Create `FileHandle.protectedSize()` to match other abstract functions.
+ * Fix: Open files in binary mode on Windows. Without this, files that contain `0x1a` will be
+   truncated prematurely.
+
+
 ## Version 3.0.0-alpha.8
 
 _2021-07-13_
