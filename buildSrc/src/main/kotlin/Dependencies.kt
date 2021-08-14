@@ -5,24 +5,21 @@ val kmpJsEnabled = System.getProperty("kjs", "true").toBoolean()
 val kmpNativeEnabled = System.getProperty("knative", "true").toBoolean()
 
 object versions {
-  val kotlin = "1.5.20"
-  val jmhPlugin = "0.5.0"
-  val animalSnifferPlugin = "1.5.0"
-  val dokka = "1.4.20"
-  val jmh = "1.23"
-  val animalSniffer = "1.16"
-  val junit = "4.12"
-  val assertj = "1.7.0"
-  val shadowPlugin = "5.2.0"
-  val spotless = "5.8.2"
+  val kotlin = "1.5.21"
+  val jmhPlugin = "0.5.3"
+  val dokka = "1.5.0"
+  val jmh = "1.33"
+  val junit = "4.13.2"
+  val shadowPlugin = "6.1.0"
+  val spotless = "5.14.2"
   val ktlint = "0.40.0"
-  val bndPlugin = "5.1.2"
+  val bndPlugin = "5.3.0"
 }
 
 object deps {
   object android {
-    val gradlePlugin = "com.android.tools.build:gradle:4.1.1"
-    val desugarJdkLibs = "com.android.tools:desugar_jdk_libs:1.1.1"
+    val gradlePlugin = "com.android.tools.build:gradle:4.2.2"
+    val desugarJdkLibs = "com.android.tools:desugar_jdk_libs:1.1.5"
   }
 
   object androidx {
@@ -56,13 +53,13 @@ object deps {
   }
 
   object animalSniffer {
-    val gradlePlugin = "ru.vyarus:gradle-animalsniffer-plugin:${versions.animalSnifferPlugin}"
-    val annotations = "org.codehaus.mojo:animal-sniffer-annotations:${versions.animalSniffer}"
+    val gradlePlugin = "ru.vyarus:gradle-animalsniffer-plugin:1.5.3"
+    val annotations = "org.codehaus.mojo:animal-sniffer-annotations:1.20"
     val androidSignature = "net.sf.androidscents.signature:android-api-level-15:4.0.3_r5@signature"
     val javaSignature = "org.codehaus.mojo.signature:java17:1.0@signature"
   }
 
-  val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.2.8"
+  val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.2.9"
   val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}"
   val shadow = "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}"
   val spotless = "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotless}"
@@ -70,6 +67,6 @@ object deps {
 
   object test {
     val junit = "junit:junit:${versions.junit}"
-    val assertj = "org.assertj:assertj-core:${versions.assertj}"
+    val assertj = "org.assertj:assertj-core:3.20.2"
   }
 }
