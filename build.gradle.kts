@@ -37,20 +37,20 @@ ext.set("bndBundleTaskConventionClass", BundleTaskConvention::class.java)
 allprojects {
   group = project.property("GROUP") as String
   version = project.property("VERSION_NAME") as String
-}
 
-subprojects {
   repositories {
     mavenCentral()
     google()
   }
+}
 
+subprojects {
   apply(plugin = "com.diffplug.spotless")
 
   configure<SpotlessExtension> {
     kotlin {
       target("**/*.kt")
-      ktlint(versions.ktlint).userData(mapOf("indent_size" to  "2"))
+      ktlint(versions.ktlint).userData(mapOf("indent_size" to "2"))
       trimTrailingWhitespace()
       endWithNewline()
     }
@@ -67,6 +67,10 @@ subprojects {
     options.encoding = "UTF-8"
     sourceCompatibility = JavaVersion.VERSION_1_8.toString()
     targetCompatibility = JavaVersion.VERSION_1_8.toString()
+  }
+
+  tasks.withType<Copy> {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
   }
 
   tasks.withType<Test> {
