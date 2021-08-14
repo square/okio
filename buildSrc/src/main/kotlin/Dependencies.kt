@@ -6,14 +6,8 @@ val kmpNativeEnabled = System.getProperty("knative", "true").toBoolean()
 
 object versions {
   val kotlin = "1.5.21"
-  val jmhPlugin = "0.5.3"
-  val dokka = "1.5.0"
   val jmh = "1.33"
-  val junit = "4.13.2"
-  val shadowPlugin = "6.1.0"
-  val spotless = "5.14.2"
   val ktlint = "0.40.0"
-  val bndPlugin = "5.3.0"
 }
 
 object deps {
@@ -31,9 +25,9 @@ object deps {
     val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
 
     object stdLib {
-      val common = "org.jetbrains.kotlin:kotlin-stdlib-common"
-      val jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-      val js = "org.jetbrains.kotlin:kotlin-stdlib-js"
+      val common = "org.jetbrains.kotlin:kotlin-stdlib-common:${versions.kotlin}"
+      val jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}"
+      val js = "org.jetbrains.kotlin:kotlin-stdlib-js:${versions.kotlin}"
     }
 
     object test {
@@ -47,7 +41,7 @@ object deps {
   }
 
   object jmh {
-    val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:${versions.jmhPlugin}"
+    val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.3"
     val core = "org.openjdk.jmh:jmh-core:${versions.jmh}"
     val generator = "org.openjdk.jmh:jmh-generator-annprocess:${versions.jmh}"
   }
@@ -60,13 +54,13 @@ object deps {
   }
 
   val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.2.9"
-  val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokka}"
-  val shadow = "com.github.jengelman.gradle.plugins:shadow:${versions.shadowPlugin}"
-  val spotless = "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotless}"
-  val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:${versions.bndPlugin}"
+  val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.0"
+  val shadow = "com.github.jengelman.gradle.plugins:shadow:6.1.0"
+  val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.14.2"
+  val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
 
   object test {
-    val junit = "junit:junit:${versions.junit}"
+    val junit = "junit:junit:4.13.2"
     val assertj = "org.assertj:assertj-core:3.20.2"
   }
 }
