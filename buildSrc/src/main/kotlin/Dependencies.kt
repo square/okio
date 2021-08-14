@@ -5,62 +5,62 @@ val kmpJsEnabled = System.getProperty("kjs", "true").toBoolean()
 val kmpNativeEnabled = System.getProperty("knative", "true").toBoolean()
 
 object versions {
-  val kotlin = "1.5.21"
-  val jmh = "1.33"
-  val ktlint = "0.40.0"
+  const val kotlin = "1.5.21"
+  const val jmh = "1.33"
+  const val ktlint = "0.40.0"
 }
 
 object deps {
   object android {
-    val gradlePlugin = "com.android.tools.build:gradle:4.2.2"
-    val desugarJdkLibs = "com.android.tools:desugar_jdk_libs:1.1.5"
+    const val gradlePlugin = "com.android.tools.build:gradle:4.2.2"
+    const val desugarJdkLibs = "com.android.tools:desugar_jdk_libs:1.1.5"
   }
 
   object androidx {
-    val testExtJunit = "androidx.test.ext:junit:1.1.2"
-    val testRunner = "androidx.test:runner:1.3.0"
+    const val testExtJunit = "androidx.test.ext:junit:1.1.2"
+    const val testRunner = "androidx.test:runner:1.3.0"
   }
 
   object kotlin {
-    val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
 
     object stdLib {
-      val common = "org.jetbrains.kotlin:kotlin-stdlib-common:${versions.kotlin}"
-      val jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}"
-      val js = "org.jetbrains.kotlin:kotlin-stdlib-js:${versions.kotlin}"
+      const val common = "org.jetbrains.kotlin:kotlin-stdlib-common:${versions.kotlin}"
+      const val jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}"
+      const val js = "org.jetbrains.kotlin:kotlin-stdlib-js:${versions.kotlin}"
     }
 
     object test {
-      val common = "org.jetbrains.kotlin:kotlin-test-common"
-      val annotations = "org.jetbrains.kotlin:kotlin-test-annotations-common"
-      val jdk = "org.jetbrains.kotlin:kotlin-test-junit"
-      val js = "org.jetbrains.kotlin:kotlin-test-js"
+      const val common = "org.jetbrains.kotlin:kotlin-test-common"
+      const val annotations = "org.jetbrains.kotlin:kotlin-test-annotations-common"
+      const val jdk = "org.jetbrains.kotlin:kotlin-test-junit"
+      const val js = "org.jetbrains.kotlin:kotlin-test-js"
     }
 
-    val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.2.1"
+    const val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.2.1"
   }
 
   object jmh {
-    val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.3"
-    val core = "org.openjdk.jmh:jmh-core:${versions.jmh}"
-    val generator = "org.openjdk.jmh:jmh-generator-annprocess:${versions.jmh}"
+    const val gradlePlugin = "me.champeau.gradle:jmh-gradle-plugin:0.5.3"
+    const val core = "org.openjdk.jmh:jmh-core:${versions.jmh}"
+    const val generator = "org.openjdk.jmh:jmh-generator-annprocess:${versions.jmh}"
   }
 
   object animalSniffer {
-    val gradlePlugin = "ru.vyarus:gradle-animalsniffer-plugin:1.5.3"
-    val annotations = "org.codehaus.mojo:animal-sniffer-annotations:1.20"
-    val androidSignature = "net.sf.androidscents.signature:android-api-level-15:4.0.3_r5@signature"
-    val javaSignature = "org.codehaus.mojo.signature:java17:1.0@signature"
+    const val gradlePlugin = "ru.vyarus:gradle-animalsniffer-plugin:1.5.3"
+    const val annotations = "org.codehaus.mojo:animal-sniffer-annotations:1.20"
+    const val androidSignature = "net.sf.androidscents.signature:android-api-level-15:4.0.3_r5@signature"
+    const val javaSignature = "org.codehaus.mojo.signature:java17:1.0@signature"
   }
 
-  val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.2.9"
-  val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.0"
-  val shadow = "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-  val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.14.2"
-  val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
+  const val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.2.9"
+  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.0"
+  const val shadow = "com.github.jengelman.gradle.plugins:shadow:6.1.0"
+  const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.14.2"
+  const val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
 
   object test {
-    val junit = "junit:junit:4.13.2"
-    val assertj = "org.assertj:assertj-core:3.20.2"
+    const val junit = "junit:junit:4.13.2"
+    const val assertj = "org.assertj:assertj-core:3.20.2"
   }
 }
