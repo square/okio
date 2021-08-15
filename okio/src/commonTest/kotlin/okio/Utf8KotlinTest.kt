@@ -25,8 +25,8 @@ import kotlin.test.assertFailsWith
 class Utf8KotlinTest {
   @Test fun oneByteCharacters() {
     assertEncoded("00", 0x00) // Smallest 1-byte character.
-    assertEncoded("20", ' '.toInt())
-    assertEncoded("7e", '~'.toInt())
+    assertEncoded("20", ' '.code)
+    assertEncoded("7e", '~'.code)
     assertEncoded("7f", 0x7f) // Largest 1-byte character.
   }
 
@@ -90,10 +90,10 @@ class Utf8KotlinTest {
 
   @Test fun highSurrogateFollowedByNonSurrogate() {
     assertStringEncoded("3fee8080", "\ud800\ue000") // "?\ue000": Following character is too high.
-    assertCodePointDecoded("f090ee8080", REPLACEMENT_CODE_POINT, '\ue000'.toInt())
+    assertCodePointDecoded("f090ee8080", REPLACEMENT_CODE_POINT, '\ue000'.code)
 
     assertStringEncoded("3f61", "\ud800\u0061") // "?a": Following character is too low.
-    assertCodePointDecoded("f09061", REPLACEMENT_CODE_POINT, 'a'.toInt())
+    assertCodePointDecoded("f09061", REPLACEMENT_CODE_POINT, 'a'.code)
   }
 
   @Test fun doubleLowSurrogate() {
@@ -113,7 +113,7 @@ class Utf8KotlinTest {
 
   @Test fun writeSurrogateCodePoint() {
     assertStringEncoded("ed9fbf", "\ud7ff") // Below lowest surrogate is okay.
-    assertCodePointDecoded("ed9fbf", '\ud7ff'.toInt())
+    assertCodePointDecoded("ed9fbf", '\ud7ff'.code)
 
     assertStringEncoded("3f", "\ud800") // Lowest surrogate gets '?'.
     assertCodePointDecoded("eda080", REPLACEMENT_CODE_POINT)
@@ -122,7 +122,7 @@ class Utf8KotlinTest {
     assertCodePointDecoded("edbfbf", REPLACEMENT_CODE_POINT)
 
     assertStringEncoded("ee8080", "\ue000") // Above highest surrogate is okay.
-    assertCodePointDecoded("ee8080", '\ue000'.toInt())
+    assertCodePointDecoded("ee8080", '\ue000'.code)
   }
 
   @Test fun size() {

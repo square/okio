@@ -43,7 +43,7 @@ class UnsafeCursorTest {
     val cursor = buffer.readAndWriteUnsafe()
     try {
       while (cursor.next() != -1) {
-        cursor.data!!.fill('z'.toByte(), cursor.start, cursor.end)
+        cursor.data!!.fill('z'.code.toByte(), cursor.start, cursor.end)
       }
     } finally {
       cursor.close()
@@ -58,7 +58,7 @@ class UnsafeCursorTest {
     val cursor = buffer.readAndWriteUnsafe()
     try {
       cursor.expandBuffer(100)
-      cursor.data!!.fill('z'.toByte(), cursor.start, cursor.start + 100)
+      cursor.data!!.fill('z'.code.toByte(), cursor.start, cursor.start + 100)
       cursor.resizeBuffer(100L)
     } finally {
       cursor.close()
@@ -77,7 +77,7 @@ class UnsafeCursorTest {
     val cursor = buffer.readAndWriteUnsafe()
     try {
       cursor.resizeBuffer(100L)
-      cursor.data!!.fill('z'.toByte(), cursor.start, cursor.end)
+      cursor.data!!.fill('z'.code.toByte(), cursor.start, cursor.end)
     } finally {
       cursor.close()
     }

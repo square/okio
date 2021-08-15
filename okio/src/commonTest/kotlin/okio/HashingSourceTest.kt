@@ -82,11 +82,11 @@ class HashingSourceTest {
     val hashingSource = sha256(source)
     val bufferedSource = hashingSource.buffer()
     source.writeUtf8("a")
-    assertEquals('a'.toLong(), bufferedSource.readUtf8CodePoint().toLong())
+    assertEquals('a'.code.toLong(), bufferedSource.readUtf8CodePoint().toLong())
     source.writeUtf8("b")
-    assertEquals('b'.toLong(), bufferedSource.readUtf8CodePoint().toLong())
+    assertEquals('b'.code.toLong(), bufferedSource.readUtf8CodePoint().toLong())
     source.writeUtf8("c")
-    assertEquals('c'.toLong(), bufferedSource.readUtf8CodePoint().toLong())
+    assertEquals('c'.code.toLong(), bufferedSource.readUtf8CodePoint().toLong())
     assertEquals(HashingTest.SHA256_abc, hashingSource.hash)
   }
 

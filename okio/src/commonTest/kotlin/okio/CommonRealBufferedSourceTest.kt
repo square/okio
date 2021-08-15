@@ -36,7 +36,7 @@ class CommonRealBufferedSourceTest {
       ).buffer()
 
     assertEquals(6, buffer.size)
-    assertEquals(-1, bufferedSource.indexOf('e'.toByte(), 0, 4))
+    assertEquals(-1, bufferedSource.indexOf('e'.code.toByte(), 0, 4))
     assertEquals(2, buffer.size)
   }
 

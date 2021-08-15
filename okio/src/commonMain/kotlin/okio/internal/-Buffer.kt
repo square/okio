@@ -84,7 +84,7 @@ internal fun rangeEquals(
 
 internal fun Buffer.readUtf8Line(newline: Long): String {
   return when {
-    newline > 0 && this[newline - 1] == '\r'.toByte() -> {
+    newline > 0 && this[newline - 1] == '\r'.code.toByte() -> {
       // Read everything until '\r\n', then skip the '\r\n'.
       val result = readUtf8(newline - 1L)
       skip(2L)
@@ -447,7 +447,7 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
   var v = v
   if (v == 0L) {
     // Both a shortcut and required since the following code can't handle zero.
-    return writeByte('0'.toInt())
+    return writeByte('0'.code)
   }
 
   var negative = false
@@ -501,7 +501,7 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
     v /= 10
   }
   if (negative) {
-    data[--pos] = '-'.toByte()
+    data[--pos] = '-'.code.toByte()
   }
 
   tail.limit += width
@@ -513,7 +513,7 @@ internal inline fun Buffer.commonWriteHexadecimalUnsignedLong(v: Long): Buffer {
   var v = v
   if (v == 0L) {
     // Both a shortcut and required since the following code can't handle zero.
-    return writeByte('0'.toInt())
+    return writeByte('0'.code)
   }
 
   // Mask every bit below the most significant bit to a 1
@@ -665,8 +665,8 @@ internal inline fun Buffer.commonReadDecimalLong(): Long {
 
     while (pos < limit) {
       val b = data[pos]
-      if (b >= '0'.toByte() && b <= '9'.toByte()) {
-        val digit = '0'.toByte() - b
+      if (b >= '0'.code.toByte() && b <= '9'.code.toByte()) {
+        val digit = '0'.code.toByte() - b
 
         // Detect when the digit would cause an overflow.
         if (value < OVERFLOW_ZONE || value == OVERFLOW_ZONE && digit < overflowDigit) {
@@ -676,7 +676,7 @@ internal inline fun Buffer.commonReadDecimalLong(): Long {
         }
         value *= 10L
         value += digit.toLong()
-      } else if (b == '-'.toByte() && seen == 0) {
+      } else if (b == '-'.code.toByte() && seen == 0) {
         negative = true
         overflowDigit -= 1
       } else {
@@ -723,12 +723,12 @@ internal inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
       val digit: Int
 
       val b = data[pos]
-      if (b >= '0'.toByte() && b <= '9'.toByte()) {
-        digit = b - '0'.toByte()
-      } else if (b >= 'a'.toByte() && b <= 'f'.toByte()) {
-        digit = b - 'a'.toByte() + 10
-      } else if (b >= 'A'.toByte() && b <= 'F'.toByte()) {
-        digit = b - 'A'.toByte() + 10 // We never write uppercase, but we support reading it.
+      if (b >= '0'.code.toByte() && b <= '9'.code.toByte()) {
+        digit = b - '0'.code.toByte()
+      } else if (b >= 'a'.code.toByte() && b <= 'f'.code.toByte()) {
+        digit = b - 'a'.code.toByte() + 10
+      } else if (b >= 'A'.code.toByte() && b <= 'F'.code.toByte()) {
+        digit = b - 'A'.code.toByte() + 10 // We never write uppercase, but we support reading it.
       } else {
         if (seen == 0) {
           throw NumberFormatException(
@@ -828,7 +828,7 @@ internal inline fun Buffer.commonReadUtf8(byteCount: Long): String {
 }
 
 internal inline fun Buffer.commonReadUtf8Line(): String? {
-  val newline = indexOf('\n'.toByte())
+  val newline = indexOf('\n'.code.toByte())
 
   return when {
     newline != -1L -> readUtf8Line(newline)
@@ -840,11 +840,11 @@ internal inline fun Buffer.commonReadUtf8Line(): String? {
 internal inline fun Buffer.commonReadUtf8LineStrict(limit: Long): String {
   require(limit >= 0L) { "limit < 0: $limit" }
   val scanLength = if (limit == Long.MAX_VALUE) Long.MAX_VALUE else limit + 1L
-  val newline = indexOf('\n'.toByte(), 0L, scanLength)
+  val newline = indexOf('\n'.code.toByte(), 0L, scanLength)
   if (newline != -1L) return readUtf8Line(newline)
   if (scanLength < size &&
-    this[scanLength - 1] == '\r'.toByte() &&
-    this[scanLength] == '\n'.toByte()
+    this[scanLength - 1] == '\r'.code.toByte() &&
+    this[scanLength] == '\n'.code.toByte()
   ) {
     return readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
   }
@@ -941,7 +941,7 @@ internal inline fun Buffer.commonWriteUtf8(string: String, beginIndex: Int, endI
   // Transcode a UTF-16 Java String to UTF-8 bytes.
   var i = beginIndex
   while (i < endIndex) {
-    var c = string[i].toInt()
+    var c = string[i].code
 
     when {
       c < 0x80 -> {
@@ -956,7 +956,7 @@ internal inline fun Buffer.commonWriteUtf8(string: String, beginIndex: Int, endI
         // Fast-path contiguous runs of ASCII characters. This is ugly, but yields a ~4x performance
         // improvement over independent calls to writeByte().
         while (i < runLimit) {
-          c = string[i].toInt()
+          c = string[i].code
           if (c >= 0x80) break
           data[segmentOffset + i++] = c.toByte() // 0xxxxxxx
         }
@@ -995,9 +995,9 @@ internal inline fun Buffer.commonWriteUtf8(string: String, beginIndex: Int, endI
         // c is a surrogate. Make sure it is a high surrogate & that its successor is a low
         // surrogate. If not, the UTF-16 is invalid, in which case we emit a replacement
         // character.
-        val low = (if (i + 1 < endIndex) string[i + 1].toInt() else 0)
+        val low = (if (i + 1 < endIndex) string[i + 1].code else 0)
         if (c > 0xdbff || low !in 0xdc00..0xdfff) {
-          writeByte('?'.toInt())
+          writeByte('?'.code)
           i++
         } else {
           // UTF-16 high surrogate: 110110xxxxxxxxxx (10 bits)
@@ -1042,7 +1042,7 @@ internal inline fun Buffer.commonWriteUtf8CodePoint(codePoint: Int): Buffer {
     }
     codePoint in 0xd800..0xdfff -> {
       // Emit a replacement character for a partial surrogate.
-      writeByte('?'.toInt())
+      writeByte('?'.code)
     }
     codePoint < 0x10000 -> {
       // Emit a 16-bit code point with 3 bytes.

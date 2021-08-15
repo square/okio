@@ -240,14 +240,14 @@ class CommonBufferTest {
     buffer.writeUtf8('b'.repeat(halfSegment))
     buffer.writeUtf8('c'.repeat(halfSegment))
     buffer.writeUtf8('d'.repeat(halfSegment))
-    assertEquals(0, buffer.indexOf('a'.toByte(), 0))
-    assertEquals((halfSegment - 1).toLong(), buffer.indexOf('a'.toByte(), (halfSegment - 1).toLong()))
-    assertEquals(halfSegment.toLong(), buffer.indexOf('b'.toByte(), (halfSegment - 1).toLong()))
-    assertEquals((halfSegment * 2).toLong(), buffer.indexOf('c'.toByte(), (halfSegment - 1).toLong()))
-    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.toByte(), (halfSegment - 1).toLong()))
-    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.toByte(), (halfSegment * 2).toLong()))
-    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.toByte(), (halfSegment * 3).toLong()))
-    assertEquals((halfSegment * 4 - 1).toLong(), buffer.indexOf('d'.toByte(), (halfSegment * 4 - 1).toLong()))
+    assertEquals(0, buffer.indexOf('a'.code.toByte(), 0))
+    assertEquals((halfSegment - 1).toLong(), buffer.indexOf('a'.code.toByte(), (halfSegment - 1).toLong()))
+    assertEquals(halfSegment.toLong(), buffer.indexOf('b'.code.toByte(), (halfSegment - 1).toLong()))
+    assertEquals((halfSegment * 2).toLong(), buffer.indexOf('c'.code.toByte(), (halfSegment - 1).toLong()))
+    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.code.toByte(), (halfSegment - 1).toLong()))
+    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.code.toByte(), (halfSegment * 2).toLong()))
+    assertEquals((halfSegment * 3).toLong(), buffer.indexOf('d'.code.toByte(), (halfSegment * 3).toLong()))
+    assertEquals((halfSegment * 4 - 1).toLong(), buffer.indexOf('d'.code.toByte(), (halfSegment * 4 - 1).toLong()))
   }
 
   @Test fun byteAt() {
@@ -255,11 +255,11 @@ class CommonBufferTest {
     buffer.writeUtf8("a")
     buffer.writeUtf8('b'.repeat(Segment.SIZE))
     buffer.writeUtf8("c")
-    assertEquals('a'.toLong(), buffer[0].toLong())
-    assertEquals('a'.toLong(), buffer[0].toLong()) // getByte doesn't mutate!
-    assertEquals('c'.toLong(), buffer[buffer.size - 1].toLong())
-    assertEquals('b'.toLong(), buffer[buffer.size - 2].toLong())
-    assertEquals('b'.toLong(), buffer[buffer.size - 3].toLong())
+    assertEquals('a'.code.toLong(), buffer[0].toLong())
+    assertEquals('a'.code.toLong(), buffer[0].toLong()) // getByte doesn't mutate!
+    assertEquals('c'.code.toLong(), buffer[buffer.size - 1].toLong())
+    assertEquals('b'.code.toLong(), buffer[buffer.size - 2].toLong())
+    assertEquals('b'.code.toLong(), buffer[buffer.size - 3].toLong())
   }
 
   @Test fun getByteOfEmptyBuffer() {

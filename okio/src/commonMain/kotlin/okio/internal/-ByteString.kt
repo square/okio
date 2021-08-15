@@ -74,7 +74,7 @@ internal inline fun ByteString.commonToAsciiLowercase(): ByteString {
   var i = 0
   while (i < data.size) {
     var c = data[i]
-    if (c < 'A'.toByte() || c > 'Z'.toByte()) {
+    if (c < 'A'.code.toByte() || c > 'Z'.code.toByte()) {
       i++
       continue
     }
@@ -84,7 +84,7 @@ internal inline fun ByteString.commonToAsciiLowercase(): ByteString {
     lowercase[i++] = (c - ('A' - 'a')).toByte()
     while (i < lowercase.size) {
       c = lowercase[i]
-      if (c < 'A'.toByte() || c > 'Z'.toByte()) {
+      if (c < 'A'.code.toByte() || c > 'Z'.code.toByte()) {
         i++
         continue
       }
@@ -102,7 +102,7 @@ internal inline fun ByteString.commonToAsciiUppercase(): ByteString {
   var i = 0
   while (i < data.size) {
     var c = data[i]
-    if (c < 'a'.toByte() || c > 'z'.toByte()) {
+    if (c < 'a'.code.toByte() || c > 'z'.code.toByte()) {
       i++
       continue
     }
@@ -112,7 +112,7 @@ internal inline fun ByteString.commonToAsciiUppercase(): ByteString {
     lowercase[i++] = (c - ('a' - 'A')).toByte()
     while (i < lowercase.size) {
       c = lowercase[i]
-      if (c < 'a'.toByte() || c > 'z'.toByte()) {
+      if (c < 'a'.code.toByte() || c > 'z'.code.toByte()) {
         i++
         continue
       }
@@ -347,7 +347,7 @@ private fun codePointIndexToCharIndex(s: ByteArray, codePointCount: Int): Int {
       return charCount
     }
 
-    if ((c != '\n'.toInt() && c != '\r'.toInt() && isIsoControl(c)) ||
+    if ((c != '\n'.code && c != '\r'.code && isIsoControl(c)) ||
       c == REPLACEMENT_CODE_POINT
     ) {
       return -1

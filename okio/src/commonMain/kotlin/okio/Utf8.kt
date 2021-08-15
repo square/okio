@@ -82,7 +82,7 @@ fun String.utf8Size(beginIndex: Int = 0, endIndex: Int = length): Long {
   var result = 0L
   var i = beginIndex
   while (i < endIndex) {
-    val c = this[i].toInt()
+    val c = this[i].code
 
     if (c < 0x80) {
       // A 7-bit character with 1 byte.
@@ -97,7 +97,7 @@ fun String.utf8Size(beginIndex: Int = 0, endIndex: Int = length): Long {
       result += 3
       i++
     } else {
-      val low = if (i + 1 < endIndex) this[i + 1].toInt() else 0
+      val low = if (i + 1 < endIndex) this[i + 1].code else 0
       if (c > 0xdbff || low < 0xdc00 || low > 0xdfff) {
         // A malformed surrogate, which yields '?'.
         result++
@@ -113,9 +113,9 @@ fun String.utf8Size(beginIndex: Int = 0, endIndex: Int = length): Long {
   return result
 }
 
-internal const val REPLACEMENT_BYTE: Byte = '?'.toByte()
+internal const val REPLACEMENT_BYTE: Byte = '?'.code.toByte()
 internal const val REPLACEMENT_CHARACTER: Char = '\ufffd'
-internal const val REPLACEMENT_CODE_POINT: Int = REPLACEMENT_CHARACTER.toInt()
+internal const val REPLACEMENT_CODE_POINT: Int = REPLACEMENT_CHARACTER.code
 
 @Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline fun isIsoControl(codePoint: Int): Boolean =
@@ -142,20 +142,20 @@ internal inline fun String.processUtf8Bytes(
     when {
       c < '\u0080' -> {
         // Emit a 7-bit character with 1 byte.
-        yield(c.toByte()) // 0xxxxxxx
+        yield(c.code.toByte()) // 0xxxxxxx
         index++
 
         // Assume there is going to be more ASCII
         while (index < endIndex && this[index] < '\u0080') {
-          yield(this[index++].toByte())
+          yield(this[index++].code.toByte())
         }
       }
 
       c < '\u0800' -> {
         // Emit a 11-bit character with 2 bytes.
         /* ktlint-disable no-multi-spaces */
-        yield((c.toInt() shr 6          or 0xc0).toByte()) // 110xxxxx
-        yield((c.toInt()       and 0x3f or 0x80).toByte()) // 10xxxxxx
+        yield((c.code shr 6          or 0xc0).toByte()) // 110xxxxx
+        yield((c.code and 0x3f or 0x80).toByte()) // 10xxxxxx
         /* ktlint-enable no-multi-spaces */
         index++
       }
@@ -163,9 +163,9 @@ internal inline fun String.processUtf8Bytes(
       c !in '\ud800'..'\udfff' -> {
         // Emit a 16-bit character with 3 bytes.
         /* ktlint-disable no-multi-spaces */
-        yield((c.toInt() shr 12          or 0xe0).toByte()) // 1110xxxx
-        yield((c.toInt() shr  6 and 0x3f or 0x80).toByte()) // 10xxxxxx
-        yield((c.toInt()        and 0x3f or 0x80).toByte()) // 10xxxxxx
+        yield((c.code shr 12          or 0xe0).toByte()) // 1110xxxx
+        yield((c.code shr  6 and 0x3f or 0x80).toByte()) // 10xxxxxx
+        yield((c.code and 0x3f or 0x80).toByte()) // 10xxxxxx
         /* ktlint-enable no-multi-spaces */
         index++
       }
@@ -185,7 +185,7 @@ internal inline fun String.processUtf8Bytes(
           // UTF-16 low surrogate:  110111yyyyyyyyyy (10 bits)
           // Unicode code point:    00010000000000000000 + xxxxxxxxxxyyyyyyyyyy (21 bits)
           val codePoint = (
-            ((c.toInt() shl 10) + this[index + 1].toInt()) +
+            ((c.code shl 10) + this[index + 1].code) +
               (0x010000 - (0xd800 shl 10) - 0xdc00)
             )
 
@@ -262,13 +262,13 @@ internal inline fun ByteArray.processUtf16Chars(
     when {
       b0 >= 0 -> {
         // 0b0xxxxxxx
-        yield(b0.toChar())
+        yield(b0.toInt().toChar())
         index++
 
         // Assume there is going to be more ASCII
         // This is almost double the performance of the outer loop
         while (index < endIndex && this[index] >= 0) {
-          yield(this[index++].toChar())
+          yield(this[index++].toInt().toChar())
         }
       }
       b0 shr 5 == -2 -> {

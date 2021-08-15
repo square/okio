@@ -40,12 +40,12 @@ class SegmentSharingTest {
 
   @Test fun snapshotGetByte() {
     val byteString = bufferWithSegments(xs, ys, zs).snapshot()
-    assertEquals('x', byteString[0].toChar())
-    assertEquals('x', byteString[xs.length - 1].toChar())
-    assertEquals('y', byteString[xs.length].toChar())
-    assertEquals('y', byteString[xs.length + ys.length - 1].toChar())
-    assertEquals('z', byteString[xs.length + ys.length].toChar())
-    assertEquals('z', byteString[xs.length + ys.length + zs.length - 1].toChar())
+    assertEquals('x', byteString[0].toInt().toChar())
+    assertEquals('x', byteString[xs.length - 1].toInt().toChar())
+    assertEquals('y', byteString[xs.length].toInt().toChar())
+    assertEquals('y', byteString[xs.length + ys.length - 1].toInt().toChar())
+    assertEquals('z', byteString[xs.length + ys.length].toInt().toChar())
+    assertEquals('z', byteString[xs.length + ys.length + zs.length - 1].toInt().toChar())
     assertFailsWith<IndexOutOfBoundsException> {
       byteString[-1]
     }

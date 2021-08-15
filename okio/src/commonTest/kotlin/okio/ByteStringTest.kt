@@ -41,9 +41,9 @@ abstract class AbstractByteStringTest internal constructor(
   @Test fun get() {
     val actual = factory.encodeUtf8("abc")
     assertEquals(3, actual.size)
-    assertEquals(actual[0], 'a'.toByte())
-    assertEquals(actual[1], 'b'.toByte())
-    assertEquals(actual[2], 'c'.toByte())
+    assertEquals(actual[0], 'a'.code.toByte())
+    assertEquals(actual[1], 'b'.code.toByte())
+    assertEquals(actual[2], 'c'.code.toByte())
     try {
       actual[-1]
       fail("no index out of bounds: -1")
