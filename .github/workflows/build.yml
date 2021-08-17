@@ -88,7 +88,7 @@ jobs:
 
   publish:
     runs-on: macOS-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
     needs: [jvm, multiplatform, windows]
 
     steps:
@@ -111,7 +111,7 @@ jobs:
 
   publish-windows:
     runs-on: windows-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
     needs: [jvm, multiplatform, windows]
 
     steps:
@@ -134,7 +134,7 @@ jobs:
 
   publish-website:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
     needs: [jvm, multiplatform]
 
     steps:
