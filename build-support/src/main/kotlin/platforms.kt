@@ -48,27 +48,6 @@ val linuxTargets = listOf(
 
 val nativeTargets = appleTargets + linuxTargets + mingwTargets
 
-/** Note that size_t is 32-bit on legacy watchOS versions (ie. pointers are always 32-bit). */
-val unixSizet32Targets = listOf(
-  "watchosArm32",
-  "watchosArm64",
-  "watchosX86"
-)
-
-val unixSizet64Targets = listOf(
-  "iosArm64",
-  "iosX64",
-  "iosSimulatorArm64",
-  "linuxX64",
-  "macosX64",
-  "macosArm64",
-  "tvosArm64",
-  "tvosX64",
-  "tvosSimulatorArm64",
-  "watchosSimulatorArm64",
-  "watchosX64"
-)
-
 /**
  * Creates a source set for a directory that isn't already a built-in platform. Use this to create
  * custom shared directories like `nonJvmMain` or `unixMain`.

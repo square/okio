@@ -40,11 +40,6 @@ plugins {
  *           '-- mingwX64
  * ```
  *
- * Every child of `unix` also includes a source set that depends on the pointer size:
- *
- *  * `sizet32` for watchOS, including watchOS 64-bit architectures
- *  * `sizet64` for everything else
- *
  * The `nonJvm` source set excludes that platform.
  *
  * The `hashFunctions` source set builds on all platforms. It ships as a main source set on non-JVM
@@ -88,8 +83,13 @@ kotlin {
         implementation(project(":okio-testing-support"))
       }
     }
+
+    val hashFunctions by creating {
+      dependsOn(commonMain)
+    }
+
     val nonJvmMain by creating {
-      kotlin.srcDir("src/hashFunctions/kotlin")
+      dependsOn(hashFunctions)
       dependsOn(commonMain)
     }
     val nonJvmTest by creating {
@@ -102,7 +102,7 @@ kotlin {
       }
     }
     val jvmTest by getting {
-      kotlin.srcDir("src/hashFunctions/kotlin")
+      kotlin.srcDir("src/jvmTest/hashFunctions")
       dependencies {
         implementation(deps.test.junit)
         implementation(deps.test.assertj)
@@ -126,8 +126,6 @@ kotlin {
             .also { unixMain ->
               createSourceSet("linuxMain", parent = unixMain, children = linuxTargets)
               createSourceSet("appleMain", parent = unixMain, children = appleTargets)
-              createSourceSet("sizet32Main", parent = unixMain, children = unixSizet32Targets)
-              createSourceSet("sizet64Main", parent = unixMain, children = unixSizet64Targets)
             }
         }
 

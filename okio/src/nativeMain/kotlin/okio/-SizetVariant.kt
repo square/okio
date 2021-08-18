@@ -18,16 +18,22 @@ package okio
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.UnsafeNumber
+import kotlinx.cinterop.convert
 import platform.posix.FILE
+import platform.posix.fread
+import platform.posix.fwrite
 
-internal expect fun variantFread(
+@OptIn(UnsafeNumber::class)
+internal fun variantFread(
   target: CPointer<ByteVarOf<Byte>>,
   byteCount: UInt,
   file: CPointer<FILE>
-): UInt
+): UInt = fread(target, 1, byteCount.convert(), file).convert()
 
-internal expect fun variantFwrite(
+@OptIn(UnsafeNumber::class)
+internal fun variantFwrite(
   source: CPointer<ByteVar>,
   byteCount: UInt,
   file: CPointer<FILE>
-): UInt
+): UInt = fwrite(source, 1, byteCount.convert(), file).convert()
