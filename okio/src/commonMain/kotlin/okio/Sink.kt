@@ -42,14 +42,14 @@ package okio
  * Use [sink] to adapt an `OutputStream` to a sink. Use [outputStream()][BufferedSink.outputStream]
  * to adapt a sink to an `OutputStream`.
  */
-expect interface Sink : Closeable {
+interface Sink : Closeable, Flushable {
   /** Removes `byteCount` bytes from `source` and appends them to this.  */
   @Throws(IOException::class)
   fun write(source: Buffer, byteCount: Long)
 
   /** Pushes all buffered bytes to their final destination.  */
   @Throws(IOException::class)
-  fun flush()
+  override fun flush()
 
   /** Returns the timeout for this sink.  */
   fun timeout(): Timeout

@@ -46,3 +46,8 @@ actual interface Closeable {
   @Throws(IOException::class)
   actual fun close()
 }
+
+actual interface Flushable {
+  @Throws(IOException::class)
+  actual fun flush()
+}

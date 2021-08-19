@@ -34,3 +34,5 @@ actual typealias EOFException = java.io.EOFException
 actual typealias FileNotFoundException = java.io.FileNotFoundException
 
 actual typealias Closeable = java.io.Closeable
+
+actual typealias Flushable = java.io.Flushable

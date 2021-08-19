@@ -41,3 +41,9 @@ expect interface Closeable {
   @Throws(IOException::class)
   fun close()
 }
+
+expect interface Flushable {
+  /** Pushes all buffered bytes to their final destination.  */
+  @Throws(IOException::class)
+  fun flush()
+}
