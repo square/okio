@@ -5,7 +5,7 @@ val kmpJsEnabled = System.getProperty("kjs", "true").toBoolean()
 val kmpNativeEnabled = System.getProperty("knative", "true").toBoolean()
 
 object versions {
-  const val kotlin = "1.5.21"
+  const val kotlin = "1.5.30"
   const val jmh = "1.33"
   const val ktlint = "0.42.1"
 }
@@ -56,7 +56,7 @@ object deps {
   const val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.2.9"
   const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.0"
   const val shadow = "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-  const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.14.2"
+  const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.14.3"
   const val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
 
   object test {
