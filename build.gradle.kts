@@ -20,16 +20,13 @@ buildscript {
     classpath(deps.spotless)
     classpath(deps.bnd)
     // https://github.com/melix/japicmp-gradle-plugin/issues/36
-    classpath("com.google.guava:guava:28.2-jre")
+    classpath(deps.guava)
   }
 
   repositories {
     mavenCentral()
     gradlePluginPortal()
-    jcenter()
     google()
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
-    maven(url = "https://kotlin.bintray.com/kotlinx/")
   }
 }
 
@@ -45,10 +42,7 @@ allprojects {
 subprojects {
   repositories {
     mavenCentral()
-    jcenter()
     google()
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
-    maven(url = "https://kotlin.bintray.com/kotlinx/")
   }
 
   apply(plugin = "com.diffplug.spotless")
