@@ -20,7 +20,7 @@ buildscript {
     classpath(deps.spotless)
     classpath(deps.bnd)
     // https://github.com/melix/japicmp-gradle-plugin/issues/36
-    classpath("com.google.guava:guava:28.2-jre")
+    classpath(deps.guava)
   }
 
   repositories {
