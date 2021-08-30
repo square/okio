@@ -59,16 +59,7 @@ extensions.getByType<PublishingExtension>().apply {
           }
         }
       }
-    }
-
-    // Use default artifact name for the JVM target
-    val kotlinMultiplatform by getting {
-      if (this !is MavenPublication) return@getting
-      artifactId = POM_ARTIFACT_ID + "-multiplatform"
-    }
-    val jvm = findByName("jvm")
-    if (jvm is MavenPublication) {
-      jvm.artifactId = POM_ARTIFACT_ID
+      artifactId = POM_ARTIFACT_ID
     }
   }
 
