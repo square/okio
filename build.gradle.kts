@@ -1,5 +1,6 @@
 import aQute.bnd.gradle.BundleTaskConvention
 import com.diffplug.gradle.spotless.SpotlessExtension
+import java.nio.charset.StandardCharsets
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
@@ -46,7 +47,6 @@ allprojects {
 
 subprojects {
   apply(plugin = "com.diffplug.spotless")
-
   configure<SpotlessExtension> {
     kotlin {
       target("**/*.kt")
@@ -56,21 +56,18 @@ subprojects {
     }
   }
 
-  tasks.withType<KotlinCompile>().all {
+  tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
-      jvmTarget = "1.8"
+      jvmTarget = JavaVersion.VERSION_1_8.toString()
+      @Suppress("SuspiciousCollectionReassignment")
       freeCompilerArgs += "-Xjvm-default=all"
     }
   }
 
   tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
+    options.encoding = StandardCharsets.UTF_8.toString()
     sourceCompatibility = JavaVersion.VERSION_1_8.toString()
     targetCompatibility = JavaVersion.VERSION_1_8.toString()
-  }
-
-  tasks.withType<Copy> {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
   }
 
   tasks.withType<Test> {
