@@ -1,6 +1,11 @@
+import com.vanniktech.maven.publish.JavadocJar.Dokka
+import com.vanniktech.maven.publish.KotlinJs
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
+
 plugins {
-  kotlin("multiplatform")
+  kotlin("js")
   id("org.jetbrains.dokka")
+  id("com.vanniktech.maven.publish.base")
 }
 
 kotlin {
@@ -26,7 +31,7 @@ kotlin {
     all {
       languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
     }
-    val jsMain by getting {
+    val main by getting {
       dependencies {
         implementation(project(":okio"))
         api(deps.kotlin.stdLib.common)
@@ -35,7 +40,7 @@ kotlin {
         api(deps.kotlin.stdLib.js)
       }
     }
-    val jsTest by getting {
+    val test by getting {
       dependencies {
         implementation(deps.kotlin.test.common)
         implementation(deps.kotlin.test.annotations)
@@ -48,4 +53,8 @@ kotlin {
   }
 }
 
-apply(plugin = "okio-publishing")
+configure<MavenPublishBaseExtension> {
+  configure(
+    KotlinJs(javadocJar = Dokka("dokkaGfm"))
+  )
+}
