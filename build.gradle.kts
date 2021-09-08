@@ -1,6 +1,5 @@
 import aQute.bnd.gradle.BundleTaskConvention
 import com.diffplug.gradle.spotless.SpotlessExtension
-import java.nio.charset.StandardCharsets
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
 import java.nio.charset.StandardCharsets
