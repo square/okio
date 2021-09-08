@@ -59,6 +59,7 @@ object deps {
   const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.14.3"
   const val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
   const val guava = "com.google.guava:guava:30.1.1-jre"
+  const val vanniktechPublishPlugin = "com.vanniktech:gradle-maven-publish-plugin:0.17.0"
 
   object test {
     const val junit = "junit:junit:4.13.2"
