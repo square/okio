@@ -53,7 +53,7 @@ kotlin {
         val okioVersion = "3.XXX"
         val commonMain by getting {
             dependencies {
-                implementation("com.squareup.okio:okio-multiplatform:$okioVersion")
+                implementation("com.squareup.okio:okio:$okioVersion")
             }
         }
         val jsMain by getting {
