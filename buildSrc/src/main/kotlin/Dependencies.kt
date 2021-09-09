@@ -55,7 +55,7 @@ object deps {
 
   const val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.2.9"
   const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.0"
-  const val shadow = "com.github.jengelman.gradle.plugins:shadow:6.1.0"
+  const val shadow = "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0"
   const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.14.3"
   const val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
   const val guava = "com.google.guava:guava:30.1.1-jre"
