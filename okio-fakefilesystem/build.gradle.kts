@@ -77,8 +77,7 @@ configure<AnimalSnifferExtension> {
   sourceSets = listOf(project.sourceSets.getByName("main"))
 }
 
-val signature by configurations.getting {
-}
+val signature: Configuration by configurations
 
 dependencies {
   signature(deps.animalSniffer.androidSignature)

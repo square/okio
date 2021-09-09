@@ -87,7 +87,7 @@ kotlin {
   sourceSets {
     all {
       languageSettings.apply {
-        useExperimentalAnnotation("kotlin.RequiresOptIn")
+        optIn("kotlin.RequiresOptIn")
       }
     }
 
@@ -259,8 +259,7 @@ configure<AnimalSnifferExtension> {
   sourceSets = listOf(project.sourceSets.getByName("main"))
 }
 
-val signature by configurations.getting {
-}
+val signature: Configuration by configurations
 
 dependencies {
   signature(deps.animalSniffer.androidSignature)
