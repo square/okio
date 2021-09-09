@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.10
+
+_2021-09-09_
+
+This release drops the `-multiplatform` suffix on Kotlin Multiplatform artifacts. All artifacts now
+share the same name (like `com.squareup.okio:okio:3.0.0-alpha.10`) for both Kotlin/JVM and Kotlin
+Multiplatform.
+
+ * Fix: Don't crash in `ResourceFileSystem` when classpath `.jar` files have special characters in
+   their paths.
+
+
 ## Version 3.0.0-alpha.9
 
 _2021-08-01_
@@ -41,7 +53,7 @@ _2021-06-01_
    support the legacy artifact format.
  * New: Support tvOS (tvosArm64, tvosX64) in multiplatform.
  * New: Change `ResourceFileSystem` to omit `.class` files when indexing `.zip` files. We expect
-   this to lower the memory footprint of `ResourceFileSystem`. 
+   this to lower the memory footprint of `ResourceFileSystem`.
  * Fix: Don't crash on background thread access in Kotlin/Native. We had to apply `@SharedImmutable`
    and run our test suite on a background thread.
 
@@ -143,10 +155,10 @@ _2020-07-07_
 
  * New: `Pipe.cancel()` causes in-progress and future reads and writes on the pipe to immediately
    fail with an `IOException`. The streams may still be canceled normally.
-   
+
  * New: Enlarge Okio's internal segment pool from a fixed 64 KiB total to 64 KiB per processor. For
-   example, on an Intel i9 8-core/16-thread machine the segment pool now uses up to 1 MiB of memory.  
- 
+   example, on an Intel i9 8-core/16-thread machine the segment pool now uses up to 1 MiB of memory.
+
  * New: Migrate from `synchronized` to lock-free when accessing the segment pool. Combined with the
    change above we saw throughput increase 3x on a synthetic benchmark designed to create
    contention.
