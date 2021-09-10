@@ -559,7 +559,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
 
   @Test fun indexOfByteWithBothOffsets() {
     if (factory.isOneByteAtATime) {
-      // When run on Travis this causes out-of-memory errors.
+      // When run on CI this causes out-of-memory errors.
       return
     }
     val a = 'a'.toByte()
@@ -1132,6 +1132,10 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   @Test fun peekLarge() {
+    if (factory.isOneByteAtATime) {
+      // When run on CI this causes out-of-memory errors.
+      return
+    }
     sink.writeUtf8("abcdef")
     sink.writeUtf8("g".repeat(2 * Segment.SIZE))
     sink.writeUtf8("hij")
