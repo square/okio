@@ -69,6 +69,8 @@ kotlin {
           }
         }
       }
+      browser {
+      }
     }
   }
   if (kmpNativeEnabled) {
@@ -103,6 +105,7 @@ kotlin {
         implementation(deps.kotlin.time)
 
         implementation(project(":okio-fakefilesystem"))
+        implementation(project(":okio-testing-support"))
       }
     }
     val nonJvmMain by creating {
@@ -134,7 +137,6 @@ kotlin {
       val jsTest by getting {
         dependencies {
           implementation(deps.kotlin.test.js)
-          implementation(project(":okio-nodefilesystem"))
         }
       }
     }

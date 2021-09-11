@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Square, Inc.
+ * Copyright (C) 2021 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * See `fs.kt` for information on what this file does and how to keep it up-to-date.
- */
-@file:JsModule("os")
-@file:JsNonModule
 package okio
 
-internal external fun tmpdir(): String
-
-internal external fun platform(): String
+actual fun isBrowser() = false

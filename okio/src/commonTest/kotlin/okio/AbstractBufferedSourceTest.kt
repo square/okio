@@ -1015,6 +1015,9 @@ abstract class AbstractBufferedSourceTest internal constructor(
 
   /** Note that this test crashes the VM on Android. */
   @Test fun selectSpanningMultipleSegments() {
+    if (factory.isOneByteAtATime && isBrowser()) {
+      return // This test times out on browsers.
+    }
     val commonPrefix = randomBytes(Segment.SIZE + 10)
     val a = Buffer().write(commonPrefix).writeUtf8("a").readByteString()
     val bc = Buffer().write(commonPrefix).writeUtf8("bc").readByteString()

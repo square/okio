@@ -70,6 +70,6 @@ actual abstract class FileSystem {
     commonDeleteRecursively(fileOrDirectory)
 
   actual companion object {
-    actual val SYSTEM_TEMPORARY_DIRECTORY: Path = tmpdir().toPath()
+    actual val SYSTEM_TEMPORARY_DIRECTORY: Path = tmpdir.toPath()
   }
 }
