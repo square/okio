@@ -30,6 +30,8 @@ kotlin {
           }
         }
       }
+      browser {
+      }
     }
   }
   if (kmpNativeEnabled) {
