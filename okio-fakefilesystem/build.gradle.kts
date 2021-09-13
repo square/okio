@@ -35,17 +35,7 @@ kotlin {
     }
   }
   if (kmpNativeEnabled) {
-    iosX64()
-    iosArm64()
-    tvosX64()
-    tvosArm64()
-    watchosArm32()
-    watchosArm64()
-    watchosX86()
-    // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
-    linuxX64()
-    macosX64()
-    mingwX64()
+    createNativePlatforms()
   }
   sourceSets {
     commonMain {
