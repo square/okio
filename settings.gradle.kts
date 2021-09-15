@@ -5,11 +5,10 @@ include(":okio-fakefilesystem")
 if (System.getProperty("kjs", "true").toBoolean()) {
   include(":okio-nodefilesystem")
 }
+include(":okio-testing-support")
 include(":okio:jvm:japicmp")
 include(":okio:jvm:jmh")
 include(":samples")
-
-enableFeaturePreview("GRADLE_METADATA")
 
 // The Android test module doesn't work in IntelliJ. Use Android Studio or the command line.
 if (System.getProperties().containsKey("android.injected.invoked.from.ide") ||

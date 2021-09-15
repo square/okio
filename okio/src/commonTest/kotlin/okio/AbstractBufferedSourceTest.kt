@@ -559,7 +559,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
 
   @Test fun indexOfByteWithBothOffsets() {
     if (factory.isOneByteAtATime) {
-      // When run on Travis this causes out-of-memory errors.
+      // When run on CI this causes out-of-memory errors.
       return
     }
     val a = 'a'.code.toByte()
@@ -1015,6 +1015,9 @@ abstract class AbstractBufferedSourceTest internal constructor(
 
   /** Note that this test crashes the VM on Android. */
   @Test fun selectSpanningMultipleSegments() {
+    if (factory.isOneByteAtATime && isBrowser()) {
+      return // This test times out on browsers.
+    }
     val commonPrefix = randomBytes(Segment.SIZE + 10)
     val a = Buffer().write(commonPrefix).writeUtf8("a").readByteString()
     val bc = Buffer().write(commonPrefix).writeUtf8("bc").readByteString()
@@ -1132,6 +1135,10 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   @Test fun peekLarge() {
+    if (factory.isOneByteAtATime) {
+      // When run on CI this causes out-of-memory errors.
+      return
+    }
     sink.writeUtf8("abcdef")
     sink.writeUtf8("g".repeat(2 * Segment.SIZE))
     sink.writeUtf8("hij")

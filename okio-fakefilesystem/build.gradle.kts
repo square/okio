@@ -1,9 +1,13 @@
+import com.vanniktech.maven.publish.JavadocJar.Dokka
+import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 
 plugins {
   kotlin("multiplatform")
   id("ru.vyarus.animalsniffer")
   id("org.jetbrains.dokka")
+  id("com.vanniktech.maven.publish.base")
 }
 
 kotlin {
@@ -25,6 +29,8 @@ kotlin {
             timeout = "30s"
           }
         }
+      }
+      browser {
       }
     }
   }
@@ -81,4 +87,16 @@ dependencies {
   signature(deps.animalSniffer.javaSignature)
 }
 
-apply(plugin = "okio-publishing")
+// https://github.com/vanniktech/gradle-maven-publish-plugin/issues/301
+val metadataJar by tasks.getting(Jar::class)
+configure<PublishingExtension> {
+  publications.withType<MavenPublication>().named("kotlinMultiplatform").configure {
+    artifact(metadataJar)
+  }
+}
+
+configure<MavenPublishBaseExtension> {
+  configure(
+    KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
+  )
+}

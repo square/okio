@@ -364,6 +364,47 @@ class ResourceFileSystemTest {
     ).hasMessage("finding a resource")
   }
 
+  /**
+   * Our resource file system uses [URLClassLoader] internally, which means we need to go back and
+   * forth between [File], [URL], and [URI] models for component paths. This is a big hazard for
+   * escaping special characters and it's likely that some file paths won't survive the round trip!
+   */
+  @Test
+  fun fileNameWithSpaceInPath() {
+    val zipPath = ZipBuilder(base / "space in directory name")
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .addEntry("hello.txt", "Hello World")
+      .build()
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(arrayOf(zipPath.toFile().toURI().toURL()), null),
+      indexEagerly = false,
+    )
+
+    assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
+      .isEqualTo("Hello World")
+  }
+
+  @Test
+  fun missingResourceSilentlyIgnored() {
+    val zipAPath = ZipBuilder(base)
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .addEntry("hello.txt", "Hello World")
+      .build()
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(
+        arrayOf(
+          zipAPath.toFile().toURI().toURL(),
+          (base / "missing.zip").toFile().toURI().toURL(),
+        ),
+        null
+      ),
+      indexEagerly = false,
+    )
+
+    assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
+      .isEqualTo("Hello World")
+  }
+
   private fun Package.toPath(): Path = name.replace(".", "/").toPath()
 
   private val KClass<*>.packagePath: Path?

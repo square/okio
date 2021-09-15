@@ -1,4 +1,7 @@
 import aQute.bnd.gradle.BundleTaskConvention
+import com.vanniktech.maven.publish.JavadocJar.Dokka
+import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
@@ -8,6 +11,7 @@ plugins {
   kotlin("multiplatform")
   id("ru.vyarus.animalsniffer")
   id("org.jetbrains.dokka")
+  id("com.vanniktech.maven.publish.base")
 }
 
 /*
@@ -65,6 +69,8 @@ kotlin {
           }
         }
       }
+      browser {
+      }
     }
   }
   if (kmpNativeEnabled) {
@@ -99,6 +105,7 @@ kotlin {
         implementation(deps.kotlin.time)
 
         implementation(project(":okio-fakefilesystem"))
+        implementation(project(":okio-testing-support"))
       }
     }
     val nonJvmMain by creating {
@@ -130,7 +137,6 @@ kotlin {
       val jsTest by getting {
         dependencies {
           implementation(deps.kotlin.test.js)
-          implementation(project(":okio-nodefilesystem"))
         }
       }
     }
@@ -263,4 +269,16 @@ dependencies {
   signature(deps.animalSniffer.javaSignature)
 }
 
-apply(plugin = "okio-publishing")
+// https://github.com/vanniktech/gradle-maven-publish-plugin/issues/301
+val metadataJar by tasks.getting(Jar::class)
+configure<PublishingExtension> {
+  publications.withType<MavenPublication>().named("kotlinMultiplatform").configure {
+    artifact(metadataJar)
+  }
+}
+
+configure<MavenPublishBaseExtension> {
+  configure(
+    KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
+  )
+}

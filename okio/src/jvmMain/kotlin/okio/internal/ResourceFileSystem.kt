@@ -27,6 +27,7 @@ import okio.Sink
 import okio.Source
 import java.io.File
 import java.io.IOException
+import java.net.URI
 import java.net.URL
 
 /**
@@ -162,11 +163,11 @@ internal class ResourceFileSystem internal constructor(
       val urlString = toString()
       if (!urlString.startsWith("jar:file:")) return null // Ignore unexpected URLs.
 
-      // Given a URL like `jar:file:/tmp/foo.jar!/META-INF/MANIFEST.MF`, this returns a path to the
-      // archive file, like `/tmp/foo.jar`.
+      // Given a URL like `jar:file:/tmp/foo.jar!/META-INF/MANIFEST.MF`, get the path to the archive
+      // file, like `/tmp/foo.jar`.
       val suffixStart = urlString.lastIndexOf("!")
       if (suffixStart == -1) return null
-      val path = urlString.substring("jar:file:".length, suffixStart).toPath()
+      val path = File(URI.create(urlString.substring("jar:".length, suffixStart))).toOkioPath()
       val zip = openZip(
         zipPath = path,
         fileSystem = SYSTEM,

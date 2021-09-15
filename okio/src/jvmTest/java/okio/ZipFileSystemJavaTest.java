@@ -19,7 +19,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import static okio.UtilKt.randomToken;
+import static okio.TestingSupportKt.randomToken;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ZipFileSystemJavaTest {
