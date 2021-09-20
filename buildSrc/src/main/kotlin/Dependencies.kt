@@ -5,7 +5,7 @@ val kmpJsEnabled = System.getProperty("kjs", "true").toBoolean()
 val kmpNativeEnabled = System.getProperty("knative", "true").toBoolean()
 
 object versions {
-  const val kotlin = "1.5.30"
+  const val kotlin = "1.5.31"
   const val jmh = "1.33"
   const val ktlint = "0.42.1"
 }
