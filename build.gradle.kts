@@ -48,43 +48,7 @@ allprojects {
     mavenCentral()
     google()
   }
-}
 
-subprojects {
-  apply(plugin = "com.diffplug.spotless")
-  configure<SpotlessExtension> {
-    kotlin {
-      target("**/*.kt")
-      ktlint(versions.ktlint).userData(mapOf("indent_size" to "2"))
-      trimTrailingWhitespace()
-      endWithNewline()
-    }
-  }
-
-  tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-      jvmTarget = JavaVersion.VERSION_1_8.toString()
-      @Suppress("SuspiciousCollectionReassignment")
-      freeCompilerArgs += "-Xjvm-default=all"
-    }
-  }
-
-  tasks.withType<JavaCompile> {
-    options.encoding = StandardCharsets.UTF_8.toString()
-    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-    targetCompatibility = JavaVersion.VERSION_1_8.toString()
-  }
-
-  tasks.withType<Test> {
-    testLogging {
-      events(STARTED, PASSED, SKIPPED, FAILED)
-      exceptionFormat = TestExceptionFormat.FULL
-      showStandardStreams = false
-    }
-  }
-}
-
-allprojects {
   tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
       reportUndocumented.set(false)
@@ -146,6 +110,40 @@ allprojects {
           }
         }
       }
+    }
+  }
+}
+
+subprojects {
+  apply(plugin = "com.diffplug.spotless")
+  configure<SpotlessExtension> {
+    kotlin {
+      target("**/*.kt")
+      ktlint(versions.ktlint).userData(mapOf("indent_size" to "2"))
+      trimTrailingWhitespace()
+      endWithNewline()
+    }
+  }
+
+  tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+      jvmTarget = JavaVersion.VERSION_1_8.toString()
+      @Suppress("SuspiciousCollectionReassignment")
+      freeCompilerArgs += "-Xjvm-default=all"
+    }
+  }
+
+  tasks.withType<JavaCompile> {
+    options.encoding = StandardCharsets.UTF_8.toString()
+    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+    targetCompatibility = JavaVersion.VERSION_1_8.toString()
+  }
+
+  tasks.withType<Test> {
+    testLogging {
+      events(STARTED, PASSED, SKIPPED, FAILED)
+      exceptionFormat = TestExceptionFormat.FULL
+      showStandardStreams = false
     }
   }
 }
