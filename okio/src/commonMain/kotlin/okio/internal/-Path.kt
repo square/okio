@@ -38,7 +38,7 @@ private val DOT_DOT = "..".encodeUtf8()
 internal inline fun Path.commonIsAbsolute(): Boolean {
   return bytes.startsWith(SLASH) ||
     bytes.startsWith(BACKSLASH) ||
-    (volumeLetter != null && bytes.size > 2 && bytes[2] == '\\'.toByte())
+    (volumeLetter != null && bytes.size > 2 && bytes[2] == '\\'.code.toByte())
 }
 
 @ExperimentalFileSystem
@@ -52,8 +52,8 @@ internal inline fun Path.commonIsRelative(): Boolean {
 internal inline fun Path.commonVolumeLetter(): Char? {
   if (bytes.indexOf(SLASH) != -1) return null
   if (bytes.size < 2) return null
-  if (bytes[1] != ':'.toByte()) return null
-  val c = bytes[0].toChar()
+  if (bytes[1] != ':'.code.toByte()) return null
+  val c = bytes[0].toInt().toChar()
   if (c !in 'a'..'z' && c !in 'A'..'Z') return null
   return c
 }
@@ -273,8 +273,8 @@ private fun String.toSlash(): ByteString {
 
 private fun Byte.toSlash(): ByteString {
   return when (toInt()) {
-    '/'.toInt() -> SLASH
-    '\\'.toInt() -> BACKSLASH
+    '/'.code -> SLASH
+    '\\'.code -> BACKSLASH
     else -> throw IllegalArgumentException("not a directory separator: $this")
   }
 }
@@ -282,7 +282,7 @@ private fun Byte.toSlash(): ByteString {
 private fun Buffer.startsWithVolumeLetterAndColon(slash: ByteString): Boolean {
   if (slash != BACKSLASH) return false
   if (size < 2) return false
-  if (get(1) != ':'.toByte()) return false
-  val b = get(0).toChar()
+  if (get(1) != ':'.code.toByte()) return false
+  val b = get(0).toInt().toChar()
   return b in 'a'..'z' || b in 'A'..'Z'
 }

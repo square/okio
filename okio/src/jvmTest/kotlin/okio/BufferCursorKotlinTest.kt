@@ -97,7 +97,7 @@ class BufferCursorKotlinTest {
 
     buffer.readAndWriteUnsafe().use { cursor ->
       while (cursor.next() != -1) {
-        cursor.data!!.fill('x'.toByte(), cursor.start, cursor.end)
+        cursor.data!!.fill('x'.code.toByte(), cursor.start, cursor.end)
       }
     }
 

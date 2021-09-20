@@ -341,11 +341,11 @@ abstract class AbstractBufferedSourceTest internal constructor(
     // Verify we read all that we could from the source.
     assertArrayEquals(
       byteArrayOf(
-        'H'.toByte(),
-        'e'.toByte(),
-        'l'.toByte(),
-        'l'.toByte(),
-        'o'.toByte(),
+        'H'.code.toByte(),
+        'e'.code.toByte(),
+        'l'.code.toByte(),
+        'l'.code.toByte(),
+        'o'.code.toByte(),
         0
       ),
       array
@@ -360,11 +360,11 @@ abstract class AbstractBufferedSourceTest internal constructor(
     val read = source.read(sink)
     if (factory.isOneByteAtATime) {
       assertEquals(1, read.toLong())
-      val expected = byteArrayOf('a'.toByte(), 0, 0)
+      val expected = byteArrayOf('a'.code.toByte(), 0, 0)
       assertArrayEquals(expected, sink)
     } else {
       assertEquals(3, read.toLong())
-      val expected = byteArrayOf('a'.toByte(), 'b'.toByte(), 'c'.toByte())
+      val expected = byteArrayOf('a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte())
       assertArrayEquals(expected, sink)
     }
   }
@@ -377,11 +377,11 @@ abstract class AbstractBufferedSourceTest internal constructor(
     val read = source.read(sink)
     if (factory.isOneByteAtATime) {
       assertEquals(1, read.toLong())
-      val expected = byteArrayOf('a'.toByte(), 0, 0, 0, 0)
+      val expected = byteArrayOf('a'.code.toByte(), 0, 0, 0, 0)
       assertArrayEquals(expected, sink)
     } else {
       assertEquals(4, read.toLong())
-      val expected = byteArrayOf('a'.toByte(), 'b'.toByte(), 'c'.toByte(), 'd'.toByte(), 0)
+      val expected = byteArrayOf('a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte(), 'd'.code.toByte(), 0)
       assertArrayEquals(expected, sink)
     }
   }
@@ -394,11 +394,11 @@ abstract class AbstractBufferedSourceTest internal constructor(
     val read = source.read(sink, 2, 3)
     if (factory.isOneByteAtATime) {
       assertEquals(1, read.toLong())
-      val expected = byteArrayOf(0, 0, 'a'.toByte(), 0, 0, 0, 0)
+      val expected = byteArrayOf(0, 0, 'a'.code.toByte(), 0, 0, 0, 0)
       assertArrayEquals(expected, sink)
     } else {
       assertEquals(3, read.toLong())
-      val expected = byteArrayOf(0, 0, 'a'.toByte(), 'b'.toByte(), 'c'.toByte(), 0, 0)
+      val expected = byteArrayOf(0, 0, 'a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte(), 0, 0)
       assertArrayEquals(expected, sink)
     }
   }
@@ -491,9 +491,9 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeUtf8("c")
     sink.emit()
     source.skip(1)
-    assertEquals('b'.toLong(), (source.readByte() and 0xff).toLong())
+    assertEquals('b'.code.toLong(), (source.readByte() and 0xff).toLong())
     source.skip((Segment.SIZE - 2).toLong())
-    assertEquals('b'.toLong(), (source.readByte() and 0xff).toLong())
+    assertEquals('b'.code.toLong(), (source.readByte() and 0xff).toLong())
     source.skip(1)
     assertTrue(source.exhausted())
   }
@@ -509,52 +509,52 @@ abstract class AbstractBufferedSourceTest internal constructor(
 
   @Test fun indexOf() {
     // The segment is empty.
-    assertEquals(-1, source.indexOf('a'.toByte()))
+    assertEquals(-1, source.indexOf('a'.code.toByte()))
 
     // The segment has one value.
     sink.writeUtf8("a") // a
     sink.emit()
-    assertEquals(0, source.indexOf('a'.toByte()))
-    assertEquals(-1, source.indexOf('b'.toByte()))
+    assertEquals(0, source.indexOf('a'.code.toByte()))
+    assertEquals(-1, source.indexOf('b'.code.toByte()))
 
     // The segment has lots of data.
     sink.writeUtf8("b".repeat(Segment.SIZE - 2)) // ab...b
     sink.emit()
-    assertEquals(0, source.indexOf('a'.toByte()))
-    assertEquals(1, source.indexOf('b'.toByte()))
-    assertEquals(-1, source.indexOf('c'.toByte()))
+    assertEquals(0, source.indexOf('a'.code.toByte()))
+    assertEquals(1, source.indexOf('b'.code.toByte()))
+    assertEquals(-1, source.indexOf('c'.code.toByte()))
 
     // The segment doesn't start at 0, it starts at 2.
     source.skip(2) // b...b
-    assertEquals(-1, source.indexOf('a'.toByte()))
-    assertEquals(0, source.indexOf('b'.toByte()))
-    assertEquals(-1, source.indexOf('c'.toByte()))
+    assertEquals(-1, source.indexOf('a'.code.toByte()))
+    assertEquals(0, source.indexOf('b'.code.toByte()))
+    assertEquals(-1, source.indexOf('c'.code.toByte()))
 
     // The segment is full.
     sink.writeUtf8("c") // b...bc
     sink.emit()
-    assertEquals(-1, source.indexOf('a'.toByte()))
-    assertEquals(0, source.indexOf('b'.toByte()))
-    assertEquals((Segment.SIZE - 3).toLong(), source.indexOf('c'.toByte()))
+    assertEquals(-1, source.indexOf('a'.code.toByte()))
+    assertEquals(0, source.indexOf('b'.code.toByte()))
+    assertEquals((Segment.SIZE - 3).toLong(), source.indexOf('c'.code.toByte()))
 
     // The segment doesn't start at 2, it starts at 4.
     source.skip(2) // b...bc
-    assertEquals(-1, source.indexOf('a'.toByte()))
-    assertEquals(0, source.indexOf('b'.toByte()))
-    assertEquals((Segment.SIZE - 5).toLong(), source.indexOf('c'.toByte()))
+    assertEquals(-1, source.indexOf('a'.code.toByte()))
+    assertEquals(0, source.indexOf('b'.code.toByte()))
+    assertEquals((Segment.SIZE - 5).toLong(), source.indexOf('c'.code.toByte()))
 
     // Two segments.
     sink.writeUtf8("d") // b...bcd, d is in the 2nd segment.
     sink.emit()
-    assertEquals((Segment.SIZE - 4).toLong(), source.indexOf('d'.toByte()))
-    assertEquals(-1, source.indexOf('e'.toByte()))
+    assertEquals((Segment.SIZE - 4).toLong(), source.indexOf('d'.code.toByte()))
+    assertEquals(-1, source.indexOf('e'.code.toByte()))
   }
 
   @Test fun indexOfByteWithStartOffset() {
     sink.writeUtf8("a").writeUtf8("b".repeat(Segment.SIZE)).writeUtf8("c")
     sink.emit()
-    assertEquals(-1, source.indexOf('a'.toByte(), 1))
-    assertEquals(15, source.indexOf('b'.toByte(), 15))
+    assertEquals(-1, source.indexOf('a'.code.toByte(), 1))
+    assertEquals(15, source.indexOf('b'.code.toByte(), 15))
   }
 
   @Test fun indexOfByteWithBothOffsets() {
@@ -562,8 +562,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
       // When run on CI this causes out-of-memory errors.
       return
     }
-    val a = 'a'.toByte()
-    val c = 'c'.toByte()
+    val a = 'a'.code.toByte()
+    val c = 'c'.code.toByte()
 
     val size = Segment.SIZE * 5
     val bytes = ByteArray(size) { a }
@@ -617,13 +617,13 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.emit()
 
     try {
-      source.indexOf('a'.toByte(), -1)
+      source.indexOf('a'.code.toByte(), -1)
       fail("Expected failure: fromIndex < 0")
     } catch (expected: IllegalArgumentException) {
     }
 
     try {
-      source.indexOf('a'.toByte(), 10, 0)
+      source.indexOf('a'.code.toByte(), 10, 0)
       fail("Expected failure: fromIndex > toIndex")
     } catch (expected: IllegalArgumentException) {
     }
@@ -781,10 +781,10 @@ abstract class AbstractBufferedSourceTest internal constructor(
   @Test fun indexOfByteWithFromIndex() {
     sink.writeUtf8("aaa")
     sink.emit()
-    assertEquals(0, source.indexOf('a'.toByte()))
-    assertEquals(0, source.indexOf('a'.toByte(), 0))
-    assertEquals(1, source.indexOf('a'.toByte(), 1))
-    assertEquals(2, source.indexOf('a'.toByte(), 2))
+    assertEquals(0, source.indexOf('a'.code.toByte()))
+    assertEquals(0, source.indexOf('a'.code.toByte(), 0))
+    assertEquals(1, source.indexOf('a'.code.toByte(), 1))
+    assertEquals(2, source.indexOf('a'.code.toByte(), 2))
   }
 
   @Test fun indexOfByteStringWithFromIndex() {
@@ -1006,9 +1006,9 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeUtf8("PAPER,SCISSORS,ROCK")
     sink.emit()
     assertEquals(2, source.select(options).toLong())
-    assertEquals(','.toLong(), source.readByte().toLong())
+    assertEquals(','.code.toLong(), source.readByte().toLong())
     assertEquals(1, source.select(options).toLong())
-    assertEquals(','.toLong(), source.readByte().toLong())
+    assertEquals(','.code.toLong(), source.readByte().toLong())
     assertEquals(0, source.select(options).toLong())
     assertTrue(source.exhausted())
   }

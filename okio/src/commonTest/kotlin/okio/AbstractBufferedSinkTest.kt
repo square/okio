@@ -216,9 +216,9 @@ abstract class AbstractBufferedSinkTest internal constructor(
   }
 
   @Test fun closeEmitsBufferedBytes() {
-    sink.writeByte('a'.toInt())
+    sink.writeByte('a'.code)
     sink.close()
-    assertEquals('a', data.readByte().toChar())
+    assertEquals('a', data.readByte().toInt().toChar())
   }
 
   /**

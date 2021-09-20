@@ -178,7 +178,7 @@ internal inline fun RealBufferedSource.commonReadUtf8(byteCount: Long): String {
 }
 
 internal inline fun RealBufferedSource.commonReadUtf8Line(): String? {
-  val newline = indexOf('\n'.toByte())
+  val newline = indexOf('\n'.code.toByte())
 
   return if (newline == -1L) {
     if (buffer.size != 0L) {
@@ -194,11 +194,11 @@ internal inline fun RealBufferedSource.commonReadUtf8Line(): String? {
 internal inline fun RealBufferedSource.commonReadUtf8LineStrict(limit: Long): String {
   require(limit >= 0) { "limit < 0: $limit" }
   val scanLength = if (limit == Long.MAX_VALUE) Long.MAX_VALUE else limit + 1
-  val newline = indexOf('\n'.toByte(), 0, scanLength)
+  val newline = indexOf('\n'.code.toByte(), 0, scanLength)
   if (newline != -1L) return buffer.readUtf8Line(newline)
   if (scanLength < Long.MAX_VALUE &&
-    request(scanLength) && buffer[scanLength - 1] == '\r'.toByte() &&
-    request(scanLength + 1) && buffer[scanLength] == '\n'.toByte()
+    request(scanLength) && buffer[scanLength - 1] == '\r'.code.toByte() &&
+    request(scanLength + 1) && buffer[scanLength] == '\n'.code.toByte()
   ) {
     return buffer.readUtf8Line(scanLength) // The line was 'limit' UTF-8 bytes followed by \r\n.
   }
@@ -259,7 +259,7 @@ internal inline fun RealBufferedSource.commonReadDecimalLong(): Long {
   var pos = 0L
   while (request(pos + 1)) {
     val b = buffer[pos]
-    if ((b < '0'.toByte() || b > '9'.toByte()) && (pos != 0L || b != '-'.toByte())) {
+    if ((b < '0'.code.toByte() || b > '9'.code.toByte()) && (pos != 0L || b != '-'.code.toByte())) {
       // Non-digit, or non-leading negative sign.
       if (pos == 0L) {
         throw NumberFormatException("Expected leading [0-9] or '-' character but was 0x${b.toString(16)}")
@@ -278,9 +278,9 @@ internal inline fun RealBufferedSource.commonReadHexadecimalUnsignedLong(): Long
   var pos = 0
   while (request((pos + 1).toLong())) {
     val b = buffer[pos.toLong()]
-    if ((b < '0'.toByte() || b > '9'.toByte()) &&
-      (b < 'a'.toByte() || b > 'f'.toByte()) &&
-      (b < 'A'.toByte() || b > 'F'.toByte())
+    if ((b < '0'.code.toByte() || b > '9'.code.toByte()) &&
+      (b < 'a'.code.toByte() || b > 'f'.code.toByte()) &&
+      (b < 'A'.code.toByte() || b > 'F'.code.toByte())
     ) {
       // Non-digit, or non-leading negative sign.
       if (pos == 0) {

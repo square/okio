@@ -52,7 +52,7 @@ fun String.commonAsUtf8ToByteArray(): ByteArray {
       }
       return bytes.copyOf(size)
     }
-    bytes[index] = b0.toByte()
+    bytes[index] = b0.code.toByte()
   }
 
   return bytes.copyOf(length)

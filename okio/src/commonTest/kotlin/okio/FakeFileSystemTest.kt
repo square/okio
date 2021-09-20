@@ -22,8 +22,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlin.time.minutes
 
 @ExperimentalTime
 @ExperimentalFileSystem
@@ -167,15 +167,15 @@ abstract class FakeFileSystemTest internal constructor(
   fun fileLastAccessedTime() {
     val path = base / "file-last-accessed-time"
 
-    fakeClock.sleep(1.minutes)
+    fakeClock.sleep(Duration.minutes(1))
     path.writeUtf8("hello, world!")
     val createdAt = clock.now()
 
-    fakeClock.sleep(1.minutes)
+    fakeClock.sleep(Duration.minutes(1))
     path.writeUtf8("hello again!")
     val modifiedAt = clock.now()
 
-    fakeClock.sleep(1.minutes)
+    fakeClock.sleep(Duration.minutes(1))
     path.readUtf8()
     val accessedAt = clock.now()
 
@@ -189,15 +189,15 @@ abstract class FakeFileSystemTest internal constructor(
   fun directoryLastAccessedTime() {
     val path = base / "directory-last-accessed-time"
 
-    fakeClock.sleep(1.minutes)
+    fakeClock.sleep(Duration.minutes(1))
     fileSystem.createDirectory(path)
     val createdAt = clock.now()
 
-    fakeClock.sleep(1.minutes)
+    fakeClock.sleep(Duration.minutes(1))
     (path / "child").writeUtf8("hello world!")
     val modifiedAt = clock.now()
 
-    fakeClock.sleep(1.minutes)
+    fakeClock.sleep(Duration.minutes(1))
     fileSystem.list(path)
     val accessedAt = clock.now()
 

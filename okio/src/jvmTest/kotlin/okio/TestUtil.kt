@@ -21,6 +21,7 @@ import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
+import java.util.Locale
 import java.util.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -298,5 +299,5 @@ object TestUtil {
     return reversed.toShort()
   }
 
-  fun assumeNotWindows() = Assume.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"))
+  fun assumeNotWindows() = Assume.assumeFalse(System.getProperty("os.name").lowercase(Locale.getDefault()).contains("win"))
 }
