@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,6 +38,8 @@ import static okio.TestUtil.assertEquivalent;
 import static okio.TestUtil.makeSegments;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -263,14 +266,14 @@ public final class ByteStringJavaTest {
   @SuppressWarnings("SelfEquals")
   @Test public void equals() throws Exception {
     ByteString byteString = factory.decodeHex("000102");
-    assertTrue(byteString.equals(byteString));
-    assertTrue(byteString.equals(ByteString.decodeHex("000102")));
-    assertTrue(factory.decodeHex("").equals(ByteString.EMPTY));
-    assertTrue(factory.decodeHex("").equals(ByteString.of()));
-    assertTrue(ByteString.EMPTY.equals(factory.decodeHex("")));
-    assertTrue(ByteString.of().equals(factory.decodeHex("")));
-    assertFalse(byteString.equals(new Object()));
-    assertFalse(byteString.equals(ByteString.decodeHex("000201")));
+    assertEquals(byteString, byteString);
+    assertEquals(byteString, ByteString.decodeHex("000102"));
+    assertEquals(factory.decodeHex(""), ByteString.EMPTY);
+    assertEquals(factory.decodeHex(""), ByteString.of());
+    assertEquals(ByteString.EMPTY, factory.decodeHex(""));
+    assertEquals(ByteString.of(), factory.decodeHex(""));
+    assertNotEquals(byteString, new Object());
+    assertNotEquals(byteString, ByteString.decodeHex("000201"));
   }
 
   private final String bronzeHorseman = "На берегу пустынных волн";
@@ -278,7 +281,7 @@ public final class ByteStringJavaTest {
   @Test public void utf8() throws Exception {
     ByteString byteString = factory.encodeUtf8(bronzeHorseman);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(Charsets.UTF_8));
-    assertTrue(byteString.equals(ByteString.of(bronzeHorseman.getBytes(Charsets.UTF_8))));
+    assertEquals(byteString, ByteString.of(bronzeHorseman.getBytes(Charsets.UTF_8)));
     assertEquals(byteString.utf8(), bronzeHorseman);
   }
 
@@ -292,7 +295,7 @@ public final class ByteStringJavaTest {
 
   @Test public void encodeNullString() throws Exception {
     try {
-      ByteString.encodeString(null, Charset.forName("UTF-8"));
+      ByteString.encodeString(null, StandardCharsets.UTF_8);
       fail();
     } catch (NullPointerException expected) {
     }
@@ -307,7 +310,7 @@ public final class ByteStringJavaTest {
   }
 
   @Test public void encodeDecodeStringUtf8() throws Exception {
-    Charset utf8 = Charset.forName("UTF-8");
+    Charset utf8 = StandardCharsets.UTF_8;
     ByteString byteString = ByteString.encodeString(bronzeHorseman, utf8);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(utf8));
     assertEquals(byteString, ByteString.decodeHex("d09dd0b020d0b1d0b5d180d0b5d0b3d18320d0bfd183d181"
@@ -316,7 +319,7 @@ public final class ByteStringJavaTest {
   }
 
   @Test public void encodeDecodeStringUtf16be() throws Exception {
-    Charset utf16be = Charset.forName("UTF-16BE");
+    Charset utf16be = StandardCharsets.UTF_16BE;
     ByteString byteString = ByteString.encodeString(bronzeHorseman, utf16be);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(utf16be));
     assertEquals(byteString, ByteString.decodeHex("041d043000200431043504400435043304430020043f0443"
@@ -335,7 +338,7 @@ public final class ByteStringJavaTest {
   }
 
   @Test public void encodeDecodeStringAsciiIsLossy() throws Exception {
-    Charset ascii = Charset.forName("US-ASCII");
+    Charset ascii = StandardCharsets.US_ASCII;
     ByteString byteString = ByteString.encodeString(bronzeHorseman, ascii);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(ascii));
     assertEquals(byteString,
@@ -344,7 +347,7 @@ public final class ByteStringJavaTest {
   }
 
   @Test public void decodeMalformedStringReturnsReplacementCharacter() throws Exception {
-    Charset utf16be = Charset.forName("UTF-16BE");
+    Charset utf16be = StandardCharsets.UTF_16BE;
     String string = ByteString.decodeHex("04").string(utf16be);
     assertEquals("\ufffd", string);
   }
@@ -458,7 +461,7 @@ public final class ByteStringJavaTest {
 
   @Test public void decodeBase64() {
     assertEquals("", ByteString.decodeBase64("").utf8());
-    assertEquals(null, ByteString.decodeBase64("/===")); // Can't do anything with 6 bits!
+    assertNull(ByteString.decodeBase64("/===")); // Can't do anything with 6 bits!
     assertEquals(ByteString.decodeHex("ff"), ByteString.decodeBase64("//=="));
     assertEquals(ByteString.decodeHex("ff"), ByteString.decodeBase64("__=="));
     assertEquals(ByteString.decodeHex("ffff"), ByteString.decodeBase64("///="));
@@ -565,12 +568,12 @@ public final class ByteStringJavaTest {
 
   @Test public void javaSerializationTestNonEmpty() throws Exception {
     ByteString byteString = factory.encodeUtf8(bronzeHorseman);
-    assertEquivalent(byteString, TestUtil.<ByteString>reserialize(byteString));
+    assertEquivalent(byteString, TestUtil.reserialize(byteString));
   }
 
   @Test public void javaSerializationTestEmpty() throws Exception {
     ByteString byteString = factory.decodeHex("");
-    assertEquivalent(byteString, TestUtil.<ByteString>reserialize(byteString));
+    assertEquivalent(byteString, TestUtil.reserialize(byteString));
   }
 
   @Test public void compareToSingleBytes() throws Exception {

@@ -25,6 +25,7 @@ import java.util.Locale
 import java.util.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 object TestUtil {
@@ -64,9 +65,9 @@ object TestUtil {
   @JvmStatic
   fun randomSource(size: Long): Source {
     return object : Source {
-      internal var random = Random(0)
-      internal var bytesLeft = size
-      internal var closed: Boolean = false
+      var random = Random(0)
+      var bytesLeft = size
+      var closed: Boolean = false
 
       @Throws(IOException::class)
       override fun read(sink: Buffer, byteCount: Long): Long {
@@ -76,19 +77,19 @@ object TestUtil {
         if (byteCount > bytesLeft) byteCount = bytesLeft
 
         // If we can read a full segment we can save a copy.
-        if (byteCount >= Segment.SIZE) {
+        return if (byteCount >= Segment.SIZE) {
           val segment = sink.writableSegment(Segment.SIZE)
           random.nextBytes(segment.data)
           segment.limit += Segment.SIZE
           sink.size += Segment.SIZE.toLong()
           bytesLeft -= Segment.SIZE.toLong()
-          return Segment.SIZE.toLong()
+          Segment.SIZE.toLong()
         } else {
           val data = ByteArray(byteCount.toInt())
           random.nextBytes(data)
           sink.write(data)
           bytesLeft -= byteCount
-          return byteCount
+          byteCount
         }
       }
 
@@ -104,9 +105,9 @@ object TestUtil {
   @JvmStatic
   fun assertEquivalent(b1: ByteString, b2: ByteString) {
     // Equals.
-    assertTrue(b1 == b2)
-    assertTrue(b1 == b1)
-    assertTrue(b2 == b1)
+    assertEquals(b1, b2)
+    assertEquals(b1, b1)
+    assertEquals(b2, b1)
 
     // Hash code.
     assertEquals(b1.hashCode().toLong(), b2.hashCode().toLong())
@@ -124,26 +125,26 @@ object TestUtil {
 
     // Doesn't equal a different byte string.
     assertFalse(b1 == null)
-    assertFalse(b1 == Any())
-    if (b2Bytes.size > 0) {
+    assertNotEquals(b1, Any())
+    if (b2Bytes.isNotEmpty()) {
       val b3Bytes = b2Bytes.clone()
       b3Bytes[b3Bytes.size - 1]++
       val b3 = ByteString(b3Bytes)
-      assertFalse(b1 == b3)
-      assertFalse(b1.hashCode() == b3.hashCode())
+      assertNotEquals(b1, b3)
+      assertNotEquals(b1.hashCode(), b3.hashCode())
     } else {
       val b3 = "a".encodeUtf8()
-      assertFalse(b1 == b3)
-      assertFalse(b1.hashCode() == b3.hashCode())
+      assertNotEquals(b1, b3)
+      assertNotEquals(b1.hashCode(), b3.hashCode())
     }
   }
 
   @JvmStatic
   fun assertEquivalent(b1: Buffer, b2: Buffer) {
     // Equals.
-    assertTrue(b1 == b2)
-    assertTrue(b1 == b1)
-    assertTrue(b2 == b1)
+    assertEquals(b1, b2)
+    assertEquals(b1, b1)
+    assertEquals(b2, b1)
 
     // Hash code.
     assertEquals(b1.hashCode().toLong(), b2.hashCode().toLong())
@@ -161,17 +162,17 @@ object TestUtil {
     }
 
     // Doesn't equal a different buffer.
-    assertFalse(b1 == Any())
-    if (b2Bytes.size > 0) {
+    assertNotEquals(b1, Any())
+    if (b2Bytes.isNotEmpty()) {
       val b3Bytes = b2Bytes.clone()
       b3Bytes[b3Bytes.size - 1]++
       val b3 = Buffer().write(b3Bytes)
-      assertFalse(b1 == b3)
-      assertFalse(b1.hashCode() == b3.hashCode())
+      assertNotEquals(b1, b3)
+      assertNotEquals(b1.hashCode(), b3.hashCode())
     } else {
       val b3 = Buffer().writeUtf8("a")
-      assertFalse(b1 == b3)
-      assertFalse(b1.hashCode() == b3.hashCode())
+      assertNotEquals(b1, b3)
+      assertNotEquals(b1.hashCode(), b3.hashCode())
     }
   }
 

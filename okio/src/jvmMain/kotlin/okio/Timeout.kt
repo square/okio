@@ -189,7 +189,7 @@ actual open class Timeout {
     if (this.hasDeadline()) {
       val originalDeadline = this.deadlineNanoTime()
       if (other.hasDeadline()) {
-        this.deadlineNanoTime(Math.min(this.deadlineNanoTime(), other.deadlineNanoTime()))
+        this.deadlineNanoTime(this.deadlineNanoTime().coerceAtMost(other.deadlineNanoTime()))
       }
       try {
         block()

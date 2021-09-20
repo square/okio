@@ -38,11 +38,9 @@ public final class WaitUntilNotifiedTest {
     timeout.timeout(5000, TimeUnit.MILLISECONDS);
 
     double start = now();
-    executorService.schedule(new Runnable() {
-      @Override public void run() {
-        synchronized (WaitUntilNotifiedTest.this) {
-          WaitUntilNotifiedTest.this.notify();
-        }
+    executorService.schedule(() -> {
+      synchronized (WaitUntilNotifiedTest.this) {
+        WaitUntilNotifiedTest.this.notify();
       }
     }, 1000, TimeUnit.MILLISECONDS);
 

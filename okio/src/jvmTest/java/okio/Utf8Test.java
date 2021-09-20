@@ -16,6 +16,8 @@
 package okio;
 
 import java.io.EOFException;
+import java.nio.charset.StandardCharsets;
+
 import kotlin.text.Charsets;
 import org.junit.Test;
 
@@ -259,7 +261,7 @@ public final class Utf8Test {
     ByteString expectedUtf8 = ByteString.decodeHex(hex);
 
     // Confirm our expectations are consistent with the platform.
-    ByteString platformUtf8 = ByteString.of(string.getBytes("UTF-8"));
+    ByteString platformUtf8 = ByteString.of(string.getBytes(StandardCharsets.UTF_8));
     assertEquals(expectedUtf8, platformUtf8);
 
     // Confirm our implementation matches those expectations.

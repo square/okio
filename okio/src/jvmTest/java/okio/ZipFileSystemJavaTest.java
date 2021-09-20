@@ -23,8 +23,8 @@ import static okio.TestingSupportKt.randomToken;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ZipFileSystemJavaTest {
-  private FileSystem fileSystem = FileSystem.SYSTEM;
-  private Path base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve(randomToken(16));
+  private final FileSystem fileSystem = FileSystem.SYSTEM;
+  private final Path base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve(randomToken(16));
 
   @Before
   public void setUp() throws Exception {

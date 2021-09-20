@@ -81,8 +81,7 @@ internal inline fun RealBufferedSource.commonSelect(options: Options): Int {
   check(!closed) { "closed" }
 
   while (true) {
-    val index = buffer.selectPrefix(options, selectTruncated = true)
-    when (index) {
+    when (val index = buffer.selectPrefix(options, selectTruncated = true)) {
       -1 -> {
         return -1
       }

@@ -40,7 +40,7 @@ import org.openjdk.jmh.runner.RunnerException;
 @BenchmarkMode(Mode.SampleTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class IndexOfElementBenchmark {
-  ByteString byteString = ByteString.encodeUtf8("abcd");
+  final ByteString byteString = ByteString.encodeUtf8("abcd");
   Buffer buffer;
 
   @Param({ "32768" })

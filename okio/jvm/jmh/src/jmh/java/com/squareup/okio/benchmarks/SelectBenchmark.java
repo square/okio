@@ -45,7 +45,7 @@ import org.openjdk.jmh.runner.RunnerException;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class SelectBenchmark {
   /** Representative sample field names as one might find in a JSON document. */
-  List<String> sampleValues = Arrays.asList("id", "name", "description", "type", "sku_ids",
+  final List<String> sampleValues = Arrays.asList("id", "name", "description", "type", "sku_ids",
       "offers", "start_time", "end_time", "expires", "start_of_availability", "duration",
       "allow_recording", "thumbnail_id", "thumbnail_formats", "is_episode", "is_live", "channel_id",
       "genre_list", "provider_networks", "year", "video_flags", "is_repeat", "series_id",
@@ -65,7 +65,7 @@ public class SelectBenchmark {
   @Param({ "2048" })
   int selectCount;
 
-  Buffer buffer = new Buffer();
+  final Buffer buffer = new Buffer();
   Options options;
   ByteString sampleData;
 

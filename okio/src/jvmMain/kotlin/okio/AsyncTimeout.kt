@@ -170,7 +170,7 @@ open class AsyncTimeout : Timeout() {
     return e
   }
 
-  private class Watchdog internal constructor() : Thread("Okio Watchdog") {
+  private class Watchdog() : Thread("Okio Watchdog") {
     init {
       isDaemon = true
     }

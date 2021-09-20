@@ -27,6 +27,7 @@ import org.junit.runners.Parameterized;
 import static kotlin.text.StringsKt.repeat;
 import static okio.TestUtil.SEGMENT_SIZE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -200,13 +201,13 @@ public final class ReadUtf8LineTest {
     data.writeUtf8("abc\ndef");
     assertEquals("abc", source.readUtf8Line());
     assertEquals("def", source.readUtf8Line());
-    assertEquals(null, source.readUtf8Line());
+      assertNull(source.readUtf8Line());
   }
 
   @Test public void bufferedReaderCompatibleWithTrailingNewline() throws IOException {
     data.writeUtf8("abc\ndef\n");
     assertEquals("abc", source.readUtf8Line());
     assertEquals("def", source.readUtf8Line());
-    assertEquals(null, source.readUtf8Line());
+      assertNull(source.readUtf8Line());
   }
 }

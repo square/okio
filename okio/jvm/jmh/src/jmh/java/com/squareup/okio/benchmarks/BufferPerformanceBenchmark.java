@@ -256,11 +256,8 @@ public class BufferPerformanceBenchmark {
 
   public static class BufferState {
 
-    @SuppressWarnings("resource")
     final Buffer received = new Buffer();
-    @SuppressWarnings("resource")
     final Buffer sent = new Buffer();
-    @SuppressWarnings("resource")
     final Buffer process = new Buffer();
 
     public void releaseBuffers() throws IOException {
@@ -303,7 +300,6 @@ public class BufferPerformanceBenchmark {
 
   }
 
-  @SuppressWarnings("resource")
   private static final Sink NullSink = new Sink() {
 
     @Override public void write(Buffer source, long byteCount) throws EOFException {

@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -215,7 +216,7 @@ public final class BufferedSinkTest {
   }
 
   @Test public void writeUtf8SubstringWithCharset() throws IOException {
-    sink.writeString("təˈranəˌsôr", 3, 7, Charset.forName("utf-8"));
+    sink.writeString("təˈranəˌsôr", 3, 7, StandardCharsets.UTF_8);
     sink.flush();
     assertEquals(ByteString.encodeUtf8("ranə"), data.readByteString());
   }
@@ -323,7 +324,7 @@ public final class BufferedSinkTest {
 
   private void assertLongDecimalString(long value) throws IOException {
     sink.writeDecimalLong(value).writeUtf8("zzz").flush();
-    String expected = Long.toString(value) + "zzz";
+    String expected = value + "zzz";
     String actual = data.readUtf8();
     assertEquals(value + " expected " + expected + " but was " + actual, actual, expected);
   }

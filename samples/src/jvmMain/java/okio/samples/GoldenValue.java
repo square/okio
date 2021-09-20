@@ -54,8 +54,8 @@ public final class GoldenValue {
   }
 
   static final class Point implements Serializable {
-    double x;
-    double y;
+    final double x;
+    final double y;
 
     Point(double x, double y) {
       this.x = x;

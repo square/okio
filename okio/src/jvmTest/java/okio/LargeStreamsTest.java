@@ -106,11 +106,7 @@ public final class LargeStreamsTest {
   private Future<Long> readAllAndCloseAsync(final Source source, final Sink sink) {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     try {
-      return executor.submit(new Callable<Long>() {
-        @Override public Long call() throws Exception {
-          return readAllAndClose(source, sink);
-        }
-      });
+      return executor.submit(() -> readAllAndClose(source, sink));
     } finally {
       executor.shutdown();
     }

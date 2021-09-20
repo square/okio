@@ -208,7 +208,7 @@ abstract class AbstractByteStringTest internal constructor(
   @Test fun utf8() {
     val byteString = factory.encodeUtf8(bronzeHorseman)
     assertEquals(byteString.toByteArray().toList(), bronzeHorseman.commonAsUtf8ToByteArray().toList())
-    assertTrue(byteString == ByteString.of(*bronzeHorseman.commonAsUtf8ToByteArray()))
+    assertEquals(byteString, ByteString.of(*bronzeHorseman.commonAsUtf8ToByteArray()))
     assertEquals(
       byteString,
       (

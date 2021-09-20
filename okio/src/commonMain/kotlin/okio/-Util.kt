@@ -172,7 +172,7 @@ internal fun resolveDefaultParameter(unsafeCursor: Buffer.UnsafeCursor): Buffer.
   return unsafeCursor
 }
 
-internal val DEFAULT__ByteString_size = -1234567890
+internal const val DEFAULT__ByteString_size = -1234567890
 internal fun ByteString.resolveDefaultParameter(position: Int): Int {
   if (position == DEFAULT__ByteString_size) return size
   return position
