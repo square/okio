@@ -230,7 +230,7 @@ public final class BufferTest {
     Buffer buffer = new Buffer().writeUtf8("hello, world!");
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     buffer.copyTo(out);
-    String outString = out.toString(UTF_8);
+    String outString = out.toString(UTF_8.toString());
     assertEquals("hello, world!", outString);
     assertEquals("hello, world!", buffer.readUtf8());
   }
@@ -253,7 +253,7 @@ public final class BufferTest {
     Buffer buffer = new Buffer().writeUtf8("hello, world!");
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     buffer.writeTo(out);
-    String outString = out.toString(UTF_8);
+    String outString = out.toString(UTF_8.toString());
     assertEquals("hello, world!", outString);
     assertEquals(0, buffer.size());
   }
