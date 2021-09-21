@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,9 +92,9 @@ public final class OkioTest {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Sink sink = Okio.sink(out);
     sink.write(data, 3);
-    assertEquals("abb", out.toString("UTF-8"));
+    assertEquals("abb", out.toString(StandardCharsets.UTF_8.toString()));
     sink.write(data, data.size());
-    assertEquals("a" + repeat("b", 9998) + "c", out.toString("UTF-8"));
+    assertEquals("a" + repeat("b", 9998) + "c", out.toString(StandardCharsets.UTF_8.toString()));
   }
 
   @Test public void sourceFromInputStream() throws Exception {

@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -294,7 +295,7 @@ public final class ByteStringJavaTest {
 
   @Test public void encodeNullString() throws Exception {
     try {
-      ByteString.encodeString(null, Charset.forName("UTF-8"));
+      ByteString.encodeString(null, StandardCharsets.UTF_8);
       fail();
     } catch (NullPointerException expected) {
     }
@@ -309,7 +310,7 @@ public final class ByteStringJavaTest {
   }
 
   @Test public void encodeDecodeStringUtf8() throws Exception {
-    Charset utf8 = Charset.forName("UTF-8");
+    Charset utf8 = StandardCharsets.UTF_8;
     ByteString byteString = ByteString.encodeString(bronzeHorseman, utf8);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(utf8));
     assertEquals(byteString, ByteString.decodeHex("d09dd0b020d0b1d0b5d180d0b5d0b3d18320d0bfd183d181"
@@ -318,7 +319,7 @@ public final class ByteStringJavaTest {
   }
 
   @Test public void encodeDecodeStringUtf16be() throws Exception {
-    Charset utf16be = Charset.forName("UTF-16BE");
+    Charset utf16be = StandardCharsets.UTF_16BE;
     ByteString byteString = ByteString.encodeString(bronzeHorseman, utf16be);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(utf16be));
     assertEquals(byteString, ByteString.decodeHex("041d043000200431043504400435043304430020043f0443"
@@ -337,7 +338,7 @@ public final class ByteStringJavaTest {
   }
 
   @Test public void encodeDecodeStringAsciiIsLossy() throws Exception {
-    Charset ascii = Charset.forName("US-ASCII");
+    Charset ascii = StandardCharsets.US_ASCII;
     ByteString byteString = ByteString.encodeString(bronzeHorseman, ascii);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(ascii));
     assertEquals(byteString,
@@ -346,7 +347,7 @@ public final class ByteStringJavaTest {
   }
 
   @Test public void decodeMalformedStringReturnsReplacementCharacter() throws Exception {
-    Charset utf16be = Charset.forName("UTF-16BE");
+    Charset utf16be = StandardCharsets.UTF_16BE;
     String string = ByteString.decodeHex("04").string(utf16be);
     assertEquals("\ufffd", string);
   }
