@@ -324,7 +324,7 @@ public final class BufferedSinkTest {
 
   private void assertLongDecimalString(long value) throws IOException {
     sink.writeDecimalLong(value).writeUtf8("zzz").flush();
-    String expected = Long.toString(value) + "zzz";
+    String expected = value + "zzz";
     String actual = data.readUtf8();
     assertEquals(value + " expected " + expected + " but was " + actual, actual, expected);
   }

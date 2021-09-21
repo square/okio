@@ -568,12 +568,12 @@ public final class ByteStringJavaTest {
 
   @Test public void javaSerializationTestNonEmpty() throws Exception {
     ByteString byteString = factory.encodeUtf8(bronzeHorseman);
-    assertEquivalent(byteString, TestUtil.<ByteString>reserialize(byteString));
+    assertEquivalent(byteString, TestUtil.reserialize(byteString));
   }
 
   @Test public void javaSerializationTestEmpty() throws Exception {
     ByteString byteString = factory.decodeHex("");
-    assertEquivalent(byteString, TestUtil.<ByteString>reserialize(byteString));
+    assertEquivalent(byteString, TestUtil.reserialize(byteString));
   }
 
   @Test public void compareToSingleBytes() throws Exception {
