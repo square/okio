@@ -132,7 +132,7 @@ public class BufferPerformanceBenchmark {
   }
 
   @Benchmark
-  @GroupThreads(1)
+  @GroupThreads()
   @Group("cold")
   public void thinkReadHot(HotBuffers buffers) throws IOException {
     buffers.receive(requestBytes).readAll(NullSink);
