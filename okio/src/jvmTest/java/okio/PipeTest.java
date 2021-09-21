@@ -18,7 +18,6 @@ package okio;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -62,39 +61,35 @@ public final class PipeTest {
     ByteString expectedHash = ByteString.decodeHex("7c3b224bea749086babe079360cf29f98d88262d");
 
     // Write data to the sink.
-    Future<ByteString> sinkHash = executorService.submit(new Callable<ByteString>() {
-      @Override public ByteString call() throws Exception {
-        HashingSink hashingSink = HashingSink.sha1(pipe.sink());
-        Random random = new Random(0);
-        byte[] data = new byte[8192];
+    Future<ByteString> sinkHash = executorService.submit(() -> {
+      HashingSink hashingSink = HashingSink.sha1(pipe.sink());
+      Random random = new Random(0);
+      byte[] data = new byte[8192];
 
-        Buffer buffer = new Buffer();
-        for (long i = 0L; i < totalBytes; i += data.length) {
-          random.nextBytes(data);
-          buffer.write(data);
-          hashingSink.write(buffer, buffer.size());
-        }
-
-        hashingSink.close();
-        return hashingSink.hash();
+      Buffer buffer = new Buffer();
+      for (long i = 0L; i < totalBytes; i += data.length) {
+        random.nextBytes(data);
+        buffer.write(data);
+        hashingSink.write(buffer, buffer.size());
       }
+
+      hashingSink.close();
+      return hashingSink.hash();
     });
 
     // Read data from the source.
-    Future<ByteString> sourceHash = executorService.submit(new Callable<ByteString>() {
-      @Override public ByteString call() throws Exception {
-        Buffer blackhole = new Buffer();
-        HashingSink hashingSink = HashingSink.sha1(blackhole);
+    Future<ByteString> sourceHash = executorService.submit(() -> {
+      Buffer blackhole = new Buffer();
+      HashingSink hashingSink = HashingSink.sha1(blackhole);
 
-        Buffer buffer = new Buffer();
-        while (pipe.source().read(buffer, Long.MAX_VALUE) != -1) {
-          hashingSink.write(buffer, buffer.size());
-          blackhole.clear();
-        }
-
-        pipe.source().close();
-        return hashingSink.hash();
+      Buffer buffer = new Buffer();
+      while (pipe.source().read(buffer, Long.MAX_VALUE) != -1) {
+        hashingSink.write(buffer, buffer.size());
+        blackhole.clear();
       }
+
+      pipe.source().close();
+      return hashingSink.hash();
     });
 
     assertEquals(expectedHash, sinkHash.get());
@@ -156,25 +151,23 @@ public final class PipeTest {
    */
   @Test public void sinkBlocksOnSlowReader() throws Exception {
     final Pipe pipe = new Pipe(3L);
-    executorService.execute(new Runnable() {
-      @Override public void run() {
-        try {
-          Buffer buffer = new Buffer();
-          Thread.sleep(1000L);
-          assertEquals(3, pipe.source().read(buffer, Long.MAX_VALUE));
-          assertEquals("abc", buffer.readUtf8());
-          Thread.sleep(1000L);
-          assertEquals(3, pipe.source().read(buffer, Long.MAX_VALUE));
-          assertEquals("def", buffer.readUtf8());
-          Thread.sleep(1000L);
-          assertEquals(3, pipe.source().read(buffer, Long.MAX_VALUE));
-          assertEquals("ghi", buffer.readUtf8());
-          Thread.sleep(1000L);
-          assertEquals(3, pipe.source().read(buffer, Long.MAX_VALUE));
-          assertEquals("jkl", buffer.readUtf8());
-        } catch (IOException | InterruptedException e) {
-          throw new AssertionError();
-        }
+    executorService.execute(() -> {
+      try {
+        Buffer buffer = new Buffer();
+        Thread.sleep(1000L);
+        assertEquals(3, pipe.source().read(buffer, Long.MAX_VALUE));
+        assertEquals("abc", buffer.readUtf8());
+        Thread.sleep(1000L);
+        assertEquals(3, pipe.source().read(buffer, Long.MAX_VALUE));
+        assertEquals("def", buffer.readUtf8());
+        Thread.sleep(1000L);
+        assertEquals(3, pipe.source().read(buffer, Long.MAX_VALUE));
+        assertEquals("ghi", buffer.readUtf8());
+        Thread.sleep(1000L);
+        assertEquals(3, pipe.source().read(buffer, Long.MAX_VALUE));
+        assertEquals("jkl", buffer.readUtf8());
+      } catch (IOException | InterruptedException e) {
+        throw new AssertionError();
       }
     });
 
@@ -185,13 +178,11 @@ public final class PipeTest {
 
   @Test public void sinkWriteFailsByClosedReader() throws Exception {
     final Pipe pipe = new Pipe(3L);
-    executorService.schedule(new Runnable() {
-      @Override public void run() {
-        try {
-          pipe.source().close();
-        } catch (IOException e) {
-          throw new AssertionError();
-        }
+    executorService.schedule(() -> {
+      try {
+        pipe.source().close();
+      } catch (IOException e) {
+        throw new AssertionError();
       }
     }, 1000, TimeUnit.MILLISECONDS);
 
@@ -290,13 +281,11 @@ public final class PipeTest {
 
   @Test public void sourceReadUnblockedByClosedSink() throws Exception {
     final Pipe pipe = new Pipe(3L);
-    executorService.schedule(new Runnable() {
-      @Override public void run() {
-        try {
-          pipe.sink().close();
-        } catch (IOException e) {
-          throw new AssertionError();
-        }
+    executorService.schedule(() -> {
+      try {
+        pipe.sink().close();
+      } catch (IOException e) {
+        throw new AssertionError();
       }
     }, 1000, TimeUnit.MILLISECONDS);
 
@@ -324,20 +313,18 @@ public final class PipeTest {
    */
   @Test public void sourceBlocksOnSlowWriter() throws Exception {
     final Pipe pipe = new Pipe(100L);
-    executorService.execute(new Runnable() {
-      @Override public void run() {
-        try {
-          Thread.sleep(1000L);
-          pipe.sink().write(new Buffer().writeUtf8("abc"), 3);
-          Thread.sleep(1000L);
-          pipe.sink().write(new Buffer().writeUtf8("def"), 3);
-          Thread.sleep(1000L);
-          pipe.sink().write(new Buffer().writeUtf8("ghi"), 3);
-          Thread.sleep(1000L);
-          pipe.sink().write(new Buffer().writeUtf8("jkl"), 3);
-        } catch (IOException | InterruptedException e) {
-          throw new AssertionError();
-        }
+    executorService.execute(() -> {
+      try {
+        Thread.sleep(1000L);
+        pipe.sink().write(new Buffer().writeUtf8("abc"), 3);
+        Thread.sleep(1000L);
+        pipe.sink().write(new Buffer().writeUtf8("def"), 3);
+        Thread.sleep(1000L);
+        pipe.sink().write(new Buffer().writeUtf8("ghi"), 3);
+        Thread.sleep(1000L);
+        pipe.sink().write(new Buffer().writeUtf8("jkl"), 3);
+      } catch (IOException | InterruptedException e) {
+        throw new AssertionError();
       }
     });
 
