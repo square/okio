@@ -37,6 +37,8 @@ import static okio.TestUtil.assertEquivalent;
 import static okio.TestUtil.makeSegments;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -263,14 +265,14 @@ public final class ByteStringJavaTest {
   @SuppressWarnings("SelfEquals")
   @Test public void equals() throws Exception {
     ByteString byteString = factory.decodeHex("000102");
-    assertTrue(byteString.equals(byteString));
-    assertTrue(byteString.equals(ByteString.decodeHex("000102")));
-    assertTrue(factory.decodeHex("").equals(ByteString.EMPTY));
-    assertTrue(factory.decodeHex("").equals(ByteString.of()));
-    assertTrue(ByteString.EMPTY.equals(factory.decodeHex("")));
-    assertTrue(ByteString.of().equals(factory.decodeHex("")));
-    assertFalse(byteString.equals(new Object()));
-    assertFalse(byteString.equals(ByteString.decodeHex("000201")));
+    assertEquals(byteString, byteString);
+    assertEquals(byteString, ByteString.decodeHex("000102"));
+    assertEquals(factory.decodeHex(""), ByteString.EMPTY);
+    assertEquals(factory.decodeHex(""), ByteString.of());
+    assertEquals(ByteString.EMPTY, factory.decodeHex(""));
+    assertEquals(ByteString.of(), factory.decodeHex(""));
+    assertNotEquals(byteString, new Object());
+    assertNotEquals(byteString, ByteString.decodeHex("000201"));
   }
 
   private final String bronzeHorseman = "На берегу пустынных волн";
@@ -278,7 +280,7 @@ public final class ByteStringJavaTest {
   @Test public void utf8() throws Exception {
     ByteString byteString = factory.encodeUtf8(bronzeHorseman);
     assertByteArraysEquals(byteString.toByteArray(), bronzeHorseman.getBytes(Charsets.UTF_8));
-    assertTrue(byteString.equals(ByteString.of(bronzeHorseman.getBytes(Charsets.UTF_8))));
+    assertEquals(byteString, ByteString.of(bronzeHorseman.getBytes(Charsets.UTF_8)));
     assertEquals(byteString.utf8(), bronzeHorseman);
   }
 
@@ -458,7 +460,7 @@ public final class ByteStringJavaTest {
 
   @Test public void decodeBase64() {
     assertEquals("", ByteString.decodeBase64("").utf8());
-    assertEquals(null, ByteString.decodeBase64("/===")); // Can't do anything with 6 bits!
+    assertNull(ByteString.decodeBase64("/===")); // Can't do anything with 6 bits!
     assertEquals(ByteString.decodeHex("ff"), ByteString.decodeBase64("//=="));
     assertEquals(ByteString.decodeHex("ff"), ByteString.decodeBase64("__=="));
     assertEquals(ByteString.decodeHex("ffff"), ByteString.decodeBase64("///="));
