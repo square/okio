@@ -49,6 +49,7 @@ internal actual class RealBufferedSink actual constructor(
   override val buffer: Buffer
     inline get() = bufferField
 
+  @Suppress("OverridingDeprecatedMember")
   override fun buffer() = bufferField
 
   override fun write(source: Buffer, byteCount: Long) = commonWrite(source, byteCount)

@@ -60,6 +60,7 @@ internal actual class RealBufferedSource actual constructor(
   override val buffer: Buffer
     inline get() = bufferField
 
+  @Suppress("OverridingDeprecatedMember")
   override fun buffer() = bufferField
 
   override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)

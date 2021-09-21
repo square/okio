@@ -80,6 +80,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   actual var size: Long = 0L
     internal set
 
+  @Suppress("OverridingDeprecatedMember")
   override fun buffer() = this
 
   actual override val buffer get() = this
