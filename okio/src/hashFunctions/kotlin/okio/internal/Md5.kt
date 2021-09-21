@@ -95,8 +95,7 @@ internal class Md5 : HashFunction {
     var d = h3
 
     for (i in 0 until 16) {
-      val g = i
-      val f = ((b and c) or (b.inv() and d)) + a + localK[i] + words[g]
+      val f = ((b and c) or (b.inv() and d)) + a + localK[i] + words[i]
       a = d
       d = c
       c = b

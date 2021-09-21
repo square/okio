@@ -21,7 +21,7 @@ import java.io.IOException
 
 @Throws(IOException::class)
 fun dumpStringData(s: String) {
-  println("                       " + s)
+  println("                       $s")
   println("        String.length: " + s.length)
   println("String.codePointCount: " + s.codePointCount(0, s.length))
   println("            Utf8.size: " + s.utf8Size())

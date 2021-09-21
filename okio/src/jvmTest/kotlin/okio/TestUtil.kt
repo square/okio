@@ -64,9 +64,9 @@ object TestUtil {
   @JvmStatic
   fun randomSource(size: Long): Source {
     return object : Source {
-      internal var random = Random(0)
-      internal var bytesLeft = size
-      internal var closed: Boolean = false
+      var random = Random(0)
+      var bytesLeft = size
+      var closed: Boolean = false
 
       @Throws(IOException::class)
       override fun read(sink: Buffer, byteCount: Long): Long {
@@ -76,19 +76,19 @@ object TestUtil {
         if (byteCount > bytesLeft) byteCount = bytesLeft
 
         // If we can read a full segment we can save a copy.
-        if (byteCount >= Segment.SIZE) {
+        return if (byteCount >= Segment.SIZE) {
           val segment = sink.writableSegment(Segment.SIZE)
           random.nextBytes(segment.data)
           segment.limit += Segment.SIZE
           sink.size += Segment.SIZE.toLong()
           bytesLeft -= Segment.SIZE.toLong()
-          return Segment.SIZE.toLong()
+          Segment.SIZE.toLong()
         } else {
           val data = ByteArray(byteCount.toInt())
           random.nextBytes(data)
           sink.write(data)
           bytesLeft -= byteCount
-          return byteCount
+          byteCount
         }
       }
 
@@ -125,7 +125,7 @@ object TestUtil {
     // Doesn't equal a different byte string.
     assertFalse(b1 == null)
     assertFalse(b1 == Any())
-    if (b2Bytes.size > 0) {
+    if (b2Bytes.isNotEmpty()) {
       val b3Bytes = b2Bytes.clone()
       b3Bytes[b3Bytes.size - 1]++
       val b3 = ByteString(b3Bytes)
@@ -162,7 +162,7 @@ object TestUtil {
 
     // Doesn't equal a different buffer.
     assertFalse(b1 == Any())
-    if (b2Bytes.size > 0) {
+    if (b2Bytes.isNotEmpty()) {
       val b3Bytes = b2Bytes.clone()
       b3Bytes[b3Bytes.size - 1]++
       val b3 = Buffer().write(b3Bytes)

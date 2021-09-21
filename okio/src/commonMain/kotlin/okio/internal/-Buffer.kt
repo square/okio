@@ -195,15 +195,14 @@ internal fun Buffer.selectPrefix(options: Options, selectTruncated: Boolean = fa
         }
       }
     } else {
-      // Select: take one byte from the buffer and find a match in the trie.
-      val selectChoiceCount = scanOrSelect
       val byte = data[pos++] and 0xff
-      val selectLimit = triePos + selectChoiceCount
+      // Select: take one byte from the buffer and find a match in the trie.
+      val selectLimit = triePos + scanOrSelect
       while (true) {
         if (triePos == selectLimit) return prefixIndex // Fail 'cause we didn't find a match.
 
         if (byte == trie[triePos]) {
-          nextStep = trie[triePos + selectChoiceCount]
+          nextStep = trie[triePos + scanOrSelect]
           break
         }
 
@@ -770,10 +769,10 @@ internal inline fun Buffer.commonReadByteString(byteCount: Long): ByteString {
   require(byteCount >= 0 && byteCount <= Int.MAX_VALUE) { "byteCount: $byteCount" }
   if (size < byteCount) throw EOFException()
 
-  if (byteCount >= SEGMENTING_THRESHOLD) {
-    return snapshot(byteCount.toInt()).also { skip(byteCount) }
+  return if (byteCount >= SEGMENTING_THRESHOLD) {
+    snapshot(byteCount.toInt()).also { skip(byteCount) }
   } else {
-    return ByteString(readByteArray(byteCount))
+    ByteString(readByteArray(byteCount))
   }
 }
 
@@ -1297,7 +1296,7 @@ internal inline fun Buffer.commonIndexOf(bytes: ByteString, fromIndex: Long): Lo
     while (offset < resultLimit) {
       // Scan through the current segment.
       val data = s.data
-      val segmentLimit = okio.minOf(s.limit, s.pos + resultLimit - offset).toInt()
+      val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
       for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
         if (data[pos] == b0 && rangeEquals(s, pos + 1, targetByteArray, 1, bytesSize)) {
           return pos - s.pos + offset
@@ -1618,7 +1617,7 @@ internal inline fun UnsafeCursor.commonResizeBuffer(newSize: Long): Long {
       val tailSize = tail!!.limit - tail.pos
       if (tailSize <= bytesToSubtract) {
         buffer.head = tail.pop()
-        okio.SegmentPool.recycle(tail)
+        SegmentPool.recycle(tail)
         bytesToSubtract -= tailSize.toLong()
       } else {
         tail.limit -= bytesToSubtract.toInt()

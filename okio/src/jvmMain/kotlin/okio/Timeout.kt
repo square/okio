@@ -18,6 +18,7 @@ package okio
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
+import kotlin.math.min
 
 actual open class Timeout {
   /**
@@ -189,7 +190,7 @@ actual open class Timeout {
     if (this.hasDeadline()) {
       val originalDeadline = this.deadlineNanoTime()
       if (other.hasDeadline()) {
-        this.deadlineNanoTime(Math.min(this.deadlineNanoTime(), other.deadlineNanoTime()))
+        this.deadlineNanoTime(min(this.deadlineNanoTime(), other.deadlineNanoTime()))
       }
       try {
         block()

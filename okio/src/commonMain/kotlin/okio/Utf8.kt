@@ -439,13 +439,13 @@ internal inline fun ByteArray.process3Utf8Bytes(
   if (endIndex <= beginIndex + 2) {
     // At least 2 bytes remaining
     yield(REPLACEMENT_CODE_POINT)
-    if (endIndex <= beginIndex + 1 || !isUtf8Continuation(this[beginIndex + 1])) {
+    return if (endIndex <= beginIndex + 1 || !isUtf8Continuation(this[beginIndex + 1])) {
       // Only 1 byte remaining - underflow
       // Or 2nd byte is not a continuation - malformed
-      return 1
+      1
     } else {
       // Only 2 bytes remaining - underflow
-      return 2
+      2
     }
   }
 
@@ -499,17 +499,17 @@ internal inline fun ByteArray.process4Utf8Bytes(
   if (endIndex <= beginIndex + 3) {
     // At least 3 bytes remaining
     yield(REPLACEMENT_CODE_POINT)
-    if (endIndex <= beginIndex + 1 || !isUtf8Continuation(this[beginIndex + 1])) {
+    return if (endIndex <= beginIndex + 1 || !isUtf8Continuation(this[beginIndex + 1])) {
       // Only 1 byte remaining - underflow
       // Or 2nd byte is not a continuation - malformed
-      return 1
+      1
     } else if (endIndex <= beginIndex + 2 || !isUtf8Continuation(this[beginIndex + 2])) {
       // Only 2 bytes remaining - underflow
       // Or 3rd byte is not a continuation - malformed
-      return 2
+      2
     } else {
       // Only 3 bytes remaining - underflow
-      return 3
+      3
     }
   }
 

@@ -115,10 +115,9 @@ internal inline fun SegmentedByteString.commonSubstring(beginIndex: Int, endInde
 
   val newSegments = segments.copyOfRange(beginSegment, endSegment + 1)
   val newDirectory = IntArray(newSegments.size * 2)
-  var index = 0
-  for (s in beginSegment..endSegment) {
+  for ((index, s) in (beginSegment..endSegment).withIndex()) {
     newDirectory[index] = minOf(directory[s] - beginIndex, subLen)
-    newDirectory[index++ + newSegments.size] = directory[s + segments.size]
+    newDirectory[index + newSegments.size] = directory[s + segments.size]
   }
 
   // Set the new position of the first segment

@@ -113,8 +113,7 @@ class KotlinSocksProxyServer {
       }
 
       // Read an address.
-      val addressType = fromSource.readByte().toInt() and 0xff
-      val inetAddress = when (addressType) {
+      val inetAddress = when (fromSource.readByte().toInt() and 0xff) {
         ADDRESS_TYPE_IPV4 -> InetAddress.getByAddress(fromSource.readByteArray(4L))
         ADDRESS_TYPE_DOMAIN_NAME -> {
           val domainNameLength: Int = fromSource.readByte().toInt() and 0xff
