@@ -18,6 +18,7 @@ package okio
 import okio.Path.Companion.toPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
@@ -415,5 +416,132 @@ class PathTest {
   fun samePathNoSlashesAreEqual() {
     assertEquals("a".toPath().parent!!, "a".toPath().parent!!)
     assertEquals("a/b".toPath().parent!!, "a\\b".toPath().parent!!)
+  }
+
+  @Test
+  fun relativeToWindowsPaths() {
+    val a = "C:\\Windows\\notepad.exe".toPath()
+    val b = "C:\\".toPath()
+    assertEquals("..\\..".toPath(), b.relativeTo(a))
+    assertEquals("Windows\\notepad.exe".toPath(), a.relativeTo(b))
+
+    val c = "C:\\Windows\\".toPath()
+    val d = "C:\\Windows".toPath()
+    assertEquals(".".toPath(), d.relativeTo(c))
+    assertEquals(".".toPath(), c.relativeTo(d))
+
+    val e = "C:\\Windows\\Downloads\\".toPath()
+    val f = "C:\\Windows\\Documents\\Hello.txt".toPath()
+    assertEquals("..\\Documents\\Hello.txt".toPath(), f.relativeTo(e))
+    assertEquals("..\\..\\Downloads".toPath(), e.relativeTo(f))
+
+    val g = "C:\\Windows\\".toPath()
+    val h = "D:\\Windows\\".toPath()
+    assertFailsWith<IllegalArgumentException> { h.relativeTo(g) }
+    assertFailsWith<IllegalArgumentException> { g.relativeTo(h) }
+  }
+
+  @Test
+  fun relativeToWindowsUncPaths() {
+    val a = "\\\\localhost\\c$\\development\\schema.proto".toPath()
+    val b = "\\\\localhost\\c$\\project\\notes.txt".toPath()
+    assertEquals("..\\..\\project\\notes.txt".toPath(), b.relativeTo(a))
+    assertEquals("..\\..\\development\\schema.proto".toPath(), a.relativeTo(b))
+
+    val c = "C:\\Windows\\".toPath()
+    val d = "\\\\localhost\\c$\\project\\notes.txt".toPath()
+    assertFailsWith<IllegalArgumentException> { d.relativeTo(c) }
+    assertFailsWith<IllegalArgumentException> { c.relativeTo(d) }
+  }
+
+  @Test
+  fun absoluteUnixRoot() {
+    val a = "/Users/jesse/hello.txt".toPath()
+    val b = "/".toPath()
+    assertEquals("../../..".toPath(), b.relativeTo(a))
+    assertEquals("Users/jesse/hello.txt".toPath(), a.relativeTo(b))
+
+    val c = "/Users/jesse/hello.txt".toPath()
+    val d = "/Admin/Secret".toPath()
+    assertEquals("../../../Admin/Secret".toPath(), d.relativeTo(c))
+    assertEquals("../../Users/jesse/hello.txt".toPath(), c.relativeTo(d))
+
+    val e = "/Users/".toPath()
+    val f = "/Users".toPath()
+    assertEquals(".".toPath(), f.relativeTo(e))
+    assertEquals(".".toPath(), e.relativeTo(f))
+  }
+
+  @Test
+  fun absoluteToRelative() {
+    val a = "/Users/jesse/hello.txt".toPath()
+    val b = "Desktop/goodbye.txt".toPath()
+
+    var exception = assertFailsWith<IllegalArgumentException> { b.relativeTo(a) }
+    assertEquals(
+      "Paths of different roots cannot be relative to each other: " +
+        "Desktop/goodbye.txt and /Users/jesse/hello.txt",
+      exception.message
+    )
+
+    exception = assertFailsWith { a.relativeTo(b) }
+    assertEquals(
+      "Paths of different roots cannot be relative to each other: " +
+        "/Users/jesse/hello.txt and Desktop/goodbye.txt",
+      exception.message
+    )
+  }
+
+  @Test
+  fun absoluteToAbsolute() {
+    val a = "/Users/jesse/hello.txt".toPath()
+    val b = "/Users/benoit/Desktop/goodbye.txt".toPath()
+    assertEquals("../../benoit/Desktop/goodbye.txt".toPath(), b.relativeTo(a))
+    assertEquals("../../../jesse/hello.txt".toPath(), a.relativeTo(b))
+  }
+
+  @Test
+  fun absoluteToSelf() {
+    val a = "/Users/jesse/hello.txt".toPath()
+    assertEquals(".".toPath(), a.relativeTo(a))
+  }
+
+  @Test
+  fun relativeToSelf() {
+    val a = "Desktop/hello.txt".toPath()
+    assertEquals(".".toPath(), a.relativeTo(a))
+  }
+
+  @Test
+  fun relativeToRelative() {
+    val a = "Desktop/documents/resume.txt".toPath()
+    val b = "Desktop/documents/2021/taxes.txt".toPath()
+    assertEquals("../2021/taxes.txt".toPath(), b.relativeTo(a))
+    assertEquals("../../resume.txt".toPath(), a.relativeTo(b))
+
+    val c = "documents/resume.txt".toPath()
+    val d = "downloads/2021/taxes.txt".toPath()
+    assertEquals("../../downloads/2021/taxes.txt".toPath(), d.relativeTo(c))
+    assertEquals("../../../documents/resume.txt".toPath(), c.relativeTo(d))
+  }
+
+  @Test
+  fun unixRelativeToWindows() {
+    val a = "Desktop/documents/resume.txt".toPath()
+    val b = "Desktop\\documents\\2021\\taxes.txt".toPath()
+
+    var exception = assertFailsWith<IllegalArgumentException> { b.relativeTo(a) }
+    assertEquals(
+      "Paths of different platforms cannot be relative to each other: " +
+        "Desktop\\documents\\2021\\taxes.txt and Desktop/documents/resume.txt",
+      exception.message
+    )
+
+    exception = assertFailsWith("message") { a.relativeTo(b) }
+    assertEquals(
+      "Paths of different platforms cannot be relative to each other: " +
+        "Desktop/documents/resume.txt and Desktop\\documents\\2021\\taxes.txt",
+      exception.message
+    )
   }
 }

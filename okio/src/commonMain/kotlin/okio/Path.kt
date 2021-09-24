@@ -208,6 +208,16 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
    */
   operator fun div(child: Path): Path
 
+  /**
+   * Returns this path relative to [other].
+   *
+   * This will throw an exception if this path and [other] are not both [absolute paths][isAbsolute]
+   * or both [relative paths][isRelative], or if they have different slash (/ versus \), or if they
+   * are both [absolute paths][isAbsolute] of different roots (C: vs D:, or C: vs \\server, etc.).
+   */
+  @Throws(IllegalArgumentException::class)
+  fun relativeTo(other: Path): Path
+
   override fun compareTo(other: Path): Int
 
   override fun equals(other: Any?): Boolean

@@ -20,6 +20,8 @@ import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import okio.ExperimentalFileSystem
 import okio.Path
+import okio.Path.Companion.toPath
+import okio.and
 import kotlin.native.concurrent.SharedImmutable
 
 @SharedImmutable
@@ -211,13 +213,7 @@ internal inline fun Path.commonResolve(child: String): Path {
 internal inline fun Path.commonResolve(child: Path): Path {
   if (child.isAbsolute || child.volumeLetter != null) return child
 
-  val slash = when {
-    bytes.indexOf(SLASH) != -1 -> SLASH
-    bytes.indexOf(BACKSLASH) != -1 -> BACKSLASH
-    child.bytes.indexOf(SLASH) != -1 -> SLASH
-    child.bytes.indexOf(BACKSLASH) != -1 -> BACKSLASH
-    else -> Path.DIRECTORY_SEPARATOR.toSlash()
-  }
+  val slash = slash ?: child.slash ?: Path.DIRECTORY_SEPARATOR.toSlash()
 
   val buffer = Buffer()
   buffer.write(bytes)
@@ -226,6 +222,84 @@ internal inline fun Path.commonResolve(child: Path): Path {
   }
   buffer.write(child.bytes)
   return buffer.toPath()
+}
+
+@ExperimentalFileSystem
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun Path.commonRelativeTo(other: Path): Path {
+  require(isAbsolute && other.isAbsolute || isRelative && other.isRelative) {
+    "Paths of different roots cannot be relative to each other: $this and $other"
+  }
+
+  val thisSlash = slash
+  val otherSlash = other.slash
+  require(thisSlash == otherSlash) {
+    "Paths of different platforms cannot be relative to each other: $this and $other"
+  }
+
+  val slash = thisSlash ?: otherSlash ?: Path.DIRECTORY_SEPARATOR.toSlash()
+
+  // We look at the path both have in common.
+  var lastCommonByteIndex = 0
+  while (lastCommonByteIndex < bytes.size &&
+    lastCommonByteIndex < other.bytes.size &&
+    (bytes[lastCommonByteIndex] and 0xff) == (other.bytes[lastCommonByteIndex] and 0xff)
+  ) {
+    lastCommonByteIndex++
+  }
+
+  if (lastCommonByteIndex == bytes.size && bytes.size == other.bytes.size) {
+    // `this` and `other` are the same path.
+    return ".".toPath()
+  }
+
+  if (lastCommonByteIndex == 0 && isAbsolute) {
+    throw IllegalArgumentException(
+      "Paths of different roots cannot be relative to each other: $this and $other"
+    )
+  }
+
+  val lastCommonSlashIndex = bytes.substring(0, lastCommonByteIndex).lastIndexOf(slash)
+  val firstDiffIndex = lastCommonSlashIndex + slash.size
+
+  val buffer = Buffer()
+  val stepsToCommonParent = other.bytes.substring(firstDiffIndex, other.bytes.size).count(slash)
+  // We check if there is a trailing path segment on `other`.
+  if (other.bytes.size > firstDiffIndex) {
+    for (j in 0..stepsToCommonParent) {
+      buffer.write(DOT_DOT)
+      buffer.write(slash)
+    }
+  }
+
+  buffer.write(bytes.substring(firstDiffIndex, bytes.size))
+  return buffer.toPath()
+}
+
+@ExperimentalFileSystem
+private val Path.slash: ByteString?
+  get() {
+    return when {
+      bytes.indexOf(SLASH) != -1 -> SLASH
+      bytes.indexOf(BACKSLASH) != -1 -> BACKSLASH
+      else -> null
+    }
+  }
+
+/** Returns the number of [value]s present in this [ByteString]. */
+private fun ByteString.count(value: ByteString): Int {
+  var count = 0
+  var i = 0
+  while (i < size) {
+    when (val next = indexOf(value, i)) {
+      -1 -> return count
+      else -> {
+        i = next + 1
+        count++
+      }
+    }
+  }
+  return count
 }
 
 @ExperimentalFileSystem

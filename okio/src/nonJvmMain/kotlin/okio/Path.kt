@@ -24,6 +24,7 @@ import okio.internal.commonIsRoot
 import okio.internal.commonName
 import okio.internal.commonNameBytes
 import okio.internal.commonParent
+import okio.internal.commonRelativeTo
 import okio.internal.commonResolve
 import okio.internal.commonRoot
 import okio.internal.commonSegments
@@ -69,6 +70,8 @@ actual class Path internal actual constructor(
   actual operator fun div(child: String): Path = commonResolve(child)
 
   actual operator fun div(child: Path): Path = commonResolve(child)
+
+  actual fun relativeTo(other: Path): Path = commonRelativeTo(other)
 
   actual override fun compareTo(other: Path): Int = commonCompareTo(other)
 
