@@ -84,6 +84,7 @@ expect fun assertRelativeTo(
   a: Path,
   b: Path,
   bRelativeToA: Path,
+  confirmResolutionInversion: Boolean = true,
   consistentWithJavaNioPath: Boolean = true,
 )
 

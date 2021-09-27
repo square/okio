@@ -536,18 +536,17 @@ class PathTest {
     assertRelativeToFails(b, a, consistentWithJavaNioPath = false)
   }
 
-  // TODO(bquenaudon): change Okio's behavior
   @Test
   fun relativeToRelativeDifferentSlashes() {
     val a = "Desktop/documents/resume.txt".toPath()
     val b = "Desktop\\documents\\2021\\taxes.txt".toPath()
-    assertRelativeTo(a, b, "../2021/taxes.txt".toPath())
-    assertRelativeTo(b, a, "..\\..\\resume.txt".toPath())
+    assertRelativeTo(a, b, "../2021/taxes.txt".toPath(), consistentWithJavaNioPath = false, confirmResolutionInversion = false)
+    assertRelativeTo(b, a, "..\\..\\resume.txt".toPath(), consistentWithJavaNioPath = false, confirmResolutionInversion = false)
 
     val c = "documents/resume.txt".toPath()
     val d = "downloads\\2021\\taxes.txt".toPath()
-    assertRelativeTo(c, d, "../../downloads/2021/taxes.txt".toPath())
-    assertRelativeTo(d, c, "..\\..\\..\\documents\\resume.txt".toPath())
+    assertRelativeTo(c, d, "../../downloads/2021/taxes.txt".toPath(), consistentWithJavaNioPath = false, confirmResolutionInversion = false)
+    assertRelativeTo(d, c, "..\\..\\..\\documents\\resume.txt".toPath(), consistentWithJavaNioPath = false, confirmResolutionInversion = false)
   }
 
   // TODO(bquenaudon): change Okio's behavior
@@ -560,26 +559,5 @@ class PathTest {
     // Note that this is not consistent with what Windows' own APIs do.
     // TODO(jwilson): should we normalize this?
     assertEquals("""\\127.0.0.1\d$""", """\\127.0.0.1\c$\..\d$""".toPath().toString())
-  }
-
-  // TODO(bquenaudon): change Okio's behavior
-  @Test
-  fun unixRelativeToWindows() {
-    val a = "Desktop/documents/resume.txt".toPath()
-    val b = "Desktop\\documents\\2021\\taxes.txt".toPath()
-
-    var exception = assertRelativeToFails(a, b)
-    assertEquals(
-      "Paths of different platforms cannot be relative to each other: " +
-        "Desktop\\documents\\2021\\taxes.txt and Desktop/documents/resume.txt",
-      exception.message
-    )
-
-    exception = assertRelativeToFails(b, a)
-    assertEquals(
-      "Paths of different platforms cannot be relative to each other: " +
-        "Desktop/documents/resume.txt and Desktop\\documents\\2021\\taxes.txt",
-      exception.message
-    )
   }
 }

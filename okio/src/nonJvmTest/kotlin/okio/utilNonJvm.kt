@@ -23,10 +23,13 @@ actual fun assertRelativeTo(
   a: Path,
   b: Path,
   bRelativeToA: Path,
+  confirmResolutionInversion: Boolean,
   consistentWithJavaNioPath: Boolean,
 ) {
   assertEquals(bRelativeToA, b.relativeTo(a))
-  assertEquals(b, a / b.relativeTo(a))
+  if (confirmResolutionInversion) {
+    assertEquals(b, a / b.relativeTo(a))
+  }
 }
 
 @ExperimentalFileSystem

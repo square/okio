@@ -234,19 +234,14 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
     "Paths of different roots cannot be relative to each other: $this and $other"
   }
 
-  val thisSlash = slash
-  val otherSlash = other.slash
-  require(thisSlash == otherSlash) {
-    "Paths of different platforms cannot be relative to each other: $this and $other"
-  }
-
-  val slash = thisSlash ?: otherSlash ?: Path.DIRECTORY_SEPARATOR.toSlash()
+  val slash = slash ?: other.slash ?: Path.DIRECTORY_SEPARATOR.toSlash()
 
   // We look at the path both have in common.
   var lastCommonByteIndex = 0
   while (lastCommonByteIndex < bytes.size &&
     lastCommonByteIndex < other.bytes.size &&
-    (bytes[lastCommonByteIndex]) == (other.bytes[lastCommonByteIndex])
+    (bytes[lastCommonByteIndex] == other.bytes[lastCommonByteIndex] ||
+      bytes[lastCommonByteIndex].isSlash && other.bytes[lastCommonByteIndex].isSlash)
   ) {
     lastCommonByteIndex++
   }
@@ -270,12 +265,13 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
   val firstDiffIndex = lastCommonSlashIndex + slash.size
 
   val buffer = Buffer()
-  val stepsToCommonParent = other.bytes.substring(firstDiffIndex, other.bytes.size).count(slash)
+  val stepsToCommonParent =
+    other.bytes.substring(firstDiffIndex, other.bytes.size).count(other.slash ?: slash)
   // We check if there is a trailing path segment on `other`.
   if (other.bytes.size > firstDiffIndex) {
     for (j in 0..stepsToCommonParent) {
       buffer.write(DOT_DOT)
-      buffer.write(slash)
+      buffer.write(other.slash ?: slash)
     }
   }
 
@@ -308,6 +304,11 @@ private fun ByteString.count(value: ByteString): Int {
   }
   return count
 }
+
+private val Byte.isSlash: Boolean
+  get() {
+    return this == '/'.code.toByte() || this == '\\'.code.toByte()
+  }
 
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
