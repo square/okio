@@ -87,7 +87,8 @@ internal fun String.decodeBase64ToArray(): ByteArray? {
     }
   }
 
-  when (inCount % 4) {
+  val lastWordChars = inCount % 4
+  when (lastWordChars) {
     1 -> {
       // We read 1 char followed by "===". But 6 bits is a truncated byte! Fail.
       return null

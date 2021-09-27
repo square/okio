@@ -93,7 +93,7 @@ public final class ByteStringJavaTest {
         new Object[] { Factory.ONE_BYTE_PER_SEGMENT, "SegmentedByteString (one-at-a-time)" });
   }
 
-  @Parameter() public Factory factory;
+  @Parameter(0) public Factory factory;
   @Parameter(1) public String name;
 
   @Test public void ofCopy() {
