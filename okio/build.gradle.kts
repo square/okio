@@ -102,6 +102,11 @@ kotlin {
     val nonJvmMain by creating {
       kotlin.srcDir("src/hashFunctions/kotlin")
     }
+    val nonJvmTest by creating {
+      dependencies {
+        dependsOn(commonTest)
+      }
+    }
 
     val jvmMain by getting {
       dependencies {
@@ -127,6 +132,7 @@ kotlin {
       }
       val jsTest by getting {
         dependencies {
+          dependsOn(nonJvmTest)
           implementation(deps.kotlin.test.js)
         }
       }
@@ -144,7 +150,6 @@ kotlin {
               createSourceSet("sizet64Main", parent = unixMain, children = unixSizet64Targets)
             }
         }
-
       createSourceSet("nativeTest", parent = commonTest, children = mingwTargets + linuxTargets)
         .also { nativeTest ->
           createSourceSet("appleTest", parent = nativeTest, children = appleTargets)

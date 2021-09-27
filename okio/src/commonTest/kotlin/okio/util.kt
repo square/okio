@@ -16,6 +16,8 @@
 package okio
 
 import kotlin.random.Random
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 fun segmentSizes(buffer: Buffer): List<Int> {
   var segment = buffer.head ?: return emptyList()
@@ -76,3 +78,18 @@ fun makeSegments(source: ByteString): ByteString {
   }
   return buffer.snapshot()
 }
+
+@ExperimentalFileSystem
+expect fun assertRelativeTo(
+  a: Path,
+  b: Path,
+  bRelativeToA: Path,
+  consistentWithJavaNioPath: Boolean = true,
+)
+
+@ExperimentalFileSystem
+expect fun assertRelativeToFails(
+  a: Path,
+  b: Path,
+  consistentWithJavaNioPath: Boolean = true,
+): IllegalArgumentException
