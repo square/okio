@@ -15,23 +15,26 @@
  */
 package okio.internal
 
+import kotlin.native.concurrent.SharedImmutable
 import okio.Buffer
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import okio.ExperimentalFileSystem
 import okio.Path
 import okio.Path.Companion.toPath
-import okio.and
-import kotlin.native.concurrent.SharedImmutable
 
 @SharedImmutable
 private val SLASH = "/".encodeUtf8()
+
 @SharedImmutable
 private val BACKSLASH = "\\".encodeUtf8()
+
 @SharedImmutable
 private val ANY_SLASH = "/\\".encodeUtf8()
+
 @SharedImmutable
 private val DOT = ".".encodeUtf8()
+
 @SharedImmutable
 private val DOT_DOT = "..".encodeUtf8()
 
@@ -243,7 +246,7 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
   var lastCommonByteIndex = 0
   while (lastCommonByteIndex < bytes.size &&
     lastCommonByteIndex < other.bytes.size &&
-    (bytes[lastCommonByteIndex] and 0xff) == (other.bytes[lastCommonByteIndex] and 0xff)
+    (bytes[lastCommonByteIndex]) == (other.bytes[lastCommonByteIndex])
   ) {
     lastCommonByteIndex++
   }
@@ -259,7 +262,11 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
     )
   }
 
-  val lastCommonSlashIndex = bytes.substring(0, lastCommonByteIndex).lastIndexOf(slash)
+  val lastCommonSlashIndex = bytes.lastIndexOf(slash, lastCommonByteIndex)
+  require(other.bytes.indexOf(DOT_DOT, lastCommonSlashIndex) == -1) {
+    "Impossible relative path to resolve: $this and $other"
+  }
+
   val firstDiffIndex = lastCommonSlashIndex + slash.size
 
   val buffer = Buffer()
@@ -289,12 +296,12 @@ private val Path.slash: ByteString?
 /** Returns the number of [value]s present in this [ByteString]. */
 private fun ByteString.count(value: ByteString): Int {
   var count = 0
-  var i = 0
-  while (i < size) {
-    when (val next = indexOf(value, i)) {
+  var pos = 0
+  while (pos < size) {
+    when (val next = indexOf(value, pos)) {
       -1 -> return count
       else -> {
-        i = next + 1
+        pos = next + 1
         count++
       }
     }

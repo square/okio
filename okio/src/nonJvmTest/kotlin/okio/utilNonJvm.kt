@@ -26,6 +26,7 @@ actual fun assertRelativeTo(
   consistentWithJavaNioPath: Boolean,
 ) {
   assertEquals(bRelativeToA, b.relativeTo(a))
+  assertEquals(b, a / b.relativeTo(a))
 }
 
 @ExperimentalFileSystem

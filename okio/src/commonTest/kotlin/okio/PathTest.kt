@@ -524,7 +524,6 @@ class PathTest {
     assertRelativeTo(d, c, "../../../documents/resume.txt".toPath(), consistentWithJavaNioPath = false)
   }
 
-  // TODO(bquenaudon): change Okio's behavior
   @Test
   fun relativeToRelativeWithUpNavigationPrefix() {
     // We can't navigate from 'taxes' to 'resumes' because we don't know the name of 'Documents'.
