@@ -16,8 +16,6 @@
 package okio
 
 import kotlin.random.Random
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 fun segmentSizes(buffer: Buffer): List<Int> {
   var segment = buffer.head ?: return emptyList()
@@ -79,18 +77,26 @@ fun makeSegments(source: ByteString): ByteString {
   return buffer.snapshot()
 }
 
+/**
+ * Returns a string with all '\' slashes replaced with '/' slashes. This is useful for test
+ * assertions that intend to ignore slashes.
+ */
+@ExperimentalFileSystem
+fun Path.withUnixSlashes(): String {
+  return toString().replace('\\', '/')
+}
+
 @ExperimentalFileSystem
 expect fun assertRelativeTo(
   a: Path,
   b: Path,
   bRelativeToA: Path,
-  confirmResolutionInversion: Boolean = true,
-  consistentWithJavaNioPath: Boolean = true,
+  sameAsNio: Boolean = true,
 )
 
 @ExperimentalFileSystem
 expect fun assertRelativeToFails(
   a: Path,
   b: Path,
-  consistentWithJavaNioPath: Boolean = true,
+  sameAsNio: Boolean = true,
 ): IllegalArgumentException

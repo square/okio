@@ -23,12 +23,14 @@ actual fun assertRelativeTo(
   a: Path,
   b: Path,
   bRelativeToA: Path,
-  confirmResolutionInversion: Boolean,
-  consistentWithJavaNioPath: Boolean,
+  sameAsNio: Boolean,
 ) {
-  assertEquals(bRelativeToA, b.relativeTo(a))
-  if (confirmResolutionInversion) {
-    assertEquals(b, a / b.relativeTo(a))
+  val actual = b.relativeTo(a)
+  assertEquals(bRelativeToA, actual)
+  try {
+    assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
+  } catch (e: IllegalArgumentException) {
+    // This is also okay. It means we lose information and can't reverse the operation.
   }
 }
 
@@ -36,7 +38,7 @@ actual fun assertRelativeTo(
 actual fun assertRelativeToFails(
   a: Path,
   b: Path,
-  consistentWithJavaNioPath: Boolean,
+  sameAsNio: Boolean,
 ): IllegalArgumentException {
   return assertFailsWith {
     b.relativeTo(a)

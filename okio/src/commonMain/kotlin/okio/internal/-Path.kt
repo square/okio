@@ -238,23 +238,20 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
 
   // We look at the path both have in common.
   var lastCommonByteIndex = 0
-  while (lastCommonByteIndex < bytes.size &&
-    lastCommonByteIndex < other.bytes.size &&
-    (bytes[lastCommonByteIndex] == other.bytes[lastCommonByteIndex] ||
-      bytes[lastCommonByteIndex].isSlash && other.bytes[lastCommonByteIndex].isSlash)
+  val minSize = minOf(bytes.size, other.bytes.size)
+  while (lastCommonByteIndex < minSize &&
+    bytes[lastCommonByteIndex].equalsEitherSlash(other.bytes[lastCommonByteIndex])
   ) {
     lastCommonByteIndex++
   }
 
-  if (lastCommonByteIndex == bytes.size && bytes.size == other.bytes.size) {
+  if (lastCommonByteIndex == minSize && bytes.size == other.bytes.size) {
     // `this` and `other` are the same path.
     return ".".toPath()
   }
 
-  if (lastCommonByteIndex == 0 && isAbsolute) {
-    throw IllegalArgumentException(
-      "Paths of different roots cannot be relative to each other: $this and $other"
-    )
+  require(lastCommonByteIndex > 0 || !isAbsolute) {
+    "Paths of different roots cannot be relative to each other: $this and $other"
   }
 
   val lastCommonSlashIndex = bytes.lastIndexOf(slash, lastCommonByteIndex)
@@ -277,6 +274,11 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
 
   buffer.write(bytes.substring(firstDiffIndex, bytes.size))
   return buffer.toPath()
+}
+
+@ExperimentalFileSystem
+private fun Byte.equalsEitherSlash(other: Byte): Boolean {
+  return this == other || isSlash && other.isSlash
 }
 
 @ExperimentalFileSystem

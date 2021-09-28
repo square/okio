@@ -15,24 +15,26 @@
  */
 package okio
 
+import okio.Path.Companion.toOkioPath
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import okio.Path.Companion.toOkioPath
 
 @ExperimentalFileSystem
 actual fun assertRelativeTo(
   a: Path,
   b: Path,
   bRelativeToA: Path,
-  confirmResolutionInversion: Boolean,
-  consistentWithJavaNioPath: Boolean,
+  sameAsNio: Boolean,
 ) {
-  assertEquals(bRelativeToA, b.relativeTo(a))
-  if (confirmResolutionInversion) {
-    assertEquals(b, a / b.relativeTo(a))
+  val actual = b.relativeTo(a)
+  assertEquals(bRelativeToA, actual)
+  try {
+    assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
+  } catch (e: IllegalArgumentException) {
+    // This is also okay. It means we lose information and can't reverse the operation.
   }
   // Also confirm our behavior is consistent with java.nio.
-  if (consistentWithJavaNioPath) {
+  if (sameAsNio) {
     assertEquals(bRelativeToA, a.toNioPath().relativize(b.toNioPath()).toOkioPath())
   }
 }
@@ -41,10 +43,10 @@ actual fun assertRelativeTo(
 actual fun assertRelativeToFails(
   a: Path,
   b: Path,
-  consistentWithJavaNioPath: Boolean,
+  sameAsNio: Boolean,
 ): IllegalArgumentException {
   // Check java.nio first.
-  if (consistentWithJavaNioPath) {
+  if (sameAsNio) {
     assertFailsWith<IllegalArgumentException> {
       a.toNioPath().relativize(b.toNioPath())
     }

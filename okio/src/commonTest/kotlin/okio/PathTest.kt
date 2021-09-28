@@ -15,13 +15,14 @@
  */
 package okio
 
+import okio.Path.Companion.toPath
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import okio.Path.Companion.toPath
 
 @ExperimentalFileSystem
 class PathTest {
@@ -421,8 +422,8 @@ class PathTest {
   fun relativeToWindowsPaths() {
     val a = "C:\\Windows\\notepad.exe".toPath()
     val b = "C:\\".toPath()
-    assertRelativeTo(a, b, "..\\..".toPath(), consistentWithJavaNioPath = false)
-    assertRelativeTo(b, a, "Windows\\notepad.exe".toPath(), consistentWithJavaNioPath = false)
+    assertRelativeTo(a, b, "..\\..".toPath(), sameAsNio = false)
+    assertRelativeTo(b, a, "Windows\\notepad.exe".toPath(), sameAsNio = false)
 
     val c = "C:\\Windows\\".toPath()
     val d = "C:\\Windows".toPath()
@@ -431,26 +432,26 @@ class PathTest {
 
     val e = "C:\\Windows\\Downloads\\".toPath()
     val f = "C:\\Windows\\Documents\\Hello.txt".toPath()
-    assertRelativeTo(e, f, "..\\Documents\\Hello.txt".toPath(), consistentWithJavaNioPath = false)
-    assertRelativeTo(f, e, "..\\..\\Downloads".toPath(), consistentWithJavaNioPath = false)
+    assertRelativeTo(e, f, "..\\Documents\\Hello.txt".toPath(), sameAsNio = false)
+    assertRelativeTo(f, e, "..\\..\\Downloads".toPath(), sameAsNio = false)
 
     val g = "C:\\Windows\\".toPath()
     val h = "D:\\Windows\\".toPath()
-    assertRelativeToFails(g, h, consistentWithJavaNioPath = false)
-    assertRelativeToFails(h, g, consistentWithJavaNioPath = false)
+    assertRelativeToFails(g, h, sameAsNio = false)
+    assertRelativeToFails(h, g, sameAsNio = false)
   }
 
   @Test
   fun relativeToWindowsUncPaths() {
     val a = "\\\\localhost\\c$\\development\\schema.proto".toPath()
     val b = "\\\\localhost\\c$\\project\\notes.txt".toPath()
-    assertRelativeTo(a, b, "..\\..\\project\\notes.txt".toPath(), consistentWithJavaNioPath = false)
-    assertRelativeTo(b, a, "..\\..\\development\\schema.proto".toPath(), consistentWithJavaNioPath = false)
+    assertRelativeTo(a, b, "..\\..\\project\\notes.txt".toPath(), sameAsNio = false)
+    assertRelativeTo(b, a, "..\\..\\development\\schema.proto".toPath(), sameAsNio = false)
 
     val c = "C:\\Windows\\".toPath()
     val d = "\\\\localhost\\c$\\project\\notes.txt".toPath()
-    assertRelativeToFails(c, d, consistentWithJavaNioPath = false)
-    assertRelativeToFails(d, c, consistentWithJavaNioPath = false)
+    assertRelativeToFails(c, d, sameAsNio = false)
+    assertRelativeToFails(d, c, sameAsNio = false)
   }
 
   @Test
@@ -515,13 +516,21 @@ class PathTest {
   fun relativeToRelative() {
     val a = "Desktop/documents/resume.txt".toPath()
     val b = "Desktop/documents/2021/taxes.txt".toPath()
-    assertRelativeTo(a, b, "../2021/taxes.txt".toPath(), consistentWithJavaNioPath = false)
-    assertRelativeTo(b, a, "../../resume.txt".toPath(), consistentWithJavaNioPath = false)
+    assertRelativeTo(a, b, "../2021/taxes.txt".toPath(), sameAsNio = false)
+    assertRelativeTo(b, a, "../../resume.txt".toPath(), sameAsNio = false)
 
     val c = "documents/resume.txt".toPath()
     val d = "downloads/2021/taxes.txt".toPath()
-    assertRelativeTo(c, d, "../../downloads/2021/taxes.txt".toPath(), consistentWithJavaNioPath = false)
-    assertRelativeTo(d, c, "../../../documents/resume.txt".toPath(), consistentWithJavaNioPath = false)
+    assertRelativeTo(c, d, "../../downloads/2021/taxes.txt".toPath(), sameAsNio = false)
+    assertRelativeTo(d, c, "../../../documents/resume.txt".toPath(), sameAsNio = false)
+  }
+
+  @Test
+  fun relativeToRelativeWithMiddleDots() {
+    val a = "Desktop/documents/a...n".toPath()
+    val b = "Desktop/documents/m...z".toPath()
+    assertRelativeTo(a, b, "../m...z".toPath(), sameAsNio = false)
+    assertRelativeTo(b, a, "../a...n".toPath(), sameAsNio = false)
   }
 
   @Test
@@ -533,31 +542,47 @@ class PathTest {
     val a = "../../resumes".toPath()
     val b = "../../../taxes".toPath()
     assertRelativeTo(a, b, "../../taxes".toPath())
-    assertRelativeToFails(b, a, consistentWithJavaNioPath = false)
+    assertRelativeToFails(b, a, sameAsNio = false)
   }
 
   @Test
   fun relativeToRelativeDifferentSlashes() {
     val a = "Desktop/documents/resume.txt".toPath()
     val b = "Desktop\\documents\\2021\\taxes.txt".toPath()
-    assertRelativeTo(a, b, "../2021/taxes.txt".toPath(), consistentWithJavaNioPath = false, confirmResolutionInversion = false)
-    assertRelativeTo(b, a, "..\\..\\resume.txt".toPath(), consistentWithJavaNioPath = false, confirmResolutionInversion = false)
+    assertRelativeTo(a, b, "../2021/taxes.txt".toPath(), sameAsNio = false)
+    assertRelativeTo(b, a, "..\\..\\resume.txt".toPath(), sameAsNio = false)
 
     val c = "documents/resume.txt".toPath()
     val d = "downloads\\2021\\taxes.txt".toPath()
-    assertRelativeTo(c, d, "../../downloads/2021/taxes.txt".toPath(), consistentWithJavaNioPath = false, confirmResolutionInversion = false)
-    assertRelativeTo(d, c, "..\\..\\..\\documents\\resume.txt".toPath(), consistentWithJavaNioPath = false, confirmResolutionInversion = false)
+    assertRelativeTo(c, d, "../../downloads/2021/taxes.txt".toPath(), sameAsNio = false)
+    assertRelativeTo(d, c, "..\\..\\..\\documents\\resume.txt".toPath(), sameAsNio = false)
   }
 
-  // TODO(bquenaudon): change Okio's behavior
+  /** https://github.com/square/okio/issues/1009 */
   @Test
+  @Ignore
   fun windowsUncPathsDoNotDotDot() {
-    assertEquals("""\\localhost\c$\Windows""", """\\localhost\c$\Windows""".toPath().toString())
-    assertEquals("""\\127.0.0.1\c$\Windows""", """\\127.0.0.1\c$\Windows""".toPath().toString())
-    assertEquals("""\\127.0.0.1\c$\Windows""", """\\127.0.0.1\c$\Windows\..\Windows""".toPath().toString())
-    assertEquals("""\\127.0.0.1\localhost\c$\Windows""", """\\127.0.0.1\..\localhost\c$\Windows""".toPath().toString())
+    assertEquals(
+      """\\localhost\c$\Windows""",
+      """\\localhost\c$\Windows""".toPath().toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\c$\Windows""",
+      """\\127.0.0.1\c$\Windows""".toPath().toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\c$\Windows""",
+      """\\127.0.0.1\c$\Windows\..\Windows""".toPath().toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\localhost\c$\Windows""",
+      """\\127.0.0.1\..\localhost\c$\Windows""".toPath().toString()
+    )
     // Note that this is not consistent with what Windows' own APIs do.
     // TODO(jwilson): should we normalize this?
-    assertEquals("""\\127.0.0.1\d$""", """\\127.0.0.1\c$\..\d$""".toPath().toString())
+    assertEquals(
+      """\\127.0.0.1\d$""",
+      """\\127.0.0.1\c$\..\d$""".toPath().toString()
+    )
   }
 }
