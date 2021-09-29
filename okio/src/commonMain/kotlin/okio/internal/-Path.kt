@@ -15,13 +15,13 @@
  */
 package okio.internal
 
-import kotlin.native.concurrent.SharedImmutable
 import okio.Buffer
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import okio.ExperimentalFileSystem
 import okio.Path
 import okio.Path.Companion.toPath
+import kotlin.native.concurrent.SharedImmutable
 
 @SharedImmutable
 private val SLASH = "/".encodeUtf8()
@@ -230,49 +230,41 @@ internal inline fun Path.commonResolve(child: Path): Path {
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonRelativeTo(other: Path): Path {
-  require(isAbsolute && other.isAbsolute || isRelative && other.isRelative) {
+  require(root == other.root) {
     "Paths of different roots cannot be relative to each other: $this and $other"
   }
 
-  val slash = slash ?: other.slash ?: Path.DIRECTORY_SEPARATOR.toSlash()
+  val thisSegments = segmentsBytes
+  val otherSegments = other.segmentsBytes
 
   // We look at the path both have in common.
-  var lastCommonByteIndex = 0
-  val minSize = minOf(bytes.size, other.bytes.size)
-  while (lastCommonByteIndex < minSize &&
-    bytes[lastCommonByteIndex].equalsEitherSlash(other.bytes[lastCommonByteIndex])
+  var firstNewSegmentIndex = 0
+  val minSegmentsSize = minOf(thisSegments.size, otherSegments.size)
+  while (firstNewSegmentIndex < minSegmentsSize &&
+    thisSegments[firstNewSegmentIndex] == otherSegments[firstNewSegmentIndex]
   ) {
-    lastCommonByteIndex++
+    firstNewSegmentIndex++
   }
 
-  if (lastCommonByteIndex == minSize && bytes.size == other.bytes.size) {
+  if (firstNewSegmentIndex == minSegmentsSize && bytes.size == other.bytes.size) {
     // `this` and `other` are the same path.
     return ".".toPath()
   }
 
-  require(lastCommonByteIndex > 0 || !isAbsolute) {
-    "Paths of different roots cannot be relative to each other: $this and $other"
-  }
-
-  val lastCommonSlashIndex = bytes.lastIndexOf(slash, lastCommonByteIndex)
-  require(other.bytes.indexOf(DOT_DOT, lastCommonSlashIndex) == -1) {
+  require(otherSegments.subList(firstNewSegmentIndex, otherSegments.size).indexOf(DOT_DOT) == -1) {
     "Impossible relative path to resolve: $this and $other"
   }
 
-  val firstDiffIndex = lastCommonSlashIndex + slash.size
-
   val buffer = Buffer()
-  val stepsToCommonParent =
-    other.bytes.substring(firstDiffIndex, other.bytes.size).count(other.slash ?: slash)
-  // We check if there is a trailing path segment on `other`.
-  if (other.bytes.size > firstDiffIndex) {
-    for (j in 0..stepsToCommonParent) {
-      buffer.write(DOT_DOT)
-      buffer.write(other.slash ?: slash)
-    }
+  val slash = other.slash ?: slash ?: Path.DIRECTORY_SEPARATOR.toSlash()
+  for (i in firstNewSegmentIndex until otherSegments.size) {
+    buffer.write(DOT_DOT)
+    buffer.write(slash)
   }
-
-  buffer.write(bytes.substring(firstDiffIndex, bytes.size))
+  for (i in firstNewSegmentIndex until thisSegments.size) {
+    buffer.write(thisSegments[i])
+    buffer.write(slash)
+  }
   return buffer.toPath()
 }
 
