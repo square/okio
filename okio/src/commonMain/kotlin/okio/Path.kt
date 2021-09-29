@@ -117,29 +117,47 @@ import okio.Path.Companion.toPath
  * ------------
  *
  * <table>
- * <tr><th> Path                         <th> Parent             <th> Name          <th> Notes                          </tr>
- * <tr><td> `/`                          <td> null               <td> (empty)       <td> root                           </tr>
- * <tr><td> `/home/jesse/notes.txt`      <td> `/home/jesse`      <td> `notes.txt`   <td> absolute path                  </tr>
- * <tr><td> `project/notes.txt`          <td> `project`          <td> `notes.txt`   <td> relative path                  </tr>
- * <tr><td> `../../project/notes.txt`    <td> `../../project`    <td> `notes.txt`   <td> relative path with traversal   </tr>
- * <tr><td> `../../..`                   <td> null               <td> `..`          <td> relative path with traversal   </tr>
- * <tr><td> `.`                          <td> null               <td> `.`           <td> current working directory      </tr>
- * <tr><td> `C:\`                        <td> null               <td> (empty)       <td> volume root (Windows)          </tr>
- * <tr><td> `C:\Windows\notepad.exe`     <td> `C:\Windows`       <td> `notepad.exe` <td> volume absolute path (Windows) </tr>
- * <tr><td> `\`                          <td> null               <td> (empty)       <td> absolute path (Windows)        </tr>
- * <tr><td> `\Windows\notepad.exe`       <td> `\Windows`         <td> `notepad.exe` <td> absolute path (Windows)        </tr>
- * <tr><td> `C:`                         <td> null               <td> (empty)       <td> volume-relative path (Windows) </tr>
- * <tr><td> `C:project\notes.txt`        <td> `C:project`        <td> `notes.txt`   <td> volume-relative path (Windows) </tr>
- * <tr><td> `\\server`                   <td> null               <td> `server`      <td> UNC server (Windows)           </tr>
- * <tr><td> `\\server\project\notes.txt` <td> `\\server\project` <td> `notes.txt`   <td> UNC absolute path (Windows)    </tr>
+ * <tr><th> Path                         <th> Parent             <th> Root       <th> Name          <th> Notes                          </tr>
+ * <tr><td> `/`                          <td> null               <td> `/`        <td> (empty)       <td> root                           </tr>
+ * <tr><td> `/home/jesse/notes.txt`      <td> `/home/jesse`      <td> `/`        <td> `notes.txt`   <td> absolute path                  </tr>
+ * <tr><td> `project/notes.txt`          <td> `project`          <td> null       <td> `notes.txt`   <td> relative path                  </tr>
+ * <tr><td> `../../project/notes.txt`    <td> `../../project`    <td> null       <td> `notes.txt`   <td> relative path with traversal   </tr>
+ * <tr><td> `../../..`                   <td> null               <td> null       <td> `..`          <td> relative path with traversal   </tr>
+ * <tr><td> `.`                          <td> null               <td> null       <td> `.`           <td> current working directory      </tr>
+ * <tr><td> `C:\`                        <td> null               <td> `C:\`      <td> (empty)       <td> volume root (Windows)          </tr>
+ * <tr><td> `C:\Windows\notepad.exe`     <td> `C:\Windows`       <td> `C:\`      <td> `notepad.exe` <td> volume absolute path (Windows) </tr>
+ * <tr><td> `\`                          <td> null               <td> `\`        <td> (empty)       <td> absolute path (Windows)        </tr>
+ * <tr><td> `\Windows\notepad.exe`       <td> `\Windows`         <td> `\`        <td> `notepad.exe` <td> absolute path (Windows)        </tr>
+ * <tr><td> `C:`                         <td> null               <td> null       <td> (empty)       <td> volume-relative path (Windows) </tr>
+ * <tr><td> `C:project\notes.txt`        <td> `C:project`        <td> null       <td> `notes.txt`   <td> volume-relative path (Windows) </tr>
+ * <tr><td> `\\server`                   <td> null               <td> `\\server` <td> `server`      <td> UNC server (Windows)           </tr>
+ * <tr><td> `\\server\project\notes.txt` <td> `\\server\project` <td> `\\server` <td> `notes.txt`   <td> UNC absolute path (Windows)    </tr>
  * </table>
  */
 @ExperimentalFileSystem
 expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
+  /**
+   * This is the root path if this is an absolute path, or null if it is a relative path. UNIX paths
+   * have a single root, `/`. Each volume on Windows is its own root, like `C:\` and `D:\`. The
+   * path to the current volume `\` is its own root. Windows UNC paths like `\\server` are also
+   * roots.
+   */
+  val root: Path?
+
+  /**
+   * The components of this path that are usually delimited by slashes. If the root is not null it
+   * precedes these segments. If this path is a root its segments list is empty.
+   */
+  val segments: List<String>
+
+  val segmentsBytes: List<ByteString>
+
   internal val bytes: ByteString
 
+  /** This is true if [root] is not null. */
   val isAbsolute: Boolean
 
+  /** This is true if [root] is null. */
   val isRelative: Boolean
 
   /**
@@ -171,11 +189,7 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
    */
   val parent: Path?
 
-  /**
-   * Returns true if this is an absolute path with no parent. UNIX paths have a single root, `/`.
-   * Each volume on Windows is its own root, like `C:\` and `D:\`. Windows UNC paths like `\\server`
-   * are also roots.
-   */
+  /** Returns true if `this == this.root`. That is, this is an absolute path with no parent. */
   val isRoot: Boolean
 
   /**
