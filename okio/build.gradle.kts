@@ -12,6 +12,7 @@ plugins {
   id("ru.vyarus.animalsniffer")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
+  id("build-support")
 }
 
 /*
@@ -74,22 +75,12 @@ kotlin {
     }
   }
   if (kmpNativeEnabled) {
-    iosX64()
-    iosArm64()
-    tvosX64()
-    tvosArm64()
-    watchosArm32()
-    watchosArm64()
-    watchosX86()
-    // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
-    linuxX64()
-    macosX64()
-    mingwX64()
+    configureOrCreateNativePlatforms()
   }
   sourceSets {
     all {
       languageSettings.apply {
-        optIn("kotlin.RequiresOptIn")
+        useExperimentalAnnotation("kotlin.RequiresOptIn")
       }
     }
 
@@ -142,86 +133,22 @@ kotlin {
     }
 
     if (kmpNativeEnabled) {
-      val nativeMain by creating {
-        dependsOn(nonJvmMain)
-      }
-      val nativeTest by creating {
-        dependsOn(commonTest)
-      }
+      createSourceSet("nativeMain", parent = nonJvmMain)
+        .also { nativeMain ->
+          createSourceSet("mingwMain", parent = nativeMain, children = mingwTargets)
+          createSourceSet("unixMain", parent = nativeMain)
+            .also { unixMain ->
+              createSourceSet("linuxMain", parent = unixMain, children = linuxTargets)
+              createSourceSet("appleMain", parent = unixMain, children = appleTargets)
+              createSourceSet("sizet32Main", parent = unixMain, children = unixSizet32Targets)
+              createSourceSet("sizet64Main", parent = unixMain, children = unixSizet64Targets)
+            }
+        }
 
-      val sizet32Main by creating {
-        dependsOn(nativeMain)
-      }
-      val sizet64Main by creating {
-        dependsOn(nativeMain)
-      }
-
-      val mingwMain by creating {
-        dependsOn(nativeMain)
-      }
-      val mingwX64Main by getting {
-        dependsOn(mingwMain)
-      }
-      val mingwX64Test by getting {
-        dependsOn(nativeTest)
-      }
-
-      val unixMain by creating {
-        dependsOn(nativeMain)
-      }
-
-      val appleMain by creating {
-        dependsOn(unixMain)
-      }
-      val appleTest by creating {
-        dependsOn(nativeTest)
-      }
-      val iosX64Main by getting {}
-      val iosArm64Main by getting {}
-      val macosX64Main by getting {}
-      val tvosX64Main by getting {}
-      val tvosArm64Main by getting {}
-      for (it in listOf(iosX64Main, iosArm64Main, macosX64Main, tvosX64Main, tvosArm64Main)) {
-        it.dependsOn(sizet64Main)
-        it.dependsOn(appleMain)
-      }
-
-      val iosX64Test by getting {}
-      val iosArm64Test by getting {}
-      val macosX64Test by getting {}
-      val tvosX64Test by getting {}
-      val tvosArm64Test by getting {}
-      for (it in listOf(iosX64Test, iosArm64Test, macosX64Test, tvosX64Test, tvosArm64Test)) {
-        it.dependsOn(appleTest)
-      }
-
-      val watchosArm32Main by getting {}
-      val watchosArm64Main by getting {}
-      val watchosX86Main by getting {}
-      for (it in listOf(watchosArm32Main, watchosArm64Main, watchosX86Main)) {
-        // Note that size_t is 32-bit on all watchOS versions (ie. pointers are always 32-bit).
-        it.dependsOn(sizet32Main)
-        it.dependsOn(appleMain)
-      }
-
-      val watchosArm32Test by getting {}
-      val watchosArm64Test by getting {}
-      val watchosX86Test by getting {}
-      for (it in listOf(watchosArm32Test, watchosArm64Test, watchosX86Test)) {
-        it.dependsOn(appleTest)
-      }
-
-      val linuxMain by creating {
-        dependsOn(unixMain)
-        dependsOn(nativeMain)
-      }
-      val linuxX64Main by getting {
-        dependsOn(sizet64Main)
-        dependsOn(linuxMain)
-      }
-      val linuxX64Test by getting {
-        dependsOn(nativeTest)
-      }
+      createSourceSet("nativeTest", parent = commonTest, children = mingwTargets + linuxTargets)
+        .also { nativeTest ->
+          createSourceSet("appleTest", parent = nativeTest, children = appleTargets)
+        }
     }
   }
 
@@ -280,4 +207,13 @@ configure<MavenPublishBaseExtension> {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )
+}
+
+// https://youtrack.jetbrains.com/issue/KT-46978
+tasks.withType<ProcessResources>().all {
+  when (name) {
+    "jvmTestProcessResources", "jvmProcessResources" -> {
+      duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+  }
 }

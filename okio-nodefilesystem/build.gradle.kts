@@ -29,7 +29,7 @@ kotlin {
   }
   sourceSets {
     all {
-      languageSettings.optIn("kotlin.RequiresOptIn")
+      languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
     }
     val main by getting {
       dependencies {
