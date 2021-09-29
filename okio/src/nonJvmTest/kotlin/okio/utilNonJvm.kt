@@ -27,11 +27,7 @@ actual fun assertRelativeTo(
 ) {
   val actual = b.relativeTo(a)
   assertEquals(bRelativeToA, actual)
-  try {
-    assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
-  } catch (e: IllegalArgumentException) {
-    // This is also okay. It means we lose information and can't reverse the operation.
-  }
+  assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
 }
 
 @ExperimentalFileSystem
@@ -40,7 +36,5 @@ actual fun assertRelativeToFails(
   b: Path,
   sameAsNio: Boolean,
 ): IllegalArgumentException {
-  return assertFailsWith {
-    b.relativeTo(a)
-  }
+  return assertFailsWith { b.relativeTo(a) }
 }

@@ -28,11 +28,7 @@ actual fun assertRelativeTo(
 ) {
   val actual = b.relativeTo(a)
   assertEquals(bRelativeToA, actual)
-  try {
-    assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
-  } catch (e: IllegalArgumentException) {
-    // This is also okay. It means we lose information and can't reverse the operation.
-  }
+  assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
   // Also confirm our behavior is consistent with java.nio.
   if (sameAsNio) {
     assertEquals(bRelativeToA, a.toNioPath().relativize(b.toNioPath()).toOkioPath())
@@ -52,7 +48,5 @@ actual fun assertRelativeToFails(
     }
   }
   // Return okio.
-  return assertFailsWith {
-    b.relativeTo(a)
-  }
+  return assertFailsWith { b.relativeTo(a) }
 }

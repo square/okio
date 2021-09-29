@@ -210,12 +210,14 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
 
   /**
    * Returns this path relative to [other]. This effectively inverts the resolve operator, `/`. For
-   * any two paths `a` and `b` that have the same root, `a / (b.relativeTo(a))` is equal to `b`.
+   * any two paths `a` and `b` that have the same root, `a / (b.relativeTo(a))` is equal to `b`. If
+   * both paths don't use the same slash, the resolved path will use the slash of the [other] path.
    *
-   * @throws IllegalArgumentException if this path and [other] are not both
-   * [absolute paths][isAbsolute] or both [relative paths][isRelative], or if they have different
-   * slash (/ versus \), or if they are both [absolute paths][isAbsolute] of different roots (C: vs
-   * D:, or C: vs \\server, etc.).
+   * @throws IllegalArgumentException if this path and the [other] path are not both
+   * [absolute paths][isAbsolute] or both [relative paths][isRelative], or if they are both
+   * [absolute paths][isAbsolute] but of different roots (C: vs D:, or C: vs \\server, etc.).
+   * It will also throw if the relative path is impossible to resolve such as "resumes" relative to
+   * "../taxes".
    */
   @Throws(IllegalArgumentException::class)
   fun relativeTo(other: Path): Path
