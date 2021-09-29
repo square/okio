@@ -37,7 +37,7 @@ object deps {
       const val js = "org.jetbrains.kotlin:kotlin-test-js"
     }
 
-    const val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.2.1"
+    const val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.3.0"
   }
 
   object jmh {
