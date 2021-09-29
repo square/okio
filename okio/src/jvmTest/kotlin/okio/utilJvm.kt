@@ -16,6 +16,7 @@
 package okio
 
 import okio.Path.Companion.toOkioPath
+import okio.Path.Companion.toPath
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -31,7 +32,9 @@ actual fun assertRelativeTo(
   assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
   // Also confirm our behavior is consistent with java.nio.
   if (sameAsNio) {
-    assertEquals(bRelativeToA, a.toNioPath().relativize(b.toNioPath()).toOkioPath())
+    // On Windows, java.nio will modify slashes to backslashes for relative paths, so we force it.
+    val nioPath = a.toNioPath().relativize(b.toNioPath()).toOkioPath().withUnixSlashes().toPath()
+    assertEquals(bRelativeToA, nioPath)
   }
 }
 
