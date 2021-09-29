@@ -24,6 +24,7 @@ import okio.internal.commonIsRoot
 import okio.internal.commonName
 import okio.internal.commonNameBytes
 import okio.internal.commonParent
+import okio.internal.commonRelativeTo
 import okio.internal.commonResolve
 import okio.internal.commonRoot
 import okio.internal.commonSegments
@@ -79,6 +80,8 @@ actual class Path internal actual constructor(
 
   @JvmName("resolve")
   actual operator fun div(child: Path): Path = commonResolve(child)
+
+  actual fun relativeTo(other: Path): Path = commonRelativeTo(other)
 
   fun toFile(): File = File(toString())
 
