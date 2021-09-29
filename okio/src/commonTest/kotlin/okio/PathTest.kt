@@ -28,6 +28,8 @@ class PathTest {
   @Test
   fun unixRoot() {
     val path = "/".toPath()
+    assertEquals(path, path.root)
+    assertEquals(listOf(), path.segments)
     assertEquals("/", path.toString())
     assertNull(path.parent)
     assertNull(path.volumeLetter)
@@ -39,6 +41,8 @@ class PathTest {
   @Test
   fun unixAbsolutePath() {
     val path = "/home/jesse/todo.txt".toPath()
+    assertEquals("/".toPath(), path.root)
+    assertEquals(listOf("home", "jesse", "todo.txt"), path.segments)
     assertEquals("/home/jesse/todo.txt", path.toString())
     assertEquals("/home/jesse".toPath(), path.parent)
     assertNull(path.volumeLetter)
@@ -50,6 +54,8 @@ class PathTest {
   @Test
   fun unixRelativePath() {
     val path = "project/todo.txt".toPath()
+    assertNull(path.root)
+    assertEquals(listOf("project", "todo.txt"), path.segments)
     assertEquals("project/todo.txt", path.toString())
     assertEquals("project".toPath(), path.parent)
     assertNull(path.volumeLetter)
@@ -61,6 +67,8 @@ class PathTest {
   @Test
   fun unixRelativePathWithDots() {
     val path = "../../project/todo.txt".toPath()
+    assertNull(path.root)
+    assertEquals(listOf("..", "..", "project", "todo.txt"), path.segments)
     assertEquals("../../project/todo.txt", path.toString())
     assertEquals("../../project".toPath(), path.parent)
     assertNull(path.volumeLetter)
@@ -72,6 +80,8 @@ class PathTest {
   @Test
   fun unixRelativeSeriesOfDotDots() {
     val path = "../../..".toPath()
+    assertNull(path.root)
+    assertEquals(listOf("..", "..", ".."), path.segments)
     assertEquals("../../..", path.toString())
     assertNull(path.parent)
     assertNull(path.volumeLetter)
@@ -83,6 +93,8 @@ class PathTest {
   @Test
   fun unixAbsoluteSeriesOfDotDots() {
     val path = "/../../..".toPath()
+    assertEquals("/".toPath(), path.root)
+    assertEquals(listOf(), path.segments)
     assertEquals("/", path.toString())
     assertNull(path.parent)
     assertNull(path.volumeLetter)
@@ -94,6 +106,8 @@ class PathTest {
   @Test
   fun unixAbsoluteSingleDot() {
     val path = "/.".toPath()
+    assertEquals("/".toPath(), path.root)
+    assertEquals(listOf(), path.segments)
     assertEquals("/", path.toString())
     assertNull(path.parent)
     assertNull(path.volumeLetter)
@@ -105,6 +119,8 @@ class PathTest {
   @Test
   fun unixRelativeDoubleDots() {
     val path = "..".toPath()
+    assertNull(path.root)
+    assertEquals(listOf(".."), path.segments)
     assertEquals("..", path.toString())
     assertNull(path.parent)
     assertNull(path.volumeLetter)
@@ -116,6 +132,8 @@ class PathTest {
   @Test
   fun unixRelativeSingleDot() {
     val path = ".".toPath()
+    assertNull(path.root)
+    assertEquals(listOf("."), path.segments)
     assertEquals(".", path.toString())
     assertNull(path.parent)
     assertNull(path.volumeLetter)
@@ -127,6 +145,8 @@ class PathTest {
   @Test
   fun windowsVolumeLetter() {
     val path = "C:\\".toPath()
+    assertEquals("C:\\".toPath(), path.root)
+    assertEquals(listOf(), path.segments)
     assertEquals("C:\\", path.toString())
     assertNull(path.parent)
     assertEquals('C', path.volumeLetter)
@@ -138,6 +158,8 @@ class PathTest {
   @Test
   fun windowsAbsolutePathWithVolumeLetter() {
     val path = "C:\\Windows\\notepad.exe".toPath()
+    assertEquals("C:\\".toPath(), path.root)
+    assertEquals(listOf("Windows", "notepad.exe"), path.segments)
     assertEquals("C:\\Windows\\notepad.exe", path.toString())
     assertEquals("C:\\Windows".toPath(), path.parent)
     assertEquals('C', path.volumeLetter)
@@ -149,6 +171,8 @@ class PathTest {
   @Test
   fun windowsAbsolutePath() {
     val path = "\\".toPath()
+    assertEquals("\\".toPath(), path.root)
+    assertEquals(listOf(), path.segments)
     assertEquals("\\", path.toString())
     assertEquals(null, path.parent)
     assertNull(path.volumeLetter)
@@ -160,6 +184,8 @@ class PathTest {
   @Test
   fun windowsAbsolutePathWithoutVolumeLetter() {
     val path = "\\Windows\\notepad.exe".toPath()
+    assertEquals("\\".toPath(), path.root)
+    assertEquals(listOf("Windows", "notepad.exe"), path.segments)
     assertEquals("\\Windows\\notepad.exe", path.toString())
     assertEquals("\\Windows".toPath(), path.parent)
     assertNull(path.volumeLetter)
@@ -171,6 +197,8 @@ class PathTest {
   @Test
   fun windowsRelativePathWithVolumeLetter() {
     val path = "C:Windows\\notepad.exe".toPath()
+    assertNull(path.root)
+    assertEquals(listOf("C:Windows", "notepad.exe"), path.segments)
     assertEquals("C:Windows\\notepad.exe", path.toString())
     assertEquals("C:Windows".toPath(), path.parent)
     assertEquals('C', path.volumeLetter)
@@ -182,6 +210,8 @@ class PathTest {
   @Test
   fun windowsVolumeLetterRelative() {
     val path = "C:".toPath()
+    assertNull(path.root)
+    assertEquals(listOf("C:"), path.segments)
     assertEquals("C:", path.toString())
     assertNull(path.parent)
     assertEquals('C', path.volumeLetter)
@@ -193,6 +223,8 @@ class PathTest {
   @Test
   fun windowsRelativePath() {
     val path = "Windows\\notepad.exe".toPath()
+    assertNull(path.root)
+    assertEquals(listOf("Windows", "notepad.exe"), path.segments)
     assertEquals("Windows\\notepad.exe", path.toString())
     assertEquals("Windows".toPath(), path.parent)
     assertNull(path.volumeLetter)
@@ -204,6 +236,8 @@ class PathTest {
   @Test
   fun windowsUncServer() {
     val path = "\\\\server".toPath()
+    assertEquals("\\\\server".toPath(), path.root)
+    assertEquals(listOf(), path.segments)
     assertEquals("\\\\server", path.toString())
     assertNull(path.parent)
     assertNull(path.volumeLetter)
@@ -215,6 +249,8 @@ class PathTest {
   @Test
   fun windowsUncAbsolutePath() {
     val path = "\\\\server\\project\\notes.txt".toPath()
+    assertEquals("\\\\server".toPath(), path.root)
+    assertEquals(listOf("project", "notes.txt"), path.segments)
     assertEquals("\\\\server\\project\\notes.txt", path.toString())
     assertEquals("\\\\server\\project".toPath(), path.parent)
     assertNull(path.volumeLetter)

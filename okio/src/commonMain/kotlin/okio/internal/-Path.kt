@@ -35,16 +35,85 @@ private val DOT_DOT = "..".encodeUtf8()
 
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
+internal inline fun Path.commonRoot(): Path? {
+  return when (val rootLength = rootLength()) {
+    -1 -> null
+    else -> Path(bytes.substring(0, rootLength))
+  }
+}
+
+@ExperimentalFileSystem
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun Path.commonSegments(): List<String> {
+  return commonSegmentsBytes().map { it.utf8() }
+}
+
+/** This function skips the root then splits on slash. */
+@ExperimentalFileSystem
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun Path.commonSegmentsBytes(): List<ByteString> {
+  val result = mutableListOf<ByteString>()
+  var segmentStart = rootLength()
+
+  // segmentStart should always follow a `\`, but for UNC paths it doesn't.
+  if (segmentStart == -1) {
+    segmentStart = 0
+  } else if (segmentStart < bytes.size && bytes[segmentStart] == '\\'.code.toByte()) {
+    segmentStart++
+  }
+
+  for (i in segmentStart until bytes.size) {
+    if (bytes[i] == '/'.code.toByte() || bytes[i] == '\\'.code.toByte()) {
+      result += bytes.substring(segmentStart, i)
+      segmentStart = i + 1
+    }
+  }
+
+  if (segmentStart < bytes.size) {
+    result += bytes.substring(segmentStart, bytes.size)
+  }
+
+  return result
+}
+
+/** Return the length of the prefix of this that is the root path, or -1 if it has no root. */
+@ExperimentalFileSystem
+private fun Path.rootLength(): Int {
+  if (bytes.size == 0) return -1
+  if (bytes[0] == '/'.code.toByte()) return 1
+
+  if (bytes[0] == '\\'.code.toByte()) {
+    if (bytes.size > 2 && bytes[1] == '\\'.code.toByte()) {
+      // Look for a root like `\\localhost`.
+      var uncRootEnd = bytes.indexOf(BACKSLASH, fromIndex = 2)
+      if (uncRootEnd == -1) uncRootEnd = bytes.size
+      return uncRootEnd
+    }
+
+    // We found a root like `\`.
+    return 1
+  }
+
+  // Look for a root like `C:\`.
+  if (bytes.size > 2 && bytes[1] == ':'.code.toByte() && bytes[2] == '\\'.code.toByte()) {
+    val c = bytes[0].toInt().toChar()
+    if (c !in 'a'..'z' && c !in 'A'..'Z') return -1
+    return 3
+  }
+
+  return -1
+}
+
+@ExperimentalFileSystem
+@Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonIsAbsolute(): Boolean {
-  return bytes.startsWith(SLASH) ||
-    bytes.startsWith(BACKSLASH) ||
-    (volumeLetter != null && bytes.size > 2 && bytes[2] == '\\'.code.toByte())
+  return rootLength() != -1
 }
 
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonIsRelative(): Boolean {
-  return !isAbsolute
+  return rootLength() == -1
 }
 
 @ExperimentalFileSystem
@@ -128,7 +197,7 @@ private fun Path.lastSegmentIsDotDot(): Boolean {
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonIsRoot(): Boolean {
-  return parent == null && isAbsolute
+  return rootLength() == bytes.size
 }
 
 @ExperimentalFileSystem
