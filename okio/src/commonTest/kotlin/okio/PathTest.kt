@@ -529,8 +529,16 @@ class PathTest {
   fun relativeToRelativeWithMiddleDots() {
     val a = "Desktop/documents/a...n".toPath()
     val b = "Desktop/documents/m...z".toPath()
-    assertRelativeTo(a, b, "../m...z".toPath(), sameAsNio = false)
-    assertRelativeTo(b, a, "../a...n".toPath(), sameAsNio = false)
+    assertRelativeTo(a, b, "../m...z".toPath())
+    assertRelativeTo(b, a, "../a...n".toPath())
+  }
+
+  @Test
+  fun relativeToRelativeWithMiddleDotsInCommonPrefix() {
+    val a = "Desktop/documents/a...n/red".toPath()
+    val b = "Desktop/documents/a...m/blue".toPath()
+    assertRelativeTo(a, b, "../a...m/blue".toPath())
+    assertRelativeTo(b, a, "../a...n/red".toPath())
   }
 
   @Test
