@@ -269,11 +269,6 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
 }
 
 @ExperimentalFileSystem
-private fun Byte.equalsEitherSlash(other: Byte): Boolean {
-  return this == other || isSlash && other.isSlash
-}
-
-@ExperimentalFileSystem
 private val Path.slash: ByteString?
   get() {
     return when {
@@ -281,27 +276,6 @@ private val Path.slash: ByteString?
       bytes.indexOf(BACKSLASH) != -1 -> BACKSLASH
       else -> null
     }
-  }
-
-/** Returns the number of [value]s present in this [ByteString]. */
-private fun ByteString.count(value: ByteString): Int {
-  var count = 0
-  var pos = 0
-  while (pos < size) {
-    when (val next = indexOf(value, pos)) {
-      -1 -> return count
-      else -> {
-        pos = next + 1
-        count++
-      }
-    }
-  }
-  return count
-}
-
-private val Byte.isSlash: Boolean
-  get() {
-    return this == '/'.code.toByte() || this == '\\'.code.toByte()
   }
 
 @ExperimentalFileSystem

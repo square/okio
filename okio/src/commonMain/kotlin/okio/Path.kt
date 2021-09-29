@@ -216,8 +216,8 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
    * @throws IllegalArgumentException if this path and the [other] path are not both
    * [absolute paths][isAbsolute] or both [relative paths][isRelative], or if they are both
    * [absolute paths][isAbsolute] but of different roots (C: vs D:, or C: vs \\server, etc.).
-   * It will also throw if the relative path is impossible to resolve such as "resumes" relative to
-   * "../taxes".
+   * It will also throw if the relative path is impossible to resolve. For instance, it is
+   * impossible to resolve the path `../a` relative to `../../b`.
    */
   @Throws(IllegalArgumentException::class)
   fun relativeTo(other: Path): Path
