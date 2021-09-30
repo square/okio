@@ -1,5 +1,7 @@
 rootProject.name = "okio-parent"
 
+includeBuild("build-support")
+
 include(":okio")
 include(":okio-fakefilesystem")
 if (System.getProperty("kjs", "true").toBoolean()) {

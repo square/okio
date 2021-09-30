@@ -88,7 +88,7 @@ public final class BufferCursorTest {
     try (UnsafeCursor cursor = buffer.readUnsafe()) {
       cursor.seek(-1L);
       assertEquals(-1, cursor.offset);
-      assertEquals(null, cursor.data);
+      assertNull(cursor.data);
       assertEquals(-1, cursor.start);
       assertEquals(-1, cursor.end);
 
@@ -340,7 +340,7 @@ public final class BufferCursorTest {
       cursor.seek(buffer.size() - 1);
       cursor.resizeBuffer(3);
       assertEquals(3, cursor.offset);
-      assertEquals(null, cursor.data);
+      assertNull(cursor.data);
       assertEquals(-1, cursor.start);
       assertEquals(-1, cursor.end);
     }
