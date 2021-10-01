@@ -75,6 +75,10 @@ internal class ResourceFileSystem internal constructor(
     return result.toList()
   }
 
+  override fun listRecursively(dir: Path): Sequence<Path> {
+    TODO()
+  }
+
   override fun openReadOnly(file: Path): FileHandle {
     if (!keepPath(file)) throw FileNotFoundException("file not found: $file")
     val relativePath = file.toRelativePath()

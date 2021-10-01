@@ -34,6 +34,8 @@ actual abstract class FileSystem {
 
   actual abstract fun list(dir: Path): List<Path>
 
+  actual abstract fun listRecursively(dir: Path): Sequence<Path>
+
   actual abstract fun openReadOnly(file: Path): FileHandle
 
   actual abstract fun openReadWrite(file: Path): FileHandle

@@ -137,6 +137,9 @@ expect abstract class FileSystem() {
   @Throws(IOException::class)
   abstract fun list(dir: Path): List<Path>
 
+  @Throws(IOException::class)
+  abstract fun listRecursively(dir: Path): Sequence<Path>
+
   /**
    * Returns a handle to read [file]. This will fail if the file doesn't already exist.
    *

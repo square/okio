@@ -144,4 +144,43 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
 
     assertEquals(log, listOf("source(file=$source)", "sink(file=$target)"))
   }
+
+  @Test
+  fun listRecursively() {
+    val log = mutableListOf<String>()
+
+    val delegate = FakeFileSystem()
+
+    val forwardingFileSystem = object : ForwardingFileSystem(delegate) {
+      override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
+        log += "$functionName($parameterName=$path)"
+        return path
+      }
+    }
+
+    val baseRoot = base / "root.txt"
+    val dirA = base / "dirA"
+    val dirAText = dirA / "a.txt"
+    val dirAChild1 = dirA / "child1"
+    val dirAChild2 = dirA / "child2"
+    val dirAChild2Text = dirAChild2 / "b.txt"
+    val dirB = base / "dirB"
+
+    baseRoot.writeUtf8("I am groot.")
+    delegate.createDirectory(dirA)
+    dirAText.writeUtf8("I am a.")
+    delegate.createDirectory(dirAChild1)
+    delegate.createDirectory(dirAChild2)
+    delegate.createDirectory(dirB)
+    dirAChild2Text.writeUtf8("I am a child 2.")
+    for (i in 0..10) {
+      (dirB / i.toString()).writeUtf8("I am file #$i")
+    }
+
+    // TODO(Benoit) Files and directories are not getting created now.
+    val listRecursive = forwardingFileSystem.listRecursively(base)
+    for (path in listRecursive) {
+      // TODO(Benoit) Assert that `log.size` grows as we're looping.
+    }
+  }
 }

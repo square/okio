@@ -166,6 +166,13 @@ abstract class ForwardingFileSystem(
   }
 
   @Throws(IOException::class)
+  override fun listRecursively(dir: Path): Sequence<Path> {
+    val dir = onPathParameter(dir, "listRecursively", "dir")
+    val result = delegate.listRecursively(dir)
+    return result.map { onPathResult(it, "listRecursively") }
+  }
+
+  @Throws(IOException::class)
   override fun openReadOnly(file: Path): FileHandle {
     val file = onPathParameter(file, "openReadOnly", "file")
     return delegate.openReadOnly(file)

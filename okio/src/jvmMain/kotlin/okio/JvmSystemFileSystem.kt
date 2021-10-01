@@ -70,6 +70,13 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return result
   }
 
+  override fun listRecursively(dir: Path): Sequence<Path> {
+    val localList = list(dir).asSequence()
+    return localList.flatMap {
+      listOf(it) + listRecursively(it)
+    }
+  }
+
   override fun openReadOnly(file: Path): FileHandle {
     return JvmFileHandle(readWrite = false, randomAccessFile = RandomAccessFile(file.toFile(), "r"))
   }

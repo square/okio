@@ -110,6 +110,10 @@ class ZipFileSystem internal constructor(
     return entry.children.toList()
   }
 
+  override fun listRecursively(dir: Path): Sequence<Path> {
+    TODO()
+  }
+
   @Throws(IOException::class)
   override fun source(path: Path): Source {
     val canonicalPath = canonicalize(path)
