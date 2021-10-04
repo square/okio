@@ -15,14 +15,14 @@
  */
 package okio
 
-import kotlinx.datetime.Clock
-import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.ExperimentalTime
+import kotlinx.datetime.Clock
+import okio.Path.Companion.toPath
+import okio.fakefilesystem.FakeFileSystem
 
 @ExperimentalTime
 @ExperimentalFileSystem
@@ -147,40 +147,75 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
 
   @Test
   fun listRecursively() {
-    val log = mutableListOf<String>()
+    val logs = ArrayDeque<String>()
 
-    val delegate = FakeFileSystem()
-
-    val forwardingFileSystem = object : ForwardingFileSystem(delegate) {
+    val forwardingFileSystem = object : ForwardingFileSystem(fileSystem) {
       override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
-        log += "$functionName($parameterName=$path)"
+        logs += "$functionName($parameterName=$path)"
         return path
       }
     }
 
-    val baseRoot = base / "root.txt"
-    val dirA = base / "dirA"
-    val dirAText = dirA / "a.txt"
-    val dirAChild1 = dirA / "child1"
-    val dirAChild2 = dirA / "child2"
-    val dirAChild2Text = dirAChild2 / "b.txt"
-    val dirB = base / "dirB"
+    data class Tree(val path: Path, val isFile: Boolean)
 
-    baseRoot.writeUtf8("I am groot.")
-    delegate.createDirectory(dirA)
-    dirAText.writeUtf8("I am a.")
-    delegate.createDirectory(dirAChild1)
-    delegate.createDirectory(dirAChild2)
-    delegate.createDirectory(dirB)
-    dirAChild2Text.writeUtf8("I am a child 2.")
-    for (i in 0..10) {
-      (dirB / i.toString()).writeUtf8("I am file #$i")
+    val preExistingPaths = listOf(
+      Tree(base, isFile = false),
+      Tree("$base/root.txt".toPath(), isFile = true),
+      Tree("$base/dirA".toPath(), isFile = false),
+      Tree("$base/dirA/file.txt".toPath(), isFile = true),
+      Tree("$base/dirA/child1".toPath(), isFile = false),
+      Tree("$base/dirA/child2".toPath(), isFile = false),
+      Tree("$base/dirA/child2/file.txt".toPath(), isFile = true),
+      Tree("$base/dirB".toPath(), isFile = false),
+    )
+
+    for (preExistingPath in preExistingPaths) {
+      if (preExistingPath.path == base) continue
+
+      if (preExistingPath.isFile) {
+        fileSystem.write(preExistingPath.path) {
+          writeUtf8("file ${preExistingPath.path.name}")
+        }
+      } else {
+        fileSystem.createDirectory(preExistingPath.path)
+      }
     }
 
-    // TODO(Benoit) Files and directories are not getting created now.
+    val expectedPaths = ArrayDeque(listOf(
+      "$base/dirA".toPath(),
+      "$base/dirA/file.txt".toPath(),
+      "$base/dirA/child1".toPath(),
+      "$base/dirA/child2".toPath(),
+      "$base/dirA/child2/file.txt".toPath(),
+      "$base/dirB".toPath(),
+      "$base/dirB/1".toPath(),
+      "$base/dirB/2".toPath(),
+      "$base/dirB/3".toPath(),
+      "$base/root.txt".toPath(),
+    ))
+
     val listRecursive = forwardingFileSystem.listRecursively(base)
     for (path in listRecursive) {
-      // TODO(Benoit) Assert that `log.size` grows as we're looping.
+      logs += "Path returned: $path"
+      // TODO(Benoit) Check the order by asserting `path == expected.removeFirst()` ?
+      assertTrue(expectedPaths.remove(path))
+
+      // At some arbitrary point, we create other files which should be picked up by our
+      // `listRecursively` call if this one is lazy.
+      if (path == base / "dirA/child2") {
+        val somethingsB = listOf(
+          Tree("$base/dirB/1".toPath(), isFile = true),
+          Tree("$base/dirB/2".toPath(), isFile = true),
+          Tree("$base/dirB/3".toPath(), isFile = true),
+        )
+        for (something in somethingsB) {
+          fileSystem.write(something.path) {
+            writeUtf8("file ${something.path.name}")
+          }
+        }
+      }
     }
+
+    assertTrue(expectedPaths.isEmpty(), "Unconsummed paths: ${expectedPaths.joinToString()}")
   }
 }
