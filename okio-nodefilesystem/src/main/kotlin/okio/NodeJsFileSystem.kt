@@ -86,6 +86,18 @@ object NodeJsFileSystem : FileSystem() {
     }
   }
 
+  override fun listRecursively(dir: Path): Sequence<Path> {
+    // TODO(Benoit) return emptySequence() if `dir` is not a directory.
+
+    val currentDirList = list(dir).asSequence()
+    return sequence {
+      for (path in currentDirList) {
+        yield(path)
+        yieldAll(listRecursively(path))
+      }
+    }
+  }
+
   override fun openReadOnly(file: Path): FileHandle {
     val fd = openFd(file, flags = "r")
     return NodeJsFileHandle(fd, readWrite = false)

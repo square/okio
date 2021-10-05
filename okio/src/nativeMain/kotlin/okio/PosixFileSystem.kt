@@ -67,6 +67,18 @@ internal object PosixFileSystem : FileSystem() {
     }
   }
 
+  override fun listRecursively(dir: Path): Sequence<Path> {
+    if (opendir(dir.toString()) == null) return emptySequence()
+
+    val currentDirList = list(dir).asSequence()
+    return sequence {
+      for (path in currentDirList) {
+        yield(path)
+        yieldAll(listRecursively(path))
+      }
+    }
+  }
+
   override fun openReadOnly(file: Path) = variantOpenReadOnly(file)
 
   override fun openReadWrite(file: Path) = variantOpenReadWrite(file)

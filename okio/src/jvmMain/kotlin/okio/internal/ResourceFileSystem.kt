@@ -29,6 +29,7 @@ import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.net.URL
+import java.nio.file.Files
 
 /**
  * A file system exposing Java classpath resources. It is equivalent to the files returned by
@@ -76,7 +77,15 @@ internal class ResourceFileSystem internal constructor(
   }
 
   override fun listRecursively(dir: Path): Sequence<Path> {
-    TODO()
+    if (!Files.isDirectory(dir.toNioPath())) return emptySequence()
+
+    val currentDirList = list(dir).asSequence()
+    return sequence {
+      for (path in currentDirList) {
+        yield(path)
+        yieldAll(listRecursively(path))
+      }
+    }
   }
 
   override fun openReadOnly(file: Path): FileHandle {
