@@ -39,9 +39,7 @@ actual abstract class FileSystem {
   @Throws(IOException::class)
   actual abstract fun list(dir: Path): List<Path>
 
-  @Throws(IOException::class)
-  actual open fun listRecursively(dir: Path): Sequence<Path> =
-    commonListRecursively(dir)
+  actual open fun listRecursively(dir: Path): Sequence<Path> = commonListRecursively(dir)
 
   @Throws(IOException::class)
   actual abstract fun openReadOnly(file: Path): FileHandle

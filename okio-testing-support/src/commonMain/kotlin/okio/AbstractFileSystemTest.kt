@@ -175,8 +175,8 @@ abstract class AbstractFileSystemTest(
   }
 
   /**
-   * Not that this is different from `Files.walk` in java.nio which returns the argument if it is
-   * not a directory.
+   * Note that this is different from `Files.walk` in java.nio which returns the argument even if
+   * it is not a directory.
    */
   @Test
   fun listRecursivelyNotADirectory() {

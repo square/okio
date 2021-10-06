@@ -144,9 +144,9 @@ expect abstract class FileSystem() {
    * The returned sequence visits the tree of files in breadth-first order. That is, all elements
    * at depth _N_ are returned before any elements at depth _N + 1_.
    *
-   * Note that [listRecursively] does not throw exceptions. The returned sequence throws a
-   * [FileNotFoundException] if [dir] does not exist when it is iterated. The sequence throws an
-   * [IOException] if [dir] is not a directory or cannot be read.
+   * Note that [listRecursively] does not throw exceptions. When it is iterated, the returned
+   * sequence throws a [FileNotFoundException] if [dir] does not exist, or an [IOException] if
+   * [dir] is not a directory or cannot be read.
    */
   open fun listRecursively(dir: Path): Sequence<Path>
 
