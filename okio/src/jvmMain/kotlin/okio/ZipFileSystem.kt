@@ -16,14 +16,14 @@
  */
 package okio
 
-import java.io.FileNotFoundException
-import java.util.zip.Inflater
 import okio.Path.Companion.toPath
 import okio.internal.COMPRESSION_METHOD_STORED
 import okio.internal.FixedLengthSource
 import okio.internal.ZipEntry
 import okio.internal.readLocalHeader
 import okio.internal.skipLocalHeader
+import java.io.FileNotFoundException
+import java.util.zip.Inflater
 
 /**
  * Read only access to a [zip file][zip_format] and common [extra fields][extra_fields].
@@ -108,19 +108,6 @@ class ZipFileSystem internal constructor(
     val canonicalDir = canonicalize(dir)
     val entry = entries[canonicalDir] ?: throw IOException("not a directory: $dir")
     return entry.children.toList()
-  }
-
-  override fun listRecursively(dir: Path): Sequence<Path> {
-    val canonicalDir = canonicalize(dir)
-    if (entries[canonicalDir] == null) return emptySequence()
-
-    val currentDirList = list(dir).asSequence()
-    return sequence {
-      for (path in currentDirList) {
-        yield(path)
-        yieldAll(listRecursively(path))
-      }
-    }
   }
 
   @Throws(IOException::class)

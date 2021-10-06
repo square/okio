@@ -237,19 +237,6 @@ class FakeFileSystem(
     return paths
   }
 
-  override fun listRecursively(dir: Path): Sequence<Path> {
-    val element = elements[dir]
-    if (element !is Directory) return emptySequence()
-
-    val currentDirList = list(dir).asSequence()
-    return sequence {
-      for (path in currentDirList) {
-        yield(path)
-        yieldAll(listRecursively(path))
-      }
-    }
-  }
-
   override fun source(file: Path): Source {
     val fileHandle = openReadOnly(file)
     return fileHandle.source()

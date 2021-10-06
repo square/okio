@@ -15,8 +15,8 @@
  */
 package okio
 
-import java.io.RandomAccessFile
 import okio.Path.Companion.toOkioPath
+import java.io.RandomAccessFile
 
 /**
  * A file system that adapts `java.io`.
@@ -68,18 +68,6 @@ internal open class JvmSystemFileSystem : FileSystem() {
     val result = entries.mapTo(mutableListOf()) { dir / it }
     result.sort()
     return result
-  }
-
-  override fun listRecursively(dir: Path): Sequence<Path> {
-    if (!dir.toFile().isDirectory) return emptySequence()
-
-    val currentDirList = list(dir).asSequence()
-    return sequence {
-      for (path in currentDirList) {
-        yield(path)
-        yieldAll(listRecursively(path))
-      }
-    }
   }
 
   override fun openReadOnly(file: Path): FileHandle {

@@ -142,6 +142,126 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun listRecursivelyReturnsEmpty() {
+    val entries = fileSystem.listRecursively(base)
+    assertEquals(entries.toList(), listOf())
+  }
+
+  @Test
+  fun listRecursivelyReturnsSingleFile() {
+    val baseA = base / "a"
+    baseA.writeUtf8("a")
+    val entries = fileSystem.listRecursively(base)
+    assertEquals(entries.toList(), listOf(baseA))
+  }
+
+  @Test
+  fun listRecursivelyRecurses() {
+    val baseA = base / "a"
+    val baseAB = baseA / "b"
+    baseA.createDirectory()
+    baseAB.writeUtf8("ab")
+    val entries = fileSystem.listRecursively(base)
+    assertEquals(entries.toList(), listOf(baseA, baseAB))
+  }
+
+  @Test
+  fun listRecursivelyNoSuchFile() {
+    val baseA = base / "a"
+    val sequence = fileSystem.listRecursively(baseA)
+    assertFailsWith<FileNotFoundException> {
+      sequence.first()
+    }
+  }
+
+  /**
+   * Not that this is different from `Files.walk` in java.nio which returns the argument if it is
+   * not a directory.
+   */
+  @Test
+  fun listRecursivelyNotADirectory() {
+    val baseA = base / "a"
+    baseA.writeUtf8("a")
+    val sequence = fileSystem.listRecursively(baseA)
+    val exception = assertFailsWith<IOException> {
+      sequence.first()
+    }
+    assertTrue(exception !is FileNotFoundException)
+  }
+
+  @Test
+  fun listRecursivelyIsBreadthFirst() {
+    val baseA = base / "a"
+    val baseB = base / "b"
+    val baseA1 = baseA / "1"
+    val baseA2 = baseA / "2"
+    val baseB1 = baseB / "1"
+    val baseB2 = baseB / "2"
+    baseA.createDirectory()
+    baseB.createDirectory()
+    baseA1.writeUtf8("a1")
+    baseA2.writeUtf8("a2")
+    baseB1.writeUtf8("b1")
+    baseB2.writeUtf8("b2")
+    val entries = fileSystem.listRecursively(base)
+    assertEquals(entries.toList(), listOf(baseA, baseB, baseA1, baseA2, baseB1, baseB2))
+  }
+
+  @Test
+  fun listRecursivelyIsLazy() {
+    val baseA = base / "a"
+    val baseB = base / "b"
+    baseA.createDirectory()
+    baseB.createDirectory()
+    val entries = fileSystem.listRecursively(base).iterator()
+    assertEquals(baseA, entries.next())
+    assertEquals(baseB, entries.next())
+    val baseA1 = baseA / "1"
+    val baseA2 = baseA / "2"
+    baseA1.writeUtf8("a1")
+    baseA2.writeUtf8("a2")
+    assertEquals(baseA1, entries.next())
+    assertEquals(baseA2, entries.next())
+    val baseB1 = baseB / "1"
+    val baseB2 = baseB / "2"
+    baseB1.writeUtf8("b1")
+    baseB2.writeUtf8("b2")
+    assertEquals(baseB1, entries.next())
+    assertEquals(baseB2, entries.next())
+    assertFalse(entries.hasNext())
+  }
+
+  /**
+   * This test creates directories that should be listed lazily, and then deletes them! The test
+   * wants to confirm that the sequence is resilient to such changes.
+   */
+  @Test
+  fun listRecursivelySilentlyIgnoresListFailures() {
+    val baseA = base / "a"
+    val baseB = base / "b"
+    baseA.createDirectory()
+    baseB.createDirectory()
+    val entries = fileSystem.listRecursively(base).iterator()
+    assertEquals(baseA, entries.next())
+    assertEquals(baseB, entries.next())
+    fileSystem.delete(baseA)
+    fileSystem.delete(baseB)
+    assertFalse(entries.hasNext())
+  }
+
+  @Test
+  fun listRecursivelySequenceIterationsAreIndependent() {
+    val sequence = fileSystem.listRecursively(base)
+    val iterator1 = sequence.iterator()
+    assertFalse(iterator1.hasNext())
+    val baseA = base / "a"
+    baseA.writeUtf8("a")
+    val iterator2 = sequence.iterator()
+    assertEquals(baseA, iterator2.next())
+    assertFalse(iterator2.hasNext())
+  }
+
+  @Test
   fun fileSourceNoSuchDirectory() {
     assertFailsWith<FileNotFoundException> {
       fileSystem.source(base / "no-such-directory" / "file")
@@ -1386,6 +1506,10 @@ abstract class AbstractFileSystemTest(
     fileSystem.sink(this).buffer().use {
       it.writeUtf8(string)
     }
+  }
+
+  fun Path.createDirectory() {
+    fileSystem.createDirectory(this)
   }
 
   /**

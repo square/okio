@@ -137,8 +137,18 @@ expect abstract class FileSystem() {
   @Throws(IOException::class)
   abstract fun list(dir: Path): List<Path>
 
-  @Throws(IOException::class)
-  abstract fun listRecursively(dir: Path): Sequence<Path>
+  /**
+   * Returns a sequence that **lazily** traverses the children of [dir] using repeated calls to
+   * [list]. If none of [dir]'s children are directories this returns the same elements as [list].
+   *
+   * The returned sequence visits the tree of files in breadth-first order. That is, all elements
+   * at depth _N_ are returned before any elements at depth _N + 1_.
+   *
+   * Note that [listRecursively] does not throw exceptions. The returned sequence throws a
+   * [FileNotFoundException] if [dir] does not exist when it is iterated. The sequence throws an
+   * [IOException] if [dir] is not a directory or cannot be read.
+   */
+  open fun listRecursively(dir: Path): Sequence<Path>
 
   /**
    * Returns a handle to read [file]. This will fail if the file doesn't already exist.
