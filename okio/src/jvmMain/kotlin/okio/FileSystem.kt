@@ -21,6 +21,7 @@ import okio.internal.commonCopy
 import okio.internal.commonCreateDirectories
 import okio.internal.commonDeleteRecursively
 import okio.internal.commonExists
+import okio.internal.commonListRecursively
 import okio.internal.commonMetadata
 
 @ExperimentalFileSystem
@@ -39,6 +40,8 @@ actual abstract class FileSystem {
 
   @Throws(IOException::class)
   actual abstract fun list(dir: Path): List<Path>
+
+  actual open fun listRecursively(dir: Path): Sequence<Path> = commonListRecursively(dir)
 
   @Throws(IOException::class)
   actual abstract fun openReadOnly(file: Path): FileHandle

@@ -88,3 +88,30 @@ internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path) {
     }
   }
 }
+
+@ExperimentalFileSystem
+@Throws(IOException::class)
+internal fun FileSystem.commonListRecursively(dir: Path): Sequence<Path> {
+  return sequence {
+    val queue = ArrayDeque<Path>()
+
+    // Don't try/catch for the immediate children of `dir`. If it doesn't exist the sequence should
+    // throw an IOException.
+    val dirChildren = list(dir)
+    queue += dirChildren
+    yieldAll(dirChildren)
+
+    while (true) {
+      val element = queue.removeFirstOrNull() ?: break
+
+      // For transitive children, ignore IOExceptions such as if the child is not a directory (very
+      // common), or if it has since been deleted.
+      try {
+        val elementChildren = list(element)
+        yieldAll(elementChildren)
+        queue += elementChildren
+      } catch (_: IOException) {
+      }
+    }
+  }
+}
