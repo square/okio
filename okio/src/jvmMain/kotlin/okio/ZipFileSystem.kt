@@ -80,6 +80,7 @@ class ZipFileSystem internal constructor(
     val basicMetadata = FileMetadata(
       isRegularFile = !entry.isDirectory,
       isDirectory = entry.isDirectory,
+      symlinkTarget = null,
       size = if (entry.isDirectory) null else entry.size,
       createdAtMillis = null,
       lastModifiedAtMillis = entry.lastModifiedAtMillis,
@@ -145,4 +146,7 @@ class ZipFileSystem internal constructor(
     throw IOException("zip file systems are read-only")
 
   override fun delete(path: Path): Unit = throw IOException("zip file systems are read-only")
+
+  override fun createSymlink(source: Path, target: Path): Unit =
+    throw IOException("zip file systems are read-only")
 }

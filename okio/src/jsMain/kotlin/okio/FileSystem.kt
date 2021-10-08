@@ -72,6 +72,8 @@ actual abstract class FileSystem {
   actual open fun deleteRecursively(fileOrDirectory: Path): Unit =
     commonDeleteRecursively(fileOrDirectory)
 
+  actual abstract fun createSymlink(source: Path, target: Path)
+
   actual companion object {
     actual val SYSTEM_TEMPORARY_DIRECTORY: Path = tmpdir.toPath()
   }

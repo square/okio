@@ -125,6 +125,9 @@ internal class ResourceFileSystem internal constructor(
 
   override fun delete(path: Path): Unit = throw IOException("$this is read-only")
 
+  override fun createSymlink(source: Path, target: Path): Unit =
+    throw IOException("$this is read-only")
+
   private fun Path.toRelativePath(): String = canonicalize(this).toString().substring(1)
 
   private companion object {

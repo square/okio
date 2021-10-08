@@ -213,6 +213,12 @@ internal inline fun Path.commonResolve(child: String): Path {
 
 @ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
+internal inline fun Path.commonResolve(child: ByteString): Path {
+  return div(Buffer().write(child).toPath())
+}
+
+@ExperimentalFileSystem
+@Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonResolve(child: Path): Path {
   if (child.isAbsolute || child.volumeLetter != null) return child
 

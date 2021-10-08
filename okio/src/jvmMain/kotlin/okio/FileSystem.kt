@@ -91,6 +91,9 @@ actual abstract class FileSystem {
   actual open fun deleteRecursively(fileOrDirectory: Path): Unit =
     commonDeleteRecursively(fileOrDirectory)
 
+  @Throws(IOException::class)
+  actual abstract fun createSymlink(source: Path, target: Path)
+
   actual companion object {
     /**
      * The current process's host file system. Use this instance directly, or dependency inject a

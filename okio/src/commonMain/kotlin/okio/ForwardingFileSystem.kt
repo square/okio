@@ -220,5 +220,12 @@ abstract class ForwardingFileSystem(
     delegate.delete(path)
   }
 
+  @Throws(IOException::class)
+  override fun createSymlink(source: Path, target: Path) {
+    val source = onPathParameter(source, "createSymlink", "source")
+    val target = onPathParameter(target, "createSymlink", "target")
+    delegate.createSymlink(source, target)
+  }
+
   override fun toString() = "${this::class.simpleName}($delegate)"
 }

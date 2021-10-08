@@ -51,6 +51,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return FileMetadata(
       isRegularFile = isRegularFile,
       isDirectory = isDirectory,
+      symlinkTarget = null,
       size = size,
       createdAtMillis = null,
       lastModifiedAtMillis = lastModifiedAtMillis,
@@ -106,6 +107,10 @@ internal open class JvmSystemFileSystem : FileSystem() {
       if (!file.exists()) throw FileNotFoundException("no such file: $path")
       else throw IOException("failed to delete $path")
     }
+  }
+
+  override fun createSymlink(source: Path, target: Path) {
+    throw IOException("unsupported")
   }
 
   override fun toString() = "JvmSystemFileSystem"

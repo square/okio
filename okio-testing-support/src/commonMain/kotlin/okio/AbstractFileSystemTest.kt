@@ -136,9 +136,10 @@ abstract class AbstractFileSystemTest(
   fun listFile() {
     val target = base / "list"
     target.writeUtf8("hello, world!")
-    assertFailsWith<IOException> {
+    val exception = assertFailsWith<IOException> {
       fileSystem.list(target)
     }
+    assertTrue(exception !is FileNotFoundException)
   }
 
   @Test
@@ -454,9 +455,10 @@ abstract class AbstractFileSystemTest(
   fun createDirectoryAlreadyExists() {
     val path = base / "already-exists"
     fileSystem.createDirectory(path)
-    assertFailsWith<IOException> {
+    val exception = assertFailsWith<IOException> {
       fileSystem.createDirectory(path)
     }
+    assertTrue(exception !is FileNotFoundException)
   }
 
   @Test
@@ -558,9 +560,10 @@ abstract class AbstractFileSystemTest(
     source.writeUtf8("hello, world!")
     val target = base / "target"
     fileSystem.createDirectory(target)
-    assertFailsWith<IOException> {
+    val exception = assertFailsWith<IOException> {
       fileSystem.atomicMove(source, target)
     }
+    assertTrue(exception !is FileNotFoundException)
   }
 
   @Test
@@ -645,9 +648,10 @@ abstract class AbstractFileSystemTest(
     val path = base / "non-empty-directory"
     fileSystem.createDirectory(path)
     (path / "file.txt").writeUtf8("inside directory")
-    assertFailsWith<IOException> {
+    val exception = assertFailsWith<IOException> {
       fileSystem.delete(path)
     }
+    assertTrue(exception !is FileNotFoundException)
   }
 
   @Test
@@ -730,6 +734,25 @@ abstract class AbstractFileSystemTest(
   fun absentMetadataOrNull() {
     val path = base / "no-such-file"
     assertNull(fileSystem.metadataOrNull(path))
+  }
+
+  @Test
+  fun absentParentDirectoryMetadataOrNull() {
+    val path = base / "no-such-directory" / "no-such-file"
+    assertNull(fileSystem.metadataOrNull(path))
+  }
+
+  @Test
+  fun parentDirectoryIsFileMetadataOrNull() {
+    val parent = base / "regular-file"
+    val path = parent / "no-such-file"
+    parent.writeUtf8("just a regular file")
+    // This returns null on Windows and throws IOException on other platforms.
+    try {
+      assertNull(fileSystem.metadataOrNull(path))
+    } catch (e: IOException) {
+      // Also okay.
+    }
   }
 
   @Test
@@ -1462,6 +1485,237 @@ abstract class AbstractFileSystemTest(
     }
   }
 
+  @Test
+  fun symlinkMetadata() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+
+    val minTime = clock.now()
+    fileSystem.createSymlink(source, target)
+    val maxTime = clock.now()
+
+    val sourceMetadata = fileSystem.metadata(source)
+    assertEquals(target, sourceMetadata.symlinkTarget)
+    assertInRange(sourceMetadata.createdAt, minTime, maxTime)
+  }
+
+  @Test
+  fun createSymlinkSourceAlreadyExists() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    source.writeUtf8("hello")
+    val exception = assertFailsWith<IOException> {
+      fileSystem.createSymlink(source, target)
+    }
+    assertTrue(exception !is FileNotFoundException)
+  }
+
+  @Test
+  fun createSymlinkParentDirectoryDoesNotExist() {
+    if (!supportsSymlink()) return
+
+    val source = base / "no-such-directory" / "source"
+    val target = base / "target"
+    val e = assertFailsWith<IOException> {
+      fileSystem.createSymlink(source, target)
+    }
+    assertTrue(e !is FileNotFoundException)
+  }
+
+  @Test
+  fun openSymlinkSource() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    fileSystem.createSymlink(source, target)
+    target.writeUtf8("I am the target file")
+    val sourceContent = fileSystem.source(source).buffer().use { it.readUtf8() }
+    assertEquals("I am the target file", sourceContent)
+  }
+
+  @Test
+  fun openSymlinkSink() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    fileSystem.createSymlink(source, target)
+    fileSystem.sink(source).buffer().use {
+      it.writeUtf8("This writes to the the source file")
+    }
+    assertEquals("This writes to the the source file", target.readUtf8())
+  }
+
+  @Test
+  fun openFileWithDirectorySymlink() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAA = base / "a" / "a"
+    val baseB = base / "b"
+    val baseBA = base / "b" / "a"
+    fileSystem.createDirectory(baseA)
+    baseAA.writeUtf8("aa")
+    fileSystem.createSymlink(baseB, baseA)
+    assertEquals("aa", baseAA.readUtf8())
+    assertEquals("aa", baseBA.readUtf8())
+  }
+
+  @Test
+  fun openSymlinkFileHandle() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    fileSystem.createSymlink(source, target)
+    target.writeUtf8("I am the target file")
+    val sourceContent = fileSystem.openReadOnly(source).use { fileHandle ->
+      fileHandle.source().buffer().use { it.readUtf8() }
+    }
+    assertEquals("I am the target file", sourceContent)
+  }
+
+  @Test
+  fun listSymlinkDirectory() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAA = base / "a" / "a"
+    val baseAB = base / "a" / "b"
+    val baseB = base / "b"
+    val baseBA = base / "b" / "a"
+    val baseBB = base / "b" / "b"
+    fileSystem.createDirectory(baseA)
+    baseAA.writeUtf8("aa")
+    baseAB.writeUtf8("ab")
+    fileSystem.createSymlink(baseB, baseA)
+    assertEquals(listOf(baseBA, baseBB), fileSystem.list(baseB))
+  }
+
+  @Test
+  fun symlinkFileLastAccessedAt() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    target.writeUtf8("a")
+    fileSystem.createSymlink(source, target)
+    tryAdvanceTime()
+    val minTime = clock.now()
+    assertEquals("a", source.readUtf8())
+    val maxTime = clock.now()
+    assertInRange(fileSystem.metadata(source).lastAccessedAt, minTime, maxTime)
+  }
+
+  @Test
+  fun symlinkDirectoryLastAccessedAt() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAA = base / "a" / "a"
+    val baseB = base / "b"
+    val baseBA = base / "b" / "a"
+    fileSystem.createDirectory(baseA)
+    baseAA.writeUtf8("aa")
+    fileSystem.createSymlink(baseB, baseA)
+    tryAdvanceTime()
+    val minTime = clock.now()
+    assertEquals("aa", baseBA.readUtf8())
+    val maxTime = clock.now()
+    assertInRange(fileSystem.metadata(baseB).lastAccessedAt, minTime, maxTime)
+  }
+
+  @Test
+  fun deleteSymlinkDoesntDeleteTargetFile() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    target.writeUtf8("I am the target file")
+    fileSystem.createSymlink(source, target)
+    fileSystem.delete(source)
+    assertEquals("I am the target file", target.readUtf8())
+  }
+
+  @Test
+  fun moveSymlinkDoesntMoveTargetFile() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source1 = base / "symlink-source-1"
+    val source2 = base / "symlink-source-2"
+    target.writeUtf8("I am the target file")
+    fileSystem.createSymlink(source1, target)
+    fileSystem.atomicMove(source1, source2)
+    assertEquals("I am the target file", target.readUtf8())
+    assertEquals("I am the target file", source2.readUtf8())
+    assertEquals(target, fileSystem.metadata(source2).symlinkTarget)
+  }
+
+  @Test
+  fun symlinkCanBeRelative() {
+    if (!supportsSymlink()) return
+
+    val relativeTarget = "symlink-target".toPath()
+    val absoluteTarget = base / relativeTarget
+    val source = base / "symlink-source"
+    absoluteTarget.writeUtf8("I am the target file")
+    fileSystem.createSymlink(source, relativeTarget)
+    assertEquals("I am the target file", source.readUtf8())
+  }
+
+  @Test
+  fun symlinkCanBeRelativeWithDotDots() {
+    if (!supportsSymlink()) return
+
+    val relativeTarget = "../b/symlink-target".toPath()
+    val absoluteTarget = base / "b" / "symlink-target"
+    val absoluteSource = base / "a" / "symlink-source"
+    fileSystem.createDirectory(absoluteSource.parent!!)
+    fileSystem.createDirectory(absoluteTarget.parent!!)
+    absoluteTarget.writeUtf8("I am the target file")
+    fileSystem.createSymlink(absoluteSource, relativeTarget)
+    assertEquals("I am the target file", absoluteSource.readUtf8())
+  }
+
+  @Test
+  fun followingRecursiveSymlinksIsOkay() {
+    if (!supportsSymlink()) return
+
+    val pathA = base / "symlink-a"
+    val pathB = base / "symlink-b"
+    val pathC = base / "symlink-c"
+    val target = base / "symlink-target"
+    fileSystem.createSymlink(pathA, pathB)
+    fileSystem.createSymlink(pathB, pathC)
+    fileSystem.createSymlink(pathC, target)
+    target.writeUtf8("I am the target file")
+    assertEquals("I am the target file", pathC.readUtf8())
+    assertEquals("I am the target file", pathB.readUtf8())
+    assertEquals("I am the target file", pathA.readUtf8())
+  }
+
+  @Test
+  fun symlinkCycle() {
+    if (!supportsSymlink()) return
+
+    val pathA = base / "symlink-a"
+    val pathB = base / "symlink-b"
+    fileSystem.createSymlink(pathA, pathB)
+    fileSystem.createSymlink(pathB, pathA)
+    assertFailsWith<IOException> {
+      pathB.writeUtf8("This should not work")
+    }
+    assertFailsWith<IOException> {
+      pathB.readUtf8()
+    }
+  }
+
   private fun assertClosedFailure(block: () -> Unit) {
     val exception = assertFails {
       block()
@@ -1486,7 +1740,19 @@ abstract class AbstractFileSystemTest(
     }
   }
 
-  private fun expectIOExceptionOnWindows(exceptJs: Boolean = false, block: () -> Unit) {
+  protected fun supportsSymlink(): Boolean {
+    if (fileSystem is FakeFileSystem) return fileSystem.allowSymlinks
+    if (windowsLimitations) return false
+    return when (fileSystem::class.simpleName) {
+      "NioSystemFileSystem" -> true
+      else -> false
+    }
+  }
+
+  private fun expectIOExceptionOnWindows(
+    exceptJs: Boolean = false,
+    block: () -> Unit
+  ) {
     val expectCrash = windowsLimitations && (!isNodeJsFileSystem || !exceptJs)
     try {
       block()
@@ -1530,6 +1796,14 @@ abstract class AbstractFileSystemTest(
    */
   private fun Instant.maxFileSystemTime(): Instant {
     return Instant.fromEpochSeconds(plus(Duration.seconds(2)).epochSeconds)
+  }
+
+  /**
+   * Attempt to advance the clock so that any already-issued timestamps will not collide with
+   * timestamps yet to be issued.
+   */
+  private fun tryAdvanceTime() {
+    if (clock is FakeClock) clock.sleep(Duration.minutes(1))
   }
 
   private fun assertInRange(sampled: Instant?, minTime: Instant, maxTime: Instant) {
