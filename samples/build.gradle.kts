@@ -17,7 +17,7 @@ kotlin {
         implementation(project(":okio"))
       }
     }
-    val jvmTest by getting {
+    getByName("jvmTest") {
       dependencies {
         implementation(deps.test.junit)
         implementation(deps.test.assertj)

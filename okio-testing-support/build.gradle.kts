@@ -4,9 +4,8 @@ plugins {
 }
 
 kotlin {
-  jvm {
-  }
   if (kmpJsEnabled) {
+    jvm()
     js {
       compilations.all {
         kotlinOptions {
@@ -22,8 +21,7 @@ kotlin {
           }
         }
       }
-      browser {
-      }
+      browser()
     }
   }
   if (kmpNativeEnabled) {
@@ -40,13 +38,13 @@ kotlin {
         implementation(project(":okio-fakefilesystem"))
       }
     }
-    val jvmMain by getting {
+    getByName("jvmMain") {
       dependencies {
         implementation(deps.kotlin.test.jdk)
       }
     }
     if (kmpJsEnabled) {
-      val jsMain by getting {
+      getByName("jsMain") {
         dependencies {
           implementation(deps.kotlin.test.js)
         }

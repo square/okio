@@ -1,7 +1,6 @@
 import aQute.bnd.gradle.BundleTaskConvention
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
@@ -79,17 +78,16 @@ kotlin {
   }
   sourceSets {
     all {
-      languageSettings.apply {
-        useExperimentalAnnotation("kotlin.RequiresOptIn")
-      }
+      languageSettings.optIn("kotlin.RequiresOptIn")
     }
 
-    val commonMain by getting {
+    commonMain {
       dependencies {
         api(deps.kotlin.stdLib.common)
       }
     }
-    val commonTest by getting {
+
+    commonTest {
       dependencies {
         implementation(deps.kotlin.test.common)
         implementation(deps.kotlin.test.annotations)
@@ -104,17 +102,17 @@ kotlin {
     }
     val nonJvmTest by creating {
       dependencies {
-        dependsOn(commonTest)
+        dependsOn(commonTest.get())
       }
     }
 
-    val jvmMain by getting {
+    getByName("jvmMain") {
       dependencies {
         api(deps.kotlin.stdLib.jdk8)
         compileOnly(deps.animalSniffer.annotations)
       }
     }
-    val jvmTest by getting {
+    getByName("jvmTest") {
       kotlin.srcDir("src/hashFunctions/kotlin")
       dependencies {
         implementation(deps.test.junit)
@@ -124,13 +122,13 @@ kotlin {
     }
 
     if (kmpJsEnabled) {
-      val jsMain by getting {
+      getByName("jsMain") {
         dependsOn(nonJvmMain)
         dependencies {
           api(deps.kotlin.stdLib.js)
         }
       }
-      val jsTest by getting {
+      getByName("jsTest") {
         dependencies {
           dependsOn(nonJvmTest)
           implementation(deps.kotlin.test.js)
@@ -151,7 +149,7 @@ kotlin {
             }
         }
 
-      createSourceSet("nativeTest", parent = commonTest, children = mingwTargets + linuxTargets)
+      createSourceSet("nativeTest", parent = commonTest.get(), children = mingwTargets + linuxTargets)
         .also { nativeTest ->
           nativeTest.dependsOn(nonJvmTest)
           createSourceSet("appleTest", parent = nativeTest, children = appleTargets)
@@ -167,32 +165,30 @@ kotlin {
       }
     }
     testRuns {
-      val background by creating {
-        setExecutionSourceFrom(binaries.getByName("backgroundDebugTest") as TestExecutable)
+      create("background") {
+        setExecutionSourceFrom(binaries["backgroundDebugTest"] as TestExecutable)
       }
     }
   }
 }
 
-tasks {
-  val jvmJar by getting(Jar::class) {
-    val bndConvention = BundleTaskConvention(this)
-    bndConvention.setBnd(
-      """
+tasks.getByName<Jar>("jvmJar") {
+  val bndConvention = BundleTaskConvention(this)
+  bndConvention.setBnd(
+    """
       Export-Package: okio
       Automatic-Module-Name: okio
       Bundle-SymbolicName: com.squareup.okio
       """
-    )
-    // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
-    doLast {
-      bndConvention.buildBundle()
-    }
+  )
+  // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
+  doLast {
+    bndConvention.buildBundle()
   }
 }
 
 configure<AnimalSnifferExtension> {
-  sourceSets = listOf(project.sourceSets.getByName("main"))
+  sourceSets = listOf(project.sourceSets["main"])
 }
 
 val signature: Configuration by configurations
@@ -210,7 +206,7 @@ configure<PublishingExtension> {
   }
 }
 
-configure<MavenPublishBaseExtension> {
+mavenPublishing {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )

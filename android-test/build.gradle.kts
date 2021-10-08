@@ -1,14 +1,6 @@
 plugins {
   id("com.android.library")
-  id("org.jetbrains.kotlin.android")
-}
-
-buildscript {
-  repositories {
-    mavenCentral()
-    gradlePluginPortal()
-    google()
-  }
+  kotlin("android")
 }
 
 val isIDE = properties.containsKey("android.injected.invoked.from.ide") ||
@@ -26,11 +18,10 @@ android {
     freeCompilerArgs += "-Xmulti-platform"
   }
 
-  compileSdkVersion(30)
-
+  compileSdk = 30
   defaultConfig {
-    minSdkVersion(15)
-    targetSdkVersion(30)
+    minSdk = 15
+    targetSdk = 30
     versionCode = 1
     versionName = "1.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

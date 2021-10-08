@@ -1,6 +1,5 @@
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 
 plugins {
@@ -49,25 +48,23 @@ kotlin {
   }
 }
 
-tasks {
-  val jvmJar by getting(Jar::class) {
-    val bndConvention = aQute.bnd.gradle.BundleTaskConvention(this)
-    bndConvention.setBnd(
-      """
+tasks.getByName<Jar>("jvmJar") {
+  val bndConvention = aQute.bnd.gradle.BundleTaskConvention(this)
+  bndConvention.setBnd(
+    """
       Export-Package: okio.fakefilesystem
       Automatic-Module-Name: okio.fakefilesystem
       Bundle-SymbolicName: com.squareup.okio.fakefilesystem
       """
-    )
-    // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
-    doLast {
-      bndConvention.buildBundle()
-    }
+  )
+  // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
+  doLast {
+    bndConvention.buildBundle()
   }
 }
 
 configure<AnimalSnifferExtension> {
-  sourceSets = listOf(project.sourceSets.getByName("main"))
+  sourceSets = listOf(project.sourceSets["main"])
 }
 
 val signature: Configuration by configurations
@@ -77,15 +74,13 @@ dependencies {
   signature(deps.animalSniffer.javaSignature)
 }
 
-// https://github.com/vanniktech/gradle-maven-publish-plugin/issues/301
-val metadataJar by tasks.getting(Jar::class)
-configure<PublishingExtension> {
-  publications.withType<MavenPublication>().named("kotlinMultiplatform").configure {
-    artifact(metadataJar)
+publishing {
+  publications.getByName<MavenPublication>("kotlinMultiplatform") {
+    artifact(tasks.metadataJar)
   }
 }
 
-configure<MavenPublishBaseExtension> {
+mavenPublishing {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )

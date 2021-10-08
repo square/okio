@@ -1,6 +1,5 @@
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinJs
-import com.vanniktech.maven.publish.MavenPublishBaseExtension
 
 plugins {
   kotlin("js")
@@ -10,7 +9,7 @@ plugins {
 
 kotlin {
   js {
-    configure(listOf(compilations.getByName("main"), compilations.getByName("test"))) {
+    configure(listOf(compilations["main"], compilations["test"])) {
       tasks.getByName(compileKotlinTaskName) {
         kotlinOptions {
           moduleKind = "umd"
@@ -29,9 +28,9 @@ kotlin {
   }
   sourceSets {
     all {
-      languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+      languageSettings.optIn("kotlin.RequiresOptIn")
     }
-    val main by getting {
+    getByName("main") {
       dependencies {
         implementation(project(":okio"))
         implementation(project(":okio-testing-support"))
@@ -41,7 +40,7 @@ kotlin {
         api(deps.kotlin.stdLib.js)
       }
     }
-    val test by getting {
+    getByName("test") {
       dependencies {
         implementation(deps.kotlin.test.common)
         implementation(deps.kotlin.test.annotations)
@@ -54,7 +53,7 @@ kotlin {
   }
 }
 
-configure<MavenPublishBaseExtension> {
+mavenPublishing {
   configure(
     KotlinJs(javadocJar = Dokka("dokkaGfm"))
   )
