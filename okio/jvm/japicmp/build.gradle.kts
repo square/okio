@@ -16,7 +16,7 @@
 import me.champeau.gradle.japicmp.JapicmpTask
 
 plugins {
-  id("java-library")
+  `java-library`
   id("me.champeau.gradle.japicmp")
 }
 
@@ -32,7 +32,7 @@ dependencies {
 }
 
 val japicmp = tasks.register<JapicmpTask>("japicmp") {
-  dependsOn("jar")
+  dependsOn(tasks.jar)
   oldClasspath = baseline
   newClasspath = latest
   isOnlyBinaryIncompatibleModified = true
