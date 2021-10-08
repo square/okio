@@ -37,7 +37,7 @@ object deps {
       const val js = "org.jetbrains.kotlin:kotlin-test-js"
     }
 
-    const val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.2.1"
+    const val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.3.0"
   }
 
   object jmh {
@@ -54,10 +54,10 @@ object deps {
   }
 
   const val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.3.0"
-  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.30"
+  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.31"
   const val shadow = "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0"
-  const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.15.2"
-  const val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
+  const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.16.0"
+  const val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:6.0.0"
   const val guava = "com.google.guava:guava:31.0.1-jre"
   const val vanniktechPublishPlugin = "com.vanniktech:gradle-maven-publish-plugin:0.18.0"
 
