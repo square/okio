@@ -35,8 +35,7 @@ import static okio.TestUtil.bufferWithRandomSegmentLayout;
 import static okio.TestUtil.segmentPoolByteCount;
 import static okio.TestUtil.segmentSizes;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -407,19 +406,19 @@ public final class BufferTest {
   @Test public void equalsAndHashCodeEmpty() {
     Buffer a = new Buffer();
     Buffer b = new Buffer();
-    assertTrue(a.equals(b));
-    assertTrue(a.hashCode() == b.hashCode());
+    assertEquals(a, b);
+    assertEquals(a.hashCode(), b.hashCode());
   }
 
   @Test public void equalsAndHashCode() throws Exception {
     Buffer a = new Buffer().writeUtf8("dog");
     Buffer b = new Buffer().writeUtf8("hotdog");
-    assertFalse(a.equals(b));
-    assertFalse(a.hashCode() == b.hashCode());
+    assertNotEquals(a, b);
+    assertNotEquals(a.hashCode(), b.hashCode());
 
     b.readUtf8(3); // Leaves b containing 'dog'.
-    assertTrue(a.equals(b));
-    assertTrue(a.hashCode() == b.hashCode());
+    assertEquals(a, b);
+    assertEquals(a.hashCode(), b.hashCode());
   }
 
   @Test public void equalsAndHashCodeSpanningSegments() throws Exception {
@@ -429,13 +428,13 @@ public final class BufferTest {
 
     Buffer a = bufferWithRandomSegmentLayout(dice, data);
     Buffer b = bufferWithRandomSegmentLayout(dice, data);
-    assertTrue(a.equals(b));
-    assertTrue(a.hashCode() == b.hashCode());
+    assertEquals(a, b);
+    assertEquals(a.hashCode(), b.hashCode());
 
     data[data.length / 2]++; // Change a single byte.
     Buffer c = bufferWithRandomSegmentLayout(dice, data);
-    assertFalse(a.equals(c));
-    assertFalse(a.hashCode() == c.hashCode());
+    assertNotEquals(a, c);
+    assertNotEquals(a.hashCode(), c.hashCode());
   }
 
   @Test public void bufferInputStreamByteByByte() throws Exception {

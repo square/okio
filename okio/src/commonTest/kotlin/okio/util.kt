@@ -76,3 +76,27 @@ fun makeSegments(source: ByteString): ByteString {
   }
   return buffer.snapshot()
 }
+
+/**
+ * Returns a string with all '\' slashes replaced with '/' slashes. This is useful for test
+ * assertions that intend to ignore slashes.
+ */
+@ExperimentalFileSystem
+fun Path.withUnixSlashes(): String {
+  return toString().replace('\\', '/')
+}
+
+@ExperimentalFileSystem
+expect fun assertRelativeTo(
+  a: Path,
+  b: Path,
+  bRelativeToA: Path,
+  sameAsNio: Boolean = true,
+)
+
+@ExperimentalFileSystem
+expect fun assertRelativeToFails(
+  a: Path,
+  b: Path,
+  sameAsNio: Boolean = true,
+): IllegalArgumentException

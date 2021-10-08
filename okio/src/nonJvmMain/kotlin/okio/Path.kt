@@ -24,7 +24,11 @@ import okio.internal.commonIsRoot
 import okio.internal.commonName
 import okio.internal.commonNameBytes
 import okio.internal.commonParent
+import okio.internal.commonRelativeTo
 import okio.internal.commonResolve
+import okio.internal.commonRoot
+import okio.internal.commonSegments
+import okio.internal.commonSegmentsBytes
 import okio.internal.commonToPath
 import okio.internal.commonToString
 import okio.internal.commonVolumeLetter
@@ -33,6 +37,15 @@ import okio.internal.commonVolumeLetter
 actual class Path internal actual constructor(
   internal actual val bytes: ByteString
 ) : Comparable<Path> {
+  actual val root: Path?
+    get() = commonRoot()
+
+  actual val segments: List<String>
+    get() = commonSegments()
+
+  actual val segmentsBytes: List<ByteString>
+    get() = commonSegmentsBytes()
+
   actual val isAbsolute: Boolean
     get() = commonIsAbsolute()
 
@@ -57,6 +70,8 @@ actual class Path internal actual constructor(
   actual operator fun div(child: String): Path = commonResolve(child)
 
   actual operator fun div(child: Path): Path = commonResolve(child)
+
+  actual fun relativeTo(other: Path): Path = commonRelativeTo(other)
 
   actual override fun compareTo(other: Path): Int = commonCompareTo(other)
 
