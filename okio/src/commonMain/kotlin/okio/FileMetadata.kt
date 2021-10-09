@@ -52,24 +52,30 @@ package okio
 @ExperimentalFileSystem
 class FileMetadata(
   /** True if this file is a container of bytes. If this is true, then [size] is non-null. */
-  val isRegularFile: Boolean,
+  val isRegularFile: Boolean = false,
 
   /** True if the path refers to a directory that contains 0 or more child paths. */
-  val isDirectory: Boolean,
+  val isDirectory: Boolean = false,
+
+  /**
+   * The absolute or relative path that this file is a symlink to, or null if this is not a symlink.
+   * If this is a relative path, it is relative to the source file's parent directory.
+   */
+  val symlinkTarget: Path? = null,
 
   /**
    * Returns the number of bytes readable from this file. The amount of storage resources consumed
    * by this file may be larger (due to block size overhead, redundant copies for RAID, etc.), or
    * smaller (due to file system compression, shared inodes, etc).
    */
-  val size: Long?,
+  val size: Long? = null,
 
   /**
    * Returns the system time of the host computer when this file was created, if the host file
    * system supports this feature. This is typically available on Windows NTFS file systems and not
    * available on UNIX or Windows FAT file systems.
    */
-  val createdAtMillis: Long?,
+  val createdAtMillis: Long? = null,
 
   /**
    * Returns the system time of the host computer when this file was most recently written.
@@ -78,7 +84,7 @@ class FileMetadata(
    * particular, this value is expressed with millisecond precision but may be accessed at
    * second- or day-accuracy only.
    */
-  val lastModifiedAtMillis: Long?,
+  val lastModifiedAtMillis: Long? = null,
 
   /**
    * Returns the system time of the host computer when this file was most recently read or written.
@@ -87,7 +93,7 @@ class FileMetadata(
    * particular, this value is expressed with millisecond precision but may be accessed at
    * second- or day-accuracy only.
    */
-  val lastAccessedAtMillis: Long?
+  val lastAccessedAtMillis: Long? = null,
 ) {
   override fun equals(other: Any?) = other is FileMetadata && toString() == other.toString()
 

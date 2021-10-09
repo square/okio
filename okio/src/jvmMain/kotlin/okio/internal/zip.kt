@@ -435,6 +435,7 @@ private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): 
   return FileMetadata(
     isRegularFile = basicMetadata.isRegularFile,
     isDirectory = basicMetadata.isDirectory,
+    symlinkTarget = null,
     size = basicMetadata.size,
     createdAtMillis = createdAtMillis,
     lastModifiedAtMillis = lastModifiedAtMillis,

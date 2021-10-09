@@ -79,6 +79,9 @@ actual class Path internal actual constructor(
   actual operator fun div(child: String): Path = commonResolve(child)
 
   @JvmName("resolve")
+  actual operator fun div(child: ByteString): Path = commonResolve(child)
+
+  @JvmName("resolve")
   actual operator fun div(child: Path): Path = commonResolve(child)
 
   actual fun relativeTo(other: Path): Path = commonRelativeTo(other)

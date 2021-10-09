@@ -40,8 +40,8 @@ package okio
  * It is not suitable for high-latency or unreliable remote file systems. It lacks support for
  * retries, timeouts, cancellation, and bulk operations.
  *
- * It cannot create special file types like hard links, symlinks, pipes, or mounts. Reading
- * or writing these files works as if they were regular files.
+ * It cannot create special file types like hard links, pipes, or mounts. Reading or writing these
+ * files works as if they were regular files.
  *
  * It cannot read or write file access control features like the UNIX `chmod` and Windows access
  * control lists. It does honor these controls and will fail with an [IOException] if privileges
@@ -322,6 +322,17 @@ expect abstract class FileSystem() {
    */
   @Throws(IOException::class)
   open fun deleteRecursively(fileOrDirectory: Path)
+
+  /**
+   * Creates a symbolic link at [source] that resolves to [target]. If [target] is a relative path,
+   * it is relative to `source.parent`.
+   *
+   * @throws IOException if [source] cannot be created. This may be because it already exists
+   *     or because its storage doesn't support symlinks. This list of potential problems is not
+   *     exhaustive.
+   */
+  @Throws(IOException::class)
+  abstract fun createSymlink(source: Path, target: Path)
 
   companion object {
     /**

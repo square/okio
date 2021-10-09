@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.Path.Companion.toOkioPath
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -23,6 +24,7 @@ import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
+import java.nio.file.Path as NioPath
 
 /**
  * Extends [JvmSystemFileSystem] for platforms that support `java.nio.files` first introduced in
@@ -44,9 +46,16 @@ internal class NioSystemFileSystem : JvmSystemFileSystem() {
       return null
     }
 
+    val symlinkTarget: NioPath? = if (attributes.isSymbolicLink) {
+      Files.readSymbolicLink(nioPath)
+    } else {
+      null
+    }
+
     return FileMetadata(
       isRegularFile = attributes.isRegularFile,
       isDirectory = attributes.isDirectory,
+      symlinkTarget = symlinkTarget?.toOkioPath(),
       size = attributes.size(),
       createdAtMillis = attributes.creationTime()?.zeroToNull(),
       lastModifiedAtMillis = attributes.lastModifiedTime()?.zeroToNull(),
@@ -70,6 +79,10 @@ internal class NioSystemFileSystem : JvmSystemFileSystem() {
     } catch (e: UnsupportedOperationException) {
       throw IOException("atomic move not supported")
     }
+  }
+
+  override fun createSymlink(source: Path, target: Path) {
+    Files.createSymbolicLink(source.toNioPath(), target.toNioPath())
   }
 
   override fun toString() = "NioSystemFileSystem"

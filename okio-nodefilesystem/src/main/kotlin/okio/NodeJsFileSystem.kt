@@ -50,6 +50,7 @@ object NodeJsFileSystem : FileSystem() {
     return FileMetadata(
       isRegularFile = stat.mode.toInt() and S_IFMT == S_IFREG,
       isDirectory = stat.mode.toInt() and S_IFMT == S_IFDIR,
+      symlinkTarget = null,
       size = stat.size.toLong(),
       createdAtMillis = stat.ctimeMs.toLong(),
       lastModifiedAtMillis = stat.mtimeMs.toLong(),
@@ -168,6 +169,10 @@ object NodeJsFileSystem : FileSystem() {
     } catch (e: Throwable) {
       throw e.toIOException()
     }
+  }
+
+  override fun createSymlink(source: Path, target: Path) {
+    throw IOException("unsupported")
   }
 
   private fun Throwable.toIOException(): IOException {

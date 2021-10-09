@@ -36,6 +36,7 @@ internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
     return@memScoped FileMetadata(
       isRegularFile = stat.st_mode.toInt() and S_IFMT == S_IFREG,
       isDirectory = stat.st_mode.toInt() and S_IFMT == S_IFDIR,
+      symlinkTarget = null,
       size = stat.st_size,
       createdAtMillis = stat.st_ctim.epochMillis,
       lastModifiedAtMillis = stat.st_mtim.epochMillis,

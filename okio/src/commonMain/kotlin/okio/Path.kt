@@ -206,6 +206,14 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
    * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
    * this function is equivalent to `child.toPath()`.
    */
+  operator fun div(child: ByteString): Path
+
+  /**
+   * Returns a path that resolves [child] relative to this path.
+   *
+   * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
+   * this function is equivalent to `child.toPath()`.
+   */
   operator fun div(child: Path): Path
 
   /**

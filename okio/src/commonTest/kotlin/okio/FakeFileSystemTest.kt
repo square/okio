@@ -363,4 +363,26 @@ abstract class FakeFileSystemTest internal constructor(
       }
     }
   }
+
+  @Test
+  fun symlinkCanBeUsedAfterSettingAllowSymlinksToFalse() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    fileSystem.createSymlink(source, target)
+    fakeFileSystem.allowSymlinks = false
+    target.writeUtf8("I am the target file")
+    assertEquals("I am the target file", source.readUtf8())
+  }
+
+  @Test
+  fun symlinkCannotBeCreatedAfterSettingAllowSymlinksToFalse() {
+    fakeFileSystem.allowSymlinks = false
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    assertFailsWith<IOException> {
+      fileSystem.createSymlink(source, target)
+    }
+  }
 }

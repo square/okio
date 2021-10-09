@@ -19,6 +19,7 @@ package okio.fakefilesystem
 import kotlinx.datetime.Instant
 import okio.ExperimentalFileSystem
 import okio.FileMetadata
+import okio.Path
 import kotlin.jvm.JvmName
 
 @JvmName("newFileMetadata")
@@ -26,6 +27,7 @@ import kotlin.jvm.JvmName
 internal fun FileMetadata(
   isRegularFile: Boolean = false,
   isDirectory: Boolean = false,
+  symlinkTarget: Path? = null,
   size: Long? = null,
   createdAt: Instant? = null,
   lastModifiedAt: Instant? = null,
@@ -34,6 +36,7 @@ internal fun FileMetadata(
   return FileMetadata(
     isRegularFile = isRegularFile,
     isDirectory = isDirectory,
+    symlinkTarget = symlinkTarget,
     size = size,
     createdAtMillis = createdAt?.toEpochMilliseconds(),
     lastModifiedAtMillis = lastModifiedAt?.toEpochMilliseconds(),
