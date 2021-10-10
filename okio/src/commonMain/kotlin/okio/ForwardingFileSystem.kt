@@ -165,9 +165,9 @@ abstract class ForwardingFileSystem(
     return paths
   }
 
-  override fun listRecursively(dir: Path): Sequence<Path> {
+  override fun listRecursively(dir: Path, followSymlinks: Boolean): Sequence<Path> {
     val dir = onPathParameter(dir, "listRecursively", "dir")
-    val result = delegate.listRecursively(dir)
+    val result = delegate.listRecursively(dir, followSymlinks)
     return result.map { onPathResult(it, "listRecursively") }
   }
 

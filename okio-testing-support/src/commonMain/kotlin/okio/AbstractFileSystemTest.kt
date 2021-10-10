@@ -163,7 +163,7 @@ abstract class AbstractFileSystemTest(
     baseA.createDirectory()
     baseAB.writeUtf8("ab")
     val entries = fileSystem.listRecursively(base)
-    assertEquals(entries.toList(), listOf(baseA, baseAB))
+    assertEquals(listOf(baseA, baseAB), entries.toList())
   }
 
   @Test
@@ -191,7 +191,7 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
-  fun listRecursivelyIsBreadthFirst() {
+  fun listRecursivelyIsDepthFirst() {
     val baseA = base / "a"
     val baseB = base / "b"
     val baseA1 = baseA / "1"
@@ -205,7 +205,7 @@ abstract class AbstractFileSystemTest(
     baseB1.writeUtf8("b1")
     baseB2.writeUtf8("b2")
     val entries = fileSystem.listRecursively(base)
-    assertEquals(entries.toList(), listOf(baseA, baseB, baseA1, baseA2, baseB1, baseB2))
+    assertEquals(listOf(baseA, baseA1, baseA2, baseB, baseB1, baseB2), entries.toList())
   }
 
   @Test
@@ -215,14 +215,20 @@ abstract class AbstractFileSystemTest(
     baseA.createDirectory()
     baseB.createDirectory()
     val entries = fileSystem.listRecursively(base).iterator()
+
+    // This call will enqueue up the children of base, baseA and baseB.
     assertEquals(baseA, entries.next())
-    assertEquals(baseB, entries.next())
     val baseA1 = baseA / "1"
     val baseA2 = baseA / "2"
     baseA1.writeUtf8("a1")
     baseA2.writeUtf8("a2")
+
+    // This call will enqueue the children of baseA, baseA1 and baseA2.
     assertEquals(baseA1, entries.next())
     assertEquals(baseA2, entries.next())
+    assertEquals(baseB, entries.next())
+
+    // This call will enqueue the children of baseB, baseB1 and baseB2.
     val baseB1 = baseB / "1"
     val baseB2 = baseB / "2"
     baseB1.writeUtf8("b1")
@@ -260,6 +266,97 @@ abstract class AbstractFileSystemTest(
     val iterator2 = sequence.iterator()
     assertEquals(baseA, iterator2.next())
     assertFalse(iterator2.hasNext())
+  }
+
+  @Test
+  fun listRecursivelyFollowsSymlinks() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAA = baseA / "a"
+    val baseB = base / "b"
+    val baseBA = baseB / "a"
+    baseA.createDirectory()
+    baseAA.writeUtf8("aa")
+    fileSystem.createSymlink(baseB, baseA)
+
+    val sequence = fileSystem.listRecursively(base, followSymlinks = true)
+    assertEquals(listOf(baseA, baseAA, baseB, baseBA), sequence.toList())
+  }
+
+  @Test
+  fun listRecursivelyDoesNotFollowSymlinks() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAA = baseA / "a"
+    val baseB = base / "b"
+    baseA.createDirectory()
+    baseAA.writeUtf8("aa")
+    fileSystem.createSymlink(baseB, baseA)
+
+    val sequence = fileSystem.listRecursively(base, followSymlinks = false)
+    assertEquals(listOf(baseA, baseAA, baseB), sequence.toList())
+  }
+
+  @Test
+  fun listRecursivelyOnSymlink() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAA = baseA / "a"
+    val baseB = base / "b"
+    val baseBA = baseB / "a"
+
+    baseA.createDirectory()
+    baseAA.writeUtf8("aa")
+    fileSystem.createSymlink(baseB, baseA)
+
+    val sequence = fileSystem.listRecursively(baseB, followSymlinks = false)
+    assertEquals(listOf(baseBA), sequence.toList())
+  }
+
+  @Test
+  fun listRecursivelyOnSymlinkCycleThrows() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAB = baseA / "b"
+    val baseAC = baseA / "c"
+
+    baseA.createDirectory()
+    baseAB.writeUtf8("ab")
+    fileSystem.createSymlink(baseAC, baseA)
+
+    val iterator = fileSystem.listRecursively(base, followSymlinks = true).iterator()
+    assertEquals(baseA, iterator.next())
+    assertEquals(baseAB, iterator.next())
+    assertEquals(baseAC, iterator.next())
+    val exception = assertFailsWith<IOException> {
+      iterator.next() // This would fail because 'c' refers to a path we've already visited.
+    }
+    assertEquals("symlink cycle at $baseAC", exception.message)
+  }
+
+  @Test
+  fun listRecursivelyDoesNotFollowRelativeSymlink() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAA = baseA / "a"
+    val baseB = base / "b"
+    baseA.createDirectory()
+    baseAA.writeUtf8("aa")
+    fileSystem.createSymlink(baseB, ".".toPath()) // Symlink to enclosing directory!
+
+    val iterator = fileSystem.listRecursively(base, followSymlinks = true).iterator()
+    assertEquals(baseA, iterator.next())
+    assertEquals(baseAA, iterator.next())
+    assertEquals(baseB, iterator.next())
+    val exception = assertFailsWith<IOException> {
+      iterator.next()
+    }
+    assertEquals("symlink cycle at $baseB", exception.message)
   }
 
   @Test
@@ -673,7 +770,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun deleteRecursivelyFailsOnNoSuchFile() {
     val path = base / "no-such-file"
-    assertFailsWith<FileNotFoundException> {
+    assertFailsWith<IOException> {
       fileSystem.deleteRecursively(path)
     }
   }
@@ -695,7 +792,61 @@ abstract class AbstractFileSystemTest(
     fileSystem.createDirectory(base / "a" / "b" / "c")
     (base / "a" / "b" / "c" / "d.txt").writeUtf8("inside deep hierarchy")
     fileSystem.deleteRecursively(base / "a")
-    assertEquals(fileSystem.list(base), listOf())
+    assertEquals(listOf(), fileSystem.list(base))
+  }
+
+  @Test
+  fun deleteRecursivelyOnSymlinkToFileDeletesOnlyThatSymlink() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseB = base / "b"
+    baseB.writeUtf8("b")
+    fileSystem.createSymlink(baseA, baseB)
+    fileSystem.deleteRecursively(baseA)
+    assertEquals("b", baseB.readUtf8())
+  }
+
+  @Test
+  fun deleteRecursivelyOnSymlinkToDirectoryDeletesOnlyThatSymlink() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseB = base / "b"
+    val baseBC = base / "b" / "c"
+    fileSystem.createDirectory(baseB)
+    baseBC.writeUtf8("c")
+    fileSystem.createSymlink(baseA, baseB)
+    fileSystem.deleteRecursively(baseA)
+    assertEquals("c", baseBC.readUtf8())
+  }
+
+  @Test
+  fun deleteRecursivelyOnSymlinkCycleSucceeds() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAB = baseA / "b"
+    val baseAC = baseA / "c"
+
+    baseA.createDirectory()
+    baseAB.writeUtf8("ab")
+    fileSystem.createSymlink(baseAC, baseA)
+
+    fileSystem.deleteRecursively(base)
+    assertFalse(fileSystem.exists(base))
+  }
+
+  @Test
+  fun deleteRecursivelyOnSymlinkToEnclosingDirectorySucceeds() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    fileSystem.createSymlink(baseA, ".".toPath())
+
+    fileSystem.deleteRecursively(baseA)
+    assertFalse(fileSystem.exists(baseA))
+    assertTrue(fileSystem.exists(base))
   }
 
   @Test

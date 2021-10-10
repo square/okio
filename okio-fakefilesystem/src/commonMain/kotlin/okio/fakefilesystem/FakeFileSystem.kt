@@ -385,7 +385,11 @@ class FakeFileSystem(
   override fun delete(path: Path) {
     val canonicalPath = workingDirectory / path
 
-    val lookupResult = lookupPath(canonicalPath, createRootOnDemand = true)
+    val lookupResult = lookupPath(
+      canonicalPath = canonicalPath,
+      createRootOnDemand = true,
+      resolveLastSymlink = false
+    )
 
     if (lookupResult?.element == null) {
       throw FileNotFoundException("no such file: $path")

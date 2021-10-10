@@ -116,7 +116,7 @@ abstract class FakeFileSystemTest internal constructor(
   fun allPathsIncludesFile() {
     val file = base / "all-files-includes-file"
     file.writeUtf8("hello, world!")
-    assertEquals(fakeFileSystem.allPaths, setOf(base, file))
+    assertEquals(setOf(base, file), fakeFileSystem.allPaths)
   }
 
   @Test
@@ -133,14 +133,14 @@ abstract class FakeFileSystemTest internal constructor(
     fileC.writeUtf8("fileC")
     fileA.writeUtf8("fileA")
 
-    assertEquals(fakeFileSystem.allPaths.toList(), listOf(base, fileA, fileB, fileC, fileD))
+    assertEquals(listOf(base, fileA, fileB, fileC, fileD), fakeFileSystem.allPaths.toList())
   }
 
   @Test
   fun allPathsIncludesDirectory() {
     val dir = base / "all-files-includes-directory"
     fileSystem.createDirectory(dir)
-    assertEquals(fakeFileSystem.allPaths, setOf(base, dir))
+    assertEquals(setOf(base, dir), fakeFileSystem.allPaths)
   }
 
   @Test
@@ -148,7 +148,7 @@ abstract class FakeFileSystemTest internal constructor(
     val file = base / "all-files-does-not-include-deleted-file"
     file.writeUtf8("hello, world!")
     fileSystem.delete(file)
-    assertEquals(fakeFileSystem.allPaths, setOf(base))
+    assertEquals(setOf(base), fakeFileSystem.allPaths)
   }
 
   @Test
@@ -157,9 +157,9 @@ abstract class FakeFileSystemTest internal constructor(
 
     val file = base / "all-files-does-not-include-deleted-open-file"
     val sink = fileSystem.sink(file)
-    assertEquals(fakeFileSystem.allPaths, setOf(base, file))
+    assertEquals(setOf(base, file), fakeFileSystem.allPaths)
     fileSystem.delete(file)
-    assertEquals(fakeFileSystem.allPaths, setOf(base))
+    assertEquals(setOf(base), fakeFileSystem.allPaths)
     sink.close()
   }
 

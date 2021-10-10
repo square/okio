@@ -35,7 +35,8 @@ actual abstract class FileSystem {
 
   actual abstract fun list(dir: Path): List<Path>
 
-  actual open fun listRecursively(dir: Path): Sequence<Path> = commonListRecursively(dir)
+  actual open fun listRecursively(dir: Path, followSymlinks: Boolean): Sequence<Path> =
+    commonListRecursively(dir, followSymlinks)
 
   actual abstract fun openReadOnly(file: Path): FileHandle
 
