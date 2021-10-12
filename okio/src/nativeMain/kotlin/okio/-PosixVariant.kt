@@ -47,3 +47,6 @@ internal expect fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle
 
 @ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantOpenReadWrite(file: Path): FileHandle
+
+@ExperimentalFileSystem
+internal expect fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path)

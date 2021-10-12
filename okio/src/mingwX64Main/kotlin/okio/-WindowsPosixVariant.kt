@@ -203,3 +203,8 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(file: Path): FileHandle
   }
   return WindowsFileHandle(true, openFile)
 }
+
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path) {
+  throw okio.IOException("Not supported")
+}

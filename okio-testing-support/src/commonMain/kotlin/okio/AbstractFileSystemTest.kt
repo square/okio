@@ -1895,6 +1895,7 @@ abstract class AbstractFileSystemTest(
     if (fileSystem is FakeFileSystem) return fileSystem.allowSymlinks
     if (windowsLimitations) return false
     return when (fileSystem::class.simpleName) {
+      "PosixFileSystem",
       "NioSystemFileSystem" -> true
       else -> false
     }
