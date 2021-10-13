@@ -141,14 +141,17 @@ expect abstract class FileSystem() {
    * Returns a sequence that **lazily** traverses the children of [dir] using repeated calls to
    * [list]. If none of [dir]'s children are directories this returns the same elements as [list].
    *
-   * The returned sequence visits the tree of files in breadth-first order. That is, all elements
-   * at depth _N_ are returned before any elements at depth _N + 1_.
+   * The returned sequence visits the tree of files in depth-first order. Parent paths are returned
+   * before their children.
    *
-   * Note that [listRecursively] does not throw exceptions. When it is iterated, the returned
-   * sequence throws a [FileNotFoundException] if [dir] does not exist, or an [IOException] if
-   * [dir] is not a directory or cannot be read.
+   * Note that [listRecursively] does not throw exceptions but the returned sequence does. When it
+   * is iterated, the returned sequence throws a [FileNotFoundException] if [dir] does not exist, or
+   * an [IOException] if [dir] is not a directory or cannot be read.
+   *
+   * @param followSymlinks true to follow symlinks while traversing the children. If [dir] itself is
+   *     a symlink it will be followed even if this parameter is false.
    */
-  open fun listRecursively(dir: Path): Sequence<Path>
+  open fun listRecursively(dir: Path, followSymlinks: Boolean = false): Sequence<Path>
 
   /**
    * Returns a handle to read [file]. This will fail if the file doesn't already exist.
