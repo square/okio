@@ -30,27 +30,39 @@ object NodeJsFileSystem : FileSystem() {
   private var S_IFMT = 0xf000 // fs.constants.S_IFMT
   private var S_IFREG = 0x8000 // fs.constants.S_IFREG
   private var S_IFDIR = 0x4000 // fs.constants.S_IFDIR
+  private var S_IFLNK = 0xa000 // fs.constants.S_IFLNK
 
   override fun canonicalize(path: Path): Path {
     try {
       val canonicalPath = realpathSync(path.toString())
-      return canonicalPath.toString().toPath()
+      return canonicalPath.toPath()
     } catch (e: Throwable) {
       throw e.toIOException()
     }
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
+    val pathString = path.toString()
     val stat = try {
-      statSync(path.toString())
+      lstatSync(pathString)
     } catch (e: Throwable) {
       if (e.errorCode == "ENOENT") return null // "No such file or directory".
       throw IOException(e.message)
     }
+
+    var symlinkTarget: Path? = null
+    if ((stat.mode.toInt() and S_IFMT) == S_IFLNK) {
+      try {
+        symlinkTarget = readlinkSync(pathString).toPath()
+      } catch (e: Throwable) {
+        throw e.toIOException()
+      }
+    }
+
     return FileMetadata(
-      isRegularFile = stat.mode.toInt() and S_IFMT == S_IFREG,
-      isDirectory = stat.mode.toInt() and S_IFMT == S_IFDIR,
-      symlinkTarget = null,
+      isRegularFile = (stat.mode.toInt() and S_IFMT) == S_IFREG,
+      isDirectory = (stat.mode.toInt() and S_IFMT) == S_IFDIR,
+      symlinkTarget = symlinkTarget,
       size = stat.size.toLong(),
       createdAtMillis = stat.ctimeMs.toLong(),
       lastModifiedAtMillis = stat.mtimeMs.toLong(),
@@ -172,7 +184,15 @@ object NodeJsFileSystem : FileSystem() {
   }
 
   override fun createSymlink(source: Path, target: Path) {
-    throw IOException("unsupported")
+    if (source.parent == null || !exists(source.parent!!)) {
+      throw IOException("parent directory does not exist: ${source.parent}")
+    }
+
+    if (exists(source)) {
+      throw IOException("already exists: $source")
+    }
+
+    symlinkSync(target.toString(), source.toString())
   }
 
   private fun Throwable.toIOException(): IOException {
