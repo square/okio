@@ -95,9 +95,7 @@ internal object PosixFileSystem : FileSystem() {
     variantDelete(path)
   }
 
-  override fun createSymlink(source: Path, target: Path) {
-    throw IOException("unsupported")
-  }
+  override fun createSymlink(source: Path, target: Path) = variantCreateSymlink(source, target)
 
   override fun toString() = "PosixSystemFileSystem"
 }

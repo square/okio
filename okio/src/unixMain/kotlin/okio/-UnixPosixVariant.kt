@@ -29,6 +29,7 @@ import platform.posix.mkdir
 import platform.posix.realpath
 import platform.posix.remove
 import platform.posix.rename
+import platform.posix.symlink
 import platform.posix.timespec
 
 @ExperimentalFileSystem
@@ -111,6 +112,22 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(file: Path): FileHandle
   val openFile: CPointer<FILE> = fopen(file.toString(), "a+")
     ?: throw errnoToIOException(errno)
   return UnixFileHandle(true, openFile)
+}
+
+@ExperimentalFileSystem
+internal actual fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path) {
+  if (source.parent == null || !exists(source.parent!!)) {
+    throw IOException("parent directory does not exist: ${source.parent}")
+  }
+
+  if (exists(source)) {
+    throw IOException("already exists: $source")
+  }
+
+  val result = symlink(target.toString(), source.toString())
+  if (result != 0) {
+    throw errnoToIOException(errno)
+  }
 }
 
 internal expect fun variantPread(
