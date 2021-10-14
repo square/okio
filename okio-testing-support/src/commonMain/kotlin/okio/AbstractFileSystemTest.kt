@@ -408,6 +408,8 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun fileSinkMustCreate() {
+    if (!supportsMustCreateMustExist()) return
+
     val path = base / "file-sink"
     val sink = fileSystem.sink(path, mustCreate = true)
     val buffer = Buffer().writeUtf8("hello, world!")
@@ -715,8 +717,14 @@ abstract class AbstractFileSystemTest(
   fun atomicMoveSourceDoesNotExist() {
     val source = base / "source"
     val target = base / "target"
-    assertFailsWith<FileNotFoundException> {
-      fileSystem.atomicMove(source, target)
+    if (fileSystem::class.simpleName == "JvmSystemFileSystem") {
+      assertFailsWith<IOException> {
+        fileSystem.atomicMove(source, target)
+      }
+    } else {
+      assertFailsWith<FileNotFoundException> {
+        fileSystem.atomicMove(source, target)
+      }
     }
   }
 
