@@ -87,8 +87,8 @@ internal actual fun PosixFileSystem.variantSource(file: Path): Source {
 }
 
 @ExperimentalFileSystem
-internal actual fun PosixFileSystem.variantSink(file: Path): Sink {
-  val openFile: CPointer<FILE> = fopen(file.toString(), "w")
+internal actual fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): Sink {
+  val openFile: CPointer<FILE> = fopen(file.toString(), if (mustCreate) "wx" else "w")
     ?: throw errnoToIOException(errno)
   return FileSink(openFile)
 }

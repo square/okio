@@ -104,7 +104,7 @@ object NodeJsFileSystem : FileSystem() {
     return NodeJsFileHandle(fd, readWrite = false)
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
     val fd = if (Path.DIRECTORY_SEPARATOR == "\\") {
       // On NodeJS on Windows there's no file system flag that does all of the following:
       //  - open a file for reading, writing, seeking, and resizing
@@ -130,12 +130,12 @@ object NodeJsFileSystem : FileSystem() {
     return FileSource(fd)
   }
 
-  override fun sink(file: Path): Sink {
-    val fd = openFd(file, flags = "w")
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
+    val fd = openFd(file, flags = if (mustCreate) "wx" else "w")
     return FileSink(fd)
   }
 
-  override fun appendingSink(file: Path): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
     val fd = openFd(file, flags = "a")
     return FileSink(fd)
   }

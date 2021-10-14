@@ -87,7 +87,7 @@ internal class ResourceFileSystem internal constructor(
     throw FileNotFoundException("file not found: $file")
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
     throw IOException("resources are not writable")
   }
 
@@ -112,10 +112,13 @@ internal class ResourceFileSystem internal constructor(
     throw FileNotFoundException("file not found: $file")
   }
 
-  override fun sink(file: Path): Sink = throw IOException("$this is read-only")
-
-  override fun appendingSink(file: Path): Sink =
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
     throw IOException("$this is read-only")
+  }
+
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    throw IOException("$this is read-only")
+  }
 
   override fun createDirectory(dir: Path): Unit =
     throw IOException("$this is read-only")

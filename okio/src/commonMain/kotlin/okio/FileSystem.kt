@@ -167,12 +167,20 @@ expect abstract class FileSystem() {
    * Returns a handle to read and write [file]. This will create the file if it doesn't already
    * exist.
    *
+   * @param mustCreate true to throw an [IOException] instead of overwriting an existing file.
+   *     This is equivalent to `O_EXCL` on POSIX and `CREATE_NEW` on Windows.
+   * @param mustExist true to throw an [IOException] instead of creating a new file. This is
+   *     equivalent to `r+` on POSIX and `OPEN_EXISTING` on Windows.
    * @throws IOException if [file] is not a file, or cannot be accessed. A file cannot be accessed
    *     if the current process doesn't have sufficient reading and writing permissions for [file],
    *     if there's a loop of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun openReadWrite(file: Path): FileHandle
+  abstract fun openReadWrite(
+    file: Path,
+    mustCreate: Boolean = false,
+    mustExist: Boolean = false
+  ): FileHandle
 
   /**
    * Returns a source that reads the bytes of [file] from beginning to end.
@@ -195,30 +203,43 @@ expect abstract class FileSystem() {
    * Returns a sink that writes bytes to [file] from beginning to end. If [file] already exists it
    * will be replaced with the new data.
    *
-   * @throws IOException if [file] cannot be written. A file cannot be written if its enclosing
-   *     directory does not exist, if the current process doesn't have access to [file], if there's
-   *     a loop of symbolic links, or if any name is too long.
-   */
-  @Throws(IOException::class)
-  abstract fun sink(file: Path): Sink
-
-  /**
-   * Creates a sink to write [file], executes [writerAction] to write it, and then closes the sink.
-   * This is a compact way to write a file.
-   */
-  @Throws(IOException::class)
-  inline fun <T> write(file: Path, writerAction: BufferedSink.() -> T): T
-
-  /**
-   * Returns a sink that appends bytes to the end of [file], creating it if it doesn't already
-   * exist.
+   * @param mustCreate true to throw an [IOException] instead of overwriting an existing file.
+   *     This is equivalent to `O_EXCL` on POSIX and `CREATE_NEW` on Windows.
    *
    * @throws IOException if [file] cannot be written. A file cannot be written if its enclosing
    *     directory does not exist, if the current process doesn't have access to [file], if there's
    *     a loop of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun appendingSink(file: Path): Sink
+  abstract fun sink(file: Path, mustCreate: Boolean = false): Sink
+
+  /**
+   * Creates a sink to write [file], executes [writerAction] to write it, and then closes the sink.
+   * This is a compact way to write a file.
+   *
+   * @param mustCreate true to throw an [IOException] instead of overwriting an existing file.
+   *     This is equivalent to `O_EXCL` on POSIX and `CREATE_NEW` on Windows.
+   */
+  @Throws(IOException::class)
+  inline fun <T> write(
+    file: Path,
+    mustCreate: Boolean = false,
+    writerAction: BufferedSink.() -> T
+  ): T
+
+  /**
+   * Returns a sink that appends bytes to the end of [file], creating it if it doesn't already
+   * exist.
+   *
+   * @param mustExist true to throw an [IOException] instead of creating a new file. This is
+   *     equivalent to `r+` on POSIX and `OPEN_EXISTING` on Windows.
+   *
+   * @throws IOException if [file] cannot be written. A file cannot be written if its enclosing
+   *     directory does not exist, if the current process doesn't have access to [file], if there's
+   *     a loop of symbolic links, or if any name is too long.
+   */
+  @Throws(IOException::class)
+  abstract fun appendingSink(file: Path, mustExist: Boolean = false): Sink
 
   /**
    * Creates a directory at the path identified by [dir].

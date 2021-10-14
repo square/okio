@@ -245,15 +245,15 @@ class FakeFileSystem(
       .also { fileHandle.close() }
   }
 
-  override fun sink(file: Path): Sink {
-    val fileHandle = open(file, readWrite = true)
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
+    val fileHandle = open(file, readWrite = true, mustCreate = mustCreate)
     fileHandle.resize(0L) // If the file already has data, get rid of it.
     return fileHandle.sink()
       .also { fileHandle.close() }
   }
 
-  override fun appendingSink(file: Path): Sink {
-    val fileHandle = open(file, readWrite = true)
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    val fileHandle = open(file, readWrite = true, mustExist = mustExist)
     return fileHandle.appendingSink()
       .also { fileHandle.close() }
   }
@@ -262,19 +262,32 @@ class FakeFileSystem(
     return open(file, readWrite = false)
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
-    return open(file, readWrite = true)
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
+    return open(file, readWrite = true, mustCreate = mustCreate, mustExist = mustExist)
   }
 
   private fun open(
     file: Path,
-    readWrite: Boolean
+    readWrite: Boolean,
+    mustCreate: Boolean = false,
+    mustExist: Boolean = false,
   ): FileHandle {
+    require(!mustCreate || !mustExist) {
+      "Cannot require mustCreate and mustExist at the same time."
+    }
+
     val canonicalPath = workingDirectory / file
     val lookupResult = lookupPath(canonicalPath, createRootOnDemand = readWrite)
     val now = clock.now()
     val element: File
     val operation: Operation
+
+    if (lookupResult?.element == null && mustExist) {
+      throw IOException("$file doesn't exist.")
+    }
+    if (lookupResult?.element != null && mustCreate) {
+      throw IOException("$file already exists.")
+    }
 
     if (readWrite) {
       // Note that this case is used for both write and read/write.

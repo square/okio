@@ -69,13 +69,15 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun openReadOnly(file: Path) = variantOpenReadOnly(file)
 
-  override fun openReadWrite(file: Path) = variantOpenReadWrite(file)
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
+    return variantOpenReadWrite(file)
+  }
 
   override fun source(file: Path) = variantSource(file)
 
-  override fun sink(file: Path) = variantSink(file)
+  override fun sink(file: Path, mustCreate: Boolean) = variantSink(file, mustCreate)
 
-  override fun appendingSink(file: Path) = variantAppendingSink(file)
+  override fun appendingSink(file: Path, mustExist: Boolean) = variantAppendingSink(file)
 
   override fun createDirectory(dir: Path) {
     val result = variantMkdir(dir)

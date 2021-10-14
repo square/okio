@@ -101,7 +101,7 @@ class ZipFileSystem internal constructor(
     throw UnsupportedOperationException("not implemented yet!")
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
     throw IOException("zip entries are not writable")
   }
 
@@ -134,10 +134,13 @@ class ZipFileSystem internal constructor(
     }
   }
 
-  override fun sink(file: Path): Sink = throw IOException("zip file systems are read-only")
-
-  override fun appendingSink(file: Path): Sink =
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
     throw IOException("zip file systems are read-only")
+  }
+
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    throw IOException("zip file systems are read-only")
+  }
 
   override fun createDirectory(dir: Path): Unit =
     throw IOException("zip file systems are read-only")

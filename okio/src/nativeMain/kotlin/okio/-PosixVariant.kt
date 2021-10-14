@@ -37,7 +37,7 @@ internal expect fun PosixFileSystem.variantMove(source: Path, target: Path)
 internal expect fun PosixFileSystem.variantSource(file: Path): Source
 
 @ExperimentalFileSystem
-internal expect fun PosixFileSystem.variantSink(file: Path): Sink
+internal expect fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): Sink
 
 @ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantAppendingSink(file: Path): Sink

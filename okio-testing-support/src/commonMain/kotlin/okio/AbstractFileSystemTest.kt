@@ -406,6 +406,29 @@ abstract class AbstractFileSystemTest(
     assertEquals("hello, world!", path.readUtf8())
   }
 
+  @Test
+  fun fileSinkMustCreate() {
+    val path = base / "file-sink"
+    val sink = fileSystem.sink(path, mustCreate = true)
+    val buffer = Buffer().writeUtf8("hello, world!")
+    sink.write(buffer, buffer.size)
+    sink.close()
+    assertTrue(path in fileSystem.list(base))
+    assertEquals(0, buffer.size)
+    assertEquals("hello, world!", path.readUtf8())
+  }
+
+  @Test
+  fun fileSinkMustCreateThrowsIfAlreadyExists() {
+    if (!supportsMustCreateMustExist()) return
+
+    val path = base / "file-sink"
+    path.writeUtf8("First!")
+    assertFailsWith<IOException> {
+      fileSystem.sink(path, mustCreate = true)
+    }
+  }
+
   /**
    * Write a file by concatenating three mechanisms, then read it in its entirety using three other
    * mechanisms. This is attempting to defend against unwanted use of Windows text mode.
@@ -482,6 +505,29 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun writePathMustCreate() {
+    val path = base / "write-path"
+    val content = fileSystem.write(path, mustCreate = true) {
+      val string = "hello, write with a Path"
+      writeUtf8(string)
+      return@write string
+    }
+    assertTrue(path in fileSystem.list(base))
+    assertEquals(content, path.readUtf8())
+  }
+
+  @Test
+  fun writePathMustCreateThrowsIfAlreadyExists() {
+    if (!supportsMustCreateMustExist()) return
+
+    val path = base / "write-path"
+    path.writeUtf8("First!")
+    assertFailsWith<IOException> {
+      fileSystem.write(path, mustCreate = true) {}
+    }
+  }
+
+  @Test
   fun appendingSinkAppendsToExistingFile() {
     val path = base / "appending-sink-appends-to-existing-file"
     path.writeUtf8("hello, world!\n")
@@ -514,6 +560,29 @@ abstract class AbstractFileSystemTest(
     sink.close()
     assertTrue(path in fileSystem.list(base))
     assertEquals("this is all there is!", path.readUtf8())
+  }
+
+  @Test
+  fun appendingSinkExistingFileMustExist() {
+    val path = base / "appending-sink-creates-new-file"
+    path.writeUtf8("Hey, ")
+
+    val sink = fileSystem.appendingSink(path, mustExist = true)
+    val buffer = Buffer().writeUtf8("this is all there is!")
+    sink.write(buffer, buffer.size)
+    sink.close()
+    assertTrue(path in fileSystem.list(base))
+    assertEquals("Hey, this is all there is!", path.readUtf8())
+  }
+
+  @Test
+  fun appendingSinkMustExistThrowsIfAbsent() {
+    if (!supportsMustCreateMustExist()) return
+
+    val path = base / "appending-sink-creates-new-file"
+    assertFailsWith<IOException> {
+      fileSystem.appendingSink(path, mustExist = true)
+    }
   }
 
   @Test
@@ -1538,6 +1607,64 @@ abstract class AbstractFileSystemTest(
     assertEquals("", path.readUtf8())
   }
 
+  @Test fun openReadWriteCreatesAbsentFileMustCreate() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source"
+
+    fileSystem.openReadWrite(path, mustCreate = true).use {
+    }
+
+    assertEquals("", path.readUtf8())
+  }
+
+  @Test fun openReadWriteMustCreateThrowsIfAlreadyExists() {
+    if (!supportsFileHandle()) return
+    if (!supportsMustCreateMustExist()) return
+
+    val path = base / "file-handle-source"
+    path.writeUtf8("First!")
+
+    assertFailsWith<IOException> {
+      fileSystem.openReadWrite(path, mustCreate = true).use {}
+    }
+  }
+
+  @Test fun openReadWriteMustExist() {
+    if (!supportsFileHandle()) return
+
+    val path = base / "file-handle-source"
+    path.writeUtf8("one")
+
+    fileSystem.openReadWrite(path, mustExist = true).use { handle ->
+      handle.write(3L, Buffer().writeUtf8(" two"), 4L)
+    }
+
+    assertEquals("one two", path.readUtf8())
+  }
+
+  @Test fun openReadWriteMustExistThrowsIfAbsent() {
+    if (!supportsFileHandle()) return
+    if (!supportsMustCreateMustExist()) return
+
+    val path = base / "file-handle-source"
+
+    assertFailsWith<IOException> {
+      fileSystem.openReadWrite(path, mustExist = true).use {}
+    }
+  }
+
+  @Test fun openReadWriteThrowsIfBothMustCreateAndMustExist() {
+    if (!supportsFileHandle()) return
+    if (!supportsMustCreateMustExist()) return
+
+    val path = base / "file-handle-source"
+
+    assertFailsWith<IllegalArgumentException> {
+      fileSystem.openReadWrite(path, mustCreate = true, mustExist = true).use {}
+    }
+  }
+
   @Test fun sinkPositionFailsAfterClose() {
     if (!supportsFileHandle()) return
 
@@ -1887,6 +2014,14 @@ abstract class AbstractFileSystemTest(
       "NioSystemFileSystem",
       "PosixFileSystem",
       "NodeJsFileSystem" -> true
+      else -> false
+    }
+  }
+
+  // TODO(Benoit) Remove once all filesystems support it.
+  private fun supportsMustCreateMustExist(): Boolean {
+    return when (fileSystem::class.simpleName) {
+      "FakeFileSystem" -> true
       else -> false
     }
   }
