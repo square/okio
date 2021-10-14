@@ -58,7 +58,7 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
-                implementation("com.squareup.okio:okio-nodefilesystem-js:$okioVersion")
+                implementation("com.squareup.okio:okio-nodefilesystem:$okioVersion")
             }
         }
         val commonTest by getting {
