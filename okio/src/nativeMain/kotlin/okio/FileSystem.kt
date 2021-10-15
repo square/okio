@@ -46,7 +46,11 @@ actual abstract class FileSystem {
   actual abstract fun openReadOnly(file: Path): FileHandle
 
   @Throws(IOException::class)
-  actual abstract fun openReadWrite(file: Path): FileHandle
+  actual abstract fun openReadWrite(
+    file: Path,
+    mustCreate: Boolean,
+    mustExist: Boolean
+  ): FileHandle
 
   @Throws(IOException::class)
   actual abstract fun source(file: Path): Source
@@ -59,17 +63,21 @@ actual abstract class FileSystem {
   }
 
   @Throws(IOException::class)
-  actual abstract fun sink(file: Path): Sink
+  actual abstract fun sink(file: Path, mustCreate: Boolean): Sink
 
   @Throws(IOException::class)
-  actual inline fun <T> write(file: Path, writerAction: BufferedSink.() -> T): T {
-    return sink(file).buffer().use {
+  actual inline fun <T> write(
+    file: Path,
+    mustCreate: Boolean,
+    writerAction: BufferedSink.() -> T
+  ): T {
+    return sink(file, mustCreate).buffer().use {
       it.writerAction()
     }
   }
 
   @Throws(IOException::class)
-  actual abstract fun appendingSink(file: Path): Sink
+  actual abstract fun appendingSink(file: Path, mustExist: Boolean): Sink
 
   @Throws(IOException::class)
   actual abstract fun createDirectory(dir: Path)

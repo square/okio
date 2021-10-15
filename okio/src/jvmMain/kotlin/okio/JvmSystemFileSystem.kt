@@ -75,7 +75,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return JvmFileHandle(readWrite = false, randomAccessFile = RandomAccessFile(file.toFile(), "r"))
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
     return JvmFileHandle(readWrite = true, randomAccessFile = RandomAccessFile(file.toFile(), "rw"))
   }
 
@@ -83,11 +83,11 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return file.toFile().source()
   }
 
-  override fun sink(file: Path): Sink {
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
     return file.toFile().sink()
   }
 
-  override fun appendingSink(file: Path): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
     return file.toFile().sink(append = true)
   }
 
