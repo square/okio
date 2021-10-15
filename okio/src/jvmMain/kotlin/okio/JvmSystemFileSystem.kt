@@ -103,6 +103,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
   }
 
   override fun atomicMove(source: Path, target: Path) {
+    // Note that on Windows, this will fail if [target] already exists.
     val renamed = source.toFile().renameTo(target.toFile())
     if (!renamed) throw IOException("failed to move $source to $target")
   }
