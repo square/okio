@@ -14,6 +14,7 @@ fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
   linuxX64()
   macosX64()
+  macosArm64()
   mingwX64()
 }
 
@@ -21,6 +22,7 @@ val appleTargets = listOf(
   "iosArm64",
   "iosX64",
   "macosX64",
+  "macosArm64",
   "tvosArm64",
   "tvosX64",
   "watchosArm32",
@@ -50,6 +52,7 @@ val unixSizet64Targets = listOf(
   "iosX64",
   "linuxX64",
   "macosX64",
+  "macosArm64",
   "tvosArm64",
   "tvosX64"
 )
