@@ -5,7 +5,6 @@ val kmpJsEnabled = System.getProperty("kjs", "true").toBoolean()
 val kmpNativeEnabled = System.getProperty("knative", "true").toBoolean()
 
 object versions {
-  const val kotlin = "1.5.31"
   const val jmh = "1.33"
   const val ktlint = "0.42.1"
 }
@@ -22,14 +21,6 @@ object deps {
   }
 
   object kotlin {
-    const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
-
-    object stdLib {
-      const val common = "org.jetbrains.kotlin:kotlin-stdlib-common:${versions.kotlin}"
-      const val jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}"
-      const val js = "org.jetbrains.kotlin:kotlin-stdlib-js:${versions.kotlin}"
-    }
-
     object test {
       const val common = "org.jetbrains.kotlin:kotlin-test-common"
       const val annotations = "org.jetbrains.kotlin:kotlin-test-annotations-common"

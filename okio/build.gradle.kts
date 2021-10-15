@@ -86,7 +86,6 @@ kotlin {
 
     val commonMain by getting {
       dependencies {
-        api(deps.kotlin.stdLib.common)
       }
     }
     val commonTest by getting {
@@ -110,7 +109,6 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
-        api(deps.kotlin.stdLib.jdk8)
         compileOnly(deps.animalSniffer.annotations)
       }
     }
@@ -127,7 +125,6 @@ kotlin {
       val jsMain by getting {
         dependsOn(nonJvmMain)
         dependencies {
-          api(deps.kotlin.stdLib.js)
         }
       }
       val jsTest by getting {
