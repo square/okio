@@ -22,6 +22,5 @@ gradlePlugin {
 }
 
 dependencies {
-//  implementation(deps.kotlin.gradlePlugin) // <-- doesn't work :(
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31")
 }
