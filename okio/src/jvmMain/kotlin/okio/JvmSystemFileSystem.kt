@@ -76,6 +76,11 @@ internal open class JvmSystemFileSystem : FileSystem() {
   }
 
   override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
+    require(!mustCreate || !mustExist) {
+      "Cannot require mustCreate and mustExist at the same time."
+    }
+    if (mustCreate) file.requireCreate()
+    if (mustExist) file.requireExist()
     return JvmFileHandle(readWrite = true, randomAccessFile = RandomAccessFile(file.toFile(), "rw"))
   }
 
@@ -84,10 +89,12 @@ internal open class JvmSystemFileSystem : FileSystem() {
   }
 
   override fun sink(file: Path, mustCreate: Boolean): Sink {
+    if (mustCreate) file.requireCreate()
     return file.toFile().sink()
   }
 
   override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    if (mustExist) file.requireExist()
     return file.toFile().sink(append = true)
   }
 
@@ -114,4 +121,17 @@ internal open class JvmSystemFileSystem : FileSystem() {
   }
 
   override fun toString() = "JvmSystemFileSystem"
+
+  // We have to implement existence verification non-atomically on the JVM because there's no API
+  // to do so.
+  private fun Path.requireExist() {
+    if (!exists(this)) throw IOException("$this doesn't exist.")
+  }
+
+  // TODO(Benoit) Atomically implement this. [StandardOpenOption.CREATE_NEW] is what we want but the
+  //  APIs we are currently using don't seem to use this. Do we have to replace our
+  //  [RandomAccessFile] by something else?
+  private fun Path.requireCreate() {
+    if (exists(this)) throw IOException("$this already exists.")
+  }
 }

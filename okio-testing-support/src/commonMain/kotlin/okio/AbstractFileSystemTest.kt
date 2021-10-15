@@ -2029,6 +2029,8 @@ abstract class AbstractFileSystemTest(
   // TODO(Benoit) Remove once all filesystems support it.
   private fun supportsMustCreateMustExist(): Boolean {
     return when (fileSystem::class.simpleName) {
+      "NioSystemFileSystem",
+      "JvmSystemFileSystem",
       "FakeFileSystem" -> true
       else -> false
     }

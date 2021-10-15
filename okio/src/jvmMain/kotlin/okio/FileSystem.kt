@@ -65,9 +65,7 @@ actual abstract class FileSystem {
 
   @Throws(IOException::class)
   actual inline fun <T> write(file: Path, mustCreate: Boolean, writerAction: BufferedSink.() -> T): T {
-    if (mustCreate && exists(file)) throw IOException("$file already exist.")
-
-    return sink(file).buffer().use {
+    return sink(file, mustCreate = mustCreate).buffer().use {
       it.writerAction()
     }
   }
