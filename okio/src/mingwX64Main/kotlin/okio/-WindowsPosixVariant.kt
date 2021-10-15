@@ -41,6 +41,7 @@ import platform.posix.getenv
 import platform.posix.mkdir
 import platform.posix.remove
 import platform.posix.rmdir
+import platform.windows.CREATE_NEW
 import platform.windows.CreateFileA
 import platform.windows.FILE_ATTRIBUTE_NORMAL
 import platform.windows.FILE_SHARE_WRITE
@@ -191,14 +192,24 @@ internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle 
 internal actual fun PosixFileSystem.variantOpenReadWrite(
   file: Path,
   mustCreate: Boolean,
-  mustExist: Boolean,
+  mustExist: Boolean
 ): FileHandle {
+  require(!mustCreate || !mustExist) {
+    "Cannot require mustCreate and mustExist at the same time."
+  }
+
+  val creationDisposition = when {
+    mustCreate -> CREATE_NEW
+    mustExist -> OPEN_EXISTING
+    else -> OPEN_ALWAYS
+  }
+
   val openFile = CreateFileA(
     lpFileName = file.toString(),
     dwDesiredAccess = GENERIC_READ or GENERIC_WRITE.toUInt(),
     dwShareMode = FILE_SHARE_WRITE,
     lpSecurityAttributes = null,
-    dwCreationDisposition = OPEN_ALWAYS,
+    dwCreationDisposition = creationDisposition,
     dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
     hTemplateFile = null
   )
