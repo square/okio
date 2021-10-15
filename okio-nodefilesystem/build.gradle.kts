@@ -35,10 +35,8 @@ kotlin {
       dependencies {
         implementation(project(":okio"))
         implementation(project(":okio-testing-support"))
-        api(deps.kotlin.stdLib.common)
         // Uncomment this to generate fs.fs.module_node.kt. Use it when updating fs.kt.
         // implementation(npm("@types/node", "14.14.16", true))
-        api(deps.kotlin.stdLib.js)
       }
     }
     val test by getting {
