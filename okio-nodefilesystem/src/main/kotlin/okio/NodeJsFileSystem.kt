@@ -124,7 +124,6 @@ object NodeJsFileSystem : FileSystem() {
         openFd(file, "wx+")
       }
     } else {
-      // On other platforms 'a+' does everything that we need.
       val flags = when {
         mustExist -> "r+"
         mustCreate -> "ax+"
@@ -146,9 +145,9 @@ object NodeJsFileSystem : FileSystem() {
   }
 
   override fun appendingSink(file: Path, mustExist: Boolean): Sink {
-    // TODO(Benoit) The `r+` flag we wanna use to require existence of [file] doesn't open for
-    //  appending and we don't currently have a way to move the cursor to the end of the file. We
-    //  are instead implementing it non-atomically but we should fix it and make it atomic.
+    // There is a `r+` flag which we could have used to force existence of [file] but this flag
+    // doesn't allow opening for appending, and we don't currently have a way to move the cursor to
+    // the end of the file. We are then forcing existence non-atomically.
     if (mustExist && !exists(file)) throw IOException("$file doesn't exist.")
     val fd = openFd(file, flags = "a")
     return FileSink(fd)

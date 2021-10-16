@@ -16,8 +16,7 @@
 package okio
 
 internal class FileSink(
-  private val fd: Number,
-  private val appending: Boolean = false,
+  private val fd: Number
 ) : Sink {
   private var closed = false
 
