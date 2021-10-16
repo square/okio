@@ -199,9 +199,9 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(
   }
 
   val creationDisposition = when {
-    mustCreate -> CREATE_NEW
-    mustExist -> OPEN_EXISTING
-    else -> OPEN_ALWAYS
+    mustCreate -> CREATE_NEW.toUInt()
+    mustExist -> OPEN_EXISTING.toUInt()
+    else -> OPEN_ALWAYS.toUInt()
   }
 
   val openFile = CreateFileA(
