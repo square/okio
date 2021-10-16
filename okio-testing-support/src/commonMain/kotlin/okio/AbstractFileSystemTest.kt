@@ -703,6 +703,9 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun atomicMoveClobberExistingFile() {
+    // `java.io` on Windows doesn't allow file renaming if the target already exists.
+    if (windowsLimitations && fileSystem::class.simpleName == "JvmSystemFileSystem") return
+
     val source = base / "source"
     source.writeUtf8("hello, world!")
     val target = base / "target"
@@ -742,6 +745,9 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun atomicMoveSourceIsDirectoryAndTargetIsFile() {
+    // `java.io` on Windows doesn't allow file renaming if the target already exists.
+    if (windowsLimitations && fileSystem::class.simpleName == "JvmSystemFileSystem") return
+
     val source = base / "source"
     fileSystem.createDirectory(source)
     val target = base / "target"
@@ -2029,6 +2035,8 @@ abstract class AbstractFileSystemTest(
   // TODO(Benoit) Remove once all filesystems support it.
   private fun supportsMustCreateMustExist(): Boolean {
     return when (fileSystem::class.simpleName) {
+      "NioSystemFileSystem",
+      "JvmSystemFileSystem",
       "FakeFileSystem" -> true
       else -> false
     }
