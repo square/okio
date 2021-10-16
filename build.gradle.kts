@@ -11,10 +11,13 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+plugins {
+  id("build-support").apply(false)
+}
+
 buildscript {
   dependencies {
     classpath(deps.android.gradlePlugin)
-    classpath(deps.kotlin.gradlePlugin)
     classpath(deps.animalSniffer.gradlePlugin)
     classpath(deps.japicmp)
     classpath(deps.dokka)
