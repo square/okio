@@ -46,7 +46,11 @@ internal expect fun PosixFileSystem.variantAppendingSink(file: Path): Sink
 internal expect fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle
 
 @ExperimentalFileSystem
-internal expect fun PosixFileSystem.variantOpenReadWrite(file: Path): FileHandle
+internal expect fun PosixFileSystem.variantOpenReadWrite(
+  file: Path,
+  mustCreate: Boolean,
+  mustExist: Boolean
+): FileHandle
 
 @ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path)

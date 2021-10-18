@@ -70,7 +70,7 @@ internal object PosixFileSystem : FileSystem() {
   override fun openReadOnly(file: Path) = variantOpenReadOnly(file)
 
   override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
-    return variantOpenReadWrite(file)
+    return variantOpenReadWrite(file, mustCreate, mustExist)
   }
 
   override fun source(file: Path) = variantSource(file)
