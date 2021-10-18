@@ -6,11 +6,14 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
   iosX64()
   iosArm64()
+  iosSimulatorArm64()
   tvosX64()
   tvosArm64()
+  tvosSimulatorArm64()
   watchosArm32()
   watchosArm64()
   watchosX86()
+  watchosSimulatorArm64()
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
   linuxX64()
   macosX64()
@@ -21,13 +24,16 @@ fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
 val appleTargets = listOf(
   "iosArm64",
   "iosX64",
+  "iosSimulatorArm64",
   "macosX64",
   "macosArm64",
   "tvosArm64",
   "tvosX64",
+  "tvosSimulatorArm64",
   "watchosArm32",
   "watchosArm64",
-  "watchosX86"
+  "watchosX86",
+  "watchosSimulatorArm64"
 )
 
 val mingwTargets = listOf(
@@ -50,11 +56,14 @@ val unixSizet32Targets = listOf(
 val unixSizet64Targets = listOf(
   "iosArm64",
   "iosX64",
+  "iosSimulatorArm64",
   "linuxX64",
   "macosX64",
   "macosArm64",
   "tvosArm64",
-  "tvosX64"
+  "tvosX64",
+  "tvosSimulatorArm64",
+  "watchosSimulatorArm64"
 )
 
 /**
