@@ -188,7 +188,11 @@ internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle 
 }
 
 @ExperimentalFileSystem
-internal actual fun PosixFileSystem.variantOpenReadWrite(file: Path): FileHandle {
+internal actual fun PosixFileSystem.variantOpenReadWrite(
+  file: Path,
+  mustCreate: Boolean,
+  mustExist: Boolean,
+): FileHandle {
   val openFile = CreateFileA(
     lpFileName = file.toString(),
     dwDesiredAccess = GENERIC_READ or GENERIC_WRITE.toUInt(),
