@@ -116,11 +116,11 @@ object NodeJsFileSystem : FileSystem() {
       // Work around this by attempting to open a file that does exist (r+), falling back to
       // creating a file that does not exist (wx+) if that throws. This is not atomic.
       // https://nodejs.org/api/fs.html#fs_file_system_flags
-      // TODO(Benoit) Throws if `mustCreate`?
       try {
+        if (mustCreate && exists(file)) { throw IOException("$file already exists.") }
         openFd(file, "r+")
       } catch (e: FileNotFoundException) {
-        // TODO(Benoit) Throws if `mustExist`?
+        if (mustExist) { throw IOException("$file doesn't exist.") }
         openFd(file, "wx+")
       }
     } else {
