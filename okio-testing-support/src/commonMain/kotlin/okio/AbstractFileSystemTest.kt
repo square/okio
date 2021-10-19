@@ -2037,6 +2037,7 @@ abstract class AbstractFileSystemTest(
     return when (fileSystem::class.simpleName) {
       "NioSystemFileSystem",
       "JvmSystemFileSystem",
+      "NodeJsFileSystem",
       "FakeFileSystem" -> true
       else -> false
     }

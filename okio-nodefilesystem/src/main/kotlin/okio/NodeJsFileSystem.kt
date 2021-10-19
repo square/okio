@@ -105,6 +105,9 @@ object NodeJsFileSystem : FileSystem() {
   }
 
   override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
+    require(!mustCreate || !mustExist) {
+      "Cannot require mustCreate and mustExist at the same time."
+    }
     val fd = if (Path.DIRECTORY_SEPARATOR == "\\") {
       // On NodeJS on Windows there's no file system flag that does all of the following:
       //  - open a file for reading, writing, seeking, and resizing
@@ -114,13 +117,19 @@ object NodeJsFileSystem : FileSystem() {
       // creating a file that does not exist (wx+) if that throws. This is not atomic.
       // https://nodejs.org/api/fs.html#fs_file_system_flags
       try {
+        if (mustCreate && exists(file)) { throw IOException("$file already exists.") }
         openFd(file, "r+")
       } catch (e: FileNotFoundException) {
+        if (mustExist) { throw IOException("$file doesn't exist.") }
         openFd(file, "wx+")
       }
     } else {
-      // On other platforms 'a+' does everything that we need.
-      openFd(file, "a+")
+      val flags = when {
+        mustExist -> "r+"
+        mustCreate -> "ax+"
+        else -> "a+"
+      }
+      openFd(file, flags)
     }
     return NodeJsFileHandle(fd, readWrite = true)
   }
@@ -136,6 +145,10 @@ object NodeJsFileSystem : FileSystem() {
   }
 
   override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    // There is a `r+` flag which we could have used to force existence of [file] but this flag
+    // doesn't allow opening for appending, and we don't currently have a way to move the cursor to
+    // the end of the file. We are then forcing existence non-atomically.
+    if (mustExist && !exists(file)) throw IOException("$file doesn't exist.")
     val fd = openFd(file, flags = "a")
     return FileSink(fd)
   }
