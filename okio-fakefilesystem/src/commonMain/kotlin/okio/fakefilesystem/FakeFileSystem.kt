@@ -37,6 +37,7 @@ import okio.fakefilesystem.FakeFileSystem.Operation.READ
 import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 
 /**
  * A fully in-memory file system useful for testing. It includes features to support writing
@@ -214,6 +215,30 @@ class FakeFileSystem(
     }
 
     return canonicalPath
+  }
+
+  /**
+   * Sets the metadata of type [type] on [path] to [value]. If [value] is null this clears that
+   * metadata.
+   *
+   * Extras are not copied by [copy] but they are moved with [atomicMove].
+   *
+   * @throws IOException if [path] does not exist.
+   */
+  @Throws(IOException::class)
+  fun <T : Any> setExtra(path: Path, type: KClass<out T>, value: T?) {
+    val canonicalPath = workingDirectory / path
+    val lookupResult = lookupPath(
+      canonicalPath = canonicalPath,
+      createRootOnDemand = canonicalPath.isRoot,
+      resolveLastSymlink = false
+    )
+    val element = lookupResult?.element ?: throw FileNotFoundException("no such file: $path")
+    if (value == null) {
+      element.extras.remove(type)
+    } else {
+      element.extras[type] = value
+    }
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
@@ -548,6 +573,7 @@ class FakeFileSystem(
   ) {
     var lastModifiedAt: Instant = createdAt
     var lastAccessedAt: Instant = createdAt
+    val extras = mutableMapOf<KClass<*>, Any>()
 
     class File(createdAt: Instant) : Element(createdAt) {
       var data: ByteString = ByteString.EMPTY
@@ -558,7 +584,8 @@ class FakeFileSystem(
           size = data.size.toLong(),
           createdAt = createdAt,
           lastModifiedAt = lastModifiedAt,
-          lastAccessedAt = lastAccessedAt
+          lastAccessedAt = lastAccessedAt,
+          extras = extras,
         )
     }
 
@@ -571,7 +598,8 @@ class FakeFileSystem(
           isDirectory = true,
           createdAt = createdAt,
           lastModifiedAt = lastModifiedAt,
-          lastAccessedAt = lastAccessedAt
+          lastAccessedAt = lastAccessedAt,
+          extras = extras,
         )
     }
 
@@ -585,7 +613,8 @@ class FakeFileSystem(
           symlinkTarget = target,
           createdAt = createdAt,
           lastModifiedAt = lastModifiedAt,
-          lastAccessedAt = lastAccessedAt
+          lastAccessedAt = lastAccessedAt,
+          extras = extras,
         )
     }
 
