@@ -99,6 +99,14 @@ object NodeJsFileSystem : FileSystem() {
     }
   }
 
+  override fun listOrNull(dir: Path): List<Path>? {
+    return try {
+      list(dir)
+    } catch (_: IOException) {
+      null
+    }
+  }
+
   override fun openReadOnly(file: Path): FileHandle {
     val fd = openFd(file, flags = "r")
     return NodeJsFileHandle(fd, readWrite = false)
@@ -117,10 +125,10 @@ object NodeJsFileSystem : FileSystem() {
       // creating a file that does not exist (wx+) if that throws. This is not atomic.
       // https://nodejs.org/api/fs.html#fs_file_system_flags
       try {
-        if (mustCreate && exists(file)) { throw IOException("$file already exists.") }
+        if (mustCreate && exists(file)) throw IOException("$file already exists.")
         openFd(file, "r+")
       } catch (e: FileNotFoundException) {
-        if (mustExist) { throw IOException("$file doesn't exist.") }
+        if (mustExist) throw IOException("$file doesn't exist.")
         openFd(file, "wx+")
       }
     } else {

@@ -239,6 +239,14 @@ class FakeFileSystem(
     return element.children.keys.map { dir / it }.sorted()
   }
 
+  override fun listOrNull(dir: Path): List<Path>? {
+    return try {
+      list(dir)
+    } catch (_: IOException) {
+      null
+    }
+  }
+
   override fun source(file: Path): Source {
     val fileHandle = openReadOnly(file)
     return fileHandle.source()

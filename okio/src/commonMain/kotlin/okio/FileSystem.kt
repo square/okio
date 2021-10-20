@@ -138,6 +138,16 @@ expect abstract class FileSystem() {
   abstract fun list(dir: Path): List<Path>
 
   /**
+   * Returns the children of the directory identified by [dir]. The returned list is sorted using
+   * natural ordering. If [dir] is a relative path, the returned elements will also be relative
+   * paths. If it is an absolute path, the returned elements will also be absolute paths. This
+   * returns null if [dir] does not exist, is not a directory, or cannot be read. A directory cannot
+   * be read if the current process doesn't have access to [dir], or if there's a loop of symbolic
+   * links, or if any name is too long.
+   */
+  abstract fun listOrNull(dir: Path): List<Path>?
+
+  /**
    * Returns a sequence that **lazily** traverses the children of [dir] using repeated calls to
    * [list]. If none of [dir]'s children are directories this returns the same elements as [list].
    *

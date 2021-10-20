@@ -148,8 +148,7 @@ internal suspend fun SequenceScope<Path>.collectRecursively(
 
 /** Returns null if [path] is not a directory or cannot be read. */
 @ExperimentalFileSystem
-@Throws(IOException::class)
-private fun FileSystem.listOrNull(path: Path): List<Path>? {
+internal fun FileSystem.commonListOrNull(path: Path): List<Path>? {
   return try {
     list(path)
   } catch (_: IOException) {

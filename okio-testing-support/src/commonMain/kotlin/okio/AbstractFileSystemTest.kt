@@ -143,6 +143,60 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun listOrNull() {
+    val target = base / "list"
+    target.writeUtf8("hello, world!")
+    val entries = fileSystem.listOrNull(base)!!
+    assertTrue(entries.toString()) { target in entries }
+  }
+
+  @Test
+  fun listOrNullOnRelativePathReturnsRelativePaths() {
+    // Make sure there's always at least one file so our assertion is useful.
+    if (fileSystem is FakeFileSystem) {
+      val workingDirectory = "/directory".toPath()
+      fileSystem.createDirectory(workingDirectory)
+      fileSystem.workingDirectory = workingDirectory
+      fileSystem.write("a.txt".toPath()) {
+        writeUtf8("hello, world!")
+      }
+    }
+
+    val entries = fileSystem.listOrNull(".".toPath())
+    assertTrue(entries.toString()) { entries!!.isNotEmpty() && entries.all { it.isRelative } }
+  }
+
+  @Test
+  fun listOrNullResultsAreSorted() {
+    val fileA = base / "a"
+    val fileB = base / "b"
+    val fileC = base / "c"
+    val fileD = base / "d"
+
+    // Create files in a different order than the sorted order, so a file system that returns files
+    // in creation-order or reverse-creation order won't pass by accident.
+    fileD.writeUtf8("fileD")
+    fileB.writeUtf8("fileB")
+    fileC.writeUtf8("fileC")
+    fileA.writeUtf8("fileA")
+
+    val entries = fileSystem.listOrNull(base)
+    assertEquals(entries, listOf(fileA, fileB, fileC, fileD))
+  }
+
+  @Test
+  fun listOrNullNoSuchDirectory() {
+    assertNull(fileSystem.listOrNull(base / "no-such-directory"))
+  }
+
+  @Test
+  fun listOrNullFile() {
+    val target = base / "list"
+    target.writeUtf8("hello, world!")
+    assertNull(fileSystem.listOrNull(target))
+  }
+
+  @Test
   fun listRecursivelyReturnsEmpty() {
     val entries = fileSystem.listRecursively(base)
     assertEquals(entries.toList(), listOf())
