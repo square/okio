@@ -15,19 +15,6 @@
  */
 package okio
 
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.toKString
-import okio.Path.Companion.toPath
-import okio.internal.toPath
-import platform.posix.PATH_MAX
-import platform.posix.S_IFLNK
-import platform.posix.S_IFMT
-import platform.posix.errno
-import platform.posix.readlink
-import platform.posix.stat
-
 @ExperimentalFileSystem
 internal expect val PLATFORM_TEMPORARY_DIRECTORY: Path
 
@@ -67,18 +54,3 @@ internal expect fun PosixFileSystem.variantOpenReadWrite(
 
 @ExperimentalFileSystem
 internal expect fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path)
-
-@ExperimentalFileSystem
-internal fun symlinkTarget(stat: stat, path: Path): Path? {
-  if (stat.st_mode.toInt() and S_IFMT != S_IFLNK) return null
-
-  // `path` is a symlink, let's resolve its target.
-  memScoped {
-    val buffer = allocArray<ByteVar>(PATH_MAX)
-    val byteCount = readlink(path.toString(), buffer, PATH_MAX)
-    if (byteCount.toInt() == -1) {
-      throw errnoToIOException(errno)
-    }
-    return buffer.toKString().toPath()
-  }
-}
