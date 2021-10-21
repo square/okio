@@ -124,10 +124,12 @@ object NodeJsFileSystem : FileSystem() {
         openFd(file, "wx+")
       }
     } else {
+      // Note that on Linux, positional writes don't work when the file is opened in append mode, so
+      // we don't want to use the `a` flag,
       val flags = when {
-        mustExist -> "r+"
-        mustCreate -> "ax+"
-        else -> "a+"
+        mustCreate -> "wx+"
+        mustExist || exists(file) -> "r+"
+        else -> "w+"
       }
       openFd(file, flags)
     }
