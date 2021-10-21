@@ -129,9 +129,6 @@ internal open class JvmSystemFileSystem : FileSystem() {
     if (!exists(this)) throw IOException("$this doesn't exist.")
   }
 
-  // TODO(Benoit) Atomically implement this. [StandardOpenOption.CREATE_NEW] is what we want but the
-  //  APIs we are currently using don't seem to use this. Do we have to replace our
-  //  [RandomAccessFile] by something else?
   private fun Path.requireCreate() {
     if (exists(this)) throw IOException("$this already exists.")
   }
