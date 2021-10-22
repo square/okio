@@ -21,6 +21,7 @@ import okio.ExperimentalFileSystem
 import okio.FileMetadata
 import okio.Path
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 
 @JvmName("newFileMetadata")
 @ExperimentalFileSystem
@@ -31,7 +32,8 @@ internal fun FileMetadata(
   size: Long? = null,
   createdAt: Instant? = null,
   lastModifiedAt: Instant? = null,
-  lastAccessedAt: Instant? = null
+  lastAccessedAt: Instant? = null,
+  extras: Map<KClass<*>, Any> = mapOf(),
 ): FileMetadata {
   return FileMetadata(
     isRegularFile = isRegularFile,
@@ -40,6 +42,7 @@ internal fun FileMetadata(
     size = size,
     createdAtMillis = createdAt?.toEpochMilliseconds(),
     lastModifiedAtMillis = lastModifiedAt?.toEpochMilliseconds(),
-    lastAccessedAtMillis = lastAccessedAt?.toEpochMilliseconds()
+    lastAccessedAtMillis = lastAccessedAt?.toEpochMilliseconds(),
+    extras = extras,
   )
 }

@@ -15,6 +15,9 @@
  */
 package okio
 
+import kotlin.reflect.KClass
+import kotlin.reflect.cast
+
 /**
  * Description of a file or another object referenced by a path.
  *
@@ -64,21 +67,21 @@ class FileMetadata(
   val symlinkTarget: Path? = null,
 
   /**
-   * Returns the number of bytes readable from this file. The amount of storage resources consumed
-   * by this file may be larger (due to block size overhead, redundant copies for RAID, etc.), or
-   * smaller (due to file system compression, shared inodes, etc).
+   * The number of bytes readable from this file. The amount of storage resources consumed by this
+   * file may be larger (due to block size overhead, redundant copies for RAID, etc.), or smaller
+   * (due to file system compression, shared inodes, etc).
    */
   val size: Long? = null,
 
   /**
-   * Returns the system time of the host computer when this file was created, if the host file
-   * system supports this feature. This is typically available on Windows NTFS file systems and not
+   * The system time of the host computer when this file was created, if the host file system
+   * supports this feature. This is typically available on Windows NTFS file systems and not
    * available on UNIX or Windows FAT file systems.
    */
   val createdAtMillis: Long? = null,
 
   /**
-   * Returns the system time of the host computer when this file was most recently written.
+   * The system time of the host computer when this file was most recently written.
    *
    * Note that the accuracy of the returned time may be much more coarse than its precision. In
    * particular, this value is expressed with millisecond precision but may be accessed at
@@ -87,17 +90,30 @@ class FileMetadata(
   val lastModifiedAtMillis: Long? = null,
 
   /**
-   * Returns the system time of the host computer when this file was most recently read or written.
+   * The system time of the host computer when this file was most recently read or written.
    *
    * Note that the accuracy of the returned time may be much more coarse than its precision. In
    * particular, this value is expressed with millisecond precision but may be accessed at
    * second- or day-accuracy only.
    */
   val lastAccessedAtMillis: Long? = null,
-) {
-  override fun equals(other: Any?) = other is FileMetadata && toString() == other.toString()
 
-  override fun hashCode() = toString().hashCode()
+  extras: Map<KClass<*>, Any> = mapOf()
+) {
+  /**
+   * Additional file system-specific metadata organized by the class of that metadata. File systems
+   * may use this to include information like permissions, content-type, or linked applications.
+   *
+   * Values in this map should be instances of immutable classes. Keys should be the types of those
+   * classes.
+   */
+  val extras: Map<KClass<*>, Any> = extras.toMap()
+
+  /** Returns extra metadata of type [type], or null if no such metadata is held. */
+  fun <T : Any> extra(type: KClass<out T>): T? {
+    val value = extras[type] ?: return null
+    return type.cast(value)
+  }
 
   override fun toString(): String {
     val fields = mutableListOf<String>()
@@ -107,6 +123,7 @@ class FileMetadata(
     if (createdAtMillis != null) fields += "createdAt=$createdAtMillis"
     if (lastModifiedAtMillis != null) fields += "lastModifiedAt=$lastModifiedAtMillis"
     if (lastAccessedAtMillis != null) fields += "lastAccessedAt=$lastAccessedAtMillis"
+    if (extras.isNotEmpty()) fields += "extras=$extras"
     return fields.joinToString(separator = ", ", prefix = "FileMetadata(", postfix = ")")
   }
 }

@@ -17,10 +17,12 @@ package okio
 
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -385,4 +387,117 @@ abstract class FakeFileSystemTest internal constructor(
       fileSystem.createSymlink(source, target)
     }
   }
+
+  @Test
+  fun fileExtras() {
+    val path = base / "a.txt"
+    path.writeUtf8("hello")
+    fakeFileSystem.setExtra(path, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    val metadata = fileSystem.metadata(path)
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun directoryExtras() {
+    val path = base / "a.txt"
+    fileSystem.createDirectory(path)
+    fakeFileSystem.setExtra(path, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    val metadata = fileSystem.metadata(path)
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun symlinkExtras() {
+    if (!supportsSymlink()) return
+
+    val pathA = base / "a.txt"
+    val pathB = base / "b.txt"
+    fileSystem.createSymlink(pathA, pathB)
+    fakeFileSystem.setExtra(pathA, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    val metadata = fileSystem.metadata(pathA)
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun deleteExtra() {
+    val path = base / "a.txt"
+    path.writeUtf8("hello")
+    fakeFileSystem.setExtra(path, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    fakeFileSystem.setExtra(path, ContentTypeExtra::class, null)
+    val metadata = fileSystem.metadata(path)
+    assertNull(metadata.extra(ContentTypeExtra::class))
+    assertEquals(mapOf(), metadata.extras)
+  }
+
+  @Test
+  fun extraIsNotCopiedByFileCopy() {
+    val pathA = base / "a.txt"
+    val pathB = base / "b.txt"
+    pathA.writeUtf8("hello")
+    fakeFileSystem.setExtra(pathA, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    fileSystem.copy(pathA, pathB)
+    val metadata = fileSystem.metadata(pathB)
+    assertNull(metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun extraIsMovedByAtomicMove() {
+    val pathA = base / "a.txt"
+    val pathB = base / "b.txt"
+    pathA.writeUtf8("hello")
+    fakeFileSystem.setExtra(pathA, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    fileSystem.atomicMove(pathA, pathB)
+    val metadata = fileSystem.metadata(pathB)
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun extrasHappyPath() {
+    val metadata = FileMetadata(
+      isRegularFile = true,
+      size = 10L,
+      extras = mapOf(ContentTypeExtra::class to ContentTypeExtra("text/plain")),
+    )
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun createExtrasDefensiveCopy() {
+    val extras = mutableMapOf<KClass<*>, Any>(
+      ContentTypeExtra::class to ContentTypeExtra("text/plain")
+    )
+    val metadata = FileMetadata(
+      isRegularFile = true,
+      size = 10L,
+      extras = extras,
+    )
+    extras.clear()
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun getExtraAbsent() {
+    val metadata = FileMetadata(
+      isRegularFile = true,
+      size = 10L,
+      extras = mapOf(),
+    )
+    assertNull(metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun getExtraWrongType() {
+    val metadata = FileMetadata(
+      isRegularFile = true,
+      size = 10L,
+      extras = mapOf(ContentTypeExtra::class to "hello"),
+    )
+    assertFailsWith<ClassCastException> {
+      metadata.extra(ContentTypeExtra::class)
+    }
+  }
+
+  internal data class ContentTypeExtra(
+    val contentType: String
+  )
 }
