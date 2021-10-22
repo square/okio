@@ -20,7 +20,6 @@ import okio.Path.Companion.toPath
 import okio.internal.COMPRESSION_METHOD_STORED
 import okio.internal.FixedLengthSource
 import okio.internal.ZipEntry
-import okio.internal.commonListOrNull
 import okio.internal.readLocalHeader
 import okio.internal.skipLocalHeader
 import java.io.FileNotFoundException
@@ -106,13 +105,16 @@ class ZipFileSystem internal constructor(
     throw IOException("zip entries are not writable")
   }
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     val canonicalDir = canonicalize(dir)
-    val entry = entries[canonicalDir] ?: throw IOException("not a directory: $dir")
+    val entry = entries[canonicalDir]
+      ?: if (throwOnFailure) throw IOException("not a directory: $dir") else return null
     return entry.children.toList()
   }
-
-  override fun listOrNull(dir: Path): List<Path>? = commonListOrNull(dir)
 
   @Throws(IOException::class)
   override fun source(path: Path): Source {

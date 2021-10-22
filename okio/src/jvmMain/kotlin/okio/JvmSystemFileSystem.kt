@@ -16,7 +16,6 @@
 package okio
 
 import okio.Path.Companion.toOkioPath
-import okio.internal.commonListOrNull
 import java.io.RandomAccessFile
 
 /**
@@ -60,19 +59,25 @@ internal open class JvmSystemFileSystem : FileSystem() {
     )
   }
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     val file = dir.toFile()
     val entries = file.list()
     if (entries == null) {
-      if (!file.exists()) throw FileNotFoundException("no such file: $dir")
-      throw IOException("failed to list $dir")
+      if (throwOnFailure) {
+        if (!file.exists()) throw FileNotFoundException("no such file: $dir")
+        throw IOException("failed to list $dir")
+      } else {
+        return null
+      }
     }
     val result = entries.mapTo(mutableListOf()) { dir / it }
     result.sort()
     return result
   }
-
-  override fun listOrNull(dir: Path): List<Path>? = commonListOrNull(dir)
 
   override fun openReadOnly(file: Path): FileHandle {
     return JvmFileHandle(readWrite = false, randomAccessFile = RandomAccessFile(file.toFile(), "r"))

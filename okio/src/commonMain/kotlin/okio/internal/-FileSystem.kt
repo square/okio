@@ -146,16 +146,6 @@ internal suspend fun SequenceScope<Path>.collectRecursively(
   }
 }
 
-/** Returns null if [path] is not a directory or cannot be read. */
-@ExperimentalFileSystem
-internal fun FileSystem.commonListOrNull(path: Path): List<Path>? {
-  return try {
-    list(path)
-  } catch (_: IOException) {
-    null
-  }
-}
-
 /** Returns a resolved path to the symlink target, resolving it if necessary. */
 @ExperimentalFileSystem
 @Throws(IOException::class)
