@@ -16,6 +16,7 @@
 package okio
 
 import okio.Path.Companion.toOkioPath
+import okio.internal.commonListOrNull
 import java.io.RandomAccessFile
 
 /**
@@ -70,6 +71,8 @@ internal open class JvmSystemFileSystem : FileSystem() {
     result.sort()
     return result
   }
+
+  override fun listOrNull(dir: Path): List<Path>? = commonListOrNull(dir)
 
   override fun openReadOnly(file: Path): FileHandle {
     return JvmFileHandle(readWrite = false, randomAccessFile = RandomAccessFile(file.toFile(), "r"))

@@ -165,6 +165,14 @@ abstract class ForwardingFileSystem(
     return paths
   }
 
+  override fun listOrNull(dir: Path): List<Path>? {
+    val dir = onPathParameter(dir, "listOrNull", "dir")
+    val result = delegate.listOrNull(dir) ?: return null
+    val paths = result.mapTo(mutableListOf()) { onPathResult(it, "listOrNull") }
+    paths.sort()
+    return paths
+  }
+
   override fun listRecursively(dir: Path, followSymlinks: Boolean): Sequence<Path> {
     val dir = onPathParameter(dir, "listRecursively", "dir")
     val result = delegate.listRecursively(dir, followSymlinks)
