@@ -1,6 +1,36 @@
 Change Log
 ==========
 
+## Version 3.0.0-alpha.11
+
+_2021-10-23_
+
+ * Upgrade: [Kotlin 1.5.31][kotlin_1_5_31].
+ * Upgrade: [kotlinx-datetime 0.3.0][datetime_0_3_0]. (This is a dependency of `okio-fakefilesystem`
+   only.)
+ * New: Support creating and accessing symlinks. We were reluctant to include symlinks in our API
+   (to keep it small!) but decided that supporting them was essential to properly implement
+   recursive traversal.
+ * New: `FileMetadata.extras` can track metadata for custom `FileSystem` implementations.
+ * New: Support Apple Silicon Kotlin/Native targets (`macosArm64`, `iosSimulatorArm64`,
+   `tvosSimulatorArm64`, and `watchosSimulatorArm64`).
+ * New: `FileSystem.listRecursively()` returns a `Sequence` that includes all of a directory's
+   children, and all of their children recursively. The implementation does a lazy, depth-first
+   traversal.
+ * New: `Path.relativeTo()` computes how to get from one path to another.
+ * New: `Path.root` and `Path.segments`. These APIs decompose a path into its component parts.
+ * New: `FileSystem.listOrNull()` returns a directory's children, or null if the path doesn't
+   reference a readable directory.
+ * New: Option to fail if the file being updated doesn't already exist: `mustExist`. Use this to
+   avoid creating a new file when your intention is to update an existing file.
+ * New: Option to fail if a file being created already exists: `mustCreate`. Use this to avoid
+   updating an existing file when your intention is to create a new file.
+ * Fix: Restore support for Kotlin/JS on browser platforms. We were relying on NodeJS-only features
+   to fetch the local directory separator (`/` or `\`) and temporary directory.
+ * Fix: Don't ignore the caller's specified write offset running Okio on Kotlin/Native on Linux.
+   (`FileHandle.write()` was broken and always appended to the end of the file.)
+
+
 ## Version 3.0.0-alpha.10
 
 _2021-09-09_
@@ -698,9 +728,11 @@ _2014-04-08_
  * Imported from OkHttp.
 
 
+ [datetime_0_3_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.3.0
  [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
  [kotlin_1_4_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.10
  [kotlin_1_4_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.20
  [kotlin_1_5_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.20
+ [kotlin_1_5_31]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.31
  [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
  [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
