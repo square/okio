@@ -63,7 +63,6 @@ import java.util.zip.Inflater
  * [zip_format]: https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE_6.2.0.txt
  * [extra_fields]: https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld
  */
-@ExperimentalFileSystem
 class ZipFileSystem internal constructor(
   private val zipPath: Path,
   private val fileSystem: FileSystem,

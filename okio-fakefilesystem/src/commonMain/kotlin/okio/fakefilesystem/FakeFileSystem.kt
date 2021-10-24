@@ -20,7 +20,6 @@ import kotlinx.datetime.Instant
 import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.ByteString
-import okio.ExperimentalFileSystem
 import okio.FileHandle
 import okio.FileMetadata
 import okio.FileNotFoundException
@@ -61,7 +60,6 @@ import kotlin.reflect.KClass
  * Windows systems. Relax these constraints individually or call [emulateWindows] or [emulateUnix];
  * to apply the constraints of a particular operating system.
  */
-@ExperimentalFileSystem
 class FakeFileSystem(
   @JvmField
   val clock: Clock = Clock.System

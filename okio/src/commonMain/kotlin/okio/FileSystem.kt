@@ -80,7 +80,6 @@ package okio
  * In Okio's API paths are just identifiers; you must use a specific `FileSystem` object to do
  * I/O with.
  */
-@ExperimentalFileSystem
 expect abstract class FileSystem() {
 
   /**

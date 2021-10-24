@@ -25,7 +25,6 @@ import kotlin.test.assertTrue
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class ForwardingFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = object : ForwardingFileSystem(FakeFileSystem().apply { emulateUnix() }) {},

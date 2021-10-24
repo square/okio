@@ -15,13 +15,16 @@
  */
 package okio
 
-import kotlin.RequiresOptIn.Level.ERROR
-import kotlin.annotation.AnnotationRetention.BINARY
+import kotlin.DeprecationLevel.HIDDEN
+import kotlin.annotation.AnnotationRetention.SOURCE
 import kotlin.annotation.AnnotationTarget.CLASS
 import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.annotation.AnnotationTarget.PROPERTY
 
-@RequiresOptIn(level = ERROR, message = "okio's FileSystem is unstable and subject to change")
-@Retention(BINARY)
+@Deprecated(
+  message = "This annotation is obsolete and should be removed.",
+  level = HIDDEN
+)
+@Retention(SOURCE)
 @Target(CLASS, FUNCTION, PROPERTY)
 annotation class ExperimentalFileSystem

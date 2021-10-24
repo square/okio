@@ -15,7 +15,6 @@
  */
 package okio.internal
 
-import okio.ExperimentalFileSystem
 import okio.FileHandle
 import okio.FileMetadata
 import okio.FileNotFoundException
@@ -41,7 +40,6 @@ import java.net.URL
  *
  * This file system is read-only.
  */
-@ExperimentalFileSystem
 internal class ResourceFileSystem internal constructor(
   classLoader: ClassLoader,
   indexEagerly: Boolean,

@@ -18,7 +18,6 @@ package okio.internal
 import okio.Buffer
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
-import okio.ExperimentalFileSystem
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.native.concurrent.SharedImmutable
@@ -38,7 +37,6 @@ private val DOT = ".".encodeUtf8()
 @SharedImmutable
 private val DOT_DOT = "..".encodeUtf8()
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonRoot(): Path? {
   return when (val rootLength = rootLength()) {
@@ -47,14 +45,12 @@ internal inline fun Path.commonRoot(): Path? {
   }
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonSegments(): List<String> {
   return commonSegmentsBytes().map { it.utf8() }
 }
 
 /** This function skips the root then splits on slash. */
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonSegmentsBytes(): List<ByteString> {
   val result = mutableListOf<ByteString>()
@@ -82,7 +78,6 @@ internal inline fun Path.commonSegmentsBytes(): List<ByteString> {
 }
 
 /** Return the length of the prefix of this that is the root path, or -1 if it has no root. */
-@ExperimentalFileSystem
 private fun Path.rootLength(): Int {
   if (bytes.size == 0) return -1
   if (bytes[0] == '/'.code.toByte()) return 1
@@ -109,19 +104,16 @@ private fun Path.rootLength(): Int {
   return -1
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonIsAbsolute(): Boolean {
   return rootLength() != -1
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonIsRelative(): Boolean {
   return rootLength() == -1
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonVolumeLetter(): Char? {
   if (bytes.indexOf(SLASH) != -1) return null
@@ -132,7 +124,6 @@ internal inline fun Path.commonVolumeLetter(): Char? {
   return c
 }
 
-@ExperimentalFileSystem
 private val Path.indexOfLastSlash: Int
   get() {
     val lastSlash = bytes.lastIndexOf(SLASH)
@@ -140,7 +131,6 @@ private val Path.indexOfLastSlash: Int
     return bytes.lastIndexOf(BACKSLASH)
   }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonNameBytes(): ByteString {
   val lastSlash = indexOfLastSlash
@@ -151,13 +141,11 @@ internal inline fun Path.commonNameBytes(): ByteString {
   }
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonName(): String {
   return nameBytes.utf8()
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonParent(): Path? {
   if (bytes == DOT || bytes == SLASH || bytes == BACKSLASH || lastSegmentIsDotDot()) {
@@ -189,7 +177,6 @@ internal inline fun Path.commonParent(): Path? {
   }
 }
 
-@ExperimentalFileSystem
 private fun Path.lastSegmentIsDotDot(): Boolean {
   if (bytes.endsWith(DOT_DOT)) {
     if (bytes.size == 2) return true // ".." is the whole string.
@@ -199,25 +186,21 @@ private fun Path.lastSegmentIsDotDot(): Boolean {
   return false
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonIsRoot(): Boolean {
   return rootLength() == bytes.size
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonResolve(child: String): Path {
   return div(Buffer().writeUtf8(child).toPath())
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonResolve(child: ByteString): Path {
   return div(Buffer().write(child).toPath())
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonResolve(child: Path): Path {
   if (child.isAbsolute || child.volumeLetter != null) return child
@@ -233,7 +216,6 @@ internal inline fun Path.commonResolve(child: Path): Path {
   return buffer.toPath()
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonRelativeTo(other: Path): Path {
   require(root == other.root) {
@@ -274,7 +256,6 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
   return buffer.toPath()
 }
 
-@ExperimentalFileSystem
 private val Path.slash: ByteString?
   get() {
     return when {
@@ -284,37 +265,31 @@ private val Path.slash: ByteString?
     }
   }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonCompareTo(other: Path): Int {
   return bytes.compareTo(other.bytes)
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonEquals(other: Any?): Boolean {
   return other is Path && other.bytes == bytes
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonHashCode(): Int {
   return bytes.hashCode()
 }
 
-@ExperimentalFileSystem
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Path.commonToString(): String {
   return bytes.utf8()
 }
 
-@ExperimentalFileSystem
 fun String.commonToPath(): Path {
   return Buffer().writeUtf8(this).toPath()
 }
 
 /** Consume the buffer and return it as a path. */
-@ExperimentalFileSystem
 internal fun Buffer.toPath(): Path {
   var slash: ByteString? = null
   val result = Buffer()
