@@ -15,15 +15,14 @@
  */
 package okio.samples
 
-import okio.FileSystem
-import okio.IOException
-import okio.Path
-import okio.Path.Companion.toPath
+import java.io.File
+import java.io.IOException
 import okio.buffer
+import okio.sink
 
 @Throws(IOException::class)
-fun writeEnv(path: Path) {
-  FileSystem.SYSTEM.sink(path).buffer().use { sink ->
+fun writeEnv(file: File) {
+  file.sink().buffer().use { sink ->
     for ((key, value) in System.getenv()) {
       sink.writeUtf8(key)
       sink.writeUtf8("=")
@@ -34,5 +33,5 @@ fun writeEnv(path: Path) {
 }
 
 fun main() {
-  writeEnv("env.txt".toPath())
+  writeEnv(File("env.txt"))
 }

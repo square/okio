@@ -15,10 +15,11 @@
  */
 package okio.samples;
 
-import java.io.File;
 import java.io.IOException;
 import okio.BufferedSink;
+import okio.FileSystem;
 import okio.Okio;
+import okio.Path;
 
 public final class BitmapEncoder {
   static final class Bitmap {
@@ -66,8 +67,8 @@ public final class BitmapEncoder {
     return new Bitmap(pixels);
   }
 
-  void encode(Bitmap bitmap, File file) throws IOException {
-    try (BufferedSink sink = Okio.buffer(Okio.sink(file))) {
+  void encode(Bitmap bitmap, FileSystem fileSystem, Path path) throws IOException {
+    try (BufferedSink sink = Okio.buffer(fileSystem.sink(path))) {
       encode(bitmap, sink);
     }
   }
@@ -122,6 +123,6 @@ public final class BitmapEncoder {
   public static void main(String[] args) throws Exception {
     BitmapEncoder encoder = new BitmapEncoder();
     Bitmap bitmap = encoder.generateGradient();
-    encoder.encode(bitmap, new File("gradient.bmp"));
+    encoder.encode(bitmap, FileSystem.SYSTEM, Path.get("gradient.bmp"));
   }
 }

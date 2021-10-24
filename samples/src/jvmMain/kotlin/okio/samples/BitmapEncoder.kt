@@ -15,12 +15,12 @@
  */
 package okio.samples
 
-import okio.BufferedSink
-import okio.buffer
-import okio.sink
-import java.io.File
-import java.io.IOException
 import kotlin.math.hypot
+import okio.BufferedSink
+import okio.FileSystem
+import okio.IOException
+import okio.Path
+import okio.Path.Companion.toPath
 
 class KotlinBitmapEncoder {
   class Bitmap(
@@ -54,8 +54,8 @@ class KotlinBitmapEncoder {
   }
 
   @Throws(IOException::class)
-  fun encode(bitmap: Bitmap, file: File) {
-    file.sink().buffer().use { sink -> encode(bitmap, sink) }
+  fun encode(bitmap: Bitmap, fileSystem: FileSystem, path: Path) {
+    fileSystem.write(path) { encode(bitmap, this) }
   }
 
   /** https://en.wikipedia.org/wiki/BMP_file_format  */
@@ -109,5 +109,5 @@ class KotlinBitmapEncoder {
 fun main() {
   val encoder = KotlinBitmapEncoder()
   val bitmap = encoder.generateGradient()
-  encoder.encode(bitmap, File("gradient.bmp"))
+  encoder.encode(bitmap, FileSystem.SYSTEM, "gradient.bmp".toPath())
 }
