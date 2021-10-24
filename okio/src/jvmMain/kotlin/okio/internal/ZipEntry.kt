@@ -16,10 +16,8 @@
  */
 package okio.internal
 
-import okio.ExperimentalFileSystem
 import okio.Path
 
-@ExperimentalFileSystem
 internal class ZipEntry(
   /**
    * Absolute path of this entry. If the raw name on disk contains relative paths like `..`, they

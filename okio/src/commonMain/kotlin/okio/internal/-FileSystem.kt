@@ -15,7 +15,6 @@
  */
 package okio.internal
 
-import okio.ExperimentalFileSystem
 import okio.FileMetadata
 import okio.FileNotFoundException
 import okio.FileSystem
@@ -29,19 +28,16 @@ import okio.use
  *
  * @throws IOException if [path] does not exist or its metadata cannot be read.
  */
-@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun FileSystem.commonMetadata(path: Path): FileMetadata {
   return metadataOrNull(path) ?: throw FileNotFoundException("no such file: $path")
 }
 
-@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun FileSystem.commonExists(path: Path): Boolean {
   return metadataOrNull(path) != null
 }
 
-@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun FileSystem.commonCreateDirectories(dir: Path) {
   // Compute the sequence of directories to create.
@@ -58,7 +54,6 @@ internal fun FileSystem.commonCreateDirectories(dir: Path) {
   }
 }
 
-@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun FileSystem.commonCopy(source: Path, target: Path) {
   source(source).use { bytesIn ->
@@ -68,7 +63,6 @@ internal fun FileSystem.commonCopy(source: Path, target: Path) {
   }
 }
 
-@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path) {
   val sequence = sequence {
@@ -85,7 +79,6 @@ internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path) {
   }
 }
 
-@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun FileSystem.commonListRecursively(dir: Path, followSymlinks: Boolean): Sequence<Path> {
   return sequence {
@@ -103,7 +96,6 @@ internal fun FileSystem.commonListRecursively(dir: Path, followSymlinks: Boolean
   }
 }
 
-@ExperimentalFileSystem
 internal suspend fun SequenceScope<Path>.collectRecursively(
   fileSystem: FileSystem,
   stack: ArrayDeque<Path>,
@@ -147,7 +139,6 @@ internal suspend fun SequenceScope<Path>.collectRecursively(
 }
 
 /** Returns null if [path] is not a directory or cannot be read. */
-@ExperimentalFileSystem
 internal fun FileSystem.commonListOrNull(path: Path): List<Path>? {
   return try {
     list(path)
@@ -157,7 +148,6 @@ internal fun FileSystem.commonListOrNull(path: Path): List<Path>? {
 }
 
 /** Returns a resolved path to the symlink target, resolving it if necessary. */
-@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun FileSystem.symlinkTarget(path: Path): Path? {
   val target = metadata(path).symlinkTarget ?: return null

@@ -30,7 +30,6 @@ import java.nio.file.Path as NioPath
  * Extends [JvmSystemFileSystem] for platforms that support `java.nio.files` first introduced in
  * Java 7 and Android 8.0 (API level 26).
  */
-@ExperimentalFileSystem
 @IgnoreJRERequirement // Only used on platforms that support java.nio.file.
 internal class NioSystemFileSystem : JvmSystemFileSystem() {
   override fun metadataOrNull(path: Path): FileMetadata? {

@@ -101,7 +101,6 @@ import kotlin.jvm.JvmName
  * other functions of this class. If desired, subclasses may override non-abstract functions to
  * forward them.
  */
-@ExperimentalFileSystem
 abstract class ForwardingFileSystem(
   /** [FileSystem] to which this instance is delegating. */
   @get:JvmName("delegate")

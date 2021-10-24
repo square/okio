@@ -24,7 +24,6 @@ import okio.internal.commonExists
 import okio.internal.commonListRecursively
 import okio.internal.commonMetadata
 
-@ExperimentalFileSystem
 actual abstract class FileSystem {
   @Throws(IOException::class)
   actual abstract fun canonicalize(path: Path): Path

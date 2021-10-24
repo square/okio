@@ -15,7 +15,6 @@
  */
 package okio
 
-@ExperimentalFileSystem
 internal class NodeJsFileHandle(
   private val fd: Number,
   readWrite: Boolean

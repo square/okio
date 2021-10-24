@@ -26,7 +26,6 @@ import org.junit.Assume.assumeTrue
  * the tool uses zip64 for the possibility of a very large file.) Files received from a pipe are
  * always named `-`.
  */
-@ExperimentalFileSystem
 class ZipBuilder(
   private val directory: Path
 ) {

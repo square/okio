@@ -37,7 +37,6 @@ import java.io.File
 import java.nio.file.Paths
 import java.nio.file.Path as NioPath
 
-@ExperimentalFileSystem
 actual class Path internal actual constructor(
   internal actual val bytes: ByteString
 ) : Comparable<Path> {
