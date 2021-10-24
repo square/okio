@@ -15,20 +15,21 @@
  */
 package okio.samples;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import okio.BufferedSink;
+import okio.FileSystem;
 import okio.Okio;
+import okio.Path;
 import okio.Sink;
 
 public final class WriteFile {
   public void run() throws Exception {
-    writeEnv(new File("env.txt"));
+    writeEnv(Path.get("env.txt"));
   }
 
-  public void writeEnv(File file) throws IOException {
-    try (Sink fileSink = Okio.sink(file);
+  public void writeEnv(Path path) throws IOException {
+    try (Sink fileSink = FileSystem.SYSTEM.sink(path);
          BufferedSink bufferedSink = Okio.buffer(fileSink)) {
 
       for (Map.Entry<String, String> entry : System.getenv().entrySet()) {

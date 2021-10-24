@@ -15,35 +15,33 @@
  */
 package okio.samples;
 
+import java.io.File;
 import java.io.IOException;
-import okio.BufferedSource;
-import okio.FileSystem;
+import java.util.Map;
+import okio.BufferedSink;
 import okio.Okio;
-import okio.Path;
-import okio.Source;
+import okio.Sink;
 
-public final class ReadFileLineByLine {
+public final class WriteJavaIoFile {
   public void run() throws Exception {
-    readLines(Path.get("../README.md"));
+    writeEnv(new File("env.txt"));
   }
 
-  public void readLines(Path path) throws IOException {
-    try (Source fileSource = FileSystem.SYSTEM.source(path);
-         BufferedSource bufferedFileSource = Okio.buffer(fileSource)) {
+  public void writeEnv(File file) throws IOException {
+    try (Sink fileSink = Okio.sink(file);
+         BufferedSink bufferedSink = Okio.buffer(fileSink)) {
 
-      while (true) {
-        String line = bufferedFileSource.readUtf8Line();
-        if (line == null) break;
-
-        if (line.contains("square")) {
-          System.out.println(line);
-        }
+      for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+        bufferedSink.writeUtf8(entry.getKey());
+        bufferedSink.writeUtf8("=");
+        bufferedSink.writeUtf8(entry.getValue());
+        bufferedSink.writeUtf8("\n");
       }
 
     }
   }
 
   public static void main(String... args) throws Exception {
-    new ReadFileLineByLine().run();
+    new WriteFile().run();
   }
 }
