@@ -46,7 +46,6 @@ import platform.posix.stat
 import platform.posix.symlink
 import platform.posix.timespec
 
-@ExperimentalFileSystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
   get() {
     val tmpdir = getenv("TMPDIR")
@@ -57,7 +56,6 @@ internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "/"
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantDelete(path: Path) {
   val result = remove(path.toString())
   if (result != 0) {
@@ -65,12 +63,10 @@ internal actual fun PosixFileSystem.variantDelete(path: Path) {
   }
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantMkdir(dir: Path): Int {
   return mkdir(dir.toString(), 0b111111111 /* octal 777 */)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
   // Note that realpath() fails if the file doesn't exist.
   val fullpath = realpath(path.toString(), null)
@@ -82,7 +78,6 @@ internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
   }
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantMove(
   source: Path,
   target: Path
@@ -93,35 +88,30 @@ internal actual fun PosixFileSystem.variantMove(
   }
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantSource(file: Path): Source {
   val openFile: CPointer<FILE> = fopen(file.toString(), "r")
     ?: throw errnoToIOException(errno)
   return FileSource(openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): Sink {
   val openFile: CPointer<FILE> = fopen(file.toString(), if (mustCreate) "wx" else "w")
     ?: throw errnoToIOException(errno)
   return FileSink(openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantAppendingSink(file: Path): Sink {
   val openFile: CPointer<FILE> = fopen(file.toString(), "a")
     ?: throw errnoToIOException(errno)
   return FileSink(openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle {
   val openFile: CPointer<FILE> = fopen(file.toString(), "r")
     ?: throw errnoToIOException(errno)
   return UnixFileHandle(false, openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantOpenReadWrite(
   file: Path,
   mustCreate: Boolean,
@@ -147,7 +137,6 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(
   return UnixFileHandle(true, openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path) {
   if (source.parent == null || !exists(source.parent!!)) {
     throw IOException("parent directory does not exist: ${source.parent}")
@@ -180,7 +169,6 @@ internal expect fun variantPwrite(
 internal val timespec.epochMillis: Long
   get() = tv_sec * 1000L + tv_sec / 1_000_000L
 
-@ExperimentalFileSystem
 internal fun symlinkTarget(stat: stat, path: Path): Path? {
   if (stat.st_mode.toInt() and S_IFMT != S_IFLNK) return null
 

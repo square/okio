@@ -53,7 +53,6 @@ import platform.windows.MoveFileExA
 import platform.windows.OPEN_ALWAYS
 import platform.windows.OPEN_EXISTING
 
-@ExperimentalFileSystem
 internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
   get() {
     // Windows' built-in APIs check the TEMP, TMP, and USERPROFILE environment variables in order.
@@ -72,7 +71,6 @@ internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "\\"
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantDelete(path: Path) {
   val pathString = path.toString()
 
@@ -86,12 +84,10 @@ internal actual fun PosixFileSystem.variantDelete(path: Path) {
   throw errnoToIOException(EACCES)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantMkdir(dir: Path): Int {
   return mkdir(dir.toString())
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
   // Note that _fullpath() returns normally if the file doesn't exist.
   val fullpath = _fullpath(null, path.toString(), PATH_MAX)
@@ -107,7 +103,6 @@ internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
   }
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
     val stat = alloc<_stat64>()
@@ -127,7 +122,6 @@ internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
   }
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantMove(source: Path, target: Path) {
   if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING) == 0) {
     throw lastErrorToIOException()
@@ -150,28 +144,24 @@ internal actual fun variantFwrite(
   return fwrite(source, 1, byteCount.toULong(), file).toUInt()
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantSource(file: Path): Source {
   val openFile: CPointer<FILE> = fopen(file.toString(), "rb")
     ?: throw errnoToIOException(errno)
   return FileSource(openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): Sink {
   val openFile: CPointer<FILE> = fopen(file.toString(), "wb")
     ?: throw errnoToIOException(errno)
   return FileSink(openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantAppendingSink(file: Path): Sink {
   val openFile: CPointer<FILE> = fopen(file.toString(), "ab")
     ?: throw errnoToIOException(errno)
   return FileSink(openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle {
   val openFile = CreateFileA(
     lpFileName = file.toString(),
@@ -188,7 +178,6 @@ internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle 
   return WindowsFileHandle(false, openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantOpenReadWrite(
   file: Path,
   mustCreate: Boolean,
@@ -219,7 +208,6 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(
   return WindowsFileHandle(true, openFile)
 }
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path) {
   throw okio.IOException("Not supported")
 }

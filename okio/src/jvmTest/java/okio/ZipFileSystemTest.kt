@@ -23,7 +23,6 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
-@ExperimentalFileSystem
 class ZipFileSystemTest {
   private val fileSystem = FileSystem.SYSTEM
   private var base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)

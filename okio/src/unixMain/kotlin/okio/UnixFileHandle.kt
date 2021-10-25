@@ -30,7 +30,6 @@ import platform.posix.fstat
 import platform.posix.ftruncate
 import platform.posix.stat
 
-@ExperimentalFileSystem
 internal class UnixFileHandle(
   readWrite: Boolean,
   private val file: CPointer<FILE>

@@ -17,7 +17,6 @@ package okio
 
 import java.io.RandomAccessFile
 
-@ExperimentalFileSystem
 internal class JvmFileHandle(
   readWrite: Boolean,
   private val randomAccessFile: RandomAccessFile

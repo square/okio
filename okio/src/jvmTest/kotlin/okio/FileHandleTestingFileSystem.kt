@@ -23,7 +23,6 @@ import kotlin.time.ExperimentalTime
  * This is intended to increase test coverage for [FileHandle].
  */
 @ExperimentalTime
-@ExperimentalFileSystem
 class FileHandleFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileHandleTestingFileSystem(FileSystem.SYSTEM),
