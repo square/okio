@@ -113,8 +113,8 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
       }
     }
 
-    assertEquals(fileSystem.list(base), listOf(base / "az", base / "by", base / "cx"))
-    assertEquals(forwardingFileSystem.list(base), listOf(base / "xc", base / "yb", base / "za"))
+    assertEquals(listOf(base / "az", base / "by", base / "cx"), fileSystem.list(base))
+    assertEquals(listOf(base / "xc", base / "yb", base / "za"), forwardingFileSystem.list(base))
   }
 
   @Test
@@ -142,6 +142,33 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
     assertEquals("hello, world!", source.readUtf8())
     assertEquals("hello, world!", target.readUtf8())
 
-    assertEquals(log, listOf("source(file=$source)", "sink(file=$target)"))
+    assertEquals(listOf("source(file=$source)", "sink(file=$target)"), log)
+  }
+
+  @Test
+  fun metadataForwardsParameterAndSymlinkTarget() {
+    val log = mutableListOf<String>()
+
+    val forwardingFileSystem = object : ForwardingFileSystem(fileSystem) {
+      override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
+        log += "$functionName($parameterName=$path)"
+        return path
+      }
+
+      override fun onPathResult(path: Path, functionName: String): Path {
+        log += "$functionName($path)"
+        return path
+      }
+    }
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+
+    fileSystem.createSymlink(source, target)
+
+    val sourceMetadata = forwardingFileSystem.metadata(source)
+    assertEquals(target, sourceMetadata.symlinkTarget)
+
+    assertEquals(listOf("metadataOrNull(path=$source)", "metadataOrNull($target)"), log)
   }
 }

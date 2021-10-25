@@ -153,7 +153,20 @@ abstract class ForwardingFileSystem(
   @Throws(IOException::class)
   override fun metadataOrNull(path: Path): FileMetadata? {
     val path = onPathParameter(path, "metadataOrNull", "path")
-    return delegate.metadataOrNull(path)
+    val metadataOrNull = delegate.metadataOrNull(path) ?: return null
+    if (metadataOrNull.symlinkTarget == null) return metadataOrNull
+
+    val symlinkTarget = onPathResult(metadataOrNull.symlinkTarget, "metadataOrNull")
+    return FileMetadata(
+      isRegularFile = metadataOrNull.isRegularFile,
+      isDirectory = metadataOrNull.isDirectory,
+      symlinkTarget = symlinkTarget,
+      size = metadataOrNull.size,
+      createdAtMillis = metadataOrNull.createdAtMillis,
+      lastAccessedAtMillis = metadataOrNull.lastAccessedAtMillis,
+      lastModifiedAtMillis = metadataOrNull.lastModifiedAtMillis,
+      extras = metadataOrNull.extras,
+    )
   }
 
   @Throws(IOException::class)
