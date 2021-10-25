@@ -53,7 +53,13 @@ internal class ResourceFileSystem internal constructor(
   }
 
   override fun canonicalize(path: Path): Path {
-    return ROOT / path
+    // TODO(jwilson): throw FileNotFoundException if the canonical file doesn't exist.
+    return canonicalizeInternal(path)
+  }
+
+  /** Don't throw [FileNotFoundException] if the path doesn't identify a file. */
+  private fun canonicalizeInternal(path: Path): Path {
+    return ROOT.resolve(path, normalize = true)
   }
 
   override fun list(dir: Path): List<Path> {
@@ -145,7 +151,10 @@ internal class ResourceFileSystem internal constructor(
   override fun createSymlink(source: Path, target: Path): Unit =
     throw IOException("$this is read-only")
 
-  private fun Path.toRelativePath(): String = canonicalize(this).toString().substring(1)
+  private fun Path.toRelativePath(): String {
+    val canonicalThis = canonicalizeInternal(this)
+    return canonicalThis.relativeTo(ROOT).toString()
+  }
 
   private companion object {
     val ROOT = "/".toPath()

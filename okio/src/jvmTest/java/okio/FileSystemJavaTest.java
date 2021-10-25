@@ -29,16 +29,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class FileSystemJavaTest {
   @Test
   public void pathApi() {
-    Path path = Path.get("/home/jesse/todo.txt");
+    Path path = Path.get("/home/jesse/todo.txt", false);
 
-    assertThat(Path.get("/home/jesse").resolve("todo.txt")).isEqualTo(path);
-    assertThat(Path.get("/home/jesse/todo.txt")).isEqualTo(path);
+    assertThat(Path.get("/home/jesse", false).resolve("todo.txt")).isEqualTo(path);
+    assertThat(Path.get("/home/jesse/todo.txt", false)).isEqualTo(path);
     assertThat(path.isAbsolute()).isTrue();
     assertThat(path.isRelative()).isFalse();
     assertThat(path.isRoot()).isFalse();
     assertThat(path.name()).isEqualTo("todo.txt");
     assertThat(path.nameBytes()).isEqualTo(ByteString.encodeUtf8("todo.txt"));
-    assertThat(path.parent()).isEqualTo(Path.get("/home/jesse"));
+    assertThat(path.parent()).isEqualTo(Path.get("/home/jesse", false));
     assertThat(path.volumeLetter()).isNull();
   }
 
@@ -52,8 +52,8 @@ public final class FileSystemJavaTest {
   public void javaIoFileToOkioPath() {
     String string = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR);
     File javaIoFile = new File(string);
-    Path okioPath = Path.get(string);
-    assertThat(Path.get(javaIoFile)).isEqualTo(okioPath);
+    Path okioPath = Path.get(string, false);
+    assertThat(Path.get(javaIoFile, false)).isEqualTo(okioPath);
     assertThat(okioPath.toFile()).isEqualTo(javaIoFile);
   }
 
@@ -62,8 +62,8 @@ public final class FileSystemJavaTest {
   public void nioPathToOkioPath() {
     String string = "/foo/bar/baz".replace("/", okio.Path.DIRECTORY_SEPARATOR);
     java.nio.file.Path nioPath = Paths.get(string);
-    Path okioPath = Path.get(string);
-    assertThat(Path.get(nioPath)).isEqualTo(okioPath);
+    Path okioPath = Path.get(string, false);
+    assertThat(Path.get(nioPath, false)).isEqualTo(okioPath);
     assertThat((Object) okioPath.toNioPath()).isEqualTo(nioPath);
   }
 
@@ -119,7 +119,7 @@ public final class FileSystemJavaTest {
         return path;
       }
     };
-    forwardingFileSystem.metadataOrNull(Path.get("/"));
+    forwardingFileSystem.metadataOrNull(Path.get("/", false));
     assertThat(log).containsExactly("metadataOrNull(path=/)");
   }
 }

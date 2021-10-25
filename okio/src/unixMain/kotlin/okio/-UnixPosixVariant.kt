@@ -72,7 +72,7 @@ internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
   val fullpath = realpath(path.toString(), null)
     ?: throw errnoToIOException(errno)
   try {
-    return Buffer().writeNullTerminated(fullpath).toPath()
+    return Buffer().writeNullTerminated(fullpath).toPath(normalize = true)
   } finally {
     free(fullpath)
   }

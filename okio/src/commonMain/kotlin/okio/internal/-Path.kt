@@ -192,17 +192,21 @@ internal inline fun Path.commonIsRoot(): Boolean {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun Path.commonResolve(child: String): Path {
-  return div(Buffer().writeUtf8(child).toPath())
+internal inline fun Path.commonResolve(child: String, normalize: Boolean): Path {
+  return commonResolve(Buffer().writeUtf8(child), normalize = normalize)
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun Path.commonResolve(child: ByteString): Path {
-  return div(Buffer().write(child).toPath())
+internal inline fun Path.commonResolve(child: ByteString, normalize: Boolean): Path {
+  return commonResolve(Buffer().write(child), normalize = normalize)
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun Path.commonResolve(child: Path): Path {
+internal inline fun Path.commonResolve(child: Buffer, normalize: Boolean): Path {
+  return commonResolve(child.toPath(normalize = false), normalize = normalize)
+}
+
+internal fun Path.commonResolve(child: Path, normalize: Boolean): Path {
   if (child.isAbsolute || child.volumeLetter != null) return child
 
   val slash = slash ?: child.slash ?: Path.DIRECTORY_SEPARATOR.toSlash()
@@ -213,7 +217,7 @@ internal inline fun Path.commonResolve(child: Path): Path {
     buffer.write(slash)
   }
   buffer.write(child.bytes)
-  return buffer.toPath()
+  return buffer.toPath(normalize = normalize)
 }
 
 @Suppress("NOTHING_TO_INLINE")
@@ -222,7 +226,7 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
     "Paths of different roots cannot be relative to each other: $this and $other"
   }
 
-  val thisSegments = segmentsBytes
+  val thisSegments = this.segmentsBytes
   val otherSegments = other.segmentsBytes
 
   // We look at the path both have in common.
@@ -253,7 +257,12 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
     buffer.write(thisSegments[i])
     buffer.write(slash)
   }
-  return buffer.toPath()
+  return buffer.toPath(normalize = false)
+}
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun Path.commonNormalized(): Path {
+  return toString().toPath(normalize = true)
 }
 
 private val Path.slash: ByteString?
@@ -285,12 +294,12 @@ internal inline fun Path.commonToString(): String {
   return bytes.utf8()
 }
 
-fun String.commonToPath(): Path {
-  return Buffer().writeUtf8(this).toPath()
+fun String.commonToPath(normalize: Boolean): Path {
+  return Buffer().writeUtf8(this).toPath(normalize)
 }
 
 /** Consume the buffer and return it as a path. */
-internal fun Buffer.toPath(): Path {
+internal fun Buffer.toPath(normalize: Boolean): Path {
   var slash: ByteString? = null
   val result = Buffer()
 
@@ -308,7 +317,7 @@ internal fun Buffer.toPath(): Path {
     result.write(slash)
   } else if (leadingSlashCount > 0) {
     // This is platform-dependent:
-    //  * On UNIX: a absolute path like /home
+    //  * On UNIX: an absolute path like /home
     //  * On Windows: this is relative to the current volume, like \Windows.
     result.write(slash!!)
   } else {
@@ -342,7 +351,9 @@ internal fun Buffer.toPath(): Path {
     }
 
     if (part == DOT_DOT) {
-      if (!absolute && (canonicalParts.isEmpty() || canonicalParts.last() == DOT_DOT)) {
+      if (absolute && canonicalParts.isEmpty()) {
+        // Silently consume `..`.
+      } else if (!normalize || !absolute && (canonicalParts.isEmpty() || canonicalParts.last() == DOT_DOT)) {
         canonicalParts.add(part) // '..' doesn't pop '..' for relative paths.
       } else {
         canonicalParts.removeLastOrNull()

@@ -23,6 +23,7 @@ import okio.internal.commonIsRelative
 import okio.internal.commonIsRoot
 import okio.internal.commonName
 import okio.internal.commonNameBytes
+import okio.internal.commonNormalized
 import okio.internal.commonParent
 import okio.internal.commonRelativeTo
 import okio.internal.commonResolve
@@ -75,15 +76,26 @@ actual class Path internal actual constructor(
     get() = commonIsRoot()
 
   @JvmName("resolve")
-  actual operator fun div(child: String): Path = commonResolve(child)
+  actual operator fun div(child: String): Path = commonResolve(child, normalize = false)
 
   @JvmName("resolve")
-  actual operator fun div(child: ByteString): Path = commonResolve(child)
+  actual operator fun div(child: ByteString): Path = commonResolve(child, normalize = false)
 
   @JvmName("resolve")
-  actual operator fun div(child: Path): Path = commonResolve(child)
+  actual operator fun div(child: Path): Path = commonResolve(child, normalize = false)
+
+  actual fun resolve(child: String, normalize: Boolean): Path =
+    commonResolve(child, normalize = normalize)
+
+  actual fun resolve(child: ByteString, normalize: Boolean): Path =
+    commonResolve(child, normalize = normalize)
+
+  actual fun resolve(child: Path, normalize: Boolean): Path =
+    commonResolve(child = child, normalize = normalize)
 
   actual fun relativeTo(other: Path): Path = commonRelativeTo(other)
+
+  actual fun normalized(): Path = commonNormalized()
 
   fun toFile(): File = File(toString())
 
@@ -102,14 +114,14 @@ actual class Path internal actual constructor(
     @JvmField
     actual val DIRECTORY_SEPARATOR: String = File.separator
 
-    @JvmName("get") @JvmStatic
-    actual fun String.toPath(): Path = commonToPath()
+    @JvmName("get") @JvmStatic @JvmOverloads
+    actual fun String.toPath(normalize: Boolean): Path = commonToPath(normalize)
 
-    @JvmName("get") @JvmStatic
-    fun File.toOkioPath(): Path = toString().toPath()
+    @JvmName("get") @JvmStatic @JvmOverloads
+    fun File.toOkioPath(normalize: Boolean = false): Path = toString().toPath(normalize)
 
-    @JvmName("get") @JvmStatic
+    @JvmName("get") @JvmStatic @JvmOverloads
     @IgnoreJRERequirement // Can only be invoked on platforms that have java.nio.file.
-    fun NioPath.toOkioPath(): Path = toString().toPath()
+    fun NioPath.toOkioPath(normalize: Boolean = false): Path = toString().toPath(normalize)
   }
 }

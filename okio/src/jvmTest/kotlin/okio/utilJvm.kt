@@ -28,11 +28,12 @@ actual fun assertRelativeTo(
 ) {
   val actual = b.relativeTo(a)
   assertEquals(bRelativeToA, actual)
-  assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
+  assertEquals(b.normalized().withUnixSlashes(), (a / actual).normalized().withUnixSlashes())
   // Also confirm our behavior is consistent with java.nio.
   if (sameAsNio) {
     // On Windows, java.nio will modify slashes to backslashes for relative paths, so we force it.
-    val nioPath = a.toNioPath().relativize(b.toNioPath()).toOkioPath().withUnixSlashes().toPath()
+    val nioPath = a.toNioPath().relativize(b.toNioPath())
+      .toOkioPath(normalize = true).withUnixSlashes().toPath()
     assertEquals(bRelativeToA, nioPath)
   }
 }

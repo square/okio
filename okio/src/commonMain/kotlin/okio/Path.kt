@@ -69,8 +69,9 @@ import okio.Path.Companion.toPath
  *
  *  * Segments are always non-empty.
  *  * If the segment is `.`, then the full path must be `.`.
- *  * If the segment is `..`, then the the path must be relative. All `..` segments precede all
- *    other segments.
+ *  * For normalized paths, if the segment is `..`, then the path must be relative. All `..`
+ *    segments precede all other segments. In all cases, a segment `..` cannot be the first segment
+ *    of an absolute path.
  *
  * The only path that ends with `/` is the file system root, `/`. The dot path `.` is a relative
  * path that resolves to whichever path it is resolved against.
@@ -192,7 +193,8 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
   val isRoot: Boolean
 
   /**
-   * Returns a path that resolves [child] relative to this path.
+   * Returns a path that resolves [child] relative to this path. Note that the result isn't
+   * guaranteed to be normalized even if this and [child] are both normalized themselves.
    *
    * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
    * this function is equivalent to `child.toPath()`.
@@ -200,7 +202,8 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
   operator fun div(child: String): Path
 
   /**
-   * Returns a path that resolves [child] relative to this path.
+   * Returns a path that resolves [child] relative to this path. Note that the result isn't
+   * guaranteed to be normalized even if this and [child] are both normalized themselves.
    *
    * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
    * this function is equivalent to `child.toPath()`.
@@ -208,12 +211,19 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
   operator fun div(child: ByteString): Path
 
   /**
-   * Returns a path that resolves [child] relative to this path.
+   * Returns a path that resolves [child] relative to this path. Note that the result isn't
+   * guaranteed to be normalized even if this and [child] are both normalized themselves.
    *
    * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
    * this function is equivalent to `child.toPath()`.
    */
   operator fun div(child: Path): Path
+
+  fun resolve(child: String, normalize: Boolean = false): Path
+
+  fun resolve(child: ByteString, normalize: Boolean = false): Path
+
+  fun resolve(child: Path, normalize: Boolean = false): Path
 
   /**
    * Returns this path relative to [other]. This effectively inverts the resolve operator, `/`. For
@@ -228,6 +238,12 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
    */
   @Throws(IllegalArgumentException::class)
   fun relativeTo(other: Path): Path
+
+  /**
+   * Returns the normalized version of this path. This has the same effect as
+   * `this.toString().toPath(normalize = true)`.
+   */
+  fun normalized(): Path
 
   override fun compareTo(other: Path): Int
 
@@ -247,6 +263,17 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
      */
     val DIRECTORY_SEPARATOR: String
 
-    fun String.toPath(): Path
+    /**
+     * Returns the [Path] representation for this string.
+     *
+     * Set [normalize] to true to eagerly consume `..` segments in your path. In all cases, leading
+     * `..` on absolute paths will be removed.
+     *
+     * ```
+     * "/Users/jesse/Documents/../notes.txt".toPath(normalize = false).toString() => "/Users/jesse/Documents/../notes.txt"
+     * "/Users/jesse/Documents/../notes.txt".toPath(normalize = true).toString() => "/Users/jesse/notes.txt"
+     * ```
+     */
+    fun String.toPath(normalize: Boolean = false): Path
   }
 }
