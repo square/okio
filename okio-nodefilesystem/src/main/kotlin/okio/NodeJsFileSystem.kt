@@ -80,7 +80,11 @@ object NodeJsFileSystem : FileSystem() {
   private val Throwable.errorCode
     get() = asDynamic().code
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     try {
       val opendir = opendirSync(dir.toString())
       try {
@@ -95,15 +99,8 @@ object NodeJsFileSystem : FileSystem() {
         opendir.closeSync()
       }
     } catch (e: Throwable) {
-      throw e.toIOException()
-    }
-  }
-
-  override fun listOrNull(dir: Path): List<Path>? {
-    return try {
-      list(dir)
-    } catch (_: IOException) {
-      null
+      if (throwOnFailure) throw e.toIOException()
+      else return null
     }
   }
 

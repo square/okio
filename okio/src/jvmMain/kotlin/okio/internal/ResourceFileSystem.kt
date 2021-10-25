@@ -75,7 +75,21 @@ internal class ResourceFileSystem internal constructor(
     return result.toList()
   }
 
-  override fun listOrNull(dir: Path): List<Path>? = commonListOrNull(dir)
+  override fun listOrNull(dir: Path): List<Path>? {
+    val relativePath = dir.toRelativePath()
+    val result = mutableSetOf<Path>()
+    var foundAny = false
+    for ((fileSystem, base) in roots) {
+      val baseResult = fileSystem.listOrNull(base / relativePath)
+        ?.filter { keepPath(it) }
+        ?.map { it.removeBase(base) }
+      if (baseResult != null) {
+        result += baseResult
+        foundAny = true
+      }
+    }
+    return if (foundAny) result.toList() else null
+  }
 
   override fun openReadOnly(file: Path): FileHandle {
     if (!keepPath(file)) throw FileNotFoundException("file not found: $file")

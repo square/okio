@@ -36,9 +36,13 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun metadataOrNull(path: Path) = variantMetadataOrNull(path)
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     val opendir: CPointer<DIR> = opendir(dir.toString())
-      ?: throw errnoToIOException(errno)
+      ?: if (throwOnFailure) throw errnoToIOException(errno) else return null
 
     try {
       val result = mutableListOf<Path>()
@@ -58,20 +62,15 @@ internal object PosixFileSystem : FileSystem() {
         result += dir / childPath
       }
 
-      if (errno != 0) throw errnoToIOException(errno)
+      if (errno != 0) {
+        if (throwOnFailure) throw errnoToIOException(errno)
+        else return null
+      }
 
       result.sort()
       return result
     } finally {
       closedir(opendir) // Ignore errno from closedir.
-    }
-  }
-
-  override fun listOrNull(dir: Path): List<Path>? {
-    return try {
-      list(dir)
-    } catch (_: IOException) {
-      null
     }
   }
 
