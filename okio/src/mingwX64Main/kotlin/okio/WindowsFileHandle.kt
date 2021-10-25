@@ -37,7 +37,6 @@ import platform.windows.SetFilePointer
 import platform.windows.WriteFile
 import platform.windows._OVERLAPPED
 
-@ExperimentalFileSystem
 internal class WindowsFileHandle(
   readWrite: Boolean,
   private val file: HANDLE?

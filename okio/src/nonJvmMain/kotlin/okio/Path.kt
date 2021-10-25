@@ -33,7 +33,6 @@ import okio.internal.commonToPath
 import okio.internal.commonToString
 import okio.internal.commonVolumeLetter
 
-@ExperimentalFileSystem
 actual class Path internal actual constructor(
   internal actual val bytes: ByteString
 ) : Comparable<Path> {

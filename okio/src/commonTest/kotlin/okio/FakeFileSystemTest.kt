@@ -28,28 +28,24 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class FakeWindowsFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateWindows() },
   temporaryDirectory = "C:\\".toPath()
 )
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class FakeUnixFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateUnix() },
   temporaryDirectory = "/".toPath()
 )
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class StrictFakeFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()),
   temporaryDirectory = "/".toPath()
 )
 
 @ExperimentalTime
-@ExperimentalFileSystem
 abstract class FakeFileSystemTest internal constructor(
   private val fakeFileSystem: FakeFileSystem,
   temporaryDirectory: Path

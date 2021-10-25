@@ -22,7 +22,6 @@ import java.io.File
 import java.nio.file.Paths
 import kotlin.test.Test
 
-@ExperimentalFileSystem
 class JvmTest {
   @Test
   fun baseDirectoryConsistentWithJavaIoFile() {

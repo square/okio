@@ -24,7 +24,6 @@ import java.io.RandomAccessFile
  * This base class is used on Android API levels 15 (our minimum supported API) through 26
  * (the first release that includes java.nio.file).
  */
-@ExperimentalFileSystem
 internal open class JvmSystemFileSystem : FileSystem() {
   override fun canonicalize(path: Path): Path {
     val canonicalFile = path.toFile().canonicalFile

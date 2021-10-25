@@ -23,7 +23,6 @@ import kotlin.time.ExperimentalTime
  * on the classpath, [JvmSystemFileSystem] will be use instead.
  */
 @ExperimentalTime
-@ExperimentalFileSystem
 class NioSystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileSystem.SYSTEM,
@@ -33,7 +32,6 @@ class NioSystemFileSystemTest : AbstractFileSystemTest(
 )
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class JvmSystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = JvmSystemFileSystem(),

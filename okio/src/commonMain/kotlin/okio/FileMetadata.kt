@@ -52,7 +52,6 @@ import kotlin.reflect.cast
  * File metadata is subject to change, and code that operates on file systems should defend against
  * changes to the file that occur between reading metadata and subsequent operations.
  */
-@ExperimentalFileSystem
 class FileMetadata(
   /** True if this file is a container of bytes. If this is true, then [size] is non-null. */
   val isRegularFile: Boolean = false,

@@ -19,7 +19,6 @@ import kotlinx.datetime.Clock
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class NativeSystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileSystem.SYSTEM,

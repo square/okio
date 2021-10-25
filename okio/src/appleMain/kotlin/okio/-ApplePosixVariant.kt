@@ -26,7 +26,6 @@ import platform.posix.errno
 import platform.posix.lstat
 import platform.posix.stat
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
     val stat = alloc<stat>()
