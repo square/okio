@@ -63,7 +63,7 @@ import java.util.zip.Inflater
  * [extra_fields]: https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld
  */
 @ExperimentalFileSystem
-class ZipFileSystem internal constructor(
+internal class ZipFileSystem internal constructor(
   private val zipPath: Path,
   private val fileSystem: FileSystem,
   private val entries: Map<Path, ZipEntry>,
