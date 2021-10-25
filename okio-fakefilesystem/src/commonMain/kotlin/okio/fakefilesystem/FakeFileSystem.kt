@@ -249,25 +249,21 @@ class FakeFileSystem(
     return lookupResult?.element?.metadata
   }
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     val canonicalPath = workingDirectory / dir
     val lookupResult = lookupPath(canonicalPath)
     if (lookupResult?.element == null) {
-      throw FileNotFoundException("no such directory: $dir")
+      if (throwOnFailure) throw FileNotFoundException("no such directory: $dir") else return null
     }
     val element = lookupResult.element as? Directory
-      ?: throw IOException("not a directory: $dir")
+      ?: if (throwOnFailure) throw IOException("not a directory: $dir") else return null
 
     element.access(now = clock.now())
     return element.children.keys.map { dir / it }.sorted()
-  }
-
-  override fun listOrNull(dir: Path): List<Path>? {
-    return try {
-      list(dir)
-    } catch (_: IOException) {
-      null
-    }
   }
 
   override fun source(file: Path): Source {

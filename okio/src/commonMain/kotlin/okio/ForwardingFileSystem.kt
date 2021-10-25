@@ -187,7 +187,7 @@ abstract class ForwardingFileSystem(
   @Throws(IOException::class)
   override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
     val file = onPathParameter(file, "openReadWrite", "file")
-    return delegate.openReadWrite(file)
+    return delegate.openReadWrite(file, mustCreate, mustExist)
   }
 
   @Throws(IOException::class)
@@ -199,13 +199,13 @@ abstract class ForwardingFileSystem(
   @Throws(IOException::class)
   override fun sink(file: Path, mustCreate: Boolean): Sink {
     val file = onPathParameter(file, "sink", "file")
-    return delegate.sink(file)
+    return delegate.sink(file, mustCreate)
   }
 
   @Throws(IOException::class)
   override fun appendingSink(file: Path, mustExist: Boolean): Sink {
     val file = onPathParameter(file, "appendingSink", "file")
-    return delegate.appendingSink(file)
+    return delegate.appendingSink(file, mustExist)
   }
 
   @Throws(IOException::class)
