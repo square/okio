@@ -22,17 +22,19 @@ import okio.Path.Companion.toPath
 import okio.buffer
 
 @Throws(IOException::class)
-fun writeEnv(path: Path) {
-  FileSystem.SYSTEM.sink(path).buffer().use { sink ->
-    for ((key, value) in System.getenv()) {
-      sink.writeUtf8(key)
-      sink.writeUtf8("=")
-      sink.writeUtf8(value)
-      sink.writeUtf8("\n")
+fun readLines(path: Path) {
+  FileSystem.SYSTEM.source(path).use { fileSource ->
+    fileSource.buffer().use { bufferedFileSource ->
+      while (true) {
+        val line = bufferedFileSource.readUtf8Line() ?: break
+        if ("square" in line) {
+          println(line)
+        }
+      }
     }
   }
 }
 
 fun main() {
-  writeEnv("env.txt".toPath())
+  readLines("../README.md".toPath())
 }
