@@ -17,6 +17,7 @@ package okio
 
 import okio.Path.Companion.toOkioPath
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+import java.nio.file.FileSystemException
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.NoSuchFileException
@@ -42,6 +43,8 @@ internal class NioSystemFileSystem : JvmSystemFileSystem() {
         LinkOption.NOFOLLOW_LINKS
       )
     } catch (_: NoSuchFileException) {
+      return null
+    } catch (_: FileSystemException) {
       return null
     }
 

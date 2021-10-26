@@ -52,6 +52,31 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun exists() {
+    val file = base / "simple-file"
+    file.writeUtf8("just a file")
+
+    assertTrue(fileSystem.exists(file))
+  }
+
+  @Test
+  fun doesNotExists() {
+    val file = base / "simple-file"
+
+    assertFalse(fileSystem.exists(file))
+  }
+
+  @Test
+  fun doesNotExistsWithInvalidPathDoesNotThrow() {
+    val slash = Path.DIRECTORY_SEPARATOR
+    // We are testing: `\\127.0.0.1\..\localhost\c$\Windows`.
+    val file =
+      "${slash}${slash}127.0.0.1$slash..${slash}localhost${slash}c\$${slash}Windows".toPath()
+
+    assertFalse(fileSystem.exists(file))
+  }
+
+  @Test
   fun canonicalizeDotReturnsCurrentWorkingDirectory() {
     if (fileSystem is FakeFileSystem || fileSystem is ForwardingFileSystem) return
     val cwd = fileSystem.canonicalize(".".toPath())
