@@ -23,6 +23,7 @@ import okio.internal.commonIsRelative
 import okio.internal.commonIsRoot
 import okio.internal.commonName
 import okio.internal.commonNameBytes
+import okio.internal.commonNormalized
 import okio.internal.commonParent
 import okio.internal.commonRelativeTo
 import okio.internal.commonResolve
@@ -66,13 +67,24 @@ actual class Path internal actual constructor(
   actual val isRoot: Boolean
     get() = commonIsRoot()
 
-  actual operator fun div(child: String): Path = commonResolve(child)
+  actual operator fun div(child: String): Path = commonResolve(child, normalize = false)
 
-  actual operator fun div(child: ByteString): Path = commonResolve(child)
+  actual operator fun div(child: ByteString): Path = commonResolve(child, normalize = false)
 
-  actual operator fun div(child: Path): Path = commonResolve(child)
+  actual operator fun div(child: Path): Path = commonResolve(child, normalize = false)
+
+  actual fun resolve(child: String, normalize: Boolean): Path =
+    commonResolve(child, normalize = normalize)
+
+  actual fun resolve(child: ByteString, normalize: Boolean): Path =
+    commonResolve(child, normalize = normalize)
+
+  actual fun resolve(child: Path, normalize: Boolean): Path =
+    commonResolve(child = child, normalize = normalize)
 
   actual fun relativeTo(other: Path): Path = commonRelativeTo(other)
+
+  actual fun normalized(): Path = commonNormalized()
 
   actual override fun compareTo(other: Path): Int = commonCompareTo(other)
 
@@ -85,6 +97,6 @@ actual class Path internal actual constructor(
   actual companion object {
     actual val DIRECTORY_SEPARATOR: String = PLATFORM_DIRECTORY_SEPARATOR
 
-    actual fun String.toPath(): Path = commonToPath()
+    actual fun String.toPath(normalize: Boolean): Path = commonToPath(normalize)
   }
 }

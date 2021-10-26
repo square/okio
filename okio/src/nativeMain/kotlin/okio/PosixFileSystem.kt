@@ -52,7 +52,7 @@ internal object PosixFileSystem : FileSystem() {
         val dirent: CPointer<dirent> = readdir(opendir) ?: break
         val childPath = buffer.writeNullTerminated(
           bytes = dirent[0].d_name
-        ).toPath()
+        ).toPath(normalize = true)
 
         if (childPath == SELF_DIRECTORY_ENTRY || childPath == PARENT_DIRECTORY_ENTRY) {
           continue // exclude '.' and '..' from the results.

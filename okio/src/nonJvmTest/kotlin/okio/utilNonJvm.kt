@@ -26,7 +26,7 @@ actual fun assertRelativeTo(
 ) {
   val actual = b.relativeTo(a)
   assertEquals(bRelativeToA, actual)
-  assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
+  assertEquals(b.normalized().withUnixSlashes(), (a / actual).normalized().withUnixSlashes())
 }
 
 actual fun assertRelativeToFails(
