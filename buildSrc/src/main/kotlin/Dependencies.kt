@@ -16,8 +16,8 @@ object deps {
   }
 
   object androidx {
-    const val testExtJunit = "androidx.test.ext:junit:1.1.2"
-    const val testRunner = "androidx.test:runner:1.3.0"
+    const val testExtJunit = "androidx.test.ext:junit:1.1.3"
+    const val testRunner = "androidx.test:runner:1.4.0"
   }
 
   object kotlin {
@@ -44,16 +44,16 @@ object deps {
     const val javaSignature = "org.codehaus.mojo.signature:java17:1.0@signature"
   }
 
-  const val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.2.9"
-  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.0"
-  const val shadow = "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0"
-  const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.14.3"
-  const val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
-  const val guava = "com.google.guava:guava:30.1.1-jre"
-  const val vanniktechPublishPlugin = "com.vanniktech:gradle-maven-publish-plugin:0.17.0"
+  const val japicmp = "me.champeau.gradle:japicmp-gradle-plugin:0.3.0"
+  const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.5.31"
+  const val shadow = "gradle.plugin.com.github.johnrengelman:shadow:7.1.0"
+  const val spotless = "com.diffplug.spotless:spotless-plugin-gradle:5.16.0"
+  const val bnd = "biz.aQute.bnd:biz.aQute.bnd.gradle:6.0.0"
+  const val guava = "com.google.guava:guava:31.0.1-jre"
+  const val vanniktechPublishPlugin = "com.vanniktech:gradle-maven-publish-plugin:0.18.0"
 
   object test {
     const val junit = "junit:junit:4.13.2"
-    const val assertj = "org.assertj:assertj-core:3.20.2"
+    const val assertj = "org.assertj:assertj-core:3.21.0"
   }
 }
