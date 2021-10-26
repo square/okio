@@ -321,7 +321,7 @@ expect abstract class FileSystem() {
   abstract fun atomicMove(source: Path, target: Path)
 
   /**
-   * Copies all of the bytes from the file at [source] to the file at [target]. This does not copy
+   * Copies all the bytes from the file at [source] to the file at [target]. This does not copy
    * file metadata like last modified time, permissions, or extended attributes.
    *
    * This function is not atomic; a failure may leave [target] in an inconsistent state. For
