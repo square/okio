@@ -185,7 +185,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     offset: Long
   ): Buffer = copyTo(out, offset, size - offset)
 
-  /** Write `byteCount` bytes from this to `out`.  */
+  /** Write `byteCount` bytes from this to `out`. */
   @Throws(IOException::class)
   @JvmOverloads
   fun writeTo(out: OutputStream, byteCount: Long = size): Buffer {
@@ -212,14 +212,14 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return this
   }
 
-  /** Read and exhaust bytes from `input` into this.  */
+  /** Read and exhaust bytes from `input` into this. */
   @Throws(IOException::class)
   fun readFrom(input: InputStream): Buffer {
     readFrom(input, Long.MAX_VALUE, true)
     return this
   }
 
-  /** Read `byteCount` bytes from `input` into this.  */
+  /** Read `byteCount` bytes from `input` into this. */
   @Throws(IOException::class)
   fun readFrom(input: InputStream, byteCount: Long): Buffer {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
@@ -503,16 +503,24 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun timeout() = Timeout.NONE
 
-  /** Returns the 128-bit MD5 hash of this buffer.  */
+  /**
+   * Returns the 128-bit MD5 hash of this buffer.
+   *
+   * MD5 has been vulnerable to collisions since 2004. It should not be used in new code.
+   */
   actual fun md5() = digest("MD5")
 
-  /** Returns the 160-bit SHA-1 hash of this buffer.  */
+  /**
+   * Returns the 160-bit SHA-1 hash of this buffer.
+   *
+   * SHA-1 has been vulnerable to collisions since 2017. It should not be used in new code.
+   */
   actual fun sha1() = digest("SHA-1")
 
-  /** Returns the 256-bit SHA-256 hash of this buffer.  */
+  /** Returns the 256-bit SHA-256 hash of this buffer. */
   actual fun sha256() = digest("SHA-256")
 
-  /** Returns the 512-bit SHA-512 hash of this buffer.  */
+  /** Returns the 512-bit SHA-512 hash of this buffer. */
   actual fun sha512() = digest("SHA-512")
 
   private fun digest(algorithm: String): ByteString {
@@ -528,13 +536,13 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return ByteString(messageDigest.digest())
   }
 
-  /** Returns the 160-bit SHA-1 HMAC of this buffer.  */
+  /** Returns the 160-bit SHA-1 HMAC of this buffer. */
   actual fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
 
-  /** Returns the 256-bit SHA-256 HMAC of this buffer.  */
+  /** Returns the 256-bit SHA-256 HMAC of this buffer. */
   actual fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
 
-  /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
+  /** Returns the 512-bit SHA-512 HMAC of this buffer. */
   actual fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
 
   private fun hmac(algorithm: String, key: ByteString): ByteString {
