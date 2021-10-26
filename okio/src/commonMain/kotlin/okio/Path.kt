@@ -219,10 +219,40 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
    */
   operator fun div(child: Path): Path
 
+  /**
+   * Returns a path that resolves [child] relative to this path.
+   *
+   * Set [normalize] to true to eagerly consume `..` segments on the resolved path. In all cases,
+   * leading `..` on absolute paths will be removed. If [normalize] is false, note that the result
+   * isn't guaranteed to be normalized even if this and [child] are both normalized themselves.
+   *
+   * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
+   * this function is equivalent to `child.toPath(normalize)`.
+   */
   fun resolve(child: String, normalize: Boolean = false): Path
 
+  /**
+   * Returns a path that resolves [child] relative to this path.
+   *
+   * Set [normalize] to true to eagerly consume `..` segments on the resolved path. In all cases,
+   * leading `..` on absolute paths will be removed. If [normalize] is false, note that the result
+   * isn't guaranteed to be normalized even if this and [child] are both normalized themselves.
+   *
+   * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
+   * this function is equivalent to `child.toPath(normalize)`.
+   */
   fun resolve(child: ByteString, normalize: Boolean = false): Path
 
+  /**
+   * Returns a path that resolves [child] relative to this path.
+   *
+   * Set [normalize] to true to eagerly consume `..` segments on the resolved path. In all cases,
+   * leading `..` on absolute paths will be removed. If [normalize] is false, note that the result
+   * isn't guaranteed to be normalized even if this and [child] are both normalized themselves.
+   *
+   * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
+   * this function is equivalent to `child.toPath(normalize)`.
+   */
   fun resolve(child: Path, normalize: Boolean = false): Path
 
   /**
