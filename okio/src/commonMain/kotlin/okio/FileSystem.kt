@@ -125,13 +125,17 @@ expect abstract class FileSystem() {
   fun exists(path: Path): Boolean
 
   /**
-   * Returns the children of the directory identified by [dir]. The returned list is sorted using
-   * natural ordering. If [dir] is a relative path, the returned elements will also be relative
-   * paths. If it is an absolute path, the returned elements will also be absolute paths.
+   * Returns the children of [dir]. The returned list is sorted using natural ordering. If [dir] is
+   * a relative path, the returned elements will also be relative paths. If it is an absolute path,
+   * the returned elements will also be absolute paths.
    *
-   * @throws IOException if [dir] does not exist, is not a directory, or cannot be read. A directory
-   *     cannot be read if the current process doesn't have access to [dir], or if there's a loop of
-   *     symbolic links, or if any name is too long.
+   * Note that a path does not need to be a [directory][FileMetadata.isDirectory] for this function
+   * to return successfully. For example, mounted storage devices may have child files but do not
+   * identify themselves as directories.
+   *
+   * @throws IOException if [dir] does not exist or cannot be listed. A path cannot be listed if the
+   *     current process doesn't have access to [dir], or if there's a loop of symbolic links, or if
+   *     any name is too long.
    */
   @Throws(IOException::class)
   abstract fun list(dir: Path): List<Path>
@@ -139,10 +143,11 @@ expect abstract class FileSystem() {
   /**
    * Returns the children of the directory identified by [dir]. The returned list is sorted using
    * natural ordering. If [dir] is a relative path, the returned elements will also be relative
-   * paths. If it is an absolute path, the returned elements will also be absolute paths. This
-   * returns null if [dir] does not exist, is not a directory, or cannot be read. A directory cannot
-   * be read if the current process doesn't have access to [dir], or if there's a loop of symbolic
-   * links, or if any name is too long.
+   * paths. If it is an absolute path, the returned elements will also be absolute paths.
+   *
+   * This returns null if [dir] does not exist or cannot be listed. A directory cannot be listed if
+   * the current process doesn't have access to [dir], or if there's a loop of symbolic links, or if
+   * any name is too long.
    */
   abstract fun listOrNull(dir: Path): List<Path>?
 
@@ -155,7 +160,7 @@ expect abstract class FileSystem() {
    *
    * Note that [listRecursively] does not throw exceptions but the returned sequence does. When it
    * is iterated, the returned sequence throws a [FileNotFoundException] if [dir] does not exist, or
-   * an [IOException] if [dir] is not a directory or cannot be read.
+   * an [IOException] if [dir] cannot be listed.
    *
    * @param followSymlinks true to follow symlinks while traversing the children. If [dir] itself is
    *     a symlink it will be followed even if this parameter is false.
@@ -376,6 +381,10 @@ expect abstract class FileSystem() {
      *  * **JVM and Android**: the path in the `java.io.tmpdir` system property
      *  * **Linux, iOS, and macOS**: the path in the `TMPDIR` environment variable.
      *  * **Windows**: the first non-null of `TEMP`, `TMP`, and `USERPROFILE` environment variables.
+     *
+     * **Note that the returned directory is not generally private.** Other users or processes that
+     * share this file system may read data that is written to this directory, or write malicious
+     * data for this process to receive.
      */
     val SYSTEM_TEMPORARY_DIRECTORY: Path
   }
