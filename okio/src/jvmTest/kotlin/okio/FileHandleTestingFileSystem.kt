@@ -42,14 +42,14 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
     }
 
     override fun sink(file: Path, mustCreate: Boolean): Sink {
-      val fileHandle = openReadWrite(file)
+      val fileHandle = openReadWrite(file, mustCreate)
       fileHandle.resize(0L) // If the file already has data, get rid of it.
       return fileHandle.sink()
         .also { fileHandle.close() }
     }
 
     override fun appendingSink(file: Path, mustExist: Boolean): Sink {
-      val fileHandle = openReadWrite(file)
+      val fileHandle = openReadWrite(file, mustCreate = false, mustExist = mustExist)
       return fileHandle.appendingSink()
         .also { fileHandle.close() }
     }
