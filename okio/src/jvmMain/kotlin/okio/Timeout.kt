@@ -182,7 +182,7 @@ actual open class Timeout {
    * Applies the minimum intersection between this timeout and `other`, run `block`, then finally
    * rollback this timeout's values.
    */
-  inline fun intersectWith(other: Timeout, block: () -> Unit) {
+  inline fun <T> intersectWith(other: Timeout, block: () -> T): T {
     val originalTimeout = this.timeoutNanos()
     this.timeout(minTimeout(other.timeoutNanos(), this.timeoutNanos()), TimeUnit.NANOSECONDS)
 
@@ -192,7 +192,7 @@ actual open class Timeout {
         this.deadlineNanoTime(Math.min(this.deadlineNanoTime(), other.deadlineNanoTime()))
       }
       try {
-        block()
+        return block()
       } finally {
         this.timeout(originalTimeout, TimeUnit.NANOSECONDS)
         if (other.hasDeadline()) {
@@ -204,7 +204,7 @@ actual open class Timeout {
         this.deadlineNanoTime(other.deadlineNanoTime())
       }
       try {
-        block()
+        return block()
       } finally {
         this.timeout(originalTimeout, TimeUnit.NANOSECONDS)
         if (other.hasDeadline()) {
