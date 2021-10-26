@@ -16,7 +16,6 @@
 package okio
 
 import okio.Path.Companion.toPath
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -679,9 +678,7 @@ class PathTest {
     assertRelativeTo(d, c, "..\\..\\..\\documents\\resume.txt".toPath(), sameAsNio = false)
   }
 
-  /** https://github.com/square/okio/issues/1009 */
   @Test
-  @Ignore
   fun windowsUncPathsDoNotDotDot() {
     assertEquals(
       """\\localhost\c$\Windows""",
@@ -692,21 +689,43 @@ class PathTest {
       """\\127.0.0.1\c$\Windows""".toPath().toString()
     )
     assertEquals(
-      """\\127.0.0.1\c$\Windows""",
+      """\\127.0.0.1\c$\Windows\..\Windows""",
       """\\127.0.0.1\c$\Windows\..\Windows""".toPath().toString()
     )
     assertEquals(
-      """\\127.0.0.1\localhost\c$\Windows""",
+      """\\127.0.0.1\..\localhost\c$\Windows""",
       """\\127.0.0.1\..\localhost\c$\Windows""".toPath().toString()
     )
-    // Note that this is not consistent with what Windows' own APIs do.
-    // TODO(jwilson): should we normalize this?
     assertEquals(
-      """\\127.0.0.1\d$""",
+      """\\127.0.0.1\c$\..\d$""",
       """\\127.0.0.1\c$\..\d$""".toPath().toString()
     )
-  }
 
+    assertEquals(
+      """\\localhost\c$\Windows""",
+      """\\localhost\c$\Windows""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\c$\Windows""",
+      """\\127.0.0.1\c$\Windows""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\c$\Windows""",
+      """\\127.0.0.1\c$\Windows\..\Windows""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\localhost\c$\Windows""",
+      """\\127.0.0.1\..\localhost\c$\Windows""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\d$""",
+      """\\127.0.0.1\c$\..\d$""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\c$""",
+      """\\..\127.0.0.1\..\c$""".toPath(normalize = true).toString()
+    )
+  }
   @Test fun normalizeAbsolute() {
     assertEquals("/", "/.".toPath(normalize = true).toString())
     assertEquals("/", "/.".toPath(normalize = false).toString())
