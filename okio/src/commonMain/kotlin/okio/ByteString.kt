@@ -42,7 +42,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   internal var hashCode: Int
   internal var utf8: String?
 
-  /** Constructs a new `String` by decoding the bytes as `UTF-8`.  */
+  /** Constructs a new `String` by decoding the bytes as `UTF-8`. */
   fun utf8(): String
 
   /**
@@ -54,28 +54,36 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   /** Returns this byte string encoded as [URL-safe Base64](http://www.ietf.org/rfc/rfc4648.txt). */
   fun base64Url(): String
 
-  /** Returns this byte string encoded in hexadecimal.  */
+  /** Returns this byte string encoded in hexadecimal. */
   fun hex(): String
 
-  /** Returns the 128-bit MD5 hash of this byte string.  */
+  /**
+   * Returns the 128-bit MD5 hash of this byte string.
+   *
+   * MD5 has been vulnerable to collisions since 2004. It should not be used in new code.
+   */
   fun md5(): ByteString
 
-  /** Returns the 160-bit SHA-1 hash of this byte string.  */
+  /**
+   * Returns the 160-bit SHA-1 hash of this byte string.
+   *
+   * SHA-1 has been vulnerable to collisions since 2017. It should not be used in new code.
+   */
   fun sha1(): ByteString
 
-  /** Returns the 256-bit SHA-256 hash of this byte string.  */
+  /** Returns the 256-bit SHA-256 hash of this byte string. */
   fun sha256(): ByteString
 
-  /** Returns the 512-bit SHA-512 hash of this byte string.  */
+  /** Returns the 512-bit SHA-512 hash of this byte string. */
   fun sha512(): ByteString
 
-  /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
+  /** Returns the 160-bit SHA-1 HMAC of this byte string. */
   fun hmacSha1(key: ByteString): ByteString
 
-  /** Returns the 256-bit SHA-256 HMAC of this byte string.  */
+  /** Returns the 256-bit SHA-256 HMAC of this byte string. */
   fun hmacSha256(key: ByteString): ByteString
 
-  /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
+  /** Returns the 512-bit SHA-512 HMAC of this byte string. */
   fun hmacSha512(key: ByteString): ByteString
   /**
    * Returns a byte string equal to this byte string, but with the bytes 'A' through 'Z' replaced
@@ -98,10 +106,10 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
    */
   fun toAsciiUppercase(): ByteString
 
-  /** Returns the byte at `pos`.  */
+  /** Returns the byte at `pos`. */
   internal fun internalGet(pos: Int): Byte
 
-  /** Returns the byte at `index`.  */
+  /** Returns the byte at `index`. */
   @JvmName("getByte")
   operator fun get(index: Int): Byte
 
@@ -115,7 +123,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   /** Returns a byte array containing a copy of the bytes in this `ByteString`. */
   fun toByteArray(): ByteArray
 
-  /** Writes the contents of this byte string to `buffer`.  */
+  /** Writes the contents of this byte string to `buffer`. */
   internal fun write(buffer: Buffer, offset: Int, byteCount: Int)
 
   /** Returns the bytes of this string without a defensive copy. Do not mutate!  */
@@ -172,7 +180,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   override fun toString(): String
 
   companion object {
-    /** A singleton empty `ByteString`.  */
+    /** A singleton empty `ByteString`. */
     @JvmField
     val EMPTY: ByteString
 
@@ -187,7 +195,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
     @JvmStatic
     fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString
 
-    /** Returns a new byte string containing the `UTF-8` bytes of this [String].  */
+    /** Returns a new byte string containing the `UTF-8` bytes of this [String]. */
     @JvmStatic
     fun String.encodeUtf8(): ByteString
 
@@ -198,7 +206,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
     @JvmStatic
     fun String.decodeBase64(): ByteString?
 
-    /** Decodes the hex-encoded bytes and returns their value a byte string.  */
+    /** Decodes the hex-encoded bytes and returns their value a byte string. */
     @JvmStatic
     fun String.decodeHex(): ByteString
   }
