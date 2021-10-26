@@ -20,7 +20,6 @@ import kotlinx.datetime.Instant
 import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.ByteString
-import okio.ExperimentalFileSystem
 import okio.FileHandle
 import okio.FileMetadata
 import okio.FileNotFoundException
@@ -32,10 +31,12 @@ import okio.Sink
 import okio.Source
 import okio.fakefilesystem.FakeFileSystem.Element.Directory
 import okio.fakefilesystem.FakeFileSystem.Element.File
+import okio.fakefilesystem.FakeFileSystem.Element.Symlink
 import okio.fakefilesystem.FakeFileSystem.Operation.READ
 import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 
 /**
  * A fully in-memory file system useful for testing. It includes features to support writing
@@ -47,8 +48,7 @@ import kotlin.jvm.JvmName
  * Strict By Default
  * -----------------
  *
- * By default this file system is strict. These actions are not allowed and throw an [IOException]
- * if attempted:
+ * These actions are not allowed and throw an [IOException] if attempted:
  *
  *  * Moving a file that is currently open for reading or writing.
  *  * Deleting a file that is currently open for reading or writing.
@@ -60,14 +60,13 @@ import kotlin.jvm.JvmName
  * Windows systems. Relax these constraints individually or call [emulateWindows] or [emulateUnix];
  * to apply the constraints of a particular operating system.
  */
-@ExperimentalFileSystem
 class FakeFileSystem(
   @JvmField
   val clock: Clock = Clock.System
 ) : FileSystem() {
 
-  /** Keys are canonical paths. Each value is either a [Directory] or a [ByteString]. */
-  private val elements = mutableMapOf<Path, Element>()
+  /** File system roots. Each element is a Directory and is created on-demand. */
+  private val roots = mutableMapOf<Path, Directory>()
 
   /** Files that are currently open and need to be closed to avoid resource leaks. */
   private val openFiles = mutableListOf<OpenFile>()
@@ -115,6 +114,13 @@ class FakeFileSystem(
   var allowReadsWhileWriting = false
 
   /**
+   * True to allow symlinks to be created. UNIX file systems typically allow symlinks; Windows file
+   * systems do not. Setting this to false after creating a symlink does not prevent that symlink
+   * from being returned or used.
+   */
+  var allowSymlinks = false
+
+  /**
    * Canonical paths for every file and directory in this file system. This omits file system roots
    * like `C:\` and `/`.
    */
@@ -122,9 +128,8 @@ class FakeFileSystem(
   val allPaths: Set<Path>
     get() {
       val result = mutableListOf<Path>()
-      for (path in elements.keys) {
-        if (path.isRoot) continue
-        result += path
+      for (path in roots.keys) {
+        result += listRecursively(path)
       }
       result.sort()
       return result.toSet()
@@ -197,44 +202,68 @@ class FakeFileSystem(
     allowClobberingEmptyDirectories = false
     allowWritesWhileWriting = true
     allowReadsWhileWriting = true
+    allowSymlinks = true
   }
 
   override fun canonicalize(path: Path): Path {
     val canonicalPath = workingDirectory / path
 
-    if (canonicalPath !in elements) {
+    if (lookupPath(canonicalPath)?.element == null) {
       throw FileNotFoundException("no such file: $path")
     }
 
     return canonicalPath
   }
 
-  override fun metadataOrNull(path: Path): FileMetadata? {
+  /**
+   * Sets the metadata of type [type] on [path] to [value]. If [value] is null this clears that
+   * metadata.
+   *
+   * Extras are not copied by [copy] but they are moved with [atomicMove].
+   *
+   * @throws IOException if [path] does not exist.
+   */
+  @Throws(IOException::class)
+  fun <T : Any> setExtra(path: Path, type: KClass<out T>, value: T?) {
     val canonicalPath = workingDirectory / path
-    var element = elements[canonicalPath]
-
-    // If the path is a root, create it on demand.
-    if (element == null && canonicalPath.isRoot) {
-      element = Directory(createdAt = clock.now())
-      elements[canonicalPath] = element
+    val lookupResult = lookupPath(
+      canonicalPath = canonicalPath,
+      createRootOnDemand = canonicalPath.isRoot,
+      resolveLastSymlink = false
+    )
+    val element = lookupResult?.element ?: throw FileNotFoundException("no such file: $path")
+    if (value == null) {
+      element.extras.remove(type)
+    } else {
+      element.extras[type] = value
     }
-
-    return element?.metadata
   }
 
-  override fun list(dir: Path): List<Path> {
+  override fun metadataOrNull(path: Path): FileMetadata? {
+    val canonicalPath = workingDirectory / path
+    val lookupResult = lookupPath(
+      canonicalPath = canonicalPath,
+      createRootOnDemand = canonicalPath.isRoot,
+      resolveLastSymlink = false
+    )
+    return lookupResult?.element?.metadata
+  }
+
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     val canonicalPath = workingDirectory / dir
-    val element = requireDirectory(canonicalPath)
+    val lookupResult = lookupPath(canonicalPath)
+    if (lookupResult?.element == null) {
+      if (throwOnFailure) throw FileNotFoundException("no such directory: $dir") else return null
+    }
+    val element = lookupResult.element as? Directory
+      ?: if (throwOnFailure) throw IOException("not a directory: $dir") else return null
 
     element.access(now = clock.now())
-    val paths = elements.keys.filterTo(mutableListOf()) { it.parent == canonicalPath }
-    if (dir.isRelative) {
-      for (i in paths.indices) {
-        paths[i] = dir / paths[i].name
-      }
-    }
-    paths.sort()
-    return paths
+    return element.children.keys.map { dir / it }.sorted()
   }
 
   override fun source(file: Path): Source {
@@ -243,15 +272,15 @@ class FakeFileSystem(
       .also { fileHandle.close() }
   }
 
-  override fun sink(file: Path): Sink {
-    val fileHandle = open(file, readWrite = true)
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
+    val fileHandle = open(file, readWrite = true, mustCreate = mustCreate)
     fileHandle.resize(0L) // If the file already has data, get rid of it.
     return fileHandle.sink()
       .also { fileHandle.close() }
   }
 
-  override fun appendingSink(file: Path): Sink {
-    val fileHandle = open(file, readWrite = true)
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    val fileHandle = open(file, readWrite = true, mustExist = mustExist)
     return fileHandle.appendingSink()
       .also { fileHandle.close() }
   }
@@ -260,23 +289,36 @@ class FakeFileSystem(
     return open(file, readWrite = false)
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
-    return open(file, readWrite = true)
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
+    return open(file, readWrite = true, mustCreate = mustCreate, mustExist = mustExist)
   }
 
   private fun open(
     file: Path,
-    readWrite: Boolean
+    readWrite: Boolean,
+    mustCreate: Boolean = false,
+    mustExist: Boolean = false,
   ): FileHandle {
+    require(!mustCreate || !mustExist) {
+      "Cannot require mustCreate and mustExist at the same time."
+    }
+
     val canonicalPath = workingDirectory / file
-    val existing = elements[canonicalPath]
+    val lookupResult = lookupPath(canonicalPath, createRootOnDemand = readWrite)
     val now = clock.now()
     val element: File
     val operation: Operation
 
+    if (lookupResult?.element == null && mustExist) {
+      throw IOException("$file doesn't exist.")
+    }
+    if (lookupResult?.element != null && mustCreate) {
+      throw IOException("$file already exists.")
+    }
+
     if (readWrite) {
       // Note that this case is used for both write and read/write.
-      if (existing is Directory) {
+      if (lookupResult?.element is Directory) {
         throw IOException("destination is a directory: $file")
       }
       if (!allowWritesWhileWriting) {
@@ -290,18 +332,21 @@ class FakeFileSystem(
         }
       }
 
-      val parent = requireDirectory(canonicalPath.parent)
+      val parent = lookupResult?.parent
+        ?: throw FileNotFoundException("parent directory does not exist")
       parent.access(now, true)
 
+      val existing = lookupResult.element
       element = File(createdAt = existing?.createdAt ?: now)
-      elements[canonicalPath] = element
+      parent.children[lookupResult.segment!!] = element
       operation = WRITE
 
       if (existing is File) {
         element.data = existing.data
       }
     } else {
-      if (existing == null) throw FileNotFoundException("no such file: $file")
+      val existing = lookupResult?.element
+        ?: throw FileNotFoundException("no such file: $file")
       element = existing as? File ?: throw IOException("not a file: $file")
       operation = READ
 
@@ -327,26 +372,36 @@ class FakeFileSystem(
   override fun createDirectory(dir: Path) {
     val canonicalPath = workingDirectory / dir
 
-    if (elements[canonicalPath] != null) {
+    val lookupResult = lookupPath(canonicalPath, createRootOnDemand = true)
+
+    if (canonicalPath.isRoot) {
+      // Looking it up was sufficient. Don't crash when creating roots that already exist.
+      return
+    }
+
+    if (lookupResult?.element != null) {
       throw IOException("already exists: $dir")
     }
-    requireDirectory(canonicalPath.parent)
 
-    elements[canonicalPath] = Directory(createdAt = clock.now())
+    val parentDirectory = lookupResult.requireParent()
+    parentDirectory.children[canonicalPath.nameBytes] = Directory(createdAt = clock.now())
   }
 
-  override fun atomicMove(source: Path, target: Path) {
+  override fun atomicMove(
+    source: Path,
+    target: Path
+  ) {
     val canonicalSource = workingDirectory / source
     val canonicalTarget = workingDirectory / target
 
-    val targetElement = elements[canonicalTarget]
-    val sourceElement = elements[canonicalSource]
+    val targetLookupResult = lookupPath(canonicalTarget, createRootOnDemand = true)
+    val sourceLookupResult = lookupPath(canonicalSource, resolveLastSymlink = false)
 
     // Universal constraints.
-    if (targetElement is Directory) {
+    if (targetLookupResult?.element is Directory) {
       throw IOException("target is a directory: $target")
     }
-    requireDirectory(canonicalTarget.parent)
+    val targetParent = targetLookupResult.requireParent()
     if (!allowMovingOpenFiles) {
       findOpenFile(canonicalSource)?.let {
         throw IOException("source is open $source", it.backtrace)
@@ -356,20 +411,31 @@ class FakeFileSystem(
       }
     }
     if (!allowClobberingEmptyDirectories) {
-      if (sourceElement is Directory && targetElement is File) {
+      if (sourceLookupResult?.element is Directory && targetLookupResult?.element is File) {
         throw IOException("source is a directory and target is a file")
       }
     }
 
-    val removed = elements.remove(canonicalSource)
+    val sourceParent = sourceLookupResult.requireParent()
+    val removed = sourceParent.children.remove(canonicalSource.nameBytes)
       ?: throw FileNotFoundException("source doesn't exist: $source")
-    elements[canonicalTarget] = removed
+    targetParent.children[canonicalTarget.nameBytes] = removed
   }
 
   override fun delete(path: Path) {
     val canonicalPath = workingDirectory / path
 
-    if (elements.keys.any { it.parent == canonicalPath }) {
+    val lookupResult = lookupPath(
+      canonicalPath = canonicalPath,
+      createRootOnDemand = true,
+      resolveLastSymlink = false
+    )
+
+    if (lookupResult?.element == null) {
+      throw FileNotFoundException("no such file: $path")
+    }
+
+    if (lookupResult.element is Directory && lookupResult.element.children.isNotEmpty()) {
       throw IOException("non-empty directory")
     }
 
@@ -379,34 +445,129 @@ class FakeFileSystem(
       }
     }
 
-    if (elements.remove(canonicalPath) == null) {
-      throw FileNotFoundException("no such file: $path")
+    val directory = lookupResult.requireParent()
+    directory.children.remove(canonicalPath.nameBytes)
+  }
+
+  override fun createSymlink(
+    source: Path,
+    target: Path
+  ) {
+    val canonicalSource = workingDirectory / source
+
+    val existingLookupResult = lookupPath(canonicalSource, createRootOnDemand = true)
+    if (existingLookupResult?.element != null) {
+      throw IOException("already exists: $source")
     }
+    val parent = existingLookupResult.requireParent()
+
+    if (!allowSymlinks) {
+      throw IOException("symlinks are not supported")
+    }
+
+    parent.children[canonicalSource.nameBytes] = Symlink(createdAt = clock.now(), target)
   }
 
   /**
-   * Gets the directory at [path], creating it if [path] is a file system root.
+   * Walks the file system looking for [canonicalPath], following symlinks encountered along the
+   * way. This function is designed to be used both when looking up existing files and when creating
+   * new files into an existing directory.
    *
-   * @throws IOException if the named directory is not a root and does not exist, or if it does
-   *     exist but is not a directory.
+   * It returns either:
+   *
+   *  * a path lookup result with an element if that file or directory or symlink exists. This is
+   *    useful when reading or writing an existing fie.
+   *
+   *  * a path lookup result that only got as far as the canonical path's parent, if the parent
+   *    exists but the child file does not. This is useful when creating a new file.
+   *
+   *  * null, if not even the parent directory exists. A file cannot yet be created with this path
+   *    because there is no parent to attach it to.
+   *
+   * This will create the root of the returned path if it does not exist.
+   *
+   * @param recurseCount used internally to detect cycles
+   * @param resolveLastSymlink true if the result's element must not itself be a symlink. Use this
+   *     for looking up metadata, or operations that apply to the path like delete and move. We
+   *     always follow symlinks for enclosing directories.
+   * @param createRootOnDemand true to create a root directory like `C:\` or `/` if it doesn't
+   *     exist. Pass true for mutating operations.
    */
-  private fun requireDirectory(path: Path?): Directory {
-    if (path == null) throw IOException("directory does not exist")
-
-    // If the path is a directory, return it!
-    val element = elements[path]
-    if (element is Directory) return element
-
-    // If the path is a root, create a directory for it on demand.
-    if (path.isRoot) {
-      val root = Directory(createdAt = clock.now())
-      elements[path] = root
-      return root
+  private fun lookupPath(
+    canonicalPath: Path,
+    recurseCount: Int = 0,
+    resolveLastSymlink: Boolean = true,
+    createRootOnDemand: Boolean = false,
+  ): PathLookupResult? {
+    // 40 is chosen for consistency with the Linux kernel (which previously used 8).
+    if (recurseCount > 40) {
+      throw IOException("symlink cycle?")
     }
 
-    if (element == null) throw FileNotFoundException("no such directory: $path")
+    val rootPath = canonicalPath.root!!
+    var root = roots[rootPath]
 
-    throw IOException("not a directory: $path")
+    // If the path is a root, create it on demand.
+    if (root == null) {
+      if (!createRootOnDemand) return null
+      root = Directory(createdAt = clock.now())
+      roots[rootPath] = root
+    }
+
+    var parent: Directory? = null
+    var lastSegment: ByteString? = null
+    var current: Element = root
+    var currentPath: Path = rootPath
+
+    var segmentsTraversed = 0
+    val segments = canonicalPath.segmentsBytes
+    for (segment in segments) {
+      lastSegment = segment
+
+      // Push the newest segment.
+      if (current !is Directory) {
+        throw IOException("not a directory: $currentPath")
+      }
+      parent = current
+      current = current.children[segment] ?: break
+      currentPath /= segment
+      segmentsTraversed++
+
+      // If it's a symlink, recurse to follow it.
+      val isLastSegment = segmentsTraversed == segments.size
+      val followSymlinks = !isLastSegment || resolveLastSymlink
+      if (current is Symlink && followSymlinks) {
+        current.access(now = clock.now())
+        currentPath = currentPath.parent!! / current.target
+        val symlinkLookupResult = lookupPath(
+          canonicalPath = currentPath,
+          recurseCount = recurseCount + 1,
+          createRootOnDemand = createRootOnDemand
+        ) ?: break
+        parent = symlinkLookupResult.parent
+        lastSegment = symlinkLookupResult.segment
+        current = symlinkLookupResult.element ?: break
+      }
+    }
+
+    return when (segmentsTraversed) {
+      segments.size -> PathLookupResult(parent, lastSegment, current) // The file.
+      segments.size - 1 -> PathLookupResult(parent, lastSegment, null) // The enclosing directory.
+      else -> null // We found nothing.
+    }
+  }
+
+  private class PathLookupResult(
+    /** Only null if the looked up path is a root. */
+    val parent: Directory?,
+    /** Only null if the looked up path is a root. */
+    val segment: ByteString?,
+    /** Non-null if this is a root. Also not null if this file exists. */
+    val element: Element?
+  )
+
+  private fun PathLookupResult?.requireParent(): Directory {
+    return this?.parent ?: throw IOException("parent directory does not exist")
   }
 
   private sealed class Element(
@@ -414,6 +575,7 @@ class FakeFileSystem(
   ) {
     var lastModifiedAt: Instant = createdAt
     var lastAccessedAt: Instant = createdAt
+    val extras = mutableMapOf<KClass<*>, Any>()
 
     class File(createdAt: Instant) : Element(createdAt) {
       var data: ByteString = ByteString.EMPTY
@@ -424,21 +586,44 @@ class FakeFileSystem(
           size = data.size.toLong(),
           createdAt = createdAt,
           lastModifiedAt = lastModifiedAt,
-          lastAccessedAt = lastAccessedAt
+          lastAccessedAt = lastAccessedAt,
+          extras = extras,
         )
     }
 
     class Directory(createdAt: Instant) : Element(createdAt) {
+      /** Keys are path segments. */
+      val children = mutableMapOf<ByteString, Element>()
+
       override val metadata: FileMetadata
         get() = FileMetadata(
           isDirectory = true,
           createdAt = createdAt,
           lastModifiedAt = lastModifiedAt,
-          lastAccessedAt = lastAccessedAt
+          lastAccessedAt = lastAccessedAt,
+          extras = extras,
         )
     }
 
-    fun access(now: Instant, modified: Boolean = false) {
+    class Symlink(
+      createdAt: Instant,
+      /** This may be an absolute or relative path. */
+      val target: Path
+    ) : Element(createdAt) {
+      override val metadata: FileMetadata
+        get() = FileMetadata(
+          symlinkTarget = target,
+          createdAt = createdAt,
+          lastModifiedAt = lastModifiedAt,
+          lastAccessedAt = lastAccessedAt,
+          extras = extras,
+        )
+    }
+
+    fun access(
+      now: Instant,
+      modified: Boolean = false
+    ) {
       lastAccessedAt = now
       if (modified) {
         lastModifiedAt = now
@@ -448,13 +633,20 @@ class FakeFileSystem(
     abstract val metadata: FileMetadata
   }
 
-  private fun findOpenFile(canonicalPath: Path, operation: Operation? = null): OpenFile? {
+  private fun findOpenFile(
+    canonicalPath: Path,
+    operation: Operation? = null
+  ): OpenFile? {
     return openFiles.firstOrNull {
       it.canonicalPath == canonicalPath && (operation == null || operation == it.operation)
     }
   }
 
-  private fun checkOffsetAndCount(size: Long, offset: Long, byteCount: Long) {
+  private fun checkOffsetAndCount(
+    size: Long,
+    offset: Long,
+    byteCount: Long
+  ) {
     if (offset or byteCount < 0 || offset > size || size - offset < byteCount) {
       throw ArrayIndexOutOfBoundsException("size=$size offset=$offset byteCount=$byteCount")
     }

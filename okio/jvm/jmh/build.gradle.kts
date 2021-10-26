@@ -17,10 +17,8 @@ jmh {
 
 dependencies {
   api(project(":okio"))
-  api(deps.kotlin.stdLib.jdk8)
   api(deps.jmh.core)
   jmh(project(path = ":okio", configuration = "jvmRuntimeElements"))
-  jmh(deps.kotlin.stdLib.jdk8)
   jmh(deps.jmh.core)
   jmh(deps.jmh.generator)
 }

@@ -17,7 +17,6 @@
 package okio.internal
 
 import okio.BufferedSource
-import okio.ExperimentalFileSystem
 import okio.FileMetadata
 import okio.FileSystem
 import okio.IOException
@@ -60,7 +59,6 @@ private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
  *     system.
  */
 @Throws(IOException::class)
-@ExperimentalFileSystem
 internal fun openZip(
   zipPath: Path,
   fileSystem: FileSystem,
@@ -161,7 +159,6 @@ internal fun openZip(
  * Returns a map containing all of [entries], plus parent entries required so that all entries
  * (other than the file system root `/`) have a parent.
  */
-@ExperimentalFileSystem
 private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
   val result = mutableMapOf<Path, ZipEntry>()
 
@@ -199,7 +196,6 @@ private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
 }
 
 /** When this returns, [this] will be positioned at the start of the next entry. */
-@ExperimentalFileSystem
 @Throws(IOException::class)
 internal fun BufferedSource.readEntry(): ZipEntry {
   val signature = readIntLe()
@@ -362,12 +358,10 @@ private fun BufferedSource.readExtra(extraSize: Int, block: (Int, Long) -> Unit)
   }
 }
 
-@ExperimentalFileSystem
 internal fun BufferedSource.skipLocalHeader() {
   readOrSkipLocalHeader(null)
 }
 
-@ExperimentalFileSystem
 internal fun BufferedSource.readLocalHeader(basicMetadata: FileMetadata): FileMetadata {
   return readOrSkipLocalHeader(basicMetadata)!!
 }
@@ -376,7 +370,6 @@ internal fun BufferedSource.readLocalHeader(basicMetadata: FileMetadata): FileMe
  * If [basicMetadata] is null this will return null. Otherwise it will return a new header which
  * updates [basicMetadata] with information from the local header.
  */
-@ExperimentalFileSystem
 private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): FileMetadata? {
   var lastModifiedAtMillis = basicMetadata?.lastModifiedAtMillis
   var lastAccessedAtMillis: Long? = null
@@ -435,6 +428,7 @@ private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): 
   return FileMetadata(
     isRegularFile = basicMetadata.isRegularFile,
     isDirectory = basicMetadata.isDirectory,
+    symlinkTarget = null,
     size = basicMetadata.size,
     createdAtMillis = createdAtMillis,
     lastModifiedAtMillis = lastModifiedAtMillis,

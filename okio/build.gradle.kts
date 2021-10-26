@@ -83,7 +83,6 @@ kotlin {
 
     commonMain {
       dependencies {
-        api(deps.kotlin.stdLib.common)
       }
     }
 
@@ -108,7 +107,6 @@ kotlin {
 
     getByName("jvmMain") {
       dependencies {
-        api(deps.kotlin.stdLib.jdk8)
         compileOnly(deps.animalSniffer.annotations)
       }
     }
@@ -125,7 +123,6 @@ kotlin {
       getByName("jsMain") {
         dependsOn(nonJvmMain)
         dependencies {
-          api(deps.kotlin.stdLib.js)
         }
       }
       getByName("jsTest") {

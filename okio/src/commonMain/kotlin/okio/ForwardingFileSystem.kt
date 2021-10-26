@@ -101,7 +101,6 @@ import kotlin.jvm.JvmName
  * other functions of this class. If desired, subclasses may override non-abstract functions to
  * forward them.
  */
-@ExperimentalFileSystem
 abstract class ForwardingFileSystem(
   /** [FileSystem] to which this instance is delegating. */
   @get:JvmName("delegate")
@@ -153,7 +152,20 @@ abstract class ForwardingFileSystem(
   @Throws(IOException::class)
   override fun metadataOrNull(path: Path): FileMetadata? {
     val path = onPathParameter(path, "metadataOrNull", "path")
-    return delegate.metadataOrNull(path)
+    val metadataOrNull = delegate.metadataOrNull(path) ?: return null
+    if (metadataOrNull.symlinkTarget == null) return metadataOrNull
+
+    val symlinkTarget = onPathResult(metadataOrNull.symlinkTarget, "metadataOrNull")
+    return FileMetadata(
+      isRegularFile = metadataOrNull.isRegularFile,
+      isDirectory = metadataOrNull.isDirectory,
+      symlinkTarget = symlinkTarget,
+      size = metadataOrNull.size,
+      createdAtMillis = metadataOrNull.createdAtMillis,
+      lastAccessedAtMillis = metadataOrNull.lastAccessedAtMillis,
+      lastModifiedAtMillis = metadataOrNull.lastModifiedAtMillis,
+      extras = metadataOrNull.extras,
+    )
   }
 
   @Throws(IOException::class)
@@ -165,9 +177,17 @@ abstract class ForwardingFileSystem(
     return paths
   }
 
-  override fun listRecursively(dir: Path): Sequence<Path> {
+  override fun listOrNull(dir: Path): List<Path>? {
+    val dir = onPathParameter(dir, "listOrNull", "dir")
+    val result = delegate.listOrNull(dir) ?: return null
+    val paths = result.mapTo(mutableListOf()) { onPathResult(it, "listOrNull") }
+    paths.sort()
+    return paths
+  }
+
+  override fun listRecursively(dir: Path, followSymlinks: Boolean): Sequence<Path> {
     val dir = onPathParameter(dir, "listRecursively", "dir")
-    val result = delegate.listRecursively(dir)
+    val result = delegate.listRecursively(dir, followSymlinks)
     return result.map { onPathResult(it, "listRecursively") }
   }
 
@@ -178,9 +198,9 @@ abstract class ForwardingFileSystem(
   }
 
   @Throws(IOException::class)
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
     val file = onPathParameter(file, "openReadWrite", "file")
-    return delegate.openReadWrite(file)
+    return delegate.openReadWrite(file, mustCreate, mustExist)
   }
 
   @Throws(IOException::class)
@@ -190,15 +210,15 @@ abstract class ForwardingFileSystem(
   }
 
   @Throws(IOException::class)
-  override fun sink(file: Path): Sink {
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
     val file = onPathParameter(file, "sink", "file")
-    return delegate.sink(file)
+    return delegate.sink(file, mustCreate)
   }
 
   @Throws(IOException::class)
-  override fun appendingSink(file: Path): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
     val file = onPathParameter(file, "appendingSink", "file")
-    return delegate.appendingSink(file)
+    return delegate.appendingSink(file, mustExist)
   }
 
   @Throws(IOException::class)
@@ -218,6 +238,13 @@ abstract class ForwardingFileSystem(
   override fun delete(path: Path) {
     val path = onPathParameter(path, "delete", "path")
     delegate.delete(path)
+  }
+
+  @Throws(IOException::class)
+  override fun createSymlink(source: Path, target: Path) {
+    val source = onPathParameter(source, "createSymlink", "source")
+    val target = onPathParameter(target, "createSymlink", "target")
+    delegate.createSymlink(source, target)
   }
 
   override fun toString() = "${this::class.simpleName}($delegate)"

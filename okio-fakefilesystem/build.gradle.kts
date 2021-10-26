@@ -40,7 +40,6 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
-        api(deps.kotlin.stdLib.common)
         api(deps.kotlin.time)
         api(project(":okio"))
       }

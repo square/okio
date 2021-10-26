@@ -32,7 +32,6 @@ package okio
  * File handles may be used by multiple threads concurrently. But the individual sources and sinks
  * produced by a file handle are not safe for concurrent use.
  */
-@ExperimentalFileSystem
 abstract class FileHandle(
   /**
    * True if this handle supports both reading and writing. If this is false all write operations

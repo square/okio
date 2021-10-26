@@ -134,7 +134,6 @@ import okio.Path.Companion.toPath
  * <tr><td> `\\server\project\notes.txt` <td> `\\server\project` <td> `\\server` <td> `notes.txt`   <td> UNC absolute path (Windows)    </tr>
  * </table>
  */
-@ExperimentalFileSystem
 expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
   /**
    * This is the root path if this is an absolute path, or null if it is a relative path. UNIX paths
@@ -199,6 +198,14 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
    * this function is equivalent to `child.toPath()`.
    */
   operator fun div(child: String): Path
+
+  /**
+   * Returns a path that resolves [child] relative to this path.
+   *
+   * If [child] is an [absolute path][isAbsolute] or [has a volume letter][hasVolumeLetter] then
+   * this function is equivalent to `child.toPath()`.
+   */
+  operator fun div(child: ByteString): Path
 
   /**
    * Returns a path that resolves [child] relative to this path.

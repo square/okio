@@ -24,7 +24,6 @@ import java.io.RandomAccessFile
  * This base class is used on Android API levels 15 (our minimum supported API) through 26
  * (the first release that includes java.nio.file).
  */
-@ExperimentalFileSystem
 internal open class JvmSystemFileSystem : FileSystem() {
   override fun canonicalize(path: Path): Path {
     val canonicalFile = path.toFile().canonicalFile
@@ -51,6 +50,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return FileMetadata(
       isRegularFile = isRegularFile,
       isDirectory = isDirectory,
+      symlinkTarget = null,
       size = size,
       createdAtMillis = null,
       lastModifiedAtMillis = lastModifiedAtMillis,
@@ -58,12 +58,20 @@ internal open class JvmSystemFileSystem : FileSystem() {
     )
   }
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     val file = dir.toFile()
     val entries = file.list()
     if (entries == null) {
-      if (!file.exists()) throw FileNotFoundException("no such file: $dir")
-      throw IOException("failed to list $dir")
+      if (throwOnFailure) {
+        if (!file.exists()) throw FileNotFoundException("no such file: $dir")
+        throw IOException("failed to list $dir")
+      } else {
+        return null
+      }
     }
     val result = entries.mapTo(mutableListOf()) { dir / it }
     result.sort()
@@ -74,7 +82,12 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return JvmFileHandle(readWrite = false, randomAccessFile = RandomAccessFile(file.toFile(), "r"))
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
+    require(!mustCreate || !mustExist) {
+      "Cannot require mustCreate and mustExist at the same time."
+    }
+    if (mustCreate) file.requireCreate()
+    if (mustExist) file.requireExist()
     return JvmFileHandle(readWrite = true, randomAccessFile = RandomAccessFile(file.toFile(), "rw"))
   }
 
@@ -82,11 +95,13 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return file.toFile().source()
   }
 
-  override fun sink(file: Path): Sink {
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
+    if (mustCreate) file.requireCreate()
     return file.toFile().sink()
   }
 
-  override fun appendingSink(file: Path): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    if (mustExist) file.requireExist()
     return file.toFile().sink(append = true)
   }
 
@@ -95,6 +110,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
   }
 
   override fun atomicMove(source: Path, target: Path) {
+    // Note that on Windows, this will fail if [target] already exists.
     val renamed = source.toFile().renameTo(target.toFile())
     if (!renamed) throw IOException("failed to move $source to $target")
   }
@@ -108,5 +124,19 @@ internal open class JvmSystemFileSystem : FileSystem() {
     }
   }
 
+  override fun createSymlink(source: Path, target: Path) {
+    throw IOException("unsupported")
+  }
+
   override fun toString() = "JvmSystemFileSystem"
+
+  // We have to implement existence verification non-atomically on the JVM because there's no API
+  // to do so.
+  private fun Path.requireExist() {
+    if (!exists(this)) throw IOException("$this doesn't exist.")
+  }
+
+  private fun Path.requireCreate() {
+    if (exists(this)) throw IOException("$this already exists.")
+  }
 }

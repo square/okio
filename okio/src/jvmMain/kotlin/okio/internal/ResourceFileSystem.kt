@@ -15,7 +15,6 @@
  */
 package okio.internal
 
-import okio.ExperimentalFileSystem
 import okio.FileHandle
 import okio.FileMetadata
 import okio.FileNotFoundException
@@ -41,7 +40,6 @@ import java.net.URL
  *
  * This file system is read-only.
  */
-@ExperimentalFileSystem
 internal class ResourceFileSystem internal constructor(
   classLoader: ClassLoader,
   indexEagerly: Boolean,
@@ -75,6 +73,22 @@ internal class ResourceFileSystem internal constructor(
     return result.toList()
   }
 
+  override fun listOrNull(dir: Path): List<Path>? {
+    val relativePath = dir.toRelativePath()
+    val result = mutableSetOf<Path>()
+    var foundAny = false
+    for ((fileSystem, base) in roots) {
+      val baseResult = fileSystem.listOrNull(base / relativePath)
+        ?.filter { keepPath(it) }
+        ?.map { it.removeBase(base) }
+      if (baseResult != null) {
+        result += baseResult
+        foundAny = true
+      }
+    }
+    return if (foundAny) result.toList() else null
+  }
+
   override fun openReadOnly(file: Path): FileHandle {
     if (!keepPath(file)) throw FileNotFoundException("file not found: $file")
     val relativePath = file.toRelativePath()
@@ -87,7 +101,7 @@ internal class ResourceFileSystem internal constructor(
     throw FileNotFoundException("file not found: $file")
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
     throw IOException("resources are not writable")
   }
 
@@ -112,10 +126,13 @@ internal class ResourceFileSystem internal constructor(
     throw FileNotFoundException("file not found: $file")
   }
 
-  override fun sink(file: Path): Sink = throw IOException("$this is read-only")
-
-  override fun appendingSink(file: Path): Sink =
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
     throw IOException("$this is read-only")
+  }
+
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    throw IOException("$this is read-only")
+  }
 
   override fun createDirectory(dir: Path): Unit =
     throw IOException("$this is read-only")
@@ -124,6 +141,9 @@ internal class ResourceFileSystem internal constructor(
     throw IOException("$this is read-only")
 
   override fun delete(path: Path): Unit = throw IOException("$this is read-only")
+
+  override fun createSymlink(source: Path, target: Path): Unit =
+    throw IOException("$this is read-only")
 
   private fun Path.toRelativePath(): String = canonicalize(this).toString().substring(1)
 

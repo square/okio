@@ -45,11 +45,6 @@ Okio uses the built-in implementations of these functions on the JVM.
 // build.gradle.kts
 kotlin {
     sourceSets {
-        all {
-            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")               
-            languageSettings.useExperimentalAnnotation("okio.ExperimentalFileSystem")
-        }
-
         val okioVersion = "3.XXX"
         val commonMain by getting {
             dependencies {
@@ -58,7 +53,7 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
-                implementation("com.squareup.okio:okio-nodefilesystem-js:$okioVersion")
+                implementation("com.squareup.okio:okio-nodefilesystem:$okioVersion")
             }
         }
         val commonTest by getting {

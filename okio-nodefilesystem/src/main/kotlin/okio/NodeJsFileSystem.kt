@@ -25,31 +25,43 @@ import okio.Path.Companion.toPath
  *
  * [node_fs]: https://nodejs.org/dist/latest-v14.x/docs/api/fs.html
  */
-@ExperimentalFileSystem
 object NodeJsFileSystem : FileSystem() {
   private var S_IFMT = 0xf000 // fs.constants.S_IFMT
   private var S_IFREG = 0x8000 // fs.constants.S_IFREG
   private var S_IFDIR = 0x4000 // fs.constants.S_IFDIR
+  private var S_IFLNK = 0xa000 // fs.constants.S_IFLNK
 
   override fun canonicalize(path: Path): Path {
     try {
       val canonicalPath = realpathSync(path.toString())
-      return canonicalPath.toString().toPath()
+      return canonicalPath.toPath()
     } catch (e: Throwable) {
       throw e.toIOException()
     }
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
+    val pathString = path.toString()
     val stat = try {
-      statSync(path.toString())
+      lstatSync(pathString)
     } catch (e: Throwable) {
       if (e.errorCode == "ENOENT") return null // "No such file or directory".
       throw IOException(e.message)
     }
+
+    var symlinkTarget: Path? = null
+    if ((stat.mode.toInt() and S_IFMT) == S_IFLNK) {
+      try {
+        symlinkTarget = readlinkSync(pathString).toPath()
+      } catch (e: Throwable) {
+        throw e.toIOException()
+      }
+    }
+
     return FileMetadata(
-      isRegularFile = stat.mode.toInt() and S_IFMT == S_IFREG,
-      isDirectory = stat.mode.toInt() and S_IFMT == S_IFDIR,
+      isRegularFile = (stat.mode.toInt() and S_IFMT) == S_IFREG,
+      isDirectory = (stat.mode.toInt() and S_IFMT) == S_IFDIR,
+      symlinkTarget = symlinkTarget,
       size = stat.size.toLong(),
       createdAtMillis = stat.ctimeMs.toLong(),
       lastModifiedAtMillis = stat.mtimeMs.toLong(),
@@ -67,7 +79,11 @@ object NodeJsFileSystem : FileSystem() {
   private val Throwable.errorCode
     get() = asDynamic().code
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     try {
       val opendir = opendirSync(dir.toString())
       try {
@@ -82,7 +98,8 @@ object NodeJsFileSystem : FileSystem() {
         opendir.closeSync()
       }
     } catch (e: Throwable) {
-      throw e.toIOException()
+      if (throwOnFailure) throw e.toIOException()
+      else return null
     }
   }
 
@@ -91,7 +108,10 @@ object NodeJsFileSystem : FileSystem() {
     return NodeJsFileHandle(fd, readWrite = false)
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
+    require(!mustCreate || !mustExist) {
+      "Cannot require mustCreate and mustExist at the same time."
+    }
     val fd = if (Path.DIRECTORY_SEPARATOR == "\\") {
       // On NodeJS on Windows there's no file system flag that does all of the following:
       //  - open a file for reading, writing, seeking, and resizing
@@ -101,13 +121,21 @@ object NodeJsFileSystem : FileSystem() {
       // creating a file that does not exist (wx+) if that throws. This is not atomic.
       // https://nodejs.org/api/fs.html#fs_file_system_flags
       try {
+        if (mustCreate && exists(file)) throw IOException("$file already exists.")
         openFd(file, "r+")
       } catch (e: FileNotFoundException) {
+        if (mustExist) throw IOException("$file doesn't exist.")
         openFd(file, "wx+")
       }
     } else {
-      // On other platforms 'a+' does everything that we need.
-      openFd(file, "a+")
+      // Note that on Linux, positional writes don't work when the file is opened in append mode, so
+      // we don't want to use the `a` flag,
+      val flags = when {
+        mustCreate -> "wx+"
+        mustExist || exists(file) -> "r+"
+        else -> "w+"
+      }
+      openFd(file, flags)
     }
     return NodeJsFileHandle(fd, readWrite = true)
   }
@@ -117,12 +145,16 @@ object NodeJsFileSystem : FileSystem() {
     return FileSource(fd)
   }
 
-  override fun sink(file: Path): Sink {
-    val fd = openFd(file, flags = "w")
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
+    val fd = openFd(file, flags = if (mustCreate) "wx" else "w")
     return FileSink(fd)
   }
 
-  override fun appendingSink(file: Path): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    // There is a `r+` flag which we could have used to force existence of [file] but this flag
+    // doesn't allow opening for appending, and we don't currently have a way to move the cursor to
+    // the end of the file. We are then forcing existence non-atomically.
+    if (mustExist && !exists(file)) throw IOException("$file doesn't exist.")
     val fd = openFd(file, flags = "a")
     return FileSink(fd)
   }
@@ -168,6 +200,18 @@ object NodeJsFileSystem : FileSystem() {
     } catch (e: Throwable) {
       throw e.toIOException()
     }
+  }
+
+  override fun createSymlink(source: Path, target: Path) {
+    if (source.parent == null || !exists(source.parent!!)) {
+      throw IOException("parent directory does not exist: ${source.parent}")
+    }
+
+    if (exists(source)) {
+      throw IOException("already exists: $source")
+    }
+
+    symlinkSync(target.toString(), source.toString())
   }
 
   private fun Throwable.toIOException(): IOException {

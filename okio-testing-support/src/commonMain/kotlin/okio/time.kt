@@ -17,21 +17,18 @@ package okio
 
 import kotlinx.datetime.Instant
 
-@ExperimentalFileSystem
 val FileMetadata.createdAt: Instant?
   get() {
     val createdAt = createdAtMillis ?: return null
     return Instant.fromEpochMilliseconds(createdAt)
   }
 
-@ExperimentalFileSystem
 val FileMetadata.lastModifiedAt: Instant?
   get() {
     val lastModifiedAt = lastModifiedAtMillis ?: return null
     return Instant.fromEpochMilliseconds(lastModifiedAt)
   }
 
-@ExperimentalFileSystem
 val FileMetadata.lastAccessedAt: Instant?
   get() {
     val lastAccessedAt = lastAccessedAtMillis ?: return null

@@ -23,19 +23,20 @@ import platform.posix.S_IFDIR
 import platform.posix.S_IFMT
 import platform.posix.S_IFREG
 import platform.posix.errno
+import platform.posix.lstat
 import platform.posix.stat
 
-@ExperimentalFileSystem
 internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
     val stat = alloc<stat>()
-    if (platform.posix.lstat(path.toString(), stat.ptr) != 0) {
+    if (lstat(path.toString(), stat.ptr) != 0) {
       if (errno == ENOENT) return null
       throw errnoToIOException(errno)
     }
     return@memScoped FileMetadata(
       isRegularFile = stat.st_mode.toInt() and S_IFMT == S_IFREG,
       isDirectory = stat.st_mode.toInt() and S_IFMT == S_IFDIR,
+      symlinkTarget = symlinkTarget(stat, path),
       size = stat.st_size,
       createdAtMillis = stat.st_ctimespec.epochMillis,
       lastModifiedAtMillis = stat.st_mtimespec.epochMillis,

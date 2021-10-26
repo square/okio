@@ -17,37 +17,35 @@ package okio
 
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class FakeWindowsFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateWindows() },
   temporaryDirectory = "C:\\".toPath()
 )
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class FakeUnixFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateUnix() },
   temporaryDirectory = "/".toPath()
 )
 
 @ExperimentalTime
-@ExperimentalFileSystem
 class StrictFakeFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()),
   temporaryDirectory = "/".toPath()
 )
 
 @ExperimentalTime
-@ExperimentalFileSystem
 abstract class FakeFileSystemTest internal constructor(
   private val fakeFileSystem: FakeFileSystem,
   temporaryDirectory: Path
@@ -116,7 +114,7 @@ abstract class FakeFileSystemTest internal constructor(
   fun allPathsIncludesFile() {
     val file = base / "all-files-includes-file"
     file.writeUtf8("hello, world!")
-    assertEquals(fakeFileSystem.allPaths, setOf(base, file))
+    assertEquals(setOf(base, file), fakeFileSystem.allPaths)
   }
 
   @Test
@@ -133,14 +131,14 @@ abstract class FakeFileSystemTest internal constructor(
     fileC.writeUtf8("fileC")
     fileA.writeUtf8("fileA")
 
-    assertEquals(fakeFileSystem.allPaths.toList(), listOf(base, fileA, fileB, fileC, fileD))
+    assertEquals(listOf(base, fileA, fileB, fileC, fileD), fakeFileSystem.allPaths.toList())
   }
 
   @Test
   fun allPathsIncludesDirectory() {
     val dir = base / "all-files-includes-directory"
     fileSystem.createDirectory(dir)
-    assertEquals(fakeFileSystem.allPaths, setOf(base, dir))
+    assertEquals(setOf(base, dir), fakeFileSystem.allPaths)
   }
 
   @Test
@@ -148,7 +146,7 @@ abstract class FakeFileSystemTest internal constructor(
     val file = base / "all-files-does-not-include-deleted-file"
     file.writeUtf8("hello, world!")
     fileSystem.delete(file)
-    assertEquals(fakeFileSystem.allPaths, setOf(base))
+    assertEquals(setOf(base), fakeFileSystem.allPaths)
   }
 
   @Test
@@ -157,9 +155,9 @@ abstract class FakeFileSystemTest internal constructor(
 
     val file = base / "all-files-does-not-include-deleted-open-file"
     val sink = fileSystem.sink(file)
-    assertEquals(fakeFileSystem.allPaths, setOf(base, file))
+    assertEquals(setOf(base, file), fakeFileSystem.allPaths)
     fileSystem.delete(file)
-    assertEquals(fakeFileSystem.allPaths, setOf(base))
+    assertEquals(setOf(base), fakeFileSystem.allPaths)
     sink.close()
   }
 
@@ -363,4 +361,139 @@ abstract class FakeFileSystemTest internal constructor(
       }
     }
   }
+
+  @Test
+  fun symlinkCanBeUsedAfterSettingAllowSymlinksToFalse() {
+    if (!supportsSymlink()) return
+
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    fileSystem.createSymlink(source, target)
+    fakeFileSystem.allowSymlinks = false
+    target.writeUtf8("I am the target file")
+    assertEquals("I am the target file", source.readUtf8())
+  }
+
+  @Test
+  fun symlinkCannotBeCreatedAfterSettingAllowSymlinksToFalse() {
+    fakeFileSystem.allowSymlinks = false
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    assertFailsWith<IOException> {
+      fileSystem.createSymlink(source, target)
+    }
+  }
+
+  @Test
+  fun fileExtras() {
+    val path = base / "a.txt"
+    path.writeUtf8("hello")
+    fakeFileSystem.setExtra(path, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    val metadata = fileSystem.metadata(path)
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun directoryExtras() {
+    val path = base / "a.txt"
+    fileSystem.createDirectory(path)
+    fakeFileSystem.setExtra(path, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    val metadata = fileSystem.metadata(path)
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun symlinkExtras() {
+    if (!supportsSymlink()) return
+
+    val pathA = base / "a.txt"
+    val pathB = base / "b.txt"
+    fileSystem.createSymlink(pathA, pathB)
+    fakeFileSystem.setExtra(pathA, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    val metadata = fileSystem.metadata(pathA)
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun deleteExtra() {
+    val path = base / "a.txt"
+    path.writeUtf8("hello")
+    fakeFileSystem.setExtra(path, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    fakeFileSystem.setExtra(path, ContentTypeExtra::class, null)
+    val metadata = fileSystem.metadata(path)
+    assertNull(metadata.extra(ContentTypeExtra::class))
+    assertEquals(mapOf(), metadata.extras)
+  }
+
+  @Test
+  fun extraIsNotCopiedByFileCopy() {
+    val pathA = base / "a.txt"
+    val pathB = base / "b.txt"
+    pathA.writeUtf8("hello")
+    fakeFileSystem.setExtra(pathA, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    fileSystem.copy(pathA, pathB)
+    val metadata = fileSystem.metadata(pathB)
+    assertNull(metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun extraIsMovedByAtomicMove() {
+    val pathA = base / "a.txt"
+    val pathB = base / "b.txt"
+    pathA.writeUtf8("hello")
+    fakeFileSystem.setExtra(pathA, ContentTypeExtra::class, ContentTypeExtra("text/plain"))
+    fileSystem.atomicMove(pathA, pathB)
+    val metadata = fileSystem.metadata(pathB)
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun extrasHappyPath() {
+    val metadata = FileMetadata(
+      isRegularFile = true,
+      size = 10L,
+      extras = mapOf(ContentTypeExtra::class to ContentTypeExtra("text/plain")),
+    )
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun createExtrasDefensiveCopy() {
+    val extras = mutableMapOf<KClass<*>, Any>(
+      ContentTypeExtra::class to ContentTypeExtra("text/plain")
+    )
+    val metadata = FileMetadata(
+      isRegularFile = true,
+      size = 10L,
+      extras = extras,
+    )
+    extras.clear()
+    assertEquals(ContentTypeExtra("text/plain"), metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun getExtraAbsent() {
+    val metadata = FileMetadata(
+      isRegularFile = true,
+      size = 10L,
+      extras = mapOf(),
+    )
+    assertNull(metadata.extra(ContentTypeExtra::class))
+  }
+
+  @Test
+  fun getExtraWrongType() {
+    val metadata = FileMetadata(
+      isRegularFile = true,
+      size = 10L,
+      extras = mapOf(ContentTypeExtra::class to "hello"),
+    )
+    assertFailsWith<ClassCastException> {
+      metadata.extra(ContentTypeExtra::class)
+    }
+  }
+
+  internal data class ContentTypeExtra(
+    val contentType: String
+  )
 }

@@ -23,7 +23,6 @@ import kotlin.time.ExperimentalTime
  * This is intended to increase test coverage for [FileHandle].
  */
 @ExperimentalTime
-@ExperimentalFileSystem
 class FileHandleFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileHandleTestingFileSystem(FileSystem.SYSTEM),
@@ -42,14 +41,14 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
         .also { fileHandle.close() }
     }
 
-    override fun sink(file: Path): Sink {
+    override fun sink(file: Path, mustCreate: Boolean): Sink {
       val fileHandle = openReadWrite(file)
       fileHandle.resize(0L) // If the file already has data, get rid of it.
       return fileHandle.sink()
         .also { fileHandle.close() }
     }
 
-    override fun appendingSink(file: Path): Sink {
+    override fun appendingSink(file: Path, mustExist: Boolean): Sink {
       val fileHandle = openReadWrite(file)
       return fileHandle.appendingSink()
         .also { fileHandle.close() }

@@ -27,7 +27,6 @@ import platform.posix.opendir
 import platform.posix.readdir
 import platform.posix.set_posix_errno
 
-@ExperimentalFileSystem
 internal object PosixFileSystem : FileSystem() {
   private val SELF_DIRECTORY_ENTRY = ".".toPath()
   private val PARENT_DIRECTORY_ENTRY = "..".toPath()
@@ -36,9 +35,13 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun metadataOrNull(path: Path) = variantMetadataOrNull(path)
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     val opendir: CPointer<DIR> = opendir(dir.toString())
-      ?: throw errnoToIOException(errno)
+      ?: if (throwOnFailure) throw errnoToIOException(errno) else return null
 
     try {
       val result = mutableListOf<Path>()
@@ -58,7 +61,10 @@ internal object PosixFileSystem : FileSystem() {
         result += dir / childPath
       }
 
-      if (errno != 0) throw errnoToIOException(errno)
+      if (errno != 0) {
+        if (throwOnFailure) throw errnoToIOException(errno)
+        else return null
+      }
 
       result.sort()
       return result
@@ -69,13 +75,15 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun openReadOnly(file: Path) = variantOpenReadOnly(file)
 
-  override fun openReadWrite(file: Path) = variantOpenReadWrite(file)
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
+    return variantOpenReadWrite(file, mustCreate = mustCreate, mustExist = mustExist)
+  }
 
   override fun source(file: Path) = variantSource(file)
 
-  override fun sink(file: Path) = variantSink(file)
+  override fun sink(file: Path, mustCreate: Boolean) = variantSink(file, mustCreate)
 
-  override fun appendingSink(file: Path) = variantAppendingSink(file)
+  override fun appendingSink(file: Path, mustExist: Boolean) = variantAppendingSink(file)
 
   override fun createDirectory(dir: Path) {
     val result = variantMkdir(dir)
@@ -94,6 +102,8 @@ internal object PosixFileSystem : FileSystem() {
   override fun delete(path: Path) {
     variantDelete(path)
   }
+
+  override fun createSymlink(source: Path, target: Path) = variantCreateSymlink(source, target)
 
   override fun toString() = "PosixSystemFileSystem"
 }

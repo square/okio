@@ -62,8 +62,7 @@ import java.util.zip.Inflater
  * [zip_format]: https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE_6.2.0.txt
  * [extra_fields]: https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld
  */
-@ExperimentalFileSystem
-class ZipFileSystem internal constructor(
+internal class ZipFileSystem internal constructor(
   private val zipPath: Path,
   private val fileSystem: FileSystem,
   private val entries: Map<Path, ZipEntry>,
@@ -80,6 +79,7 @@ class ZipFileSystem internal constructor(
     val basicMetadata = FileMetadata(
       isRegularFile = !entry.isDirectory,
       isDirectory = entry.isDirectory,
+      symlinkTarget = null,
       size = if (entry.isDirectory) null else entry.size,
       createdAtMillis = null,
       lastModifiedAtMillis = entry.lastModifiedAtMillis,
@@ -100,13 +100,18 @@ class ZipFileSystem internal constructor(
     throw UnsupportedOperationException("not implemented yet!")
   }
 
-  override fun openReadWrite(file: Path): FileHandle {
+  override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
     throw IOException("zip entries are not writable")
   }
 
-  override fun list(dir: Path): List<Path> {
+  override fun list(dir: Path): List<Path> = list(dir, throwOnFailure = true)!!
+
+  override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
+
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
     val canonicalDir = canonicalize(dir)
-    val entry = entries[canonicalDir] ?: throw IOException("not a directory: $dir")
+    val entry = entries[canonicalDir]
+      ?: if (throwOnFailure) throw IOException("not a directory: $dir") else return null
     return entry.children.toList()
   }
 
@@ -133,10 +138,13 @@ class ZipFileSystem internal constructor(
     }
   }
 
-  override fun sink(file: Path): Sink = throw IOException("zip file systems are read-only")
-
-  override fun appendingSink(file: Path): Sink =
+  override fun sink(file: Path, mustCreate: Boolean): Sink {
     throw IOException("zip file systems are read-only")
+  }
+
+  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    throw IOException("zip file systems are read-only")
+  }
 
   override fun createDirectory(dir: Path): Unit =
     throw IOException("zip file systems are read-only")
@@ -145,4 +153,7 @@ class ZipFileSystem internal constructor(
     throw IOException("zip file systems are read-only")
 
   override fun delete(path: Path): Unit = throw IOException("zip file systems are read-only")
+
+  override fun createSymlink(source: Path, target: Path): Unit =
+    throw IOException("zip file systems are read-only")
 }

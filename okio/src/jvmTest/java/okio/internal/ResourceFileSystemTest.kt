@@ -16,7 +16,6 @@
 package okio.internal
 
 import okio.ByteString
-import okio.ExperimentalFileSystem
 import okio.FileSystem
 import okio.IOException
 import okio.Path
@@ -32,7 +31,6 @@ import kotlin.reflect.KClass
 import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
-@ExperimentalFileSystem
 class ResourceFileSystemTest {
   private val fileSystem = FileSystem.RESOURCES as ResourceFileSystem
   private var base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)

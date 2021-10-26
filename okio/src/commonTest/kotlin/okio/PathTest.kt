@@ -24,7 +24,6 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@ExperimentalFileSystem
 class PathTest {
   @Test
   fun unixRoot() {

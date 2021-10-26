@@ -18,7 +18,6 @@ package okio
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-@ExperimentalFileSystem
 actual fun assertRelativeTo(
   a: Path,
   b: Path,
@@ -30,7 +29,6 @@ actual fun assertRelativeTo(
   assertEquals(b.withUnixSlashes(), (a / actual).withUnixSlashes())
 }
 
-@ExperimentalFileSystem
 actual fun assertRelativeToFails(
   a: Path,
   b: Path,

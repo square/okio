@@ -56,7 +56,6 @@ dependencies {
   androidTestImplementation(deps.androidx.testExtJunit)
   androidTestImplementation(deps.androidx.testRunner)
   androidTestImplementation(deps.animalSniffer.annotations)
-  androidTestImplementation(deps.kotlin.stdLib.common)
   androidTestImplementation(deps.kotlin.test.annotations)
   androidTestImplementation(deps.kotlin.test.common)
   androidTestImplementation(deps.kotlin.test.jdk)

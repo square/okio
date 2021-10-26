@@ -20,7 +20,6 @@ import okio.Path.Companion.toPath
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-@ExperimentalFileSystem
 actual fun assertRelativeTo(
   a: Path,
   b: Path,
@@ -38,7 +37,6 @@ actual fun assertRelativeTo(
   }
 }
 
-@ExperimentalFileSystem
 actual fun assertRelativeToFails(
   a: Path,
   b: Path,

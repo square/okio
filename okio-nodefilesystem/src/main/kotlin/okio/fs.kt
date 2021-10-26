@@ -54,7 +54,7 @@
  * jsMain {
  *   ...
  *   dependencies {
- *     implementation(npm('@types/node', '14.14.16', true))
+ *     implementation(npm("@types/node", "14.14.16", true))
  *     ...
  *   }
  * }
@@ -83,15 +83,17 @@ internal external fun openSync(path: String, flags: String): Double
 
 internal external fun opendirSync(path: String): Dir
 
+internal external fun readlinkSync(path: String): String
+
 internal external fun readSync(fd: Number, buffer: ByteArray, offset: Double, length: Double, position: Double?): Double
 
-internal external fun realpathSync(path: String): dynamic /* String | Buffer */
+internal external fun realpathSync(path: String): String
 
 internal external fun renameSync(oldPath: String, newPath: String)
 
 internal external fun rmdirSync(path: String)
 
-internal external fun statSync(path: String): Stats
+internal external fun lstatSync(path: String): Stats
 
 internal external fun fstatSync(fd: Number): Stats
 
@@ -102,6 +104,8 @@ internal external fun writeSync(fd: Number, buffer: ByteArray): Double
 internal external fun writeSync(fd: Number, buffer: ByteArray, offset: Double, length: Double, position: Double): Double
 
 internal external fun ftruncateSync(fd: Number, len: Double)
+
+internal external fun symlinkSync(target: String, path: String)
 
 internal open external class Dir {
   open var path: String
