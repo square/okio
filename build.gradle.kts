@@ -1,4 +1,3 @@
-import aQute.bnd.gradle.BundleTaskConvention
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
@@ -38,10 +37,6 @@ buildscript {
 }
 
 apply(plugin = "com.vanniktech.maven.publish.base")
-
-// When scripts are applied the buildscript classes are not accessible directly therefore we save
-// the class here to make it accessible.
-ext.set("bndBundleTaskConventionClass", BundleTaskConvention::class.java)
 
 allprojects {
   group = project.property("GROUP") as String
