@@ -957,7 +957,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
       source.readDecimalLong()
       fail()
     } catch (e: NumberFormatException) {
-      assertEquals("Expected leading [0-9] or '-' character but was 0x20", e.message)
+      assertEquals("Expected a digit or '-' but was 0x20", e.message)
     }
   }
 
@@ -968,6 +968,26 @@ abstract class AbstractBufferedSourceTest internal constructor(
       source.readDecimalLong()
       fail()
     } catch (expected: EOFException) {
+    }
+  }
+
+  @Test fun longDecimalLoneDashThrows() {
+    try {
+      sink.writeUtf8("-")
+      sink.emit()
+      source.readDecimalLong()
+      fail()
+    } catch (expected: EOFException) {
+    }
+  }
+
+  @Test fun longDecimalDashFollowedByNonDigitThrows() {
+    try {
+      sink.writeUtf8("- ")
+      sink.emit()
+      source.readDecimalLong()
+      fail()
+    } catch (expected: NumberFormatException) {
     }
   }
 

@@ -262,7 +262,7 @@ internal inline fun RealBufferedSource.commonReadDecimalLong(): Long {
     if ((b < '0'.code.toByte() || b > '9'.code.toByte()) && (pos != 0L || b != '-'.code.toByte())) {
       // Non-digit, or non-leading negative sign.
       if (pos == 0L) {
-        throw NumberFormatException("Expected leading [0-9] or '-' character but was 0x${b.toString(16)}")
+        throw NumberFormatException("Expected a digit or '-' but was 0x${b.toString(16)}")
       }
       break
     }
