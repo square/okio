@@ -120,6 +120,28 @@ class FileMetadata(
     return type.cast(value)
   }
 
+  fun copy(
+    isRegularFile: Boolean = this.isRegularFile,
+    isDirectory: Boolean = this.isDirectory,
+    symlinkTarget: Path? = this.symlinkTarget,
+    size: Long? = this.size,
+    createdAtMillis: Long? = this.createdAtMillis,
+    lastModifiedAtMillis: Long? = this.lastModifiedAtMillis,
+    lastAccessedAtMillis: Long? = this.lastAccessedAtMillis,
+    extras: Map<KClass<*>, Any> = this.extras,
+  ): FileMetadata {
+    return FileMetadata(
+      isRegularFile = isRegularFile,
+      isDirectory = isDirectory,
+      symlinkTarget = symlinkTarget,
+      size = size,
+      createdAtMillis = createdAtMillis,
+      lastAccessedAtMillis = lastAccessedAtMillis,
+      lastModifiedAtMillis = lastModifiedAtMillis,
+      extras = extras,
+    )
+  }
+
   override fun toString(): String {
     val fields = mutableListOf<String>()
     if (isRegularFile) fields += "isRegularFile"

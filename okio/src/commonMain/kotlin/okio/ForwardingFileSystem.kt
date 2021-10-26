@@ -156,16 +156,7 @@ abstract class ForwardingFileSystem(
     if (metadataOrNull.symlinkTarget == null) return metadataOrNull
 
     val symlinkTarget = onPathResult(metadataOrNull.symlinkTarget, "metadataOrNull")
-    return FileMetadata(
-      isRegularFile = metadataOrNull.isRegularFile,
-      isDirectory = metadataOrNull.isDirectory,
-      symlinkTarget = symlinkTarget,
-      size = metadataOrNull.size,
-      createdAtMillis = metadataOrNull.createdAtMillis,
-      lastAccessedAtMillis = metadataOrNull.lastAccessedAtMillis,
-      lastModifiedAtMillis = metadataOrNull.lastModifiedAtMillis,
-      extras = metadataOrNull.extras,
-    )
+    return metadataOrNull.copy(symlinkTarget = symlinkTarget)
   }
 
   @Throws(IOException::class)
