@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import kotlin.sequences.Sequence;
 import okio.fakefilesystem.FakeFileSystem;
 import org.junit.Test;
 
@@ -66,9 +67,37 @@ public final class FileSystemJavaTest {
     assertThat((Object) okioPath.toNioPath()).isEqualTo(nioPath);
   }
 
-  @Test
+  // Just confirm these APIs exist; don't invoke them
+  @SuppressWarnings("unused")
   public void fileSystemApi() throws IOException {
-    assertThat(FileSystem.SYSTEM.metadata(FileSystem.SYSTEM_TEMPORARY_DIRECTORY)).isNotNull();
+    FileSystem fileSystem = FileSystem.SYSTEM;
+    Path pathA = Path.get("a.txt");
+    Path pathB = Path.get("b.txt");
+    Path canonicalized = fileSystem.canonicalize(pathA);
+    FileMetadata metadata = fileSystem.metadata(pathA);
+    FileMetadata metadataOrNull = fileSystem.metadataOrNull(pathA);
+    boolean exists = fileSystem.exists(pathA);
+    List<Path> list = fileSystem.list(pathA);
+    List<Path> listOrNull = fileSystem.listOrNull(pathA);
+    Sequence<Path> listRecursivelyBoolean = fileSystem.listRecursively(pathA, false);
+    Sequence<Path> listRecursively = fileSystem.listRecursively(pathA);
+    FileHandle openReadOnly = fileSystem.openReadOnly(pathA);
+    FileHandle openReadOnlyBooleanBoolean = fileSystem.openReadWrite(pathA, false, false);
+    FileHandle openReadWrite = fileSystem.openReadWrite(pathA);
+    Source source = fileSystem.source(pathA);
+    // Note that FileSystem.read() isn't available to Java callers.
+    Sink sinkFalse = fileSystem.sink(pathA, false);
+    Sink sink = fileSystem.sink(pathA);
+    // Note that FileSystem.write() isn't available to Java callers.
+    Sink appendingSinkBoolean = fileSystem.appendingSink(pathA, false);
+    Sink appendingSink = fileSystem.appendingSink(pathA);
+    fileSystem.createDirectory(pathA);
+    fileSystem.createDirectories(pathA);
+    fileSystem.atomicMove(pathA, pathB);
+    fileSystem.copy(pathA, pathB);
+    fileSystem.delete(pathA);
+    fileSystem.deleteRecursively(pathA);
+    fileSystem.createSymlink(pathA, pathB);
   }
 
   @Test

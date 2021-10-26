@@ -46,6 +46,8 @@ actual abstract class FileSystem {
   actual open fun listRecursively(dir: Path, followSymlinks: Boolean): Sequence<Path> =
     commonListRecursively(dir, followSymlinks)
 
+  fun listRecursively(dir: Path): Sequence<Path> = listRecursively(dir, followSymlinks = false)
+
   @Throws(IOException::class)
   actual abstract fun openReadOnly(file: Path): FileHandle
 
@@ -53,9 +55,14 @@ actual abstract class FileSystem {
   actual abstract fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle
 
   @Throws(IOException::class)
+  fun openReadWrite(file: Path): FileHandle =
+    openReadWrite(file, mustCreate = false, mustExist = false)
+
+  @Throws(IOException::class)
   actual abstract fun source(file: Path): Source
 
   @Throws(IOException::class)
+  @JvmName("-read")
   actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
     return source(file).buffer().use {
       it.readerAction()
@@ -66,6 +73,10 @@ actual abstract class FileSystem {
   actual abstract fun sink(file: Path, mustCreate: Boolean): Sink
 
   @Throws(IOException::class)
+  fun sink(file: Path): Sink = sink(file, mustCreate = false)
+
+  @Throws(IOException::class)
+  @JvmName("-write")
   actual inline fun <T> write(file: Path, mustCreate: Boolean, writerAction: BufferedSink.() -> T): T {
     return sink(file, mustCreate = mustCreate).buffer().use {
       it.writerAction()
@@ -74,6 +85,9 @@ actual abstract class FileSystem {
 
   @Throws(IOException::class)
   actual abstract fun appendingSink(file: Path, mustExist: Boolean): Sink
+
+  @Throws(IOException::class)
+  fun appendingSink(file: Path): Sink = appendingSink(file, mustExist = false)
 
   @Throws(IOException::class)
   actual abstract fun createDirectory(dir: Path)
