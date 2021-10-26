@@ -4,8 +4,8 @@ plugins {
 }
 
 kotlin {
+  jvm()
   if (kmpJsEnabled) {
-    jvm()
     js {
       compilations.all {
         kotlinOptions {
