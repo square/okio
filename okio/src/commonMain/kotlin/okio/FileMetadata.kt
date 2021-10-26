@@ -56,7 +56,13 @@ class FileMetadata(
   /** True if this file is a container of bytes. If this is true, then [size] is non-null. */
   val isRegularFile: Boolean = false,
 
-  /** True if the path refers to a directory that contains 0 or more child paths. */
+  /**
+   * True if the path refers to a directory that contains 0 or more child paths.
+   *
+   * Note that a path does not need to be a directory for [FileSystem.list] to return successfully.
+   * For example, mounted storage devices may have child files, but do not identify themselves as
+   * directories.
+   */
   val isDirectory: Boolean = false,
 
   /**
