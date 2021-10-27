@@ -311,9 +311,10 @@ internal fun Buffer.toPath(normalize: Boolean): Path {
     slash = slash ?: byte.toSlash()
     leadingSlashCount++
   }
-  if (leadingSlashCount >= 2 && slash == BACKSLASH) {
+  val windowsUncPath = leadingSlashCount >= 2 && slash == BACKSLASH
+  if (windowsUncPath) {
     // This is a Windows UNC path, like \\server\directory\file.txt.
-    result.write(slash)
+    result.write(slash!!)
     result.write(slash)
   } else if (leadingSlashCount > 0) {
     // This is platform-dependent:
@@ -355,6 +356,8 @@ internal fun Buffer.toPath(normalize: Boolean): Path {
         // Silently consume `..`.
       } else if (!normalize || !absolute && (canonicalParts.isEmpty() || canonicalParts.last() == DOT_DOT)) {
         canonicalParts.add(part) // '..' doesn't pop '..' for relative paths.
+      } else if (windowsUncPath && canonicalParts.size == 1) {
+        // `..` doesn't pop UNC hostnames.
       } else {
         canonicalParts.removeLastOrNull()
       }
