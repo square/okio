@@ -488,8 +488,6 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun fileSinkMustCreate() {
-    if (!supportsMustCreateMustExist()) return
-
     val path = base / "file-sink"
     val sink = fileSystem.sink(path, mustCreate = true)
     val buffer = Buffer().writeUtf8("hello, world!")
@@ -502,8 +500,6 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun fileSinkMustCreateThrowsIfAlreadyExists() {
-    if (!supportsMustCreateMustExist()) return
-
     val path = base / "file-sink"
     path.writeUtf8("First!")
     assertFailsWith<IOException> {
@@ -600,8 +596,6 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun writePathMustCreateThrowsIfAlreadyExists() {
-    if (!supportsMustCreateMustExist()) return
-
     val path = base / "write-path"
     path.writeUtf8("First!")
     assertFailsWith<IOException> {
@@ -659,8 +653,6 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun appendingSinkMustExistThrowsIfAbsent() {
-    if (!supportsMustCreateMustExist()) return
-
     val path = base / "appending-sink-creates-new-file"
     assertFailsWith<IOException> {
       fileSystem.appendingSink(path, mustExist = true)
@@ -1714,8 +1706,6 @@ abstract class AbstractFileSystemTest(
 
   @Test fun openReadWriteMustCreateThrowsIfAlreadyExists() {
     if (!supportsFileHandle()) return
-    if (!supportsMustCreateMustExist()) return
-
     val path = base / "file-handle-source"
     path.writeUtf8("First!")
 
@@ -1739,8 +1729,6 @@ abstract class AbstractFileSystemTest(
 
   @Test fun openReadWriteMustExistThrowsIfAbsent() {
     if (!supportsFileHandle()) return
-    if (!supportsMustCreateMustExist()) return
-
     val path = base / "file-handle-source"
 
     assertFailsWith<IOException> {
@@ -1750,8 +1738,6 @@ abstract class AbstractFileSystemTest(
 
   @Test fun openReadWriteThrowsIfBothMustCreateAndMustExist() {
     if (!supportsFileHandle()) return
-    if (!supportsMustCreateMustExist()) return
-
     val path = base / "file-handle-source"
 
     assertFailsWith<IllegalArgumentException> {
@@ -2108,17 +2094,6 @@ abstract class AbstractFileSystemTest(
       "NioSystemFileSystem",
       "PosixFileSystem",
       "NodeJsFileSystem" -> true
-      else -> false
-    }
-  }
-
-  // TODO(Benoit) Remove once all filesystems support it.
-  private fun supportsMustCreateMustExist(): Boolean {
-    return when (fileSystem::class.simpleName) {
-      "NioSystemFileSystem",
-      "JvmSystemFileSystem",
-      "NodeJsFileSystem",
-      "FakeFileSystem" -> true
       else -> false
     }
   }

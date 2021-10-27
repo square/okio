@@ -31,7 +31,7 @@ internal expect fun PosixFileSystem.variantSource(file: Path): Source
 
 internal expect fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): Sink
 
-internal expect fun PosixFileSystem.variantAppendingSink(file: Path): Sink
+internal expect fun PosixFileSystem.variantAppendingSink(file: Path, mustExist: Boolean): Sink
 
 internal expect fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle
 

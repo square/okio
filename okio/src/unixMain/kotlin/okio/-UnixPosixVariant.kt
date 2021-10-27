@@ -100,7 +100,11 @@ internal actual fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean)
   return FileSink(openFile)
 }
 
-internal actual fun PosixFileSystem.variantAppendingSink(file: Path): Sink {
+internal actual fun PosixFileSystem.variantAppendingSink(file: Path, mustExist: Boolean): Sink {
+  // There is a `r+` flag which we could have used to force existence of [file] but this flag
+  // doesn't allow opening for appending, and we don't currently have a way to move the cursor to
+  // the end of the file. We are then forcing existence non-atomically.
+  if (mustExist && !exists(file)) throw IOException("$file doesn't exist.")
   val openFile: CPointer<FILE> = fopen(file.toString(), "a")
     ?: throw errnoToIOException(errno)
   return FileSink(openFile)
