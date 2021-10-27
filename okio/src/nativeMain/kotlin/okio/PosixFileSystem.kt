@@ -83,7 +83,7 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun sink(file: Path, mustCreate: Boolean) = variantSink(file, mustCreate)
 
-  override fun appendingSink(file: Path, mustExist: Boolean) = variantAppendingSink(file)
+  override fun appendingSink(file: Path, mustExist: Boolean) = variantAppendingSink(file, mustExist)
 
   override fun createDirectory(dir: Path) {
     val result = variantMkdir(dir)
