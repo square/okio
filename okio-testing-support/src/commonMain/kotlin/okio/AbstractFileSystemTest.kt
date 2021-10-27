@@ -68,6 +68,8 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun doesNotExistsWithInvalidPathDoesNotThrow() {
+    if (isNodeJsFileSystemOnWindows()) return
+
     val slash = Path.DIRECTORY_SEPARATOR
     // We are testing: `\\127.0.0.1\..\localhost\c$\Windows`.
     val file =
@@ -2200,5 +2202,9 @@ abstract class AbstractFileSystemTest(
 
   private fun isJvmFileSystemOnWindows(): Boolean {
     return windowsLimitations && fileSystem::class.simpleName == "JvmSystemFileSystem"
+  }
+
+  private fun isNodeJsFileSystemOnWindows(): Boolean {
+    return windowsLimitations && fileSystem::class.simpleName == "NodeJsFileSystem"
   }
 }
