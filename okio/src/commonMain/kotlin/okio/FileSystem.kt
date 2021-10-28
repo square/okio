@@ -258,7 +258,7 @@ expect abstract class FileSystem() {
   /**
    * Creates a directory at the path identified by [dir].
    *
-   * @param mustCreate true to throw an [IOException] instead of overwriting an existing directory.
+   * @param mustCreate true to throw an [IOException] if the directory already exists.
    * @throws IOException if [dir]'s parent does not exist, is not a directory, or cannot be written.
    *     A directory cannot be created if the current process doesn't have access, if there's a loop
    *     of symbolic links, or if any name is too long.

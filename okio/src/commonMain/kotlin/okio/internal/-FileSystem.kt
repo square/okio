@@ -77,8 +77,10 @@ internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path, mustExist
       postorder = true
     )
   }
-  for (toDelete in sequence) {
-    delete(toDelete, mustExist = mustExist)
+  val iterator = sequence.iterator()
+  while (iterator.hasNext()) {
+    val toDelete = iterator.next()
+    delete(toDelete, mustExist = mustExist && !iterator.hasNext())
   }
 }
 
