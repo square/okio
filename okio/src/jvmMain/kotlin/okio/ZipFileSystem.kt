@@ -152,13 +152,14 @@ internal class ZipFileSystem internal constructor(
     throw IOException("zip file systems are read-only")
   }
 
-  override fun createDirectory(dir: Path): Unit =
+  override fun createDirectory(dir: Path, mustCreate: Boolean): Unit =
     throw IOException("zip file systems are read-only")
 
   override fun atomicMove(source: Path, target: Path): Unit =
     throw IOException("zip file systems are read-only")
 
-  override fun delete(path: Path): Unit = throw IOException("zip file systems are read-only")
+  override fun delete(path: Path, mustExist: Boolean): Unit =
+    throw IOException("zip file systems are read-only")
 
   override fun createSymlink(source: Path, target: Path): Unit =
     throw IOException("zip file systems are read-only")

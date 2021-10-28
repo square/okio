@@ -15,12 +15,6 @@
  */
 package okio
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import okio.ByteString.Companion.encodeUtf8
-import okio.ByteString.Companion.toByteString
-import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -33,6 +27,12 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import okio.ByteString.Companion.encodeUtf8
+import okio.ByteString.Companion.toByteString
+import okio.Path.Companion.toPath
+import okio.fakefilesystem.FakeFileSystem
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 @ExperimentalTime
@@ -692,11 +692,25 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun createDirectoryMustCreate() {
+    val path = base / "create-directory"
+    fileSystem.createDirectory(path, mustCreate = true)
+    assertTrue(path in fileSystem.list(base))
+  }
+
+  @Test
   fun createDirectoryAlreadyExists() {
     val path = base / "already-exists"
     fileSystem.createDirectory(path)
+    fileSystem.createDirectory(path)
+  }
+
+  @Test
+  fun createDirectoryAlreadyExistsMustCreateThrows() {
+    val path = base / "already-exists"
+    fileSystem.createDirectory(path)
     val exception = assertFailsWith<IOException> {
-      fileSystem.createDirectory(path)
+      fileSystem.createDirectory(path, mustCreate = true)
     }
     assertTrue(exception !is FileNotFoundException)
   }
@@ -722,6 +736,17 @@ abstract class AbstractFileSystemTest(
     val path = base / "already-exists"
     fileSystem.createDirectory(path)
     fileSystem.createDirectories(path)
+    assertTrue(fileSystem.metadata(path).isDirectory)
+  }
+
+  @Test
+  fun createDirectoriesAlreadyExistsMustCreateThrows() {
+    val path = base / "already-exists"
+    fileSystem.createDirectory(path)
+    val exception = assertFailsWith<IOException> {
+      fileSystem.createDirectories(path, mustCreate = true)
+    }
+    assertTrue(exception !is FileNotFoundException)
     assertTrue(fileSystem.metadata(path).isDirectory)
   }
 
@@ -873,6 +898,14 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun deleteFileMustExist() {
+    val path = base / "delete-file"
+    path.writeUtf8("delete me")
+    fileSystem.delete(path, mustExist = true)
+    assertTrue(path !in fileSystem.list(base))
+  }
+
+  @Test
   fun deleteEmptyDirectory() {
     val path = base / "delete-empty-directory"
     fileSystem.createDirectory(path)
@@ -881,27 +914,52 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
-  fun deleteFailsOnNoSuchFile() {
+  fun deleteEmptyDirectoryMustExist() {
+    val path = base / "delete-empty-directory"
+    fileSystem.createDirectory(path)
+    fileSystem.delete(path, mustExist = true)
+    assertTrue(path !in fileSystem.list(base))
+  }
+
+  @Test
+  fun deleteDoesNotExist() {
+    val path = base / "no-such-file"
+    fileSystem.delete(path)
+  }
+
+  @Test
+  fun deleteFailsOnNoSuchFileIfMustExist() {
     val path = base / "no-such-file"
     // TODO(jwilson): fix Windows to throw FileNotFoundException on deleting an absent file.
     if (windowsLimitations) {
       assertFailsWith<IOException> {
-        fileSystem.delete(path)
+        fileSystem.delete(path, mustExist = true)
       }
     } else {
       assertFailsWith<FileNotFoundException> {
-        fileSystem.delete(path)
+        fileSystem.delete(path, mustExist = true)
       }
     }
   }
 
   @Test
-  fun deleteFailsOnNonemptyDirectory() {
+  fun deleteFailsOnNonEmptyDirectory() {
     val path = base / "non-empty-directory"
     fileSystem.createDirectory(path)
     (path / "file.txt").writeUtf8("inside directory")
     val exception = assertFailsWith<IOException> {
       fileSystem.delete(path)
+    }
+    assertTrue(exception !is FileNotFoundException)
+  }
+
+  @Test
+  fun deleteFailsOnNonEmptyDirectoryMustExist() {
+    val path = base / "non-empty-directory"
+    fileSystem.createDirectory(path)
+    (path / "file.txt").writeUtf8("inside directory")
+    val exception = assertFailsWith<IOException> {
+      fileSystem.delete(path, mustExist = true)
     }
     assertTrue(exception !is FileNotFoundException)
   }
@@ -915,6 +973,14 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun deleteRecursivelyFileMustExist() {
+    val path = base / "delete-recursively-file"
+    path.writeUtf8("delete me")
+    fileSystem.deleteRecursively(path, mustExist = true)
+    assertTrue(path !in fileSystem.list(base))
+  }
+
+  @Test
   fun deleteRecursivelyEmptyDirectory() {
     val path = base / "delete-recursively-empty-directory"
     fileSystem.createDirectory(path)
@@ -923,19 +989,42 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
-  fun deleteRecursivelyFailsOnNoSuchFile() {
+  fun deleteRecursivelyEmptyDirectoryMustExist() {
+    val path = base / "delete-recursively-empty-directory"
+    fileSystem.createDirectory(path)
+    fileSystem.deleteRecursively(path, mustExist = true)
+    assertTrue(path !in fileSystem.list(base))
+  }
+
+  @Test
+  fun deleteRecursivelyNoSuchFile() {
+    val path = base / "no-such-file"
+      fileSystem.deleteRecursively(path)
+  }
+
+  @Test
+  fun deleteRecursivelyMustExistFailsOnNoSuchFile() {
     val path = base / "no-such-file"
     assertFailsWith<IOException> {
-      fileSystem.deleteRecursively(path)
+      fileSystem.deleteRecursively(path, mustExist = true)
     }
   }
 
   @Test
-  fun deleteRecursivelyNonemptyDirectory() {
+  fun deleteRecursivelyNonEmptyDirectory() {
     val path = base / "delete-recursively-non-empty-directory"
     fileSystem.createDirectory(path)
     (path / "file.txt").writeUtf8("inside directory")
     fileSystem.deleteRecursively(path)
+    assertTrue(path !in fileSystem.list(base))
+    assertTrue((path / "file.txt") !in fileSystem.list(base))
+  }
+  @Test
+  fun deleteRecursivelyNonEmptyDirectoryMustExist() {
+    val path = base / "delete-recursively-non-empty-directory"
+    fileSystem.createDirectory(path)
+    (path / "file.txt").writeUtf8("inside directory")
+    fileSystem.deleteRecursively(path, mustExist = true)
     assertTrue(path !in fileSystem.list(base))
     assertTrue((path / "file.txt") !in fileSystem.list(base))
   }
@@ -951,6 +1040,16 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun deleteRecursivelyDeepHierarchyMustExist() {
+    fileSystem.createDirectory(base / "a")
+    fileSystem.createDirectory(base / "a" / "b")
+    fileSystem.createDirectory(base / "a" / "b" / "c")
+    (base / "a" / "b" / "c" / "d.txt").writeUtf8("inside deep hierarchy")
+    fileSystem.deleteRecursively(base / "a", mustExist = true)
+    assertEquals(listOf(), fileSystem.list(base))
+  }
+
+  @Test
   fun deleteRecursivelyOnSymlinkToFileDeletesOnlyThatSymlink() {
     if (!supportsSymlink()) return
 
@@ -959,6 +1058,19 @@ abstract class AbstractFileSystemTest(
     baseB.writeUtf8("b")
     fileSystem.createSymlink(baseA, baseB)
     fileSystem.deleteRecursively(baseA)
+    assertEquals("b", baseB.readUtf8())
+  }
+
+
+  @Test
+  fun deleteRecursivelyOnSymlinkToFileDeletesOnlyThatSymlinkMustExist() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseB = base / "b"
+    baseB.writeUtf8("b")
+    fileSystem.createSymlink(baseA, baseB)
+    fileSystem.deleteRecursively(baseA, mustExist = true)
     assertEquals("b", baseB.readUtf8())
   }
 
@@ -973,6 +1085,20 @@ abstract class AbstractFileSystemTest(
     baseBC.writeUtf8("c")
     fileSystem.createSymlink(baseA, baseB)
     fileSystem.deleteRecursively(baseA)
+    assertEquals("c", baseBC.readUtf8())
+  }
+
+  @Test
+  fun deleteRecursivelyOnSymlinkToDirectoryDeletesOnlyThatSymlinkMustExist() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseB = base / "b"
+    val baseBC = base / "b" / "c"
+    fileSystem.createDirectory(baseB)
+    baseBC.writeUtf8("c")
+    fileSystem.createSymlink(baseA, baseB)
+    fileSystem.deleteRecursively(baseA, mustExist = true)
     assertEquals("c", baseBC.readUtf8())
   }
 
@@ -993,6 +1119,22 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun deleteRecursivelyOnSymlinkCycleSucceedsMustExist() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    val baseAB = baseA / "b"
+    val baseAC = baseA / "c"
+
+    baseA.createDirectory()
+    baseAB.writeUtf8("ab")
+    fileSystem.createSymlink(baseAC, baseA)
+
+    fileSystem.deleteRecursively(base, mustExist = true)
+    assertFalse(fileSystem.exists(base))
+  }
+
+  @Test
   fun deleteRecursivelyOnSymlinkToEnclosingDirectorySucceeds() {
     if (!supportsSymlink()) return
 
@@ -1000,6 +1142,18 @@ abstract class AbstractFileSystemTest(
     fileSystem.createSymlink(baseA, ".".toPath())
 
     fileSystem.deleteRecursively(baseA)
+    assertFalse(fileSystem.exists(baseA))
+    assertTrue(fileSystem.exists(base))
+  }
+
+  @Test
+  fun deleteRecursivelyOnSymlinkToEnclosingDirectorySucceedsMustExist() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "a"
+    fileSystem.createSymlink(baseA, ".".toPath())
+
+    fileSystem.deleteRecursively(baseA, mustExist = true)
     assertFalse(fileSystem.exists(baseA))
     assertTrue(fileSystem.exists(base))
   }

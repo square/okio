@@ -374,7 +374,7 @@ class FakeFileSystem(
     )
   }
 
-  override fun createDirectory(dir: Path) {
+  override fun createDirectory(dir: Path, mustCreate: Boolean) {
     val canonicalPath = canonicalizeInternal(dir)
 
     val lookupResult = lookupPath(canonicalPath, createRootOnDemand = true)
@@ -384,7 +384,7 @@ class FakeFileSystem(
       return
     }
 
-    if (lookupResult?.element != null) {
+    if (mustCreate && lookupResult?.element != null) {
       throw IOException("already exists: $dir")
     }
 
@@ -427,7 +427,7 @@ class FakeFileSystem(
     targetParent.children[canonicalTarget.nameBytes] = removed
   }
 
-  override fun delete(path: Path) {
+  override fun delete(path: Path, mustExist: Boolean) {
     val canonicalPath = canonicalizeInternal(path)
 
     val lookupResult = lookupPath(
@@ -437,7 +437,11 @@ class FakeFileSystem(
     )
 
     if (lookupResult?.element == null) {
-      throw FileNotFoundException("no such file: $path")
+      if (mustExist) {
+        throw FileNotFoundException("no such file: $path")
+      } else {
+        return
+      }
     }
 
     if (lookupResult.element is Directory && lookupResult.element.children.isNotEmpty()) {

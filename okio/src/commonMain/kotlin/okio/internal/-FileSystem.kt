@@ -39,7 +39,7 @@ internal fun FileSystem.commonExists(path: Path): Boolean {
 }
 
 @Throws(IOException::class)
-internal fun FileSystem.commonCreateDirectories(dir: Path) {
+internal fun FileSystem.commonCreateDirectories(dir: Path, mustCreate: Boolean) {
   // Compute the sequence of directories to create.
   val directories = ArrayDeque<Path>()
   var path: Path? = dir
@@ -48,8 +48,11 @@ internal fun FileSystem.commonCreateDirectories(dir: Path) {
     path = path.parent
   }
 
+  if (mustCreate && directories.isEmpty()) throw IOException("$dir already exist.")
+
   // Create them.
   for (toCreate in directories) {
+    // We know we are creating new directories by now so we don't have to pass down `mustCreate`.
     createDirectory(toCreate)
   }
 }
@@ -64,7 +67,7 @@ internal fun FileSystem.commonCopy(source: Path, target: Path) {
 }
 
 @Throws(IOException::class)
-internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path) {
+internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path, mustExist: Boolean) {
   val sequence = sequence {
     collectRecursively(
       fileSystem = this@commonDeleteRecursively,
@@ -74,8 +77,10 @@ internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path) {
       postorder = true
     )
   }
+  var firstDeleted = false
   for (toDelete in sequence) {
-    delete(toDelete)
+    delete(toDelete, mustExist = if (firstDeleted) false else mustExist)
+    firstDeleted = true
   }
 }
 

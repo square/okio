@@ -15,8 +15,8 @@
  */
 package okio
 
-import okio.Path.Companion.toOkioPath
 import java.io.RandomAccessFile
+import okio.Path.Companion.toOkioPath
 
 /**
  * A file system that adapts `java.io`.
@@ -105,8 +105,15 @@ internal open class JvmSystemFileSystem : FileSystem() {
     return file.toFile().sink(append = true)
   }
 
-  override fun createDirectory(dir: Path) {
-    if (!dir.toFile().mkdir()) throw IOException("failed to create directory: $dir")
+  override fun createDirectory(dir: Path, mustCreate: Boolean) {
+    if (!dir.toFile().mkdir()) {
+      val alreadyExist = metadataOrNull(dir)?.isDirectory == true
+      if (alreadyExist) {
+        if (mustCreate) throw IOException("$dir already exist.")
+        else return
+      }
+      throw IOException("failed to create directory: $dir")
+    }
   }
 
   override fun atomicMove(source: Path, target: Path) {
@@ -115,12 +122,12 @@ internal open class JvmSystemFileSystem : FileSystem() {
     if (!renamed) throw IOException("failed to move $source to $target")
   }
 
-  override fun delete(path: Path) {
+  override fun delete(path: Path, mustExist: Boolean) {
     val file = path.toFile()
     val deleted = file.delete()
     if (!deleted) {
-      if (!file.exists()) throw FileNotFoundException("no such file: $path")
-      else throw IOException("failed to delete $path")
+      if (file.exists()) throw IOException("failed to delete $path")
+      if (mustExist) throw FileNotFoundException("no such file: $path")
     }
   }
 

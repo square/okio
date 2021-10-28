@@ -30,6 +30,7 @@ import platform.posix.O_EXCL
 import platform.posix.O_RDWR
 import platform.posix.PATH_MAX
 import platform.posix.S_IFLNK
+import platform.posix.ENOENT
 import platform.posix.S_IFMT
 import platform.posix.errno
 import platform.posix.fdopen
@@ -56,9 +57,13 @@ internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "/"
 
-internal actual fun PosixFileSystem.variantDelete(path: Path) {
+internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean) {
   val result = remove(path.toString())
   if (result != 0) {
+    if (errno == ENOENT) {
+      if (mustExist) throw FileNotFoundException("$path doesn't exist.")
+      else return
+    }
     throw errnoToIOException(errno)
   }
 }

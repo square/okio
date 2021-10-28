@@ -21,6 +21,7 @@ import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.DIR
 import platform.posix.closedir
+import platform.posix.EEXIST
 import platform.posix.dirent
 import platform.posix.errno
 import platform.posix.opendir
@@ -85,9 +86,13 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun appendingSink(file: Path, mustExist: Boolean) = variantAppendingSink(file, mustExist)
 
-  override fun createDirectory(dir: Path) {
+  override fun createDirectory(dir: Path, mustCreate: Boolean) {
     val result = variantMkdir(dir)
     if (result != 0) {
+      if (errno == EEXIST) {
+        if (mustCreate) errnoToIOException(errno)
+        else return
+      }
       throw errnoToIOException(errno)
     }
   }
@@ -99,8 +104,8 @@ internal object PosixFileSystem : FileSystem() {
     variantMove(source, target)
   }
 
-  override fun delete(path: Path) {
-    variantDelete(path)
+  override fun delete(path: Path, mustExist: Boolean) {
+    variantDelete(path, mustExist)
   }
 
   override fun createSymlink(source: Path, target: Path) = variantCreateSymlink(source, target)

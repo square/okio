@@ -258,21 +258,23 @@ expect abstract class FileSystem() {
   /**
    * Creates a directory at the path identified by [dir].
    *
+   * @param mustCreate true to throw an [IOException] instead of overwriting an existing directory.
    * @throws IOException if [dir]'s parent does not exist, is not a directory, or cannot be written.
-   *     A directory cannot be created if it already exists, if the current process doesn't have
-   *     access, if there's a loop of symbolic links, or if any name is too long.
+   *     A directory cannot be created if the current process doesn't have access, if there's a loop
+   *     of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun createDirectory(dir: Path)
+  abstract fun createDirectory(dir: Path, mustCreate: Boolean = false)
 
   /**
    * Creates a directory at the path identified by [dir], and any enclosing parent path directories,
    * recursively.
    *
+   * @param mustCreate true to throw an [IOException] instead of overwriting an existing directory.
    * @throws IOException if any [metadata] or [createDirectory] operation fails.
    */
   @Throws(IOException::class)
-  fun createDirectories(dir: Path)
+  fun createDirectories(dir: Path, mustCreate: Boolean = false)
 
   /**
    * Moves [source] to [target] in-place if the underlying file system supports it. If [target]
@@ -340,13 +342,13 @@ expect abstract class FileSystem() {
   /**
    * Deletes the file or directory at [path].
    *
-   * @throws IOException if there is nothing at [path] to delete, or if there is a file or directory
-   *     but it could not be deleted. Deletes fail if the current process doesn't have access, if
-   *     the file system is readonly, or if [path] is a non-empty directory. This list of potential
-   *     problems is not exhaustive.
+   * @param mustExist true to throw an [IOException] if there is nothing at [path] to delete.
+   * @throws IOException if there is a file or directory but it could not be deleted. Deletes fail
+   *     if the current process doesn't have access, if the file system is readonly, or if [path]
+   *     is a non-empty directory. This list of potential problems is not exhaustive.
    */
   @Throws(IOException::class)
-  abstract fun delete(path: Path)
+  abstract fun delete(path: Path, mustExist: Boolean = false)
 
   /**
    * Recursively deletes all children of [fileOrDirectory] if it is a directory, then deletes
@@ -356,10 +358,12 @@ expect abstract class FileSystem() {
    * or deleted in [fileOrDirectory] while this function is executing, this may fail with an
    * [IOException].
    *
+   * @param mustExist true to throw an [IOException] if there is nothing at [fileOrDirectory] to
+   *     delete.
    * @throws IOException if any [metadata], [list], or [delete] operation fails.
    */
   @Throws(IOException::class)
-  open fun deleteRecursively(fileOrDirectory: Path)
+  open fun deleteRecursively(fileOrDirectory: Path, mustExist: Boolean = false)
 
   /**
    * Creates a symbolic link at [source] that resolves to [target]. If [target] is a relative path,
