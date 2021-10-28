@@ -77,10 +77,8 @@ internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path, mustExist
       postorder = true
     )
   }
-  var firstDeleted = false
   for (toDelete in sequence) {
-    delete(toDelete, mustExist = if (firstDeleted) false else mustExist)
-    firstDeleted = true
+    delete(toDelete, mustExist = mustExist)
   }
 }
 

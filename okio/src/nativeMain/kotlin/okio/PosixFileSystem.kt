@@ -20,8 +20,8 @@ import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.DIR
-import platform.posix.closedir
 import platform.posix.EEXIST
+import platform.posix.closedir
 import platform.posix.dirent
 import platform.posix.errno
 import platform.posix.opendir

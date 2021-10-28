@@ -15,6 +15,12 @@
  */
 package okio
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import okio.ByteString.Companion.encodeUtf8
+import okio.ByteString.Companion.toByteString
+import okio.Path.Companion.toPath
+import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -27,12 +33,6 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import okio.ByteString.Companion.encodeUtf8
-import okio.ByteString.Companion.toByteString
-import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 @ExperimentalTime
@@ -999,7 +999,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun deleteRecursivelyNoSuchFile() {
     val path = base / "no-such-file"
-      fileSystem.deleteRecursively(path)
+    fileSystem.deleteRecursively(path)
   }
 
   @Test
@@ -1060,7 +1060,6 @@ abstract class AbstractFileSystemTest(
     fileSystem.deleteRecursively(baseA)
     assertEquals("b", baseB.readUtf8())
   }
-
 
   @Test
   fun deleteRecursivelyOnSymlinkToFileDeletesOnlyThatSymlinkMustExist() {

@@ -24,13 +24,13 @@ import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.DEFFILEMODE
+import platform.posix.ENOENT
 import platform.posix.FILE
 import platform.posix.O_CREAT
 import platform.posix.O_EXCL
 import platform.posix.O_RDWR
 import platform.posix.PATH_MAX
 import platform.posix.S_IFLNK
-import platform.posix.ENOENT
 import platform.posix.S_IFMT
 import platform.posix.errno
 import platform.posix.fdopen

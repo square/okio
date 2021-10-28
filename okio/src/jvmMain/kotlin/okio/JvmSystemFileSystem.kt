@@ -15,8 +15,8 @@
  */
 package okio
 
-import java.io.RandomAccessFile
 import okio.Path.Companion.toOkioPath
+import java.io.RandomAccessFile
 
 /**
  * A file system that adapts `java.io`.
