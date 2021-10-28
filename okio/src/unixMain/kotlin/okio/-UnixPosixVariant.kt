@@ -24,6 +24,7 @@ import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.DEFFILEMODE
+import platform.posix.ENOENT
 import platform.posix.FILE
 import platform.posix.O_CREAT
 import platform.posix.O_EXCL
@@ -56,9 +57,13 @@ internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "/"
 
-internal actual fun PosixFileSystem.variantDelete(path: Path) {
+internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean) {
   val result = remove(path.toString())
   if (result != 0) {
+    if (errno == ENOENT) {
+      if (mustExist) throw FileNotFoundException("no such file: $path")
+      else return
+    }
     throw errnoToIOException(errno)
   }
 }

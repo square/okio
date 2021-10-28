@@ -17,7 +17,7 @@ package okio
 
 internal expect val PLATFORM_TEMPORARY_DIRECTORY: Path
 
-internal expect fun PosixFileSystem.variantDelete(path: Path)
+internal expect fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean)
 
 internal expect fun PosixFileSystem.variantMkdir(dir: Path): Int
 

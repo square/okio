@@ -167,10 +167,16 @@ object NodeJsFileSystem : FileSystem() {
     }
   }
 
-  override fun createDirectory(dir: Path) {
+  override fun createDirectory(dir: Path, mustCreate: Boolean) {
     try {
       mkdirSync(dir.toString())
     } catch (e: Throwable) {
+      val alreadyExist = metadataOrNull(dir)?.isDirectory == true
+      if (alreadyExist) {
+        if (mustCreate) throw IOException("$dir already exist.")
+        else return
+      }
+
       throw e.toIOException()
     }
   }
@@ -189,7 +195,7 @@ object NodeJsFileSystem : FileSystem() {
    *
    * TODO(jwilson): switch to fs.rmSync() when our minimum requirements are Node 14.14.0.
    */
-  override fun delete(path: Path) {
+  override fun delete(path: Path, mustExist: Boolean) {
     try {
       unlinkSync(path.toString())
       return
@@ -198,6 +204,10 @@ object NodeJsFileSystem : FileSystem() {
     try {
       rmdirSync(path.toString())
     } catch (e: Throwable) {
+      if (e.errorCode == "ENOENT") {
+        if (mustExist) throw FileNotFoundException("no such file: $path")
+        else return
+      }
       throw e.toIOException()
     }
   }

@@ -71,7 +71,7 @@ internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "\\"
 
-internal actual fun PosixFileSystem.variantDelete(path: Path) {
+internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean) {
   val pathString = path.toString()
 
   if (remove(pathString) == 0) return
@@ -79,6 +79,10 @@ internal actual fun PosixFileSystem.variantDelete(path: Path) {
   // If remove failed with EACCES, it might be a directory. Try that.
   if (errno == EACCES) {
     if (rmdir(pathString) == 0) return
+  }
+  if (errno == ENOENT) {
+    if (mustExist) throw FileNotFoundException("no such file: $path")
+    else return
   }
 
   throw errnoToIOException(EACCES)

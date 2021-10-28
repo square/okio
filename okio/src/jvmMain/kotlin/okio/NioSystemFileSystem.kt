@@ -66,7 +66,7 @@ internal class NioSystemFileSystem : JvmSystemFileSystem() {
   }
 
   /**
-   * Returns this time as a epoch millis. If this is 0L this returns null, because epoch time 0L is
+   * Returns this time as an epoch millis. If this is 0L this returns null, because epoch time 0L is
    * a special value that indicates the requested time was not available.
    */
   private fun FileTime.zeroToNull(): Long? {
