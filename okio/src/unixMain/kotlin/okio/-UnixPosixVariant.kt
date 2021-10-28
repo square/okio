@@ -61,7 +61,7 @@ internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean
   val result = remove(path.toString())
   if (result != 0) {
     if (errno == ENOENT) {
-      if (mustExist) throw FileNotFoundException("$path doesn't exist.")
+      if (mustExist) throw FileNotFoundException("no such file: $path")
       else return
     }
     throw errnoToIOException(errno)

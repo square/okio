@@ -81,7 +81,7 @@ internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean
     if (rmdir(pathString) == 0) return
   }
   if (errno == ENOENT) {
-    if (mustExist) throw FileNotFoundException("$path doesn't exist.")
+    if (mustExist) throw FileNotFoundException("no such file: $path")
     else return
   }
 
