@@ -34,7 +34,6 @@ kotlin {
     val main by getting {
       dependencies {
         implementation(project(":okio"))
-        implementation(project(":okio-testing-support"))
         // Uncomment this to generate fs.fs.module_node.kt. Use it when updating fs.kt.
         // implementation(npm("@types/node", "14.14.16", true))
       }
@@ -46,6 +45,7 @@ kotlin {
         implementation(deps.kotlin.time)
 
         implementation(project(":okio-fakefilesystem"))
+        implementation(project(":okio-testing-support"))
         implementation(deps.kotlin.test.js)
       }
     }
