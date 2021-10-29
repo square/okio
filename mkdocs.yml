@@ -53,7 +53,10 @@ nav:
   - 'Stack Overflow ⏏': https://stackoverflow.com/questions/tagged/okio?sort=active
   - 'Recipes': recipes.md
   - 'java.io Recipes': java_io_recipes.md
-  - '2.x API': 2.x/okio/okio/index.html
+  - '3.x API':
+    - 'okio': 3.x/okio/okio/okio/index.html
+    - 'fakefilesystem': 3.x/okio-fakefilesystem/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/index.html
+    - 'nodefilesystem': 3.x/okio-nodefilesystem/okio-nodefilesystem/okio/-node-js-file-system/index.html
   - '1.x API ⏏': https://square.github.io/okio/1.x/okio/
   - 'Change Log': changelog.md
   - 'File System': file_system.md

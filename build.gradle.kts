@@ -68,7 +68,7 @@ allprojects {
     }
 
     if (name == "dokkaHtml") {
-      outputDirectory.set(file("${rootDir}/docs/2.x"))
+      outputDirectory.set(file("${rootDir}/docs/3.x/${project.name}"))
       pluginsMapConfiguration.set(
         mapOf(
           "org.jetbrains.dokka.base.DokkaBase" to """
