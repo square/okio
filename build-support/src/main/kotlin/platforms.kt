@@ -13,6 +13,7 @@ fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
   watchosArm32()
   watchosArm64()
   watchosX86()
+  watchosX64()
   watchosSimulatorArm64()
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
   linuxX64()
@@ -33,6 +34,7 @@ val appleTargets = listOf(
   "watchosArm32",
   "watchosArm64",
   "watchosX86",
+  "watchosX64",
   "watchosSimulatorArm64"
 )
 
@@ -46,7 +48,7 @@ val linuxTargets = listOf(
 
 val nativeTargets = appleTargets + linuxTargets + mingwTargets
 
-/** Note that size_t is 32-bit on all watchOS versions (ie. pointers are always 32-bit). */
+/** Note that size_t is 32-bit on legacy watchOS versions (ie. pointers are always 32-bit). */
 val unixSizet32Targets = listOf(
   "watchosArm32",
   "watchosArm64",
@@ -63,7 +65,8 @@ val unixSizet64Targets = listOf(
   "tvosArm64",
   "tvosX64",
   "tvosSimulatorArm64",
-  "watchosSimulatorArm64"
+  "watchosSimulatorArm64",
+  "watchosX64"
 )
 
 /**
