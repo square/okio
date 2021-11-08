@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import kotlin.sequences.Sequence;
 import okio.fakefilesystem.FakeFileSystem;
 import org.junit.Test;
 
@@ -28,16 +29,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class FileSystemJavaTest {
   @Test
   public void pathApi() {
-    Path path = Path.get("/home/jesse/todo.txt");
+    Path path = Path.get("/home/jesse/todo.txt", false);
 
-    assertThat(Path.get("/home/jesse").resolve("todo.txt")).isEqualTo(path);
-    assertThat(Path.get("/home/jesse/todo.txt")).isEqualTo(path);
+    assertThat(Path.get("/home/jesse", false).resolve("todo.txt")).isEqualTo(path);
+    assertThat(Path.get("/home/jesse/todo.txt", false)).isEqualTo(path);
     assertThat(path.isAbsolute()).isTrue();
     assertThat(path.isRelative()).isFalse();
     assertThat(path.isRoot()).isFalse();
     assertThat(path.name()).isEqualTo("todo.txt");
     assertThat(path.nameBytes()).isEqualTo(ByteString.encodeUtf8("todo.txt"));
-    assertThat(path.parent()).isEqualTo(Path.get("/home/jesse"));
+    assertThat(path.parent()).isEqualTo(Path.get("/home/jesse", false));
     assertThat(path.volumeLetter()).isNull();
   }
 
@@ -51,8 +52,8 @@ public final class FileSystemJavaTest {
   public void javaIoFileToOkioPath() {
     String string = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR);
     File javaIoFile = new File(string);
-    Path okioPath = Path.get(string);
-    assertThat(Path.get(javaIoFile)).isEqualTo(okioPath);
+    Path okioPath = Path.get(string, false);
+    assertThat(Path.get(javaIoFile, false)).isEqualTo(okioPath);
     assertThat(okioPath.toFile()).isEqualTo(javaIoFile);
   }
 
@@ -61,14 +62,42 @@ public final class FileSystemJavaTest {
   public void nioPathToOkioPath() {
     String string = "/foo/bar/baz".replace("/", okio.Path.DIRECTORY_SEPARATOR);
     java.nio.file.Path nioPath = Paths.get(string);
-    Path okioPath = Path.get(string);
-    assertThat(Path.get(nioPath)).isEqualTo(okioPath);
+    Path okioPath = Path.get(string, false);
+    assertThat(Path.get(nioPath, false)).isEqualTo(okioPath);
     assertThat((Object) okioPath.toNioPath()).isEqualTo(nioPath);
   }
 
-  @Test
+  // Just confirm these APIs exist; don't invoke them
+  @SuppressWarnings("unused")
   public void fileSystemApi() throws IOException {
-    assertThat(FileSystem.SYSTEM.metadata(FileSystem.SYSTEM_TEMPORARY_DIRECTORY)).isNotNull();
+    FileSystem fileSystem = FileSystem.SYSTEM;
+    Path pathA = Path.get("a.txt");
+    Path pathB = Path.get("b.txt");
+    Path canonicalized = fileSystem.canonicalize(pathA);
+    FileMetadata metadata = fileSystem.metadata(pathA);
+    FileMetadata metadataOrNull = fileSystem.metadataOrNull(pathA);
+    boolean exists = fileSystem.exists(pathA);
+    List<Path> list = fileSystem.list(pathA);
+    List<Path> listOrNull = fileSystem.listOrNull(pathA);
+    Sequence<Path> listRecursivelyBoolean = fileSystem.listRecursively(pathA, false);
+    Sequence<Path> listRecursively = fileSystem.listRecursively(pathA);
+    FileHandle openReadOnly = fileSystem.openReadOnly(pathA);
+    FileHandle openReadOnlyBooleanBoolean = fileSystem.openReadWrite(pathA, false, false);
+    FileHandle openReadWrite = fileSystem.openReadWrite(pathA);
+    Source source = fileSystem.source(pathA);
+    // Note that FileSystem.read() isn't available to Java callers.
+    Sink sinkFalse = fileSystem.sink(pathA, false);
+    Sink sink = fileSystem.sink(pathA);
+    // Note that FileSystem.write() isn't available to Java callers.
+    Sink appendingSinkBoolean = fileSystem.appendingSink(pathA, false);
+    Sink appendingSink = fileSystem.appendingSink(pathA);
+    fileSystem.createDirectory(pathA);
+    fileSystem.createDirectories(pathA);
+    fileSystem.atomicMove(pathA, pathB);
+    fileSystem.copy(pathA, pathB);
+    fileSystem.delete(pathA);
+    fileSystem.deleteRecursively(pathA);
+    fileSystem.createSymlink(pathA, pathB);
   }
 
   @Test
@@ -90,7 +119,7 @@ public final class FileSystemJavaTest {
         return path;
       }
     };
-    forwardingFileSystem.metadataOrNull(Path.get("/"));
+    forwardingFileSystem.metadataOrNull(Path.get("/", false));
     assertThat(log).containsExactly("metadataOrNull(path=/)");
   }
 }

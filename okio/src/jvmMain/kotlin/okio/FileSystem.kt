@@ -45,6 +45,8 @@ actual abstract class FileSystem {
   actual open fun listRecursively(dir: Path, followSymlinks: Boolean): Sequence<Path> =
     commonListRecursively(dir, followSymlinks)
 
+  fun listRecursively(dir: Path): Sequence<Path> = listRecursively(dir, followSymlinks = false)
+
   @Throws(IOException::class)
   actual abstract fun openReadOnly(file: Path): FileHandle
 
@@ -52,9 +54,14 @@ actual abstract class FileSystem {
   actual abstract fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle
 
   @Throws(IOException::class)
+  fun openReadWrite(file: Path): FileHandle =
+    openReadWrite(file, mustCreate = false, mustExist = false)
+
+  @Throws(IOException::class)
   actual abstract fun source(file: Path): Source
 
   @Throws(IOException::class)
+  @JvmName("-read")
   actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
     return source(file).buffer().use {
       it.readerAction()
@@ -65,6 +72,10 @@ actual abstract class FileSystem {
   actual abstract fun sink(file: Path, mustCreate: Boolean): Sink
 
   @Throws(IOException::class)
+  fun sink(file: Path): Sink = sink(file, mustCreate = false)
+
+  @Throws(IOException::class)
+  @JvmName("-write")
   actual inline fun <T> write(file: Path, mustCreate: Boolean, writerAction: BufferedSink.() -> T): T {
     return sink(file, mustCreate = mustCreate).buffer().use {
       it.writerAction()
@@ -75,10 +86,20 @@ actual abstract class FileSystem {
   actual abstract fun appendingSink(file: Path, mustExist: Boolean): Sink
 
   @Throws(IOException::class)
-  actual abstract fun createDirectory(dir: Path)
+  fun appendingSink(file: Path): Sink = appendingSink(file, mustExist = false)
 
   @Throws(IOException::class)
-  actual fun createDirectories(dir: Path): Unit = commonCreateDirectories(dir)
+  actual abstract fun createDirectory(dir: Path, mustCreate: Boolean)
+
+  @Throws(IOException::class)
+  fun createDirectory(dir: Path) = createDirectory(dir, mustCreate = false)
+
+  @Throws(IOException::class)
+  actual fun createDirectories(dir: Path, mustCreate: Boolean): Unit =
+    commonCreateDirectories(dir, mustCreate)
+
+  @Throws(IOException::class)
+  fun createDirectories(dir: Path): Unit = createDirectories(dir, mustCreate = false)
 
   @Throws(IOException::class)
   actual abstract fun atomicMove(source: Path, target: Path)
@@ -87,11 +108,18 @@ actual abstract class FileSystem {
   actual open fun copy(source: Path, target: Path): Unit = commonCopy(source, target)
 
   @Throws(IOException::class)
-  actual abstract fun delete(path: Path)
+  actual abstract fun delete(path: Path, mustExist: Boolean)
 
   @Throws(IOException::class)
-  actual open fun deleteRecursively(fileOrDirectory: Path): Unit =
-    commonDeleteRecursively(fileOrDirectory)
+  fun delete(path: Path) = delete(path, mustExist = false)
+
+  @Throws(IOException::class)
+  actual open fun deleteRecursively(fileOrDirectory: Path, mustExist: Boolean): Unit =
+    commonDeleteRecursively(fileOrDirectory, mustExist)
+
+  @Throws(IOException::class)
+  fun deleteRecursively(fileOrDirectory: Path): Unit =
+    deleteRecursively(fileOrDirectory, mustExist = false)
 
   @Throws(IOException::class)
   actual abstract fun createSymlink(source: Path, target: Path)

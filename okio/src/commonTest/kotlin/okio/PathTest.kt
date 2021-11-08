@@ -16,7 +16,6 @@
 package okio
 
 import okio.Path.Companion.toPath
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -28,6 +27,7 @@ class PathTest {
   @Test
   fun unixRoot() {
     val path = "/".toPath()
+    assertEquals(path, path.normalized())
     assertEquals(path, path.root)
     assertEquals(listOf(), path.segments)
     assertEquals("/", path.toString())
@@ -41,6 +41,7 @@ class PathTest {
   @Test
   fun unixAbsolutePath() {
     val path = "/home/jesse/todo.txt".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("/".toPath(), path.root)
     assertEquals(listOf("home", "jesse", "todo.txt"), path.segments)
     assertEquals("/home/jesse/todo.txt", path.toString())
@@ -54,6 +55,7 @@ class PathTest {
   @Test
   fun unixRelativePath() {
     val path = "project/todo.txt".toPath()
+    assertEquals(path, path.normalized())
     assertNull(path.root)
     assertEquals(listOf("project", "todo.txt"), path.segments)
     assertEquals("project/todo.txt", path.toString())
@@ -67,6 +69,7 @@ class PathTest {
   @Test
   fun unixRelativePathWithDots() {
     val path = "../../project/todo.txt".toPath()
+    assertEquals(path, path.normalized())
     assertNull(path.root)
     assertEquals(listOf("..", "..", "project", "todo.txt"), path.segments)
     assertEquals("../../project/todo.txt", path.toString())
@@ -80,6 +83,7 @@ class PathTest {
   @Test
   fun unixRelativeSeriesOfDotDots() {
     val path = "../../..".toPath()
+    assertEquals(path, path.normalized())
     assertNull(path.root)
     assertEquals(listOf("..", "..", ".."), path.segments)
     assertEquals("../../..", path.toString())
@@ -93,6 +97,7 @@ class PathTest {
   @Test
   fun unixAbsoluteSeriesOfDotDots() {
     val path = "/../../..".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("/".toPath(), path.root)
     assertEquals(listOf(), path.segments)
     assertEquals("/", path.toString())
@@ -106,6 +111,7 @@ class PathTest {
   @Test
   fun unixAbsoluteSingleDot() {
     val path = "/.".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("/".toPath(), path.root)
     assertEquals(listOf(), path.segments)
     assertEquals("/", path.toString())
@@ -119,6 +125,7 @@ class PathTest {
   @Test
   fun unixRelativeDoubleDots() {
     val path = "..".toPath()
+    assertEquals(path, path.normalized())
     assertNull(path.root)
     assertEquals(listOf(".."), path.segments)
     assertEquals("..", path.toString())
@@ -132,6 +139,7 @@ class PathTest {
   @Test
   fun unixRelativeSingleDot() {
     val path = ".".toPath()
+    assertEquals(path, path.normalized())
     assertNull(path.root)
     assertEquals(listOf("."), path.segments)
     assertEquals(".", path.toString())
@@ -145,6 +153,7 @@ class PathTest {
   @Test
   fun windowsVolumeLetter() {
     val path = "C:\\".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("C:\\".toPath(), path.root)
     assertEquals(listOf(), path.segments)
     assertEquals("C:\\", path.toString())
@@ -158,6 +167,7 @@ class PathTest {
   @Test
   fun windowsAbsolutePathWithVolumeLetter() {
     val path = "C:\\Windows\\notepad.exe".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("C:\\".toPath(), path.root)
     assertEquals(listOf("Windows", "notepad.exe"), path.segments)
     assertEquals("C:\\Windows\\notepad.exe", path.toString())
@@ -171,6 +181,7 @@ class PathTest {
   @Test
   fun windowsAbsolutePath() {
     val path = "\\".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("\\".toPath(), path.root)
     assertEquals(listOf(), path.segments)
     assertEquals("\\", path.toString())
@@ -184,6 +195,7 @@ class PathTest {
   @Test
   fun windowsAbsolutePathWithoutVolumeLetter() {
     val path = "\\Windows\\notepad.exe".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("\\".toPath(), path.root)
     assertEquals(listOf("Windows", "notepad.exe"), path.segments)
     assertEquals("\\Windows\\notepad.exe", path.toString())
@@ -197,6 +209,7 @@ class PathTest {
   @Test
   fun windowsRelativePathWithVolumeLetter() {
     val path = "C:Windows\\notepad.exe".toPath()
+    assertEquals(path, path.normalized())
     assertNull(path.root)
     assertEquals(listOf("C:Windows", "notepad.exe"), path.segments)
     assertEquals("C:Windows\\notepad.exe", path.toString())
@@ -210,6 +223,7 @@ class PathTest {
   @Test
   fun windowsVolumeLetterRelative() {
     val path = "C:".toPath()
+    assertEquals(path, path.normalized())
     assertNull(path.root)
     assertEquals(listOf("C:"), path.segments)
     assertEquals("C:", path.toString())
@@ -223,6 +237,7 @@ class PathTest {
   @Test
   fun windowsRelativePath() {
     val path = "Windows\\notepad.exe".toPath()
+    assertEquals(path, path.normalized())
     assertNull(path.root)
     assertEquals(listOf("Windows", "notepad.exe"), path.segments)
     assertEquals("Windows\\notepad.exe", path.toString())
@@ -236,6 +251,7 @@ class PathTest {
   @Test
   fun windowsUncServer() {
     val path = "\\\\server".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("\\\\server".toPath(), path.root)
     assertEquals(listOf(), path.segments)
     assertEquals("\\\\server", path.toString())
@@ -249,6 +265,7 @@ class PathTest {
   @Test
   fun windowsUncAbsolutePath() {
     val path = "\\\\server\\project\\notes.txt".toPath()
+    assertEquals(path, path.normalized())
     assertEquals("\\\\server".toPath(), path.root)
     assertEquals(listOf("project", "notes.txt"), path.segments)
     assertEquals("\\\\server\\project\\notes.txt", path.toString())
@@ -264,8 +281,8 @@ class PathTest {
     val root = "/".toPath()
     assertEquals("/home".toPath(), root / "home")
     assertEquals("/home/jesse".toPath(), root / "home" / "jesse")
-    assertEquals("/home".toPath(), root / "home" / "jesse" / "..")
-    assertEquals("/home/jake".toPath(), root / "home" / "jesse" / ".." / "jake")
+    assertEquals("/home/jesse/..".toPath(), root / "home" / "jesse" / "..")
+    assertEquals("/home/jesse/../jake".toPath(), root / "home" / "jesse" / ".." / "jake")
   }
 
   @Test
@@ -274,8 +291,11 @@ class PathTest {
     val cwd = ".".toPath()
     assertEquals("home".toPath(), cwd / "home")
     assertEquals("home${slash}jesse".toPath(), cwd / "home" / "jesse")
-    assertEquals("home".toPath(), cwd / "home" / "jesse" / "..")
-    assertEquals("home${slash}jake".toPath(), cwd / "home" / "jesse" / ".." / "jake")
+    assertEquals("home${slash}jesse$slash..".toPath(), cwd / "home" / "jesse" / "..")
+    assertEquals(
+      "home${slash}jesse$slash..${slash}jake".toPath(),
+      cwd / "home" / "jesse" / ".." / "jake"
+    )
   }
 
   @Test
@@ -306,6 +326,11 @@ class PathTest {
     assertEquals("/a", "/a/".toPath().toString())
     assertEquals("/a/b/c", "/a/b/c".toPath().toString())
     assertEquals("/a/b/c", "/a/b/c/".toPath().toString())
+    assertEquals("/", "/".toPath(normalize = true).toString())
+    assertEquals("/a", "/a".toPath(normalize = true).toString())
+    assertEquals("/a", "/a/".toPath(normalize = true).toString())
+    assertEquals("/a/b/c", "/a/b/c".toPath(normalize = true).toString())
+    assertEquals("/a/b/c", "/a/b/c/".toPath(normalize = true).toString())
   }
 
   @Test
@@ -314,6 +339,10 @@ class PathTest {
     assertEquals("/", "/../".toPath().toString())
     assertEquals("/", "/../..".toPath().toString())
     assertEquals("/", "/../../".toPath().toString())
+    assertEquals("/", "/..".toPath(normalize = true).toString())
+    assertEquals("/", "/../".toPath(normalize = true).toString())
+    assertEquals("/", "/../..".toPath(normalize = true).toString())
+    assertEquals("/", "/../../".toPath(normalize = true).toString())
   }
 
   @Test
@@ -323,6 +352,11 @@ class PathTest {
     assertEquals("/a", "/a//".toPath().toString())
     assertEquals("/a", "//a//".toPath().toString())
     assertEquals("/a/b", "/a/b//".toPath().toString())
+    assertEquals("/", "//".toPath(normalize = true).toString())
+    assertEquals("/a", "//a".toPath(normalize = true).toString())
+    assertEquals("/a", "/a//".toPath(normalize = true).toString())
+    assertEquals("/a", "//a//".toPath(normalize = true).toString())
+    assertEquals("/a/b", "/a/b//".toPath(normalize = true).toString())
   }
 
   @Test
@@ -336,6 +370,15 @@ class PathTest {
     assertEquals("/a", "//a/./".toPath().toString())
     assertEquals("/a", "//a/./.".toPath().toString())
     assertEquals("/a/b", "/a/./b/".toPath().toString())
+    assertEquals("/", "/./".toPath(normalize = true).toString())
+    assertEquals("/a", "/./a".toPath(normalize = true).toString())
+    assertEquals("/a", "/a/./".toPath(normalize = true).toString())
+    assertEquals("/a", "/a//.".toPath(normalize = true).toString())
+    assertEquals("/a", "/./a//".toPath(normalize = true).toString())
+    assertEquals("/a", "/a/.".toPath(normalize = true).toString())
+    assertEquals("/a", "//a/./".toPath(normalize = true).toString())
+    assertEquals("/a", "//a/./.".toPath(normalize = true).toString())
+    assertEquals("/a/b", "/a/./b/".toPath(normalize = true).toString())
   }
 
   @Test
@@ -347,20 +390,37 @@ class PathTest {
     assertEquals("a/b", "a/b/".toPath().toString())
     assertEquals("a/b/c/d", "a/b/c/d".toPath().toString())
     assertEquals("a/b/c/d", "a/b/c/d/".toPath().toString())
+    assertEquals(".", "".toPath(normalize = true).toString())
+    assertEquals(".", ".".toPath(normalize = true).toString())
+    assertEquals("a", "a/".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/b".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/b/".toPath(normalize = true).toString())
+    assertEquals("a/b/c/d", "a/b/c/d".toPath(normalize = true).toString())
+    assertEquals("a/b/c/d", "a/b/c/d/".toPath(normalize = true).toString())
   }
 
   @Test
   fun stringToRelativePathWithTraversal() {
     assertEquals("..", "..".toPath().toString())
     assertEquals("..", "../".toPath().toString())
-    assertEquals(".", "a/..".toPath().toString())
-    assertEquals(".", "a/../".toPath().toString())
-    assertEquals("..", "a/../..".toPath().toString())
-    assertEquals("..", "a/../../".toPath().toString())
-    assertEquals("../..", "a/../../..".toPath().toString())
+    assertEquals("a/..", "a/..".toPath().toString())
+    assertEquals("a/..", "a/../".toPath().toString())
+    assertEquals("a/../..", "a/../..".toPath().toString())
+    assertEquals("a/../..", "a/../../".toPath().toString())
+    assertEquals("a/../../..", "a/../../..".toPath().toString())
     assertEquals("../../b", "../../b".toPath().toString())
-    assertEquals("../../b", "a/../../../b".toPath().toString())
-    assertEquals("../../c", "a/../../../b/../c".toPath().toString())
+    assertEquals("a/../../../b", "a/../../../b".toPath().toString())
+    assertEquals("a/../../../b/../c", "a/../../../b/../c".toPath().toString())
+    assertEquals("..", "..".toPath(normalize = true).toString())
+    assertEquals("..", "../".toPath(normalize = true).toString())
+    assertEquals(".", "a/..".toPath(normalize = true).toString())
+    assertEquals(".", "a/../".toPath(normalize = true).toString())
+    assertEquals("..", "a/../..".toPath(normalize = true).toString())
+    assertEquals("..", "a/../../".toPath(normalize = true).toString())
+    assertEquals("../..", "a/../../..".toPath(normalize = true).toString())
+    assertEquals("../../b", "../../b".toPath(normalize = true).toString())
+    assertEquals("../../b", "a/../../../b".toPath(normalize = true).toString())
+    assertEquals("../../c", "a/../../../b/../c".toPath(normalize = true).toString())
   }
 
   @Test
@@ -370,6 +430,11 @@ class PathTest {
     assertEquals("a/b", "a/b//".toPath().toString())
     assertEquals("a/b", "a//b//".toPath().toString())
     assertEquals("a/b/c", "a/b/c//".toPath().toString())
+    assertEquals("a", "a//".toPath(normalize = true).toString())
+    assertEquals("a/b", "a//b".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/b//".toPath(normalize = true).toString())
+    assertEquals("a/b", "a//b//".toPath(normalize = true).toString())
+    assertEquals("a/b/c", "a/b/c//".toPath(normalize = true).toString())
   }
 
   @Test
@@ -377,7 +442,7 @@ class PathTest {
     assertEquals(".", ".".toPath().toString())
     assertEquals(".", "./".toPath().toString())
     assertEquals(".", "././".toPath().toString())
-    assertEquals(".", "././a/..".toPath().toString())
+    assertEquals("a/..", "././a/..".toPath().toString())
     assertEquals("a", "a/./".toPath().toString())
     assertEquals("a/b", "a/./b".toPath().toString())
     assertEquals("a/b", "a/b/./".toPath().toString())
@@ -387,6 +452,19 @@ class PathTest {
     assertEquals("a/b", "a//b/./".toPath().toString())
     assertEquals("a/b", "a//b/./.".toPath().toString())
     assertEquals("a/b/c", "a/b/./c/".toPath().toString())
+    assertEquals(".", ".".toPath(normalize = true).toString())
+    assertEquals(".", "./".toPath(normalize = true).toString())
+    assertEquals(".", "././".toPath(normalize = true).toString())
+    assertEquals(".", "././a/..".toPath(normalize = true).toString())
+    assertEquals("a", "a/./".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/./b".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/b/./".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/b//.".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/./b//".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/b/.".toPath(normalize = true).toString())
+    assertEquals("a/b", "a//b/./".toPath(normalize = true).toString())
+    assertEquals("a/b", "a//b/./.".toPath(normalize = true).toString())
+    assertEquals("a/b/c", "a/b/./c/".toPath(normalize = true).toString())
   }
 
   @Test
@@ -401,8 +479,10 @@ class PathTest {
 
   @Test
   fun windowsPathTraversalUp() {
-    assertEquals("C:\\z".toPath(), "C:\\x\\y\\..\\..\\..\\z".toPath())
-    assertEquals("C:..\\z".toPath(), "C:x\\y\\..\\..\\..\\z".toPath())
+    assertEquals("C:\\x\\y\\..\\..\\..\\z".toPath(), "C:\\x\\y\\..\\..\\..\\z".toPath())
+    assertEquals("C:x\\y\\..\\..\\..\\z".toPath(), "C:x\\y\\..\\..\\..\\z".toPath())
+    assertEquals("C:\\z".toPath(), "C:\\x\\y\\..\\..\\..\\z".toPath(normalize = true))
+    assertEquals("C:..\\z".toPath(), "C:x\\y\\..\\..\\..\\z".toPath(normalize = true))
   }
 
   @Test
@@ -471,6 +551,25 @@ class PathTest {
     assertRelativeTo(f, e, ".".toPath())
   }
 
+  // Note that we handle the normalized version of the paths when computing relative paths.
+  @Test
+  fun relativeToUnnormalizedPath() {
+    val a = "Users/../a".toPath() // `a` if normalized.
+    val b = "Users/b/../c".toPath() // `Users/c` if normalized.
+    assertRelativeToFails(a, b, sameAsNio = false)
+    assertRelativeToFails(b, a, sameAsNio = false)
+    assertRelativeTo(a.normalized(), b.normalized(), "../Users/c".toPath())
+    assertRelativeTo(b.normalized(), a.normalized(), "../../a".toPath())
+  }
+
+  @Test
+  fun relativeToNormalizedPath() {
+    val a = "Users/../a".toPath(normalize = true) // results to `a`.
+    val b = "Users/b/../c".toPath(normalize = true) // results to `Users/c`.
+    assertRelativeTo(a, b, "../Users/c".toPath())
+    assertRelativeTo(b, a, "../../a".toPath())
+  }
+
   @Test
   fun absoluteToRelative() {
     val a = "/Users/jesse/hello.txt".toPath()
@@ -503,12 +602,26 @@ class PathTest {
   fun absoluteToSelf() {
     val a = "/Users/jesse/hello.txt".toPath()
     assertRelativeTo(a, a, ".".toPath())
+
+    val b = "/Users/benoit/../jesse/hello.txt".toPath()
+    // NIO normalizes.
+    assertRelativeTo(a, b, "../../benoit/../jesse/hello.txt".toPath(), sameAsNio = false)
+    assertRelativeToFails(b, a, sameAsNio = false)
+    assertRelativeTo(b.normalized(), a, ".".toPath())
+    assertRelativeTo(a, b.normalized(), ".".toPath())
   }
 
   @Test
   fun relativeToSelf() {
     val a = "Desktop/hello.txt".toPath()
     assertRelativeTo(a, a, ".".toPath())
+
+    val b = "Documents/../Desktop/hello.txt".toPath()
+    // NIO normalizes.
+    assertRelativeTo(a, b, "../../Documents/../Desktop/hello.txt".toPath(), sameAsNio = false)
+    assertRelativeToFails(b, a, sameAsNio = false)
+    assertRelativeTo(a, b.normalized(), ".".toPath())
+    assertRelativeTo(b.normalized(), a, ".".toPath())
   }
 
   @Test
@@ -565,9 +678,7 @@ class PathTest {
     assertRelativeTo(d, c, "..\\..\\..\\documents\\resume.txt".toPath(), sameAsNio = false)
   }
 
-  /** https://github.com/square/okio/issues/1009 */
   @Test
-  @Ignore
   fun windowsUncPathsDoNotDotDot() {
     assertEquals(
       """\\localhost\c$\Windows""",
@@ -578,18 +689,88 @@ class PathTest {
       """\\127.0.0.1\c$\Windows""".toPath().toString()
     )
     assertEquals(
-      """\\127.0.0.1\c$\Windows""",
+      """\\127.0.0.1\c$\Windows\..\Windows""",
       """\\127.0.0.1\c$\Windows\..\Windows""".toPath().toString()
     )
     assertEquals(
-      """\\127.0.0.1\localhost\c$\Windows""",
+      """\\127.0.0.1\..\localhost\c$\Windows""",
       """\\127.0.0.1\..\localhost\c$\Windows""".toPath().toString()
     )
-    // Note that this is not consistent with what Windows' own APIs do.
-    // TODO(jwilson): should we normalize this?
     assertEquals(
-      """\\127.0.0.1\d$""",
+      """\\127.0.0.1\c$\..\d$""",
       """\\127.0.0.1\c$\..\d$""".toPath().toString()
     )
+
+    assertEquals(
+      """\\localhost\c$\Windows""",
+      """\\localhost\c$\Windows""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\c$\Windows""",
+      """\\127.0.0.1\c$\Windows""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\c$\Windows""",
+      """\\127.0.0.1\c$\Windows\..\Windows""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\localhost\c$\Windows""",
+      """\\127.0.0.1\..\localhost\c$\Windows""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\d$""",
+      """\\127.0.0.1\c$\..\d$""".toPath(normalize = true).toString()
+    )
+    assertEquals(
+      """\\127.0.0.1\c$""",
+      """\\..\127.0.0.1\..\c$""".toPath(normalize = true).toString()
+    )
+  }
+  @Test fun normalizeAbsolute() {
+    assertEquals("/", "/.".toPath(normalize = true).toString())
+    assertEquals("/", "/.".toPath(normalize = false).toString())
+    assertEquals("/", "/..".toPath(normalize = true).toString())
+    assertEquals("/", "/..".toPath(normalize = false).toString())
+    assertEquals("/", "/../..".toPath(normalize = true).toString())
+    assertEquals("/", "/../..".toPath(normalize = false).toString())
+
+    assertEquals("/a/b", "/a/./b".toPath(normalize = true).toString())
+    assertEquals("/a/b", "/a/./b".toPath(normalize = false).toString())
+    assertEquals("/a/.../b", "/a/..././b".toPath(normalize = true).toString())
+    assertEquals("/a/.../b", "/a/..././b".toPath(normalize = false).toString())
+    assertEquals("/", "/a/..".toPath(normalize = true).toString())
+    assertEquals("/a/..", "/a/..".toPath(normalize = false).toString())
+    assertEquals("/b", "/../a/../b".toPath(normalize = true).toString())
+    assertEquals("/a/../b", "/../a/../b".toPath(normalize = false).toString())
+  }
+
+  @Test fun normalizeRelative() {
+    assertEquals(".", ".".toPath(normalize = true).toString())
+    assertEquals(".", ".".toPath(normalize = false).toString())
+    assertEquals("..", "..".toPath(normalize = true).toString())
+    assertEquals("..", "..".toPath(normalize = false).toString())
+    assertEquals("../..", "../..".toPath(normalize = true).toString())
+    assertEquals("../..", "../..".toPath(normalize = false).toString())
+
+    assertEquals("a/b", "a/./b".toPath(normalize = true).toString())
+    assertEquals("a/b", "a/./b".toPath(normalize = false).toString())
+    assertEquals("a/.../b", "a/..././b".toPath(normalize = true).toString())
+    assertEquals("a/.../b", "a/..././b".toPath(normalize = false).toString())
+    assertEquals(".", "a/..".toPath(normalize = true).toString())
+    assertEquals("a/..", "a/..".toPath(normalize = false).toString())
+    assertEquals("../b", "../a/../b".toPath(normalize = true).toString())
+    assertEquals("../a/../b", "../a/../b".toPath(normalize = false).toString())
+  }
+
+  @Test fun normalized() {
+    val normalizedRoot = "/".toPath()
+    assertEquals(normalizedRoot, "/a/..".toPath(normalize = true))
+    assertEquals(normalizedRoot, "/a/..".toPath(normalize = false).normalized())
+    assertEquals(normalizedRoot, "/a/..".toPath(normalize = true).normalized())
+
+    val normalizedRelative = "../b".toPath()
+    assertEquals(normalizedRelative, "../a/../b".toPath(normalize = true))
+    assertEquals(normalizedRelative, "../a/../b".toPath(normalize = false).normalized())
+    assertEquals(normalizedRelative, "../a/../b".toPath(normalize = true).normalized())
   }
 }

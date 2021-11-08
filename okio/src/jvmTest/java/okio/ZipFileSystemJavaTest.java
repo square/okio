@@ -38,13 +38,9 @@ public final class ZipFileSystemJavaTest {
         .build();
     FileSystem zipFileSystem = Okio.openZip(fileSystem, zipPath);
 
-    String content = zipFileSystem.read(Path.get("hello.txt"), source -> {
-      try {
-        return source.readUtf8();
-      } catch (IOException e) {
-        throw new AssertionError(e);
-      }
-    });
-    assertThat(content).isEqualTo("Hello World");
+    try (BufferedSource source = Okio.buffer(zipFileSystem.source(Path.get("hello.txt", false)))) {
+      String content = source.readUtf8();
+      assertThat(content).isEqualTo("Hello World");
+    }
   }
 }

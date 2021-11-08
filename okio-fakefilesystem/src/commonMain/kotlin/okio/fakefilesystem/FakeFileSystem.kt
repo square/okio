@@ -206,13 +206,18 @@ class FakeFileSystem(
   }
 
   override fun canonicalize(path: Path): Path {
-    val canonicalPath = workingDirectory / path
+    val canonicalPath = canonicalizeInternal(path)
 
     if (lookupPath(canonicalPath)?.element == null) {
       throw FileNotFoundException("no such file: $path")
     }
 
     return canonicalPath
+  }
+
+  /** Don't throw [FileNotFoundException] if the path doesn't identify a file. */
+  private fun canonicalizeInternal(path: Path): Path {
+    return workingDirectory.resolve(path, normalize = true)
   }
 
   /**
@@ -225,7 +230,7 @@ class FakeFileSystem(
    */
   @Throws(IOException::class)
   fun <T : Any> setExtra(path: Path, type: KClass<out T>, value: T?) {
-    val canonicalPath = workingDirectory / path
+    val canonicalPath = canonicalizeInternal(path)
     val lookupResult = lookupPath(
       canonicalPath = canonicalPath,
       createRootOnDemand = canonicalPath.isRoot,
@@ -240,7 +245,7 @@ class FakeFileSystem(
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
-    val canonicalPath = workingDirectory / path
+    val canonicalPath = canonicalizeInternal(path)
     val lookupResult = lookupPath(
       canonicalPath = canonicalPath,
       createRootOnDemand = canonicalPath.isRoot,
@@ -254,7 +259,7 @@ class FakeFileSystem(
   override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
 
   private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
-    val canonicalPath = workingDirectory / dir
+    val canonicalPath = canonicalizeInternal(dir)
     val lookupResult = lookupPath(canonicalPath)
     if (lookupResult?.element == null) {
       if (throwOnFailure) throw FileNotFoundException("no such directory: $dir") else return null
@@ -303,7 +308,7 @@ class FakeFileSystem(
       "Cannot require mustCreate and mustExist at the same time."
     }
 
-    val canonicalPath = workingDirectory / file
+    val canonicalPath = canonicalizeInternal(file)
     val lookupResult = lookupPath(canonicalPath, createRootOnDemand = readWrite)
     val now = clock.now()
     val element: File
@@ -369,8 +374,8 @@ class FakeFileSystem(
     )
   }
 
-  override fun createDirectory(dir: Path) {
-    val canonicalPath = workingDirectory / dir
+  override fun createDirectory(dir: Path, mustCreate: Boolean) {
+    val canonicalPath = canonicalizeInternal(dir)
 
     val lookupResult = lookupPath(canonicalPath, createRootOnDemand = true)
 
@@ -379,7 +384,7 @@ class FakeFileSystem(
       return
     }
 
-    if (lookupResult?.element != null) {
+    if (mustCreate && lookupResult?.element != null) {
       throw IOException("already exists: $dir")
     }
 
@@ -391,8 +396,8 @@ class FakeFileSystem(
     source: Path,
     target: Path
   ) {
-    val canonicalSource = workingDirectory / source
-    val canonicalTarget = workingDirectory / target
+    val canonicalSource = canonicalizeInternal(source)
+    val canonicalTarget = canonicalizeInternal(target)
 
     val targetLookupResult = lookupPath(canonicalTarget, createRootOnDemand = true)
     val sourceLookupResult = lookupPath(canonicalSource, resolveLastSymlink = false)
@@ -422,8 +427,8 @@ class FakeFileSystem(
     targetParent.children[canonicalTarget.nameBytes] = removed
   }
 
-  override fun delete(path: Path) {
-    val canonicalPath = workingDirectory / path
+  override fun delete(path: Path, mustExist: Boolean) {
+    val canonicalPath = canonicalizeInternal(path)
 
     val lookupResult = lookupPath(
       canonicalPath = canonicalPath,
@@ -432,7 +437,11 @@ class FakeFileSystem(
     )
 
     if (lookupResult?.element == null) {
-      throw FileNotFoundException("no such file: $path")
+      if (mustExist) {
+        throw FileNotFoundException("no such file: $path")
+      } else {
+        return
+      }
     }
 
     if (lookupResult.element is Directory && lookupResult.element.children.isNotEmpty()) {
@@ -453,7 +462,7 @@ class FakeFileSystem(
     source: Path,
     target: Path
   ) {
-    val canonicalSource = workingDirectory / source
+    val canonicalSource = canonicalizeInternal(source)
 
     val existingLookupResult = lookupPath(canonicalSource, createRootOnDemand = true)
     if (existingLookupResult?.element != null) {
@@ -486,7 +495,8 @@ class FakeFileSystem(
    *
    * This will create the root of the returned path if it does not exist.
    *
-   * @param recurseCount used internally to detect cycles
+   * @param canonicalPath a normalized path, typically the result of [FakeFileSystem.canonicalizeInternal].
+   * @param recurseCount used internally to detect cycles.
    * @param resolveLastSymlink true if the result's element must not itself be a symlink. Use this
    *     for looking up metadata, or operations that apply to the path like delete and move. We
    *     always follow symlinks for enclosing directories.
@@ -538,7 +548,8 @@ class FakeFileSystem(
       val followSymlinks = !isLastSegment || resolveLastSymlink
       if (current is Symlink && followSymlinks) {
         current.access(now = clock.now())
-        currentPath = currentPath.parent!! / current.target
+        // We wanna normalize it in case the target is relative and starts with `..`.
+        currentPath = currentPath.parent!!.resolve(current.target, normalize = true)
         val symlinkLookupResult = lookupPath(
           canonicalPath = currentPath,
           recurseCount = recurseCount + 1,

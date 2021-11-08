@@ -23,7 +23,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 class BufferSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.BUFFER)
 class RealBufferedSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.REAL_BUFFERED_SOURCE)
@@ -381,7 +380,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
       assertArrayEquals(expected, sink)
     } else {
       assertEquals(4, read.toLong())
-      val expected = byteArrayOf('a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte(), 'd'.code.toByte(), 0)
+      val expected =
+        byteArrayOf('a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte(), 'd'.code.toByte(), 0)
       assertArrayEquals(expected, sink)
     }
   }
@@ -398,7 +398,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
       assertArrayEquals(expected, sink)
     } else {
       assertEquals(3, read.toLong())
-      val expected = byteArrayOf(0, 0, 'a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte(), 0, 0)
+      val expected =
+        byteArrayOf(0, 0, 'a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte(), 0, 0)
       assertArrayEquals(expected, sink)
     }
   }
@@ -501,7 +502,6 @@ abstract class AbstractBufferedSourceTest internal constructor(
   @Test fun skipInsufficientData() {
     sink.writeUtf8("a")
     sink.emit()
-
     assertFailsWith<EOFException> {
       source.skip(2)
     }
@@ -615,17 +615,11 @@ abstract class AbstractBufferedSourceTest internal constructor(
   @Test fun indexOfByteInvalidBoundsThrows() {
     sink.writeUtf8("abc")
     sink.emit()
-
-    try {
+    assertFailsWith<IllegalArgumentException>("Expected failure: fromIndex < 0") {
       source.indexOf('a'.code.toByte(), -1)
-      fail("Expected failure: fromIndex < 0")
-    } catch (expected: IllegalArgumentException) {
     }
-
-    try {
+    assertFailsWith<IllegalArgumentException>("Expected failure: fromIndex > toIndex") {
       source.indexOf('a'.code.toByte(), 10, 0)
-      fail("Expected failure: fromIndex > toIndex")
-    } catch (expected: IllegalArgumentException) {
     }
   }
 
@@ -723,19 +717,15 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   @Test fun indexOfByteStringInvalidArgumentsThrows() {
-    try {
+    var e = assertFailsWith<IllegalArgumentException> {
       source.indexOf(ByteString.of())
-      fail()
-    } catch (e: IllegalArgumentException) {
-      assertEquals("bytes is empty", e.message)
     }
+    assertEquals("bytes is empty", e.message)
 
-    try {
+    e = assertFailsWith<IllegalArgumentException> {
       source.indexOf("hi".encodeUtf8(), -1)
-      fail()
-    } catch (e: IllegalArgumentException) {
-      assertEquals("fromIndex < 0: -1", e.message)
     }
+    assertEquals("fromIndex < 0: -1", e.message)
   }
 
   /**
@@ -857,35 +847,29 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   @Test fun longHexStringTooLongThrows() {
-    try {
-      sink.writeUtf8("fffffffffffffffff")
-      sink.emit()
+    sink.writeUtf8("fffffffffffffffff")
+    sink.emit()
+
+    val e = assertFailsWith<NumberFormatException> {
       source.readHexadecimalUnsignedLong()
-      fail()
-    } catch (e: NumberFormatException) {
-      assertEquals("Number too large: fffffffffffffffff", e.message)
     }
+    assertEquals("Number too large: fffffffffffffffff", e.message)
   }
 
   @Test fun longHexStringTooShortThrows() {
-    try {
-      sink.writeUtf8(" ")
-      sink.emit()
+    sink.writeUtf8(" ")
+    sink.emit()
+
+    val e = assertFailsWith<NumberFormatException> {
       source.readHexadecimalUnsignedLong()
-      fail()
-    } catch (e: NumberFormatException) {
-      assertEquals("Expected leading [0-9a-fA-F] character but was 0x20", e.message)
     }
+    assertEquals("Expected leading [0-9a-fA-F] character but was 0x20", e.message)
   }
 
   @Test fun longHexEmptySourceThrows() {
-    try {
-      sink.writeUtf8("")
-      sink.emit()
-      source.readHexadecimalUnsignedLong()
-      fail()
-    } catch (expected: EOFException) {
-    }
+    sink.writeUtf8("")
+    sink.emit()
+    assertFailsWith<EOFException> { source.readHexadecimalUnsignedLong() }
   }
 
   @Test fun longDecimalString() {
@@ -918,56 +902,66 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   @Test fun longDecimalStringTooLongThrows() {
-    try {
-      sink.writeUtf8("12345678901234567890") // Too many digits.
-      sink.emit()
+    sink.writeUtf8("12345678901234567890") // Too many digits.
+    sink.emit()
+
+    val e = assertFailsWith<NumberFormatException> {
       source.readDecimalLong()
-      fail()
-    } catch (e: NumberFormatException) {
-      assertEquals("Number too large: 12345678901234567890", e.message)
     }
+    assertEquals("Number too large: 12345678901234567890", e.message)
   }
 
   @Test fun longDecimalStringTooHighThrows() {
-    try {
-      sink.writeUtf8("9223372036854775808") // Right size but cannot fit.
-      sink.emit()
+    sink.writeUtf8("9223372036854775808") // Right size but cannot fit.
+    sink.emit()
+
+    val e = assertFailsWith<NumberFormatException> {
       source.readDecimalLong()
-      fail()
-    } catch (e: NumberFormatException) {
-      assertEquals("Number too large: 9223372036854775808", e.message)
     }
+    assertEquals("Number too large: 9223372036854775808", e.message)
   }
 
   @Test fun longDecimalStringTooLowThrows() {
-    try {
-      sink.writeUtf8("-9223372036854775809") // Right size but cannot fit.
-      sink.emit()
+    sink.writeUtf8("-9223372036854775809") // Right size but cannot fit.
+    sink.emit()
+
+    val e = assertFailsWith<NumberFormatException> {
       source.readDecimalLong()
-      fail()
-    } catch (e: NumberFormatException) {
-      assertEquals("Number too large: -9223372036854775809", e.message)
     }
+    assertEquals("Number too large: -9223372036854775809", e.message)
   }
 
   @Test fun longDecimalStringTooShortThrows() {
-    try {
-      sink.writeUtf8(" ")
-      sink.emit()
+    sink.writeUtf8(" ")
+    sink.emit()
+
+    val e = assertFailsWith<NumberFormatException> {
       source.readDecimalLong()
-      fail()
-    } catch (e: NumberFormatException) {
-      assertEquals("Expected leading [0-9] or '-' character but was 0x20", e.message)
     }
+    assertEquals("Expected a digit or '-' but was 0x20", e.message)
   }
 
   @Test fun longDecimalEmptyThrows() {
-    try {
-      sink.writeUtf8("")
-      sink.emit()
+    sink.writeUtf8("")
+    sink.emit()
+    assertFailsWith<EOFException> {
       source.readDecimalLong()
-      fail()
-    } catch (expected: EOFException) {
+    }
+  }
+
+  @Test fun longDecimalLoneDashThrows() {
+    sink.writeUtf8("-")
+    sink.emit()
+    assertFailsWith<EOFException> {
+      source.readDecimalLong()
+    }
+  }
+
+  @Test fun longDecimalDashFollowedByNonDigitThrows() {
+    sink.writeUtf8("- ")
+    sink.emit()
+    assertFailsWith<NumberFormatException> {
+      source.readDecimalLong()
     }
   }
 
@@ -1170,12 +1164,10 @@ abstract class AbstractBufferedSourceTest internal constructor(
 
     assertEquals("def", source.readUtf8(3))
 
-    try {
+    val e = assertFailsWith<IllegalStateException> {
       peek.readUtf8()
-      fail()
-    } catch (e: IllegalStateException) {
-      assertEquals("Peek source is invalid because upstream source was used", e.message)
     }
+    assertEquals("Peek source is invalid because upstream source was used", e.message)
   }
 
   @Test fun peekSegmentThenInvalid() {
@@ -1193,12 +1185,10 @@ abstract class AbstractBufferedSourceTest internal constructor(
     // Skip the rest of the buffered data
     peek.skip(peek.buffer.size)
 
-    try {
+    val e = assertFailsWith<IllegalStateException> {
       peek.readByte()
-      fail()
-    } catch (e: IllegalStateException) {
-      assertEquals("Peek source is invalid because upstream source was used", e.message)
     }
+    assertEquals("Peek source is invalid because upstream source was used", e.message)
   }
 
   @Test fun peekDoesntReadTooMuch() {

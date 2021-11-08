@@ -1137,7 +1137,7 @@ public final class BufferedSourceTest {
       source.readDecimalLong();
       fail();
     } catch (NumberFormatException e) {
-      assertEquals("Expected leading [0-9] or '-' character but was 0x20", e.getMessage());
+      assertEquals("Expected a digit or '-' but was 0x20", e.getMessage());
     }
   }
 

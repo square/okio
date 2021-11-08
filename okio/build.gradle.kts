@@ -195,15 +195,7 @@ dependencies {
   signature(deps.animalSniffer.javaSignature)
 }
 
-// https://github.com/vanniktech/gradle-maven-publish-plugin/issues/301
-val metadataJar by tasks.getting(Jar::class)
-configure<PublishingExtension> {
-  publications.withType<MavenPublication>().named("kotlinMultiplatform").configure {
-    artifact(metadataJar)
-  }
-}
-
-mavenPublishing {
+configure<MavenPublishBaseExtension> {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )

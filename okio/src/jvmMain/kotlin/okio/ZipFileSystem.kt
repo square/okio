@@ -69,11 +69,17 @@ internal class ZipFileSystem internal constructor(
   private val comment: String?
 ) : FileSystem() {
   override fun canonicalize(path: Path): Path {
-    return "/".toPath() / path
+    // TODO(jwilson): throw FileNotFoundException if the canonical file doesn't exist.
+    return canonicalizeInternal(path)
+  }
+
+  /** Don't throw [FileNotFoundException] if the path doesn't identify a file. */
+  private fun canonicalizeInternal(path: Path): Path {
+    return ROOT.resolve(path, normalize = true)
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
-    val canonicalPath = canonicalize(path)
+    val canonicalPath = canonicalizeInternal(path)
     val entry = entries[canonicalPath] ?: return null
 
     val basicMetadata = FileMetadata(
@@ -109,7 +115,7 @@ internal class ZipFileSystem internal constructor(
   override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
 
   private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
-    val canonicalDir = canonicalize(dir)
+    val canonicalDir = canonicalizeInternal(dir)
     val entry = entries[canonicalDir]
       ?: if (throwOnFailure) throw IOException("not a directory: $dir") else return null
     return entry.children.toList()
@@ -117,7 +123,7 @@ internal class ZipFileSystem internal constructor(
 
   @Throws(IOException::class)
   override fun source(path: Path): Source {
-    val canonicalPath = canonicalize(path)
+    val canonicalPath = canonicalizeInternal(path)
     val entry = entries[canonicalPath] ?: throw FileNotFoundException("no such file: $path")
     val source = fileSystem.openReadOnly(zipPath).use { fileHandle ->
       fileHandle.source(entry.offset).buffer()
@@ -146,14 +152,19 @@ internal class ZipFileSystem internal constructor(
     throw IOException("zip file systems are read-only")
   }
 
-  override fun createDirectory(dir: Path): Unit =
+  override fun createDirectory(dir: Path, mustCreate: Boolean): Unit =
     throw IOException("zip file systems are read-only")
 
   override fun atomicMove(source: Path, target: Path): Unit =
     throw IOException("zip file systems are read-only")
 
-  override fun delete(path: Path): Unit = throw IOException("zip file systems are read-only")
+  override fun delete(path: Path, mustExist: Boolean): Unit =
+    throw IOException("zip file systems are read-only")
 
   override fun createSymlink(source: Path, target: Path): Unit =
     throw IOException("zip file systems are read-only")
+
+  private companion object {
+    val ROOT = "/".toPath()
+  }
 }

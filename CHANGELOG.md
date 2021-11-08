@@ -1,6 +1,47 @@
 Change Log
 ==========
 
+## Version 3.0.0
+
+_2021-10-28_
+
+This is the first stable release of Okio 3.x. This release is strongly backwards-compatible with
+Okio 2.x, and the new major version signifies new capabilities more than it does backwards
+incompatibility.
+
+Most users should be able to upgrade from 2.x by just changing the version. If you're using Okio
+in a Kotlin Multiplatform project, you'll need to drop the `-multiplatform` suffix in your Gradle
+dependencies.
+
+ * New: Remove `@ExperimentalFileSystem`. This annotation is no longer necessary as the file system
+   is no longer experimental!
+ * New: Path no longer aggressively normalizes `..` segments. Use `Path.normalize()` to apply these
+   based on the content of the path, or `FileSystem.canonicalize()` to do it honoring any symlinks
+   on a particular file system.
+ * New: Publish a [bill of materials (BOM)][bom] for Okio. Depend on this from Gradle or Maven to
+   keep all of your Okio artifacts on the same version, even if they're declared via transitive
+   dependencies. You can even omit versions when declaring other Okio dependencies.
+
+   ```kotlin
+   dependencies {
+      api(platform("com.squareup.okio:okio-bom:3.0.0"))
+      api("com.squareup.okio:okio")                // No version!
+      api("com.squareup.okio:okio-fakefilesystem") // No version!
+   }
+   ```
+
+ * New: `FileSystem.delete()` silently succeeds when deleting a file that doesn't exist. Use
+   the new `mustExist` parameter to trigger an exception instead.
+ * New: `FileSystem.createDirectories()` silently succeeds when creating a directory that already
+   exists. Use the new `mustCreate` parameter to trigger an exception instead.
+ * New: `FileSystem` offers Java-language overloads where appropriate. Previously functions that
+   had default parameters were potentially awkward to invoke from Java.
+ * New: `Timeout.intersectWith()` returns a value instead of `Unit`. This is a binary-incompatible
+   change. We expect that this public API is very rarely used outside of Okio itself.
+ * Fix: Change `BufferedSource.readDecimalLong()` to fail if the input value is just `-`. Previously
+   Okio incorrectly returned `0` for this.
+
+
 ## Version 3.0.0-alpha.11
 
 _2021-10-23_
@@ -728,11 +769,12 @@ _2014-04-08_
  * Imported from OkHttp.
 
 
- [datetime_0_3_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.3.0
- [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
- [kotlin_1_4_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.10
- [kotlin_1_4_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.20
- [kotlin_1_5_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.20
- [kotlin_1_5_31]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.31
- [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
- [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
+[bom]: https://docs.gradle.org/6.2/userguide/platforms.html#sub:bom_import
+[datetime_0_3_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.3.0
+[gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
+[kotlin_1_4_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.10
+[kotlin_1_4_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.20
+[kotlin_1_5_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.20
+[kotlin_1_5_31]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.31
+[maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
+[xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302

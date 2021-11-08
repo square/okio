@@ -680,11 +680,6 @@ internal inline fun Buffer.commonReadDecimalLong(): Long {
         negative = true
         overflowDigit -= 1
       } else {
-        if (seen == 0) {
-          throw NumberFormatException(
-            "Expected leading [0-9] or '-' character but was 0x${b.toHexString()}"
-          )
-        }
         // Set a flag to stop iteration. We still need to run through segment updating below.
         done = true
         break
@@ -702,6 +697,14 @@ internal inline fun Buffer.commonReadDecimalLong(): Long {
   } while (!done && head != null)
 
   size -= seen.toLong()
+
+  val minimumSeen = if (negative) 2 else 1
+  if (seen < minimumSeen) {
+    if (size == 0L) throw EOFException()
+    val expected = if (negative) "Expected a digit" else "Expected a digit or '-'"
+    throw NumberFormatException("$expected but was 0x${get(0).toHexString()}")
+  }
+
   return if (negative) value else -value
 }
 

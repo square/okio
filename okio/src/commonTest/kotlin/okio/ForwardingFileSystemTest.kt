@@ -35,7 +35,7 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
   @Test
   fun pathBlocking() {
     val forwardingFileSystem = object : ForwardingFileSystem(fileSystem) {
-      override fun delete(path: Path) {
+      override fun delete(path: Path, mustExist: Boolean) {
         throw IOException("synthetic failure!")
       }
 

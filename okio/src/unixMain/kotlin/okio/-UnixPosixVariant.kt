@@ -24,6 +24,7 @@ import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.DEFFILEMODE
+import platform.posix.ENOENT
 import platform.posix.FILE
 import platform.posix.O_CREAT
 import platform.posix.O_EXCL
@@ -56,9 +57,13 @@ internal actual val PLATFORM_TEMPORARY_DIRECTORY: Path
 
 internal actual val PLATFORM_DIRECTORY_SEPARATOR = "/"
 
-internal actual fun PosixFileSystem.variantDelete(path: Path) {
+internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean) {
   val result = remove(path.toString())
   if (result != 0) {
+    if (errno == ENOENT) {
+      if (mustExist) throw FileNotFoundException("no such file: $path")
+      else return
+    }
     throw errnoToIOException(errno)
   }
 }
@@ -72,7 +77,7 @@ internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
   val fullpath = realpath(path.toString(), null)
     ?: throw errnoToIOException(errno)
   try {
-    return Buffer().writeNullTerminated(fullpath).toPath()
+    return Buffer().writeNullTerminated(fullpath).toPath(normalize = true)
   } finally {
     free(fullpath)
   }
@@ -100,7 +105,11 @@ internal actual fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean)
   return FileSink(openFile)
 }
 
-internal actual fun PosixFileSystem.variantAppendingSink(file: Path): Sink {
+internal actual fun PosixFileSystem.variantAppendingSink(file: Path, mustExist: Boolean): Sink {
+  // There is a `r+` flag which we could have used to force existence of [file] but this flag
+  // doesn't allow opening for appending, and we don't currently have a way to move the cursor to
+  // the end of the file. We are then forcing existence non-atomically.
+  if (mustExist && !exists(file)) throw IOException("$file doesn't exist.")
   val openFile: CPointer<FILE> = fopen(file.toString(), "a")
     ?: throw errnoToIOException(errno)
   return FileSink(openFile)

@@ -17,6 +17,7 @@ package okio
 
 import okio.Path.Companion.toOkioPath
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+import java.nio.file.FileSystemException
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.NoSuchFileException
@@ -43,6 +44,8 @@ internal class NioSystemFileSystem : JvmSystemFileSystem() {
       )
     } catch (_: NoSuchFileException) {
       return null
+    } catch (_: FileSystemException) {
+      return null
     }
 
     val symlinkTarget: NioPath? = if (attributes.isSymbolicLink) {
@@ -63,7 +66,7 @@ internal class NioSystemFileSystem : JvmSystemFileSystem() {
   }
 
   /**
-   * Returns this time as a epoch millis. If this is 0L this returns null, because epoch time 0L is
+   * Returns this time as an epoch millis. If this is 0L this returns null, because epoch time 0L is
    * a special value that indicates the requested time was not available.
    */
   private fun FileTime.zeroToNull(): Long? {

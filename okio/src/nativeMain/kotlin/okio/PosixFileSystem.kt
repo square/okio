@@ -20,6 +20,7 @@ import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.DIR
+import platform.posix.EEXIST
 import platform.posix.closedir
 import platform.posix.dirent
 import platform.posix.errno
@@ -52,7 +53,7 @@ internal object PosixFileSystem : FileSystem() {
         val dirent: CPointer<dirent> = readdir(opendir) ?: break
         val childPath = buffer.writeNullTerminated(
           bytes = dirent[0].d_name
-        ).toPath()
+        ).toPath(normalize = true)
 
         if (childPath == SELF_DIRECTORY_ENTRY || childPath == PARENT_DIRECTORY_ENTRY) {
           continue // exclude '.' and '..' from the results.
@@ -83,11 +84,15 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun sink(file: Path, mustCreate: Boolean) = variantSink(file, mustCreate)
 
-  override fun appendingSink(file: Path, mustExist: Boolean) = variantAppendingSink(file)
+  override fun appendingSink(file: Path, mustExist: Boolean) = variantAppendingSink(file, mustExist)
 
-  override fun createDirectory(dir: Path) {
+  override fun createDirectory(dir: Path, mustCreate: Boolean) {
     val result = variantMkdir(dir)
     if (result != 0) {
+      if (errno == EEXIST) {
+        if (mustCreate) errnoToIOException(errno)
+        else return
+      }
       throw errnoToIOException(errno)
     }
   }
@@ -99,8 +104,8 @@ internal object PosixFileSystem : FileSystem() {
     variantMove(source, target)
   }
 
-  override fun delete(path: Path) {
-    variantDelete(path)
+  override fun delete(path: Path, mustExist: Boolean) {
+    variantDelete(path, mustExist)
   }
 
   override fun createSymlink(source: Path, target: Path) = variantCreateSymlink(source, target)

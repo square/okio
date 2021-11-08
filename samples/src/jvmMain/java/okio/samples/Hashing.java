@@ -15,23 +15,24 @@
  */
 package okio.samples;
 
-import java.io.File;
 import java.io.IOException;
 import okio.Buffer;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.ByteString;
+import okio.FileSystem;
 import okio.HashingSink;
 import okio.HashingSource;
 import okio.Okio;
+import okio.Path;
 import okio.Source;
 
 public final class Hashing {
   public void run() throws Exception {
-    File file = new File("../README.md");
+    Path path = Path.get("../README.md");
 
     System.out.println("ByteString");
-    ByteString byteString = readByteString(file);
+    ByteString byteString = readByteString(path);
     System.out.println("       md5: " + byteString.md5().hex());
     System.out.println("      sha1: " + byteString.sha1().hex());
     System.out.println("    sha256: " + byteString.sha256().hex());
@@ -39,7 +40,7 @@ public final class Hashing {
     System.out.println();
 
     System.out.println("Buffer");
-    Buffer buffer = readBuffer(file);
+    Buffer buffer = readBuffer(path);
     System.out.println("       md5: " + buffer.md5().hex());
     System.out.println("      sha1: " + buffer.sha1().hex());
     System.out.println("    sha256: " + buffer.sha256().hex());
@@ -47,7 +48,7 @@ public final class Hashing {
     System.out.println();
 
     System.out.println("HashingSource");
-    try (HashingSource hashingSource = HashingSource.sha256(Okio.source(file));
+    try (HashingSource hashingSource = HashingSource.sha256(FileSystem.SYSTEM.source(path));
          BufferedSource source = Okio.buffer(hashingSource)) {
       source.readAll(Okio.blackhole());
       System.out.println("    sha256: " + hashingSource.hash().hex());
@@ -57,7 +58,7 @@ public final class Hashing {
     System.out.println("HashingSink");
     try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
          BufferedSink sink = Okio.buffer(hashingSink);
-         Source source = Okio.source(file)) {
+         Source source = FileSystem.SYSTEM.source(path)) {
       sink.writeAll(source);
       sink.close(); // Emit anything buffered.
       System.out.println("    sha256: " + hashingSink.hash().hex());
@@ -70,14 +71,14 @@ public final class Hashing {
     System.out.println();
   }
 
-  public ByteString readByteString(File file) throws IOException {
-    try (BufferedSource source = Okio.buffer(Okio.source(file))) {
+  public ByteString readByteString(Path path) throws IOException {
+    try (BufferedSource source = Okio.buffer(FileSystem.SYSTEM.source(path))) {
       return source.readByteString();
     }
   }
 
-  public Buffer readBuffer(File file) throws IOException {
-    try (Source source = Okio.source(file)) {
+  public Buffer readBuffer(Path path) throws IOException {
+    try (Source source = FileSystem.SYSTEM.source(path)) {
       Buffer buffer = new Buffer();
       buffer.writeAll(source);
       return buffer;

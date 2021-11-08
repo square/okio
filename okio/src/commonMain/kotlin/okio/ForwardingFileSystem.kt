@@ -156,16 +156,7 @@ abstract class ForwardingFileSystem(
     if (metadataOrNull.symlinkTarget == null) return metadataOrNull
 
     val symlinkTarget = onPathResult(metadataOrNull.symlinkTarget, "metadataOrNull")
-    return FileMetadata(
-      isRegularFile = metadataOrNull.isRegularFile,
-      isDirectory = metadataOrNull.isDirectory,
-      symlinkTarget = symlinkTarget,
-      size = metadataOrNull.size,
-      createdAtMillis = metadataOrNull.createdAtMillis,
-      lastAccessedAtMillis = metadataOrNull.lastAccessedAtMillis,
-      lastModifiedAtMillis = metadataOrNull.lastModifiedAtMillis,
-      extras = metadataOrNull.extras,
-    )
+    return metadataOrNull.copy(symlinkTarget = symlinkTarget)
   }
 
   @Throws(IOException::class)
@@ -222,9 +213,9 @@ abstract class ForwardingFileSystem(
   }
 
   @Throws(IOException::class)
-  override fun createDirectory(dir: Path) {
+  override fun createDirectory(dir: Path, mustCreate: Boolean) {
     val dir = onPathParameter(dir, "createDirectory", "dir")
-    delegate.createDirectory(dir)
+    delegate.createDirectory(dir, mustCreate)
   }
 
   @Throws(IOException::class)
@@ -235,9 +226,9 @@ abstract class ForwardingFileSystem(
   }
 
   @Throws(IOException::class)
-  override fun delete(path: Path) {
+  override fun delete(path: Path, mustExist: Boolean) {
     val path = onPathParameter(path, "delete", "path")
-    delegate.delete(path)
+    delegate.delete(path, mustExist)
   }
 
   @Throws(IOException::class)

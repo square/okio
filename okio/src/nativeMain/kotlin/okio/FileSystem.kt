@@ -81,10 +81,10 @@ actual abstract class FileSystem {
   actual abstract fun appendingSink(file: Path, mustExist: Boolean): Sink
 
   @Throws(IOException::class)
-  actual abstract fun createDirectory(dir: Path)
+  actual abstract fun createDirectory(dir: Path, mustCreate: Boolean)
 
   @Throws(IOException::class)
-  actual fun createDirectories(dir: Path): Unit = commonCreateDirectories(dir)
+  actual fun createDirectories(dir: Path, mustCreate: Boolean): Unit = commonCreateDirectories(dir, mustCreate)
 
   @Throws(IOException::class)
   actual abstract fun atomicMove(source: Path, target: Path)
@@ -93,11 +93,11 @@ actual abstract class FileSystem {
   actual open fun copy(source: Path, target: Path): Unit = commonCopy(source, target)
 
   @Throws(IOException::class)
-  actual abstract fun delete(path: Path)
+  actual abstract fun delete(path: Path, mustExist: Boolean)
 
   @Throws(IOException::class)
-  actual open fun deleteRecursively(fileOrDirectory: Path): Unit =
-    commonDeleteRecursively(fileOrDirectory)
+  actual open fun deleteRecursively(fileOrDirectory: Path, mustExist: Boolean): Unit =
+    commonDeleteRecursively(fileOrDirectory, mustExist)
 
   @Throws(IOException::class)
   actual abstract fun createSymlink(source: Path, target: Path)

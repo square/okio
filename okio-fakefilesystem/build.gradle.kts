@@ -73,13 +73,7 @@ dependencies {
   signature(deps.animalSniffer.javaSignature)
 }
 
-publishing {
-  publications.getByName<MavenPublication>("kotlinMultiplatform") {
-    artifact(tasks.metadataJar)
-  }
-}
-
-mavenPublishing {
+configure<MavenPublishBaseExtension> {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )

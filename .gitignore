@@ -25,6 +25,6 @@ obj
 node_modules
 
 # Special Mkdocs files
-docs/2.x
+docs/3.x
 docs/changelog.md
 docs/contributing.md
