@@ -195,7 +195,7 @@ dependencies {
   signature(deps.animalSniffer.javaSignature)
 }
 
-configure<MavenPublishBaseExtension> {
+mavenPublishing {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )
