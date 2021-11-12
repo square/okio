@@ -46,8 +46,13 @@ jobs:
           name: japicmp-report
           path: okio/jvm/japicmp/build/reports/japi.txt
 
-  multiplatform:
-    runs-on: macOS-latest
+  all-platforms:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
 
     steps:
       - name: Checkout
@@ -61,53 +66,13 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 14
-
-      - name: Test
-        run: |
-          ./gradlew build
-
-  linux:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-
-      - name: Configure JDK
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'zulu'
-          java-version: 14
-
-      - name: Test
-        run: |
-          ./gradlew build
-
-  windows:
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-
-      - name: Configure JDK
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'zulu'
-          java-version: 8
 
       - name: Test
         run: |
           ./gradlew build
 
   publish:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
     needs: [jvm, multiplatform, windows]
 
