@@ -80,7 +80,12 @@ kotlin {
   sourceSets {
     all {
       languageSettings.apply {
-        useExperimentalAnnotation("kotlin.RequiresOptIn")
+        optIn("kotlin.RequiresOptIn")
+      }
+    }
+    matching { it.name.endsWith("Test") }.all {
+      languageSettings {
+        optIn("kotlin.time.ExperimentalTime")
       }
     }
 

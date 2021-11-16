@@ -16,13 +16,11 @@
 package okio
 
 import kotlinx.datetime.Clock
-import kotlin.time.ExperimentalTime
 
 /**
  * This test will run using [NioSystemFileSystem] by default. If [java.nio.file.Files] is not found
  * on the classpath, [JvmSystemFileSystem] will be use instead.
  */
-@ExperimentalTime
 class NioSystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileSystem.SYSTEM,
@@ -31,7 +29,6 @@ class NioSystemFileSystemTest : AbstractFileSystemTest(
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY
 )
 
-@ExperimentalTime
 class JvmSystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = JvmSystemFileSystem(),

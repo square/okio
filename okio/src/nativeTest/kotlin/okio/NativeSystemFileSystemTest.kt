@@ -16,9 +16,7 @@
 package okio
 
 import kotlinx.datetime.Clock
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 class NativeSystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileSystem.SYSTEM,
