@@ -29,7 +29,12 @@ kotlin {
   }
   sourceSets {
     all {
-      languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+      languageSettings.optIn("kotlin.RequiresOptIn")
+    }
+    matching { it.name.endsWith("Test") }.all {
+      languageSettings {
+        optIn("kotlin.time.ExperimentalTime")
+      }
     }
     val main by getting {
       dependencies {

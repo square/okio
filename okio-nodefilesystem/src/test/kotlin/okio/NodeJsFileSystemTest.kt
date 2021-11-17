@@ -16,9 +16,7 @@
 package okio
 
 import kotlinx.datetime.Clock
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 class NodeJsFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = NodeJsFileSystem,

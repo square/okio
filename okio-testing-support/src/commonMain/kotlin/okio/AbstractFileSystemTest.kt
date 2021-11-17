@@ -31,11 +31,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
-@ExperimentalTime
 abstract class AbstractFileSystemTest(
   val clock: Clock,
   val fileSystem: FileSystem,
@@ -2308,7 +2307,7 @@ abstract class AbstractFileSystemTest(
    * https://docs.microsoft.com/en-us/windows/win32/sysinfo/file-times
    */
   private fun Instant.maxFileSystemTime(): Instant {
-    return Instant.fromEpochSeconds(plus(Duration.seconds(2)).epochSeconds)
+    return Instant.fromEpochSeconds(plus(2.seconds).epochSeconds)
   }
 
   /**
@@ -2316,7 +2315,7 @@ abstract class AbstractFileSystemTest(
    * timestamps yet to be issued.
    */
   private fun tryAdvanceTime() {
-    if (clock is FakeClock) clock.sleep(Duration.minutes(1))
+    if (clock is FakeClock) clock.sleep(1.minutes)
   }
 
   private fun assertInRange(sampled: Instant?, minTime: Instant, maxTime: Instant) {

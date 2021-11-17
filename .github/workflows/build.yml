@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-latest, ubuntu-latest, windows-latest ]
+        os: [ macos-11, ubuntu-latest, windows-latest ]
 
     steps:
       - name: Checkout
@@ -72,7 +72,7 @@ jobs:
           ./gradlew build
 
   publish:
-    runs-on: macos-latest
+    runs-on: macos-11
     if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
     needs: [jvm, all-platforms]
 
