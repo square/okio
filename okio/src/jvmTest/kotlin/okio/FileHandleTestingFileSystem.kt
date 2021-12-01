@@ -16,13 +16,11 @@
 package okio
 
 import kotlinx.datetime.Clock
-import kotlin.time.ExperimentalTime
 
 /**
  * Run a regular file system test, but use [FileHandle] for more file system operations than usual.
  * This is intended to increase test coverage for [FileHandle].
  */
-@ExperimentalTime
 class FileHandleFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = FileHandleTestingFileSystem(FileSystem.SYSTEM),

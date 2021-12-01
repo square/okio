@@ -24,28 +24,23 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import kotlin.time.Duration.Companion.minutes
 
-@ExperimentalTime
 class FakeWindowsFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateWindows() },
   temporaryDirectory = "C:\\".toPath()
 )
 
-@ExperimentalTime
 class FakeUnixFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateUnix() },
   temporaryDirectory = "/".toPath()
 )
 
-@ExperimentalTime
 class StrictFakeFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()),
   temporaryDirectory = "/".toPath()
 )
 
-@ExperimentalTime
 abstract class FakeFileSystemTest internal constructor(
   private val fakeFileSystem: FakeFileSystem,
   temporaryDirectory: Path
@@ -165,15 +160,15 @@ abstract class FakeFileSystemTest internal constructor(
   fun fileLastAccessedTime() {
     val path = base / "file-last-accessed-time"
 
-    fakeClock.sleep(Duration.minutes(1))
+    fakeClock.sleep(1.minutes)
     path.writeUtf8("hello, world!")
     val createdAt = clock.now()
 
-    fakeClock.sleep(Duration.minutes(1))
+    fakeClock.sleep(1.minutes)
     path.writeUtf8("hello again!")
     val modifiedAt = clock.now()
 
-    fakeClock.sleep(Duration.minutes(1))
+    fakeClock.sleep(1.minutes)
     path.readUtf8()
     val accessedAt = clock.now()
 
@@ -187,15 +182,15 @@ abstract class FakeFileSystemTest internal constructor(
   fun directoryLastAccessedTime() {
     val path = base / "directory-last-accessed-time"
 
-    fakeClock.sleep(Duration.minutes(1))
+    fakeClock.sleep(1.minutes)
     fileSystem.createDirectory(path)
     val createdAt = clock.now()
 
-    fakeClock.sleep(Duration.minutes(1))
+    fakeClock.sleep(1.minutes)
     (path / "child").writeUtf8("hello world!")
     val modifiedAt = clock.now()
 
-    fakeClock.sleep(Duration.minutes(1))
+    fakeClock.sleep(1.minutes)
     fileSystem.list(path)
     val accessedAt = clock.now()
 

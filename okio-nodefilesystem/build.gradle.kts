@@ -30,6 +30,11 @@ kotlin {
     all {
       languageSettings.optIn("kotlin.RequiresOptIn")
     }
+    matching { it.name.endsWith("Test") }.all {
+      languageSettings {
+        optIn("kotlin.time.ExperimentalTime")
+      }
+    }
     getByName("main") {
       dependencies {
         implementation(project(":okio"))

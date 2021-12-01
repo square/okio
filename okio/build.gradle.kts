@@ -80,7 +80,12 @@ kotlin {
     all {
       languageSettings.optIn("kotlin.RequiresOptIn")
     }
-
+    matching { it.name.endsWith("Test") }.all {
+      languageSettings {
+        optIn("kotlin.time.ExperimentalTime")
+      }
+    }
+    val commonMain by getting {
     commonMain {
       dependencies {
       }
