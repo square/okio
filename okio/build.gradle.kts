@@ -85,11 +85,6 @@ kotlin {
         optIn("kotlin.time.ExperimentalTime")
       }
     }
-    val commonMain by getting {
-    commonMain {
-      dependencies {
-      }
-    }
 
     commonTest {
       dependencies {
