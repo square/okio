@@ -98,8 +98,11 @@ kotlin {
         implementation(project(":okio-testing-support"))
       }
     }
+    val hashFunctions by creating {
+      dependsOn(commonMain)
+    }
     val nonJvmMain by creating {
-      kotlin.srcDir("src/hashFunctions/kotlin")
+      dependsOn(hashFunctions)
     }
     val nonJvmTest by creating {
       dependencies {
@@ -113,7 +116,7 @@ kotlin {
       }
     }
     val jvmTest by getting {
-      kotlin.srcDir("src/hashFunctions/kotlin")
+      kotlin.srcDir("src/jvmTest/hashFunctions")
       dependencies {
         implementation(deps.test.junit)
         implementation(deps.test.assertj)
