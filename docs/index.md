@@ -104,7 +104,7 @@ implementation("com.squareup.okio:okio:3.0.0")
 ```kotlin
 repositories {
     maven {
-        url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     }
 }
 
