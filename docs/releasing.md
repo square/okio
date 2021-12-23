@@ -30,7 +30,7 @@ Cutting a Release
       `find . -name "index.md"`
     ```
 
-4. Tag the release and push to GitHub. 
+4. Tag the release and push to GitHub.
 
     ```
     git commit -am "Prepare for release $RELEASE_VERSION."
@@ -58,4 +58,4 @@ Cutting a Release
 
  [github_actions]: https://github.com/square/okio/actions
  [sonatype_issues]: https://issues.sonatype.org/
- [sonatype_nexus]: https://oss.sonatype.org/
+ [sonatype_nexus]: https://s01.oss.sonatype.org/
