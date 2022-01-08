@@ -193,7 +193,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
      * starting at `offset`.
      */
     @JvmStatic
-    fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = size): ByteString
+    fun ByteArray.toByteString(offset: Int = 0, byteCount: Int = DEFAULT__ByteString_size): ByteString
 
     /** Returns a new byte string containing the `UTF-8` bytes of this [String]. */
     @JvmStatic

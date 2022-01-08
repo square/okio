@@ -270,6 +270,7 @@ internal inline fun commonOf(data: ByteArray) = ByteString(data.copyOf())
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteArray.commonToByteString(offset: Int, byteCount: Int): ByteString {
+  val byteCount = resolveDefaultParameter(byteCount)
   checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
   return ByteString(copyOfRange(offset, offset + byteCount))
 }
