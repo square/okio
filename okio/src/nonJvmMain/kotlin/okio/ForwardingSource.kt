@@ -15,10 +15,7 @@
  */
 package okio
 
-import java.io.IOException
-
 actual abstract class ForwardingSource actual constructor(
-  @get:JvmName("delegate")
   actual val delegate: Source
 ) : Source {
   // TODO 'Source by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
@@ -31,13 +28,5 @@ actual abstract class ForwardingSource actual constructor(
   @Throws(IOException::class)
   actual override fun close() = delegate.close()
 
-  actual override fun toString() = "${javaClass.simpleName}($delegate)"
-
-  @JvmName("-deprecated_delegate")
-  @Deprecated(
-    message = "moved to val",
-    replaceWith = ReplaceWith(expression = "delegate"),
-    level = DeprecationLevel.ERROR
-  )
-  fun delegate() = delegate
+  actual override fun toString() = "${this::class.simpleName}($delegate)"
 }

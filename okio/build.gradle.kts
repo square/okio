@@ -105,14 +105,10 @@ kotlin {
     }
     val nonJvmMain by creating {
       kotlin.srcDir("src/hashFunctions/kotlin")
-      dependencies {
-        dependsOn(commonMain)
-      }
+      dependsOn(commonMain)
     }
     val nonJvmTest by creating {
-      dependencies {
-        dependsOn(commonTest)
-      }
+      dependsOn(commonTest)
     }
 
     val jvmMain by getting {
@@ -136,8 +132,8 @@ kotlin {
         }
       }
       val jsTest by getting {
+        dependsOn(nonJvmTest)
         dependencies {
-          dependsOn(nonJvmTest)
           implementation(deps.kotlin.test.js)
         }
       }
