@@ -105,6 +105,9 @@ kotlin {
     }
     val nonJvmMain by creating {
       kotlin.srcDir("src/hashFunctions/kotlin")
+      dependencies {
+        dependsOn(commonMain)
+      }
     }
     val nonJvmTest by creating {
       dependencies {
