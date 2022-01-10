@@ -17,6 +17,7 @@ package okio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ForwardingSourceTest {
   val source = Buffer().writeUtf8("Delegate")
@@ -47,6 +48,6 @@ class ForwardingSourceTest {
     val forwardingSource = object : ForwardingSource(source) {
     }
 
-    assertEquals("([text=Delegate])", forwardingSource.toString())
+    assertTrue(forwardingSource.toString().endsWith("([text=Delegate])"))
   }
 }
