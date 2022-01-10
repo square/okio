@@ -177,3 +177,8 @@ internal fun ByteString.resolveDefaultParameter(position: Int): Int {
   if (position == DEFAULT__ByteString_size) return size
   return position
 }
+
+internal fun ByteArray.resolveDefaultParameter(sizeParam: Int): Int {
+  if (sizeParam == DEFAULT__ByteString_size) return size
+  return sizeParam
+}
