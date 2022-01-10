@@ -15,17 +15,17 @@
  */
 package okio
 
-/** A [Source] which forwards calls to another. Useful for subclassing. */
 actual abstract class ForwardingSource actual constructor(
-  /** [Source] to which this instance is delegating. */
   actual val delegate: Source
 ) : Source {
   // TODO 'Source by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
+  @Throws(IOException::class)
   actual override fun read(sink: Buffer, byteCount: Long): Long = delegate.read(sink, byteCount)
 
   actual override fun timeout() = delegate.timeout()
 
+  @Throws(IOException::class)
   actual override fun close() = delegate.close()
 
   actual override fun toString() = "${this::class.simpleName}($delegate)"

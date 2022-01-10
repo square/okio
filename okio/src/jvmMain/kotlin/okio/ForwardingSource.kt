@@ -17,9 +17,7 @@ package okio
 
 import java.io.IOException
 
-/** A [Source] which forwards calls to another. Useful for subclassing. */
 actual abstract class ForwardingSource actual constructor(
-  /** [Source] to which this instance is delegating. */
   @get:JvmName("delegate")
   actual val delegate: Source
 ) : Source {
