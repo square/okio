@@ -51,21 +51,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
-  fun exists() {
-    val file = base / "simple-file"
-    file.writeUtf8("just a file")
-
-    assertTrue(fileSystem.exists(file))
-  }
-
-  @Test
-  fun doesNotExists() {
-    val file = base / "simple-file"
-
-    assertFalse(fileSystem.exists(file))
-  }
-
-  @Test
   fun doesNotExistsWithInvalidPathDoesNotThrow() {
     if (isNodeJsFileSystemOnWindows()) return
 
@@ -396,6 +381,39 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun listRecursiveWithSpecialCharacterNamedFiles() {
+    val baseA = base / "ä"
+    val baseASuperSaiyan = baseA / "超サイヤ人"
+    val baseB = base / "ß"
+    val baseBIliad = baseB / "Ἰλιάς"
+
+    baseA.createDirectory()
+    baseASuperSaiyan.writeUtf8("カカロットよ！")
+    baseB.createDirectory()
+    baseBIliad.writeUtf8("μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος")
+
+    val sequence = fileSystem.listRecursively(base)
+    assertEquals(listOf(baseB, baseBIliad, baseA, baseASuperSaiyan), sequence.toList())
+  }
+
+  @Test
+  fun listRecursiveOnSymlinkWithSpecialCharacterNamedFiles() {
+    if (!supportsSymlink()) return
+
+    val baseA = base / "ä"
+    val baseASuperSaiyan = baseA / "超サイヤ人"
+    val baseB = base / "ß"
+    val baseBSuperSaiyan = baseB / "超サイヤ人"
+
+    baseA.createDirectory()
+    baseASuperSaiyan.writeUtf8("aa")
+    fileSystem.createSymlink(baseB, baseA)
+
+    val sequence = fileSystem.listRecursively(baseB, followSymlinks = false)
+    assertEquals(listOf(baseBSuperSaiyan), sequence.toList())
+  }
+
+  @Test
   fun listRecursivelyOnSymlinkCycleThrows() {
     if (!supportsSymlink()) return
 
@@ -483,6 +501,18 @@ abstract class AbstractFileSystemTest(
     assertTrue(path in fileSystem.list(base))
     assertEquals(0, buffer.size)
     assertEquals("hello, world!", path.readUtf8())
+  }
+
+  @Test
+  fun fileSinkWithSpecialCharacterNamedFiles() {
+    val path = base / "Ἰλιάς"
+    val sink = fileSystem.sink(path)
+    val buffer = Buffer().writeUtf8("μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος")
+    sink.write(buffer, buffer.size)
+    sink.close()
+    assertTrue(path in fileSystem.list(base))
+    assertEquals(0, buffer.size)
+    assertEquals("μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος", path.readUtf8())
   }
 
   @Test
@@ -1176,6 +1206,38 @@ abstract class AbstractFileSystemTest(
   fun directoryMetadata() {
     val minTime = clock.now()
     val path = base / "directory-metadata"
+    fileSystem.createDirectory(path)
+    val maxTime = clock.now()
+
+    val metadata = fileSystem.metadata(path)
+    assertFalse(metadata.isRegularFile)
+    assertTrue(metadata.isDirectory)
+    // Note that the size check is omitted; we'd expect null but the JVM returns values like 64.
+    assertInRange(metadata.createdAt, minTime, maxTime)
+    assertInRange(metadata.lastModifiedAt, minTime, maxTime)
+    assertInRange(metadata.lastAccessedAt, minTime, maxTime)
+  }
+
+  @Test
+  fun fileMetadataWithSpecialCharacterNamedFiles() {
+    val minTime = clock.now()
+    val path = base / "超サイヤ人"
+    path.writeUtf8("カカロットよ！")
+    val maxTime = clock.now()
+
+    val metadata = fileSystem.metadata(path)
+    assertTrue(metadata.isRegularFile)
+    assertFalse(metadata.isDirectory)
+    assertEquals(21, metadata.size)
+    assertInRange(metadata.createdAt, minTime, maxTime)
+    assertInRange(metadata.lastModifiedAt, minTime, maxTime)
+    assertInRange(metadata.lastAccessedAt, minTime, maxTime)
+  }
+
+  @Test
+  fun directoryMetadataWithSpecialCharacterNamedFiles() {
+    val minTime = clock.now()
+    val path = base / "Ἰλιάς"
     fileSystem.createDirectory(path)
     val maxTime = clock.now()
 
