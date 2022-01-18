@@ -15,6 +15,7 @@
  */
 package okio.internal
 
+import okio.BufferedSource
 import okio.ByteString
 import okio.FileSystem
 import okio.IOException
@@ -28,6 +29,7 @@ import java.net.URL
 import java.net.URLClassLoader
 import java.util.Enumeration
 import kotlin.reflect.KClass
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
@@ -401,6 +403,21 @@ class ResourceFileSystemTest {
 
     assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
       .isEqualTo("Hello World")
+  }
+
+  @Test fun listSpecialCharacterNamedFiles() {
+    val path = "okio/resourcefilesystem/non-ascii".toPath()
+
+    assertThat(fileSystem.listRecursively(path).toList()).containsExactly(
+      "/okio/resourcefilesystem/non-ascii/ギリシア神話".toPath(),
+      "/okio/resourcefilesystem/non-ascii/ギリシア神話/Ἰλιάς".toPath(),
+    )
+
+    val content = fileSystem.read(
+      "/okio/resourcefilesystem/non-ascii/ギリシア神話/Ἰλιάς".toPath(),
+      BufferedSource::readUtf8
+    )
+    assertEquals("Chante, ô déesse, le courroux du Péléide Achille,\n", content)
   }
 
   private fun Package.toPath(): Path = name.replace(".", "/").toPath()
