@@ -29,6 +29,8 @@ internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R {
 
 actual typealias IOException = java.io.IOException
 
+actual typealias ProtocolException = java.net.ProtocolException
+
 actual typealias EOFException = java.io.EOFException
 
 actual typealias FileNotFoundException = java.io.FileNotFoundException
