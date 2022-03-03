@@ -37,7 +37,6 @@ class CipherSource(
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
     if (byteCount == 0L) return 0L
-    if (final) return buffer.read(sink, byteCount)
 
     refill()
 
@@ -45,7 +44,7 @@ class CipherSource(
   }
 
   private fun refill() {
-    while (buffer.size == 0L) {
+    while (buffer.size == 0L && !final) {
       if (source.exhausted()) {
         final = true
         doFinal()
@@ -63,7 +62,14 @@ class CipherSource(
     // Shorten input until output is guaranteed to fit within a segment
     var outputSize = cipher.getOutputSize(size)
     while (outputSize > Segment.SIZE) {
-      check(size > blockSize) { "Unexpected output size $outputSize for input size $size" }
+      if (size <= blockSize) {
+        // Bug: For AES-GCM on Android `update` method never outputs any data
+        // As a consequence, `getOutputSize` just keeps increasing indefinitely after each update
+        // When that happens, the fallback is to break the streaming implementation and just cipher the rest of the data all at once
+        final = true
+        buffer.write(cipher.doFinal(source.readByteArray()))
+        return
+      }
       size -= blockSize
       outputSize = cipher.getOutputSize(size)
     }
