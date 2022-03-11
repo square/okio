@@ -52,7 +52,7 @@ plugins {
  */
 kotlin {
   jvm {
-    withJava()
+//    withJava()
   }
   if (kmpJsEnabled) {
     js {
@@ -154,33 +154,33 @@ kotlin {
   }
 }
 
-tasks {
-  val jvmJar by getting(Jar::class) {
-    val bndConvention = BundleTaskConvention(this)
-    bndConvention.setBnd(
-      """
-      Export-Package: okio
-      Automatic-Module-Name: okio
-      Bundle-SymbolicName: com.squareup.okio
-      """
-    )
-    // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
-    doLast {
-      bndConvention.buildBundle()
-    }
-  }
-}
+//tasks {
+//  val jvmJar by getting(Jar::class) {
+//    val bndConvention = BundleTaskConvention(this)
+//    bndConvention.setBnd(
+//      """
+//      Export-Package: okio
+//      Automatic-Module-Name: okio
+//      Bundle-SymbolicName: com.squareup.okio
+//      """
+//    )
+//    // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
+//    doLast {
+//      bndConvention.buildBundle()
+//    }
+//  }
+//}
 
-configure<AnimalSnifferExtension> {
-  sourceSets = listOf(project.sourceSets.getByName("main"))
-}
-
-val signature: Configuration by configurations
-
-dependencies {
-  signature(deps.animalSniffer.androidSignature)
-  signature(deps.animalSniffer.javaSignature)
-}
+//configure<AnimalSnifferExtension> {
+//  sourceSets = listOf(project.sourceSets.getByName("main"))
+//}
+//
+//val signature: Configuration by configurations
+//
+//dependencies {
+//  signature(deps.animalSniffer.androidSignature)
+//  signature(deps.animalSniffer.javaSignature)
+//}
 
 configure<MavenPublishBaseExtension> {
   configure(
