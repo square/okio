@@ -16,6 +16,7 @@
 package okio
 
 import kotlinx.datetime.Instant
+import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 import org.assertj.core.api.Assertions.assertThat
@@ -30,6 +31,35 @@ class ZipFileSystemTest {
   @Before
   fun setUp() {
     fileSystem.createDirectory(base)
+  }
+
+  @Test
+  fun emptyZipThrows() {
+    // ZipBuilder cannot write empty zips.
+    val zipPath = base / "empty.zip"
+    fileSystem.write(zipPath) {
+      write("504b0506000000000000000000000000000000000000".decodeHex())
+    }
+
+    val t = assertFailsWith<IOException> {
+      fileSystem.openZip(zipPath)
+    }
+    assertThat(t).hasMessage("unsupported zip: empty")
+  }
+
+  @Test
+  fun emptyZipWithPrependedDataThrows() {
+    // ZipBuilder cannot write empty zips.
+    val zipPath = base / "empty.zip"
+    fileSystem.write(zipPath) {
+      writeUtf8("Hello I'm junk data prepended to the ZIP!")
+      write("504b0506000000000000000000000000000000000000".decodeHex())
+    }
+
+    val t = assertFailsWith<IOException> {
+      fileSystem.openZip(zipPath)
+    }
+    assertThat(t).hasMessage("unsupported zip: empty")
   }
 
   @Test

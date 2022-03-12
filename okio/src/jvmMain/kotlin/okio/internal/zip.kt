@@ -65,19 +65,6 @@ internal fun openZip(
   predicate: (ZipEntry) -> Boolean = { true }
 ): ZipFileSystem {
   fileSystem.openReadOnly(zipPath).use { fileHandle ->
-
-    fileHandle.source().buffer().use { source ->
-      val firstFileSignature = source.readIntLe()
-      if (firstFileSignature != LOCAL_FILE_HEADER_SIGNATURE) {
-        if (firstFileSignature == END_OF_CENTRAL_DIRECTORY_SIGNATURE) {
-          throw IOException("unsupported zip: empty")
-        }
-        throw IOException(
-          "not a zip: expected ${LOCAL_FILE_HEADER_SIGNATURE.hex} but was ${firstFileSignature.hex}"
-        )
-      }
-    }
-
     // Scan backwards from the end of the file looking for the END_OF_CENTRAL_DIRECTORY_SIGNATURE.
     // If this file has no comment we'll see it on the first attempt; otherwise we have to go
     // backwards byte-by-byte until we reach it. (The number of bytes scanned will equal the comment
@@ -132,6 +119,10 @@ internal fun openZip(
           }
         }
       }
+    }
+
+    if (record.entryCount == 0L) {
+      throw IOException("unsupported zip: empty")
     }
 
     // Seek to the first central directory entry and read all of the entries.
