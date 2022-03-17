@@ -45,13 +45,11 @@ kotlin {
     }
     val test by getting {
       dependencies {
-        implementation(deps.kotlin.test.common)
-        implementation(deps.kotlin.test.annotations)
+        implementation(deps.kotlin.test)
         implementation(deps.kotlin.time)
 
         implementation(project(":okio-fakefilesystem"))
         implementation(project(":okio-testing-support"))
-        implementation(deps.kotlin.test.js)
       }
     }
   }

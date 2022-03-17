@@ -95,8 +95,7 @@ kotlin {
     }
     val commonTest by getting {
       dependencies {
-        implementation(deps.kotlin.test.common)
-        implementation(deps.kotlin.test.annotations)
+        implementation(deps.kotlin.test)
         implementation(deps.kotlin.time)
 
         implementation(project(":okio-fakefilesystem"))
@@ -121,21 +120,15 @@ kotlin {
       dependencies {
         implementation(deps.test.junit)
         implementation(deps.test.assertj)
-        implementation(deps.kotlin.test.jdk)
       }
     }
 
     if (kmpJsEnabled) {
       val jsMain by getting {
         dependsOn(nonJvmMain)
-        dependencies {
-        }
       }
       val jsTest by getting {
         dependsOn(nonJvmTest)
-        dependencies {
-          implementation(deps.kotlin.test.js)
-        }
       }
     }
 
