@@ -122,9 +122,9 @@ internal class ZipFileSystem internal constructor(
   }
 
   @Throws(IOException::class)
-  override fun source(path: Path): Source {
-    val canonicalPath = canonicalizeInternal(path)
-    val entry = entries[canonicalPath] ?: throw FileNotFoundException("no such file: $path")
+  override fun source(file: Path): Source {
+    val canonicalPath = canonicalizeInternal(file)
+    val entry = entries[canonicalPath] ?: throw FileNotFoundException("no such file: $file")
     val source = fileSystem.openReadOnly(zipPath).use { fileHandle ->
       fileHandle.source(entry.offset).buffer()
     }
