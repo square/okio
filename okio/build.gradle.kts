@@ -78,21 +78,7 @@ kotlin {
     configureOrCreateNativePlatforms()
   }
   sourceSets {
-    all {
-      languageSettings.apply {
-        optIn("kotlin.RequiresOptIn")
-      }
-    }
-    matching { it.name.endsWith("Test") }.all {
-      languageSettings {
-        optIn("kotlin.time.ExperimentalTime")
-      }
-    }
-
-    val commonMain by getting {
-      dependencies {
-      }
-    }
+    val commonMain by getting
     val commonTest by getting {
       dependencies {
         implementation(deps.kotlin.test)
@@ -200,13 +186,4 @@ configure<MavenPublishBaseExtension> {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )
-}
-
-// https://youtrack.jetbrains.com/issue/KT-46978
-tasks.withType<ProcessResources>().all {
-  when (name) {
-    "jvmTestProcessResources", "jvmProcessResources" -> {
-      duplicatesStrategy = DuplicatesStrategy.WARN
-    }
-  }
 }
