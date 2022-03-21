@@ -40,21 +40,16 @@ kotlin {
       dependencies {
         api(deps.kotlin.time)
         api(project(":okio"))
-        implementation(deps.kotlin.test.common)
-        implementation(deps.kotlin.test.annotations)
+        api(deps.kotlin.test)
         implementation(project(":okio-fakefilesystem"))
       }
     }
-    val jvmMain by getting {
+    getByName("jvmMain") {
       dependencies {
-        implementation(deps.kotlin.test.jdk)
-      }
-    }
-    if (kmpJsEnabled) {
-      val jsMain by getting {
-        dependencies {
-          implementation(deps.kotlin.test.js)
-        }
+        // On the JVM the kotlin-test library resolves to one of three implementations based on
+        // which testing framework is in use. JUnit is used downstream, but Gradle can't know that
+        // here and thus fails to select a variant automatically. Declare it manually instead.
+        api(deps.kotlin.testJunit)
       }
     }
     if (kmpNativeEnabled) {

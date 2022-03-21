@@ -21,13 +21,8 @@ object deps {
   }
 
   object kotlin {
-    object test {
-      const val common = "org.jetbrains.kotlin:kotlin-test-common"
-      const val annotations = "org.jetbrains.kotlin:kotlin-test-annotations-common"
-      const val jdk = "org.jetbrains.kotlin:kotlin-test-junit"
-      const val js = "org.jetbrains.kotlin:kotlin-test-js"
-    }
-
+    const val test = "org.jetbrains.kotlin:kotlin-test"
+    const val testJunit = "org.jetbrains.kotlin:kotlin-test-junit"
     const val time = "org.jetbrains.kotlinx:kotlinx-datetime:0.3.1"
   }
 
