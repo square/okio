@@ -294,7 +294,7 @@ internal inline fun Path.commonToString(): String {
   return bytes.utf8()
 }
 
-fun String.commonToPath(normalize: Boolean): Path {
+internal fun String.commonToPath(normalize: Boolean): Path {
   return Buffer().writeUtf8(this).toPath(normalize)
 }
 
