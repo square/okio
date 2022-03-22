@@ -11,7 +11,7 @@ object versions {
 
 object deps {
   object android {
-    const val gradlePlugin = "com.android.tools.build:gradle:4.2.2"
+    const val gradlePlugin = "com.android.tools.build:gradle:7.0.0"
     const val desugarJdkLibs = "com.android.tools:desugar_jdk_libs:1.1.5"
   }
 
@@ -35,6 +35,7 @@ object deps {
   object animalSniffer {
     const val gradlePlugin = "ru.vyarus:gradle-animalsniffer-plugin:1.5.3"
     const val annotations = "org.codehaus.mojo:animal-sniffer-annotations:1.20"
+    const val antTasks = "org.codehaus.mojo:animal-sniffer-ant-tasks:1.20"
     const val androidSignature = "net.sf.androidscents.signature:android-api-level-15:4.0.3_r5@signature"
     const val javaSignature = "org.codehaus.mojo.signature:java17:1.0@signature"
   }

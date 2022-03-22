@@ -1,15 +1,13 @@
-import aQute.bnd.gradle.BundleTaskConvention
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 
 plugins {
   kotlin("multiplatform")
-  id("ru.vyarus.animalsniffer")
+  id("com.android.library")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")
@@ -22,6 +20,7 @@ plugins {
  * ```
  *   common
  *   |-- jvm
+ *   |   '-- android
  *   |-- js
  *   '-- native
  *       |- unix
@@ -51,9 +50,10 @@ plugins {
  * platforms and as a test source set on the JVM platform.
  */
 kotlin {
-  jvm {
-//    withJava()
+  android {
+    publishLibraryVariants("release")
   }
+  jvm()
   if (kmpJsEnabled) {
     js {
       compilations.all {
@@ -109,6 +109,13 @@ kotlin {
       }
     }
 
+    val androidMain by getting {
+      dependsOn(jvmMain)
+    }
+    val androidAndroidTest by getting {
+      dependsOn(jvmTest)
+    }
+
     if (kmpJsEnabled) {
       val jsMain by getting {
         dependsOn(nonJvmMain)
@@ -150,6 +157,27 @@ kotlin {
       val background by creating {
         setExecutionSourceFrom(binaries.getByName("backgroundDebugTest") as TestExecutable)
       }
+    }
+  }
+}
+
+dependencies {
+  androidTestImplementation(deps.test.junit)
+  androidTestImplementation(deps.test.assertj)
+  androidTestImplementation(deps.androidx.testRunner)
+}
+
+android {
+  compileSdk = 31
+
+  defaultConfig {
+    minSdk = 14
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  sourceSets {
+    getByName("main").apply {
+      manifest.srcFile("src/androidMain/AndroidManifest.xml")
     }
   }
 }
