@@ -446,6 +446,38 @@ class ZipFileSystemTest {
     assertThat(zipFileSystem.list("/".toPath()))
       .containsExactly("/hello.txt".toPath())
   }
+
+  @Test
+  fun canonicalizationValid() {
+    val zipPath = ZipBuilder(base)
+      .addEntry("hello.txt", "Hello World")
+      .addEntry("directory/child.txt", "Another file!")
+      .build()
+    val zipFileSystem = fileSystem.openZip(zipPath)
+
+    assertThat(zipFileSystem.canonicalize("/".toPath())).isEqualTo("/".toPath())
+    assertThat(zipFileSystem.canonicalize(".".toPath())).isEqualTo("/".toPath())
+    assertThat(zipFileSystem.canonicalize("not/a/path/../../..".toPath())).isEqualTo("/".toPath())
+    assertThat(zipFileSystem.canonicalize("hello.txt".toPath())).isEqualTo("/hello.txt".toPath())
+    assertThat(zipFileSystem.canonicalize("stuff/../hello.txt".toPath())).isEqualTo("/hello.txt".toPath())
+    assertThat(zipFileSystem.canonicalize("directory".toPath())).isEqualTo("/directory".toPath())
+    assertThat(zipFileSystem.canonicalize("directory/whevs/..".toPath())).isEqualTo("/directory".toPath())
+    assertThat(zipFileSystem.canonicalize("directory/child.txt".toPath())).isEqualTo("/directory/child.txt".toPath())
+    assertThat(zipFileSystem.canonicalize("directory/whevs/../child.txt".toPath())).isEqualTo("/directory/child.txt".toPath())
+  }
+
+  @Test
+  fun canonicalizationInvalidThrows() {
+    val zipPath = ZipBuilder(base)
+      .addEntry("hello.txt", "Hello World")
+      .addEntry("directory/child.txt", "Another file!")
+      .build()
+    val zipFileSystem = fileSystem.openZip(zipPath)
+
+    assertFailsWith<FileNotFoundException> {
+      zipFileSystem.canonicalize("not/a/path".toPath())
+    }
+  }
 }
 
 private fun ByteString.replaceAll(a: ByteString, b: ByteString): ByteString {
