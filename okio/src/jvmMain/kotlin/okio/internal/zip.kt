@@ -121,10 +121,6 @@ internal fun openZip(
       }
     }
 
-    if (record.entryCount == 0L) {
-      throw IOException("unsupported zip: empty")
-    }
-
     // Seek to the first central directory entry and read all of the entries.
     val entries = mutableListOf<ZipEntry>()
     fileHandle.source(record.centralDirectoryOffset).buffer().use { source ->
@@ -151,7 +147,10 @@ internal fun openZip(
  * (other than the file system root `/`) have a parent.
  */
 private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
-  val result = mutableMapOf<Path, ZipEntry>()
+  val root = "/".toPath()
+  val result = mutableMapOf(
+    root to ZipEntry(canonicalPath = root, isDirectory = true),
+  )
 
   // Iterate in sorted order so each path is preceded by its parent.
   for (entry in entries.sortedBy { it.canonicalPath }) {
