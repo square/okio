@@ -69,8 +69,11 @@ internal class ZipFileSystem internal constructor(
   private val comment: String?
 ) : FileSystem() {
   override fun canonicalize(path: Path): Path {
-    // TODO(jwilson): throw FileNotFoundException if the canonical file doesn't exist.
-    return canonicalizeInternal(path)
+    val canonical = canonicalizeInternal(path)
+    if (canonical !in entries) {
+      throw FileNotFoundException("$path")
+    }
+    return canonical
   }
 
   /** Don't throw [FileNotFoundException] if the path doesn't identify a file. */
