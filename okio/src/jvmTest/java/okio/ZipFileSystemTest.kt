@@ -34,21 +34,19 @@ class ZipFileSystemTest {
   }
 
   @Test
-  fun emptyZipThrows() {
+  fun emptyZip() {
     // ZipBuilder cannot write empty zips.
     val zipPath = base / "empty.zip"
     fileSystem.write(zipPath) {
       write("504b0506000000000000000000000000000000000000".decodeHex())
     }
 
-    val t = assertFailsWith<IOException> {
-      fileSystem.openZip(zipPath)
-    }
-    assertThat(t).hasMessage("unsupported zip: empty")
+    val zipFileSystem = fileSystem.openZip(zipPath)
+    assertThat(zipFileSystem.list("/".toPath())).isEmpty()
   }
 
   @Test
-  fun emptyZipWithPrependedDataThrows() {
+  fun emptyZipWithPrependedData() {
     // ZipBuilder cannot write empty zips.
     val zipPath = base / "empty.zip"
     fileSystem.write(zipPath) {
@@ -56,10 +54,8 @@ class ZipFileSystemTest {
       write("504b0506000000000000000000000000000000000000".decodeHex())
     }
 
-    val t = assertFailsWith<IOException> {
-      fileSystem.openZip(zipPath)
-    }
-    assertThat(t).hasMessage("unsupported zip: empty")
+    val zipFileSystem = fileSystem.openZip(zipPath)
+    assertThat(zipFileSystem.list("/".toPath())).isEmpty()
   }
 
   @Test
