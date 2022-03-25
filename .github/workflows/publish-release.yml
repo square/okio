@@ -1,0 +1,91 @@
+name: publish-release
+
+on:
+  release:
+    types: [published]
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+
+jobs:
+  create_staging_repository:
+    runs-on: ubuntu-latest
+    name: Create staging repository
+    outputs:
+      repository_id: ${{ steps.create.outputs.repository_id }}
+    steps:
+      - id: create
+        uses: nexus-actions/create-nexus-staging-repo@v1.1
+        with:
+          username: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          staging_profile_id: # TODO(egor): What's the profile ID to use here? Need to add it to Square as a new secret.
+          description: ${{ github.repository }}/${{ github.workflow }}#${{ github.run_number }}
+
+  publish:
+    runs-on: macos-11
+    if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
+    needs: create_staging_repository
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 14
+
+      - name: Upload Artifacts
+        run: |
+          ./gradlew clean publish --stacktrace
+        env:
+          SONATYPE_REPOSITORY_ID: ${{ needs.create_staging_repository.outputs.repository_id }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ARTIFACT_SIGNING_PRIVATE_KEY }}
+
+  publish_windows:
+    runs-on: windows-latest
+    if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
+    needs: create_staging_repository
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 8
+
+      - name: Upload Artifacts
+        run: |
+          ./gradlew clean publishMingwX64PublicationToMavenCentralRepository --stacktrace
+        env:
+          SONATYPE_REPOSITORY_ID: ${{ needs.create_staging_repository.outputs.repository_id }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ARTIFACT_SIGNING_PRIVATE_KEY }}
+
+  finalize:
+    runs-on: ubuntu-latest
+    needs: [create_staging_repository, publish, publish_windows]
+    if: ${{ always() && needs.create_staging_repository.result == 'success' }}
+    steps:
+      - name: Discard
+        if: ${{ needs.publish.result != 'success' || needs.publish_windows.result != 'success' }}
+        uses: nexus-actions/drop-nexus-staging-repo@v1
+        with:
+          username: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          staging_repository_id: ${{ needs.create_staging_repository.outputs.repository_id }}
+      - name: Release
+        if: ${{ needs.publish.result == 'success' && needs.publish_windows.result == 'success' }}
+        uses: nexus-actions/release-nexus-staging-repo@v1.2
+        with:
+          username: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          staging_repository_id: ${{ needs.create_staging_repository.outputs.repository_id }}
