@@ -1,6 +1,6 @@
 name: build
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
@@ -12,15 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java-version:
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
+        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15 ]
 
     steps:
       - name: Checkout
@@ -74,7 +66,7 @@ jobs:
   publish:
     runs-on: macos-11
     if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
-    needs: [jvm, all-platforms]
+    needs: [ jvm, all-platforms ]
 
     steps:
       - name: Checkout
@@ -97,7 +89,7 @@ jobs:
   publish-windows:
     runs-on: windows-latest
     if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
-    needs: [jvm, all-platforms]
+    needs: [ jvm, all-platforms ]
 
     steps:
       - name: Checkout
@@ -120,7 +112,7 @@ jobs:
   publish-website:
     runs-on: ubuntu-latest
     if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
-    needs: [jvm, all-platforms]
+    needs: [ jvm, all-platforms ]
 
     steps:
       - name: Checkout
