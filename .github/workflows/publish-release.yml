@@ -15,7 +15,7 @@ jobs:
       repository_id: ${{ steps.create.outputs.repository_id }}
     steps:
       - id: create
-        uses: nexus-actions/create-nexus-staging-repo@v1.1
+        uses: nexus-actions/create-nexus-staging-repo@10a43a22d0278ed006f1293214b99184c60fbdff // v1.1
         with:
           username: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
@@ -77,14 +77,14 @@ jobs:
     steps:
       - name: Discard
         if: ${{ needs.publish.result != 'success' || needs.publish_windows.result != 'success' }}
-        uses: nexus-actions/drop-nexus-staging-repo@v1
+        uses: nexus-actions/drop-nexus-staging-repo@fe83783967a063540320ace3c8942608246705a1 // v1
         with:
           username: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
           staging_repository_id: ${{ needs.create_staging_repository.outputs.repository_id }}
       - name: Release
         if: ${{ needs.publish.result == 'success' && needs.publish_windows.result == 'success' }}
-        uses: nexus-actions/release-nexus-staging-repo@v1.2
+        uses: nexus-actions/release-nexus-staging-repo@36161f25ef98cc3821eabb11ab742d2e9d479e52 // v1.2
         with:
           username: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
