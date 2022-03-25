@@ -50,9 +50,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
