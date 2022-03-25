@@ -27,6 +27,8 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
 
+      - uses: gradle/gradle-build-action@v2
+
       - name: Test
         run: |
           ./gradlew -Dkjs=false -Dknative=false build --stacktrace
@@ -56,6 +58,8 @@ jobs:
           distribution: 'zulu'
           java-version: 14
 
+      - uses: gradle/gradle-build-action@v2
+
       - name: Test
         run: |
           ./gradlew build
@@ -74,6 +78,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 14
+
+      - uses: gradle/gradle-build-action@v2
 
       - name: Upload Artifacts
         run: |
@@ -97,6 +103,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 8
+
+      - uses: gradle/gradle-build-action@v2
 
       - name: Upload Artifacts
         run: |
