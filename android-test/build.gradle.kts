@@ -31,8 +31,6 @@ android {
   defaultConfig {
     minSdkVersion(15)
     targetSdkVersion(30)
-    versionCode = 1
-    versionName = "1.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     // AndroidJUnitRunner wasn't finding tests in multidex artifacts when running on Android 4.0.3.

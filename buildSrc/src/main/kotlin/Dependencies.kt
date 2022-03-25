@@ -11,7 +11,7 @@ object versions {
 
 object deps {
   object android {
-    const val gradlePlugin = "com.android.tools.build:gradle:4.2.2"
+    const val gradlePlugin = "com.android.tools.build:gradle:7.1.2"
     const val desugarJdkLibs = "com.android.tools:desugar_jdk_libs:1.1.5"
   }
 
