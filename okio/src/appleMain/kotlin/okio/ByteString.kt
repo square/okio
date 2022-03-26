@@ -23,13 +23,15 @@ import platform.posix.memcpy
 fun NSData.toByteString(): ByteString {
   val data = this
   val size = data.length.toInt()
-  return ByteString(
-    ByteArray(size).apply {
-      if (size != 0 ) {
+  return if (size != 0 ) {
+    ByteString(
+      ByteArray(size).apply {
         usePinned { pinned ->
           memcpy(pinned.addressOf(0), data.bytes, data.length)
         }
       }
-    }
-  )
+    )
+  } else {
+    ByteString.EMPTY
+  }
 }
