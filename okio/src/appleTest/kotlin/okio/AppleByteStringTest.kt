@@ -32,6 +32,6 @@ class AppleByteStringTest {
   @Test fun emptyNsDataToByteString() {
     val data = ("" as NSString).dataUsingEncoding(NSUTF8StringEncoding) as NSData
     val byteString = data.toByteString()
-    assertEquals("", byteString.utf8())
+    assertEquals(ByteString.EMPTY, byteString)
   }
 }
