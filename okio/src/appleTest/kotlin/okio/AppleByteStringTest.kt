@@ -28,4 +28,10 @@ class AppleByteStringTest {
     val byteString = data.toByteString()
     assertEquals("Hello", byteString.utf8())
   }
+
+  @Test fun emptyNsDataToByteString() {
+    val data = ("" as NSString).dataUsingEncoding(NSUTF8StringEncoding) as NSData
+    val byteString = data.toByteString()
+    assertEquals(ByteString.EMPTY, byteString)
+  }
 }
