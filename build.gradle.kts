@@ -9,6 +9,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -125,6 +126,20 @@ subprojects {
       ktlint(versions.ktlint).userData(mapOf("indent_size" to "2"))
       trimTrailingWhitespace()
       endWithNewline()
+    }
+  }
+
+  plugins.withId("org.jetbrains.kotlin.multiplatform") {
+    extensions.getByType<KotlinMultiplatformExtension>().jvmToolchain {
+      (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(17))
+    }
+  }
+
+  plugins.withId("java-library") {
+    tasks.withType<Test>() {
+      javaLauncher.set(extensions.getByType<JavaToolchainService>().launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(8))
+      })
     }
   }
 

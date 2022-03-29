@@ -9,19 +9,6 @@ jobs:
   jvm:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        java-version:
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -33,7 +20,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: ${{ matrix.java-version }}
+          java-version: 18
 
       - name: Test
         run: |
@@ -65,7 +52,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 18
 
       - name: Test
         run: |
@@ -84,7 +71,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 18
 
       - name: Upload Artifacts
         run: |
@@ -107,7 +94,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 18
 
       - name: Upload Artifacts
         run: |
@@ -132,7 +119,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 18
 
       - name: Set up Python
         uses: actions/setup-python@v2
