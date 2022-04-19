@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+## Version 3.1.0
+
+_2021-04-19_
+
+ * Upgrade: [Kotlin 1.6.20][kotlin_1_6_20].
+ * New: Support [Hierarchical project structure][hierarchical_projects]. If you're using Okio in a
+   multiplatform project please upgrade your project to Kotlin 1.6.20 (or newer) to take advantage
+   of this. With hierarchical projects it's easier to use properties like `FileSystem.SYSTEM` that
+   are available on most Okio platforms but not all of them.
+ * New: `ForwardingSource` is now available on all platforms.
+ * New: The `watchosX64` platform is now supported.
+ * Fix: Don't crash in `NSData.toByteString()' when the input is empty.
+ * Fix: Support empty ZIP files in `FileSystem.openZip()`.
+ * Fix: Throw in `canonicalize()` of ZIP file systems if the path doesn't exist.
+ * Fix: Don't require ZIP files start with a local file header.
+ * New: `okio.ProtocolException` is a new exception type for multiplatform users. (It is aliased to
+   `java.net.ProtocolException` on JVM platforms).
+
+
 ## Version 3.0.0
 
 _2021-10-28_
@@ -772,9 +791,11 @@ _2014-04-08_
 [bom]: https://docs.gradle.org/6.2/userguide/platforms.html#sub:bom_import
 [datetime_0_3_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.3.0
 [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
+[hierarchical_projects]: https://kotlinlang.org/docs/multiplatform-hierarchy.html
 [kotlin_1_4_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.10
 [kotlin_1_4_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.20
 [kotlin_1_5_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.20
 [kotlin_1_5_31]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.31
+[kotlin_1_6_20]: https://blog.jetbrains.com/kotlin/2022/04/kotlin-1-6-20-released/
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
 [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
