@@ -19,7 +19,6 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import okio.internal.toPath
-import platform.posix.DIR
 import platform.posix.EEXIST
 import platform.posix.closedir
 import platform.posix.dirent
@@ -41,7 +40,7 @@ internal object PosixFileSystem : FileSystem() {
   override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
 
   private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
-    val opendir: CPointer<DIR> = opendir(dir.toString())
+    val opendir = opendir(dir.toString())
       ?: if (throwOnFailure) throw errnoToIOException(errno) else return null
 
     try {

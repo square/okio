@@ -15,11 +15,13 @@
  */
 package okio
 
+import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.posix.memcpy
 
+@OptIn(UnsafeNumber::class)
 fun NSData.toByteString(): ByteString {
   val data = this
   val size = data.length.toInt()

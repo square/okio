@@ -18,7 +18,9 @@ package okio
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValuesRef
+import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.toKString
 import okio.Path.Companion.toPath
@@ -34,11 +36,14 @@ import platform.posix.S_IFLNK
 import platform.posix.S_IFMT
 import platform.posix.errno
 import platform.posix.fdopen
+import platform.posix.fileno
 import platform.posix.fopen
 import platform.posix.free
 import platform.posix.getenv
 import platform.posix.mkdir
 import platform.posix.open
+import platform.posix.pread
+import platform.posix.pwrite
 import platform.posix.readlink
 import platform.posix.realpath
 import platform.posix.remove
@@ -68,8 +73,9 @@ internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean
   }
 }
 
+@OptIn(UnsafeNumber::class)
 internal actual fun PosixFileSystem.variantMkdir(dir: Path): Int {
-  return mkdir(dir.toString(), 0b111111111 /* octal 777 */)
+  return mkdir(dir.toString(), 0b111111111u.convert() /* octal 777 */)
 }
 
 internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
@@ -161,31 +167,35 @@ internal actual fun PosixFileSystem.variantCreateSymlink(source: Path, target: P
   }
 }
 
-internal expect fun variantPread(
+@OptIn(UnsafeNumber::class)
+internal fun variantPread(
   file: CPointer<FILE>,
   target: CValuesRef<*>,
   byteCount: Int,
   offset: Long
-): Int
+): Int = pread(fileno(file), target, byteCount.convert(), offset).convert()
 
-internal expect fun variantPwrite(
+@OptIn(UnsafeNumber::class)
+internal fun variantPwrite(
   file: CPointer<FILE>,
   source: CValuesRef<*>,
   byteCount: Int,
   offset: Long
-): Int
+): Int = pwrite(fileno(file), source, byteCount.convert(), offset).convert()
 
+@OptIn(UnsafeNumber::class)
 internal val timespec.epochMillis: Long
   get() = tv_sec * 1000L + tv_sec / 1_000_000L
 
+@OptIn(UnsafeNumber::class)
 internal fun symlinkTarget(stat: stat, path: Path): Path? {
   if (stat.st_mode.toInt() and S_IFMT != S_IFLNK) return null
 
   // `path` is a symlink, let's resolve its target.
   memScoped {
     val buffer = allocArray<ByteVar>(PATH_MAX)
-    val byteCount = readlink(path.toString(), buffer, PATH_MAX)
-    if (byteCount.toInt() == -1) {
+    val byteCount = readlink(path.toString(), buffer, PATH_MAX.convert())
+    if (byteCount.convert<Int>() == -1) {
       throw errnoToIOException(errno)
     }
     return buffer.toKString().toPath()

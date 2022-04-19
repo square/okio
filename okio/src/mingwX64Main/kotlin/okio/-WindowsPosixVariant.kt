@@ -15,8 +15,6 @@
  */
 package okio
 
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
@@ -34,9 +32,7 @@ import platform.posix._fullpath
 import platform.posix._stat64
 import platform.posix.errno
 import platform.posix.fopen
-import platform.posix.fread
 import platform.posix.free
-import platform.posix.fwrite
 import platform.posix.getenv
 import platform.posix.mkdir
 import platform.posix.remove
@@ -130,22 +126,6 @@ internal actual fun PosixFileSystem.variantMove(source: Path, target: Path) {
   if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING) == 0) {
     throw lastErrorToIOException()
   }
-}
-
-internal actual fun variantFread(
-  target: CPointer<ByteVarOf<Byte>>,
-  byteCount: UInt,
-  file: CPointer<FILE>
-): UInt {
-  return fread(target, 1, byteCount.toULong(), file).toUInt()
-}
-
-internal actual fun variantFwrite(
-  source: CPointer<ByteVar>,
-  byteCount: UInt,
-  file: CPointer<FILE>
-): UInt {
-  return fwrite(source, 1, byteCount.toULong(), file).toUInt()
 }
 
 internal actual fun PosixFileSystem.variantSource(file: Path): Source {
