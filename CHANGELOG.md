@@ -3,7 +3,7 @@ Change Log
 
 ## Version 3.1.0
 
-_2021-04-19_
+_2022-04-19_
 
  * Upgrade: [Kotlin 1.6.20][kotlin_1_6_20].
  * New: Support [Hierarchical project structure][hierarchical_projects]. If you're using Okio in a
