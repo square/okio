@@ -15,12 +15,8 @@
  */
 package okio
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 import kotlinx.cinterop.*
-import platform.darwin.NSUInteger
 import platform.darwin.NSUIntegerVar
 import platform.darwin.UInt8Var
 
@@ -66,6 +62,26 @@ class AppleBufferedSourceTest {
       assertEquals('a'.code.toUByte(), buffer[0])
       assertEquals('b'.code.toUByte(), buffer[1])
       assertEquals('c'.code.toUByte(), buffer[2])
+    }
+  }
+
+  @Test fun nsInputStreamClose() {
+    val buffer = Buffer()
+    buffer.writeUtf8("abc")
+    val source = RealBufferedSource(buffer)
+    assertFalse(source.closed)
+
+    val nsis = source.inputStream()
+    nsis.close()
+    assertTrue(source.closed)
+
+    val byteArray = ByteArray(4)
+    byteArray.usePinned {
+      val cPtr = it.addressOf(0).reinterpret<UInt8Var>()
+
+      byteArray.fill(-5)
+      assertEquals(-1, nsis.read(cPtr, 4))
+      assertEquals("[-5, -5, -5, -5]", byteArray.contentToString())
     }
   }
 }
