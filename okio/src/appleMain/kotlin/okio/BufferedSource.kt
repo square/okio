@@ -16,8 +16,7 @@
 package okio
 
 import kotlinx.cinterop.*
-import platform.Foundation.NSData
-import platform.Foundation.NSInputStream
+import platform.Foundation.*
 import platform.darwin.NSInteger
 import platform.darwin.NSUInteger
 import platform.darwin.NSUIntegerVar
@@ -27,17 +26,39 @@ import platform.posix.uint8_tVar
 @OptIn(UnsafeNumber::class)
 fun BufferedSource.inputStream(): NSInputStream {
   return object : NSInputStream(NSData()) {
+
+    private var error: NSError? = null
+
+    private fun Exception.toNSError(): NSError {
+      return NSError(
+        "Kotlin",
+        0,
+        mapOf(
+          NSLocalizedDescriptionKey to message,
+          NSUnderlyingErrorKey to this
+        )
+      )
+    }
+
     override fun read(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
       val bytes = ByteArray(maxLength.toInt())
-      val read = this@inputStream.read(bytes, 0, maxLength.toInt())
-      return if (read > 0) {
+      val read = try {
+        this@inputStream.read(bytes, 0, maxLength.toInt())
+      } catch (e: Exception) {
+        error = e.toNSError()
+        return -1
+      }
+      if (read > 0) {
         bytes.usePinned {
           memcpy(buffer, it.addressOf(0), read.toULong())
         }
-        read.toLong()
-      } else {
-        0
+        return read.toLong()
       }
+      return 0
+    }
+
+    override fun streamError(): NSError? {
+      return error
     }
 
     override fun getBuffer(
