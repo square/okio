@@ -40,6 +40,8 @@ fun BufferedSource.inputStream(): NSInputStream {
       )
     }
 
+    override fun streamError(): NSError? = error
+
     override fun read(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
       val bytes = ByteArray(maxLength.toInt())
       val read = try {
@@ -57,20 +59,23 @@ fun BufferedSource.inputStream(): NSInputStream {
       return 0
     }
 
-    override fun streamError(): NSError? {
-      return error
-    }
-
     override fun getBuffer(
       buffer: CPointer<CPointerVar<uint8_tVar>>?,
       length: CPointer<NSUIntegerVar>?
     ): Boolean {
+      if (this@inputStream.buffer.size > 0) {
+        this@inputStream.buffer.head?.let { s ->
+          s.data.usePinned {
+            buffer?.pointed?.value = it.addressOf(s.pos).reinterpret()
+            length?.pointed?.value = (s.limit - s.pos).toULong()
+            return true
+          }
+        }
+      }
       return false
     }
 
-    override fun hasBytesAvailable(): Boolean {
-      return buffer.size > 0
-    }
+    override fun hasBytesAvailable(): Boolean = buffer.size > 0
 
     override fun close() = this@inputStream.close()
 

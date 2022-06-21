@@ -17,11 +17,14 @@ package okio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.reinterpret
-import kotlinx.cinterop.usePinned
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import kotlinx.cinterop.*
+import platform.darwin.NSUInteger
+import platform.darwin.NSUIntegerVar
 import platform.darwin.UInt8Var
 
+@OptIn(UnsafeNumber::class)
 class AppleBufferedSourceTest {
   @Test fun bufferInputStream() {
     val source = Buffer()
@@ -39,6 +42,30 @@ class AppleBufferedSourceTest {
       byteArray.fill(-7)
       assertEquals(0, nsis.read(cPtr, 4).toLong())
       assertEquals("[-7, -7, -7, -7]", byteArray.contentToString())
+    }
+  }
+
+  @Test fun nsInputStreamGetBuffer() {
+    val source = Buffer()
+    source.writeUtf8("abc")
+
+    val nsis = source.inputStream()
+    assertTrue(nsis.hasBytesAvailable)
+
+    memScoped {
+      val bufferPtr = alloc<CPointerVar<UInt8Var>>()
+      val lengthPtr = alloc<NSUIntegerVar>()
+      assertTrue(nsis.getBuffer(bufferPtr.ptr, lengthPtr.ptr))
+
+      val length = lengthPtr.value
+      assertNotNull(length)
+      assertEquals(3UL, length)
+
+      val buffer = bufferPtr.value
+      assertNotNull(buffer)
+      assertEquals('a'.code.toUByte(), buffer[0])
+      assertEquals('b'.code.toUByte(), buffer[1])
+      assertEquals('c'.code.toUByte(), buffer[2])
     }
   }
 }
