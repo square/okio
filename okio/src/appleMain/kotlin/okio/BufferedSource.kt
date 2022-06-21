@@ -52,9 +52,9 @@ fun BufferedSource.inputStream(): NSInputStream {
       }
       if (read > 0) {
         bytes.usePinned {
-          memcpy(buffer, it.addressOf(0), read.toULong())
+          memcpy(buffer, it.addressOf(0), read.convert())
         }
-        return read.toLong()
+        return read.convert()
       }
       return 0
     }
@@ -67,7 +67,7 @@ fun BufferedSource.inputStream(): NSInputStream {
         this@inputStream.buffer.head?.let { s ->
           s.data.usePinned {
             buffer?.pointed?.value = it.addressOf(s.pos).reinterpret()
-            length?.pointed?.value = (s.limit - s.pos).toULong()
+            length?.pointed?.value = (s.limit - s.pos).convert()
             return true
           }
         }

@@ -36,11 +36,11 @@ class AppleBufferedSourceTest {
 
       byteArray.fill(-5)
       val nsis = source.inputStream()
-      assertEquals(3, nsis.read(cPtr, 4).toLong())
+      assertEquals(3, nsis.read(cPtr, 4))
       assertEquals("[97, 98, 99, -5]", byteArray.contentToString())
 
       byteArray.fill(-7)
-      assertEquals(0, nsis.read(cPtr, 4).toLong())
+      assertEquals(0, nsis.read(cPtr, 4))
       assertEquals("[-7, -7, -7, -7]", byteArray.contentToString())
     }
   }
@@ -59,7 +59,7 @@ class AppleBufferedSourceTest {
 
       val length = lengthPtr.value
       assertNotNull(length)
-      assertEquals(3UL, length)
+      assertEquals(3.convert(), length)
 
       val buffer = bufferPtr.value
       assertNotNull(buffer)

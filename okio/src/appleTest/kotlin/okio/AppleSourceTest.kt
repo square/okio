@@ -19,12 +19,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.allocArrayOf
+import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import platform.Foundation.NSData
 import platform.Foundation.NSInputStream
 import platform.Foundation.create
 
+@OptIn(UnsafeNumber::class)
 class AppleSourceTest {
 
   @Test fun nsInputStreamSource() {
@@ -81,7 +84,7 @@ class AppleSourceTest {
   }
 
   private fun ByteArray.toNSData(): NSData = memScoped {
-    NSData.create(bytes = allocArrayOf(this@toNSData), length = size.toULong())
+    NSData.create(bytes = allocArrayOf(this@toNSData), length = size.convert())
   }
 
   private fun assertNoEmptySegments(buffer: Buffer) {

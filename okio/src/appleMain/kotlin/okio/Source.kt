@@ -37,7 +37,7 @@ private open class NSInputStreamSource(
     val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit)
     val bytesRead = tail.data.usePinned {
       val bytes = it.addressOf(tail.limit).reinterpret<UInt8Var>()
-      input.read(bytes, maxToCopy.toULong())
+      input.read(bytes, maxToCopy.convert()).toLong()
     }
     if (bytesRead < 0) throw IOException(input.streamError?.localizedDescription)
     if (bytesRead == 0L) {
@@ -50,7 +50,7 @@ private open class NSInputStreamSource(
     }
     tail.limit += bytesRead.toInt()
     sink.size += bytesRead
-    return bytesRead
+    return bytesRead.convert()
   }
 
   override fun close() = input.close()
