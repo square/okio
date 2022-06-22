@@ -21,7 +21,9 @@ import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.dataUsingEncoding
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.cinterop.UnsafeNumber
 
+@OptIn(UnsafeNumber::class)
 class AppleByteStringTest {
   @Test fun nsDataToByteString() {
     val data = ("Hello" as NSString).dataUsingEncoding(NSUTF8StringEncoding) as NSData

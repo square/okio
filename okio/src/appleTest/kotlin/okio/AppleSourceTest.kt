@@ -82,14 +82,6 @@ class AppleSourceTest {
     }
   }
 
-  private fun ByteArray.toNSData(): NSData = memScoped {
-    NSData.create(bytes = allocArrayOf(this@toNSData), length = size.convert())
-  }
-
-  private fun assertNoEmptySegments(buffer: Buffer) {
-    assertTrue(segmentSizes(buffer).all { it != 0 }, "Expected all segments to be non-empty")
-  }
-
   companion object {
     const val SEGMENT_SIZE = Segment.SIZE
   }
