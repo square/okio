@@ -29,7 +29,6 @@ import platform.Foundation.create
 
 @OptIn(UnsafeNumber::class)
 class AppleSourceTest {
-
   @Test fun nsInputStreamSource() {
     val nsis = NSInputStream(byteArrayOf(0x61).toNSData())
     val source = nsis.source()

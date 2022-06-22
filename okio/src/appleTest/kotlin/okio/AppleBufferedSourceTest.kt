@@ -81,6 +81,8 @@ class AppleBufferedSourceTest {
 
       byteArray.fill(-5)
       assertEquals(-1, nsis.read(cPtr, 4))
+      assertNotNull(nsis.streamError)
+      assertEquals("closed", nsis.streamError?.localizedDescription)
       assertEquals("[-5, -5, -5, -5]", byteArray.contentToString())
     }
   }

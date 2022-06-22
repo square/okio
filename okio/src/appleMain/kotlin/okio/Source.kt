@@ -21,15 +21,15 @@ import platform.darwin.UInt8Var
 
 fun NSInputStream.source(): Source = NSInputStreamSource(this)
 
+@OptIn(UnsafeNumber::class)
 private open class NSInputStreamSource(
-  val input: NSInputStream
+  private val input: NSInputStream
 ) : Source {
 
   init {
     input.open()
   }
 
-  @OptIn(UnsafeNumber::class)
   override fun read(sink: Buffer, byteCount: Long): Long {
     if (byteCount == 0L) return 0L
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
