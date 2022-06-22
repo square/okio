@@ -23,6 +23,7 @@ import platform.darwin.NSUIntegerVar
 import platform.posix.memcpy
 import platform.posix.uint8_tVar
 
+/** Returns an input stream that reads from this source. */
 @OptIn(UnsafeNumber::class)
 fun BufferedSource.inputStream(): NSInputStream {
   return object : NSInputStream(NSData()) {

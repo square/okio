@@ -19,6 +19,7 @@ import kotlinx.cinterop.*
 import platform.Foundation.NSInputStream
 import platform.darwin.UInt8Var
 
+/** Returns a source that reads from `in`. */
 fun NSInputStream.source(): Source = NSInputStreamSource(this)
 
 @OptIn(UnsafeNumber::class)
