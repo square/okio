@@ -15,17 +15,11 @@
  */
 package okio
 
+import kotlinx.cinterop.UnsafeNumber
+import platform.Foundation.NSInputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.test.fail
-import kotlinx.cinterop.UnsafeNumber
-import kotlinx.cinterop.allocArrayOf
-import kotlinx.cinterop.convert
-import kotlinx.cinterop.memScoped
-import platform.Foundation.NSData
-import platform.Foundation.NSInputStream
-import platform.Foundation.create
 
 @OptIn(UnsafeNumber::class)
 class AppleSourceTest {

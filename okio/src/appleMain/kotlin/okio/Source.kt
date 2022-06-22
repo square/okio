@@ -15,7 +15,11 @@
  */
 package okio
 
-import kotlinx.cinterop.*
+import kotlinx.cinterop.UnsafeNumber
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.usePinned
 import platform.Foundation.NSInputStream
 import platform.darwin.UInt8Var
 

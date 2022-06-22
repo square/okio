@@ -15,8 +15,20 @@
  */
 package okio
 
-import kotlinx.cinterop.*
-import platform.Foundation.*
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CPointerVar
+import kotlinx.cinterop.UnsafeNumber
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.value
+import platform.Foundation.NSData
+import platform.Foundation.NSError
+import platform.Foundation.NSInputStream
+import platform.Foundation.NSLocalizedDescriptionKey
+import platform.Foundation.NSUnderlyingErrorKey
 import platform.darwin.NSInteger
 import platform.darwin.NSUInteger
 import platform.darwin.NSUIntegerVar
