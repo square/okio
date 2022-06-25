@@ -56,20 +56,25 @@ fun BufferedSource.inputStream(): NSInputStream {
     override fun streamError(): NSError? = error
 
     override fun read(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
-      val bytes = ByteArray(maxLength.toInt())
-      val read = try {
-        this@inputStream.read(bytes, 0, maxLength.toInt())
+      try {
+        val internalBuffer = this@inputStream.buffer
+
+        if (this@inputStream is RealBufferedSource) {
+          if (closed) throw IOException("closed")
+
+          if (internalBuffer.size == 0L) {
+            val count = this@inputStream.source.read(internalBuffer, Segment.SIZE.toLong())
+            if (count == -1L) return 0
+          }
+        }
+
+        val toRead = minOf(maxLength.toInt(), internalBuffer.size).toInt()
+        return internalBuffer.readNative(buffer, toRead).convert()
+
       } catch (e: Exception) {
         error = e.toNSError()
         return -1
       }
-      if (read > 0) {
-        bytes.usePinned {
-          memcpy(buffer, it.addressOf(0), read.convert())
-        }
-        return read.convert()
-      }
-      return 0
     }
 
     override fun getBuffer(
@@ -94,4 +99,23 @@ fun BufferedSource.inputStream(): NSInputStream {
 
     override fun description(): String = "${this@inputStream}.inputStream()"
   }
+}
+
+@OptIn(UnsafeNumber::class)
+internal fun Buffer.readNative(sink: CPointer<uint8_tVar>?, maxLength: Int): Int {
+  val s = head ?: return 0
+  val toCopy = minOf(maxLength, s.limit - s.pos)
+  s.data.usePinned {
+    memcpy(sink, it.addressOf(s.pos), toCopy.convert())
+  }
+
+  s.pos += toCopy
+  size -= toCopy.toLong()
+
+  if (s.pos == s.limit) {
+    head = s.pop()
+    SegmentPool.recycle(s)
+  }
+
+  return toCopy
 }

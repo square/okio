@@ -33,19 +33,28 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import platform.Foundation.NSInputStream
 
 @OptIn(UnsafeNumber::class)
 class AppleBufferedSourceTest {
   @Test fun bufferInputStream() {
     val source = Buffer()
     source.writeUtf8("abc")
+    testInputStream(source.inputStream())
+  }
 
+  @Test fun realBufferedSourceInputStream() {
+    val source = Buffer()
+    source.writeUtf8("abc")
+    testInputStream(RealBufferedSource(source).inputStream())
+  }
+
+  private fun testInputStream(nsis: NSInputStream) {
     val byteArray = ByteArray(4)
     byteArray.usePinned {
       val cPtr = it.addressOf(0).reinterpret<UInt8Var>()
 
       byteArray.fill(-5)
-      val nsis = source.inputStream()
       assertEquals(3, nsis.read(cPtr, 4))
       assertEquals("[97, 98, 99, -5]", byteArray.contentToString())
 
