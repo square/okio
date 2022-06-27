@@ -50,7 +50,13 @@ class CipherSink(
     // Shorten input until output is guaranteed to fit within a segment
     var outputSize = cipher.getOutputSize(size)
     while (outputSize > Segment.SIZE) {
-      check(size > blockSize) { "Unexpected output size $outputSize for input size $size" }
+      if (size <= blockSize) {
+        // Bug: For AES-GCM on Android `update` method never outputs any data
+        // As a consequence, `getOutputSize` just keeps increasing indefinitely after each update
+        // When that happens, the fallback is to perform the update operation without using a pre-allocated segment
+        sink.write(cipher.update(source.readByteArray(remaining)))
+        return remaining.toInt()
+      }
       size -= blockSize
       outputSize = cipher.getOutputSize(size)
     }
@@ -103,6 +109,18 @@ class CipherSink(
   private fun doFinal(): Throwable? {
     val outputSize = cipher.getOutputSize(0)
     if (outputSize == 0) return null
+
+    if (outputSize > Segment.SIZE) {
+      // Bug: For AES-GCM on Android `update` method never outputs any data
+      // As a consequence, `doFinal` returns the fully encrypted data, which may be arbitrarily large
+      // When that happens, the fallback is to perform the `doFinal` operation without using a pre-allocated segment
+      try {
+        sink.write(cipher.doFinal())
+      } catch (t: Throwable) {
+        return t
+      }
+      return null
+    }
 
     var thrown: Throwable? = null
     val buffer = sink.buffer
