@@ -26,6 +26,7 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.value
+import platform.Foundation.NSInputStream
 import platform.darwin.NSUIntegerVar
 import platform.darwin.UInt8Var
 import kotlin.test.Test
@@ -33,7 +34,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import platform.Foundation.NSInputStream
 
 @OptIn(UnsafeNumber::class)
 class AppleBufferedSourceTest {

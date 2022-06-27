@@ -70,7 +70,6 @@ fun BufferedSource.inputStream(): NSInputStream {
 
         val toRead = minOf(maxLength.toInt(), internalBuffer.size).toInt()
         return internalBuffer.readNative(buffer, toRead).convert()
-
       } catch (e: Exception) {
         error = e.toNSError()
         return -1
