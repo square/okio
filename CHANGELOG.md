@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+## Version 3.2.0
+
+_2022-06-26_
+
+ * Fix: Configure the multiplatform artifact (`com.squareup.okio:okio:3.x.x`) to depend on the
+   JVM artifact (`com.squareup.okio:okio-jvm:3.x.x`) for Maven builds. This should work-around an
+   issue where Maven doesn't interpret Gradle metadata.
+ * Fix: Change `CipherSource` and `CipherSink` to recover if the cipher doesn't support streaming.
+   This should work around a crash with AES/GCM ciphers on Android.
+
+
 ## Version 3.1.0
 
 _2022-04-19_
