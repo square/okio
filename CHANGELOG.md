@@ -10,6 +10,7 @@ _2022-06-26_
    issue where Maven doesn't interpret Gradle metadata.
  * Fix: Change `CipherSource` and `CipherSink` to recover if the cipher doesn't support streaming.
    This should work around a crash with AES/GCM ciphers on Android.
+ * New: Enable compatibility with non-hierarchical projects.
 
 
 ## Version 3.1.0
