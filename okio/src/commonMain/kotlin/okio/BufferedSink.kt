@@ -19,7 +19,7 @@ package okio
  * A sink that keeps a buffer internally so that callers can do small writes without a performance
  * penalty.
  */
-expect interface BufferedSink : Sink {
+expect sealed interface BufferedSink : Sink {
   /** This sink's internal buffer. */
   val buffer: Buffer
 
