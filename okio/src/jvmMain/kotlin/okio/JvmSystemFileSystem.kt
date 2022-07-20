@@ -124,7 +124,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
   }
 
   override fun delete(path: Path, mustExist: Boolean) {
-    if (Thread.currentThread().isInterrupted) {
+    if (Thread.interrupted()) {
       // If the current thread has been interrupted.
       throw InterruptedIOException("interrupted")
     }
