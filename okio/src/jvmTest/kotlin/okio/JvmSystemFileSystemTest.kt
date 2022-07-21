@@ -16,6 +16,11 @@
 package okio
 
 import kotlinx.datetime.Clock
+import org.junit.Test
+import java.io.InterruptedIOException
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.fail
 
 /**
  * This test will run using [NioSystemFileSystem] by default. If [java.nio.file.Files] is not found
@@ -35,4 +40,16 @@ class JvmSystemFileSystemTest : AbstractFileSystemTest(
   windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY
-)
+) {
+
+  @Test fun checkInterruptedBeforeDeleting() {
+    Thread.currentThread().interrupt()
+    try {
+      fileSystem.delete(base)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("interrupted", expected.message)
+      assertFalse(Thread.interrupted())
+    }
+  }
+}
