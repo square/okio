@@ -45,17 +45,6 @@ private class BufferedSourceInputStream(
 
   private var error: NSError? = null
 
-  private fun Exception.toNSError(): NSError {
-    return NSError(
-      "Kotlin",
-      0,
-      mapOf(
-        NSLocalizedDescriptionKey to message,
-        NSUnderlyingErrorKey to this
-      )
-    )
-  }
-
   override fun streamError(): NSError? = error
 
   override fun open() {
@@ -104,23 +93,33 @@ private class BufferedSourceInputStream(
   override fun close() = bufferedSource.close()
 
   override fun description(): String = "$bufferedSource.inputStream()"
-}
 
-@OptIn(UnsafeNumber::class)
-internal fun Buffer.readNative(sink: CPointer<uint8_tVar>?, maxLength: Int): Int {
-  val s = head ?: return 0
-  val toCopy = minOf(maxLength, s.limit - s.pos)
-  s.data.usePinned {
-    memcpy(sink, it.addressOf(s.pos), toCopy.convert())
+  private fun Exception.toNSError(): NSError {
+    return NSError(
+      "Kotlin",
+      0,
+      mapOf(
+        NSLocalizedDescriptionKey to message,
+        NSUnderlyingErrorKey to this
+      )
+    )
   }
 
-  s.pos += toCopy
-  size -= toCopy.toLong()
+  private fun Buffer.readNative(sink: CPointer<uint8_tVar>?, maxLength: Int): Int {
+    val s = head ?: return 0
+    val toCopy = minOf(maxLength, s.limit - s.pos)
+    s.data.usePinned {
+      memcpy(sink, it.addressOf(s.pos), toCopy.convert())
+    }
 
-  if (s.pos == s.limit) {
-    head = s.pop()
-    SegmentPool.recycle(s)
+    s.pos += toCopy
+    size -= toCopy.toLong()
+
+    if (s.pos == s.limit) {
+      head = s.pop()
+      SegmentPool.recycle(s)
+    }
+
+    return toCopy
   }
-
-  return toCopy
 }
