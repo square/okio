@@ -20,7 +20,7 @@ import java.io.OutputStream
 import java.nio.channels.WritableByteChannel
 import java.nio.charset.Charset
 
-actual interface BufferedSink : Sink, WritableByteChannel {
+actual sealed interface BufferedSink : Sink, WritableByteChannel {
   /** Returns this sink's internal buffer. */
   @Deprecated(
     message = "moved to val: use getBuffer() instead",

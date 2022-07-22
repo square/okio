@@ -15,7 +15,7 @@
  */
 package okio
 
-actual interface BufferedSource : Source {
+actual sealed interface BufferedSource : Source {
   actual val buffer: Buffer
 
   actual fun exhausted(): Boolean

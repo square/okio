@@ -16,6 +16,7 @@
 package okio
 
 import okio.Path.Companion.toOkioPath
+import java.io.InterruptedIOException
 import java.io.RandomAccessFile
 
 /**
@@ -123,6 +124,10 @@ internal open class JvmSystemFileSystem : FileSystem() {
   }
 
   override fun delete(path: Path, mustExist: Boolean) {
+    if (Thread.interrupted()) {
+      // If the current thread has been interrupted.
+      throw InterruptedIOException("interrupted")
+    }
     val file = path.toFile()
     val deleted = file.delete()
     if (!deleted) {
