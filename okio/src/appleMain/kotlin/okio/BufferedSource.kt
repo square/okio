@@ -35,69 +35,75 @@ import platform.darwin.NSUIntegerVar
 import platform.posix.memcpy
 import platform.posix.uint8_tVar
 
+fun BufferedSource.inputStream(): NSInputStream = BufferedSourceInputStream(this)
+
 /** Returns an input stream that reads from this source. */
 @OptIn(UnsafeNumber::class)
-fun BufferedSource.inputStream(): NSInputStream {
-  return object : NSInputStream(NSData()) {
+private class BufferedSourceInputStream(
+  private val source: BufferedSource
+) : NSInputStream(NSData()) {
 
-    private var error: NSError? = null
+  private var error: NSError? = null
 
-    private fun Exception.toNSError(): NSError {
-      return NSError(
-        "Kotlin",
-        0,
-        mapOf(
-          NSLocalizedDescriptionKey to message,
-          NSUnderlyingErrorKey to this
-        )
+  private fun Exception.toNSError(): NSError {
+    return NSError(
+      "Kotlin",
+      0,
+      mapOf(
+        NSLocalizedDescriptionKey to message,
+        NSUnderlyingErrorKey to this
       )
-    }
-
-    override fun streamError(): NSError? = error
-
-    override fun read(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
-      try {
-        val internalBuffer = this@inputStream.buffer
-
-        if (this@inputStream is RealBufferedSource) {
-          if (closed) throw IOException("closed")
-
-          if (internalBuffer.size == 0L) {
-            val count = this@inputStream.source.read(internalBuffer, Segment.SIZE.toLong())
-            if (count == -1L) return 0
-          }
-        }
-
-        val toRead = minOf(maxLength.toInt(), internalBuffer.size).toInt()
-        return internalBuffer.readNative(buffer, toRead).convert()
-      } catch (e: Exception) {
-        error = e.toNSError()
-        return -1
-      }
-    }
-
-    override fun getBuffer(
-      buffer: CPointer<CPointerVar<uint8_tVar>>?,
-      length: CPointer<NSUIntegerVar>?
-    ): Boolean {
-      if (this@inputStream.buffer.size > 0) {
-        this@inputStream.buffer.head?.let { s ->
-          s.data.usePinned {
-            buffer?.pointed?.value = it.addressOf(s.pos).reinterpret()
-            length?.pointed?.value = (s.limit - s.pos).convert()
-            return true
-          }
-        }
-      }
-      return false
-    }
-
-    override fun hasBytesAvailable(): Boolean = buffer.size > 0
-
-    override fun close() = this@inputStream.close()
-
-    override fun description(): String = "${this@inputStream}.inputStream()"
+    )
   }
+
+  override fun streamError(): NSError? = error
+
+  override fun open() {
+    // no-op
+  }
+
+  override fun read(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
+    try {
+      val internalBuffer = source.buffer
+
+      if (source is RealBufferedSource) {
+        if (source.closed) throw IOException("closed")
+
+        if (internalBuffer.size == 0L) {
+          val count = source.source.read(internalBuffer, Segment.SIZE.toLong())
+          if (count == -1L) return 0
+        }
+      }
+
+      val toRead = minOf(maxLength.toInt(), internalBuffer.size).toInt()
+      return internalBuffer.readNative(buffer, toRead).convert()
+    } catch (e: Exception) {
+      error = e.toNSError()
+      return -1
+    }
+  }
+
+  override fun getBuffer(
+    buffer: CPointer<CPointerVar<uint8_tVar>>?,
+    length: CPointer<NSUIntegerVar>?
+  ): Boolean {
+    if (source.buffer.size > 0) {
+      source.buffer.head?.let { s ->
+        s.data.usePinned {
+          buffer?.pointed?.value = it.addressOf(s.pos).reinterpret()
+          length?.pointed?.value = (s.limit - s.pos).convert()
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  override fun hasBytesAvailable(): Boolean = source.buffer.size > 0
+
+  override fun close() = source.close()
+
+  override fun description(): String = "$source.inputStream()"
 }
 
 @OptIn(UnsafeNumber::class)

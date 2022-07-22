@@ -50,6 +50,7 @@ class AppleBufferedSourceTest {
   }
 
   private fun testInputStream(nsis: NSInputStream) {
+    nsis.open()
     val byteArray = ByteArray(4)
     byteArray.usePinned {
       val cPtr = it.addressOf(0).reinterpret<UInt8Var>()
@@ -69,6 +70,7 @@ class AppleBufferedSourceTest {
     source.writeUtf8("abc")
 
     val nsis = source.inputStream()
+    nsis.open()
     assertTrue(nsis.hasBytesAvailable)
 
     memScoped {
@@ -95,6 +97,7 @@ class AppleBufferedSourceTest {
     assertFalse(source.closed)
 
     val nsis = source.inputStream()
+    nsis.open()
     nsis.close()
     assertTrue(source.closed)
 
