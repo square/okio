@@ -40,7 +40,7 @@ fun BufferedSource.inputStream(): NSInputStream = BufferedSourceInputStream(this
 /** Returns an input stream that reads from this source. */
 @OptIn(UnsafeNumber::class)
 private class BufferedSourceInputStream(
-  private val source: BufferedSource
+  private val bufferedSource: BufferedSource
 ) : NSInputStream(NSData()) {
 
   private var error: NSError? = null
@@ -64,13 +64,13 @@ private class BufferedSourceInputStream(
 
   override fun read(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
     try {
-      val internalBuffer = source.buffer
+      val internalBuffer = bufferedSource.buffer
 
-      if (source is RealBufferedSource) {
-        if (source.closed) throw IOException("closed")
+      if (bufferedSource is RealBufferedSource) {
+        if (bufferedSource.closed) throw IOException("closed")
 
         if (internalBuffer.size == 0L) {
-          val count = source.source.read(internalBuffer, Segment.SIZE.toLong())
+          val count = bufferedSource.source.read(internalBuffer, Segment.SIZE.toLong())
           if (count == -1L) return 0
         }
       }
@@ -87,8 +87,8 @@ private class BufferedSourceInputStream(
     buffer: CPointer<CPointerVar<uint8_tVar>>?,
     length: CPointer<NSUIntegerVar>?
   ): Boolean {
-    if (source.buffer.size > 0) {
-      source.buffer.head?.let { s ->
+    if (bufferedSource.buffer.size > 0) {
+      bufferedSource.buffer.head?.let { s ->
         s.data.usePinned {
           buffer?.pointed?.value = it.addressOf(s.pos).reinterpret()
           length?.pointed?.value = (s.limit - s.pos).convert()
@@ -99,11 +99,11 @@ private class BufferedSourceInputStream(
     return false
   }
 
-  override fun hasBytesAvailable(): Boolean = source.buffer.size > 0
+  override fun hasBytesAvailable(): Boolean = bufferedSource.buffer.size > 0
 
-  override fun close() = source.close()
+  override fun close() = bufferedSource.close()
 
-  override fun description(): String = "$source.inputStream()"
+  override fun description(): String = "$bufferedSource.inputStream()"
 }
 
 @OptIn(UnsafeNumber::class)
