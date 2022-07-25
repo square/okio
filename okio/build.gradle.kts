@@ -88,6 +88,10 @@ kotlin {
       dependsOn(commonMain)
     }
 
+    val nonAppleMain by creating {
+      dependsOn(hashFunctions)
+    }
+
     val nonJvmMain by creating {
       dependsOn(hashFunctions)
       dependsOn(commonMain)
@@ -112,6 +116,7 @@ kotlin {
     if (kmpJsEnabled) {
       val jsMain by getting {
         dependsOn(nonJvmMain)
+        dependsOn(nonAppleMain)
       }
       val jsTest by getting {
         dependsOn(nonJvmTest)
@@ -121,10 +126,14 @@ kotlin {
     if (kmpNativeEnabled) {
       createSourceSet("nativeMain", parent = nonJvmMain)
         .also { nativeMain ->
-          createSourceSet("mingwMain", parent = nativeMain, children = mingwTargets)
+          createSourceSet("mingwMain", parent = nativeMain, children = mingwTargets).also { mingwMain ->
+            mingwMain.dependsOn(nonAppleMain)
+          }
           createSourceSet("unixMain", parent = nativeMain)
             .also { unixMain ->
-              createSourceSet("linuxMain", parent = unixMain, children = linuxTargets)
+              createSourceSet("linuxMain", parent = unixMain, children = linuxTargets).also { linuxMain ->
+                linuxMain.dependsOn(nonAppleMain)
+              }
               createSourceSet("appleMain", parent = unixMain, children = appleTargets)
             }
         }

@@ -25,13 +25,23 @@ import kotlin.test.assertEquals
 class AppleByteStringTest {
   @Test fun nsDataToByteString() {
     val data = ("Hello" as NSString).dataUsingEncoding(NSUTF8StringEncoding) as NSData
-    val byteString = data.toByteString()
+
+    @Suppress("DEPRECATION") // Ensure deprecated function continues to work.
+    val byteStringDeprecated = data.toByteString()
+    assertEquals("Hello", byteStringDeprecated.utf8())
+
+    val byteString = with(ByteString) { data.toByteString() }
     assertEquals("Hello", byteString.utf8())
   }
 
   @Test fun emptyNsDataToByteString() {
     val data = ("" as NSString).dataUsingEncoding(NSUTF8StringEncoding) as NSData
-    val byteString = data.toByteString()
+
+    @Suppress("DEPRECATION") // Ensure deprecated function continues to work.
+    val byteStringDeprecated = data.toByteString()
+    assertEquals(ByteString.EMPTY, byteStringDeprecated)
+
+    val byteString = with(ByteString) { data.toByteString() }
     assertEquals(ByteString.EMPTY, byteString)
   }
 }
