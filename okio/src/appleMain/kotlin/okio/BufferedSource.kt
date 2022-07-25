@@ -17,9 +17,11 @@ package okio
 
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CPointerVar
+import kotlinx.cinterop.Pinned
 import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.convert
+import kotlinx.cinterop.pin
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
@@ -44,6 +46,7 @@ private class BufferedSourceInputStream(
 ) : NSInputStream(NSData()) {
 
   private var error: NSError? = null
+  private var pinnedBuffer: Pinned<ByteArray>? = null
 
   override fun streamError(): NSError? = error
 
@@ -72,7 +75,9 @@ private class BufferedSourceInputStream(
   ): Boolean {
     if (bufferedSource.buffer.size > 0) {
       bufferedSource.buffer.head?.let { s ->
-        s.data.usePinned {
+        pinnedBuffer?.unpin()
+        s.data.pin().let {
+          pinnedBuffer = it
           buffer?.pointed?.value = it.addressOf(s.pos).reinterpret()
           length?.pointed?.value = (s.limit - s.pos).convert()
           return true
@@ -84,7 +89,10 @@ private class BufferedSourceInputStream(
 
   override fun hasBytesAvailable(): Boolean = bufferedSource.buffer.size > 0
 
-  override fun close() = bufferedSource.close()
+  override fun close() {
+    pinnedBuffer?.unpin()
+    bufferedSource.close()
+  }
 
   override fun description(): String = "$bufferedSource.inputStream()"
 
