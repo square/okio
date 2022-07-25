@@ -35,10 +35,7 @@ internal inline fun RealBufferedSource.commonRead(sink: Buffer, byteCount: Long)
   require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   check(!closed) { "closed" }
 
-  if (buffer.size == 0L) {
-    val read = source.read(buffer, Segment.SIZE.toLong())
-    if (read == -1L) return -1L
-  }
+  if (exhausted()) return -1L
 
   val toRead = minOf(byteCount, buffer.size)
   return buffer.read(sink, toRead)
@@ -130,10 +127,7 @@ internal inline fun RealBufferedSource.commonReadFully(sink: ByteArray) {
 internal inline fun RealBufferedSource.commonRead(sink: ByteArray, offset: Int, byteCount: Int): Int {
   checkOffsetAndCount(sink.size.toLong(), offset.toLong(), byteCount.toLong())
 
-  if (buffer.size == 0L) {
-    val read = source.read(buffer, Segment.SIZE.toLong())
-    if (read == -1L) return -1
-  }
+  if (exhausted()) return -1
 
   val toRead = okio.minOf(byteCount, buffer.size).toInt()
   return buffer.read(sink, offset, toRead)
