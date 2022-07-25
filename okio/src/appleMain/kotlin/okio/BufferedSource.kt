@@ -35,9 +35,9 @@ import platform.darwin.NSUIntegerVar
 import platform.posix.memcpy
 import platform.posix.uint8_tVar
 
+/** Returns an input stream that reads from this source. */
 fun BufferedSource.inputStream(): NSInputStream = BufferedSourceInputStream(this)
 
-/** Returns an input stream that reads from this source. */
 @OptIn(UnsafeNumber::class)
 private class BufferedSourceInputStream(
   private val bufferedSource: BufferedSource
@@ -58,10 +58,7 @@ private class BufferedSourceInputStream(
       if (bufferedSource is RealBufferedSource) {
         if (bufferedSource.closed) throw IOException("closed")
 
-        if (internalBuffer.size == 0L) {
-          val count = bufferedSource.source.read(internalBuffer, Segment.SIZE.toLong())
-          if (count == -1L) return 0
-        }
+        if (bufferedSource.exhausted()) return 0
       }
 
       val toRead = minOf(maxLength.toInt(), internalBuffer.size).toInt()
