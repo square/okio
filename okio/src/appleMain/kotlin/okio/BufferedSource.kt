@@ -53,16 +53,13 @@ private class BufferedSourceInputStream(
 
   override fun read(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
     try {
-      val internalBuffer = bufferedSource.buffer
-
       if (bufferedSource is RealBufferedSource) {
         if (bufferedSource.closed) throw IOException("closed")
-
         if (bufferedSource.exhausted()) return 0
       }
 
-      val toRead = minOf(maxLength.toInt(), internalBuffer.size).toInt()
-      return internalBuffer.readNative(buffer, toRead).convert()
+      val toRead = minOf(maxLength.toInt(), bufferedSource.buffer.size).toInt()
+      return bufferedSource.buffer.readNative(buffer, toRead).convert()
     } catch (e: Exception) {
       error = e.toNSError()
       return -1
