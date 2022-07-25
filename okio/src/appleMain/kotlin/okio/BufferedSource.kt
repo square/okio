@@ -91,6 +91,7 @@ private class BufferedSourceInputStream(
 
   override fun close() {
     pinnedBuffer?.unpin()
+    pinnedBuffer = null
     bufferedSource.close()
   }
 

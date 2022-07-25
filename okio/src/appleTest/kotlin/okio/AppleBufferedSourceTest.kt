@@ -84,9 +84,9 @@ class AppleBufferedSourceTest {
 
       val buffer = bufferPtr.value
       assertNotNull(buffer)
-      assertEquals('a'.code.toUByte(), buffer[0])
-      assertEquals('b'.code.toUByte(), buffer[1])
-      assertEquals('c'.code.toUByte(), buffer[2])
+      assertEquals('a'.code.convert(), buffer[0])
+      assertEquals('b'.code.convert(), buffer[1])
+      assertEquals('c'.code.convert(), buffer[2])
     }
   }
 
