@@ -19,7 +19,7 @@ import java.io.IOException
 import javax.crypto.Cipher
 
 class CipherSink(
-  private val sink: BufferedSink,
+  private val sink: Sink,
   val cipher: Cipher
 ) : RawSink {
   private val blockSize = cipher.blockSize

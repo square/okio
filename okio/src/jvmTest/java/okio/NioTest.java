@@ -35,14 +35,14 @@ public final class NioTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test public void sourceIsOpen() throws Exception {
-    BufferedSource source = Okio.buffer((RawSource) new Buffer());
+    Source source = Okio.buffer((RawSource) new Buffer());
     assertTrue(source.isOpen());
     source.close();
     assertFalse(source.isOpen());
   }
 
   @Test public void sinkIsOpen() throws Exception {
-    BufferedSink sink = Okio.buffer((RawSink) new Buffer());
+    Sink sink = Okio.buffer((RawSink) new Buffer());
     assertTrue(sink.isOpen());
     sink.close();
     assertFalse(sink.isOpen());
@@ -53,7 +53,7 @@ public final class NioTest {
     FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE);
     testWritableByteChannel(fileChannel);
 
-    BufferedSource emitted = Okio.buffer(Okio.source(file));
+    Source emitted = Okio.buffer(Okio.source(file));
     assertEquals("defghijklmnopqrstuvw", emitted.readUtf8());
     emitted.close();
   }
@@ -66,7 +66,7 @@ public final class NioTest {
 
   @Test public void writableChannelBufferedSink() throws Exception {
     Buffer buffer = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((RawSink) buffer);
+    Sink bufferedSink = Okio.buffer((RawSink) buffer);
     testWritableByteChannel(bufferedSink);
     assertEquals("defghijklmnopqrstuvw", buffer.readUtf8());
   }
@@ -74,7 +74,7 @@ public final class NioTest {
   @Test public void readableChannelNioFile() throws Exception {
     File file = temporaryFolder.newFile();
 
-    BufferedSink initialData = Okio.buffer(Okio.sink(file));
+    Sink initialData = Okio.buffer(Okio.sink(file));
     initialData.writeUtf8("abcdefghijklmnopqrstuvwxyz");
     initialData.close();
 
@@ -91,7 +91,7 @@ public final class NioTest {
 
   @Test public void readableChannelBufferedSource() throws Exception {
     Buffer buffer = new Buffer();
-    BufferedSource bufferedSource = Okio.buffer((RawSource) buffer);
+    Source bufferedSource = Okio.buffer((RawSource) buffer);
     buffer.writeUtf8("abcdefghijklmnopqrstuvwxyz");
 
     testReadableByteChannel(bufferedSource);

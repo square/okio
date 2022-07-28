@@ -39,9 +39,9 @@ import okio.internal.commonWriteShortLe
 import okio.internal.commonWriteUtf8
 import okio.internal.commonWriteUtf8CodePoint
 
-internal actual class RealBufferedSink actual constructor(
+internal actual class RealSink actual constructor(
   @JvmField actual val sink: RawSink
-) : BufferedSink {
+) : Sink {
   @JvmField val bufferField = Buffer()
   @JvmField actual var closed: Boolean = false
 
@@ -61,7 +61,7 @@ internal actual class RealBufferedSink actual constructor(
 
   override fun writeUtf8CodePoint(codePoint: Int) = commonWriteUtf8CodePoint(codePoint)
 
-  override fun writeString(string: String, charset: Charset): BufferedSink {
+  override fun writeString(string: String, charset: Charset): Sink {
     check(!closed) { "closed" }
     buffer.writeString(string, charset)
     return emitCompleteSegments()
@@ -72,7 +72,7 @@ internal actual class RealBufferedSink actual constructor(
     beginIndex: Int,
     endIndex: Int,
     charset: Charset
-  ): BufferedSink {
+  ): Sink {
     check(!closed) { "closed" }
     buffer.writeString(string, beginIndex, endIndex, charset)
     return emitCompleteSegments()
@@ -90,7 +90,7 @@ internal actual class RealBufferedSink actual constructor(
   }
 
   override fun writeAll(source: RawSource) = commonWriteAll(source)
-  override fun write(source: RawSource, byteCount: Long): BufferedSink = commonWrite(source, byteCount)
+  override fun write(source: RawSource, byteCount: Long): Sink = commonWrite(source, byteCount)
   override fun writeByte(b: Int) = commonWriteByte(b)
   override fun writeShort(s: Int) = commonWriteShort(s)
   override fun writeShortLe(s: Int) = commonWriteShortLe(s)
@@ -120,13 +120,13 @@ internal actual class RealBufferedSink actual constructor(
       override fun flush() {
         // For backwards compatibility, a flush() on a closed stream is a no-op.
         if (!closed) {
-          this@RealBufferedSink.flush()
+          this@RealSink.flush()
         }
       }
 
-      override fun close() = this@RealBufferedSink.close()
+      override fun close() = this@RealSink.close()
 
-      override fun toString() = "${this@RealBufferedSink}.outputStream()"
+      override fun toString() = "${this@RealSink}.outputStream()"
     }
   }
 

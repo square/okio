@@ -45,8 +45,8 @@ public final class InflaterSourceTest {
   }
 
   public final BufferedSourceFactory bufferFactory;
-  public BufferedSink deflatedSink;
-  public BufferedSource deflatedSource;
+  public Sink deflatedSink;
+  public Source deflatedSource;
 
   public InflaterSourceTest(BufferedSourceFactory bufferFactory) {
     this.bufferFactory = bufferFactory;
@@ -200,7 +200,7 @@ public final class InflaterSourceTest {
   }
 
   /** Returns a new buffer containing the inflated contents of {@code deflated}. */
-  private Buffer inflate(BufferedSource deflated) throws IOException {
+  private Buffer inflate(Source deflated) throws IOException {
     Buffer result = new Buffer();
     InflaterSource source = new InflaterSource(deflated, new Inflater());
     while (source.read(result, Integer.MAX_VALUE) != -1) {

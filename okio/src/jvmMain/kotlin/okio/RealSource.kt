@@ -50,9 +50,9 @@ import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonToString
 
-internal actual class RealBufferedSource actual constructor(
+internal actual class RealSource actual constructor(
   @JvmField actual val source: RawSource
-) : BufferedSource {
+) : Source {
   @JvmField val bufferField = Buffer()
   @JvmField actual var closed: Boolean = false
 
@@ -137,7 +137,7 @@ internal actual class RealBufferedSource actual constructor(
     byteCount: Int
   ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
-  override fun peek(): BufferedSource = commonPeek()
+  override fun peek(): Source = commonPeek()
 
   override fun inputStream(): InputStream {
     return object : InputStream() {
@@ -167,9 +167,9 @@ internal actual class RealBufferedSource actual constructor(
         return minOf(buffer.size, Integer.MAX_VALUE).toInt()
       }
 
-      override fun close() = this@RealBufferedSource.close()
+      override fun close() = this@RealSource.close()
 
-      override fun toString() = "${this@RealBufferedSource}.inputStream()"
+      override fun toString() = "${this@RealSource}.inputStream()"
     }
   }
 

@@ -20,7 +20,7 @@ package okio
  * penalty. It also allows clients to read ahead, buffering as much as necessary before consuming
  * input.
  */
-expect sealed interface BufferedSource : RawSource {
+expect sealed interface Source : RawSource {
   /** This source's internal buffer. */
   val buffer: Buffer
 
@@ -530,5 +530,5 @@ expect sealed interface BufferedSource : RawSource {
    * buffer.readUtf8(3) // returns "def", buffer contains "ghi"
    * ```
    */
-  fun peek(): BufferedSource
+  fun peek(): Source
 }

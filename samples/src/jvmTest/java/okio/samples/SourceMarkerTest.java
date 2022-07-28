@@ -18,7 +18,7 @@ package okio.samples;
 import java.io.IOException;
 import java.util.Arrays;
 import okio.Buffer;
-import okio.BufferedSource;
+import okio.Source;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,7 +27,7 @@ import static org.junit.Assert.fail;
 public final class SourceMarkerTest {
   @Test public void test() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     assertThat(source.readUtf8(3)).isEqualTo("ABC");
     long pos3 = marker.mark(7); // DEFGHIJ
@@ -56,7 +56,7 @@ public final class SourceMarkerTest {
 
   @Test public void exceedLimitTest() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     assertThat(source.readUtf8(3)).isEqualTo("ABC");
     long pos3 = marker.mark(Long.MAX_VALUE); // D...
@@ -79,7 +79,7 @@ public final class SourceMarkerTest {
 
   @Test public void markAndLimitSmallerThanUserBuffer() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     // Load 5 bytes into the user buffer, then mark 0..3 and confirm that resetting from 4 fails.
     source.require(5);
@@ -97,7 +97,7 @@ public final class SourceMarkerTest {
 
   @Test public void resetTooLow() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     source.skip(3);
     marker.mark(3);
@@ -112,7 +112,7 @@ public final class SourceMarkerTest {
 
   @Test public void resetTooHigh() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     marker.mark(3);
     source.skip(6);
@@ -138,7 +138,7 @@ public final class SourceMarkerTest {
 
   @Test public void markNothingBuffered() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     long pos0 = marker.mark(5);
     assertThat(source.readUtf8(4)).isEqualTo("ABCD");
@@ -148,7 +148,7 @@ public final class SourceMarkerTest {
 
   @Test public void mark0() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     long pos0 = marker.mark(0);
     marker.reset(pos0);
@@ -168,7 +168,7 @@ public final class SourceMarkerTest {
 
   @Test public void resetAfterEof() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDE"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     long pos0 = marker.mark(5);
     assertThat(source.readUtf8()).isEqualTo("ABCDE");
@@ -178,7 +178,7 @@ public final class SourceMarkerTest {
 
   @Test public void closeThenMark() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     source.close();
     try {
@@ -191,7 +191,7 @@ public final class SourceMarkerTest {
 
   @Test public void closeThenReset() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     long pos0 = marker.mark(5);
     source.close();
@@ -205,7 +205,7 @@ public final class SourceMarkerTest {
 
   @Test public void closeThenRead() throws Exception {
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     source.close();
     try {
@@ -223,7 +223,7 @@ public final class SourceMarkerTest {
     String ds = repeat('d', 10_000);
 
     SourceMarker marker = new SourceMarker(new Buffer().writeUtf8(as + bs + cs + ds));
-    BufferedSource source = marker.source();
+    Source source = marker.source();
 
     assertThat(source.readUtf8(10_000)).isEqualTo(as);
     long pos10k = marker.mark(15_000);

@@ -20,18 +20,18 @@
 package okio.internal
 
 import okio.Buffer
-import okio.BufferedSource
+import okio.Source
 import okio.ByteString
 import okio.EOFException
 import okio.Options
 import okio.PeekSource
-import okio.RealBufferedSource
+import okio.RealSource
 import okio.Segment
 import okio.RawSink
 import okio.buffer
 import okio.checkOffsetAndCount
 
-internal inline fun RealBufferedSource.commonRead(sink: Buffer, byteCount: Long): Long {
+internal inline fun RealSource.commonRead(sink: Buffer, byteCount: Long): Long {
   require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   check(!closed) { "closed" }
 
@@ -44,16 +44,16 @@ internal inline fun RealBufferedSource.commonRead(sink: Buffer, byteCount: Long)
   return buffer.read(sink, toRead)
 }
 
-internal inline fun RealBufferedSource.commonExhausted(): Boolean {
+internal inline fun RealSource.commonExhausted(): Boolean {
   check(!closed) { "closed" }
   return buffer.exhausted() && source.read(buffer, Segment.SIZE.toLong()) == -1L
 }
 
-internal inline fun RealBufferedSource.commonRequire(byteCount: Long) {
+internal inline fun RealSource.commonRequire(byteCount: Long) {
   if (!request(byteCount)) throw EOFException()
 }
 
-internal inline fun RealBufferedSource.commonRequest(byteCount: Long): Boolean {
+internal inline fun RealSource.commonRequest(byteCount: Long): Boolean {
   require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   check(!closed) { "closed" }
   while (buffer.size < byteCount) {
@@ -62,22 +62,22 @@ internal inline fun RealBufferedSource.commonRequest(byteCount: Long): Boolean {
   return true
 }
 
-internal inline fun RealBufferedSource.commonReadByte(): Byte {
+internal inline fun RealSource.commonReadByte(): Byte {
   require(1)
   return buffer.readByte()
 }
 
-internal inline fun RealBufferedSource.commonReadByteString(): ByteString {
+internal inline fun RealSource.commonReadByteString(): ByteString {
   buffer.writeAll(source)
   return buffer.readByteString()
 }
 
-internal inline fun RealBufferedSource.commonReadByteString(byteCount: Long): ByteString {
+internal inline fun RealSource.commonReadByteString(byteCount: Long): ByteString {
   require(byteCount)
   return buffer.readByteString(byteCount)
 }
 
-internal inline fun RealBufferedSource.commonSelect(options: Options): Int {
+internal inline fun RealSource.commonSelect(options: Options): Int {
   check(!closed) { "closed" }
 
   while (true) {
@@ -100,17 +100,17 @@ internal inline fun RealBufferedSource.commonSelect(options: Options): Int {
   }
 }
 
-internal inline fun RealBufferedSource.commonReadByteArray(): ByteArray {
+internal inline fun RealSource.commonReadByteArray(): ByteArray {
   buffer.writeAll(source)
   return buffer.readByteArray()
 }
 
-internal inline fun RealBufferedSource.commonReadByteArray(byteCount: Long): ByteArray {
+internal inline fun RealSource.commonReadByteArray(byteCount: Long): ByteArray {
   require(byteCount)
   return buffer.readByteArray(byteCount)
 }
 
-internal inline fun RealBufferedSource.commonReadFully(sink: ByteArray) {
+internal inline fun RealSource.commonReadFully(sink: ByteArray) {
   try {
     require(sink.size.toLong())
   } catch (e: EOFException) {
@@ -127,7 +127,7 @@ internal inline fun RealBufferedSource.commonReadFully(sink: ByteArray) {
   buffer.readFully(sink)
 }
 
-internal inline fun RealBufferedSource.commonRead(sink: ByteArray, offset: Int, byteCount: Int): Int {
+internal inline fun RealSource.commonRead(sink: ByteArray, offset: Int, byteCount: Int): Int {
   checkOffsetAndCount(sink.size.toLong(), offset.toLong(), byteCount.toLong())
 
   if (buffer.size == 0L) {
@@ -139,7 +139,7 @@ internal inline fun RealBufferedSource.commonRead(sink: ByteArray, offset: Int, 
   return buffer.read(sink, offset, toRead)
 }
 
-internal inline fun RealBufferedSource.commonReadFully(sink: Buffer, byteCount: Long) {
+internal inline fun RealSource.commonReadFully(sink: Buffer, byteCount: Long) {
   try {
     require(byteCount)
   } catch (e: EOFException) {
@@ -151,7 +151,7 @@ internal inline fun RealBufferedSource.commonReadFully(sink: Buffer, byteCount: 
   buffer.readFully(sink, byteCount)
 }
 
-internal inline fun RealBufferedSource.commonReadAll(sink: RawSink): Long {
+internal inline fun RealSource.commonReadAll(sink: RawSink): Long {
   var totalBytesWritten: Long = 0
   while (source.read(buffer, Segment.SIZE.toLong()) != -1L) {
     val emitByteCount = buffer.completeSegmentByteCount()
@@ -167,17 +167,17 @@ internal inline fun RealBufferedSource.commonReadAll(sink: RawSink): Long {
   return totalBytesWritten
 }
 
-internal inline fun RealBufferedSource.commonReadUtf8(): String {
+internal inline fun RealSource.commonReadUtf8(): String {
   buffer.writeAll(source)
   return buffer.readUtf8()
 }
 
-internal inline fun RealBufferedSource.commonReadUtf8(byteCount: Long): String {
+internal inline fun RealSource.commonReadUtf8(byteCount: Long): String {
   require(byteCount)
   return buffer.readUtf8(byteCount)
 }
 
-internal inline fun RealBufferedSource.commonReadUtf8Line(): String? {
+internal inline fun RealSource.commonReadUtf8Line(): String? {
   val newline = indexOf('\n'.code.toByte())
 
   return if (newline == -1L) {
@@ -191,7 +191,7 @@ internal inline fun RealBufferedSource.commonReadUtf8Line(): String? {
   }
 }
 
-internal inline fun RealBufferedSource.commonReadUtf8LineStrict(limit: Long): String {
+internal inline fun RealSource.commonReadUtf8LineStrict(limit: Long): String {
   require(limit >= 0) { "limit < 0: $limit" }
   val scanLength = if (limit == Long.MAX_VALUE) Long.MAX_VALUE else limit + 1
   val newline = indexOf('\n'.code.toByte(), 0, scanLength)
@@ -210,7 +210,7 @@ internal inline fun RealBufferedSource.commonReadUtf8LineStrict(limit: Long): St
   )
 }
 
-internal inline fun RealBufferedSource.commonReadUtf8CodePoint(): Int {
+internal inline fun RealSource.commonReadUtf8CodePoint(): Int {
   require(1)
 
   val b0 = buffer[0].toInt()
@@ -223,37 +223,37 @@ internal inline fun RealBufferedSource.commonReadUtf8CodePoint(): Int {
   return buffer.readUtf8CodePoint()
 }
 
-internal inline fun RealBufferedSource.commonReadShort(): Short {
+internal inline fun RealSource.commonReadShort(): Short {
   require(2)
   return buffer.readShort()
 }
 
-internal inline fun RealBufferedSource.commonReadShortLe(): Short {
+internal inline fun RealSource.commonReadShortLe(): Short {
   require(2)
   return buffer.readShortLe()
 }
 
-internal inline fun RealBufferedSource.commonReadInt(): Int {
+internal inline fun RealSource.commonReadInt(): Int {
   require(4)
   return buffer.readInt()
 }
 
-internal inline fun RealBufferedSource.commonReadIntLe(): Int {
+internal inline fun RealSource.commonReadIntLe(): Int {
   require(4)
   return buffer.readIntLe()
 }
 
-internal inline fun RealBufferedSource.commonReadLong(): Long {
+internal inline fun RealSource.commonReadLong(): Long {
   require(8)
   return buffer.readLong()
 }
 
-internal inline fun RealBufferedSource.commonReadLongLe(): Long {
+internal inline fun RealSource.commonReadLongLe(): Long {
   require(8)
   return buffer.readLongLe()
 }
 
-internal inline fun RealBufferedSource.commonReadDecimalLong(): Long {
+internal inline fun RealSource.commonReadDecimalLong(): Long {
   require(1)
 
   var pos = 0L
@@ -272,7 +272,7 @@ internal inline fun RealBufferedSource.commonReadDecimalLong(): Long {
   return buffer.readDecimalLong()
 }
 
-internal inline fun RealBufferedSource.commonReadHexadecimalUnsignedLong(): Long {
+internal inline fun RealSource.commonReadHexadecimalUnsignedLong(): Long {
   require(1)
 
   var pos = 0
@@ -294,7 +294,7 @@ internal inline fun RealBufferedSource.commonReadHexadecimalUnsignedLong(): Long
   return buffer.readHexadecimalUnsignedLong()
 }
 
-internal inline fun RealBufferedSource.commonSkip(byteCount: Long) {
+internal inline fun RealSource.commonSkip(byteCount: Long) {
   var byteCount = byteCount
   check(!closed) { "closed" }
   while (byteCount > 0) {
@@ -307,7 +307,7 @@ internal inline fun RealBufferedSource.commonSkip(byteCount: Long) {
   }
 }
 
-internal inline fun RealBufferedSource.commonIndexOf(b: Byte, fromIndex: Long, toIndex: Long): Long {
+internal inline fun RealSource.commonIndexOf(b: Byte, fromIndex: Long, toIndex: Long): Long {
   var fromIndex = fromIndex
   check(!closed) { "closed" }
   require(fromIndex in 0L..toIndex) { "fromIndex=$fromIndex toIndex=$toIndex" }
@@ -327,7 +327,7 @@ internal inline fun RealBufferedSource.commonIndexOf(b: Byte, fromIndex: Long, t
   return -1L
 }
 
-internal inline fun RealBufferedSource.commonIndexOf(bytes: ByteString, fromIndex: Long): Long {
+internal inline fun RealSource.commonIndexOf(bytes: ByteString, fromIndex: Long): Long {
   var fromIndex = fromIndex
   check(!closed) { "closed" }
 
@@ -343,7 +343,7 @@ internal inline fun RealBufferedSource.commonIndexOf(bytes: ByteString, fromInde
   }
 }
 
-internal inline fun RealBufferedSource.commonIndexOfElement(targetBytes: ByteString, fromIndex: Long): Long {
+internal inline fun RealSource.commonIndexOfElement(targetBytes: ByteString, fromIndex: Long): Long {
   var fromIndex = fromIndex
   check(!closed) { "closed" }
 
@@ -359,7 +359,7 @@ internal inline fun RealBufferedSource.commonIndexOfElement(targetBytes: ByteStr
   }
 }
 
-internal inline fun RealBufferedSource.commonRangeEquals(
+internal inline fun RealSource.commonRangeEquals(
   offset: Long,
   bytes: ByteString,
   bytesOffset: Int,
@@ -382,17 +382,17 @@ internal inline fun RealBufferedSource.commonRangeEquals(
   return true
 }
 
-internal inline fun RealBufferedSource.commonPeek(): BufferedSource {
+internal inline fun RealSource.commonPeek(): Source {
   return PeekSource(this).buffer()
 }
 
-internal inline fun RealBufferedSource.commonClose() {
+internal inline fun RealSource.commonClose() {
   if (closed) return
   closed = true
   source.close()
   buffer.clear()
 }
 
-internal inline fun RealBufferedSource.commonCancel() = source.cancel()
+internal inline fun RealSource.commonCancel() = source.cancel()
 
-internal inline fun RealBufferedSource.commonToString() = "buffer($source)"
+internal inline fun RealSource.commonToString() = "buffer($source)"

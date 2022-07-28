@@ -154,7 +154,7 @@ public final class GzipSourceTest {
         .write(ByteString.decodeHex("1f8b08000000000000004b4c4a0600c241243503000000")); // 'abc'
 
     ExhaustableSource exhaustableSource = new ExhaustableSource(gzippedSource);
-    BufferedSource gunzippedSource = Okio.buffer(new GzipSource(exhaustableSource));
+    Source gunzippedSource = Okio.buffer(new GzipSource(exhaustableSource));
 
     assertEquals('a', gunzippedSource.readByte());
     assertEquals('b', gunzippedSource.readByte());
@@ -169,7 +169,7 @@ public final class GzipSourceTest {
         .write(ByteString.decodeHex("1f8b08000000000000004b4c4a0600c241243503000000")); // 'abc'
     gzippedSource.writeByte('d'); // This byte shouldn't be here!
 
-    BufferedSource gunzippedSource = Okio.buffer(new GzipSource(gzippedSource));
+    Source gunzippedSource = Okio.buffer(new GzipSource(gzippedSource));
 
     assertEquals('a', gunzippedSource.readByte());
     assertEquals('b', gunzippedSource.readByte());

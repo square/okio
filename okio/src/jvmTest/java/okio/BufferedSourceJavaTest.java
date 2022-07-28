@@ -68,7 +68,7 @@ public final class BufferedSourceJavaTest {
   }
 
   @Test public void inputStreamCloses() throws Exception {
-    BufferedSource source = Okio.buffer((RawSource) new Buffer());
+    Source source = Okio.buffer((RawSource) new Buffer());
     InputStream in = source.inputStream();
     in.close();
     try {
@@ -81,7 +81,7 @@ public final class BufferedSourceJavaTest {
 
   @Test public void indexOfStopsReadingAtLimit() throws Exception {
     Buffer buffer = new Buffer().writeUtf8("abcdef");
-    BufferedSource bufferedSource = Okio.buffer(new ForwardingSource(buffer) {
+    Source bufferedSource = Okio.buffer(new ForwardingSource(buffer) {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         return super.read(sink, Math.min(1, byteCount));
       }
@@ -96,7 +96,7 @@ public final class BufferedSourceJavaTest {
     Buffer source = new Buffer();
     source.writeUtf8("bb");
 
-    BufferedSource bufferedSource = Okio.buffer((RawSource) source);
+    Source bufferedSource = Okio.buffer((RawSource) source);
     bufferedSource.getBuffer().writeUtf8("aa");
 
     bufferedSource.require(2);
@@ -108,7 +108,7 @@ public final class BufferedSourceJavaTest {
     Buffer source = new Buffer();
     source.writeUtf8("b");
 
-    BufferedSource bufferedSource = Okio.buffer((RawSource) source);
+    Source bufferedSource = Okio.buffer((RawSource) source);
     bufferedSource.getBuffer().writeUtf8("a");
 
     bufferedSource.require(2);
@@ -119,7 +119,7 @@ public final class BufferedSourceJavaTest {
     Buffer source = new Buffer();
     source.writeUtf8("a");
 
-    BufferedSource bufferedSource = Okio.buffer((RawSource) source);
+    Source bufferedSource = Okio.buffer((RawSource) source);
 
     try {
       bufferedSource.require(2);
@@ -133,7 +133,7 @@ public final class BufferedSourceJavaTest {
     source.writeUtf8(repeat("a", SEGMENT_SIZE));
     source.writeUtf8(repeat("b", SEGMENT_SIZE));
 
-    BufferedSource bufferedSource = Okio.buffer((RawSource) source);
+    Source bufferedSource = Okio.buffer((RawSource) source);
 
     bufferedSource.require(2);
     assertEquals(SEGMENT_SIZE, source.size());
@@ -144,7 +144,7 @@ public final class BufferedSourceJavaTest {
     Buffer source = new Buffer();
     source.writeUtf8(repeat("a", SEGMENT_SIZE));
     source.writeUtf8(repeat("b", SEGMENT_SIZE));
-    BufferedSource bufferedSource = Okio.buffer((RawSource) source);
+    Source bufferedSource = Okio.buffer((RawSource) source);
     bufferedSource.skip(2);
     assertEquals(SEGMENT_SIZE, source.size());
     assertEquals(SEGMENT_SIZE - 2, bufferedSource.getBuffer().size());
@@ -154,7 +154,7 @@ public final class BufferedSourceJavaTest {
     Buffer source = new Buffer();
     source.writeUtf8("bb");
 
-    BufferedSource bufferedSource = Okio.buffer((RawSource) source);
+    Source bufferedSource = Okio.buffer((RawSource) source);
     bufferedSource.getBuffer().writeUtf8("aa");
 
     bufferedSource.skip(2);
@@ -164,7 +164,7 @@ public final class BufferedSourceJavaTest {
 
   @Test public void operationsAfterClose() throws IOException {
     Buffer source = new Buffer();
-    BufferedSource bufferedSource = Okio.buffer((RawSource) source);
+    Source bufferedSource = Okio.buffer((RawSource) source);
     bufferedSource.close();
 
     // Test a sample set of methods.
@@ -222,7 +222,7 @@ public final class BufferedSourceJavaTest {
         + repeat("c", SEGMENT_SIZE));
 
     MockSink mockSink = new MockSink();
-    BufferedSource bufferedSource = Okio.buffer((RawSource) source);
+    Source bufferedSource = Okio.buffer((RawSource) source);
     assertEquals(SEGMENT_SIZE * 3, bufferedSource.readAll(mockSink));
     mockSink.assertLog(
         "write(" + write1 + ", " + write1.size() + ")",

@@ -41,7 +41,7 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 import okio.Buffer;
-import okio.BufferedSource;
+import okio.Source;
 import okio.Okio;
 import okio.RawSink;
 
@@ -178,7 +178,7 @@ public class BufferPerformanceBenchmark {
 
   private byte[] storeSourceData(byte[] dest) throws IOException {
     requireNonNull(dest, "dest == null");
-    try (BufferedSource source = Okio.buffer(Okio.source(OriginPath))) {
+    try (Source source = Okio.buffer(Okio.source(OriginPath))) {
       source.readFully(dest);
     }
     return dest;
@@ -238,11 +238,11 @@ public class BufferPerformanceBenchmark {
   public abstract static class BufferSetup extends BufferState {
     BufferPerformanceBenchmark bench;
 
-    public BufferedSource receive(byte[] bytes) throws IOException {
+    public Source receive(byte[] bytes) throws IOException {
       return super.receive(bytes, bench.maxReadBytes);
     }
 
-    public BufferedSource transmit(byte[] bytes) throws IOException {
+    public Source transmit(byte[] bytes) throws IOException {
       return super.transmit(bytes, bench.maxWriteBytes);
     }
 
@@ -283,12 +283,12 @@ public class BufferPerformanceBenchmark {
      * Expects process and sent buffers to be empty. Leaves the process buffer empty and
      * sent buffer full.
      */
-    protected BufferedSource transmit(byte[] bytes, int maxChunkSize) throws IOException {
+    protected Source transmit(byte[] bytes, int maxChunkSize) throws IOException {
       writeChunked(process, bytes, maxChunkSize).readAll(sent);
       return sent;
     }
 
-    private BufferedSource writeChunked(Buffer buffer, byte[] bytes, final int chunkSize) {
+    private Source writeChunked(Buffer buffer, byte[] bytes, final int chunkSize) {
       int remaining = bytes.length;
       int offset = 0;
       while (remaining > 0) {

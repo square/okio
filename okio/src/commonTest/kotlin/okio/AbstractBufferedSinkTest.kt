@@ -29,7 +29,7 @@ abstract class AbstractBufferedSinkTest internal constructor(
   factory: BufferedSinkFactory
 ) {
   private val data: Buffer = Buffer()
-  private val sink: BufferedSink = factory.create(data)
+  private val sink: Sink = factory.create(data)
 
   @Test fun writeNothing() {
     sink.writeUtf8("")

@@ -155,15 +155,15 @@ abstract class FileHandle(
 
   /**
    * Returns the position of [source] in the file. The argument [source] must be either a source
-   * produced by this file handle, or a [BufferedSource] that directly wraps such a source. If the
-   * parameter is a [BufferedSource], it adjusts for buffered bytes.
+   * produced by this file handle, or a [Source] that directly wraps such a source. If the
+   * parameter is a [Source], it adjusts for buffered bytes.
    */
   @Throws(IOException::class)
   fun position(source: RawSource): Long {
     var source = source
     var bufferSize = 0L
 
-    if (source is RealBufferedSource) {
+    if (source is RealSource) {
       bufferSize = source.buffer.size
       source = source.source
     }
@@ -178,12 +178,12 @@ abstract class FileHandle(
 
   /**
    * Change the position of [source] in the file to [position]. The argument [source] must be either
-   * a source produced by this file handle, or a [BufferedSource] that directly wraps such a source.
-   * If the parameter is a [BufferedSource], it will skip or clear buffered bytes.
+   * a source produced by this file handle, or a [Source] that directly wraps such a source.
+   * If the parameter is a [Source], it will skip or clear buffered bytes.
    */
   @Throws(IOException::class)
   fun reposition(source: RawSource, position: Long) {
-    if (source is RealBufferedSource) {
+    if (source is RealSource) {
       val fileHandleSource = source.source
       require(fileHandleSource is FileHandleSource && fileHandleSource.fileHandle === this) {
         "source was not created by this FileHandle"
@@ -234,15 +234,15 @@ abstract class FileHandle(
 
   /**
    * Returns the position of [sink] in the file. The argument [sink] must be either a sink produced
-   * by this file handle, or a [BufferedSink] that directly wraps such a sink. If the parameter is a
-   * [BufferedSink], it adjusts for buffered bytes.
+   * by this file handle, or a [Sink] that directly wraps such a sink. If the parameter is a
+   * [Sink], it adjusts for buffered bytes.
    */
   @Throws(IOException::class)
   fun position(sink: RawSink): Long {
     var sink = sink
     var bufferSize = 0L
 
-    if (sink is RealBufferedSink) {
+    if (sink is RealSink) {
       bufferSize = sink.buffer.size
       sink = sink.sink
     }
@@ -257,12 +257,12 @@ abstract class FileHandle(
 
   /**
    * Change the position of [sink] in the file to [position]. The argument [sink] must be either a
-   * sink produced by this file handle, or a [BufferedSink] that directly wraps such a sink. If the
-   * parameter is a [BufferedSink], it emits for buffered bytes.
+   * sink produced by this file handle, or a [Sink] that directly wraps such a sink. If the
+   * parameter is a [Sink], it emits for buffered bytes.
    */
   @Throws(IOException::class)
   fun reposition(sink: RawSink, position: Long) {
-    if (sink is RealBufferedSink) {
+    if (sink is RealSink) {
       val fileHandleSink = sink.sink
       require(fileHandleSink is FileHandleSink && fileHandleSink.fileHandle === this) {
         "sink was not created by this FileHandle"

@@ -70,7 +70,7 @@ import kotlin.jvm.JvmOverloads
 
 /**
  * Returns the number of bytes used to encode the slice of `string` as UTF-8 when using
- * [BufferedSink.writeUtf8].
+ * [Sink.writeUtf8].
  */
 @JvmOverloads
 @JvmName("size")

@@ -20,7 +20,7 @@ package okio
  * instance with your preferred hash algorithm. Write all of the data to the sink and then call
  * [hash] to compute the final hash value.
  *
- * In this example we use `HashingSink` with a [BufferedSink] to make writing to the
+ * In this example we use `HashingSink` with a [Sink] to make writing to the
  * sink easier.
  * ```
  * HashingSink hashingSink = HashingSink.sha256(s);

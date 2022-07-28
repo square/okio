@@ -62,7 +62,7 @@ actual abstract class FileSystem {
 
   @Throws(IOException::class)
   @JvmName("-read")
-  actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
+  actual inline fun <T> read(file: Path, readerAction: Source.() -> T): T {
     return source(file).buffer().use {
       it.readerAction()
     }
@@ -76,7 +76,7 @@ actual abstract class FileSystem {
 
   @Throws(IOException::class)
   @JvmName("-write")
-  actual inline fun <T> write(file: Path, mustCreate: Boolean, writerAction: BufferedSink.() -> T): T {
+  actual inline fun <T> write(file: Path, mustCreate: Boolean, writerAction: Sink.() -> T): T {
     return sink(file, mustCreate = mustCreate).buffer().use {
       it.writerAction()
     }

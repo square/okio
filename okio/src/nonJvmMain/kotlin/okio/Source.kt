@@ -15,7 +15,7 @@
  */
 package okio
 
-actual sealed interface BufferedSource : RawSource {
+actual sealed interface Source : RawSource {
   actual val buffer: Buffer
 
   actual fun exhausted(): Boolean
@@ -94,5 +94,5 @@ actual sealed interface BufferedSource : RawSource {
 
   actual fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
 
-  actual fun peek(): BufferedSource
+  actual fun peek(): Source
 }

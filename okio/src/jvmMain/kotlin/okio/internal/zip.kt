@@ -16,7 +16,7 @@
  */
 package okio.internal
 
-import okio.BufferedSource
+import okio.Source
 import okio.FileMetadata
 import okio.FileSystem
 import okio.IOException
@@ -187,7 +187,7 @@ private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
 
 /** When this returns, [this] will be positioned at the start of the next entry. */
 @Throws(IOException::class)
-internal fun BufferedSource.readEntry(): ZipEntry {
+internal fun Source.readEntry(): ZipEntry {
   val signature = readIntLe()
   if (signature != CENTRAL_FILE_HEADER_SIGNATURE) {
     throw IOException(
@@ -271,7 +271,7 @@ internal fun BufferedSource.readEntry(): ZipEntry {
 }
 
 @Throws(IOException::class)
-private fun BufferedSource.readEocdRecord(): EocdRecord {
+private fun Source.readEocdRecord(): EocdRecord {
   val diskNumber = readShortLe().toInt() and 0xffff
   val diskWithCentralDir = readShortLe().toInt() and 0xffff
   val entryCount = (readShortLe().toInt() and 0xffff).toLong()
@@ -291,7 +291,7 @@ private fun BufferedSource.readEocdRecord(): EocdRecord {
 }
 
 @Throws(IOException::class)
-private fun BufferedSource.readZip64EocdRecord(regularRecord: EocdRecord): EocdRecord {
+private fun Source.readZip64EocdRecord(regularRecord: EocdRecord): EocdRecord {
   skip(12) // size of central directory record (8) + version made by (2) + version to extract (2).
   val diskNumber = readIntLe()
   val diskWithCentralDirStart = readIntLe()
@@ -320,7 +320,7 @@ private fun BufferedSource.readZip64EocdRecord(regularRecord: EocdRecord): EocdR
  * This reads each extra field and calls [block] for each. The parameters are the header ID and
  * data size. It is an error for [block] to process more bytes than the data size.
  */
-private fun BufferedSource.readExtra(extraSize: Int, block: (Int, Long) -> Unit) {
+private fun Source.readExtra(extraSize: Int, block: (Int, Long) -> Unit) {
   var remaining = extraSize.toLong()
   while (remaining != 0L) {
     if (remaining < 4) {
@@ -348,11 +348,11 @@ private fun BufferedSource.readExtra(extraSize: Int, block: (Int, Long) -> Unit)
   }
 }
 
-internal fun BufferedSource.skipLocalHeader() {
+internal fun Source.skipLocalHeader() {
   readOrSkipLocalHeader(null)
 }
 
-internal fun BufferedSource.readLocalHeader(basicMetadata: FileMetadata): FileMetadata {
+internal fun Source.readLocalHeader(basicMetadata: FileMetadata): FileMetadata {
   return readOrSkipLocalHeader(basicMetadata)!!
 }
 
@@ -360,7 +360,7 @@ internal fun BufferedSource.readLocalHeader(basicMetadata: FileMetadata): FileMe
  * If [basicMetadata] is null this will return null. Otherwise it will return a new header which
  * updates [basicMetadata] with information from the local header.
  */
-private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): FileMetadata? {
+private fun Source.readOrSkipLocalHeader(basicMetadata: FileMetadata?): FileMetadata? {
   var lastModifiedAtMillis = basicMetadata?.lastModifiedAtMillis
   var lastAccessedAtMillis: Long? = null
   var createdAtMillis: Long? = null

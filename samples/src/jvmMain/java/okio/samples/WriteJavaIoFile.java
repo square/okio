@@ -18,7 +18,7 @@ package okio.samples;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import okio.BufferedSink;
+import okio.Sink;
 import okio.Okio;
 import okio.RawSink;
 
@@ -29,7 +29,7 @@ public final class WriteJavaIoFile {
 
   public void writeEnv(File file) throws IOException {
     try (RawSink fileSink = Okio.sink(file);
-         BufferedSink bufferedSink = Okio.buffer(fileSink)) {
+         Sink bufferedSink = Okio.buffer(fileSink)) {
 
       for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
         bufferedSink.writeUtf8(entry.getKey());

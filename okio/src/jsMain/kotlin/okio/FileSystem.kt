@@ -49,7 +49,7 @@ actual abstract class FileSystem {
 
   actual abstract fun source(file: Path): RawSource
 
-  actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
+  actual inline fun <T> read(file: Path, readerAction: Source.() -> T): T {
     return source(file).buffer().use {
       it.readerAction()
     }
@@ -60,7 +60,7 @@ actual abstract class FileSystem {
   actual inline fun <T> write(
     file: Path,
     mustCreate: Boolean,
-    writerAction: BufferedSink.() -> T
+    writerAction: Sink.() -> T
   ): T {
     return sink(file, mustCreate).buffer().use {
       it.writerAction()

@@ -68,7 +68,7 @@ import okio.internal.commonWriteShort
 import okio.internal.commonWriteUtf8
 import okio.internal.commonWriteUtf8CodePoint
 
-actual class Buffer : BufferedSource, BufferedSink {
+actual class Buffer : Source, Sink {
   internal actual var head: Segment? = null
 
   actual var size: Long = 0L
@@ -88,7 +88,7 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   override fun request(byteCount: Long): Boolean = size >= byteCount
 
-  override fun peek(): BufferedSource = PeekSource(this).buffer()
+  override fun peek(): Source = PeekSource(this).buffer()
 
   actual fun copyTo(
     out: Buffer,

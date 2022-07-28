@@ -22,7 +22,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
 import java.util.Set;
 import okio.Buffer;
-import okio.BufferedSource;
+import okio.Source;
 import okio.Okio;
 import okio.RawSink;
 import okio.RawSource;
@@ -65,7 +65,7 @@ public final class ChannelsTest {
   @Test public void testReadChannelFully() throws Exception {
     ReadableByteChannel channel = new Buffer().writeUtf8(quote);
 
-    BufferedSource source = Okio.buffer(new ByteChannelSource(channel));
+    Source source = Okio.buffer(new ByteChannelSource(channel));
     assertThat(source.readUtf8())
         .isEqualTo(quote);
   }
@@ -106,7 +106,7 @@ public final class ChannelsTest {
 
     Buffer buffer = new Buffer().writeUtf8(quote);
     RawSink sink;
-    BufferedSource source;
+    Source source;
 
     sink = new FileChannelSink(FileChannel.open(path, w));
     sink.write(buffer, 75);

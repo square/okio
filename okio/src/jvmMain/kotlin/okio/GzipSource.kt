@@ -38,7 +38,7 @@ class GzipSource(source: RawSource) : RawSource {
    * by deflated bytes (which we consume via an InflaterSource), followed by a
    * GZIP trailer (which we also consume directly).
    */
-  private val source = RealBufferedSource(source)
+  private val source = RealSource(source)
 
   /** The inflater used to decompress the deflated body. */
   private val inflater = Inflater(true)

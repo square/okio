@@ -17,7 +17,7 @@ package okio
 
 import kotlin.jvm.JvmStatic
 
-/** An indexed set of values that may be read with [BufferedSource.select].  */
+/** An indexed set of values that may be read with [Source.select].  */
 class Options private constructor(
   internal val byteStrings: Array<out ByteString>,
   internal val trie: IntArray

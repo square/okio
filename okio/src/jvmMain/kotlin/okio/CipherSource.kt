@@ -19,7 +19,7 @@ import java.io.IOException
 import javax.crypto.Cipher
 
 class CipherSource(
-  private val source: BufferedSource,
+  private val source: Source,
   val cipher: Cipher
 ) : RawSource {
   private val blockSize = cipher.blockSize

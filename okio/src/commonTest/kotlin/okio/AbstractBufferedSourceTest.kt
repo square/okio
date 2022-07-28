@@ -34,8 +34,8 @@ class PeekBufferedSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.
 abstract class AbstractBufferedSourceTest internal constructor(
   private val factory: BufferedSourceFactory
 ) {
-  private val sink: BufferedSink
-  private val source: BufferedSource
+  private val sink: Sink
+  private val source: Source
 
   init {
     val pipe = factory.pipe()

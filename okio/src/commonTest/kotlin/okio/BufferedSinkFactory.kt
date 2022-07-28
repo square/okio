@@ -18,17 +18,17 @@ package okio
 
 internal interface BufferedSinkFactory {
 
-  fun create(data: Buffer): BufferedSink
+  fun create(data: Buffer): Sink
 
   companion object {
     val BUFFER: BufferedSinkFactory = object : BufferedSinkFactory {
-      override fun create(data: Buffer): BufferedSink {
+      override fun create(data: Buffer): Sink {
         return data
       }
     }
 
     val REAL_BUFFERED_SINK: BufferedSinkFactory = object : BufferedSinkFactory {
-      override fun create(data: Buffer): BufferedSink {
+      override fun create(data: Buffer): Sink {
         return (data as RawSink).buffer()
       }
     }

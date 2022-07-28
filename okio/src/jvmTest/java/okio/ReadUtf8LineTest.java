@@ -34,14 +34,14 @@ import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public final class ReadUtf8LineTest {
   private interface Factory {
-    BufferedSource create(Buffer data);
+    Source create(Buffer data);
   }
 
   @Parameterized.Parameters(name = "{0}")
   public static List<Object[]> parameters() {
     return Arrays.asList(
         new Object[] { new Factory() {
-          @Override public BufferedSource create(Buffer data) {
+          @Override public Source create(Buffer data) {
             return data;
           }
 
@@ -50,8 +50,8 @@ public final class ReadUtf8LineTest {
           }
         }},
         new Object[] { new Factory() {
-          @Override public BufferedSource create(Buffer data) {
-            return new RealBufferedSource(data);
+          @Override public Source create(Buffer data) {
+            return new RealSource(data);
           }
 
           @Override public String toString() {
@@ -59,8 +59,8 @@ public final class ReadUtf8LineTest {
           }
         }},
         new Object[] { new Factory() {
-          @Override public BufferedSource create(Buffer data) {
-            return new RealBufferedSource(new ForwardingSource(data) {
+          @Override public Source create(Buffer data) {
+            return new RealSource(new ForwardingSource(data) {
               @Override public long read(Buffer sink, long byteCount) throws IOException {
                 return super.read(sink, Math.min(1, byteCount));
               }
@@ -78,7 +78,7 @@ public final class ReadUtf8LineTest {
   public Factory factory;
 
   private Buffer data;
-  private BufferedSource source;
+  private Source source;
 
   @Before public void setUp() {
     data = new Buffer();

@@ -20,7 +20,7 @@ import java.io.InputStream
 import java.nio.channels.ReadableByteChannel
 import java.nio.charset.Charset
 
-actual sealed interface BufferedSource : RawSource, ReadableByteChannel {
+actual sealed interface Source : RawSource, ReadableByteChannel {
   /** Returns this source's internal buffer. */
   @Deprecated(
     message = "moved to val: use getBuffer() instead",
@@ -156,7 +156,7 @@ actual sealed interface BufferedSource : RawSource, ReadableByteChannel {
   @Throws(IOException::class)
   actual fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
 
-  actual fun peek(): BufferedSource
+  actual fun peek(): Source
 
   /** Returns an input stream that reads from this source. */
   fun inputStream(): InputStream

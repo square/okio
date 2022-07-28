@@ -18,8 +18,8 @@ package okio
 
 interface BufferedSourceFactory {
   class Pipe(
-    var sink: BufferedSink,
-    var source: BufferedSource
+    var sink: Sink,
+    var source: Source
   )
 
   val isOneByteAtATime: Boolean

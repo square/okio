@@ -17,7 +17,7 @@ package okio.samples;
 
 import java.io.IOException;
 import java.util.Map;
-import okio.BufferedSink;
+import okio.Sink;
 import okio.FileSystem;
 import okio.Okio;
 import okio.Path;
@@ -30,7 +30,7 @@ public final class WriteFile {
 
   public void writeEnv(Path path) throws IOException {
     try (RawSink fileSink = FileSystem.SYSTEM.sink(path);
-         BufferedSink bufferedSink = Okio.buffer(fileSink)) {
+         Sink bufferedSink = Okio.buffer(fileSink)) {
 
       for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
         bufferedSink.writeUtf8(entry.getKey());

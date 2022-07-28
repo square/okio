@@ -17,8 +17,8 @@ package okio.samples;
 
 import java.io.IOException;
 import okio.Buffer;
-import okio.BufferedSink;
-import okio.BufferedSource;
+import okio.Sink;
+import okio.Source;
 import okio.ByteString;
 import okio.FileSystem;
 import okio.HashingSink;
@@ -49,7 +49,7 @@ public final class Hashing {
 
     System.out.println("HashingSource");
     try (HashingSource hashingSource = HashingSource.sha256(FileSystem.SYSTEM.source(path));
-         BufferedSource source = Okio.buffer(hashingSource)) {
+         Source source = Okio.buffer(hashingSource)) {
       source.readAll(Okio.blackhole());
       System.out.println("    sha256: " + hashingSource.hash().hex());
     }
@@ -57,7 +57,7 @@ public final class Hashing {
 
     System.out.println("HashingSink");
     try (HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
-         BufferedSink sink = Okio.buffer(hashingSink);
+         Sink sink = Okio.buffer(hashingSink);
          RawSource source = FileSystem.SYSTEM.source(path)) {
       sink.writeAll(source);
       sink.close(); // Emit anything buffered.
@@ -72,7 +72,7 @@ public final class Hashing {
   }
 
   public ByteString readByteString(Path path) throws IOException {
-    try (BufferedSource source = Okio.buffer(FileSystem.SYSTEM.source(path))) {
+    try (Source source = Okio.buffer(FileSystem.SYSTEM.source(path))) {
       return source.readByteString();
     }
   }

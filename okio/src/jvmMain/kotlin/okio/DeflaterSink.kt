@@ -44,7 +44,7 @@ class DeflaterSink
  * In general we can't share a BufferedSource because the deflater holds input
  * bytes until they are inflated.
  */
-internal constructor(private val sink: BufferedSink, private val deflater: Deflater) : RawSink {
+internal constructor(private val sink: Sink, private val deflater: Deflater) : RawSink {
   constructor(sink: RawSink, deflater: Deflater) : this(sink.buffer(), deflater)
 
   private var closed = false

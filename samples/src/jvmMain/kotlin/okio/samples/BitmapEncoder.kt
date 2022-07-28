@@ -15,7 +15,7 @@
  */
 package okio.samples
 
-import okio.BufferedSink
+import okio.Sink
 import okio.FileSystem
 import okio.IOException
 import okio.Path
@@ -60,7 +60,7 @@ class KotlinBitmapEncoder {
 
   /** https://en.wikipedia.org/wiki/BMP_file_format  */
   @Throws(IOException::class)
-  fun encode(bitmap: Bitmap, sink: BufferedSink) {
+  fun encode(bitmap: Bitmap, sink: Sink) {
     val height = bitmap.height
     val width = bitmap.width
     val bytesPerPixel = 3

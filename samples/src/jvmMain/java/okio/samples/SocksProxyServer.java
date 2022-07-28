@@ -31,8 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import okio.Buffer;
-import okio.BufferedSink;
-import okio.BufferedSource;
+import okio.Sink;
+import okio.Source;
 import okio.Okio;
 import okio.RawSink;
 import okio.RawSource;
@@ -87,8 +87,8 @@ public final class SocksProxyServer {
 
   private void handleSocket(final Socket fromSocket) {
     try {
-      final BufferedSource fromSource = Okio.buffer(Okio.source(fromSocket));
-      final BufferedSink fromSink = Okio.buffer(Okio.sink(fromSocket));
+      final Source fromSource = Okio.buffer(Okio.source(fromSocket));
+      final Sink fromSink = Okio.buffer(Okio.sink(fromSocket));
 
       // Read the hello.
       int socksVersion = fromSource.readByte() & 0xff;
@@ -156,7 +156,7 @@ public final class SocksProxyServer {
 
   /**
    * Read data from {@code source} and write it to {@code sink}. This doesn't use {@link
-   * BufferedSink#writeAll} because that method doesn't flush aggressively and we need that.
+   * Sink#writeAll} because that method doesn't flush aggressively and we need that.
    */
   private void transfer(Socket sourceSocket, RawSource source, RawSink sink) {
     try {
@@ -188,7 +188,7 @@ public final class SocksProxyServer {
 
     URL url = new URL("https://publicobject.com/helloworld.txt");
     URLConnection connection = url.openConnection(proxyServer.proxy());
-    try (BufferedSource source = Okio.buffer(Okio.source(connection.getInputStream()))) {
+    try (Source source = Okio.buffer(Okio.source(connection.getInputStream()))) {
       for (String line; (line = source.readUtf8Line()) != null; ) {
         System.out.println(line);
       }

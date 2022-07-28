@@ -42,7 +42,7 @@ import static org.junit.Assert.fail;
 public final class BufferedSinkTest {
   private interface Factory {
     Factory BUFFER = new Factory() {
-      @Override public BufferedSink create(Buffer data) {
+      @Override public Sink create(Buffer data) {
         return data;
       }
 
@@ -52,7 +52,7 @@ public final class BufferedSinkTest {
     };
 
     Factory REAL_BUFFERED_SINK = new Factory() {
-      @Override public BufferedSink create(Buffer data) {
+      @Override public Sink create(Buffer data) {
         return Okio.buffer((RawSink) data);
       }
 
@@ -61,7 +61,7 @@ public final class BufferedSinkTest {
       }
     };
 
-    BufferedSink create(Buffer data);
+    Sink create(Buffer data);
   }
 
   @Parameters(name = "{0}")
@@ -73,7 +73,7 @@ public final class BufferedSinkTest {
 
   @Parameter public Factory factory;
   private Buffer data;
-  private BufferedSink sink;
+  private Sink sink;
 
   @Before public void setUp() {
     data = new Buffer();

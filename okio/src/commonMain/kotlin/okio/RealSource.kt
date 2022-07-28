@@ -16,9 +16,9 @@
 
 package okio
 
-internal expect class RealBufferedSink(
-  sink: RawSink
-) : BufferedSink {
-  val sink: RawSink
+internal expect class RealSource(
+  source: RawSource
+) : Source {
+  val source: RawSource
   var closed: Boolean
 }

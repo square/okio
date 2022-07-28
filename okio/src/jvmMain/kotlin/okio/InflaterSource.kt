@@ -32,7 +32,7 @@ class InflaterSource
  * This internal constructor shares a buffer with its trusted caller. In general we can't share a
  * `BufferedSource` because the inflater holds input bytes until they are inflated.
  */
-internal constructor(private val source: BufferedSource, private val inflater: Inflater) : RawSource {
+internal constructor(private val source: Source, private val inflater: Inflater) : RawSource {
 
   /**
    * When we call Inflater.setInput(), the inflater keeps our byte array until it needs input again.

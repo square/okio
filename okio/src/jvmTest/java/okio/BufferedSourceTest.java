@@ -182,8 +182,8 @@ public final class BufferedSourceTest {
   }
 
   private static class Pipe {
-    BufferedSink sink;
-    BufferedSource source;
+    Sink sink;
+    Source source;
   }
 
   @Parameters(name = "{0}")
@@ -198,8 +198,8 @@ public final class BufferedSourceTest {
   }
 
   @Parameter public Factory factory;
-  private BufferedSink sink;
-  private BufferedSource source;
+  private Sink sink;
+  private Source source;
 
   @Before public void setUp() {
     Pipe pipe = factory.pipe();
@@ -1276,7 +1276,7 @@ public final class BufferedSourceTest {
 
     assertEquals("abc", source.readUtf8(3));
 
-    BufferedSource peek = source.peek();
+    Source peek = source.peek();
     assertEquals("def", peek.readUtf8(3));
     assertEquals("ghi", peek.readUtf8(3));
     assertFalse(peek.request(1));
@@ -1290,8 +1290,8 @@ public final class BufferedSourceTest {
 
     assertEquals("abc", source.readUtf8(3));
 
-    BufferedSource peek1 = source.peek();
-    BufferedSource peek2 = source.peek();
+    Source peek1 = source.peek();
+    Source peek2 = source.peek();
 
     assertEquals("def", peek1.readUtf8(3));
 
@@ -1313,7 +1313,7 @@ public final class BufferedSourceTest {
 
     assertEquals("abc", source.readUtf8(3));
 
-    BufferedSource peek = source.peek();
+    Source peek = source.peek();
     assertEquals("def", peek.readUtf8(3));
     peek.skip(2 * SEGMENT_SIZE);
     assertEquals("hij", peek.readUtf8(3));
@@ -1330,7 +1330,7 @@ public final class BufferedSourceTest {
 
     assertEquals("abc", source.readUtf8(3));
 
-    BufferedSource peek = source.peek();
+    Source peek = source.peek();
     assertEquals("def", peek.readUtf8(3));
     assertEquals("ghi", peek.readUtf8(3));
     assertFalse(peek.request(1));
@@ -1353,7 +1353,7 @@ public final class BufferedSourceTest {
     assertEquals("abc", source.readUtf8(3));
 
     // Peek a little data and skip the rest of the upstream source
-    BufferedSource peek = source.peek();
+    Source peek = source.peek();
     assertEquals("ddd", peek.readUtf8(3));
     source.readAll(Okio.blackhole());
 
@@ -1376,7 +1376,7 @@ public final class BufferedSourceTest {
     sink.writeUtf8("ghi");
     sink.emit();
 
-    BufferedSource peek = source.peek();
+    Source peek = source.peek();
 
     // Read 3 bytes. This reads some of the buffered data.
     assertTrue(peek.request(3));

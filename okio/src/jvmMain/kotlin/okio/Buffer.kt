@@ -73,7 +73,7 @@ import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
+actual class Buffer : Source, Sink, Cloneable, ByteChannel {
   @JvmField internal actual var head: Segment? = null
 
   @get:JvmName("size")
@@ -115,7 +115,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun request(byteCount: Long) = size >= byteCount
 
-  override fun peek(): BufferedSource {
+  override fun peek(): Source {
     return PeekSource(this).buffer()
   }
 

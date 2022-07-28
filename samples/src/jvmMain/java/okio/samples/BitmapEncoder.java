@@ -16,7 +16,7 @@
 package okio.samples;
 
 import java.io.IOException;
-import okio.BufferedSink;
+import okio.Sink;
 import okio.FileSystem;
 import okio.Okio;
 import okio.Path;
@@ -68,13 +68,13 @@ public final class BitmapEncoder {
   }
 
   void encode(Bitmap bitmap, FileSystem fileSystem, Path path) throws IOException {
-    try (BufferedSink sink = Okio.buffer(fileSystem.sink(path))) {
+    try (Sink sink = Okio.buffer(fileSystem.sink(path))) {
       encode(bitmap, sink);
     }
   }
 
   /** https://en.wikipedia.org/wiki/BMP_file_format */
-  void encode(Bitmap bitmap, BufferedSink sink) throws IOException {
+  void encode(Bitmap bitmap, Sink sink) throws IOException {
     int height = bitmap.height();
     int width = bitmap.width();
 

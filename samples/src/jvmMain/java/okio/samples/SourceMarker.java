@@ -17,7 +17,7 @@ package okio.samples;
 
 import java.io.IOException;
 import okio.Buffer;
-import okio.BufferedSource;
+import okio.Source;
 import okio.ForwardingSource;
 import okio.Okio;
 import okio.RawSource;
@@ -56,7 +56,7 @@ public final class SourceMarker {
   boolean closed;
 
   final MarkSource markSource;
-  final BufferedSource userSource;
+  final Source userSource;
 
   /** A copy of the underlying source's data beginning at {@code mark}. */
   final Buffer markBuffer;
@@ -71,7 +71,7 @@ public final class SourceMarker {
     this.userBuffer = userSource.getBuffer();
   }
 
-  public BufferedSource source() {
+  public Source source() {
     return userSource;
   }
 

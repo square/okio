@@ -20,7 +20,7 @@ package okio
  * network, storage, or a buffer in memory. Sinks may be layered to transform received data, such as
  * to compress, encrypt, throttle, or add protocol framing.
  *
- * Most application code shouldn't operate on a sink directly, but rather on a [BufferedSink] which
+ * Most application code shouldn't operate on a sink directly, but rather on a [Sink] which
  * is both more efficient and more convenient. Use [buffer] to wrap any sink with a buffer.
  *
  * Sinks are easy to test: just use a [Buffer] in your tests, and read from it to confirm it
@@ -39,7 +39,7 @@ package okio
  *
  * ### Interop with OutputStream
  *
- * Use [sink] to adapt an `OutputStream` to a sink. Use [outputStream()][BufferedSink.outputStream]
+ * Use [sink] to adapt an `OutputStream` to a sink. Use [outputStream()][Sink.outputStream]
  * to adapt a sink to an `OutputStream`.
  */
 expect interface RawSink : Closeable {

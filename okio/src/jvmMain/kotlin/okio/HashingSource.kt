@@ -27,7 +27,7 @@ import javax.crypto.spec.SecretKeySpec
  * then call [hash] to compute the final hash value.
  *
  *
- * In this example we use `HashingSource` with a [BufferedSource] to make reading
+ * In this example we use `HashingSource` with a [Source] to make reading
  * from the source easier.
  * ```
  * HashingSource hashingSource = HashingSource.sha256(rawSource);

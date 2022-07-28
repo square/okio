@@ -41,7 +41,7 @@ import java.util.zip.Deflater.DEFAULT_COMPRESSION
  */
 class GzipSink(sink: RawSink) : RawSink {
   /** Sink into which the GZIP format is written. */
-  private val sink = RealBufferedSink(sink)
+  private val sink = RealSink(sink)
 
   /** The deflater used to compress the body. */
   @get:JvmName("deflater")

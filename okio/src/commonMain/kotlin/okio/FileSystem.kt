@@ -211,7 +211,7 @@ expect abstract class FileSystem() {
    * source. This is a compact way to read the contents of a file.
    */
   @Throws(IOException::class)
-  inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T
+  inline fun <T> read(file: Path, readerAction: Source.() -> T): T
 
   /**
    * Returns a sink that writes bytes to [file] from beginning to end. If [file] already exists it
@@ -238,7 +238,7 @@ expect abstract class FileSystem() {
   inline fun <T> write(
     file: Path,
     mustCreate: Boolean = false,
-    writerAction: BufferedSink.() -> T
+    writerAction: Sink.() -> T
   ): T
 
   /**

@@ -46,9 +46,9 @@ import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonToString
 
-internal actual class RealBufferedSource actual constructor(
+internal actual class RealSource actual constructor(
   actual val source: RawSource
-) : BufferedSource {
+) : Source {
   actual var closed: Boolean = false
   override val buffer: Buffer = Buffer()
 
@@ -107,7 +107,7 @@ internal actual class RealBufferedSource actual constructor(
     byteCount: Int
   ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
-  override fun peek(): BufferedSource = commonPeek()
+  override fun peek(): Source = commonPeek()
   override fun close(): Unit = commonClose()
 
   override fun cancel() {

@@ -16,7 +16,7 @@
 package okio.samples;
 
 import java.io.IOException;
-import okio.BufferedSource;
+import okio.Source;
 import okio.FileSystem;
 import okio.Okio;
 import okio.Path;
@@ -29,7 +29,7 @@ public final class ReadFileLineByLine {
 
   public void readLines(Path path) throws IOException {
     try (RawSource fileSource = FileSystem.SYSTEM.source(path);
-         BufferedSource bufferedFileSource = Okio.buffer(fileSource)) {
+         Source bufferedFileSource = Okio.buffer(fileSource)) {
 
       while (true) {
         String line = bufferedFileSource.readUtf8Line();

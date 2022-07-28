@@ -18,14 +18,14 @@ package okio.samples;
 import java.io.IOException;
 import java.util.Random;
 import okio.Buffer;
-import okio.BufferedSource;
+import okio.Source;
 import okio.Okio;
 import okio.RawSource;
 
 public final class Randoms {
   public void run() throws IOException, InterruptedException {
     Random random = new Random(3782615686L);
-    BufferedSource source = Okio.buffer(new RandomSource(random, 5));
+    Source source = Okio.buffer(new RandomSource(random, 5));
     System.out.println(source.readUtf8());
   }
 

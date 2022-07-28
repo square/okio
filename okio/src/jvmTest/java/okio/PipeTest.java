@@ -172,7 +172,7 @@ public final class PipeTest {
     pipe.sink().write(new Buffer().writeUtf8("abc"), 3);
     pipe.sink().flush();
 
-    BufferedSource bufferedSource = Okio.buffer(pipe.source());
+    Source bufferedSource = Okio.buffer(pipe.source());
     assertEquals("abc", bufferedSource.readUtf8(3));
   }
 
@@ -228,7 +228,7 @@ public final class PipeTest {
     pipe.sink().write(new Buffer().writeUtf8("abc"), 3);
     pipe.sink().close();
 
-    BufferedSource bufferedSource = Okio.buffer(pipe.source());
+    Source bufferedSource = Okio.buffer(pipe.source());
     assertEquals("abc", bufferedSource.readUtf8());
     assertTrue(bufferedSource.exhausted());
   }

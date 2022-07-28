@@ -15,7 +15,7 @@
  */
 package okio.internal
 
-import okio.BufferedSource
+import okio.Source
 import okio.ByteString
 import okio.FileSystem
 import okio.IOException
@@ -415,7 +415,7 @@ class ResourceFileSystemTest {
 
     val content = fileSystem.read(
       "/okio/resourcefilesystem/non-ascii/ギリシア神話/Ἰλιάς".toPath(),
-      BufferedSource::readUtf8
+      Source::readUtf8
     )
     assertEquals("Chante, ô déesse, le courroux du Péléide Achille,\n", content)
   }
