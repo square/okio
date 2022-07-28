@@ -46,8 +46,6 @@ class Pipe(internal val maxBufferSize: Long) {
 
   @get:JvmName("sink")
   val sink = object : Sink {
-    private val timeout = Timeout()
-
     override fun write(source: Buffer, byteCount: Long) {
       var byteCount = byteCount
       var delegate: Sink? = null
@@ -65,7 +63,7 @@ class Pipe(internal val maxBufferSize: Long) {
 
           val bufferSpaceAvailable = maxBufferSize - buffer.size
           if (bufferSpaceAvailable == 0L) {
-            timeout.waitUntilNotified(buffer) // Wait until the source drains the buffer.
+            buffer.wait() // Wait until the source drains the buffer.
             if (canceled) throw IOException("canceled")
             continue
           }
@@ -117,13 +115,13 @@ class Pipe(internal val maxBufferSize: Long) {
       delegate?.forward { close() }
     }
 
-    override fun timeout(): Timeout = timeout
+    override fun cancel() {
+      this@Pipe.cancel()
+    }
   }
 
   @get:JvmName("source")
   val source = object : Source {
-    private val timeout = Timeout()
-
     override fun read(sink: Buffer, byteCount: Long): Long {
       synchronized(buffer) {
         check(!sourceClosed) { "closed" }
@@ -131,7 +129,7 @@ class Pipe(internal val maxBufferSize: Long) {
 
         while (buffer.size == 0L) {
           if (sinkClosed) return -1L
-          timeout.waitUntilNotified(buffer) // Wait until the sink fills the buffer.
+          buffer.wait() // Wait until the sink fills the buffer.
           if (canceled) throw IOException("canceled")
         }
 
@@ -148,7 +146,9 @@ class Pipe(internal val maxBufferSize: Long) {
       }
     }
 
-    override fun timeout(): Timeout = timeout
+    override fun cancel() {
+      this@Pipe.cancel()
+    }
   }
 
   /**
@@ -207,7 +207,7 @@ class Pipe(internal val maxBufferSize: Long) {
   }
 
   private inline fun Sink.forward(block: Sink.() -> Unit) {
-    this.timeout().intersectWith(this@Pipe.sink.timeout()) { this.block() }
+    block()
   }
 
   @JvmName("-deprecated_sink")

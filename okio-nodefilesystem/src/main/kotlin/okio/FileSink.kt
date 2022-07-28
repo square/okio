@@ -35,8 +35,8 @@ internal class FileSink(
   override fun flush() {
   }
 
-  override fun timeout(): Timeout {
-    return Timeout.NONE
+  override fun cancel() {
+    // Not cancelable.
   }
 
   override fun close() {

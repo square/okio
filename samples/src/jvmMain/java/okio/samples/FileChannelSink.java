@@ -20,7 +20,6 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import okio.Buffer;
 import okio.Sink;
-import okio.Timeout;
 
 /**
  * Special Sink for a FileChannel to take advantage of the
@@ -28,14 +27,11 @@ import okio.Timeout;
  */
 final class FileChannelSink implements Sink {
   private final FileChannel channel;
-  private final Timeout timeout;
 
   private long position;
 
-  FileChannelSink(FileChannel channel, Timeout timeout) throws IOException {
+  FileChannelSink(FileChannel channel) throws IOException {
     this.channel = channel;
-    this.timeout = timeout;
-
     this.position = channel.position();
   }
 
@@ -56,8 +52,9 @@ final class FileChannelSink implements Sink {
     channel.force(false);
   }
 
-  @Override public Timeout timeout() {
-    return timeout;
+  @Override
+  public void cancel() {
+    // Not cancelable.
   }
 
   @Override public void close() throws IOException {

@@ -63,8 +63,8 @@ internal class PeekSource(
     return toCopy
   }
 
-  override fun timeout(): Timeout {
-    return upstream.timeout()
+  override fun cancel() {
+    return upstream.cancel()
   }
 
   override fun close() {

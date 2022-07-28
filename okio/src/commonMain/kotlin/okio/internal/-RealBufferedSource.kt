@@ -393,6 +393,6 @@ internal inline fun RealBufferedSource.commonClose() {
   buffer.clear()
 }
 
-internal inline fun RealBufferedSource.commonTimeout() = source.timeout()
+internal inline fun RealBufferedSource.commonCancel() = source.cancel()
 
 internal inline fun RealBufferedSource.commonToString() = "buffer($source)"

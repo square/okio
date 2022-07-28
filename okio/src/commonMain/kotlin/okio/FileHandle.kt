@@ -400,7 +400,9 @@ abstract class FileHandle(
       fileHandle.protectedFlush()
     }
 
-    override fun timeout() = Timeout.NONE
+    override fun cancel() {
+      // Not cancelable.
+    }
 
     override fun close() {
       if (closed) return
@@ -426,7 +428,9 @@ abstract class FileHandle(
       return result
     }
 
-    override fun timeout() = Timeout.NONE
+    override fun cancel() {
+      // Not cancelable.
+    }
 
     override fun close() {
       if (closed) return

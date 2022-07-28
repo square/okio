@@ -109,7 +109,9 @@ class CipherSource(
     }
   }
 
-  override fun timeout() = source.timeout()
+  override fun cancel() {
+    source.cancel()
+  }
 
   @Throws(IOException::class)
   override fun close() {

@@ -165,7 +165,9 @@ class GzipSource(source: Source) : Source {
     checkEqual("ISIZE", source.readIntLe(), inflater.bytesWritten.toInt())
   }
 
-  override fun timeout(): Timeout = source.timeout()
+  override fun cancel() {
+    source.cancel()
+  }
 
   @Throws(IOException::class)
   override fun close() = inflaterSource.close()

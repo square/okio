@@ -210,6 +210,6 @@ internal inline fun RealBufferedSink.commonClose() {
   if (thrown != null) throw thrown
 }
 
-internal inline fun RealBufferedSink.commonTimeout() = sink.timeout()
+internal inline fun RealBufferedSink.commonCancel() = sink.cancel()
 
 internal inline fun RealBufferedSink.commonToString() = "buffer($sink)"

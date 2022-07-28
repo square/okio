@@ -20,7 +20,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import okio.Buffer;
 import okio.Sink;
-import okio.Timeout;
 
 /**
  * Creates a Sink around a WritableByteChannel and efficiently writes data using an UnsafeCursor.
@@ -31,13 +30,10 @@ import okio.Timeout;
  */
 final class ByteChannelSink implements Sink {
   private final WritableByteChannel channel;
-  private final Timeout timeout;
-
   private final Buffer.UnsafeCursor cursor = new Buffer.UnsafeCursor();
 
-  ByteChannelSink(WritableByteChannel channel, Timeout timeout) {
+  ByteChannelSink(WritableByteChannel channel) {
     this.channel = channel;
-    this.timeout = timeout;
   }
 
   @Override public void write(Buffer source, long byteCount) throws IOException {
@@ -46,7 +42,7 @@ final class ByteChannelSink implements Sink {
 
     long remaining = byteCount;
     while (remaining > 0) {
-      timeout.throwIfReached();
+      // kotlinx.io TODO: detect Interruption.
 
       try (Buffer.UnsafeCursor ignored = source.readUnsafe(cursor)) {
         cursor.seek(0);
@@ -60,8 +56,9 @@ final class ByteChannelSink implements Sink {
 
   @Override public void flush() {}
 
-  @Override public Timeout timeout() {
-    return timeout;
+  @Override
+  public void cancel() {
+    // Not cancelable.
   }
 
   @Override public void close() throws IOException {

@@ -58,8 +58,13 @@ interface Source : Closeable {
   @Throws(IOException::class)
   fun read(sink: Buffer, byteCount: Long): Long
 
-  /** Returns the timeout for this source.  */
-  fun timeout(): Timeout
+  /**
+   * Asynchronously cancel this source. Any [read] in flight should immediately fail with an
+   * [IOException], and any future read should also immediately fail with an [IOException].
+   *
+   * Note that it is always necessary to call [close] on a Source, even if it has been canceled.
+   */
+  fun cancel()
 
   /**
    * Closes this source and releases the resources held by this source. It is an error to read a

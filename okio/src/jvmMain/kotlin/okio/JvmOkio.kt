@@ -20,8 +20,6 @@
 
 package okio
 
-import okio.internal.ResourceFileSystem
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -29,29 +27,28 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
-import java.net.SocketTimeoutException
 import java.nio.file.Files
 import java.nio.file.OpenOption
+import java.nio.file.Path as NioPath
 import java.security.MessageDigest
-import java.util.logging.Level
 import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
-import java.nio.file.Path as NioPath
+import okio.internal.ResourceFileSystem
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /** Returns a sink that writes to `out`. */
-fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
+fun OutputStream.sink(): Sink = OutputStreamSink(this)
 
-private class OutputStreamSink(
+private open class OutputStreamSink(
   private val out: OutputStream,
-  private val timeout: Timeout
 ) : Sink {
 
   override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
     var remaining = byteCount
     while (remaining > 0) {
-      timeout.throwIfReached()
+      // kotlinx.io TODO: detect Interruption.
       val head = source.head!!
       val toCopy = minOf(remaining, head.limit - head.pos).toInt()
       out.write(head.data, head.pos, toCopy)
@@ -71,24 +68,24 @@ private class OutputStreamSink(
 
   override fun close() = out.close()
 
-  override fun timeout() = timeout
+  override fun cancel() {
+    // Not cancelable.
+  }
 
   override fun toString() = "sink($out)"
 }
 
 /** Returns a source that reads from `in`. */
-fun InputStream.source(): Source = InputStreamSource(this, Timeout())
+fun InputStream.source(): Source = InputStreamSource(this)
 
 private open class InputStreamSource(
   private val input: InputStream,
-  private val timeout: Timeout
 ) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {
     if (byteCount == 0L) return 0L
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     try {
-      timeout.throwIfReached()
       val tail = sink.writableSegment(1)
       val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
       val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
@@ -111,7 +108,9 @@ private open class InputStreamSource(
 
   override fun close() = input.close()
 
-  override fun timeout() = timeout
+  override fun cancel() {
+    // Not cancelable.
+  }
 
   override fun toString() = "source($input)"
 }
@@ -123,9 +122,11 @@ private open class InputStreamSource(
  */
 @Throws(IOException::class)
 fun Socket.sink(): Sink {
-  val timeout = SocketAsyncTimeout(this)
-  val sink = OutputStreamSink(getOutputStream(), timeout)
-  return timeout.sink(sink)
+  return object : OutputStreamSink(getOutputStream()) {
+    override fun cancel() {
+      this@sink.close()
+    }
+  }
 }
 
 /**
@@ -135,38 +136,14 @@ fun Socket.sink(): Sink {
  */
 @Throws(IOException::class)
 fun Socket.source(): Source {
-  val timeout = SocketAsyncTimeout(this)
-  val source = InputStreamSource(getInputStream(), timeout)
-  return timeout.source(source)
+  return object : InputStreamSource(getInputStream()) {
+    override fun cancel() {
+      this@source.close()
+    }
+  }
 }
 
 private val logger = Logger.getLogger("okio.Okio")
-
-private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
-  override fun newTimeoutException(cause: IOException?): IOException {
-    val ioe = SocketTimeoutException("timeout")
-    if (cause != null) {
-      ioe.initCause(cause)
-    }
-    return ioe
-  }
-
-  override fun timedOut() {
-    try {
-      socket.close()
-    } catch (e: Exception) {
-      logger.log(Level.WARNING, "Failed to close timed out socket $socket", e)
-    } catch (e: AssertionError) {
-      if (e.isAndroidGetsocknameError) {
-        // Catch this exception due to a Firmware issue up to android 4.2.2
-        // https://code.google.com/p/android/issues/detail?id=54072
-        logger.log(Level.WARNING, "Failed to close timed out socket $socket", e)
-      } else {
-        throw e
-      }
-    }
-  }
-}
 
 /** Returns a sink that writes to `file`. */
 @JvmOverloads
@@ -179,7 +156,7 @@ fun File.appendingSink(): Sink = FileOutputStream(this, true).sink()
 
 /** Returns a source that reads from `file`. */
 @Throws(FileNotFoundException::class)
-fun File.source(): Source = InputStreamSource(inputStream(), Timeout.NONE)
+fun File.source(): Source = InputStreamSource(inputStream())
 
 /** Returns a source that reads from `path`. */
 @Throws(IOException::class)

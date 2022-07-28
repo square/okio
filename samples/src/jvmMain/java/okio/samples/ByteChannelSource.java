@@ -20,7 +20,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import okio.Buffer;
 import okio.Source;
-import okio.Timeout;
 
 /**
  * Creates a Source around a ReadableByteChannel and efficiently reads data using an UnsafeCursor.
@@ -31,20 +30,18 @@ import okio.Timeout;
  */
 final class ByteChannelSource implements Source {
   private final ReadableByteChannel channel;
-  private final Timeout timeout;
 
   private final Buffer.UnsafeCursor cursor = new Buffer.UnsafeCursor();
 
-  ByteChannelSource(ReadableByteChannel channel, Timeout timeout) {
+  ByteChannelSource(ReadableByteChannel channel) {
     this.channel = channel;
-    this.timeout = timeout;
   }
 
   @Override public long read(Buffer sink, long byteCount) throws IOException {
     if (!channel.isOpen()) throw new IllegalStateException("closed");
 
     try (Buffer.UnsafeCursor ignored = sink.readAndWriteUnsafe(cursor)) {
-      timeout.throwIfReached();
+      // kotlinx.io TODO: detect Interruption.
       long oldSize = sink.size();
       int length = (int) Math.min(8192, byteCount);
 
@@ -60,8 +57,9 @@ final class ByteChannelSource implements Source {
     }
   }
 
-  @Override public Timeout timeout() {
-    return timeout;
+  @Override
+  public void cancel() {
+    // Not cancelable.
   }
 
   @Override public void close() throws IOException {

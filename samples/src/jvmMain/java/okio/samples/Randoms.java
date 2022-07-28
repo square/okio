@@ -21,7 +21,6 @@ import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
-import okio.Timeout;
 
 public final class Randoms {
   public void run() throws IOException, InterruptedException {
@@ -65,8 +64,9 @@ public final class Randoms {
       return byteCount;
     }
 
-    @Override public Timeout timeout() {
-      return Timeout.NONE;
+    @Override
+    public void cancel() {
+      // Not cancelable.
     }
 
     @Override public void close() throws IOException {

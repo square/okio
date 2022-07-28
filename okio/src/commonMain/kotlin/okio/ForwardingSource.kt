@@ -28,7 +28,7 @@ expect abstract class ForwardingSource constructor(
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long
 
-  override fun timeout(): Timeout
+  override fun cancel()
 
   @Throws(IOException::class)
   override fun close()

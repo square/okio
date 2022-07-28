@@ -46,7 +46,9 @@ actual class HashingSink internal constructor(
 
   override fun flush() = sink.flush()
 
-  override fun timeout(): Timeout = sink.timeout()
+  override fun cancel() {
+    sink.cancel()
+  }
 
   override fun close() = sink.close()
 

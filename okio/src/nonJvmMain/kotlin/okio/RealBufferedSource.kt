@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.internal.commonCancel
 import okio.internal.commonClose
 import okio.internal.commonExhausted
 import okio.internal.commonIndexOf
@@ -43,7 +44,6 @@ import okio.internal.commonRequest
 import okio.internal.commonRequire
 import okio.internal.commonSelect
 import okio.internal.commonSkip
-import okio.internal.commonTimeout
 import okio.internal.commonToString
 
 internal actual class RealBufferedSource actual constructor(
@@ -109,6 +109,10 @@ internal actual class RealBufferedSource actual constructor(
 
   override fun peek(): BufferedSource = commonPeek()
   override fun close(): Unit = commonClose()
-  override fun timeout(): Timeout = commonTimeout()
+
+  override fun cancel() {
+    commonCancel()
+  }
+
   override fun toString(): String = commonToString()
 }

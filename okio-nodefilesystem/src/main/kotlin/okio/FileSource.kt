@@ -43,7 +43,9 @@ internal class FileSource(
     return readByteCount.toLong()
   }
 
-  override fun timeout(): Timeout = Timeout.NONE
+  override fun cancel() {
+    // Not cancelable.
+  }
 
   override fun close() {
     if (closed) return

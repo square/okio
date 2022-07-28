@@ -15,6 +15,11 @@
  */
 package okio
 
+import java.io.IOException
+import java.io.InputStream
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
+import okio.internal.commonCancel
 import okio.internal.commonClose
 import okio.internal.commonExhausted
 import okio.internal.commonIndexOf
@@ -43,12 +48,7 @@ import okio.internal.commonRequest
 import okio.internal.commonRequire
 import okio.internal.commonSelect
 import okio.internal.commonSkip
-import okio.internal.commonTimeout
 import okio.internal.commonToString
-import java.io.IOException
-import java.io.InputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
 
 internal actual class RealBufferedSource actual constructor(
   @JvmField actual val source: Source
@@ -176,6 +176,10 @@ internal actual class RealBufferedSource actual constructor(
   override fun isOpen() = !closed
 
   override fun close(): Unit = commonClose()
-  override fun timeout(): Timeout = commonTimeout()
+
+  override fun cancel() {
+    commonCancel()
+  }
+
   override fun toString(): String = commonToString()
 }

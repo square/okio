@@ -26,11 +26,9 @@ import okio.BufferedSource;
 import okio.Okio;
 import okio.Sink;
 import okio.Source;
-import okio.Timeout;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -57,7 +55,7 @@ public final class ChannelsTest {
     ReadableByteChannel channel = new Buffer().writeUtf8(quote);
 
     Buffer buffer = new Buffer();
-    Source source = new ByteChannelSource(channel, Timeout.NONE);
+    Source source = new ByteChannelSource(channel);
     source.read(buffer, 75);
 
     assertThat(buffer.readUtf8())
@@ -67,7 +65,7 @@ public final class ChannelsTest {
   @Test public void testReadChannelFully() throws Exception {
     ReadableByteChannel channel = new Buffer().writeUtf8(quote);
 
-    BufferedSource source = Okio.buffer(new ByteChannelSource(channel, Timeout.NONE));
+    BufferedSource source = Okio.buffer(new ByteChannelSource(channel));
     assertThat(source.readUtf8())
         .isEqualTo(quote);
   }
@@ -75,7 +73,7 @@ public final class ChannelsTest {
   @Test public void testWriteChannel() throws Exception {
     Buffer channel = new Buffer();
 
-    Sink sink = new ByteChannelSink(channel, Timeout.NONE);
+    Sink sink = new ByteChannelSink(channel);
     sink.write(new Buffer().writeUtf8(quote), 75);
 
     assertThat(channel.readUtf8())
@@ -85,14 +83,14 @@ public final class ChannelsTest {
   @Test public void testReadWriteFile() throws Exception {
     java.nio.file.Path path = temporaryFolder.newFile().toPath();
 
-    Sink sink = new FileChannelSink(FileChannel.open(path, w), Timeout.NONE);
+    Sink sink = new FileChannelSink(FileChannel.open(path, w));
     sink.write(new Buffer().writeUtf8(quote), 317);
     sink.close();
     assertTrue(Files.exists(path));
     assertEquals(quote.length(), Files.size(path));
 
     Buffer buffer = new Buffer();
-    Source source = new FileChannelSource(FileChannel.open(path, r), Timeout.NONE);
+    Source source = new FileChannelSource(FileChannel.open(path, r));
 
     source.read(buffer, 44);
     assertThat(buffer.readUtf8())
@@ -110,23 +108,23 @@ public final class ChannelsTest {
     Sink sink;
     BufferedSource source;
 
-    sink = new FileChannelSink(FileChannel.open(path, w), Timeout.NONE);
+    sink = new FileChannelSink(FileChannel.open(path, w));
     sink.write(buffer, 75);
     sink.close();
     assertTrue(Files.exists(path));
     assertEquals(75, Files.size(path));
 
-    source = Okio.buffer(new FileChannelSource(FileChannel.open(path, r), Timeout.NONE));
+    source = Okio.buffer(new FileChannelSource(FileChannel.open(path, r)));
     assertThat(source.readUtf8())
         .isEqualTo("John, the kind of control you're attempting simply is... it's not possible.");
 
-    sink = new FileChannelSink(FileChannel.open(path, append), Timeout.NONE);
+    sink = new FileChannelSink(FileChannel.open(path, append));
     sink.write(buffer, buffer.size());
     sink.close();
     assertTrue(Files.exists(path));
     assertEquals(quote.length(), Files.size(path));
 
-    source = Okio.buffer(new FileChannelSource(FileChannel.open(path, r), Timeout.NONE));
+    source = Okio.buffer(new FileChannelSource(FileChannel.open(path, r)));
     assertThat(source.readUtf8())
         .isEqualTo(quote);
   }

@@ -101,43 +101,6 @@ public final class PipeTest {
     assertEquals(expectedHash, sourceHash.get());
   }
 
-  @Test public void sinkTimeout() throws Exception {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Pipe pipe = new Pipe(3);
-    pipe.sink().timeout().timeout(1000, TimeUnit.MILLISECONDS);
-    pipe.sink().write(new Buffer().writeUtf8("abc"), 3L);
-    double start = now();
-    try {
-      pipe.sink().write(new Buffer().writeUtf8("def"), 3L);
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("timeout", expected.getMessage());
-    }
-    assertElapsed(1000.0, start);
-
-    Buffer readBuffer = new Buffer();
-    assertEquals(3L, pipe.source().read(readBuffer, 6L));
-    assertEquals("abc", readBuffer.readUtf8());
-  }
-
-  @Test public void sourceTimeout() throws Exception {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Pipe pipe = new Pipe(3L);
-    pipe.source().timeout().timeout(1000, TimeUnit.MILLISECONDS);
-    double start = now();
-    Buffer readBuffer = new Buffer();
-    try {
-      pipe.source().read(readBuffer, 6L);
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("timeout", expected.getMessage());
-    }
-    assertElapsed(1000.0, start);
-    assertEquals(0, readBuffer.size());
-  }
-
   /**
    * The writer is writing 12 bytes as fast as it can to a 3 byte buffer. The reader alternates
    * sleeping 1000 ms, then reading 3 bytes. That should make for an approximate timeline like

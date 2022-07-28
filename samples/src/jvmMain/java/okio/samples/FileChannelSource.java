@@ -20,7 +20,6 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import okio.Buffer;
 import okio.Source;
-import okio.Timeout;
 
 /**
  * Special Source for a FileChannel to take advantage of the
@@ -28,14 +27,10 @@ import okio.Timeout;
  */
 final class FileChannelSource implements Source {
   private final FileChannel channel;
-  private final Timeout timeout;
-
   private long position;
 
-  FileChannelSource(FileChannel channel, Timeout timeout) throws IOException {
+  FileChannelSource(FileChannel channel) throws IOException {
     this.channel = channel;
-    this.timeout = timeout;
-
     this.position = channel.position();
   }
 
@@ -48,8 +43,9 @@ final class FileChannelSource implements Source {
     return read;
   }
 
-  @Override public Timeout timeout() {
-    return timeout;
+  @Override
+  public void cancel() {
+    // Not cancelable.
   }
 
   @Override public void close() throws IOException {

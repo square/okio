@@ -15,8 +15,6 @@
  */
 package okio
 
-import okio.ByteString.Companion.encodeUtf8
-import org.junit.Assume
 import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
@@ -26,6 +24,8 @@ import java.util.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import okio.ByteString.Companion.encodeUtf8
+import org.junit.Assume
 
 object TestUtil {
   // Necessary to make an internal member visible to Java.
@@ -92,7 +92,9 @@ object TestUtil {
         }
       }
 
-      override fun timeout() = Timeout.NONE
+      override fun cancel() {
+        // Not cancelable.
+      }
 
       @Throws(IOException::class)
       override fun close() {

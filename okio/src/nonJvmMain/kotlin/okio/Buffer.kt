@@ -239,7 +239,9 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   override fun close() = Unit
 
-  override fun timeout(): Timeout = Timeout.NONE
+  override fun cancel() {
+    // Not cancelable.
+  }
 
   override fun equals(other: Any?): Boolean = commonEquals(other)
 

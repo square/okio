@@ -26,7 +26,9 @@ actual abstract class ForwardingSource actual constructor(
   @Throws(IOException::class)
   actual override fun read(sink: Buffer, byteCount: Long): Long = delegate.read(sink, byteCount)
 
-  actual override fun timeout() = delegate.timeout()
+  actual override fun cancel() {
+    delegate.cancel()
+  }
 
   @Throws(IOException::class)
   actual override fun close() = delegate.close()

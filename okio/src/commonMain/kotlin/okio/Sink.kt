@@ -51,8 +51,14 @@ expect interface Sink : Closeable {
   @Throws(IOException::class)
   fun flush()
 
-  /** Returns the timeout for this sink.  */
-  fun timeout(): Timeout
+  /**
+   * Asynchronously cancel this source. Any [write] or [flush] in flight should immediately fail
+   * with an [IOException], and any future writes and flushes should also immediately fail with an
+   * [IOException].
+   *
+   * Note that it is always necessary to call [close] on a Sink, even if it has been canceled.
+   */
+  fun cancel()
 
   /**
    * Pushes all buffered bytes to their final destination and releases the resources held by this

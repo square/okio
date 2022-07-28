@@ -82,7 +82,9 @@ class GzipSink(sink: Sink) : Sink {
   @Throws(IOException::class)
   override fun flush() = deflaterSink.flush()
 
-  override fun timeout(): Timeout = sink.timeout()
+  override fun cancel() {
+    sink.cancel()
+  }
 
   @Throws(IOException::class)
   override fun close() {

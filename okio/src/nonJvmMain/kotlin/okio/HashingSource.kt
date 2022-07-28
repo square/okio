@@ -54,8 +54,9 @@ actual class HashingSource internal constructor(
     return result
   }
 
-  override fun timeout(): Timeout =
-    source.timeout()
+  override fun cancel() {
+    source.cancel()
+  }
 
   override fun close() =
     source.close()

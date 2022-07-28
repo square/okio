@@ -18,7 +18,6 @@ package okio;
 import java.io.IOException;
 import java.util.zip.CRC32;
 import org.junit.Test;
-
 import static kotlin.text.Charsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -222,8 +221,9 @@ public final class GzipSourceTest {
       return result;
     }
 
-    @Override public Timeout timeout() {
-      return source.timeout();
+    @Override
+    public void cancel() {
+      source.cancel();
     }
 
     @Override public void close() throws IOException {

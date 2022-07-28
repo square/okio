@@ -51,9 +51,8 @@ class MockSink : Sink {
     throwIfScheduled()
   }
 
-  override fun timeout(): Timeout {
-    log.add("timeout()")
-    return Timeout.NONE
+  override fun cancel() {
+    log.add("cancel()")
   }
 
   override fun close() {

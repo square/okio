@@ -16,11 +16,11 @@
 
 package okio
 
+import okio.internal.commonCancel
 import okio.internal.commonClose
 import okio.internal.commonEmit
 import okio.internal.commonEmitCompleteSegments
 import okio.internal.commonFlush
-import okio.internal.commonTimeout
 import okio.internal.commonToString
 import okio.internal.commonWrite
 import okio.internal.commonWriteAll
@@ -70,6 +70,10 @@ internal actual class RealBufferedSink actual constructor(
   override fun emit() = commonEmit()
   override fun flush() = commonFlush()
   override fun close() = commonClose()
-  override fun timeout() = commonTimeout()
+
+  override fun cancel() {
+    commonCancel()
+  }
+
   override fun toString() = commonToString()
 }

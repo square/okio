@@ -501,7 +501,9 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun close() {}
 
-  override fun timeout() = Timeout.NONE
+  override fun cancel() {
+    // Not cancelable.
+  }
 
   /**
    * Returns the 128-bit MD5 hash of this buffer.

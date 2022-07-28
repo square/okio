@@ -69,7 +69,9 @@ internal class FileSink(
     }
   }
 
-  override fun timeout(): Timeout = Timeout.NONE
+  override fun cancel() {
+    // Not cancelable.
+  }
 
   override fun close() {
     if (closed) return

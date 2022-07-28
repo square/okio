@@ -43,7 +43,7 @@ fun blackholeSink(): Sink = BlackholeSink()
 private class BlackholeSink : Sink {
   override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
   override fun flush() {}
-  override fun timeout() = Timeout.NONE
+  override fun cancel() {}
   override fun close() {}
 }
 

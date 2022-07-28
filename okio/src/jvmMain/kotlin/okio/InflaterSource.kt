@@ -126,7 +126,9 @@ internal constructor(private val source: BufferedSource, private val inflater: I
     source.skip(toRelease.toLong())
   }
 
-  override fun timeout(): Timeout = source.timeout()
+  override fun cancel() {
+    source.cancel()
+  }
 
   @Throws(IOException::class)
   override fun close() {

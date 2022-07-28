@@ -26,7 +26,7 @@ actual interface Sink : Closeable, Flushable {
   @Throws(IOException::class)
   actual override fun flush()
 
-  actual fun timeout(): Timeout
+  actual fun cancel()
 
   @Throws(IOException::class)
   actual override fun close()

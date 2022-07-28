@@ -88,7 +88,9 @@ class CipherSink(
 
   override fun flush() = sink.flush()
 
-  override fun timeout() = sink.timeout()
+  override fun cancel() {
+    sink.cancel()
+  }
 
   @Throws(IOException::class)
   override fun close() {

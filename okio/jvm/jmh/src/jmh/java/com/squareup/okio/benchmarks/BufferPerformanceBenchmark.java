@@ -44,7 +44,6 @@ import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Sink;
-import okio.Timeout;
 
 import static java.util.Objects.requireNonNull;
 
@@ -314,8 +313,8 @@ public class BufferPerformanceBenchmark {
       // nothing
     }
 
-    @Override public Timeout timeout() {
-      return Timeout.NONE;
+    @Override public void cancel() {
+      // Not cancelable.
     }
 
     @Override public void close() {
