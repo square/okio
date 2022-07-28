@@ -207,11 +207,11 @@ public final class GzipSourceTest {
   }
 
   /** This source keeps track of whether its read has returned -1. */
-  static class ExhaustableSource implements Source {
-    private final Source source;
+  static class ExhaustableSource implements RawSource {
+    private final RawSource source;
     private boolean exhausted;
 
-    ExhaustableSource(Source source) {
+    ExhaustableSource(RawSource source) {
       this.source = source;
     }
 

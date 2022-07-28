@@ -20,7 +20,7 @@ import java.io.InputStream
 import java.nio.channels.ReadableByteChannel
 import java.nio.charset.Charset
 
-actual sealed interface BufferedSource : Source, ReadableByteChannel {
+actual sealed interface BufferedSource : RawSource, ReadableByteChannel {
   /** Returns this source's internal buffer. */
   @Deprecated(
     message = "moved to val: use getBuffer() instead",
@@ -98,7 +98,7 @@ actual sealed interface BufferedSource : Source, ReadableByteChannel {
   actual fun readFully(sink: Buffer, byteCount: Long)
 
   @Throws(IOException::class)
-  actual fun readAll(sink: Sink): Long
+  actual fun readAll(sink: RawSink): Long
 
   @Throws(IOException::class)
   actual fun readUtf8(): String

@@ -28,7 +28,7 @@ class CommonRealBufferedSourceTest {
   @Test fun indexOfStopsReadingAtLimit() {
     val buffer = Buffer().writeUtf8("abcdef")
     val bufferedSource = (
-      object : Source by buffer {
+      object : RawSource by buffer {
         override fun read(sink: Buffer, byteCount: Long): Long {
           return buffer.read(sink, minOf(1, byteCount))
         }
@@ -44,7 +44,7 @@ class CommonRealBufferedSourceTest {
     val source = Buffer()
     source.writeUtf8("bb")
 
-    val bufferedSource = (source as Source).buffer()
+    val bufferedSource = (source as RawSource).buffer()
     bufferedSource.buffer.writeUtf8("aa")
 
     bufferedSource.require(2)
@@ -56,7 +56,7 @@ class CommonRealBufferedSourceTest {
     val source = Buffer()
     source.writeUtf8("b")
 
-    val bufferedSource = (source as Source).buffer()
+    val bufferedSource = (source as RawSource).buffer()
     bufferedSource.buffer.writeUtf8("a")
 
     bufferedSource.require(2)
@@ -67,7 +67,7 @@ class CommonRealBufferedSourceTest {
     val source = Buffer()
     source.writeUtf8("a")
 
-    val bufferedSource = (source as Source).buffer()
+    val bufferedSource = (source as RawSource).buffer()
 
     assertFailsWith<EOFException> {
       bufferedSource.require(2)
@@ -79,7 +79,7 @@ class CommonRealBufferedSourceTest {
     source.writeUtf8("a".repeat(Segment.SIZE))
     source.writeUtf8("b".repeat(Segment.SIZE))
 
-    val bufferedSource = (source as Source).buffer()
+    val bufferedSource = (source as RawSource).buffer()
 
     bufferedSource.require(2)
     assertEquals(Segment.SIZE.toLong(), source.size)
@@ -90,7 +90,7 @@ class CommonRealBufferedSourceTest {
     val source = Buffer()
     source.writeUtf8("a".repeat(Segment.SIZE))
     source.writeUtf8("b".repeat(Segment.SIZE))
-    val bufferedSource = (source as Source).buffer()
+    val bufferedSource = (source as RawSource).buffer()
     bufferedSource.skip(2)
     assertEquals(Segment.SIZE.toLong(), source.size)
     assertEquals(Segment.SIZE.toLong() - 2L, bufferedSource.buffer.size)
@@ -100,7 +100,7 @@ class CommonRealBufferedSourceTest {
     val source = Buffer()
     source.writeUtf8("bb")
 
-    val bufferedSource = (source as Source).buffer()
+    val bufferedSource = (source as RawSource).buffer()
     bufferedSource.buffer.writeUtf8("aa")
 
     bufferedSource.skip(2)
@@ -110,7 +110,7 @@ class CommonRealBufferedSourceTest {
 
   @Test fun operationsAfterClose() {
     val source = Buffer()
-    val bufferedSource = (source as Source).buffer()
+    val bufferedSource = (source as RawSource).buffer()
     bufferedSource.close()
 
     // Test a sample set of methods.
@@ -145,7 +145,7 @@ class CommonRealBufferedSourceTest {
     )
 
     val mockSink = MockSink()
-    val bufferedSource = (source as Source).buffer()
+    val bufferedSource = (source as RawSource).buffer()
     assertEquals(Segment.SIZE.toLong() * 3L, bufferedSource.readAll(mockSink))
     mockSink.assertLog(
       "write($write1, ${write1.size})",

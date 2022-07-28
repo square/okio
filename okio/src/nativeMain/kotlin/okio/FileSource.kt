@@ -28,7 +28,7 @@ import platform.posix.ferror
 /** Reads the bytes of a file as a source. */
 internal class FileSource(
   private val file: CPointer<FILE>
-) : Source {
+) : RawSource {
   private val unsafeCursor = UnsafeCursor()
   private var closed = false
 

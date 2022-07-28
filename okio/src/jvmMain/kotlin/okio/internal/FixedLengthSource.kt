@@ -18,7 +18,7 @@ package okio.internal
 import okio.Buffer
 import okio.ForwardingSource
 import okio.IOException
-import okio.Source
+import okio.RawSource
 
 /**
  * A source that returns [size] bytes of [delegate].
@@ -29,9 +29,9 @@ import okio.Source
  * will return exactly [size] bytes, and will throw an [IOException] if it doesn't.
  */
 internal class FixedLengthSource(
-  delegate: Source,
-  private val size: Long,
-  private val truncate: Boolean
+    delegate: RawSource,
+    private val size: Long,
+    private val truncate: Boolean
 ) : ForwardingSource(delegate) {
   private var bytesReceived = 0L
 

@@ -17,7 +17,7 @@ package okio
 
 internal class FileSink(
   private val fd: Number
-) : Sink {
+) : RawSink {
   private var closed = false
 
   override fun write(source: Buffer, byteCount: Long) {

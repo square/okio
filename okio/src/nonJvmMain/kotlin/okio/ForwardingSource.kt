@@ -16,9 +16,9 @@
 package okio
 
 actual abstract class ForwardingSource actual constructor(
-  actual val delegate: Source
-) : Source {
-  // TODO 'Source by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
+  actual val delegate: RawSource
+) : RawSource {
+  // TODO 'RawSource by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
   @Throws(IOException::class)
   actual override fun read(sink: Buffer, byteCount: Long): Long = delegate.read(sink, byteCount)

@@ -17,7 +17,7 @@
 package okio
 
 /**
- * A [Source] which peeks into an upstream [BufferedSource] and allows reading and expanding of the
+ * A [RawSource] which peeks into an upstream [BufferedSource] and allows reading and expanding of the
  * buffered data without consuming it. Does this by requesting additional data from the upstream
  * source if needed and copying out of the internal buffer of the upstream source if possible.
  *
@@ -27,7 +27,7 @@ package okio
  */
 internal class PeekSource(
   private val upstream: BufferedSource
-) : Source {
+) : RawSource {
   private val buffer = upstream.buffer
   private var expectedSegment = buffer.head
   private var expectedPos = buffer.head?.pos ?: -1

@@ -25,7 +25,7 @@ import okio.ByteString
 import okio.EOFException
 import okio.RealBufferedSink
 import okio.Segment
-import okio.Source
+import okio.RawSource
 
 internal inline fun RealBufferedSink.commonWrite(source: Buffer, byteCount: Long) {
   check(!closed) { "closed" }
@@ -87,7 +87,7 @@ internal inline fun RealBufferedSink.commonWrite(
   return emitCompleteSegments()
 }
 
-internal inline fun RealBufferedSink.commonWriteAll(source: Source): Long {
+internal inline fun RealBufferedSink.commonWriteAll(source: RawSource): Long {
   var totalBytesRead = 0L
   while (true) {
     val readCount: Long = source.read(buffer, Segment.SIZE.toLong())
@@ -98,7 +98,7 @@ internal inline fun RealBufferedSink.commonWriteAll(source: Source): Long {
   return totalBytesRead
 }
 
-internal inline fun RealBufferedSink.commonWrite(source: Source, byteCount: Long): BufferedSink {
+internal inline fun RealBufferedSink.commonWrite(source: RawSource, byteCount: Long): BufferedSink {
   var byteCount = byteCount
   while (byteCount > 0L) {
     val read = source.read(buffer, byteCount)

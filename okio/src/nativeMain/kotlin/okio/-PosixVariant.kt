@@ -27,11 +27,11 @@ internal expect fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
 
 internal expect fun PosixFileSystem.variantMove(source: Path, target: Path)
 
-internal expect fun PosixFileSystem.variantSource(file: Path): Source
+internal expect fun PosixFileSystem.variantSource(file: Path): RawSource
 
-internal expect fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): Sink
+internal expect fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): RawSink
 
-internal expect fun PosixFileSystem.variantAppendingSink(file: Path, mustExist: Boolean): Sink
+internal expect fun PosixFileSystem.variantAppendingSink(file: Path, mustExist: Boolean): RawSink
 
 internal expect fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle
 

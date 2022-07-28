@@ -19,16 +19,17 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import okio.Buffer;
-import okio.Source;
+import okio.RawSource;
 
 /**
- * Creates a Source around a ReadableByteChannel and efficiently reads data using an UnsafeCursor.
+ * Creates a RawSource around a ReadableByteChannel and efficiently reads data using an
+ * UnsafeCursor.
  *
  * <p>This is a basic example showing another use for the UnsafeCursor. Using the
  * {@link ByteBuffer#wrap(byte[], int, int) ByteBuffer.wrap()} along with access to Buffer segments,
  * a ReadableByteChannel can be given direct access to Buffer data without having to copy the data.
  */
-final class ByteChannelSource implements Source {
+final class ByteChannelSource implements RawSource {
   private final ReadableByteChannel channel;
 
   private final Buffer.UnsafeCursor cursor = new Buffer.UnsafeCursor();

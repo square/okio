@@ -33,20 +33,20 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
    * [FileHandle]. This is intended to increase test coverage for [FileHandle].
    */
   class FileHandleTestingFileSystem(delegate: FileSystem) : ForwardingFileSystem(delegate) {
-    override fun source(file: Path): Source {
+    override fun source(file: Path): RawSource {
       val fileHandle = openReadOnly(file)
       return fileHandle.source()
         .also { fileHandle.close() }
     }
 
-    override fun sink(file: Path, mustCreate: Boolean): Sink {
+    override fun sink(file: Path, mustCreate: Boolean): RawSink {
       val fileHandle = openReadWrite(file, mustCreate)
       fileHandle.resize(0L) // If the file already has data, get rid of it.
       return fileHandle.sink()
         .also { fileHandle.close() }
     }
 
-    override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+    override fun appendingSink(file: Path, mustExist: Boolean): RawSink {
       val fileHandle = openReadWrite(file, mustCreate = false, mustExist = mustExist)
       return fileHandle.appendingSink()
         .also { fileHandle.close() }

@@ -34,10 +34,10 @@ package okio
  * for primitive values, a `BufferedInputStream` for buffering, and `InputStreamReader` for strings.
  * This library uses `BufferedSource` for all of the above.
  *
- * Source avoids the impossible-to-implement [available()][java.io.InputStream.available] method.
+ * RawSource avoids the impossible-to-implement [available()][java.io.InputStream.available] method.
  * Instead callers specify how many bytes they [require][BufferedSource.require].
  *
- * Source omits the unsafe-to-compose [mark and reset][java.io.InputStream.mark] state that's
+ * RawSource omits the unsafe-to-compose [mark and reset][java.io.InputStream.mark] state that's
  * tracked by `InputStream`; instead, callers just buffer what they need.
  *
  * When implementing a source, you don't need to worry about the [read()][java.io.InputStream.read]
@@ -50,7 +50,7 @@ package okio
  * Use [source] to adapt an `InputStream` to a source. Use [BufferedSource.inputStream] to adapt a
  * source to an `InputStream`.
  */
-interface Source : Closeable {
+interface RawSource : Closeable {
   /**
    * Removes at least 1, and up to `byteCount` bytes from this and appends them to `sink`. Returns
    * the number of bytes read, or -1 if this source is exhausted.
@@ -62,7 +62,7 @@ interface Source : Closeable {
    * Asynchronously cancel this source. Any [read] in flight should immediately fail with an
    * [IOException], and any future read should also immediately fail with an [IOException].
    *
-   * Note that it is always necessary to call [close] on a Source, even if it has been canceled.
+   * Note that it is always necessary to call [close] on a source, even if it has been canceled.
    */
   fun cancel()
 

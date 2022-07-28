@@ -194,7 +194,7 @@ public final class InflaterSourceTest {
 
   /** Use DeflaterOutputStream to deflate source. */
   private void deflate(ByteString source) throws IOException {
-    Sink sink = Okio.sink(new DeflaterOutputStream(deflatedSink.outputStream()));
+    RawSink sink = Okio.sink(new DeflaterOutputStream(deflatedSink.outputStream()));
     sink.write(new Buffer().write(source), source.size());
     sink.close();
   }

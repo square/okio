@@ -20,7 +20,7 @@ package okio
  * penalty. It also allows clients to read ahead, buffering as much as necessary before consuming
  * input.
  */
-expect sealed interface BufferedSource : Source {
+expect sealed interface BufferedSource : RawSource {
   /** This source's internal buffer. */
   val buffer: Buffer
 
@@ -302,7 +302,7 @@ expect sealed interface BufferedSource : Source {
    * Removes all bytes from this and appends them to `sink`. Returns the total number of bytes
    * written to `sink` which will be 0 if this is exhausted.
    */
-  fun readAll(sink: Sink): Long
+  fun readAll(sink: RawSink): Long
 
   /**
    * Removes all bytes from this, decodes them as UTF-8, and returns the string. Returns the empty

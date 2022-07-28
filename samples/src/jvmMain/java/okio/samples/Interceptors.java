@@ -20,8 +20,8 @@ import java.util.Random;
 import okio.Buffer;
 import okio.ForwardingSink;
 import okio.ForwardingSource;
-import okio.Sink;
-import okio.Source;
+import okio.RawSink;
+import okio.RawSource;
 
 /**
  * Demonstrates use of the {@link Buffer.UnsafeCursor} class. While other
@@ -51,7 +51,7 @@ public final class Interceptors {
     Buffer wire = new Buffer();
 
     // Create a Sink which will intercept and negatively rotate each byte by `cipher`
-    Sink sink = new InterceptingSink(wire) {
+    RawSink sink = new InterceptingSink(wire) {
       @Override
       protected void intercept(byte[] data, int offset, int length) {
         for (int i = offset, end = offset + length; i < end; i++) {
@@ -61,7 +61,7 @@ public final class Interceptors {
     };
 
     // Create a Source which will intercept and positively rotate each byte by `cipher`
-    Source source = new InterceptingSource(wire) {
+    RawSource source = new InterceptingSource(wire) {
       @Override
       protected void intercept(byte[] data, int offset, int length) {
         for (int i = offset, end = offset + length; i < end; i++) {
@@ -86,7 +86,7 @@ public final class Interceptors {
 
     private final Buffer.UnsafeCursor cursor = new Buffer.UnsafeCursor();
 
-    InterceptingSource(Source source) {
+    InterceptingSource(RawSource source) {
       super(source);
     }
 
@@ -123,7 +123,7 @@ public final class Interceptors {
 
     private final Buffer.UnsafeCursor cursor = new Buffer.UnsafeCursor();
 
-    InterceptingSink(Sink delegate) {
+    InterceptingSink(RawSink delegate) {
       super(delegate);
     }
 

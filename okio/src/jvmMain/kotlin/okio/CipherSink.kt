@@ -21,7 +21,7 @@ import javax.crypto.Cipher
 class CipherSink(
   private val sink: BufferedSink,
   val cipher: Cipher
-) : Sink {
+) : RawSink {
   private val blockSize = cipher.blockSize
   private var closed = false
 

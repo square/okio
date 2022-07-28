@@ -28,7 +28,7 @@ import java.util.zip.Inflater
  * A source that uses [GZIP](http://www.ietf.org/rfc/rfc1952.txt) to
  * decompress data read from another source.
  */
-class GzipSource(source: Source) : Source {
+class GzipSource(source: RawSource) : RawSource {
 
   /** The current section. Always progresses forward. */
   private var section = SECTION_HEADER
@@ -214,8 +214,8 @@ private const val SECTION_TRAILER: Byte = 2
 private const val SECTION_DONE: Byte = 3
 
 /**
- * Returns a [GzipSource] that gzip-decompresses this [Source] while reading.
+ * Returns a [GzipSource] that gzip-decompresses this [RawSource] while reading.
  *
  * @see GzipSource
  */
-inline fun Source.gzip() = GzipSource(this)
+inline fun RawSource.gzip() = GzipSource(this)

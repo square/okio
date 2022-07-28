@@ -39,7 +39,7 @@ import java.util.zip.Deflater.DEFAULT_COMPRESSION
  * This class does not offer any partial flush mechanism. For best performance,
  * only call [flush] when application behavior requires it.
  */
-class GzipSink(sink: Sink) : Sink {
+class GzipSink(sink: RawSink) : RawSink {
   /** Sink into which the GZIP format is written. */
   private val sink = RealBufferedSink(sink)
 
@@ -147,8 +147,8 @@ class GzipSink(sink: Sink) : Sink {
 }
 
 /**
- * Returns a [GzipSink] that gzip-compresses to this [Sink] while writing.
+ * Returns a [GzipSink] that gzip-compresses to this [RawSink] while writing.
  *
  * @see GzipSource
  */
-inline fun Sink.gzip() = GzipSink(this)
+inline fun RawSink.gzip() = GzipSink(this)

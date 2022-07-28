@@ -21,7 +21,7 @@ import okio.BufferedSink;
 import okio.FileSystem;
 import okio.Okio;
 import okio.Path;
-import okio.Sink;
+import okio.RawSink;
 
 public final class WriteFile {
   public void run() throws Exception {
@@ -29,7 +29,7 @@ public final class WriteFile {
   }
 
   public void writeEnv(Path path) throws IOException {
-    try (Sink fileSink = FileSystem.SYSTEM.sink(path);
+    try (RawSink fileSink = FileSystem.SYSTEM.sink(path);
          BufferedSink bufferedSink = Okio.buffer(fileSink)) {
 
       for (Map.Entry<String, String> entry : System.getenv().entrySet()) {

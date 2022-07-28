@@ -28,19 +28,19 @@ import kotlin.jvm.JvmName
  * reads into its in-memory buffer. Use this wherever you read a source to get an ergonomic and
  * efficient access to data.
  */
-fun Source.buffer(): BufferedSource = RealBufferedSource(this)
+fun RawSource.buffer(): BufferedSource = RealBufferedSource(this)
 
 /**
  * Returns a new sink that buffers writes to `sink`. The returned sink will batch writes to `sink`.
  * Use this wherever you write to a sink to get an ergonomic and efficient access to data.
  */
-fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
+fun RawSink.buffer(): BufferedSink = RealBufferedSink(this)
 
 /** Returns a sink that writes nowhere. */
 @JvmName("blackhole")
-fun blackholeSink(): Sink = BlackholeSink()
+fun blackholeSink(): RawSink = BlackholeSink()
 
-private class BlackholeSink : Sink {
+private class BlackholeSink : RawSink {
   override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
   override fun flush() {}
   override fun cancel() {}

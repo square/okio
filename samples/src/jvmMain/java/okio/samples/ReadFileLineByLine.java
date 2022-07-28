@@ -20,7 +20,7 @@ import okio.BufferedSource;
 import okio.FileSystem;
 import okio.Okio;
 import okio.Path;
-import okio.Source;
+import okio.RawSource;
 
 public final class ReadFileLineByLine {
   public void run() throws Exception {
@@ -28,7 +28,7 @@ public final class ReadFileLineByLine {
   }
 
   public void readLines(Path path) throws IOException {
-    try (Source fileSource = FileSystem.SYSTEM.source(path);
+    try (RawSource fileSource = FileSystem.SYSTEM.source(path);
          BufferedSource bufferedFileSource = Okio.buffer(fileSource)) {
 
       while (true) {

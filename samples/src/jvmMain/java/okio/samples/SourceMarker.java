@@ -20,7 +20,7 @@ import okio.Buffer;
 import okio.BufferedSource;
 import okio.ForwardingSource;
 import okio.Okio;
-import okio.Source;
+import okio.RawSource;
 
 /**
  * Builds a buffered source that can rewind to a marked position earlier in the stream.
@@ -64,7 +64,7 @@ public final class SourceMarker {
   /** Just the userSource's buffer. */
   final Buffer userBuffer;
 
-  public SourceMarker(Source source) {
+  public SourceMarker(RawSource source) {
     this.markSource = new MarkSource(source);
     this.markBuffer = new Buffer();
     this.userSource = Okio.buffer(markSource);
@@ -127,7 +127,7 @@ public final class SourceMarker {
   }
 
   final class MarkSource extends ForwardingSource {
-    MarkSource(Source source) {
+    MarkSource(RawSource source) {
       super(source);
     }
 

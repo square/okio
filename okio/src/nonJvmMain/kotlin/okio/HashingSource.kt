@@ -23,9 +23,9 @@ import okio.internal.Sha256
 import okio.internal.Sha512
 
 actual class HashingSource internal constructor(
-  private val source: Source,
+  private val source: RawSource,
   private val hashFunction: HashFunction
-) : Source {
+) : RawSource {
 
   override fun read(sink: Buffer, byteCount: Long): Long {
     val result = source.read(sink, byteCount)
@@ -70,24 +70,24 @@ actual class HashingSource internal constructor(
   actual companion object {
 
     /** Returns a source that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
-    actual fun md5(source: Source) = HashingSource(source, Md5())
+    actual fun md5(source: RawSource) = HashingSource(source, Md5())
 
     /** Returns a source that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
-    actual fun sha1(source: Source) = HashingSource(source, Sha1())
+    actual fun sha1(source: RawSource) = HashingSource(source, Sha1())
 
     /** Returns a source that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    actual fun sha256(source: Source) = HashingSource(source, Sha256())
+    actual fun sha256(source: RawSource) = HashingSource(source, Sha256())
 
     /** Returns a source that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    actual fun sha512(source: Source) = HashingSource(source, Sha512())
+    actual fun sha512(source: RawSource) = HashingSource(source, Sha512())
 
     /** Returns a source that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    actual fun hmacSha1(source: Source, key: ByteString) = HashingSource(source, Hmac.sha1(key))
+    actual fun hmacSha1(source: RawSource, key: ByteString) = HashingSource(source, Hmac.sha1(key))
 
     /** Returns a source that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    actual fun hmacSha256(source: Source, key: ByteString) = HashingSource(source, Hmac.sha256(key))
+    actual fun hmacSha256(source: RawSource, key: ByteString) = HashingSource(source, Hmac.sha256(key))
 
     /** Returns a source that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    actual fun hmacSha512(source: Source, key: ByteString) = HashingSource(source, Hmac.sha512(key))
+    actual fun hmacSha512(source: RawSource, key: ByteString) = HashingSource(source, Hmac.sha512(key))
   }
 }

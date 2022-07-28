@@ -27,8 +27,8 @@ import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
-import okio.Sink
-import okio.Source
+import okio.RawSink
+import okio.RawSource
 import okio.fakefilesystem.FakeFileSystem.Element.Directory
 import okio.fakefilesystem.FakeFileSystem.Element.File
 import okio.fakefilesystem.FakeFileSystem.Element.Symlink
@@ -271,20 +271,20 @@ class FakeFileSystem(
     return element.children.keys.map { dir / it }.sorted()
   }
 
-  override fun source(file: Path): Source {
+  override fun source(file: Path): RawSource {
     val fileHandle = openReadOnly(file)
     return fileHandle.source()
       .also { fileHandle.close() }
   }
 
-  override fun sink(file: Path, mustCreate: Boolean): Sink {
+  override fun sink(file: Path, mustCreate: Boolean): RawSink {
     val fileHandle = open(file, readWrite = true, mustCreate = mustCreate)
     fileHandle.resize(0L) // If the file already has data, get rid of it.
     return fileHandle.sink()
       .also { fileHandle.close() }
   }
 
-  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): RawSink {
     val fileHandle = open(file, readWrite = true, mustExist = mustExist)
     return fileHandle.appendingSink()
       .also { fileHandle.close() }

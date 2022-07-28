@@ -17,8 +17,8 @@ package okio.samples
 
 import okio.Buffer
 import okio.BufferedSink
-import okio.Sink
-import okio.Source
+import okio.RawSink
+import okio.RawSource
 import okio.buffer
 import okio.sink
 import okio.source
@@ -155,7 +155,7 @@ class KotlinSocksProxyServer {
    * Read data from `source` and write it to `sink`. This doesn't use [BufferedSink.writeAll]
    * because that method doesn't flush aggressively and we need that.
    */
-  private fun transfer(sourceSocket: Socket, source: Source, sink: Sink) {
+  private fun transfer(sourceSocket: Socket, source: RawSource, sink: RawSink) {
     try {
       val buffer = Buffer()
       var byteCount: Long

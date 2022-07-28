@@ -15,15 +15,15 @@
  */
 package okio
 
-/** A [Source] which forwards calls to another. Useful for subclassing. */
+/** A [RawSource] which forwards calls to another. Useful for subclassing. */
 expect abstract class ForwardingSource constructor(
-  /** [Source] to which this instance is delegating. */
-  delegate: Source
-) : Source {
-  /** [Source] to which this instance is delegating. */
-  val delegate: Source
+  /** [RawSource] to which this instance is delegating. */
+  delegate: RawSource
+) : RawSource {
+  /** [RawSource] to which this instance is delegating. */
+  val delegate: RawSource
 
-  // TODO 'Source by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
+  // TODO 'RawSource by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long

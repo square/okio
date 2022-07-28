@@ -22,8 +22,8 @@ import okio.FileSystem
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
-import okio.Sink
-import okio.Source
+import okio.RawSink
+import okio.RawSource
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -120,7 +120,7 @@ internal class ResourceFileSystem internal constructor(
     return null
   }
 
-  override fun source(file: Path): Source {
+  override fun source(file: Path): RawSource {
     if (!keepPath(file)) throw FileNotFoundException("file not found: $file")
     val relativePath = file.toRelativePath()
     for ((fileSystem, base) in roots) {
@@ -132,11 +132,11 @@ internal class ResourceFileSystem internal constructor(
     throw FileNotFoundException("file not found: $file")
   }
 
-  override fun sink(file: Path, mustCreate: Boolean): Sink {
+  override fun sink(file: Path, mustCreate: Boolean): RawSink {
     throw IOException("$this is read-only")
   }
 
-  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): RawSink {
     throw IOException("$this is read-only")
   }
 

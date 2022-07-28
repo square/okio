@@ -145,7 +145,7 @@ abstract class FileHandle(
    * closed when it is no longer needed.
    */
   @Throws(IOException::class)
-  fun source(fileOffset: Long = 0L): Source {
+  fun source(fileOffset: Long = 0L): RawSource {
     synchronized(this) {
       check(!closed) { "closed" }
       openStreamCount++
@@ -159,7 +159,7 @@ abstract class FileHandle(
    * parameter is a [BufferedSource], it adjusts for buffered bytes.
    */
   @Throws(IOException::class)
-  fun position(source: Source): Long {
+  fun position(source: RawSource): Long {
     var source = source
     var bufferSize = 0L
 
@@ -182,7 +182,7 @@ abstract class FileHandle(
    * If the parameter is a [BufferedSource], it will skip or clear buffered bytes.
    */
   @Throws(IOException::class)
-  fun reposition(source: Source, position: Long) {
+  fun reposition(source: RawSource, position: Long) {
     if (source is RealBufferedSource) {
       val fileHandleSource = source.source
       require(fileHandleSource is FileHandleSource && fileHandleSource.fileHandle === this) {
@@ -214,7 +214,7 @@ abstract class FileHandle(
    * when it is no longer needed.
    */
   @Throws(IOException::class)
-  fun sink(fileOffset: Long = 0L): Sink {
+  fun sink(fileOffset: Long = 0L): RawSink {
     check(readWrite) { "file handle is read-only" }
     synchronized(this) {
       check(!closed) { "closed" }
@@ -228,7 +228,7 @@ abstract class FileHandle(
    * it is no longer needed.
    */
   @Throws(IOException::class)
-  fun appendingSink(): Sink {
+  fun appendingSink(): RawSink {
     return sink(size())
   }
 
@@ -238,7 +238,7 @@ abstract class FileHandle(
    * [BufferedSink], it adjusts for buffered bytes.
    */
   @Throws(IOException::class)
-  fun position(sink: Sink): Long {
+  fun position(sink: RawSink): Long {
     var sink = sink
     var bufferSize = 0L
 
@@ -261,7 +261,7 @@ abstract class FileHandle(
    * parameter is a [BufferedSink], it emits for buffered bytes.
    */
   @Throws(IOException::class)
-  fun reposition(sink: Sink, position: Long) {
+  fun reposition(sink: RawSink, position: Long) {
     if (sink is RealBufferedSink) {
       val fileHandleSink = sink.sink
       require(fileHandleSink is FileHandleSink && fileHandleSink.fileHandle === this) {
@@ -386,7 +386,7 @@ abstract class FileHandle(
   private class FileHandleSink(
     val fileHandle: FileHandle,
     var position: Long
-  ) : Sink {
+  ) : RawSink {
     var closed = false
 
     override fun write(source: Buffer, byteCount: Long) {
@@ -418,7 +418,7 @@ abstract class FileHandle(
   private class FileHandleSource(
     val fileHandle: FileHandle,
     var position: Long
-  ) : Source {
+  ) : RawSource {
     var closed = false
 
     override fun read(sink: Buffer, byteCount: Long): Long {

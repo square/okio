@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Square, Inc.
+ * Copyright (C) 2014 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,16 @@
  */
 package okio
 
-actual interface Sink : Closeable {
+import java.io.Closeable
+import java.io.Flushable
+import java.io.IOException
+
+actual interface RawSink : Closeable, Flushable {
   @Throws(IOException::class)
   actual fun write(source: Buffer, byteCount: Long)
 
   @Throws(IOException::class)
-  actual fun flush()
+  actual override fun flush()
 
   actual fun cancel()
 

@@ -15,7 +15,7 @@
  */
 package okio
 
-actual sealed interface BufferedSink : Sink {
+actual sealed interface BufferedSink : RawSink {
   actual val buffer: Buffer
 
   actual fun write(byteString: ByteString): BufferedSink
@@ -26,9 +26,9 @@ actual sealed interface BufferedSink : Sink {
 
   actual fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
 
-  actual fun writeAll(source: Source): Long
+  actual fun writeAll(source: RawSource): Long
 
-  actual fun write(source: Source, byteCount: Long): BufferedSink
+  actual fun write(source: RawSource, byteCount: Long): BufferedSink
 
   actual fun writeUtf8(string: String): BufferedSink
 

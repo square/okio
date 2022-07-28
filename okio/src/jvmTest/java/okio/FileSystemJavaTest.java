@@ -84,13 +84,13 @@ public final class FileSystemJavaTest {
     FileHandle openReadOnly = fileSystem.openReadOnly(pathA);
     FileHandle openReadOnlyBooleanBoolean = fileSystem.openReadWrite(pathA, false, false);
     FileHandle openReadWrite = fileSystem.openReadWrite(pathA);
-    Source source = fileSystem.source(pathA);
+    RawSource source = fileSystem.source(pathA);
     // Note that FileSystem.read() isn't available to Java callers.
-    Sink sinkFalse = fileSystem.sink(pathA, false);
-    Sink sink = fileSystem.sink(pathA);
+    RawSink sinkFalse = fileSystem.sink(pathA, false);
+    RawSink sink = fileSystem.sink(pathA);
     // Note that FileSystem.write() isn't available to Java callers.
-    Sink appendingSinkBoolean = fileSystem.appendingSink(pathA, false);
-    Sink appendingSink = fileSystem.appendingSink(pathA);
+    RawSink appendingSinkBoolean = fileSystem.appendingSink(pathA, false);
+    RawSink appendingSink = fileSystem.appendingSink(pathA);
     fileSystem.createDirectory(pathA);
     fileSystem.createDirectories(pathA);
     fileSystem.atomicMove(pathA, pathB);

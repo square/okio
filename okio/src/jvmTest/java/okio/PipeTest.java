@@ -16,7 +16,6 @@
 package okio;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -41,7 +40,7 @@ public final class PipeTest {
     Pipe pipe = new Pipe(6);
     pipe.sink().write(new Buffer().writeUtf8("abc"), 3L);
 
-    Source source = pipe.source();
+    RawSource source = pipe.source();
     Buffer readBuffer = new Buffer();
     assertEquals(3L, source.read(readBuffer, 6L));
     assertEquals("abc", readBuffer.readUtf8());

@@ -15,7 +15,7 @@
  */
 package okio
 
-actual sealed interface BufferedSource : Source {
+actual sealed interface BufferedSource : RawSource {
   actual val buffer: Buffer
 
   actual fun exhausted(): Boolean
@@ -62,7 +62,7 @@ actual sealed interface BufferedSource : Source {
 
   actual fun readFully(sink: Buffer, byteCount: Long)
 
-  actual fun readAll(sink: Sink): Long
+  actual fun readAll(sink: RawSink): Long
 
   actual fun readUtf8(): String
 

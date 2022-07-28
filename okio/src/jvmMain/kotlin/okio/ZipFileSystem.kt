@@ -125,7 +125,7 @@ internal class ZipFileSystem internal constructor(
   }
 
   @Throws(IOException::class)
-  override fun source(file: Path): Source {
+  override fun source(file: Path): RawSource {
     val canonicalPath = canonicalizeInternal(file)
     val entry = entries[canonicalPath] ?: throw FileNotFoundException("no such file: $file")
     val source = fileSystem.openReadOnly(zipPath).use { fileHandle ->
@@ -147,11 +147,11 @@ internal class ZipFileSystem internal constructor(
     }
   }
 
-  override fun sink(file: Path, mustCreate: Boolean): Sink {
+  override fun sink(file: Path, mustCreate: Boolean): RawSink {
     throw IOException("zip file systems are read-only")
   }
 
-  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): RawSink {
     throw IOException("zip file systems are read-only")
   }
 

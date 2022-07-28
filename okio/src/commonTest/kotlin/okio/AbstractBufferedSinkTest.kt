@@ -165,14 +165,14 @@ abstract class AbstractBufferedSinkTest internal constructor(
     val source = Buffer().writeUtf8("abcdef")
 
     // Force resolution of the Source method overload.
-    sink.write(source as Source, 4)
+    sink.write(source as RawSource, 4)
     sink.flush()
     assertEquals("abcd", data.readUtf8())
     assertEquals("ef", source.readUtf8())
   }
 
   @Test fun writeSourceReadsFully() {
-    val source = object : Source by Buffer() {
+    val source = object : RawSource by Buffer() {
       override fun read(sink: Buffer, byteCount: Long): Long {
         sink.writeUtf8("abcd")
         return 4
@@ -185,7 +185,7 @@ abstract class AbstractBufferedSinkTest internal constructor(
   }
 
   @Test fun writeSourcePropagatesEof() {
-    val source: Source = Buffer().writeUtf8("abcd")
+    val source: RawSource = Buffer().writeUtf8("abcd")
 
     assertFailsWith<EOFException> {
       sink.write(source, 8)
@@ -200,7 +200,7 @@ abstract class AbstractBufferedSinkTest internal constructor(
     // This test ensures that a zero byte count never calls through to read the source. It may be
     // tied to something like a socket which will potentially block trying to read a segment when
     // ultimately we don't want any data.
-    val source = object : Source by Buffer() {
+    val source = object : RawSource by Buffer() {
       override fun read(sink: Buffer, byteCount: Long): Long {
         throw AssertionError()
       }

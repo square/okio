@@ -23,9 +23,9 @@ import okio.internal.Sha256
 import okio.internal.Sha512
 
 actual class HashingSink internal constructor(
-  private val sink: Sink,
+  private val sink: RawSink,
   private val hashFunction: HashFunction
-) : Sink {
+) : RawSink {
 
   override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
@@ -67,24 +67,24 @@ actual class HashingSink internal constructor(
   actual companion object {
 
     /** Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes. */
-    actual fun md5(sink: Sink) = HashingSink(sink, Md5())
+    actual fun md5(sink: RawSink) = HashingSink(sink, Md5())
 
     /** Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes. */
-    actual fun sha1(sink: Sink) = HashingSink(sink, Sha1())
+    actual fun sha1(sink: RawSink) = HashingSink(sink, Sha1())
 
     /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    actual fun sha256(sink: Sink) = HashingSink(sink, Sha256())
+    actual fun sha256(sink: RawSink) = HashingSink(sink, Sha256())
 
     /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    actual fun sha512(sink: Sink) = HashingSink(sink, Sha512())
+    actual fun sha512(sink: RawSink) = HashingSink(sink, Sha512())
 
     /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    actual fun hmacSha1(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha1(key))
+    actual fun hmacSha1(sink: RawSink, key: ByteString) = HashingSink(sink, Hmac.sha1(key))
 
     /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    actual fun hmacSha256(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha256(key))
+    actual fun hmacSha256(sink: RawSink, key: ByteString) = HashingSink(sink, Hmac.sha256(key))
 
     /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    actual fun hmacSha512(sink: Sink, key: ByteString) = HashingSink(sink, Hmac.sha512(key))
+    actual fun hmacSha512(sink: RawSink, key: ByteString) = HashingSink(sink, Hmac.sha512(key))
   }
 }

@@ -89,7 +89,7 @@ public final class OkioTest {
     data.writeUtf8("c");
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    Sink sink = Okio.sink(out);
+    RawSink sink = Okio.sink(out);
     sink.write(data, 3);
     assertEquals("abb", out.toString("UTF-8"));
     sink.write(data, data.size());
@@ -101,7 +101,7 @@ public final class OkioTest {
         ("a" + repeat("b", SEGMENT_SIZE * 2) + "c").getBytes(UTF_8));
 
     // Source: ab...bc
-    Source source = Okio.source(in);
+    RawSource source = Okio.source(in);
     Buffer sink = new Buffer();
 
     // Source: b...bc. Sink: abb.
@@ -122,7 +122,7 @@ public final class OkioTest {
 
   @Test public void sourceFromInputStreamWithSegmentSize() throws Exception {
     InputStream in = new ByteArrayInputStream(new byte[SEGMENT_SIZE]);
-    Source source = Okio.source(in);
+    RawSource source = Okio.source(in);
     Buffer sink = new Buffer();
 
     assertEquals(SEGMENT_SIZE, source.read(sink, SEGMENT_SIZE));
@@ -132,7 +132,7 @@ public final class OkioTest {
   }
 
   @Test public void sourceFromInputStreamBounds() throws Exception {
-    Source source = Okio.source(new ByteArrayInputStream(new byte[100]));
+    RawSource source = Okio.source(new ByteArrayInputStream(new byte[100]));
     try {
       source.read(new Buffer(), -1);
       fail();
@@ -142,7 +142,7 @@ public final class OkioTest {
 
   @Test public void bufferSinkThrowsOnNull() {
     try {
-      Okio.buffer((Sink) null);
+      Okio.buffer((RawSink) null);
       fail();
     } catch (NullPointerException expected) {
     }
@@ -150,7 +150,7 @@ public final class OkioTest {
 
   @Test public void bufferSourceThrowsOnNull() {
     try {
-      Okio.buffer((Source) null);
+      Okio.buffer((RawSource) null);
       fail();
     } catch (NullPointerException expected) {
     }
@@ -160,7 +160,7 @@ public final class OkioTest {
     Buffer data = new Buffer();
     data.writeUtf8("blackhole");
 
-    Sink blackhole = Okio.blackhole();
+    RawSink blackhole = Okio.blackhole();
     blackhole.write(data, 5);
 
     assertEquals("hole", data.readUtf8());

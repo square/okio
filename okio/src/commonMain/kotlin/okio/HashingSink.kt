@@ -31,7 +31,7 @@ package okio
  * ByteString hash = hashingSink.hash();
  * ```
  */
-expect class HashingSink : Sink {
+expect class HashingSink : RawSink {
 
   /**
    * Returns the hash of the bytes accepted thus far and resets the internal state of this sink.
@@ -47,28 +47,28 @@ expect class HashingSink : Sink {
      *
      * MD5 has been vulnerable to collisions since 2004. It should not be used in new code.
      */
-    fun md5(sink: Sink): HashingSink
+    fun md5(sink: RawSink): HashingSink
 
     /**
      * Returns a sink that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes.
      *
      * SHA-1 has been vulnerable to collisions since 2017. It should not be used in new code.
      */
-    fun sha1(sink: Sink): HashingSink
+    fun sha1(sink: RawSink): HashingSink
 
     /** Returns a sink that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    fun sha256(sink: Sink): HashingSink
+    fun sha256(sink: RawSink): HashingSink
 
     /** Returns a sink that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    fun sha512(sink: Sink): HashingSink
+    fun sha512(sink: RawSink): HashingSink
 
     /** Returns a sink that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    fun hmacSha1(sink: Sink, key: ByteString): HashingSink
+    fun hmacSha1(sink: RawSink, key: ByteString): HashingSink
 
     /** Returns a sink that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    fun hmacSha256(sink: Sink, key: ByteString): HashingSink
+    fun hmacSha256(sink: RawSink, key: ByteString): HashingSink
 
     /** Returns a sink that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    fun hmacSha512(sink: Sink, key: ByteString): HashingSink
+    fun hmacSha512(sink: RawSink, key: ByteString): HashingSink
   }
 }

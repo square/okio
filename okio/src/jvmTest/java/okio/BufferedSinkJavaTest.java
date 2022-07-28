@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
  */
 public final class BufferedSinkJavaTest {
   @Test public void inputStreamCloses() throws Exception {
-    BufferedSink sink = Okio.buffer((Sink) new Buffer());
+    BufferedSink sink = Okio.buffer((RawSink) new Buffer());
     OutputStream out = sink.outputStream();
     out.close();
     try {
@@ -43,7 +43,7 @@ public final class BufferedSinkJavaTest {
 
   @Test public void bufferedSinkEmitsTailWhenItIsComplete() throws IOException {
     Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) sink);
     bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE - 1));
     assertEquals(0, sink.size());
     bufferedSink.writeByte(0);
@@ -53,7 +53,7 @@ public final class BufferedSinkJavaTest {
 
   @Test public void bufferedSinkEmitMultipleSegments() throws IOException {
     Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) sink);
     bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 4 - 1));
     assertEquals(SEGMENT_SIZE * 3, sink.size());
     assertEquals(SEGMENT_SIZE - 1, bufferedSink.getBuffer().size());
@@ -61,7 +61,7 @@ public final class BufferedSinkJavaTest {
 
   @Test public void bufferedSinkFlush() throws IOException {
     Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) sink);
     bufferedSink.writeByte('a');
     assertEquals(0, sink.size());
     bufferedSink.flush();
@@ -71,7 +71,7 @@ public final class BufferedSinkJavaTest {
 
   @Test public void bytesEmittedToSinkWithFlush() throws Exception {
     Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) sink);
     bufferedSink.writeUtf8("abc");
     bufferedSink.flush();
     assertEquals(3, sink.size());
@@ -79,14 +79,14 @@ public final class BufferedSinkJavaTest {
 
   @Test public void bytesNotEmittedToSinkWithoutFlush() throws Exception {
     Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) sink);
     bufferedSink.writeUtf8("abc");
     assertEquals(0, sink.size());
   }
 
   @Test public void bytesEmittedToSinkWithEmit() throws Exception {
     Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) sink);
     bufferedSink.writeUtf8("abc");
     bufferedSink.emit();
     assertEquals(3, sink.size());
@@ -94,14 +94,14 @@ public final class BufferedSinkJavaTest {
 
   @Test public void completeSegmentsEmitted() throws Exception {
     Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) sink);
     bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 3));
     assertEquals(SEGMENT_SIZE * 3, sink.size());
   }
 
   @Test public void incompleteSegmentsNotEmitted() throws Exception {
     Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) sink);
     bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 3 - 1));
     assertEquals(SEGMENT_SIZE * 2, sink.size());
   }

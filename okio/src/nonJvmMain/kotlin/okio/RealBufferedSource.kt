@@ -47,7 +47,7 @@ import okio.internal.commonSkip
 import okio.internal.commonToString
 
 internal actual class RealBufferedSource actual constructor(
-  actual val source: Source
+  actual val source: RawSource
 ) : BufferedSource {
   actual var closed: Boolean = false
   override val buffer: Buffer = Buffer()
@@ -68,7 +68,7 @@ internal actual class RealBufferedSource actual constructor(
     commonRead(sink, offset, byteCount)
 
   override fun readFully(sink: Buffer, byteCount: Long): Unit = commonReadFully(sink, byteCount)
-  override fun readAll(sink: Sink): Long = commonReadAll(sink)
+  override fun readAll(sink: RawSink): Long = commonReadAll(sink)
   override fun readUtf8(): String = commonReadUtf8()
   override fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
   override fun readUtf8Line(): String? = commonReadUtf8Line()

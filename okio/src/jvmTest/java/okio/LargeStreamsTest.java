@@ -91,7 +91,7 @@ public final class LargeStreamsTest {
   }
 
   /** Reads all bytes from {@code source} and writes them to {@code sink}. */
-  private Long readAllAndClose(Source source, Sink sink) throws IOException {
+  private Long readAllAndClose(RawSource source, RawSink sink) throws IOException {
     long result = 0L;
     Buffer buffer = new Buffer();
     for (long count; (count = source.read(buffer, SEGMENT_SIZE)) != -1L; result += count) {
@@ -103,7 +103,7 @@ public final class LargeStreamsTest {
   }
 
   /** Calls {@link #readAllAndClose} on a background thread. */
-  private Future<Long> readAllAndCloseAsync(final Source source, final Sink sink) {
+  private Future<Long> readAllAndCloseAsync(final RawSource source, final RawSink sink) {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     try {
       return executor.submit(new Callable<Long>() {

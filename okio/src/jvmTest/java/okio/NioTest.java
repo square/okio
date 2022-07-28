@@ -35,14 +35,14 @@ public final class NioTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test public void sourceIsOpen() throws Exception {
-    BufferedSource source = Okio.buffer((Source) new Buffer());
+    BufferedSource source = Okio.buffer((RawSource) new Buffer());
     assertTrue(source.isOpen());
     source.close();
     assertFalse(source.isOpen());
   }
 
   @Test public void sinkIsOpen() throws Exception {
-    BufferedSink sink = Okio.buffer((Sink) new Buffer());
+    BufferedSink sink = Okio.buffer((RawSink) new Buffer());
     assertTrue(sink.isOpen());
     sink.close();
     assertFalse(sink.isOpen());
@@ -66,7 +66,7 @@ public final class NioTest {
 
   @Test public void writableChannelBufferedSink() throws Exception {
     Buffer buffer = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) buffer);
+    BufferedSink bufferedSink = Okio.buffer((RawSink) buffer);
     testWritableByteChannel(bufferedSink);
     assertEquals("defghijklmnopqrstuvw", buffer.readUtf8());
   }
@@ -91,7 +91,7 @@ public final class NioTest {
 
   @Test public void readableChannelBufferedSource() throws Exception {
     Buffer buffer = new Buffer();
-    BufferedSource bufferedSource = Okio.buffer((Source) buffer);
+    BufferedSource bufferedSource = Okio.buffer((RawSource) buffer);
     buffer.writeUtf8("abcdefghijklmnopqrstuvwxyz");
 
     testReadableByteChannel(bufferedSource);

@@ -17,13 +17,13 @@ package okio
 
 import java.io.IOException
 
-/** A [Sink] which forwards calls to another. Useful for subclassing. */
+/** A [RawSink] which forwards calls to another. Useful for subclassing. */
 abstract class ForwardingSink(
-  /** [Sink] to which this instance is delegating. */
+  /** [RawSink] to which this instance is delegating. */
   @get:JvmName("delegate")
-  val delegate: Sink
-) : Sink {
-  // TODO 'Sink by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
+  val delegate: RawSink
+) : RawSink {
+  // TODO 'RawSink by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
   @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) = delegate.write(source, byteCount)

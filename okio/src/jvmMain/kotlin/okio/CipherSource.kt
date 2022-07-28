@@ -21,7 +21,7 @@ import javax.crypto.Cipher
 class CipherSource(
   private val source: BufferedSource,
   val cipher: Cipher
-) : Source {
+) : RawSource {
   private val blockSize = cipher.blockSize
   private val buffer = Buffer()
   private var final = false

@@ -19,7 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import okio.BufferedSource;
 import okio.Okio;
-import okio.Source;
+import okio.RawSource;
 
 public final class ReadJavaIoFileLineByLine {
   public void run() throws Exception {
@@ -27,7 +27,7 @@ public final class ReadJavaIoFileLineByLine {
   }
 
   public void readLines(File file) throws IOException {
-    try (Source fileSource = Okio.source(file);
+    try (RawSource fileSource = Okio.source(file);
          BufferedSource bufferedFileSource = Okio.buffer(fileSource)) {
 
       while (true) {

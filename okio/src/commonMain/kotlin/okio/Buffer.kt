@@ -113,7 +113,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
 
   override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
 
-  override fun write(source: Source, byteCount: Long): Buffer
+  override fun write(source: RawSource, byteCount: Long): Buffer
 
   override fun writeByte(b: Int): Buffer
 

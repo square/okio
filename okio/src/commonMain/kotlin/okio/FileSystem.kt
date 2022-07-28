@@ -204,7 +204,7 @@ expect abstract class FileSystem() {
    *     links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun source(file: Path): Source
+  abstract fun source(file: Path): RawSource
 
   /**
    * Creates a source to read [file], executes [readerAction] to read it, and then closes the
@@ -225,7 +225,7 @@ expect abstract class FileSystem() {
    *     a loop of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun sink(file: Path, mustCreate: Boolean = false): Sink
+  abstract fun sink(file: Path, mustCreate: Boolean = false): RawSink
 
   /**
    * Creates a sink to write [file], executes [writerAction] to write it, and then closes the sink.
@@ -253,7 +253,7 @@ expect abstract class FileSystem() {
    *     a loop of symbolic links, or if any name is too long.
    */
   @Throws(IOException::class)
-  abstract fun appendingSink(file: Path, mustExist: Boolean = false): Sink
+  abstract fun appendingSink(file: Path, mustExist: Boolean = false): RawSink
 
   /**
    * Creates a directory at the path identified by [dir].

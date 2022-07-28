@@ -29,7 +29,7 @@ internal interface BufferedSinkFactory {
 
     val REAL_BUFFERED_SINK: BufferedSinkFactory = object : BufferedSinkFactory {
       override fun create(data: Buffer): BufferedSink {
-        return (data as Sink).buffer()
+        return (data as RawSink).buffer()
       }
     }
   }

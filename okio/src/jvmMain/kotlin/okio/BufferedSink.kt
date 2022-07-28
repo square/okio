@@ -20,7 +20,7 @@ import java.io.OutputStream
 import java.nio.channels.WritableByteChannel
 import java.nio.charset.Charset
 
-actual sealed interface BufferedSink : Sink, WritableByteChannel {
+actual sealed interface BufferedSink : RawSink, WritableByteChannel {
   /** Returns this sink's internal buffer. */
   @Deprecated(
     message = "moved to val: use getBuffer() instead",
@@ -44,10 +44,10 @@ actual sealed interface BufferedSink : Sink, WritableByteChannel {
   actual fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
 
   @Throws(IOException::class)
-  actual fun writeAll(source: Source): Long
+  actual fun writeAll(source: RawSource): Long
 
   @Throws(IOException::class)
-  actual fun write(source: Source, byteCount: Long): BufferedSink
+  actual fun write(source: RawSource, byteCount: Long): BufferedSink
 
   @Throws(IOException::class)
   actual fun writeUtf8(string: String): BufferedSink

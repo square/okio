@@ -51,7 +51,7 @@ interface BufferedSourceFactory {
         val buffer = Buffer()
         return Pipe(
           buffer,
-          (buffer as Source).buffer()
+          (buffer as RawSource).buffer()
         )
       }
     }
@@ -70,7 +70,7 @@ interface BufferedSourceFactory {
         val buffer = Buffer()
         return Pipe(
           buffer,
-          object : Source by buffer {
+          object : RawSource by buffer {
             override fun read(sink: Buffer, byteCount: Long): Long {
               // Read one byte into a new buffer, then clone it so that the segment is shared.
               // Shared segments cannot be compacted so we'll get a long chain of short segments.
@@ -93,7 +93,7 @@ interface BufferedSourceFactory {
       override fun pipe(): Pipe {
         val buffer = Buffer()
         return Pipe(
-          object : Sink by buffer {
+          object : RawSink by buffer {
             override fun write(source: Buffer, byteCount: Long) {
               // Write each byte into a new buffer, then clone it so that the segments are shared.
               // Shared segments cannot be compacted so we'll get a long chain of short segments.
@@ -133,7 +133,7 @@ interface BufferedSourceFactory {
         val buffer = Buffer()
         return Pipe(
           buffer,
-          (buffer as Source).buffer().peek()
+          (buffer as RawSource).buffer().peek()
         )
       }
     }

@@ -29,8 +29,8 @@ import okio.REPLACEMENT_CODE_POINT
 import okio.Segment
 import okio.SegmentPool
 import okio.SegmentedByteString
-import okio.Sink
-import okio.Source
+import okio.RawSink
+import okio.RawSource
 import okio.and
 import okio.asUtf8ToByteArray
 import okio.checkOffsetAndCount
@@ -798,7 +798,7 @@ internal inline fun Buffer.commonReadFully(sink: Buffer, byteCount: Long) {
   sink.write(this, byteCount)
 }
 
-internal inline fun Buffer.commonReadAll(sink: Sink): Long {
+internal inline fun Buffer.commonReadAll(sink: RawSink): Long {
   val byteCount = size
   if (byteCount > 0L) {
     sink.write(this, byteCount)
@@ -1078,7 +1078,7 @@ internal inline fun Buffer.commonWriteUtf8CodePoint(codePoint: Int): Buffer {
   return this
 }
 
-internal inline fun Buffer.commonWriteAll(source: Source): Long {
+internal inline fun Buffer.commonWriteAll(source: RawSource): Long {
   var totalBytesRead = 0L
   while (true) {
     val readCount = source.read(this, Segment.SIZE.toLong())
@@ -1088,7 +1088,7 @@ internal inline fun Buffer.commonWriteAll(source: Source): Long {
   return totalBytesRead
 }
 
-internal inline fun Buffer.commonWrite(source: Source, byteCount: Long): Buffer {
+internal inline fun Buffer.commonWrite(source: RawSource, byteCount: Long): Buffer {
   var byteCount = byteCount
   while (byteCount > 0L) {
     val read = source.read(this, byteCount)

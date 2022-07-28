@@ -34,8 +34,8 @@ import okio.Buffer;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
-import okio.Sink;
-import okio.Source;
+import okio.RawSink;
+import okio.RawSource;
 
 /**
  * A partial implementation of SOCKS Protocol Version 5.
@@ -143,9 +143,9 @@ public final class SocksProxyServer {
           .emit();
 
       // Connect sources to sinks in both directions.
-      final Sink toSink = Okio.sink(toSocket);
+      final RawSink toSink = Okio.sink(toSocket);
       executor.execute(() -> transfer(fromSocket, fromSource, toSink));
-      final Source toSource = Okio.source(toSocket);
+      final RawSource toSource = Okio.source(toSocket);
       executor.execute(() -> transfer(toSocket, toSource, fromSink));
     } catch (IOException e) {
       closeQuietly(fromSocket);
@@ -158,7 +158,7 @@ public final class SocksProxyServer {
    * Read data from {@code source} and write it to {@code sink}. This doesn't use {@link
    * BufferedSink#writeAll} because that method doesn't flush aggressively and we need that.
    */
-  private void transfer(Socket sourceSocket, Source source, Sink sink) {
+  private void transfer(Socket sourceSocket, RawSource source, RawSink sink) {
     try {
       Buffer buffer = new Buffer();
       for (long byteCount; (byteCount = source.read(buffer, 8192L)) != -1; ) {

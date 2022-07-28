@@ -47,7 +47,7 @@ actual abstract class FileSystem {
     mustExist: Boolean
   ): FileHandle
 
-  actual abstract fun source(file: Path): Source
+  actual abstract fun source(file: Path): RawSource
 
   actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
     return source(file).buffer().use {
@@ -55,7 +55,7 @@ actual abstract class FileSystem {
     }
   }
 
-  actual abstract fun sink(file: Path, mustCreate: Boolean): Sink
+  actual abstract fun sink(file: Path, mustCreate: Boolean): RawSink
 
   actual inline fun <T> write(
     file: Path,
@@ -67,7 +67,7 @@ actual abstract class FileSystem {
     }
   }
 
-  actual abstract fun appendingSink(file: Path, mustExist: Boolean): Sink
+  actual abstract fun appendingSink(file: Path, mustExist: Boolean): RawSink
 
   actual abstract fun createDirectory(dir: Path, mustCreate: Boolean)
 

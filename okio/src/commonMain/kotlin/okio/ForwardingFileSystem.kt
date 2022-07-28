@@ -195,19 +195,19 @@ abstract class ForwardingFileSystem(
   }
 
   @Throws(IOException::class)
-  override fun source(file: Path): Source {
+  override fun source(file: Path): RawSource {
     val file = onPathParameter(file, "source", "file")
     return delegate.source(file)
   }
 
   @Throws(IOException::class)
-  override fun sink(file: Path, mustCreate: Boolean): Sink {
+  override fun sink(file: Path, mustCreate: Boolean): RawSink {
     val file = onPathParameter(file, "sink", "file")
     return delegate.sink(file, mustCreate)
   }
 
   @Throws(IOException::class)
-  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): RawSink {
     val file = onPathParameter(file, "appendingSink", "file")
     return delegate.appendingSink(file, mustExist)
   }

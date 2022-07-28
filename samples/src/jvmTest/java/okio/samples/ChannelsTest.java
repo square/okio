@@ -24,8 +24,8 @@ import java.util.Set;
 import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
-import okio.Sink;
-import okio.Source;
+import okio.RawSink;
+import okio.RawSource;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -55,7 +55,7 @@ public final class ChannelsTest {
     ReadableByteChannel channel = new Buffer().writeUtf8(quote);
 
     Buffer buffer = new Buffer();
-    Source source = new ByteChannelSource(channel);
+    RawSource source = new ByteChannelSource(channel);
     source.read(buffer, 75);
 
     assertThat(buffer.readUtf8())
@@ -73,7 +73,7 @@ public final class ChannelsTest {
   @Test public void testWriteChannel() throws Exception {
     Buffer channel = new Buffer();
 
-    Sink sink = new ByteChannelSink(channel);
+    RawSink sink = new ByteChannelSink(channel);
     sink.write(new Buffer().writeUtf8(quote), 75);
 
     assertThat(channel.readUtf8())
@@ -83,14 +83,14 @@ public final class ChannelsTest {
   @Test public void testReadWriteFile() throws Exception {
     java.nio.file.Path path = temporaryFolder.newFile().toPath();
 
-    Sink sink = new FileChannelSink(FileChannel.open(path, w));
+    RawSink sink = new FileChannelSink(FileChannel.open(path, w));
     sink.write(new Buffer().writeUtf8(quote), 317);
     sink.close();
     assertTrue(Files.exists(path));
     assertEquals(quote.length(), Files.size(path));
 
     Buffer buffer = new Buffer();
-    Source source = new FileChannelSource(FileChannel.open(path, r));
+    RawSource source = new FileChannelSource(FileChannel.open(path, r));
 
     source.read(buffer, 44);
     assertThat(buffer.readUtf8())
@@ -105,7 +105,7 @@ public final class ChannelsTest {
     java.nio.file.Path path = temporaryFolder.newFile().toPath();
 
     Buffer buffer = new Buffer().writeUtf8(quote);
-    Sink sink;
+    RawSink sink;
     BufferedSource source;
 
     sink = new FileChannelSink(FileChannel.open(path, w));

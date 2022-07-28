@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import okio.Buffer;
-import okio.Source;
+import okio.RawSource;
 
 /**
- * Special Source for a FileChannel to take advantage of the
+ * Special RawSource for a FileChannel to take advantage of the
  * {@link FileChannel#transferTo(long, long, WritableByteChannel) transfer} method available.
  */
-final class FileChannelSource implements Source {
+final class FileChannelSource implements RawSource {
   private final FileChannel channel;
   private long position;
 

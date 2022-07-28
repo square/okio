@@ -22,14 +22,14 @@ import kotlin.test.assertEquals
 class CommonOkioKotlinTest {
   @Test fun sourceBuffer() {
     val source = Buffer().writeUtf8("a")
-    val buffered = (source as Source).buffer()
+    val buffered = (source as RawSource).buffer()
     assertEquals(buffered.readUtf8(), "a")
     assertEquals(source.size, 0L)
   }
 
   @Test fun sinkBuffer() {
     val sink = Buffer()
-    val buffered = (sink as Sink).buffer()
+    val buffered = (sink as RawSink).buffer()
     buffered.writeUtf8("a")
     assertEquals(sink.size, 0L)
     buffered.flush()

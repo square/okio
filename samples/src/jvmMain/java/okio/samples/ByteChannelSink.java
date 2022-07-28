@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import okio.Buffer;
-import okio.Sink;
+import okio.RawSink;
 
 /**
  * Creates a Sink around a WritableByteChannel and efficiently writes data using an UnsafeCursor.
@@ -28,7 +28,7 @@ import okio.Sink;
  * {@link ByteBuffer#wrap(byte[], int, int) ByteBuffer.wrap()} along with access to Buffer segments,
  * a WritableByteChannel can be given direct access to Buffer data without having to copy the data.
  */
-final class ByteChannelSink implements Sink {
+final class ByteChannelSink implements RawSink {
   private final WritableByteChannel channel;
   private final Buffer.UnsafeCursor cursor = new Buffer.UnsafeCursor();
 

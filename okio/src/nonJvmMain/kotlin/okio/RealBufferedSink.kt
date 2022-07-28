@@ -37,7 +37,7 @@ import okio.internal.commonWriteUtf8
 import okio.internal.commonWriteUtf8CodePoint
 
 internal actual class RealBufferedSink actual constructor(
-  actual val sink: Sink
+  actual val sink: RawSink
 ) : BufferedSink {
   actual var closed: Boolean = false
   override val buffer = Buffer()
@@ -55,8 +55,8 @@ internal actual class RealBufferedSink actual constructor(
   override fun write(source: ByteArray, offset: Int, byteCount: Int) =
     commonWrite(source, offset, byteCount)
 
-  override fun writeAll(source: Source) = commonWriteAll(source)
-  override fun write(source: Source, byteCount: Long): BufferedSink = commonWrite(source, byteCount)
+  override fun writeAll(source: RawSource) = commonWriteAll(source)
+  override fun write(source: RawSource, byteCount: Long): BufferedSink = commonWrite(source, byteCount)
   override fun writeByte(b: Int) = commonWriteByte(b)
   override fun writeShort(s: Int) = commonWriteShort(s)
   override fun writeShortLe(s: Int) = commonWriteShortLe(s)

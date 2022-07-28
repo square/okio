@@ -23,14 +23,14 @@ import kotlin.test.assertEquals
 class GzipKotlinTest {
   @Test fun sink() {
     val data = Buffer()
-    val gzip = (data as Sink).gzip()
+    val gzip = (data as RawSink).gzip()
     gzip.buffer().writeUtf8("Hi!").close()
     assertEquals("1f8b0800000000000000f3c8540400dac59e7903000000", data.readByteString().hex())
   }
 
   @Test fun source() {
     val buffer = Buffer().write("1f8b0800000000000000f3c8540400dac59e7903000000".decodeHex())
-    val gzip = (buffer as Source).gzip()
+    val gzip = (buffer as RawSource).gzip()
     assertEquals("Hi!", gzip.buffer().readUtf8())
   }
 }

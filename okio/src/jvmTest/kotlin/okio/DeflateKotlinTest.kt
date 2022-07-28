@@ -25,27 +25,27 @@ import kotlin.test.assertEquals
 class DeflateKotlinTest {
   @Test fun deflate() {
     val data = Buffer()
-    val deflater = (data as Sink).deflate()
+    val deflater = (data as RawSink).deflate()
     deflater.buffer().writeUtf8("Hi!").close()
     assertEquals("789cf3c854040001ce00d3", data.readByteString().hex())
   }
 
   @Test fun deflateWithDeflater() {
     val data = Buffer()
-    val deflater = (data as Sink).deflate(Deflater(0, true))
+    val deflater = (data as RawSink).deflate(Deflater(0, true))
     deflater.buffer().writeUtf8("Hi!").close()
     assertEquals("010300fcff486921", data.readByteString().hex())
   }
 
   @Test fun inflate() {
     val buffer = Buffer().write("789cf3c854040001ce00d3".decodeHex())
-    val inflated = (buffer as Source).inflate()
+    val inflated = (buffer as RawSource).inflate()
     assertEquals("Hi!", inflated.buffer().readUtf8())
   }
 
   @Test fun inflateWithInflater() {
     val buffer = Buffer().write("010300fcff486921".decodeHex())
-    val inflated = (buffer as Source).inflate(Inflater(true))
+    val inflated = (buffer as RawSource).inflate(Inflater(true))
     assertEquals("Hi!", inflated.buffer().readUtf8())
   }
 }

@@ -38,17 +38,17 @@ class Pipe(internal val maxBufferSize: Long) {
   internal var canceled = false
   internal var sinkClosed = false
   internal var sourceClosed = false
-  internal var foldedSink: Sink? = null
+  internal var foldedSink: RawSink? = null
 
   init {
     require(maxBufferSize >= 1L) { "maxBufferSize < 1: $maxBufferSize" }
   }
 
   @get:JvmName("sink")
-  val sink = object : Sink {
+  val sink = object : RawSink {
     override fun write(source: Buffer, byteCount: Long) {
       var byteCount = byteCount
-      var delegate: Sink? = null
+      var delegate: RawSink? = null
       synchronized(buffer) {
         check(!sinkClosed) { "closed" }
         if (canceled) throw IOException("canceled")
@@ -79,7 +79,7 @@ class Pipe(internal val maxBufferSize: Long) {
     }
 
     override fun flush() {
-      var delegate: Sink? = null
+      var delegate: RawSink? = null
       synchronized(buffer) {
         check(!sinkClosed) { "closed" }
         if (canceled) throw IOException("canceled")
@@ -98,7 +98,7 @@ class Pipe(internal val maxBufferSize: Long) {
     }
 
     override fun close() {
-      var delegate: Sink? = null
+      var delegate: RawSink? = null
       synchronized(buffer) {
         if (sinkClosed) return
 
@@ -121,7 +121,7 @@ class Pipe(internal val maxBufferSize: Long) {
   }
 
   @get:JvmName("source")
-  val source = object : Source {
+  val source = object : RawSource {
     override fun read(sink: Buffer, byteCount: Long): Long {
       synchronized(buffer) {
         check(!sourceClosed) { "closed" }
@@ -160,7 +160,7 @@ class Pipe(internal val maxBufferSize: Long) {
    * however, to call this while concurrently writing this pipe's sink.
    */
   @Throws(IOException::class)
-  fun fold(sink: Sink) {
+  fun fold(sink: RawSink) {
     while (true) {
       // Either the buffer is empty and we can swap and return. Or the buffer is non-empty and we
       // must copy it to sink without holding any locks, then try it all again.
@@ -206,7 +206,7 @@ class Pipe(internal val maxBufferSize: Long) {
     }
   }
 
-  private inline fun Sink.forward(block: Sink.() -> Unit) {
+  private inline fun RawSink.forward(block: RawSink.() -> Unit) {
     block()
   }
 

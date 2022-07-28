@@ -177,10 +177,10 @@ class CipherSourceTest(private val cipherAlgorithm: CipherAlgorithm) {
     assertArrayEquals(expectedData, actualData)
   }
 
-  private fun Source.emitSingleBytes(): Source =
+  private fun RawSource.emitSingleBytes(): RawSource =
     SingleByteSource(this)
 
-  private class SingleByteSource(source: Source) : ForwardingSource(source) {
+  private class SingleByteSource(source: RawSource) : ForwardingSource(source) {
     override fun read(sink: Buffer, byteCount: Long): Long =
       delegate.read(sink, 1L)
   }

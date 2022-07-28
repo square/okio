@@ -32,7 +32,7 @@ package okio
  * ByteString hash = hashingSource.hash();
  * ```
  */
-expect class HashingSource : Source {
+expect class HashingSource : RawSource {
 
   /**
    * Returns the hash of the bytes supplied thus far and resets the internal state of this source.
@@ -48,28 +48,28 @@ expect class HashingSource : Source {
      *
      * MD5 has been vulnerable to collisions since 2004. It should not be used in new code.
      */
-    fun md5(source: Source): HashingSource
+    fun md5(source: RawSource): HashingSource
 
     /**
      * Returns a source that uses the obsolete SHA-1 hash algorithm to produce 160-bit hashes.
      *
      * SHA-1 has been vulnerable to collisions since 2017. It should not be used in new code.
      */
-    fun sha1(source: Source): HashingSource
+    fun sha1(source: RawSource): HashingSource
 
     /** Returns a source that uses the SHA-256 hash algorithm to produce 256-bit hashes. */
-    fun sha256(source: Source): HashingSource
+    fun sha256(source: RawSource): HashingSource
 
     /** Returns a source that uses the SHA-512 hash algorithm to produce 512-bit hashes. */
-    fun sha512(source: Source): HashingSource
+    fun sha512(source: RawSource): HashingSource
 
     /** Returns a source that uses the obsolete SHA-1 HMAC algorithm to produce 160-bit hashes. */
-    fun hmacSha1(source: Source, key: ByteString): HashingSource
+    fun hmacSha1(source: RawSource, key: ByteString): HashingSource
 
     /** Returns a source that uses the SHA-256 HMAC algorithm to produce 256-bit hashes. */
-    fun hmacSha256(source: Source, key: ByteString): HashingSource
+    fun hmacSha256(source: RawSource, key: ByteString): HashingSource
 
     /** Returns a source that uses the SHA-512 HMAC algorithm to produce 512-bit hashes. */
-    fun hmacSha512(source: Source, key: ByteString): HashingSource
+    fun hmacSha512(source: RawSource, key: ByteString): HashingSource
   }
 }

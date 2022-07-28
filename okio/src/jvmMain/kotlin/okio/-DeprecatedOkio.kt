@@ -43,7 +43,7 @@ object `-DeprecatedOkio` {
     ),
     level = DeprecationLevel.ERROR
   )
-  fun buffer(sink: Sink) = sink.buffer()
+  fun buffer(sink: RawSink) = sink.buffer()
 
   @Deprecated(
     message = "moved to extension function",
@@ -53,7 +53,7 @@ object `-DeprecatedOkio` {
     ),
     level = DeprecationLevel.ERROR
   )
-  fun buffer(source: Source) = source.buffer()
+  fun buffer(source: RawSource) = source.buffer()
 
   @Deprecated(
     message = "moved to extension function",

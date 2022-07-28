@@ -54,7 +54,7 @@ actual abstract class FileSystem {
   ): FileHandle
 
   @Throws(IOException::class)
-  actual abstract fun source(file: Path): Source
+  actual abstract fun source(file: Path): RawSource
 
   @Throws(IOException::class)
   actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
@@ -64,7 +64,7 @@ actual abstract class FileSystem {
   }
 
   @Throws(IOException::class)
-  actual abstract fun sink(file: Path, mustCreate: Boolean): Sink
+  actual abstract fun sink(file: Path, mustCreate: Boolean): RawSink
 
   @Throws(IOException::class)
   actual inline fun <T> write(
@@ -78,7 +78,7 @@ actual abstract class FileSystem {
   }
 
   @Throws(IOException::class)
-  actual abstract fun appendingSink(file: Path, mustExist: Boolean): Sink
+  actual abstract fun appendingSink(file: Path, mustExist: Boolean): RawSink
 
   @Throws(IOException::class)
   actual abstract fun createDirectory(dir: Path, mustCreate: Boolean)

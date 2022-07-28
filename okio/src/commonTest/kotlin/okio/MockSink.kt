@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /** A scriptable sink. Like Mockito, but worse and requiring less configuration.  */
-class MockSink : Sink {
+class MockSink : RawSink {
   private val log = mutableListOf<String>()
   private val callThrows = mutableMapOf<Int, IOException>()
 

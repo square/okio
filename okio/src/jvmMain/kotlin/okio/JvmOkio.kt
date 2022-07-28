@@ -38,11 +38,11 @@ import okio.internal.ResourceFileSystem
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /** Returns a sink that writes to `out`. */
-fun OutputStream.sink(): Sink = OutputStreamSink(this)
+fun OutputStream.sink(): RawSink = OutputStreamSink(this)
 
 private open class OutputStreamSink(
   private val out: OutputStream,
-) : Sink {
+) : RawSink {
 
   override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
@@ -76,11 +76,11 @@ private open class OutputStreamSink(
 }
 
 /** Returns a source that reads from `in`. */
-fun InputStream.source(): Source = InputStreamSource(this)
+fun InputStream.source(): RawSource = InputStreamSource(this)
 
 private open class InputStreamSource(
   private val input: InputStream,
-) : Source {
+) : RawSource {
 
   override fun read(sink: Buffer, byteCount: Long): Long {
     if (byteCount == 0L) return 0L
@@ -121,7 +121,7 @@ private open class InputStreamSource(
  * write times out, the socket is asynchronously closed by a watchdog thread.
  */
 @Throws(IOException::class)
-fun Socket.sink(): Sink {
+fun Socket.sink(): RawSink {
   return object : OutputStreamSink(getOutputStream()) {
     override fun cancel() {
       this@sink.close()
@@ -135,7 +135,7 @@ fun Socket.sink(): Sink {
  * read times out, the socket is asynchronously closed by a watchdog thread.
  */
 @Throws(IOException::class)
-fun Socket.source(): Source {
+fun Socket.source(): RawSource {
   return object : InputStreamSource(getInputStream()) {
     override fun cancel() {
       this@source.close()
@@ -148,26 +148,26 @@ private val logger = Logger.getLogger("okio.Okio")
 /** Returns a sink that writes to `file`. */
 @JvmOverloads
 @Throws(FileNotFoundException::class)
-fun File.sink(append: Boolean = false): Sink = FileOutputStream(this, append).sink()
+fun File.sink(append: Boolean = false): RawSink = FileOutputStream(this, append).sink()
 
 /** Returns a sink that writes to `file`. */
 @Throws(FileNotFoundException::class)
-fun File.appendingSink(): Sink = FileOutputStream(this, true).sink()
+fun File.appendingSink(): RawSink = FileOutputStream(this, true).sink()
 
 /** Returns a source that reads from `file`. */
 @Throws(FileNotFoundException::class)
-fun File.source(): Source = InputStreamSource(inputStream())
+fun File.source(): RawSource = InputStreamSource(inputStream())
 
 /** Returns a source that reads from `path`. */
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
-fun NioPath.sink(vararg options: OpenOption): Sink =
+fun NioPath.sink(vararg options: OpenOption): RawSink =
   Files.newOutputStream(this, *options).sink()
 
 /** Returns a sink that writes to `path`. */
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
-fun NioPath.source(vararg options: OpenOption): Source =
+fun NioPath.source(vararg options: OpenOption): RawSource =
   Files.newInputStream(this, *options).source()
 
 /**
@@ -175,34 +175,34 @@ fun NioPath.source(vararg options: OpenOption): Source =
  *
  * @throws IllegalArgumentException if [cipher] isn't a block cipher.
  */
-fun Sink.cipherSink(cipher: Cipher): CipherSink = CipherSink(this.buffer(), cipher)
+fun RawSink.cipherSink(cipher: Cipher): CipherSink = CipherSink(this.buffer(), cipher)
 
 /**
  * Returns a source that uses [cipher] to encrypt or decrypt [this].
  *
  * @throws IllegalArgumentException if [cipher] isn't a block cipher.
  */
-fun Source.cipherSource(cipher: Cipher): CipherSource = CipherSource(this.buffer(), cipher)
+fun RawSource.cipherSource(cipher: Cipher): CipherSource = CipherSource(this.buffer(), cipher)
 
 /**
  * Returns a sink that uses [mac] to hash [this].
  */
-fun Sink.hashingSink(mac: Mac): HashingSink = HashingSink(this, mac)
+fun RawSink.hashingSink(mac: Mac): HashingSink = HashingSink(this, mac)
 
 /**
  * Returns a source that uses [mac] to hash [this].
  */
-fun Source.hashingSource(mac: Mac): HashingSource = HashingSource(this, mac)
+fun RawSource.hashingSource(mac: Mac): HashingSource = HashingSource(this, mac)
 
 /**
  * Returns a sink that uses [digest] to hash [this].
  */
-fun Sink.hashingSink(digest: MessageDigest): HashingSink = HashingSink(this, digest)
+fun RawSink.hashingSink(digest: MessageDigest): HashingSink = HashingSink(this, digest)
 
 /**
  * Returns a source that uses [digest] to hash [this].
  */
-fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
+fun RawSource.hashingSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
 
 @Throws(IOException::class)
 fun FileSystem.openZip(zipPath: Path): FileSystem = okio.internal.openZip(zipPath, this)

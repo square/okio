@@ -132,7 +132,7 @@ class Throttler internal constructor(
   }
 
   /** Create a Source which honors this Throttler.  */
-  fun source(source: Source): Source {
+  fun source(source: RawSource): RawSource {
     return object : ForwardingSource(source) {
       override fun read(sink: Buffer, byteCount: Long): Long {
         try {
@@ -147,7 +147,7 @@ class Throttler internal constructor(
   }
 
   /** Create a Sink which honors this Throttler.  */
-  fun sink(sink: Sink): Sink {
+  fun sink(sink: RawSink): RawSink {
     return object : ForwardingSink(sink) {
       @Throws(IOException::class)
       override fun write(source: Buffer, byteCount: Long) {

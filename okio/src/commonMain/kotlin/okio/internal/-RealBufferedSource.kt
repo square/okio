@@ -27,7 +27,7 @@ import okio.Options
 import okio.PeekSource
 import okio.RealBufferedSource
 import okio.Segment
-import okio.Sink
+import okio.RawSink
 import okio.buffer
 import okio.checkOffsetAndCount
 
@@ -151,7 +151,7 @@ internal inline fun RealBufferedSource.commonReadFully(sink: Buffer, byteCount: 
   buffer.readFully(sink, byteCount)
 }
 
-internal inline fun RealBufferedSource.commonReadAll(sink: Sink): Long {
+internal inline fun RealBufferedSource.commonReadAll(sink: RawSink): Long {
   var totalBytesWritten: Long = 0
   while (source.read(buffer, Segment.SIZE.toLong()) != -1L) {
     val emitByteCount = buffer.completeSegmentByteCount()

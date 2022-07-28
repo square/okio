@@ -68,7 +68,7 @@ public final class BufferedSourceTest {
         Buffer buffer = new Buffer();
         Pipe result = new Pipe();
         result.sink = buffer;
-        result.source = Okio.buffer((Source) buffer);
+        result.source = Okio.buffer((RawSource) buffer);
         return result;
       }
 
@@ -163,7 +163,7 @@ public final class BufferedSourceTest {
         Buffer buffer = new Buffer();
         Pipe result = new Pipe();
         result.sink = buffer;
-        result.source = Okio.buffer((Source) buffer).peek();
+        result.source = Okio.buffer((RawSource) buffer).peek();
         return result;
       }
 

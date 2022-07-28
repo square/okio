@@ -62,8 +62,8 @@ object TestUtil {
   }
 
   @JvmStatic
-  fun randomSource(size: Long): Source {
-    return object : Source {
+  fun randomSource(size: Long): RawSource {
+    return object : RawSource {
       internal var random = Random(0)
       internal var bytesLeft = size
       internal var closed: Boolean = false

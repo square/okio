@@ -17,7 +17,7 @@ package okio
 
 internal class FileSource(
   private val fd: Number
-) : Source {
+) : RawSource {
   private var position_ = 0L
   private var closed = false
 

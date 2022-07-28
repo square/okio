@@ -58,7 +58,7 @@ actual abstract class FileSystem {
     openReadWrite(file, mustCreate = false, mustExist = false)
 
   @Throws(IOException::class)
-  actual abstract fun source(file: Path): Source
+  actual abstract fun source(file: Path): RawSource
 
   @Throws(IOException::class)
   @JvmName("-read")
@@ -69,10 +69,10 @@ actual abstract class FileSystem {
   }
 
   @Throws(IOException::class)
-  actual abstract fun sink(file: Path, mustCreate: Boolean): Sink
+  actual abstract fun sink(file: Path, mustCreate: Boolean): RawSink
 
   @Throws(IOException::class)
-  fun sink(file: Path): Sink = sink(file, mustCreate = false)
+  fun sink(file: Path): RawSink = sink(file, mustCreate = false)
 
   @Throws(IOException::class)
   @JvmName("-write")
@@ -83,10 +83,10 @@ actual abstract class FileSystem {
   }
 
   @Throws(IOException::class)
-  actual abstract fun appendingSink(file: Path, mustExist: Boolean): Sink
+  actual abstract fun appendingSink(file: Path, mustExist: Boolean): RawSink
 
   @Throws(IOException::class)
-  fun appendingSink(file: Path): Sink = appendingSink(file, mustExist = false)
+  fun appendingSink(file: Path): RawSink = appendingSink(file, mustExist = false)
 
   @Throws(IOException::class)
   actual abstract fun createDirectory(dir: Path, mustCreate: Boolean)

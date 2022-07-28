@@ -20,7 +20,7 @@ import java.util.Random;
 import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
-import okio.Source;
+import okio.RawSource;
 
 public final class Randoms {
   public void run() throws IOException, InterruptedException {
@@ -29,7 +29,7 @@ public final class Randoms {
     System.out.println(source.readUtf8());
   }
 
-  static final class RandomSource implements Source {
+  static final class RandomSource implements RawSource {
     private final Random random;
     private long bytesLeft;
 

@@ -27,7 +27,7 @@ import platform.posix.fflush
 /** Writes bytes to a file as a sink. */
 internal class FileSink(
   private val file: CPointer<FILE>
-) : Sink {
+) : RawSink {
   private val unsafeCursor = UnsafeCursor()
   private var closed = false
 

@@ -99,19 +99,19 @@ internal actual fun PosixFileSystem.variantMove(
   }
 }
 
-internal actual fun PosixFileSystem.variantSource(file: Path): Source {
+internal actual fun PosixFileSystem.variantSource(file: Path): RawSource {
   val openFile: CPointer<FILE> = fopen(file.toString(), "r")
     ?: throw errnoToIOException(errno)
   return FileSource(openFile)
 }
 
-internal actual fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): Sink {
+internal actual fun PosixFileSystem.variantSink(file: Path, mustCreate: Boolean): RawSink {
   val openFile: CPointer<FILE> = fopen(file.toString(), if (mustCreate) "wx" else "w")
     ?: throw errnoToIOException(errno)
   return FileSink(openFile)
 }
 
-internal actual fun PosixFileSystem.variantAppendingSink(file: Path, mustExist: Boolean): Sink {
+internal actual fun PosixFileSystem.variantAppendingSink(file: Path, mustExist: Boolean): RawSink {
   // There is a `r+` flag which we could have used to force existence of [file] but this flag
   // doesn't allow opening for appending, and we don't currently have a way to move the cursor to
   // the end of the file. We are then forcing existence non-atomically.

@@ -34,7 +34,7 @@ package okio
  * for primitive values, a `BufferedOutputStream` for buffering, and `OutputStreamWriter` for
  * charset encoding. This library uses `BufferedSink` for all of the above.
  *
- * Sink is also easier to layer: there is no [write()][java.io.OutputStream.write] method that is
+ * RawSink is also easier to layer: there is no [write()][java.io.OutputStream.write] method that is
  * awkward to implement efficiently.
  *
  * ### Interop with OutputStream
@@ -42,7 +42,7 @@ package okio
  * Use [sink] to adapt an `OutputStream` to a sink. Use [outputStream()][BufferedSink.outputStream]
  * to adapt a sink to an `OutputStream`.
  */
-expect interface Sink : Closeable {
+expect interface RawSink : Closeable {
   /** Removes `byteCount` bytes from `source` and appends them to this.  */
   @Throws(IOException::class)
   fun write(source: Buffer, byteCount: Long)
@@ -56,7 +56,7 @@ expect interface Sink : Closeable {
    * with an [IOException], and any future writes and flushes should also immediately fail with an
    * [IOException].
    *
-   * Note that it is always necessary to call [close] on a Sink, even if it has been canceled.
+   * Note that it is always necessary to call [close] on a sink, even if it has been canceled.
    */
   fun cancel()
 

@@ -187,7 +187,7 @@ class PipeKotlinTest {
     pipeSink.emit()
 
     val ultimateSink = Buffer()
-    val unnecessaryWrapper = (ultimateSink as Sink).buffer()
+    val unnecessaryWrapper = (ultimateSink as RawSink).buffer()
 
     pipe.fold(unnecessaryWrapper)
 
@@ -199,7 +199,7 @@ class PipeKotlinTest {
     val pipe = Pipe(128)
 
     val ultimateSink = Buffer()
-    val unnecessaryWrapper = (ultimateSink as Sink).buffer()
+    val unnecessaryWrapper = (ultimateSink as RawSink).buffer()
     unnecessaryWrapper.writeUtf8("hello")
 
     pipe.fold(unnecessaryWrapper)

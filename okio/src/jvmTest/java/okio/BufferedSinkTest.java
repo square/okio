@@ -53,7 +53,7 @@ public final class BufferedSinkTest {
 
     Factory REAL_BUFFERED_SINK = new Factory() {
       @Override public BufferedSink create(Buffer data) {
-        return Okio.buffer((Sink) data);
+        return Okio.buffer((RawSink) data);
       }
 
       @Override public String toString() {
@@ -233,14 +233,14 @@ public final class BufferedSinkTest {
     Buffer source = new Buffer().writeUtf8("abcdef");
 
     // Force resolution of the Source method overload.
-    sink.write((Source) source, 4);
+    sink.write((RawSource) source, 4);
     sink.flush();
     assertEquals("abcd", data.readUtf8());
     assertEquals("ef", source.readUtf8());
   }
 
   @Test public void writeSourceReadsFully() throws Exception {
-    Source source = new ForwardingSource(new Buffer()) {
+    RawSource source = new ForwardingSource(new Buffer()) {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         sink.writeUtf8("abcd");
         return 4;
@@ -253,7 +253,7 @@ public final class BufferedSinkTest {
   }
 
   @Test public void writeSourcePropagatesEof() throws IOException {
-    Source source = new Buffer().writeUtf8("abcd");
+    RawSource source = new Buffer().writeUtf8("abcd");
 
     try {
       sink.write(source, 8);
@@ -270,7 +270,7 @@ public final class BufferedSinkTest {
     // This test ensures that a zero byte count never calls through to read the source. It may be
     // tied to something like a socket which will potentially block trying to read a segment when
     // ultimately we don't want any data.
-    Source source = new ForwardingSource(new Buffer()) {
+    RawSource source = new ForwardingSource(new Buffer()) {
       @Override public long read(Buffer sink, long byteCount) throws IOException {
         throw new AssertionError();
       }

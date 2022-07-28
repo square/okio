@@ -43,7 +43,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
-import okio.Sink;
+import okio.RawSink;
 
 import static java.util.Objects.requireNonNull;
 
@@ -303,7 +303,7 @@ public class BufferPerformanceBenchmark {
   }
 
   @SuppressWarnings("resource")
-  private static final Sink NullSink = new Sink() {
+  private static final RawSink NullSink = new RawSink() {
 
     @Override public void write(Buffer source, long byteCount) throws EOFException {
       source.skip(byteCount);

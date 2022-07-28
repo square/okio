@@ -140,17 +140,17 @@ object NodeJsFileSystem : FileSystem() {
     return NodeJsFileHandle(fd, readWrite = true)
   }
 
-  override fun source(file: Path): Source {
+  override fun source(file: Path): RawSource {
     val fd = openFd(file, flags = "r")
     return FileSource(fd)
   }
 
-  override fun sink(file: Path, mustCreate: Boolean): Sink {
+  override fun sink(file: Path, mustCreate: Boolean): RawSink {
     val fd = openFd(file, flags = if (mustCreate) "wx" else "w")
     return FileSink(fd)
   }
 
-  override fun appendingSink(file: Path, mustExist: Boolean): Sink {
+  override fun appendingSink(file: Path, mustExist: Boolean): RawSink {
     // There is a `r+` flag which we could have used to force existence of [file] but this flag
     // doesn't allow opening for appending, and we don't currently have a way to move the cursor to
     // the end of the file. We are then forcing existence non-atomically.

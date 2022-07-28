@@ -32,7 +32,7 @@ class InflaterSource
  * This internal constructor shares a buffer with its trusted caller. In general we can't share a
  * `BufferedSource` because the inflater holds input bytes until they are inflated.
  */
-internal constructor(private val source: BufferedSource, private val inflater: Inflater) : Source {
+internal constructor(private val source: BufferedSource, private val inflater: Inflater) : RawSource {
 
   /**
    * When we call Inflater.setInput(), the inflater keeps our byte array until it needs input again.
@@ -41,7 +41,7 @@ internal constructor(private val source: BufferedSource, private val inflater: I
   private var bufferBytesHeldByInflater = 0
   private var closed = false
 
-  constructor(source: Source, inflater: Inflater) : this(source.buffer(), inflater)
+  constructor(source: RawSource, inflater: Inflater) : this(source.buffer(), inflater)
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {
@@ -140,9 +140,9 @@ internal constructor(private val source: BufferedSource, private val inflater: I
 }
 
 /**
- * Returns an [InflaterSource] that DEFLATE-decompresses this [Source] while reading.
+ * Returns an [InflaterSource] that DEFLATE-decompresses this [RawSource] while reading.
  *
  * @see InflaterSource
  */
-inline fun Source.inflate(inflater: Inflater = Inflater()): InflaterSource =
+inline fun RawSource.inflate(inflater: Inflater = Inflater()): InflaterSource =
   InflaterSource(this, inflater)

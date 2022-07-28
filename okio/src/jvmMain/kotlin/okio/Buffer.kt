@@ -292,7 +292,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   override fun readFully(sink: Buffer, byteCount: Long): Unit = commonReadFully(sink, byteCount)
 
   @Throws(IOException::class)
-  override fun readAll(sink: Sink): Long = commonReadAll(sink)
+  override fun readAll(sink: RawSink): Long = commonReadAll(sink)
 
   override fun readUtf8() = readString(size, Charsets.UTF_8)
 
@@ -432,10 +432,10 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   @Throws(IOException::class)
-  override fun writeAll(source: Source): Long = commonWriteAll(source)
+  override fun writeAll(source: RawSource): Long = commonWriteAll(source)
 
   @Throws(IOException::class)
-  actual override fun write(source: Source, byteCount: Long): Buffer =
+  actual override fun write(source: RawSource, byteCount: Long): Buffer =
     commonWrite(source, byteCount)
 
   actual override fun writeByte(b: Int): Buffer = commonWriteByte(b)

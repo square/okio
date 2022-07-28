@@ -19,7 +19,7 @@ package okio
  * A sink that keeps a buffer internally so that callers can do small writes without a performance
  * penalty.
  */
-expect sealed interface BufferedSink : Sink {
+expect sealed interface BufferedSink : RawSink {
   /** This sink's internal buffer. */
   val buffer: Buffer
 
@@ -37,10 +37,10 @@ expect sealed interface BufferedSink : Sink {
    * Removes all bytes from `source` and appends them to this sink. Returns the number of bytes read
    * which will be 0 if `source` is exhausted.
    */
-  fun writeAll(source: Source): Long
+  fun writeAll(source: RawSource): Long
 
   /** Removes `byteCount` bytes from `source` and appends them to this sink. */
-  fun write(source: Source, byteCount: Long): BufferedSink
+  fun write(source: RawSource, byteCount: Long): BufferedSink
 
   /**
    * Encodes `string` in UTF-8 and writes it to this sink.

@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import okio.Buffer;
-import okio.Sink;
+import okio.RawSink;
 
 /**
  * Special Sink for a FileChannel to take advantage of the
  * {@link FileChannel#transferFrom(ReadableByteChannel, long, long) transfer} method available.
  */
-final class FileChannelSink implements Sink {
+final class FileChannelSink implements RawSink {
   private final FileChannel channel;
 
   private long position;
