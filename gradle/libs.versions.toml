@@ -1,0 +1,31 @@
+[versions]
+jmh = "1.33"
+ktlint = "0.42.1"
+
+[libraries]
+android-gradle-plugin = { module = "com.android.tools.build:gradle", version = "4.2.2" }
+android-desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version = "1.1.5" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version = "1.1.3" }
+androidx-test-runner = { module = "androidx.test:runner", version = "1.4.0" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit" }
+kotlin-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.3.2" }
+jmh-gradle-plugin = { module = "me.champeau.gradle:jmh-gradle-plugin", version = "0.5.3" }
+jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
+jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
+animalSniffer-gradle-plugin = { module = "ru.vyarus:gradle-animalsniffer-plugin", version = "1.5.3" }
+animalSniffer-annotations = { module = "org.codehaus.mojo:animal-sniffer-annotations", version = "1.20" }
+animalSniffer-android-signature = { module = "net.sf.androidscents.signature:android-api-level-15", version = "4.0.3_r5@signature" }
+animalSniffer-java-signature = { module = "org.codehaus.mojo.signature:java17", version = "1.0@signature" }
+japicmp = { module = "me.champeau.gradle:japicmp-gradle-plugin", version = "0.3.0" }
+dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.5.31" }
+shadow = { module = "gradle.plugin.com.github.johnrengelman:shadow", version = "7.1.0" }
+spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "5.16.0" }
+bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.0.0" }
+guava = { module = "com.google.guava:guava", version = "31.0.1-jre" }
+vanniktech-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.18.0" }
+test-junit = { module = "junit:junit", version = "4.13.2" }
+test-assertj = { module = "org.assertj:assertj-core", version = "3.21.0" }
+
+[plugins]
+# zipline-kotlin = { id = "app.cash.zipline.kotlin" }

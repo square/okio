@@ -38,10 +38,10 @@ kotlin {
 
     commonMain {
       dependencies {
-        api(deps.kotlin.time)
-        api(project(":okio"))
-        api(deps.kotlin.test)
-        implementation(project(":okio-fakefilesystem"))
+        api(libs.kotlin.time)
+        api(projects.okio)
+        api(libs.kotlin.test)
+        implementation(projects.okioFakefilesystem)
       }
     }
     getByName("jvmMain") {
@@ -49,7 +49,7 @@ kotlin {
         // On the JVM the kotlin-test library resolves to one of three implementations based on
         // which testing framework is in use. JUnit is used downstream, but Gradle can't know that
         // here and thus fails to select a variant automatically. Declare it manually instead.
-        api(deps.kotlin.testJunit)
+        api(libs.kotlin.test.junit)
       }
     }
     if (kmpNativeEnabled) {

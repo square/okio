@@ -14,13 +14,13 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
-        implementation(project(":okio"))
+        implementation(projects.okio)
       }
     }
     val jvmTest by getting {
       dependencies {
-        implementation(deps.test.junit)
-        implementation(deps.test.assertj)
+        implementation(libs.test.junit)
+        implementation(libs.test.assertj)
       }
     }
   }

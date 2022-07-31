@@ -5,10 +5,10 @@ plugins {
 
 dependencies {
   constraints {
-    api(project(":okio"))
-    api(project(":okio-fakefilesystem"))
+    api(projects.okio)
+    api(projects.okioFakefilesystem)
     if (kmpJsEnabled) {
-      api(project(":okio-nodefilesystem"))
+      api(projects.okioNodefilesystem)
     }
   }
 }

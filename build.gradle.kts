@@ -19,17 +19,17 @@ plugins {
 
 buildscript {
   dependencies {
-    classpath(deps.android.gradlePlugin)
-    classpath(deps.animalSniffer.gradlePlugin)
-    classpath(deps.japicmp)
-    classpath(deps.dokka)
-    classpath(deps.shadow)
-    classpath(deps.jmh.gradlePlugin)
-    classpath(deps.spotless)
-    classpath(deps.bnd)
+    classpath(libs.android.gradle.plugin)
+    classpath(libs.animalSniffer.gradle.plugin)
+    classpath(libs.japicmp)
+    classpath(libs.dokka)
+    classpath(libs.shadow)
+    classpath(libs.jmh.gradle.plugin)
+    classpath(libs.spotless)
+    classpath(libs.bnd)
     // https://github.com/melix/japicmp-gradle-plugin/issues/36
-    classpath(deps.guava)
-    classpath(deps.vanniktechPublishPlugin)
+    classpath(libs.guava)
+    classpath(libs.vanniktech.publish.plugin)
   }
 
   repositories {
@@ -150,7 +150,7 @@ subprojects {
   configure<SpotlessExtension> {
     kotlin {
       target("**/*.kt")
-      ktlint(versions.ktlint).userData(mapOf("indent_size" to "2"))
+      ktlint(libs.versions.ktlint.get()).userData(mapOf("indent_size" to "2"))
       trimTrailingWhitespace()
       endWithNewline()
     }

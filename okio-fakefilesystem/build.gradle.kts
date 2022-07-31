@@ -41,8 +41,8 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
-        api(deps.kotlin.time)
-        api(project(":okio"))
+        api(libs.kotlin.time)
+        api(projects.okio)
       }
     }
   }
@@ -72,8 +72,8 @@ configure<AnimalSnifferExtension> {
 val signature: Configuration by configurations
 
 dependencies {
-  signature(deps.animalSniffer.androidSignature)
-  signature(deps.animalSniffer.javaSignature)
+  signature(libs.animalSniffer.android.signature.get())
+  signature(libs.animalSniffer.java.signature.get())
 }
 
 configure<MavenPublishBaseExtension> {
