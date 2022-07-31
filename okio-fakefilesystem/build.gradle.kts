@@ -72,8 +72,8 @@ configure<AnimalSnifferExtension> {
 val signature: Configuration by configurations
 
 dependencies {
-  signature(libs.animalSniffer.android.signature.get())
-  signature(libs.animalSniffer.java.signature.get())
+  signature(variantOf(libs.animalSniffer.android) { artifactType("signature") })
+  signature(variantOf(libs.animalSniffer.java) { artifactType("signature") })
 }
 
 configure<MavenPublishBaseExtension> {
