@@ -8,7 +8,8 @@ dependencies {
     api(projects.okio)
     api(projects.okioFakefilesystem)
     if (kmpJsEnabled) {
-      api(projects.okioNodefilesystem)
+      // No typesafe project accessor as the accessor won't exist if kmpJs is not enabled.
+      api(project(":okio-nodefilesystem"))
     }
   }
 }
