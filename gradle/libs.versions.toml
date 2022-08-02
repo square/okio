@@ -21,7 +21,7 @@ japicmp = { module = "me.champeau.gradle:japicmp-gradle-plugin", version = "0.3.
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.5.31" }
 shadow = { module = "gradle.plugin.com.github.johnrengelman:shadow", version = "7.1.0" }
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "5.16.0" }
-bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.0.0" }
+bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.3.1" }
 guava = { module = "com.google.guava:guava", version = "31.0.1-jre" }
 vanniktech-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.18.0" }
 test-junit = { module = "junit:junit", version = "4.13.2" }
