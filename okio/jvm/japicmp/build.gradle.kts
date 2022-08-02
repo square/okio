@@ -28,7 +28,7 @@ dependencies {
     isTransitive = false
     isForce = true
   }
-  latest(project(":okio", "jvmRuntimeElements"))
+  latest(projects.okio) { targetConfiguration = "jvmRuntimeElements" }
 }
 
 val japicmp = tasks.register<JapicmpTask>("japicmp") {

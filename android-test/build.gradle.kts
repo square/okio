@@ -61,12 +61,12 @@ android {
 }
 
 dependencies {
-  coreLibraryDesugaring(deps.android.desugarJdkLibs)
-  androidTestImplementation(deps.androidx.testExtJunit)
-  androidTestImplementation(deps.androidx.testRunner)
-  androidTestImplementation(deps.animalSniffer.annotations)
-  androidTestImplementation(deps.kotlin.test)
-  androidTestImplementation(deps.kotlin.time)
-  androidTestImplementation(deps.test.assertj)
-  androidTestImplementation(deps.test.junit)
+  coreLibraryDesugaring(libs.android.desugar.jdk.libs)
+  androidTestImplementation(libs.androidx.test.ext.junit)
+  androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.animalSniffer.annotations)
+  androidTestImplementation(libs.kotlin.test)
+  androidTestImplementation(libs.kotlin.time)
+  androidTestImplementation(libs.test.assertj)
+  androidTestImplementation(libs.test.junit)
 }
