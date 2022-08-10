@@ -28,7 +28,9 @@ import java.util.concurrent.atomic.AtomicReference
  * On [take], a caller swaps the stack's next pointer with the [LOCK] sentinel. If the stack was
  * not already locked, the caller replaces the head node with its successor.
  *
- * On [recycle], a caller swaps the head with a new node whose successor is the replaced head.
+ * On [recycle], a caller swaps the stack's next pointer with the [LOCK] sentinel. If the stack was
+ * not already locked, the caller replaces the head node with a new node whose successor is the
+ * replaced head.
  *
  * On conflict, operations succeed, but segments are not pushed into the stack. For example, a
  * [take] that loses a race allocates a new segment regardless of the pool size. A [recycle] call
@@ -104,19 +106,19 @@ internal actual object SegmentPool {
 
     val firstRef = firstRef()
 
-    val first = firstRef.get()
-    if (first === LOCK) return // A take() is currently in progress.
+    val first = firstRef.getAndSet(LOCK)
+    if (first === LOCK) return // A take() or recycle() is currently in progress.
     val firstLimit = first?.limit ?: 0
-    if (firstLimit >= MAX_SIZE) return // Pool is full.
+    if (firstLimit >= MAX_SIZE) {
+      firstRef.set(first) // Pool is full.
+      return
+    }
 
     segment.next = first
     segment.pos = 0
     segment.limit = firstLimit + Segment.SIZE
 
-    // If we lost a race with another operation, don't recycle this segment.
-    if (!firstRef.compareAndSet(first, segment)) {
-      segment.next = null // Don't leak a reference in the pool either!
-    }
+    firstRef.set(segment)
   }
 
   private fun firstRef(): AtomicReference<Segment?> {
