@@ -57,10 +57,11 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.magiclink
   - pymdownx.smartsymbols
-  - pymdownx.superfences
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true 
   - pymdownx.tilde
   - tables
+  - pymdownx.superfences
 
 nav:
   - 'Overview': index.md
@@ -77,4 +78,3 @@ nav:
   - 'Multiplatform': multiplatform.md
   - 'Contributing': contributing.md
   - 'Code of Conduct': code_of_conduct.md
-
