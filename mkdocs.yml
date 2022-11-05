@@ -14,8 +14,22 @@ theme:
   favicon: images/icon-square.png
   logo: images/icon-square.png
   palette:
-    primary: 'deep purple'
-    accent: 'white'
+    # Palette toggle for light mode
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      primary: 'deep purple'
+      accent: 'white'
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      primary: 'deep purple'
+      accent: 'white'
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   icon:
     repo: fontawesome/brands/github
 
