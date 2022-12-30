@@ -18,6 +18,7 @@ package okio
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.Condition
 
 actual open class Timeout {
   /**
@@ -100,6 +101,80 @@ actual open class Timeout {
 
     if (hasDeadline && deadlineNanoTime - System.nanoTime() <= 0) {
       throw InterruptedIOException("deadline reached")
+    }
+  }
+
+  /**
+   * Waits on `monitor` until it is notified. Throws [InterruptedIOException] if either the thread
+   * is interrupted or if this timeout elapses before `monitor` is notified. The caller must be
+   * synchronized on `monitor`.
+   *
+   * Here's a sample class that uses `waitUntilNotified()` to await a specific state. Note that the
+   * call is made within a loop to avoid unnecessary waiting and to mitigate spurious notifications.
+   * ```
+   * class Dice {
+   *   Random random = new Random();
+   *   int latestTotal;
+   *
+   *   public synchronized void roll() {
+   *     latestTotal = 2 + random.nextInt(6) + random.nextInt(6);
+   *     System.out.println("Rolled " + latestTotal);
+   *     notifyAll();
+   *   }
+   *
+   *   public void rollAtFixedRate(int period, TimeUnit timeUnit) {
+   *     Executors.newScheduledThreadPool(0).scheduleAtFixedRate(new Runnable() {
+   *       public void run() {
+   *         roll();
+   *       }
+   *     }, 0, period, timeUnit);
+   *   }
+   *
+   *   public synchronized void awaitTotal(Timeout timeout, int total)
+   *       throws InterruptedIOException {
+   *     while (latestTotal != total) {
+   *       timeout.waitUntilNotified(this);
+   *     }
+   *   }
+   * }
+   * ```
+   */
+  @Throws(InterruptedIOException::class)
+  fun awaitUntilNotified(monitor: Condition) {
+    try {
+      val hasDeadline = hasDeadline()
+      val timeoutNanos = timeoutNanos()
+
+      if (!hasDeadline && timeoutNanos == 0L) {
+        monitor.await() // There is no timeout: wait forever.
+        return
+      }
+
+      // Compute how long we'll wait.
+      val start = System.nanoTime()
+      val waitNanos = if (hasDeadline && timeoutNanos != 0L) {
+        val deadlineNanos = deadlineNanoTime() - start
+        minOf(timeoutNanos, deadlineNanos)
+      } else if (hasDeadline) {
+        deadlineNanoTime() - start
+      } else {
+        timeoutNanos
+      }
+
+      // Attempt to wait that long. This will break out early if the monitor is notified.
+      var elapsedNanos = 0L
+      if (waitNanos > 0L) {
+        monitor.await(waitNanos, TimeUnit.NANOSECONDS)
+        elapsedNanos = System.nanoTime() - start
+      }
+
+      // Throw if the timeout elapsed before the monitor was notified.
+      if (elapsedNanos >= waitNanos) {
+        throw InterruptedIOException("timeout")
+      }
+    } catch (e: InterruptedException) {
+      Thread.currentThread().interrupt() // Retain interrupted status.
+      throw InterruptedIOException("interrupted")
     }
   }
 

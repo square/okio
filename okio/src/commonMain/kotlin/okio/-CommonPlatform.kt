@@ -23,7 +23,11 @@ internal expect fun String.asUtf8ToByteArray(): ByteArray
 // TODO make internal https://youtrack.jetbrains.com/issue/KT-37316
 expect class ArrayIndexOutOfBoundsException(message: String?) : IndexOutOfBoundsException
 
-internal expect inline fun <R> synchronized(lock: Any, block: () -> R): R
+expect class ALock
+
+internal expect fun newLock(): ALock
+
+internal expect inline fun <R> synchronized(lock: ALock, block: () -> R): R
 
 expect open class IOException(message: String?, cause: Throwable?) : Exception {
   constructor(message: String? = null)

@@ -16,11 +16,17 @@
 package okio
 
 import java.io.RandomAccessFile
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.ReentrantLock
 
 internal class JvmFileHandle(
   readWrite: Boolean,
   private val randomAccessFile: RandomAccessFile
 ) : FileHandle(readWrite) {
+
+  val lock: ReentrantLock = ReentrantLock()
+  val condition: Condition = lock.newCondition()
+
   @Synchronized
   override fun protectedResize(size: Long) {
     val currentSize = size()
