@@ -371,6 +371,6 @@ public final class PipeTest {
    * -50..+450 milliseconds.
    */
   private void assertElapsed(double duration, double start) {
-    assertEquals(duration, now() - start - 200d, 250.0);
+    assertEquals(duration, now() - start + 200d, 250.0);
   }
 }
