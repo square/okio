@@ -72,7 +72,7 @@ class Pipe(internal val maxBufferSize: Long) {
 
           val bufferSpaceAvailable = maxBufferSize - buffer.size
           if (bufferSpaceAvailable == 0L) {
-            timeout.awaitUntilNotified(condition) // Wait until the source drains the buffer.
+            timeout.awaitSignal(condition) // Wait until the source drains the buffer.
             if (canceled) throw IOException("canceled")
             continue
           }
@@ -138,7 +138,7 @@ class Pipe(internal val maxBufferSize: Long) {
 
         while (buffer.size == 0L) {
           if (sinkClosed) return -1L
-          timeout.awaitUntilNotified(condition) // Wait until the sink fills the buffer.
+          timeout.awaitSignal(condition) // Wait until the sink fills the buffer.
           if (canceled) throw IOException("canceled")
         }
 

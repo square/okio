@@ -116,10 +116,15 @@ actual open class Timeout {
    *   Random random = new Random();
    *   int latestTotal;
    *
-   *   public synchronized void roll() {
-   *     latestTotal = 2 + random.nextInt(6) + random.nextInt(6);
-   *     System.out.println("Rolled " + latestTotal);
-   *     notifyAll();
+   *   ReentrantLock lock = new ReentrantLock();
+   *   Condition condition = lock.newCondition();
+   *
+   *   public void roll() {
+   *     lock.withLock {
+   *       latestTotal = 2 + random.nextInt(6) + random.nextInt(6);
+   *       System.out.println("Rolled " + latestTotal);
+   *       condition.signalAll();
+   *     }
    *   }
    *
    *   public void rollAtFixedRate(int period, TimeUnit timeUnit) {
@@ -130,23 +135,25 @@ actual open class Timeout {
    *     }, 0, period, timeUnit);
    *   }
    *
-   *   public synchronized void awaitTotal(Timeout timeout, int total)
+   *   public void awaitTotal(Timeout timeout, int total)
    *       throws InterruptedIOException {
-   *     while (latestTotal != total) {
-   *       timeout.waitUntilNotified(this);
+   *     lock.withLock {
+   *       while (latestTotal != total) {
+   *         timeout.awaitSignal(this);
+   *       }
    *     }
    *   }
    * }
    * ```
    */
   @Throws(InterruptedIOException::class)
-  fun awaitUntilNotified(monitor: Condition) {
+  fun awaitSignal(condition: Condition) {
     try {
       val hasDeadline = hasDeadline()
       val timeoutNanos = timeoutNanos()
 
       if (!hasDeadline && timeoutNanos == 0L) {
-        monitor.await() // There is no timeout: wait forever.
+        condition.await() // There is no timeout: wait forever.
         return
       }
 
@@ -164,7 +171,7 @@ actual open class Timeout {
       // Attempt to wait that long. This will break out early if the monitor is notified.
       var elapsedNanos = 0L
       if (waitNanos > 0L) {
-        monitor.await(waitNanos, TimeUnit.NANOSECONDS)
+        condition.await(waitNanos, TimeUnit.NANOSECONDS)
         elapsedNanos = System.nanoTime() - start
       }
 
