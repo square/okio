@@ -14,14 +14,8 @@ jobs:
       matrix:
         java-version:
           - 8
-          - 9
-          - 10
           - 11
-          - 12
-          - 13
-          - 14
-          - 15
-          - 18
+          - 17
           - 19
 
     steps:
