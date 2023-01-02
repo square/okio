@@ -15,19 +15,18 @@
  */
 package okio
 
+import java.util.concurrent.TimeUnit
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import org.junit.rules.Timeout as JUnitTimeout
 
 class TimeoutTest {
   @JvmField @Rule val timeout = JUnitTimeout(5, TimeUnit.SECONDS)
 
-  private val executorService = Executors.newScheduledThreadPool(1)
+  private val executorService = TestingExecutors.newExecutorService(1)
 
   @After @Throws(Exception::class)
   fun tearDown() {

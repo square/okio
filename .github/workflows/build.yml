@@ -48,6 +48,29 @@ jobs:
           name: japicmp-report
           path: okio/jvm/japicmp/build/reports/japi.txt
 
+  loom:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 19
+
+      - name: Test
+        run: |
+          ./gradlew -DloomEnabled=true build
+
   all-platforms:
     runs-on: ${{ matrix.os }}
 
@@ -71,7 +94,7 @@ jobs:
 
       - name: Test
         run: |
-          ./gradlew build
+          ./gradlew -Dloom=true build
 
   publish:
     runs-on: macos-11

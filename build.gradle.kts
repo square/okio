@@ -176,6 +176,14 @@ subprojects {
       exceptionFormat = TestExceptionFormat.FULL
       showStandardStreams = false
     }
+
+    if (loomEnabled) {
+      jvmArgs = jvmArgs!! + listOf(
+        "-Djdk.tracePinnedThread=full",
+        "--enable-preview",
+        "-DloomEnabled=true"
+      )
+    }
   }
 
   tasks.withType<AbstractArchiveTask>().configureEach {

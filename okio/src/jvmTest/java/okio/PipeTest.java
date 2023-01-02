@@ -18,11 +18,8 @@ package okio;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+
 import org.junit.After;
 import org.junit.Test;
 
@@ -31,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class PipeTest {
-  final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+  final ScheduledExecutorService executorService = TestingExecutors.INSTANCE.newScheduledExecutorService(2);
 
   @After public void tearDown() throws Exception {
     executorService.shutdown();
