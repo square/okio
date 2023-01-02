@@ -94,7 +94,7 @@ jobs:
 
       - name: Test
         run: |
-          ./gradlew -Dloom=true build
+          ./gradlew build
 
   publish:
     runs-on: macos-11
