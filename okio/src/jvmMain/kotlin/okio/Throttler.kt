@@ -85,7 +85,7 @@ class Throttler internal constructor(
         val now = System.nanoTime()
         val byteCountOrWaitNanos = byteCountOrWaitNanos(now, byteCount)
         if (byteCountOrWaitNanos >= 0) return byteCountOrWaitNanos
-        waitNanos(-byteCountOrWaitNanos)
+        condition.awaitNanos(-byteCountOrWaitNanos)
       }
     }
   }
@@ -129,10 +129,6 @@ class Throttler internal constructor(
   private fun Long.nanosToBytes() = this * bytesPerSecond / 1_000_000_000L
 
   private fun Long.bytesToNanos() = this * 1_000_000_000L / bytesPerSecond
-
-  private fun waitNanos(nanosToWait: Long) {
-    condition.awaitNanos(nanosToWait)
-  }
 
   /** Create a Source which honors this Throttler.  */
   fun source(source: Source): Source {
