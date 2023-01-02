@@ -17,7 +17,7 @@
 package okio
 
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+import kotlin.concurrent.withLock as jvmWithLock
 
 internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
 
@@ -26,11 +26,11 @@ internal actual fun String.asUtf8ToByteArray(): ByteArray = toByteArray(Charsets
 // TODO remove if https://youtrack.jetbrains.com/issue/KT-20641 provides a better solution
 actual typealias ArrayIndexOutOfBoundsException = java.lang.ArrayIndexOutOfBoundsException
 
-actual typealias ALock = ReentrantLock
+actual typealias Lock = ReentrantLock
 
-internal actual fun newLock(): ALock = ReentrantLock()
+internal actual fun newLock(): Lock = ReentrantLock()
 
-internal actual inline fun <R> synchronized(lock: ALock, block: () -> R): R = lock.withLock(block)
+actual inline fun <T> Lock.withLock(action: () -> T): T = jvmWithLock(action)
 
 actual typealias IOException = java.io.IOException
 
