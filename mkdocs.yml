@@ -14,8 +14,22 @@ theme:
   favicon: images/icon-square.png
   logo: images/icon-square.png
   palette:
-    primary: 'deep purple'
-    accent: 'white'
+    # Palette toggle for light mode
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      primary: 'deep purple'
+      accent: 'white'
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      primary: 'deep purple'
+      accent: 'white'
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   icon:
     repo: fontawesome/brands/github
 
@@ -44,7 +58,8 @@ markdown_extensions:
   - pymdownx.magiclink
   - pymdownx.smartsymbols
   - pymdownx.superfences
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true 
   - pymdownx.tilde
   - tables
 
@@ -63,4 +78,3 @@ nav:
   - 'Multiplatform': multiplatform.md
   - 'Contributing': contributing.md
   - 'Code of Conduct': code_of_conduct.md
-
