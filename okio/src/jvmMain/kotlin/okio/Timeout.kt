@@ -105,7 +105,7 @@ actual open class Timeout {
   }
 
   /**
-   * Waits on `monitor` until it is notified. Throws [InterruptedIOException] if either the thread
+   * Waits on `monitor` until it is signaled. Throws [InterruptedIOException] if either the thread
    * is interrupted or if this timeout elapses before `monitor` is notified.
    * The caller must hold the lock that monitor is bound to.
    *
