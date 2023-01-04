@@ -31,6 +31,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -2356,9 +2357,13 @@ abstract class AbstractFileSystemTest(
    * Returns the earliest file system time that could be recorded for an event occurring at this
    * instant. This truncates fractional seconds because most host file systems do not use precise
    * timestamps for file metadata.
+   *
+   * It also pads the result by 200 milliseconds because the host and file system may use different
+   * clocks, allowing the time on the CPU to drift ahead of the time on the file system.
    */
   private fun Instant.minFileSystemTime(): Instant {
-    return Instant.fromEpochSeconds(epochSeconds)
+    val paddedInstant = minus(200.milliseconds)
+    return Instant.fromEpochSeconds(paddedInstant.epochSeconds)
   }
 
   /**
@@ -2366,10 +2371,14 @@ abstract class AbstractFileSystemTest(
    * instant. This adds 2 seconds and truncates fractional seconds because file systems may defer
    * assigning the timestamp.
    *
+   * It also pads the result by 200 milliseconds because the host and file system may use different
+   * clocks, allowing the time on the CPU to drift behind the time on the file system.
+   *
    * https://docs.microsoft.com/en-us/windows/win32/sysinfo/file-times
    */
   private fun Instant.maxFileSystemTime(): Instant {
-    return Instant.fromEpochSeconds(plus(2.seconds).epochSeconds)
+    val paddedInstant = plus(200.milliseconds)
+    return Instant.fromEpochSeconds(paddedInstant.plus(2.seconds).epochSeconds)
   }
 
   /**
