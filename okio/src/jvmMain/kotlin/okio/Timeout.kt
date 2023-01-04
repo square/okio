@@ -109,7 +109,7 @@ actual open class Timeout {
    * is interrupted or if this timeout elapses before `monitor` is notified.
    * The caller must hold the lock that monitor is bound to.
    *
-   * Here's a sample class that uses `waitUntilNotified()` to await a specific state. Note that the
+   * Here's a sample class that uses `awaitSignal()` to await a specific state. Note that the
    * call is made within a loop to avoid unnecessary waiting and to mitigate spurious notifications.
    * ```
    * class Dice {
