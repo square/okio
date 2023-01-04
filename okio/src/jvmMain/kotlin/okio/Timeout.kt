@@ -106,7 +106,7 @@ actual open class Timeout {
 
   /**
    * Waits on `monitor` until it is signaled. Throws [InterruptedIOException] if either the thread
-   * is interrupted or if this timeout elapses before `monitor` is notified.
+   * is interrupted or if this timeout elapses before `monitor` is signaled.
    * The caller must hold the lock that monitor is bound to.
    *
    * Here's a sample class that uses `awaitSignal()` to await a specific state. Note that the
