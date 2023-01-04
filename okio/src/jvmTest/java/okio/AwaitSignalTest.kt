@@ -36,7 +36,7 @@ class AwaitSignalTest {
   }
 
   @Test
-  fun notified() = lock.withLock {
+  fun signaled() = lock.withLock {
     val timeout = Timeout()
     timeout.timeout(5000, TimeUnit.MILLISECONDS)
     val start = now()
