@@ -1,8 +1,8 @@
 package okio
 
-import kotlin.test.Test
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import kotlin.test.Test
 
 class UseTest {
   val fakeFileSystem = FakeFileSystem(clock = FakeClock()).also { it.emulateUnix() }
