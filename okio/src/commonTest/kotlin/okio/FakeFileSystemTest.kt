@@ -488,6 +488,21 @@ abstract class FakeFileSystemTest internal constructor(
     }
   }
 
+  @Test
+  fun closesWithUseBlock() {
+    fun testMethodWithUse() {
+      val sink = fakeFileSystem.sink(base / "all-files-includes-file")
+
+      sink.use {
+        return
+      }
+    }
+
+    testMethodWithUse()
+
+    fakeFileSystem.checkNoOpenFiles()
+  }
+
   internal data class ContentTypeExtra(
     val contentType: String
   )
