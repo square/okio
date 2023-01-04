@@ -494,7 +494,7 @@ abstract class FakeFileSystemTest internal constructor(
       val sink = fakeFileSystem.sink(base / "all-files-includes-file")
 
       sink.use {
-        return
+        return@testMethodWithUse
       }
     }
 
