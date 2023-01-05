@@ -24,7 +24,6 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
 import org.junit.rules.Timeout as JUnitTimeout
@@ -32,7 +31,7 @@ import org.junit.rules.Timeout as JUnitTimeout
 class PipeKotlinTest {
   @JvmField @Rule val timeout = JUnitTimeout(5, TimeUnit.SECONDS)
 
-  private val executorService = Executors.newScheduledThreadPool(1)
+  private val executorService = TestingExecutors.newScheduledExecutorService(1)
 
   @After @Throws(Exception::class)
   fun tearDown() {

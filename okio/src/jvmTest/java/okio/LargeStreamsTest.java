@@ -104,7 +104,7 @@ public final class LargeStreamsTest {
 
   /** Calls {@link #readAllAndClose} on a background thread. */
   private Future<Long> readAllAndCloseAsync(final Source source, final Sink sink) {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    ExecutorService executor = TestingExecutors.INSTANCE.newExecutorService(0);
     try {
       return executor.submit(new Callable<Long>() {
         @Override public Long call() throws Exception {

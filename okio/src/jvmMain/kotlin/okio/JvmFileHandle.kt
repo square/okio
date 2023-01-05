@@ -21,6 +21,7 @@ internal class JvmFileHandle(
   readWrite: Boolean,
   private val randomAccessFile: RandomAccessFile
 ) : FileHandle(readWrite) {
+
   @Synchronized
   override fun protectedResize(size: Long) {
     val currentSize = size()

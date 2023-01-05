@@ -29,7 +29,15 @@ actual open class ArrayIndexOutOfBoundsException actual constructor(
   message: String?
 ) : IndexOutOfBoundsException(message)
 
-internal actual inline fun <R> synchronized(lock: Any, block: () -> R): R = block()
+actual class Lock {
+  companion object {
+    val instance = Lock()
+  }
+}
+
+internal actual fun newLock(): Lock = Lock.instance
+
+actual inline fun <T> Lock.withLock(action: () -> T): T = action()
 
 actual open class IOException actual constructor(
   message: String?,
