@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class WaitUntilNotifiedTest {
-  final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(0);
+  final ScheduledExecutorService executorService = TestingExecutors.INSTANCE.newScheduledExecutorService(0);
 
   @After public void tearDown() {
     executorService.shutdown();

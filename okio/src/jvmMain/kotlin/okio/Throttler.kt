@@ -17,6 +17,9 @@ package okio
 
 import java.io.IOException
 import java.io.InterruptedIOException
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * Enables limiting of Source and Sink throughput. Attach to this throttler via [source] and [sink]
@@ -46,6 +49,9 @@ class Throttler internal constructor(
   private var waitByteCount: Long = 8 * 1024 // 8 KiB.
   private var maxByteCount: Long = 256 * 1024 // 256 KiB.
 
+  val lock: ReentrantLock = ReentrantLock()
+  val condition: Condition = lock.newCondition()
+
   constructor() : this(allocatedUntil = System.nanoTime())
 
   /** Sets the rate at which bytes will be allocated. Use 0 for no limit. */
@@ -55,7 +61,7 @@ class Throttler internal constructor(
     waitByteCount: Long = this.waitByteCount,
     maxByteCount: Long = this.maxByteCount
   ) {
-    synchronized(this) {
+    lock.withLock {
       require(bytesPerSecond >= 0)
       require(waitByteCount > 0)
       require(maxByteCount >= waitByteCount)
@@ -63,7 +69,7 @@ class Throttler internal constructor(
       this.bytesPerSecond = bytesPerSecond
       this.waitByteCount = waitByteCount
       this.maxByteCount = maxByteCount
-      (this as Object).notifyAll()
+      condition.signalAll()
     }
   }
 
@@ -74,15 +80,14 @@ class Throttler internal constructor(
   internal fun take(byteCount: Long): Long {
     require(byteCount > 0)
 
-    synchronized(this) {
+    lock.withLock {
       while (true) {
         val now = System.nanoTime()
         val byteCountOrWaitNanos = byteCountOrWaitNanos(now, byteCount)
         if (byteCountOrWaitNanos >= 0) return byteCountOrWaitNanos
-        waitNanos(-byteCountOrWaitNanos)
+        condition.awaitNanos(-byteCountOrWaitNanos)
       }
     }
-    throw AssertionError() // Unreachable, but synchronized() doesn't know that.
   }
 
   /**
@@ -124,12 +129,6 @@ class Throttler internal constructor(
   private fun Long.nanosToBytes() = this * bytesPerSecond / 1_000_000_000L
 
   private fun Long.bytesToNanos() = this * 1_000_000_000L / bytesPerSecond
-
-  private fun waitNanos(nanosToWait: Long) {
-    val millisToWait = nanosToWait / 1_000_000L
-    val remainderNanos = nanosToWait - (millisToWait * 1_000_000L)
-    (this as Object).wait(millisToWait, remainderNanos.toInt())
-  }
 
   /** Create a Source which honors this Throttler.  */
   fun source(source: Source): Source {

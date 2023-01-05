@@ -19,7 +19,6 @@ import okio.TestUtil.randomSource
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.util.concurrent.Executors
 import kotlin.test.Ignore
 
 @Ignore("These tests are flaky and fail on slower hardware, need to be improved")
@@ -31,7 +30,7 @@ class ThrottlerTest {
   private val throttlerSlow = Throttler()
 
   private val threads = 4
-  private val executorService = Executors.newFixedThreadPool(threads)
+  private val executorService = TestingExecutors.newExecutorService(threads)
   private var stopwatch = Stopwatch()
 
   @Before fun setup() {
