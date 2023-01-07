@@ -14,7 +14,7 @@ jmh-gradle-plugin = { module = "me.champeau.gradle:jmh-gradle-plugin", version =
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
 animalSniffer-gradle-plugin = { module = "ru.vyarus:gradle-animalsniffer-plugin", version = "1.6.0" }
-animalSniffer-annotations = { module = "org.codehaus.mojo:animal-sniffer-annotations", version = "1.20" }
+animalSniffer-annotations = { module = "org.codehaus.mojo:animal-sniffer-annotations", version = "1.22" }
 animalSniffer-android = { module = "net.sf.androidscents.signature:android-api-level-15", version = "4.0.3_r5" }
 animalSniffer-java = { module = "org.codehaus.mojo.signature:java17", version = "1.0" }
 japicmp = { module = "me.champeau.gradle:japicmp-gradle-plugin", version = "0.3.0" }
