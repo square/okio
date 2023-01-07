@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+## Version 3.3.0
+
+_2023-01-07_
+
+ * Fix: Don't leak resources when `use {}` is used with a non-local return. We introduced this
+   performance and stability bug by not considering that non-local returns execute neither the
+   `return` nor `catch` control flows.
+ * Fix: Use a sealed interface for `BufferedSink` and `BufferedSource`. These were never intended
+   for end-users to implement, and we're happy that Kotlin now allows us to express that in our API.
+ * New: Change internal locks from `synchronized` to `ReentrantLock` and `Condition`. We expect this
+   to improve help when using Okio with Java virtual threads ([Project Loom][loom]).
+ * Upgrade: [Kotlin 1.8.0][kotlin_1_8_0].
+
+
 ## Version 3.2.0
 
 _2022-06-26_
@@ -809,5 +823,7 @@ _2014-04-08_
 [kotlin_1_5_20]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.20
 [kotlin_1_5_31]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.31
 [kotlin_1_6_20]: https://blog.jetbrains.com/kotlin/2022/04/kotlin-1-6-20-released/
+[kotlin_1_8_0]: https://kotlinlang.org/docs/whatsnew18.html
+[loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
 [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
