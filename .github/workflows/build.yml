@@ -154,7 +154,7 @@ jobs:
           java-version: 14
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
 
