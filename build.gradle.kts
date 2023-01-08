@@ -170,7 +170,13 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8.toString()
   }
 
+  val testJavaVersion = System.getProperty("test.java.version", "19").toInt()
   tasks.withType<Test> {
+    val javaToolchains = project.extensions.getByType<JavaToolchainService>()
+    javaLauncher.set(javaToolchains.launcherFor {
+      languageVersion.set(JavaLanguageVersion.of(testJavaVersion))
+    })
+
     testLogging {
       events(STARTED, PASSED, SKIPPED, FAILED)
       exceptionFormat = TestExceptionFormat.FULL

@@ -29,11 +29,11 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: ${{ matrix.java-version }}
+          java-version: 19
 
       - name: Test
         run: |
-          ./gradlew -Dkjs=false -Dknative=false build --stacktrace
+          ./gradlew -Dkjs=false -Dknative=false -Dtest.java.version=${{ matrix.java-version }} build --stacktrace
 
       - name: Upload Japicmp report
         if: failure()
@@ -84,7 +84,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 19
 
       - name: Test
         run: |
@@ -103,7 +103,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 19
 
       - name: Upload Artifacts
         run: |
@@ -126,7 +126,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 19
 
       - name: Upload Artifacts
         run: |
@@ -151,7 +151,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 19
 
       - name: Set up Python
         uses: actions/setup-python@v2
