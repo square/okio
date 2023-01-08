@@ -24,7 +24,7 @@ val baseline: Configuration = configurations.create("baseline")
 val latest: Configuration = configurations.create("latest")
 
 dependencies {
-  baseline("com.squareup.okio:okio:1.17.5") {
+  baseline("com.squareup.okio:okio:3.2.0") {
     isTransitive = false
     isForce = true
   }
