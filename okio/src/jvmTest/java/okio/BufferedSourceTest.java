@@ -1453,7 +1453,7 @@ public final class BufferedSourceTest {
     assertEquals(expected.length(), nioByteBuffer.position());
     assertEquals(nioByteBuffer.capacity(), nioByteBuffer.limit());
 
-    nioByteBuffer.flip();
+    ((java.nio.Buffer) nioByteBuffer).flip(); // Cast necessary for Java 8.
     byte[] data = new byte[expected.length()];
     nioByteBuffer.get(data);
     assertEquals(expected, new String(data));
@@ -1473,7 +1473,7 @@ public final class BufferedSourceTest {
     assertEquals(expected.length(), nioByteBuffer.position());
     assertEquals(nioByteBuffer.capacity(), nioByteBuffer.limit());
 
-    nioByteBuffer.flip();
+    ((java.nio.Buffer) nioByteBuffer).flip(); // Cast necessary for Java 8.
     byte[] data = new byte[expected.length()];
     nioByteBuffer.get(data);
     assertEquals(expected, new String(data));

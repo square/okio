@@ -114,7 +114,7 @@ public final class ByteStringJavaTest {
   @Test public void ofByteBuffer() {
     byte[] bytes = "Hello, World!".getBytes(Charsets.UTF_8);
     ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-    byteBuffer.position(2).limit(11);
+    ((java.nio.Buffer) byteBuffer).position(2).limit(11); // Cast necessary for Java 8.
     ByteString byteString = ByteString.of(byteBuffer);
     // Verify that the bytes were copied out.
     byteBuffer.put(4, (byte) 'a');

@@ -344,7 +344,7 @@ public final class BufferedSinkTest {
 
     ByteBuffer nioByteBuffer = ByteBuffer.allocate(1024);
     nioByteBuffer.put("abcdefg".getBytes(UTF_8));
-    nioByteBuffer.flip();
+    ((java.nio.Buffer) nioByteBuffer).flip(); // Cast necessary for Java 8.
 
     int byteCount = sink.write(nioByteBuffer);
     assertEquals(expected.length(), byteCount);
@@ -360,7 +360,7 @@ public final class BufferedSinkTest {
 
     ByteBuffer nioByteBuffer = ByteBuffer.allocate(SEGMENT_SIZE * 4);
     nioByteBuffer.put(repeat("a", SEGMENT_SIZE * 3).getBytes(UTF_8));
-    nioByteBuffer.flip();
+    ((java.nio.Buffer) nioByteBuffer).flip(); // Cast necessary for Java 8.
 
     int byteCount = sink.write(nioByteBuffer);
     assertEquals(expected.length(), byteCount);

@@ -106,9 +106,9 @@ public final class NioTest {
 
     ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
     byteBuffer.put("abcdefghijklmnopqrstuvwxyz".getBytes(Charsets.UTF_8));
-    byteBuffer.flip();
-    byteBuffer.position(3);
-    byteBuffer.limit(23);
+    ((java.nio.Buffer) byteBuffer).flip(); // Cast necessary for Java 8.
+    ((java.nio.Buffer) byteBuffer).position(3); // Cast necessary for Java 8.
+    ((java.nio.Buffer) byteBuffer).limit(23); // Cast necessary for Java 8.
 
     int byteCount = channel.write(byteBuffer);
     assertEquals(20, byteCount);
@@ -127,8 +127,8 @@ public final class NioTest {
     assertTrue(channel.isOpen());
 
     ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-    byteBuffer.position(3);
-    byteBuffer.limit(23);
+    ((java.nio.Buffer) byteBuffer).position(3); // Cast necessary for Java 8.
+    ((java.nio.Buffer) byteBuffer).limit(23); // Cast necessary for Java 8.
 
     int byteCount = channel.read(byteBuffer);
     assertEquals(20, byteCount);
@@ -138,8 +138,8 @@ public final class NioTest {
     channel.close();
     assertEquals(channel instanceof Buffer, channel.isOpen()); // Buffer.close() does nothing.
 
-    byteBuffer.flip();
-    byteBuffer.position(3);
+    ((java.nio.Buffer) byteBuffer).flip(); // Cast necessary for Java 8.
+    ((java.nio.Buffer) byteBuffer).position(3); // Cast necessary for Java 8.
     byte[] data = new byte[byteBuffer.remaining()];
     byteBuffer.get(data);
     assertEquals("abcdefghijklmnopqrst", new String(data, Charsets.UTF_8));
