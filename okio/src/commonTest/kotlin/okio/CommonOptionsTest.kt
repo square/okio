@@ -15,11 +15,11 @@
  */
 package okio
 
-import okio.ByteString.Companion.encodeUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.fail
+import okio.ByteString.Companion.encodeUtf8
 
 class CommonOptionsTest {
   /** Confirm that options prefers the first-listed option, not the longest or shortest one. */

@@ -16,11 +16,11 @@
 @file:JvmName("-Time")
 package okio.fakefilesystem
 
+import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 import kotlinx.datetime.Instant
 import okio.FileMetadata
 import okio.Path
-import kotlin.jvm.JvmName
-import kotlin.reflect.KClass
 
 @JvmName("newFileMetadata")
 internal fun FileMetadata(

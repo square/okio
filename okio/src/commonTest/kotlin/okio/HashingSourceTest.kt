@@ -15,15 +15,15 @@
  */
 package okio
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.fail
 import okio.HashingSource.Companion.hmacSha1
 import okio.HashingSource.Companion.hmacSha256
 import okio.HashingSource.Companion.hmacSha512
 import okio.HashingSource.Companion.md5
 import okio.HashingSource.Companion.sha1
 import okio.HashingSource.Companion.sha256
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.fail
 
 class HashingSourceTest {
   private val source = Buffer()

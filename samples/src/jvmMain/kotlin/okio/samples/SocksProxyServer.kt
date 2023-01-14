@@ -15,13 +15,6 @@
  */
 package okio.samples
 
-import okio.Buffer
-import okio.BufferedSink
-import okio.Sink
-import okio.Source
-import okio.buffer
-import okio.sink
-import okio.source
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -33,6 +26,13 @@ import java.net.URL
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import okio.Buffer
+import okio.BufferedSink
+import okio.Sink
+import okio.Source
+import okio.buffer
+import okio.sink
+import okio.source
 
 private const val VERSION_5 = 5
 private const val METHOD_NO_AUTHENTICATION_REQUIRED = 0

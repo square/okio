@@ -16,6 +16,8 @@
  */
 package okio.internal
 
+import java.util.Calendar
+import java.util.GregorianCalendar
 import okio.BufferedSource
 import okio.FileMetadata
 import okio.FileSystem
@@ -24,8 +26,6 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.ZipFileSystem
 import okio.buffer
-import java.util.Calendar
-import java.util.GregorianCalendar
 
 private const val LOCAL_FILE_HEADER_SIGNATURE = 0x4034b50
 private const val CENTRAL_FILE_HEADER_SIGNATURE = 0x2014b50

@@ -15,17 +15,17 @@
  */
 package okio
 
-import okio.Path.Companion.toOkioPath
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.nio.file.FileSystemException
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.NoSuchFileException
+import java.nio.file.Path as NioPath
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
-import java.nio.file.Path as NioPath
+import okio.Path.Companion.toOkioPath
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /**
  * Extends [JvmSystemFileSystem] for platforms that support `java.nio.files` first introduced in

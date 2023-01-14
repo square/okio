@@ -15,6 +15,9 @@
  */
 package okio
 
+import java.io.File
+import java.nio.file.Path as NioPath
+import java.nio.file.Paths
 import okio.internal.commonCompareTo
 import okio.internal.commonEquals
 import okio.internal.commonHashCode
@@ -34,9 +37,6 @@ import okio.internal.commonToPath
 import okio.internal.commonToString
 import okio.internal.commonVolumeLetter
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
-import java.io.File
-import java.nio.file.Paths
-import java.nio.file.Path as NioPath
 
 actual class Path internal actual constructor(
   internal actual val bytes: ByteString

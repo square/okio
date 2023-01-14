@@ -15,14 +15,14 @@
  */
 package okio
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import okio.HashingSink.Companion.hmacSha1
 import okio.HashingSink.Companion.hmacSha256
 import okio.HashingSink.Companion.hmacSha512
 import okio.HashingSink.Companion.sha1
 import okio.HashingSink.Companion.sha256
 import okio.HashingSink.Companion.sha512
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class HashingSinkTest {
   private val source = Buffer()

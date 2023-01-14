@@ -17,8 +17,8 @@
 
 package okio
 
-import okio.ByteString.Companion.encodeUtf8
 import kotlin.native.concurrent.SharedImmutable
+import okio.ByteString.Companion.encodeUtf8
 
 /** @author Alexander Y. Kleymenov */
 

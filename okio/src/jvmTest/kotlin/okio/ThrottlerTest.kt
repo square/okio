@@ -15,11 +15,11 @@
  */
 package okio
 
+import kotlin.test.Ignore
 import okio.TestUtil.randomSource
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.Ignore
 
 @Ignore("These tests are flaky and fail on slower hardware, need to be improved")
 class ThrottlerTest {

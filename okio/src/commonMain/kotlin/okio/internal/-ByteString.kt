@@ -16,6 +16,7 @@
 
 package okio.internal
 
+import kotlin.native.concurrent.SharedImmutable
 import okio.BASE64_URL_SAFE
 import okio.Buffer
 import okio.ByteString
@@ -31,7 +32,6 @@ import okio.processUtf8CodePoints
 import okio.resolveDefaultParameter
 import okio.shr
 import okio.toUtf8String
-import kotlin.native.concurrent.SharedImmutable
 
 // TODO Kotlin's expect classes can't have default implementations, so platform implementations
 // have to call these functions. Remove all this nonsense when expect class allow actual code.

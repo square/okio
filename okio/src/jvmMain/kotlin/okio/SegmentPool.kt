@@ -15,10 +15,10 @@
  */
 package okio
 
+import java.util.concurrent.atomic.AtomicReference
 import okio.SegmentPool.LOCK
 import okio.SegmentPool.recycle
 import okio.SegmentPool.take
-import java.util.concurrent.atomic.AtomicReference
 
 /**
  * This class pools segments in a lock-free singly-linked stack. Though this code is lock-free it

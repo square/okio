@@ -15,6 +15,14 @@
  */
 package okio
 
+import java.io.IOException
+import java.io.OutputStream
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
+import java.security.InvalidKeyException
+import java.security.MessageDigest
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import okio.internal.commonCopyInto
 import okio.internal.commonEquals
 import okio.internal.commonGetSize
@@ -25,14 +33,6 @@ import okio.internal.commonSubstring
 import okio.internal.commonToByteArray
 import okio.internal.commonWrite
 import okio.internal.forEachSegment
-import java.io.IOException
-import java.io.OutputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
-import java.security.InvalidKeyException
-import java.security.MessageDigest
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
 
 internal actual class SegmentedByteString internal actual constructor(
   @Transient internal actual val segments: Array<ByteArray>,

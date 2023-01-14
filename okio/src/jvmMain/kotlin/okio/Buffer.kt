@@ -15,6 +15,18 @@
  */
 package okio
 
+import java.io.Closeable
+import java.io.EOFException
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.nio.ByteBuffer
+import java.nio.channels.ByteChannel
+import java.nio.charset.Charset
+import java.security.InvalidKeyException
+import java.security.MessageDigest
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import okio.internal.commonClear
 import okio.internal.commonClose
 import okio.internal.commonCompleteSegmentByteCount
@@ -60,18 +72,6 @@ import okio.internal.commonWriteLong
 import okio.internal.commonWriteShort
 import okio.internal.commonWriteUtf8
 import okio.internal.commonWriteUtf8CodePoint
-import java.io.Closeable
-import java.io.EOFException
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
-import java.nio.ByteBuffer
-import java.nio.channels.ByteChannel
-import java.nio.charset.Charset
-import java.security.InvalidKeyException
-import java.security.MessageDigest
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
 
 actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @JvmField internal actual var head: Segment? = null

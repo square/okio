@@ -15,13 +15,13 @@
  */
 package okio
 
-import okio.ByteString.Companion.decodeHex
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import okio.ByteString.Companion.decodeHex
 
 /**
  * Tests solely for the behavior of Buffer's implementation. For generic BufferedSink or

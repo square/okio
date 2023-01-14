@@ -15,13 +15,13 @@
  */
 package okio.samples
 
-import okio.Buffer
-import okio.ByteString
-import okio.ByteString.Companion.decodeBase64
 import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
+import okio.Buffer
+import okio.ByteString
+import okio.ByteString.Companion.decodeBase64
 
 class KotlinGoldenValue {
   fun run() {

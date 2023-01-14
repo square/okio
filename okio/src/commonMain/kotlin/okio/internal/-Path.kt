@@ -15,12 +15,12 @@
  */
 package okio.internal
 
+import kotlin.native.concurrent.SharedImmutable
 import okio.Buffer
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path
 import okio.Path.Companion.toPath
-import kotlin.native.concurrent.SharedImmutable
 
 @SharedImmutable
 private val SLASH = "/".encodeUtf8()

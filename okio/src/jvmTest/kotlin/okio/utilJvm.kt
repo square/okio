@@ -15,10 +15,10 @@
  */
 package okio
 
-import okio.Path.Companion.toOkioPath
-import okio.Path.Companion.toPath
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import okio.Path.Companion.toOkioPath
+import okio.Path.Companion.toPath
 
 actual fun assertRelativeTo(
   a: Path,

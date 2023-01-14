@@ -15,6 +15,9 @@
  */
 package okio.fakefilesystem
 
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import okio.ArrayIndexOutOfBoundsException
@@ -34,9 +37,6 @@ import okio.fakefilesystem.FakeFileSystem.Element.File
 import okio.fakefilesystem.FakeFileSystem.Element.Symlink
 import okio.fakefilesystem.FakeFileSystem.Operation.READ
 import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmName
-import kotlin.reflect.KClass
 
 /**
  * A fully in-memory file system useful for testing. It includes features to support writing
