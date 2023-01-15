@@ -91,10 +91,10 @@ allprojects {
   plugins.withId("com.vanniktech.maven.publish.base") {
     val publishingExtension = extensions.getByType(PublishingExtension::class.java)
     configure<MavenPublishBaseExtension> {
-      publishToMavenCentral(SonatypeHost.S01)
+      publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
       signAllPublications()
       pom {
-        description.set("A modern I/O API for Java")
+        description.set("A modern I/O library for Android, Java, and Kotlin Multiplatform.")
         name.set(project.name)
         url.set("https://github.com/square/okio/")
         licenses {
