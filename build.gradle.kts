@@ -150,6 +150,7 @@ subprojects {
   configure<SpotlessExtension> {
     kotlin {
       target("**/*.kt")
+      ktlint(libs.versions.ktlint.get())
     }
   }
 
