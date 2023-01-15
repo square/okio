@@ -15,9 +15,9 @@
  */
 package okio
 
-import okio.Path.Companion.toOkioPath
 import java.io.InterruptedIOException
 import java.io.RandomAccessFile
+import okio.Path.Companion.toOkioPath
 
 /**
  * A file system that adapts `java.io`.

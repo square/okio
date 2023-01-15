@@ -16,11 +16,11 @@
 
 package okio
 
-import okio.ByteString.Companion.decodeHex
-import org.junit.Test
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 import kotlin.test.assertEquals
+import okio.ByteString.Companion.decodeHex
+import org.junit.Test
 
 class DeflateKotlinTest {
   @Test fun deflate() {

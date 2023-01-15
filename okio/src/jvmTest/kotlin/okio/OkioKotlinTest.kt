@@ -16,17 +16,17 @@
 
 package okio
 
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Ignore
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.net.Socket
 import java.nio.file.StandardOpenOption
 import java.nio.file.StandardOpenOption.APPEND
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 class OkioKotlinTest {
   @get:Rule val temp = TemporaryFolder()

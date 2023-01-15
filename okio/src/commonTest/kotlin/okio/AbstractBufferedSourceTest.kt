@@ -16,13 +16,13 @@
 
 package okio
 
-import okio.ByteString.Companion.decodeHex
-import okio.ByteString.Companion.encodeUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import okio.ByteString.Companion.decodeHex
+import okio.ByteString.Companion.encodeUtf8
 
 class BufferSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.BUFFER)
 class RealBufferedSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.REAL_BUFFERED_SOURCE)

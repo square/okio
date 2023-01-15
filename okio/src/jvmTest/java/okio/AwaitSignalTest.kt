@@ -15,14 +15,14 @@
  */
 package okio
 
-import okio.TestUtil.assumeNotWindows
-import org.junit.After
-import org.junit.Assert
-import org.junit.Test
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
+import okio.TestUtil.assumeNotWindows
+import org.junit.After
+import org.junit.Assert
+import org.junit.Test
 
 class AwaitSignalTest {
   val executorService = TestingExecutors.newScheduledExecutorService(0)

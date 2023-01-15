@@ -15,6 +15,10 @@
  */
 package okio
 
+import java.io.IOException
+import java.io.InputStream
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import okio.internal.commonClose
 import okio.internal.commonExhausted
 import okio.internal.commonIndexOf
@@ -45,10 +49,6 @@ import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonTimeout
 import okio.internal.commonToString
-import java.io.IOException
-import java.io.InputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
 
 internal actual class RealBufferedSource actual constructor(
   @JvmField actual val source: Source

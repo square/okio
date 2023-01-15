@@ -15,13 +15,13 @@
  */
 package okio
 
-import okio.Path.Companion.toPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import okio.Path.Companion.toPath
 
 class PathTest {
   @Test

@@ -15,9 +15,9 @@
  */
 package okio.samples
 
+import java.io.IOException
 import okio.ByteString.Companion.encodeUtf8
 import okio.utf8Size
-import java.io.IOException
 
 @Throws(IOException::class)
 fun dumpStringData(s: String) {

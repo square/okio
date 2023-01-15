@@ -15,12 +15,12 @@
  */
 package okio
 
-import kotlinx.datetime.Clock
-import org.junit.Test
 import java.io.InterruptedIOException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.fail
+import kotlinx.datetime.Clock
+import org.junit.Test
 
 /**
  * This test will run using [NioSystemFileSystem] by default. If [java.nio.file.Files] is not found

@@ -15,8 +15,6 @@
  */
 package okio
 
-import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,6 +23,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
+import okio.Path.Companion.toPath
+import okio.fakefilesystem.FakeFileSystem
 
 class FakeWindowsFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateWindows() },

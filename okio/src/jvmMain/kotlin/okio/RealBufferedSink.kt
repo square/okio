@@ -15,6 +15,10 @@
  */
 package okio
 
+import java.io.IOException
+import java.io.OutputStream
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import okio.internal.commonClose
 import okio.internal.commonEmit
 import okio.internal.commonEmitCompleteSegments
@@ -34,10 +38,6 @@ import okio.internal.commonWriteShort
 import okio.internal.commonWriteShortLe
 import okio.internal.commonWriteUtf8
 import okio.internal.commonWriteUtf8CodePoint
-import java.io.IOException
-import java.io.OutputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
 
 internal actual class RealBufferedSink actual constructor(
   @JvmField actual val sink: Sink

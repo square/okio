@@ -15,6 +15,7 @@
  */
 package okio
 
+import kotlin.test.assertFailsWith
 import kotlinx.datetime.Instant
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
@@ -22,7 +23,6 @@ import okio.Path.Companion.toPath
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.assertFailsWith
 
 class ZipFileSystemTest {
   private val fileSystem = FileSystem.SYSTEM

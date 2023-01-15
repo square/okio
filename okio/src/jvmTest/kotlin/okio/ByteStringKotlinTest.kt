@@ -15,14 +15,14 @@
  */
 package okio
 
-import okio.ByteString.Companion.encode
-import okio.ByteString.Companion.encodeUtf8
-import okio.ByteString.Companion.readByteString
-import okio.ByteString.Companion.toByteString
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import okio.ByteString.Companion.encode
+import okio.ByteString.Companion.encodeUtf8
+import okio.ByteString.Companion.readByteString
+import okio.ByteString.Companion.toByteString
 
 class ByteStringKotlinTest {
   @Test fun arrayToByteString() {

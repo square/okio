@@ -15,6 +15,13 @@
  */
 package okio.internal
 
+import java.net.URL
+import java.net.URLClassLoader
+import java.util.Enumeration
+import kotlin.reflect.KClass
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.fail
 import okio.BufferedSource
 import okio.ByteString
 import okio.FileSystem
@@ -25,13 +32,6 @@ import okio.ZipBuilder
 import okio.randomToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.net.URL
-import java.net.URLClassLoader
-import java.util.Enumeration
-import kotlin.reflect.KClass
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.fail
 
 class ResourceFileSystemTest {
   private val fileSystem = FileSystem.RESOURCES as ResourceFileSystem

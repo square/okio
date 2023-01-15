@@ -15,14 +15,14 @@
  */
 package okio.internal
 
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import kotlin.random.Random
 import okio.ByteString
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
-import kotlin.random.Random
 
 /**
  * Check the [Hmac] implementation against the reference [Mac] JVM implementation.

@@ -15,9 +15,9 @@
  */
 package okio
 
-import okio.ByteString.Companion.toByteString
 import kotlin.random.Random
 import kotlin.test.assertEquals
+import okio.ByteString.Companion.toByteString
 
 fun Char.repeat(count: Int): String {
   return toString().repeat(count)

@@ -15,12 +15,12 @@
  */
 package okio
 
-import okio.Path.Companion.toOkioPath
-import okio.Path.Companion.toPath
-import org.assertj.core.api.Assertions.assertThat
 import java.io.File
 import java.nio.file.Paths
 import kotlin.test.Test
+import okio.Path.Companion.toOkioPath
+import okio.Path.Companion.toPath
+import org.assertj.core.api.Assertions.assertThat
 
 class JvmTest {
   @Test
