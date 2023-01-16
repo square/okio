@@ -150,9 +150,7 @@ subprojects {
   configure<SpotlessExtension> {
     kotlin {
       target("**/*.kt")
-      ktlint(libs.versions.ktlint.get()).userData(mapOf("indent_size" to "2"))
-      trimTrailingWhitespace()
-      endWithNewline()
+      ktlint(libs.versions.ktlint.get())
     }
   }
 
