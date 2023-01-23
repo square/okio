@@ -3,5 +3,5 @@
   "extends": [
     "config:base"
   ],
-  semanticCommits: "disabled"
+  "semanticCommits": "disabled"
 }
