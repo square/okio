@@ -59,7 +59,8 @@ enum class BufferFactory {
 
       return bufferWithRandomSegmentLayout(dice, largeByteArray)
     }
-  };
+  },
+  ;
 
   @Throws(Exception::class)
   abstract fun newBuffer(): Buffer

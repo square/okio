@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+@file:JvmName("-ByteString") // A leading '-' hides this class from Java.
 package okio.internal
 
+import kotlin.jvm.JvmName
 import kotlin.native.concurrent.SharedImmutable
 import okio.BASE64_URL_SAFE
 import okio.Buffer

@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("-FileSystem") // A leading '-' hides this class from Java.
 package okio.internal
 
+import kotlin.jvm.JvmName
 import okio.FileMetadata
 import okio.FileNotFoundException
 import okio.FileSystem

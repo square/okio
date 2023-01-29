@@ -17,8 +17,10 @@
 // TODO move to SegmentedByteString class: https://youtrack.jetbrains.com/issue/KT-20427
 @file:Suppress("NOTHING_TO_INLINE")
 
+@file:JvmName("-SegmentedByteString") // A leading '-' hides this class from Java.
 package okio.internal
 
+import kotlin.jvm.JvmName
 import okio.Buffer
 import okio.ByteString
 import okio.Segment

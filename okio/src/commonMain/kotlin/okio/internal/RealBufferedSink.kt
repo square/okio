@@ -17,8 +17,10 @@
 // TODO move to RealBufferedSink class: https://youtrack.jetbrains.com/issue/KT-20427
 @file:Suppress("NOTHING_TO_INLINE")
 
+@file:JvmName("-RealBufferedSink") // A leading '-' hides this class from Java.
 package okio.internal
 
+import kotlin.jvm.JvmName
 import okio.Buffer
 import okio.BufferedSink
 import okio.ByteString

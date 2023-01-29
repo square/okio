@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+@file:JvmName("-CommonPlatform") // A leading '-' hides this class from Java.
 package okio
+
+import kotlin.jvm.JvmName
 
 internal expect fun ByteArray.toUtf8String(): String
 

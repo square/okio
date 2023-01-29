@@ -14,9 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
+@file:JvmName("-Base64") // A leading '-' hides this class from Java.
 package okio
 
+import kotlin.jvm.JvmName
 import kotlin.native.concurrent.SharedImmutable
 import okio.ByteString.Companion.encodeUtf8
 
