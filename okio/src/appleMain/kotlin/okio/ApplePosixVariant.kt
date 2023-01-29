@@ -40,7 +40,7 @@ internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
       size = stat.st_size,
       createdAtMillis = stat.st_ctimespec.epochMillis,
       lastModifiedAtMillis = stat.st_mtimespec.epochMillis,
-      lastAccessedAtMillis = stat.st_atimespec.epochMillis
+      lastAccessedAtMillis = stat.st_atimespec.epochMillis,
     )
   }
 }

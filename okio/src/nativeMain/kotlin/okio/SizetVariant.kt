@@ -28,12 +28,12 @@ import platform.posix.fwrite
 internal fun variantFread(
   target: CPointer<ByteVarOf<Byte>>,
   byteCount: UInt,
-  file: CPointer<FILE>
+  file: CPointer<FILE>,
 ): UInt = fread(target, 1, byteCount.convert(), file).convert()
 
 @OptIn(UnsafeNumber::class)
 internal fun variantFwrite(
   source: CPointer<ByteVar>,
   byteCount: UInt,
-  file: CPointer<FILE>
+  file: CPointer<FILE>,
 ): UInt = fwrite(source, 1, byteCount.convert(), file).convert()

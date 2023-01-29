@@ -58,7 +58,7 @@ import okio.internal.commonWrite
 
 actual open class ByteString
 internal actual constructor(
-  internal actual val data: ByteArray
+  internal actual val data: ByteArray,
 ) : Serializable, Comparable<ByteString> {
   @Transient internal actual var hashCode: Int = 0 // Lazily computed; 0 if unknown.
   @Transient internal actual var utf8: String? = null // Lazily computed.
@@ -123,7 +123,8 @@ internal actual constructor(
   actual operator fun get(index: Int): Byte = internalGet(index)
 
   actual val size
-    @JvmName("size") get() = getSize()
+    @JvmName("size")
+    get() = getSize()
 
   internal actual open fun getSize() = commonGetSize()
 
@@ -147,21 +148,21 @@ internal actual constructor(
     offset: Int,
     other: ByteString,
     otherOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
 
   actual open fun rangeEquals(
     offset: Int,
     other: ByteArray,
     otherOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
 
   actual open fun copyInto(
     offset: Int,
     target: ByteArray,
     targetOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) = commonCopyInto(offset, target, targetOffset, byteCount)
 
   actual fun startsWith(prefix: ByteString) = commonStartsWith(prefix)
@@ -211,7 +212,7 @@ internal actual constructor(
   @Deprecated(
     message = "moved to operator function",
     replaceWith = ReplaceWith(expression = "this[index]"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun getByte(index: Int) = this[index]
 
@@ -219,7 +220,7 @@ internal actual constructor(
   @Deprecated(
     message = "moved to val",
     replaceWith = ReplaceWith(expression = "size"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun size() = size
 
@@ -287,9 +288,9 @@ internal actual constructor(
       message = "moved to extension function",
       replaceWith = ReplaceWith(
         expression = "string.decodeBase64()",
-        imports = ["okio.ByteString.Companion.decodeBase64"]
+        imports = ["okio.ByteString.Companion.decodeBase64"],
       ),
-      level = DeprecationLevel.ERROR
+      level = DeprecationLevel.ERROR,
     )
     fun decodeBase64(string: String) = string.decodeBase64()
 
@@ -298,9 +299,9 @@ internal actual constructor(
       message = "moved to extension function",
       replaceWith = ReplaceWith(
         expression = "string.decodeHex()",
-        imports = ["okio.ByteString.Companion.decodeHex"]
+        imports = ["okio.ByteString.Companion.decodeHex"],
       ),
-      level = DeprecationLevel.ERROR
+      level = DeprecationLevel.ERROR,
     )
     fun decodeHex(string: String) = string.decodeHex()
 
@@ -309,9 +310,9 @@ internal actual constructor(
       message = "moved to extension function",
       replaceWith = ReplaceWith(
         expression = "string.encode(charset)",
-        imports = ["okio.ByteString.Companion.encode"]
+        imports = ["okio.ByteString.Companion.encode"],
       ),
-      level = DeprecationLevel.ERROR
+      level = DeprecationLevel.ERROR,
     )
     fun encodeString(string: String, charset: Charset) = string.encode(charset)
 
@@ -320,9 +321,9 @@ internal actual constructor(
       message = "moved to extension function",
       replaceWith = ReplaceWith(
         expression = "string.encodeUtf8()",
-        imports = ["okio.ByteString.Companion.encodeUtf8"]
+        imports = ["okio.ByteString.Companion.encodeUtf8"],
       ),
-      level = DeprecationLevel.ERROR
+      level = DeprecationLevel.ERROR,
     )
     fun encodeUtf8(string: String) = string.encodeUtf8()
 
@@ -331,9 +332,9 @@ internal actual constructor(
       message = "moved to extension function",
       replaceWith = ReplaceWith(
         expression = "buffer.toByteString()",
-        imports = ["okio.ByteString.Companion.toByteString"]
+        imports = ["okio.ByteString.Companion.toByteString"],
       ),
-      level = DeprecationLevel.ERROR
+      level = DeprecationLevel.ERROR,
     )
     fun of(buffer: ByteBuffer) = buffer.toByteString()
 
@@ -342,9 +343,9 @@ internal actual constructor(
       message = "moved to extension function",
       replaceWith = ReplaceWith(
         expression = "array.toByteString(offset, byteCount)",
-        imports = ["okio.ByteString.Companion.toByteString"]
+        imports = ["okio.ByteString.Companion.toByteString"],
       ),
-      level = DeprecationLevel.ERROR
+      level = DeprecationLevel.ERROR,
     )
     fun of(array: ByteArray, offset: Int, byteCount: Int) = array.toByteString(offset, byteCount)
 
@@ -353,9 +354,9 @@ internal actual constructor(
       message = "moved to extension function",
       replaceWith = ReplaceWith(
         expression = "inputstream.readByteString(byteCount)",
-        imports = ["okio.ByteString.Companion.readByteString"]
+        imports = ["okio.ByteString.Companion.readByteString"],
       ),
-      level = DeprecationLevel.ERROR
+      level = DeprecationLevel.ERROR,
     )
     fun read(inputstream: InputStream, byteCount: Int) = inputstream.readByteString(byteCount)
   }

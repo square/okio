@@ -40,9 +40,10 @@ import okio.internal.commonWriteUtf8
 import okio.internal.commonWriteUtf8CodePoint
 
 internal actual class RealBufferedSink actual constructor(
-  @JvmField actual val sink: Sink
+  @JvmField actual val sink: Sink,
 ) : BufferedSink {
   @JvmField val bufferField = Buffer()
+
   @JvmField actual var closed: Boolean = false
 
   @Suppress("OVERRIDE_BY_INLINE") // Prevent internal code from calling the getter.
@@ -71,7 +72,7 @@ internal actual class RealBufferedSink actual constructor(
     string: String,
     beginIndex: Int,
     endIndex: Int,
-    charset: Charset
+    charset: Charset,
   ): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeString(string, beginIndex, endIndex, charset)

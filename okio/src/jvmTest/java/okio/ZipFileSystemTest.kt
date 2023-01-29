@@ -140,13 +140,13 @@ class ZipFileSystemTest {
         path = "a.txt",
         content = "Android",
         modifiedAt = "200102030405.06",
-        accessedAt = "200102030405.07"
+        accessedAt = "200102030405.07",
       )
       .addEntry(
         path = "b.txt",
         content = "Banana",
         modifiedAt = "200908070605.04",
-        accessedAt = "200908070605.03"
+        accessedAt = "200908070605.03",
       )
       .build()
     val zipFileSystem = fileSystem.openZip(zipPath)
@@ -180,13 +180,13 @@ class ZipFileSystemTest {
         path = "a.txt",
         content = "Android",
         modifiedAt = "196912310000.00",
-        accessedAt = "196912300000.00"
+        accessedAt = "196912300000.00",
       )
       .addEntry(
         path = "b.txt",
         content = "Banana",
         modifiedAt = "203801190314.07", // Last UNIX date representable in 31 bits.
-        accessedAt = "203801190314.08" // Overflows!
+        accessedAt = "203801190314.08", // Overflows!
       )
       .build()
     val zipFileSystem = fileSystem.openZip(zipPath)
@@ -228,14 +228,14 @@ class ZipFileSystemTest {
         path = "a",
         directory = true,
         modifiedAt = "200102030405.06",
-        accessedAt = "200102030405.07"
+        accessedAt = "200102030405.07",
       )
       .addEntry("b/b.txt", "Android")
       .addEntry(
         path = "b",
         directory = true,
         modifiedAt = "200908070605.04",
-        accessedAt = "200908070605.03"
+        accessedAt = "200908070605.03",
       )
       .build()
     val zipFileSystem = fileSystem.openZip(zipPath)
@@ -270,7 +270,7 @@ class ZipFileSystemTest {
         "a/a.txt",
         modifiedAt = "197001010001.00",
         accessedAt = "197001010002.00",
-        content = "Android"
+        content = "Android",
       )
       .build()
     val zipFileSystem = fileSystem.openZip(zipPath)
@@ -291,7 +291,7 @@ class ZipFileSystemTest {
         path = "a",
         directory = true,
         modifiedAt = "200102030405.06",
-        accessedAt = "200102030405.07"
+        accessedAt = "200102030405.07",
       )
       .build()
     val zipFileSystem = fileSystem.openZip(zipPath)

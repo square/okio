@@ -57,7 +57,7 @@ internal fun rangeEquals(
   segmentPos: Int,
   bytes: ByteArray,
   bytesOffset: Int,
-  bytesLimit: Int
+  bytesLimit: Int,
 ): Boolean {
   var segment = segment
   var segmentPos = segmentPos
@@ -107,7 +107,7 @@ internal fun Buffer.readUtf8Line(newline: Long): String {
  */
 internal inline fun <T> Buffer.seek(
   fromIndex: Long,
-  lambda: (Segment?, Long) -> T
+  lambda: (Segment?, Long) -> T,
 ): T {
   var s: Segment = head ?: return lambda(null, -1L)
 
@@ -239,7 +239,7 @@ internal fun Buffer.selectPrefix(options: Options, selectTruncated: Boolean = fa
 internal inline fun Buffer.commonCopyTo(
   out: Buffer,
   offset: Long,
-  byteCount: Long
+  byteCount: Long,
 ): Buffer {
   var offset = offset
   var byteCount = byteCount
@@ -439,7 +439,7 @@ internal inline fun Buffer.commonSkip(byteCount: Long) {
 internal inline fun Buffer.commonWrite(
   byteString: ByteString,
   offset: Int = 0,
-  byteCount: Int = byteString.size
+  byteCount: Int = byteString.size,
 ): Buffer {
   byteString.write(this, offset, byteCount)
   return this
@@ -463,33 +463,61 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
 
   // Binary search for character width which favors matching lower numbers.
   var width =
-    if (v < 100000000L)
-      if (v < 10000L)
-        if (v < 100L)
-          if (v < 10L) 1
-          else 2
-        else if (v < 1000L) 3
-        else 4
-      else if (v < 1000000L)
-        if (v < 100000L) 5
-        else 6
-      else if (v < 10000000L) 7
-      else 8
-    else if (v < 1000000000000L)
-      if (v < 10000000000L)
-        if (v < 1000000000L) 9
-        else 10
-      else if (v < 100000000000L) 11
-      else 12
-    else if (v < 1000000000000000L)
-      if (v < 10000000000000L) 13
-      else if (v < 100000000000000L) 14
-      else 15
-    else if (v < 100000000000000000L)
-      if (v < 10000000000000000L) 16
-      else 17
-    else if (v < 1000000000000000000L) 18
-    else 19
+    if (v < 100000000L) {
+      if (v < 10000L) {
+        if (v < 100L) {
+          if (v < 10L) {
+            1
+          } else {
+            2
+          }
+        } else if (v < 1000L) {
+          3
+        } else {
+          4
+        }
+      } else if (v < 1000000L) {
+        if (v < 100000L) {
+          5
+        } else {
+          6
+        }
+      } else if (v < 10000000L) {
+        7
+      } else {
+        8
+      }
+    } else if (v < 1000000000000L) {
+      if (v < 10000000000L) {
+        if (v < 1000000000L) {
+          9
+        } else {
+          10
+        }
+      } else if (v < 100000000000L) {
+        11
+      } else {
+        12
+      }
+    } else if (v < 1000000000000000L) {
+      if (v < 10000000000000L) {
+        13
+      } else if (v < 100000000000000L) {
+        14
+      } else {
+        15
+      }
+    } else if (v < 100000000000000000L) {
+      if (v < 10000000000000000L) {
+        16
+      } else {
+        17
+      }
+    } else if (v < 1000000000000000000L) {
+      18
+    } else {
+      19
+    }
   if (negative) {
     ++width
   }
@@ -577,7 +605,7 @@ internal inline fun Buffer.commonWrite(source: ByteArray) = write(source, 0, sou
 internal inline fun Buffer.commonWrite(
   source: ByteArray,
   offset: Int,
-  byteCount: Int
+  byteCount: Int,
 ): Buffer {
   var offset = offset
   checkOffsetAndCount(source.size.toLong(), offset.toLong(), byteCount.toLong())
@@ -591,7 +619,7 @@ internal inline fun Buffer.commonWrite(
       destination = tail.data,
       destinationOffset = tail.limit,
       startIndex = offset,
-      endIndex = offset + toCopy
+      endIndex = offset + toCopy,
     )
 
     offset += toCopy
@@ -630,7 +658,10 @@ internal inline fun Buffer.commonRead(sink: ByteArray, offset: Int, byteCount: I
   val s = head ?: return -1
   val toCopy = minOf(byteCount, s.limit - s.pos)
   s.data.copyInto(
-    destination = sink, destinationOffset = offset, startIndex = s.pos, endIndex = s.pos + toCopy
+    destination = sink,
+    destinationOffset = offset,
+    startIndex = s.pos,
+    endIndex = s.pos + toCopy,
   )
 
   s.pos += toCopy
@@ -737,7 +768,7 @@ internal inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
       } else {
         if (seen == 0) {
           throw NumberFormatException(
-            "Expected leading [0-9a-fA-F] character but was 0x${b.toHexString()}"
+            "Expected leading [0-9a-fA-F] character but was 0x${b.toHexString()}",
           )
         }
         // Set a flag to stop iteration. We still need to run through segment updating below.
@@ -858,8 +889,8 @@ internal inline fun Buffer.commonReadUtf8LineStrict(limit: Long): String {
   throw EOFException(
     "\\n not found: limit=${minOf(
       size,
-      limit
-    )} content=${data.readByteString().hex()}${'…'}"
+      limit,
+    )} content=${data.readByteString().hex()}${'…'}",
   )
 }
 
@@ -1381,7 +1412,7 @@ internal inline fun Buffer.commonRangeEquals(
   offset: Long,
   bytes: ByteString,
   bytesOffset: Int,
-  byteCount: Int
+  byteCount: Int,
 ): Boolean {
   if (offset < 0L ||
     bytesOffset < 0 ||

@@ -27,14 +27,14 @@ import platform.posix.ferror
 
 /** Reads the bytes of a file as a source. */
 internal class FileSource(
-  private val file: CPointer<FILE>
+  private val file: CPointer<FILE>,
 ) : Source {
   private val unsafeCursor = UnsafeCursor()
   private var closed = false
 
   override fun read(
     sink: Buffer,
-    byteCount: Long
+    byteCount: Long,
   ): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }

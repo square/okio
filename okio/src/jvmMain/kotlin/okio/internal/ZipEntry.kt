@@ -45,7 +45,7 @@ internal class ZipEntry(
 
   val lastModifiedAtMillis: Long? = null,
 
-  val offset: Long = -1L
+  val offset: Long = -1L,
 ) {
   val children = mutableListOf<Path>()
 }

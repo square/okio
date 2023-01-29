@@ -114,7 +114,7 @@ class ResourceFileSystemTest {
           filesAPath.toFile().toURI().toURL(),
           zipBPath.toFile().toURI().toURL(),
         ),
-        null
+        null,
       ),
       indexEagerly = false,
     )
@@ -132,8 +132,8 @@ class ResourceFileSystemTest {
       listOf(
         "/colors/red.txt".toPath(),
         "/colors/green.txt".toPath(),
-        "/colors/blue.txt".toPath()
-      )
+        "/colors/blue.txt".toPath(),
+      ),
     )
 
     assertThat(resourceFileSystem.metadata("/".toPath()).isDirectory).isTrue()
@@ -157,7 +157,7 @@ class ResourceFileSystemTest {
           filesAPath.toFile().toURI().toURL(),
           filesBPath.toFile().toURI().toURL(),
         ),
-        null
+        null,
       ),
       indexEagerly = false,
     )
@@ -175,8 +175,8 @@ class ResourceFileSystemTest {
       listOf(
         "/colors/red.txt".toPath(),
         "/colors/green.txt".toPath(),
-        "/colors/blue.txt".toPath()
-      )
+        "/colors/blue.txt".toPath(),
+      ),
     )
 
     assertThat(resourceFileSystem.metadata("/".toPath()).isDirectory).isTrue()
@@ -201,7 +201,7 @@ class ResourceFileSystemTest {
           zipAPath.toFile().toURI().toURL(),
           zipBPath.toFile().toURI().toURL(),
         ),
-        null
+        null,
       ),
       indexEagerly = false,
     )
@@ -219,8 +219,8 @@ class ResourceFileSystemTest {
       listOf(
         "/colors/red.txt".toPath(),
         "/colors/green.txt".toPath(),
-        "/colors/blue.txt".toPath()
-      )
+        "/colors/blue.txt".toPath(),
+      ),
     )
 
     assertThat(resourceFileSystem.metadata("/".toPath()).isDirectory).isTrue()
@@ -284,7 +284,7 @@ class ResourceFileSystemTest {
     val resourceFileSystem = ResourceFileSystem(
       classLoader = URLClassLoader(
         arrayOf(filesPath.toFile().toURI().toURL()),
-        null
+        null,
       ),
       indexEagerly = false,
     )
@@ -336,13 +336,13 @@ class ResourceFileSystemTest {
 
     val resourceFileSystem = ResourceFileSystem(
       classLoader = classLoader,
-      indexEagerly = false
+      indexEagerly = false,
     )
 
     assertThat(
       assertFailsWith<Exception> {
         resourceFileSystem.list("/".toPath())
-      }
+      },
     ).hasMessage("finding a resource")
   }
 
@@ -358,9 +358,9 @@ class ResourceFileSystemTest {
       assertFailsWith<Exception> {
         ResourceFileSystem(
           classLoader = classLoader,
-          indexEagerly = true
+          indexEagerly = true,
         )
-      }
+      },
     ).hasMessage("finding a resource")
   }
 
@@ -396,7 +396,7 @@ class ResourceFileSystemTest {
           zipAPath.toFile().toURI().toURL(),
           (base / "missing.zip").toFile().toURI().toURL(),
         ),
-        null
+        null,
       ),
       indexEagerly = false,
     )
@@ -415,7 +415,7 @@ class ResourceFileSystemTest {
 
     val content = fileSystem.read(
       "/okio/resourcefilesystem/non-ascii/ギリシア神話/Ἰλιάς".toPath(),
-      BufferedSource::readUtf8
+      BufferedSource::readUtf8,
     )
     assertEquals("Chante, ô déesse, le courroux du Péléide Achille,\n", content)
   }

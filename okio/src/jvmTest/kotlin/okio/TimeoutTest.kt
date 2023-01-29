@@ -24,11 +24,13 @@ import org.junit.Test
 import org.junit.rules.Timeout as JUnitTimeout
 
 class TimeoutTest {
-  @JvmField @Rule val timeout = JUnitTimeout(5, TimeUnit.SECONDS)
+  @JvmField @Rule
+  val timeout = JUnitTimeout(5, TimeUnit.SECONDS)
 
   private val executorService = TestingExecutors.newExecutorService(1)
 
-  @After @Throws(Exception::class)
+  @After
+  @Throws(Exception::class)
   fun tearDown() {
     executorService.shutdown()
   }

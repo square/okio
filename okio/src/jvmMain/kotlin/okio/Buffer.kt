@@ -147,7 +147,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   fun copyTo(
     out: OutputStream,
     offset: Long = 0L,
-    byteCount: Long = size - offset
+    byteCount: Long = size - offset,
   ): Buffer {
     var offset = offset
     var byteCount = byteCount
@@ -177,12 +177,12 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   actual fun copyTo(
     out: Buffer,
     offset: Long,
-    byteCount: Long
+    byteCount: Long,
   ): Buffer = commonCopyTo(out, offset, byteCount)
 
   actual fun copyTo(
     out: Buffer,
-    offset: Long
+    offset: Long,
   ): Buffer = copyTo(out, offset, size - offset)
 
   /** Write `byteCount` bytes from this to `out`. */
@@ -387,15 +387,17 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     commonWriteUtf8CodePoint(codePoint)
 
   override fun writeString(string: String, charset: Charset) = writeString(
-    string, 0, string.length,
-    charset
+    string,
+    0,
+    string.length,
+    charset,
   )
 
   override fun writeString(
     string: String,
     beginIndex: Int,
     endIndex: Int,
-    charset: Charset
+    charset: Charset,
   ): Buffer {
     require(beginIndex >= 0) { "beginIndex < 0: $beginIndex" }
     require(endIndex >= beginIndex) { "endIndex < beginIndex: $endIndex < $beginIndex" }
@@ -410,7 +412,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   actual override fun write(
     source: ByteArray,
     offset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Buffer = commonWrite(source, offset, byteCount)
 
   @Throws(IOException::class)
@@ -492,7 +494,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     offset: Long,
     bytes: ByteString,
     bytesOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
   override fun flush() {}
@@ -593,7 +595,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @Deprecated(
     message = "moved to operator function",
     replaceWith = ReplaceWith(expression = "this[index]"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun getByte(index: Long) = this[index]
 
@@ -601,18 +603,23 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @Deprecated(
     message = "moved to val",
     replaceWith = ReplaceWith(expression = "size"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun size() = size
 
   actual class UnsafeCursor : Closeable {
     @JvmField actual var buffer: Buffer? = null
+
     @JvmField actual var readWrite: Boolean = false
 
     internal actual var segment: Segment? = null
+
     @JvmField actual var offset = -1L
+
     @JvmField actual var data: ByteArray? = null
+
     @JvmField actual var start = -1
+
     @JvmField actual var end = -1
 
     actual fun next(): Int = commonNext()

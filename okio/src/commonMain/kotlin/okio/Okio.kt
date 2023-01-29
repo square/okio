@@ -60,8 +60,11 @@ inline fun <T : Closeable?, R> T.use(block: (T) -> R): R {
     try {
       this?.close()
     } catch (t: Throwable) {
-      if (thrown == null) thrown = t
-      else thrown.addSuppressed(t)
+      if (thrown == null) {
+        thrown = t
+      } else {
+        thrown.addSuppressed(t)
+      }
     }
   }
 

@@ -294,7 +294,7 @@ class PathTest {
     assertEquals("home${slash}jesse$slash..".toPath(), cwd / "home" / "jesse" / "..")
     assertEquals(
       "home${slash}jesse$slash..${slash}jake".toPath(),
-      cwd / "home" / "jesse" / ".." / "jake"
+      cwd / "home" / "jesse" / ".." / "jake",
     )
   }
 
@@ -307,7 +307,7 @@ class PathTest {
     assertEquals("..$slash..${slash}etc".toPath(), cwd / ".." / ".." / "etc")
     assertEquals(
       "..$slash..${slash}etc${slash}passwd".toPath(),
-      cwd / ".." / ".." / "etc" / "passwd"
+      cwd / ".." / ".." / "etc" / "passwd",
     )
   }
 
@@ -579,14 +579,14 @@ class PathTest {
     assertEquals(
       "Paths of different roots cannot be relative to each other: " +
         "Desktop/goodbye.txt and /Users/jesse/hello.txt",
-      exception.message
+      exception.message,
     )
 
     exception = assertRelativeToFails(b, a)
     assertEquals(
       "Paths of different roots cannot be relative to each other: " +
         "/Users/jesse/hello.txt and Desktop/goodbye.txt",
-      exception.message
+      exception.message,
     )
   }
 
@@ -682,50 +682,51 @@ class PathTest {
   fun windowsUncPathsDoNotDotDot() {
     assertEquals(
       """\\localhost\c$\Windows""",
-      """\\localhost\c$\Windows""".toPath().toString()
+      """\\localhost\c$\Windows""".toPath().toString(),
     )
     assertEquals(
       """\\127.0.0.1\c$\Windows""",
-      """\\127.0.0.1\c$\Windows""".toPath().toString()
+      """\\127.0.0.1\c$\Windows""".toPath().toString(),
     )
     assertEquals(
       """\\127.0.0.1\c$\Windows\..\Windows""",
-      """\\127.0.0.1\c$\Windows\..\Windows""".toPath().toString()
+      """\\127.0.0.1\c$\Windows\..\Windows""".toPath().toString(),
     )
     assertEquals(
       """\\127.0.0.1\..\localhost\c$\Windows""",
-      """\\127.0.0.1\..\localhost\c$\Windows""".toPath().toString()
+      """\\127.0.0.1\..\localhost\c$\Windows""".toPath().toString(),
     )
     assertEquals(
       """\\127.0.0.1\c$\..\d$""",
-      """\\127.0.0.1\c$\..\d$""".toPath().toString()
+      """\\127.0.0.1\c$\..\d$""".toPath().toString(),
     )
 
     assertEquals(
       """\\localhost\c$\Windows""",
-      """\\localhost\c$\Windows""".toPath(normalize = true).toString()
+      """\\localhost\c$\Windows""".toPath(normalize = true).toString(),
     )
     assertEquals(
       """\\127.0.0.1\c$\Windows""",
-      """\\127.0.0.1\c$\Windows""".toPath(normalize = true).toString()
+      """\\127.0.0.1\c$\Windows""".toPath(normalize = true).toString(),
     )
     assertEquals(
       """\\127.0.0.1\c$\Windows""",
-      """\\127.0.0.1\c$\Windows\..\Windows""".toPath(normalize = true).toString()
+      """\\127.0.0.1\c$\Windows\..\Windows""".toPath(normalize = true).toString(),
     )
     assertEquals(
       """\\127.0.0.1\localhost\c$\Windows""",
-      """\\127.0.0.1\..\localhost\c$\Windows""".toPath(normalize = true).toString()
+      """\\127.0.0.1\..\localhost\c$\Windows""".toPath(normalize = true).toString(),
     )
     assertEquals(
       """\\127.0.0.1\d$""",
-      """\\127.0.0.1\c$\..\d$""".toPath(normalize = true).toString()
+      """\\127.0.0.1\c$\..\d$""".toPath(normalize = true).toString(),
     )
     assertEquals(
       """\\127.0.0.1\c$""",
-      """\\..\127.0.0.1\..\c$""".toPath(normalize = true).toString()
+      """\\..\127.0.0.1\..\c$""".toPath(normalize = true).toString(),
     )
   }
+
   @Test fun normalizeAbsolute() {
     assertEquals("/", "/.".toPath(normalize = true).toString())
     assertEquals("/", "/.".toPath(normalize = false).toString())

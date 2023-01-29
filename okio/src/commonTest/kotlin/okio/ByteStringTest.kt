@@ -36,7 +36,7 @@ class ByteStringOneBytePerSegmentTest : AbstractByteStringTest(ByteStringFactory
 class OkioEncoderTest : AbstractByteStringTest(ByteStringFactory.OKIO_ENCODER)
 
 abstract class AbstractByteStringTest internal constructor(
-  private val factory: ByteStringFactory
+  private val factory: ByteStringFactory,
 ) {
   @Test fun get() {
     val actual = factory.encodeUtf8("abc")
@@ -214,7 +214,7 @@ abstract class AbstractByteStringTest internal constructor(
       (
         "d09dd0b020d0b1d0b5d180d0b5d0b3d18320d0bfd183d181" +
           "d182d18bd0bdd0bdd18bd18520d0b2d0bed0bbd0bd"
-        ).decodeHex()
+        ).decodeHex(),
     )
     assertEquals(byteString.utf8(), bronzeHorseman)
   }
@@ -277,7 +277,7 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals("AAAA", factory.encodeUtf8("\u0000\u0000\u0000").base64())
     assertEquals(
       "SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU/ICdib3V0IDIgbWlsbGlvbi4=",
-      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64()
+      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64(),
     )
   }
 
@@ -288,7 +288,7 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals("AAAA", factory.encodeUtf8("\u0000\u0000\u0000").base64Url())
     assertEquals(
       "SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU_ICdib3V0IDIgbWlsbGlvbi4=",
-      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url()
+      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url(),
     )
   }
 
@@ -313,7 +313,7 @@ abstract class AbstractByteStringTest internal constructor(
       (
         "V2hhdCdzIHRvIGJlIHNjYXJlZCBhYm91dD8gSXQncyBqdXN0IGEgbGl0dGxlIGhpY2" +
           "N1cCBpbiB0aGUgcG93ZXIuLi4="
-        ).decodeBase64()!!.utf8()
+        ).decodeBase64()!!.utf8(),
     )
     // Uses two encoding styles. Malformed, but supported as a side-effect.
     assertEquals("ffffff".decodeHex(), "__//".decodeBase64())
@@ -358,11 +358,11 @@ abstract class AbstractByteStringTest internal constructor(
   @Test fun toStringOnShortText() {
     assertEquals(
       "[text=Tyrannosaur]",
-      factory.encodeUtf8("Tyrannosaur").toString()
+      factory.encodeUtf8("Tyrannosaur").toString(),
     )
     assertEquals(
       "[text=təˈranəˌsôr]",
-      factory.decodeHex("74c999cb8872616ec999cb8c73c3b472").toString()
+      factory.decodeHex("74c999cb8872616ec999cb8c73c3b472").toString(),
     )
   }
 
@@ -379,7 +379,7 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals(
       "[size=517 text=Um, I'll tell you the problem with the scientific power that " +
         "you…]",
-      factory.encodeUtf8(raw).toString()
+      factory.encodeUtf8(raw).toString(),
     )
     val war = (
       "Սｍ, I'll 𝓽𝖾ll ᶌօ𝘂 ᴛℎ℮ 𝜚𝕣०ｂl𝖾ｍ ｗі𝕥𝒽 𝘵𝘩𝐞 𝓼𝙘𝐢𝔢𝓷𝗍𝜄𝚏𝑖ｃ 𝛠𝝾ｗ𝚎𝑟 𝕥ｈ⍺𝞃 𝛄𝓸𝘂'𝒓𝗲 υ𝖘𝓲𝗇ɡ 𝕙𝚎𝑟ｅ, " +
@@ -392,7 +392,7 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals(
       "[size=1496 text=Սｍ, I'll 𝓽𝖾ll ᶌօ𝘂 ᴛℎ℮ 𝜚𝕣०ｂl𝖾ｍ ｗі𝕥𝒽 𝘵𝘩𝐞 𝓼𝙘𝐢𝔢𝓷𝗍𝜄𝚏𝑖ｃ 𝛠𝝾ｗ𝚎𝑟 𝕥ｈ⍺𝞃 " +
         "𝛄𝓸𝘂…]",
-      factory.encodeUtf8(war).toString()
+      factory.encodeUtf8(war).toString(),
     )
   }
 
@@ -400,7 +400,7 @@ abstract class AbstractByteStringTest internal constructor(
     // Instead of emitting a literal newline in the toString(), these are escaped as "\n".
     assertEquals(
       "[text=a\\r\\nb\\nc\\rd\\\\e]",
-      factory.encodeUtf8("a\r\nb\nc\rd\\e").toString()
+      factory.encodeUtf8("a\r\nb\nc\rd\\e").toString(),
     )
   }
 
@@ -408,13 +408,13 @@ abstract class AbstractByteStringTest internal constructor(
     val byteString = factory.decodeHex(
       "" +
         "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
-        "4bf0b54023c29b624de9ef9c2f931efc580f9afb"
+        "4bf0b54023c29b624de9ef9c2f931efc580f9afb",
     )
     assertEquals(
       "[hex=" +
         "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
         "4bf0b54023c29b624de9ef9c2f931efc580f9afb]",
-      byteString.toString()
+      byteString.toString(),
     )
   }
 
@@ -422,13 +422,13 @@ abstract class AbstractByteStringTest internal constructor(
     val byteString = factory.decodeHex(
       "" +
         "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
-        "4bf0b54023c29b624de9ef9c2f931efc580f9afba1"
+        "4bf0b54023c29b624de9ef9c2f931efc580f9afba1",
     )
     assertEquals(
       "[size=65 hex=" +
         "60b420bb3851d9d47acb933dbe70399bf6c92da33af01d4fb770e98c0325f41d3ebaf8986da712c82bcd4d55" +
         "4bf0b54023c29b624de9ef9c2f931efc580f9afb…]",
-      byteString.toString()
+      byteString.toString(),
     )
   }
 
@@ -441,7 +441,7 @@ abstract class AbstractByteStringTest internal constructor(
       factory.decodeHex("80"),
       factory.decodeHex("81"),
       factory.decodeHex("fe"),
-      factory.decodeHex("ff")
+      factory.decodeHex("ff"),
     )
 
     val sortedByteStrings = originalByteStrings.toMutableList()
@@ -479,7 +479,7 @@ abstract class AbstractByteStringTest internal constructor(
       factory.decodeHex("010101"),
       factory.decodeHex("7f0000"),
       factory.decodeHex("7f0000ffff"),
-      factory.decodeHex("ffffff")
+      factory.decodeHex("ffffff"),
     )
 
     val sortedByteStrings = originalByteStrings.toMutableList()

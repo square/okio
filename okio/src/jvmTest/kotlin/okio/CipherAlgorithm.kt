@@ -23,7 +23,7 @@ data class CipherAlgorithm(
   val transformation: String,
   val padding: Boolean,
   val keyLength: Int,
-  val ivLength: Int? = null
+  val ivLength: Int? = null,
 ) {
   fun createCipherFactory(random: Random): CipherFactory {
     val key = random.nextBytes(keyLength)
@@ -57,7 +57,7 @@ data class CipherAlgorithm(
         CipherAlgorithm("DESede/CBC/NoPadding", false, 24, 8),
         CipherAlgorithm("DESede/CBC/PKCS5Padding", true, 24, 8),
         CipherAlgorithm("DESede/ECB/NoPadding", false, 24),
-        CipherAlgorithm("DESede/ECB/PKCS5Padding", true, 24)
+        CipherAlgorithm("DESede/ECB/PKCS5Padding", true, 24),
       )
   }
 }

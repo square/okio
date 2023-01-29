@@ -77,8 +77,11 @@ internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean
     if (rmdir(pathString) == 0) return
   }
   if (errno == ENOENT) {
-    if (mustExist) throw FileNotFoundException("no such file: $path")
-    else return
+    if (mustExist) {
+      throw FileNotFoundException("no such file: $path")
+    } else {
+      return
+    }
   }
 
   throw errnoToIOException(EACCES)
@@ -117,7 +120,7 @@ internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
       size = stat.st_size,
       createdAtMillis = stat.st_ctime * 1000L,
       lastModifiedAtMillis = stat.st_mtime * 1000L,
-      lastAccessedAtMillis = stat.st_atime * 1000L
+      lastAccessedAtMillis = stat.st_atime * 1000L,
     )
   }
 }
@@ -160,7 +163,7 @@ internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle 
     lpSecurityAttributes = null,
     dwCreationDisposition = OPEN_EXISTING,
     dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
-    hTemplateFile = null
+    hTemplateFile = null,
   )
   if (openFile == INVALID_HANDLE_VALUE) {
     throw lastErrorToIOException()
@@ -171,7 +174,7 @@ internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle 
 internal actual fun PosixFileSystem.variantOpenReadWrite(
   file: Path,
   mustCreate: Boolean,
-  mustExist: Boolean
+  mustExist: Boolean,
 ): FileHandle {
   require(!mustCreate || !mustExist) {
     "Cannot require mustCreate and mustExist at the same time."
@@ -190,7 +193,7 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(
     lpSecurityAttributes = null,
     dwCreationDisposition = creationDisposition,
     dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
-    hTemplateFile = null
+    hTemplateFile = null,
   )
   if (openFile == INVALID_HANDLE_VALUE) {
     throw lastErrorToIOException()

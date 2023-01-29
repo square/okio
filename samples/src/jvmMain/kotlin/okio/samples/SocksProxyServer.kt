@@ -64,7 +64,7 @@ class KotlinSocksProxyServer {
 
   fun proxy(): Proxy = Proxy(
     Proxy.Type.SOCKS,
-    InetSocketAddress.createUnresolved("localhost", serverSocket.localPort)
+    InetSocketAddress.createUnresolved("localhost", serverSocket.localPort),
   )
 
   private fun acceptSockets() {

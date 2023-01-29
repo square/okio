@@ -37,7 +37,7 @@ internal fun Buffer.writeNullTerminated(bytes: CPointer<ByteVarOf<Byte>>): Buffe
 internal fun Buffer.write(
   source: CPointer<ByteVarOf<Byte>>,
   offset: Int = 0,
-  byteCount: Int
+  byteCount: Int,
 ): Buffer = apply {
   for (i in offset until offset + byteCount) {
     writeByte(source[i].toInt())
@@ -47,7 +47,7 @@ internal fun Buffer.write(
 internal fun Buffer.read(
   sink: CPointer<ByteVarOf<Byte>>,
   offset: Int = 0,
-  byteCount: Int
+  byteCount: Int,
 ): Buffer = apply {
   for (i in offset until offset + byteCount) {
     sink[i] = readByte()

@@ -19,7 +19,7 @@ import java.io.IOException
 
 actual abstract class ForwardingSource actual constructor(
   @get:JvmName("delegate")
-  actual val delegate: Source
+  actual val delegate: Source,
 ) : Source {
   // TODO 'Source by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
@@ -37,7 +37,7 @@ actual abstract class ForwardingSource actual constructor(
   @Deprecated(
     message = "moved to val",
     replaceWith = ReplaceWith(expression = "delegate"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun delegate() = delegate
 }

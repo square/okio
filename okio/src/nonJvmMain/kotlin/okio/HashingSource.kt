@@ -24,7 +24,7 @@ import okio.internal.Sha512
 
 actual class HashingSource internal constructor(
   private val source: Source,
-  private val hashFunction: HashFunction
+  private val hashFunction: HashFunction,
 ) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {

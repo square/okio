@@ -44,7 +44,7 @@ fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
 
 private class OutputStreamSink(
   private val out: OutputStream,
-  private val timeout: Timeout
+  private val timeout: Timeout,
 ) : Sink {
 
   override fun write(source: Buffer, byteCount: Long) {
@@ -81,7 +81,7 @@ fun InputStream.source(): Source = InputStreamSource(this, Timeout())
 
 private open class InputStreamSource(
   private val input: InputStream,
-  private val timeout: Timeout
+  private val timeout: Timeout,
 ) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {

@@ -43,7 +43,7 @@ class AwaitSignalTest {
     executorService.schedule(
       { lock.withLock { condition.signal() } },
       1000,
-      TimeUnit.MILLISECONDS
+      TimeUnit.MILLISECONDS,
     )
     timeout.awaitSignal(condition)
     assertElapsed(1000.0, start)

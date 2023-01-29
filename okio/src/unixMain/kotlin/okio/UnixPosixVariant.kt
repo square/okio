@@ -66,8 +66,11 @@ internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean
   val result = remove(path.toString())
   if (result != 0) {
     if (errno == ENOENT) {
-      if (mustExist) throw FileNotFoundException("no such file: $path")
-      else return
+      if (mustExist) {
+        throw FileNotFoundException("no such file: $path")
+      } else {
+        return
+      }
     }
     throw errnoToIOException(errno)
   }
@@ -91,7 +94,7 @@ internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
 
 internal actual fun PosixFileSystem.variantMove(
   source: Path,
-  target: Path
+  target: Path,
 ) {
   val result = rename(source.toString(), target.toString())
   if (result != 0) {
@@ -130,7 +133,7 @@ internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle 
 internal actual fun PosixFileSystem.variantOpenReadWrite(
   file: Path,
   mustCreate: Boolean,
-  mustExist: Boolean
+  mustExist: Boolean,
 ): FileHandle {
   // Note that we're using open() followed by fdopen() rather than fopen() because this way we
   // can pass exactly the flags we want. Note that there's no string mode that opens for reading
@@ -172,7 +175,7 @@ internal fun variantPread(
   file: CPointer<FILE>,
   target: CValuesRef<*>,
   byteCount: Int,
-  offset: Long
+  offset: Long,
 ): Int = pread(fileno(file), target, byteCount.convert(), offset).convert()
 
 @OptIn(UnsafeNumber::class)
@@ -180,7 +183,7 @@ internal fun variantPwrite(
   file: CPointer<FILE>,
   source: CValuesRef<*>,
   byteCount: Int,
-  offset: Long
+  offset: Long,
 ): Int = pwrite(fileno(file), source, byteCount.convert(), offset).convert()
 
 @OptIn(UnsafeNumber::class)

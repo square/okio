@@ -62,7 +62,7 @@ private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
 internal fun openZip(
   zipPath: Path,
   fileSystem: FileSystem,
-  predicate: (ZipEntry) -> Boolean = { true }
+  predicate: (ZipEntry) -> Boolean = { true },
 ): ZipFileSystem {
   fileSystem.openReadOnly(zipPath).use { fileHandle ->
     // Scan backwards from the end of the file looking for the END_OF_CENTRAL_DIRECTORY_SIGNATURE.
@@ -112,7 +112,7 @@ internal fun openZip(
             if (zip64EocdSignature != ZIP64_EOCD_RECORD_SIGNATURE) {
               throw IOException(
                 "bad zip: expected ${ZIP64_EOCD_RECORD_SIGNATURE.hex} " +
-                  "but was ${zip64EocdSignature.hex}"
+                  "but was ${zip64EocdSignature.hex}",
               )
             }
             record = zip64EocdSource.readZip64EocdRecord(record)
@@ -174,7 +174,7 @@ private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
       // A parent is missing! Synthesize one.
       parentEntry = ZipEntry(
         canonicalPath = parentPath,
-        isDirectory = true
+        isDirectory = true,
       )
       result[parentPath] = parentEntry
       parentEntry.children += child.canonicalPath
@@ -191,7 +191,7 @@ internal fun BufferedSource.readEntry(): ZipEntry {
   val signature = readIntLe()
   if (signature != CENTRAL_FILE_HEADER_SIGNATURE) {
     throw IOException(
-      "bad zip: expected ${CENTRAL_FILE_HEADER_SIGNATURE.hex} but was ${signature.hex}"
+      "bad zip: expected ${CENTRAL_FILE_HEADER_SIGNATURE.hex} but was ${signature.hex}",
     )
   }
 
@@ -266,7 +266,7 @@ internal fun BufferedSource.readEntry(): ZipEntry {
     size = size,
     compressionMethod = compressionMethod,
     lastModifiedAtMillis = lastModifiedAtMillis,
-    offset = offset
+    offset = offset,
   )
 }
 
@@ -286,7 +286,7 @@ private fun BufferedSource.readEocdRecord(): EocdRecord {
   return EocdRecord(
     entryCount = entryCount,
     centralDirectoryOffset = centralDirectoryOffset,
-    commentByteCount = commentByteCount
+    commentByteCount = commentByteCount,
   )
 }
 
@@ -306,7 +306,7 @@ private fun BufferedSource.readZip64EocdRecord(regularRecord: EocdRecord): EocdR
   return EocdRecord(
     entryCount = entryCount,
     centralDirectoryOffset = centralDirectoryOffset,
-    commentByteCount = regularRecord.commentByteCount
+    commentByteCount = regularRecord.commentByteCount,
   )
 }
 
@@ -368,7 +368,7 @@ private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): 
   val signature = readIntLe()
   if (signature != LOCAL_FILE_HEADER_SIGNATURE) {
     throw IOException(
-      "bad zip: expected ${LOCAL_FILE_HEADER_SIGNATURE.hex} but was ${signature.hex}"
+      "bad zip: expected ${LOCAL_FILE_HEADER_SIGNATURE.hex} but was ${signature.hex}",
     )
   }
   skip(2) // version to extract.
@@ -422,7 +422,7 @@ private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): 
     size = basicMetadata.size,
     createdAtMillis = createdAtMillis,
     lastModifiedAtMillis = lastModifiedAtMillis,
-    lastAccessedAtMillis = lastAccessedAtMillis
+    lastAccessedAtMillis = lastAccessedAtMillis,
   )
 }
 
@@ -451,7 +451,7 @@ private fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
 private class EocdRecord(
   val entryCount: Long,
   val centralDirectoryOffset: Long,
-  val commentByteCount: Int
+  val commentByteCount: Int,
 )
 
 private val Int.hex: String

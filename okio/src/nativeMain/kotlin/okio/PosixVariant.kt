@@ -38,7 +38,7 @@ internal expect fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle
 internal expect fun PosixFileSystem.variantOpenReadWrite(
   file: Path,
   mustCreate: Boolean,
-  mustExist: Boolean
+  mustExist: Boolean,
 ): FileHandle
 
 internal expect fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path)

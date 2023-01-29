@@ -104,7 +104,7 @@ import kotlin.jvm.JvmName
 abstract class ForwardingFileSystem(
   /** [FileSystem] to which this instance is delegating. */
   @get:JvmName("delegate")
-  val delegate: FileSystem
+  val delegate: FileSystem,
 ) : FileSystem() {
 
   /**

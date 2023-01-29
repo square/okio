@@ -61,7 +61,7 @@ actual class HashingSink : ForwardingSink, Sink { // Need to explicitly declare 
       }
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
-    }
+    },
   )
 
   @Throws(IOException::class)
@@ -103,7 +103,7 @@ actual class HashingSink : ForwardingSink, Sink { // Need to explicitly declare 
   @Deprecated(
     message = "moved to val",
     replaceWith = ReplaceWith(expression = "hash"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun hash() = hash
 

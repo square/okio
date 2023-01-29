@@ -51,7 +51,7 @@ internal object PosixFileSystem : FileSystem() {
       while (true) {
         val dirent: CPointer<dirent> = readdir(opendir) ?: break
         val childPath = buffer.writeNullTerminated(
-          bytes = dirent[0].d_name
+          bytes = dirent[0].d_name,
         ).toPath(normalize = true)
 
         if (childPath == SELF_DIRECTORY_ENTRY || childPath == PARENT_DIRECTORY_ENTRY) {
@@ -62,8 +62,11 @@ internal object PosixFileSystem : FileSystem() {
       }
 
       if (errno != 0) {
-        if (throwOnFailure) throw errnoToIOException(errno)
-        else return null
+        if (throwOnFailure) {
+          throw errnoToIOException(errno)
+        } else {
+          return null
+        }
       }
 
       result.sort()
@@ -89,8 +92,11 @@ internal object PosixFileSystem : FileSystem() {
     val result = variantMkdir(dir)
     if (result != 0) {
       if (errno == EEXIST) {
-        if (mustCreate) errnoToIOException(errno)
-        else return
+        if (mustCreate) {
+          errnoToIOException(errno)
+        } else {
+          return
+        }
       }
       throw errnoToIOException(errno)
     }
@@ -98,7 +104,7 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun atomicMove(
     source: Path,
-    target: Path
+    target: Path,
   ) {
     variantMove(source, target)
   }

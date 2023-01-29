@@ -51,9 +51,10 @@ import okio.internal.commonTimeout
 import okio.internal.commonToString
 
 internal actual class RealBufferedSource actual constructor(
-  @JvmField actual val source: Source
+  @JvmField actual val source: Source,
 ) : BufferedSource {
   @JvmField val bufferField = Buffer()
+
   @JvmField actual var closed: Boolean = false
 
   @Suppress("OVERRIDE_BY_INLINE") // Prevent internal code from calling the getter.
@@ -126,15 +127,17 @@ internal actual class RealBufferedSource actual constructor(
     commonIndexOfElement(targetBytes, fromIndex)
 
   override fun rangeEquals(offset: Long, bytes: ByteString) = rangeEquals(
-    offset, bytes, 0,
-    bytes.size
+    offset,
+    bytes,
+    0,
+    bytes.size,
   )
 
   override fun rangeEquals(
     offset: Long,
     bytes: ByteString,
     bytesOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Boolean = commonRangeEquals(offset, bytes, bytesOffset, byteCount)
 
   override fun peek(): BufferedSource = commonPeek()

@@ -26,7 +26,7 @@ internal actual fun ByteArray.toUtf8String(): String = commonToUtf8String()
 internal actual fun String.asUtf8ToByteArray(): ByteArray = commonAsUtf8ToByteArray()
 
 actual open class ArrayIndexOutOfBoundsException actual constructor(
-  message: String?
+  message: String?,
 ) : IndexOutOfBoundsException(message)
 
 actual class Lock {
@@ -41,7 +41,7 @@ actual inline fun <T> Lock.withLock(action: () -> T): T = action()
 
 actual open class IOException actual constructor(
   message: String?,
-  cause: Throwable?
+  cause: Throwable?,
 ) : Exception(message, cause) {
   actual constructor(message: String?) : this(message, null)
 }

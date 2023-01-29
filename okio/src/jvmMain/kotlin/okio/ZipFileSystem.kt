@@ -66,7 +66,7 @@ internal class ZipFileSystem internal constructor(
   private val zipPath: Path,
   private val fileSystem: FileSystem,
   private val entries: Map<Path, ZipEntry>,
-  private val comment: String?
+  private val comment: String?,
 ) : FileSystem() {
   override fun canonicalize(path: Path): Path {
     val canonical = canonicalizeInternal(path)
@@ -92,7 +92,7 @@ internal class ZipFileSystem internal constructor(
       size = if (entry.isDirectory) null else entry.size,
       createdAtMillis = null,
       lastModifiedAtMillis = entry.lastModifiedAtMillis,
-      lastAccessedAtMillis = null
+      lastAccessedAtMillis = null,
     )
 
     if (entry.offset == -1L) {
@@ -140,7 +140,7 @@ internal class ZipFileSystem internal constructor(
       else -> {
         val inflaterSource = InflaterSource(
           FixedLengthSource(source, entry.compressedSize, truncate = true),
-          Inflater(true)
+          Inflater(true),
         )
         FixedLengthSource(inflaterSource, entry.size, truncate = false)
       }

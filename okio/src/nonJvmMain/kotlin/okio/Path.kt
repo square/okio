@@ -35,7 +35,7 @@ import okio.internal.commonToString
 import okio.internal.commonVolumeLetter
 
 actual class Path internal actual constructor(
-  internal actual val bytes: ByteString
+  internal actual val bytes: ByteString,
 ) : Comparable<Path> {
   actual val root: Path?
     get() = commonRoot()

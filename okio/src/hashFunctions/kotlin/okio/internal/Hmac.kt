@@ -20,7 +20,7 @@ import okio.xor
 
 internal class Hmac private constructor(
   private val hashFunction: HashFunction,
-  private val outerKey: ByteArray
+  private val outerKey: ByteArray,
 ) : HashFunction {
   override fun update(input: ByteArray, offset: Int, byteCount: Int) {
     hashFunction.update(input, offset, byteCount)
@@ -51,7 +51,7 @@ internal class Hmac private constructor(
     private fun create(
       key: ByteString,
       hashFunction: HashFunction,
-      blockLength: Int
+      blockLength: Int,
     ): Hmac {
       val keySize = key.size
       val paddedKey = when {
@@ -68,7 +68,7 @@ internal class Hmac private constructor(
 
       return Hmac(
         hashFunction,
-        outerKey
+        outerKey,
       )
     }
   }

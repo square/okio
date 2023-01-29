@@ -139,7 +139,7 @@ class GzipSink(sink: Sink) : Sink {
   @Deprecated(
     message = "moved to val",
     replaceWith = ReplaceWith(expression = "deflater"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun deflater() = deflater
 }

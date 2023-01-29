@@ -55,7 +55,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
       size = size,
       createdAtMillis = null,
       lastModifiedAtMillis = lastModifiedAtMillis,
-      lastAccessedAtMillis = null
+      lastAccessedAtMillis = null,
     )
   }
 
@@ -110,8 +110,11 @@ internal open class JvmSystemFileSystem : FileSystem() {
     if (!dir.toFile().mkdir()) {
       val alreadyExist = metadataOrNull(dir)?.isDirectory == true
       if (alreadyExist) {
-        if (mustCreate) throw IOException("$dir already exist.")
-        else return
+        if (mustCreate) {
+          throw IOException("$dir already exist.")
+        } else {
+          return
+        }
       }
       throw IOException("failed to create directory: $dir")
     }

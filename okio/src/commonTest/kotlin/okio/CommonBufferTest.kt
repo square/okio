@@ -48,22 +48,22 @@ class CommonBufferTest {
     assertEquals("[size=0]", Buffer().toString())
     assertEquals(
       "[text=a\\r\\nb\\nc\\rd\\\\e]",
-      Buffer().writeUtf8("a\r\nb\nc\rd\\e").toString()
+      Buffer().writeUtf8("a\r\nb\nc\rd\\e").toString(),
     )
     assertEquals(
       "[text=Tyrannosaur]",
-      Buffer().writeUtf8("Tyrannosaur").toString()
+      Buffer().writeUtf8("Tyrannosaur").toString(),
     )
     assertEquals(
       "[text=təˈranəˌsôr]",
       Buffer()
         .write("74c999cb8872616ec999cb8c73c3b472".decodeHex())
-        .toString()
+        .toString(),
     )
     assertEquals(
       "[hex=0000000000000000000000000000000000000000000000000000000000000000000000000000" +
         "0000000000000000000000000000000000000000000000000000]",
-      Buffer().write(ByteArray(64)).toString()
+      Buffer().write(ByteArray(64)).toString(),
     )
   }
 
@@ -127,10 +127,16 @@ class CommonBufferTest {
     val segmentSizes = moveBytesBetweenBuffers('a'.repeat(size), 'b'.repeat(size))
     assertEquals(
       listOf(
-        Segment.SIZE, Segment.SIZE, Segment.SIZE, 1,
-        Segment.SIZE, Segment.SIZE, Segment.SIZE, 1
+        Segment.SIZE,
+        Segment.SIZE,
+        Segment.SIZE,
+        1,
+        Segment.SIZE,
+        Segment.SIZE,
+        Segment.SIZE,
+        1,
       ),
-      segmentSizes
+      segmentSizes,
     )
   }
 
@@ -279,7 +285,8 @@ class CommonBufferTest {
   }
 
   @Suppress("ReplaceAssertBooleanWithAssertEquality")
-  @Test fun equalsAndHashCodeEmpty() {
+  @Test
+  fun equalsAndHashCodeEmpty() {
     val a = Buffer()
     val b = Buffer()
     assertTrue(a == b)
@@ -287,7 +294,8 @@ class CommonBufferTest {
   }
 
   @Suppress("ReplaceAssertBooleanWithAssertEquality")
-  @Test fun equalsAndHashCode() {
+  @Test
+  fun equalsAndHashCode() {
     val a = Buffer().writeUtf8("dog")
     val b = Buffer().writeUtf8("hotdog")
     assertFalse(a == b)
@@ -299,7 +307,8 @@ class CommonBufferTest {
   }
 
   @Suppress("ReplaceAssertBooleanWithAssertEquality")
-  @Test fun equalsAndHashCodeSpanningSegments() {
+  @Test
+  fun equalsAndHashCodeSpanningSegments() {
     val data = ByteArray(1024 * 1024)
     val dice = Random(0)
     dice.nextBytes(data)
@@ -323,13 +332,13 @@ class CommonBufferTest {
     val write1 = Buffer().writeUtf8(
       'a'.repeat(Segment.SIZE) +
         'b'.repeat(Segment.SIZE) +
-        'c'.repeat(Segment.SIZE)
+        'c'.repeat(Segment.SIZE),
     )
 
     val source = Buffer().writeUtf8(
       'a'.repeat(Segment.SIZE) +
         'b'.repeat(Segment.SIZE) +
-        'c'.repeat(Segment.SIZE)
+        'c'.repeat(Segment.SIZE),
     )
 
     val mockSink = MockSink()

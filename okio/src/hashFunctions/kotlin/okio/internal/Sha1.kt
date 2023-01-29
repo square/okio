@@ -32,7 +32,7 @@ internal class Sha1 : HashFunction {
   override fun update(
     input: ByteArray,
     offset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) {
     messageLength += byteCount
     var pos = offset

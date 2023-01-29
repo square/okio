@@ -26,14 +26,14 @@ import platform.posix.fflush
 
 /** Writes bytes to a file as a sink. */
 internal class FileSink(
-  private val file: CPointer<FILE>
+  private val file: CPointer<FILE>,
 ) : Sink {
   private val unsafeCursor = UnsafeCursor()
   private var closed = false
 
   override fun write(
     source: Buffer,
-    byteCount: Long
+    byteCount: Long,
   ) {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     require(source.size >= byteCount) { "source.size=${source.size} < byteCount=$byteCount" }

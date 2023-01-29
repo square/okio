@@ -71,6 +71,7 @@
  */
 @file:JsModule("fs")
 @file:JsNonModule
+
 package okio
 
 import kotlin.js.Date
@@ -110,6 +111,7 @@ internal external fun symlinkSync(target: String, path: String)
 internal open external class Dir {
   open var path: String
   open fun closeSync()
+
   // Note that dukat's signature of readSync() returns a non-nullable Dirent; that's incorrect.
   open fun readSync(): Dirent?
 }

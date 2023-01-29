@@ -201,7 +201,7 @@ internal class ResourceFileSystem internal constructor(
       val zip = openZip(
         zipPath = path,
         fileSystem = SYSTEM,
-        predicate = { entry -> keepPath(entry.canonicalPath) }
+        predicate = { entry -> keepPath(entry.canonicalPath) },
       )
       return zip to ROOT
     }
