@@ -25,4 +25,4 @@ bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.3.1" }
 guava = { module = "com.google.guava:guava", version = "31.1-jre" }
 vanniktech-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.23.2" }
 test-junit = { module = "junit:junit", version = "4.13.2" }
-test-assertj = { module = "org.assertj:assertj-core", version = "3.24.1" }
+test-assertj = { module = "org.assertj:assertj-core", version = "3.24.2" }
