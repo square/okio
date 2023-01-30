@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("-Utf8") // A leading '-' hides this class from Java.
 
 package okio.internal
 
+import kotlin.jvm.JvmName
 import okio.ArrayIndexOutOfBoundsException
 import okio.processUtf16Chars
 import okio.processUtf8Bytes

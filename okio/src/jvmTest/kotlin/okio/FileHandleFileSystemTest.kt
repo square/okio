@@ -26,7 +26,7 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
   fileSystem = FileHandleTestingFileSystem(FileSystem.SYSTEM),
   windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
-  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
 ) {
   /**
    * A testing-only file system that implements all reading and writing operations with

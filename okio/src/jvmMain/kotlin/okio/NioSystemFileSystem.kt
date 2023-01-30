@@ -40,7 +40,7 @@ internal class NioSystemFileSystem : JvmSystemFileSystem() {
       Files.readAttributes(
         nioPath,
         BasicFileAttributes::class.java,
-        LinkOption.NOFOLLOW_LINKS
+        LinkOption.NOFOLLOW_LINKS,
       )
     } catch (_: NoSuchFileException) {
       return null
@@ -61,7 +61,7 @@ internal class NioSystemFileSystem : JvmSystemFileSystem() {
       size = attributes.size(),
       createdAtMillis = attributes.creationTime()?.zeroToNull(),
       lastModifiedAtMillis = attributes.lastModifiedTime()?.zeroToNull(),
-      lastAccessedAtMillis = attributes.lastAccessTime()?.zeroToNull()
+      lastAccessedAtMillis = attributes.lastAccessTime()?.zeroToNull(),
     )
   }
 

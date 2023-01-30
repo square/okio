@@ -26,7 +26,7 @@ package okio
  * invalid and throw [IllegalStateException] on any future reads.
  */
 internal class PeekSource(
-  private val upstream: BufferedSource
+  private val upstream: BufferedSource,
 ) : Source {
   private val buffer = upstream.buffer
   private var expectedSegment = buffer.head
@@ -42,7 +42,7 @@ internal class PeekSource(
     // do not match the current head and head position of the upstream buffer
     check(
       expectedSegment == null ||
-        expectedSegment === buffer.head && expectedPos == buffer.head!!.pos
+        expectedSegment === buffer.head && expectedPos == buffer.head!!.pos,
     ) {
       "Peek source is invalid because upstream source was used"
     }

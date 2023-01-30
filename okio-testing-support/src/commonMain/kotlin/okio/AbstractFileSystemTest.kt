@@ -41,7 +41,7 @@ abstract class AbstractFileSystemTest(
   val fileSystem: FileSystem,
   val windowsLimitations: Boolean,
   val allowClobberingEmptyDirectories: Boolean,
-  temporaryDirectory: Path
+  temporaryDirectory: Path,
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
   private val isNodeJsFileSystem = fileSystem::class.simpleName?.startsWith("NodeJs") ?: false
@@ -1049,6 +1049,7 @@ abstract class AbstractFileSystemTest(
     assertTrue(path !in fileSystem.list(base))
     assertTrue((path / "file.txt") !in fileSystem.list(base))
   }
+
   @Test
   fun deleteRecursivelyNonEmptyDirectoryMustExist() {
     val path = base / "delete-recursively-non-empty-directory"
@@ -2298,7 +2299,7 @@ abstract class AbstractFileSystemTest(
       exceptionType == "IOException" ||
         exceptionType == "IllegalStateException" ||
         exceptionType == "ClosedChannelException",
-      "unexpected exception: $exception"
+      "unexpected exception: $exception",
     )
   }
 
@@ -2308,7 +2309,8 @@ abstract class AbstractFileSystemTest(
       "JvmSystemFileSystem",
       "NioSystemFileSystem",
       "PosixFileSystem",
-      "NodeJsFileSystem" -> true
+      "NodeJsFileSystem",
+      -> true
       else -> false
     }
   }
@@ -2319,14 +2321,15 @@ abstract class AbstractFileSystemTest(
     return when (fileSystem::class.simpleName) {
       "NodeJsFileSystem",
       "PosixFileSystem",
-      "NioSystemFileSystem" -> true
+      "NioSystemFileSystem",
+      -> true
       else -> false
     }
   }
 
   private fun expectIOExceptionOnWindows(
     exceptJs: Boolean = false,
-    block: () -> Unit
+    block: () -> Unit,
   ) {
     val expectCrash = windowsLimitations && (!isNodeJsFileSystem || !exceptJs)
     try {

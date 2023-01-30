@@ -24,7 +24,7 @@ import okio.Path.Companion.toPath
 
 class KotlinBitmapEncoder {
   class Bitmap(
-    private val pixels: Array<IntArray>
+    private val pixels: Array<IntArray>,
   ) {
     val width: Int = pixels[0].size
     val height: Int = pixels.size

@@ -20,7 +20,7 @@ import javax.crypto.Cipher
 
 class CipherSource(
   private val source: BufferedSource,
-  val cipher: Cipher
+  val cipher: Cipher,
 ) : Source {
   private val blockSize = cipher.blockSize
   private val buffer = Buffer()

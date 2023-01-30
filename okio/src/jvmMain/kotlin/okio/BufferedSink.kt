@@ -25,7 +25,7 @@ actual sealed interface BufferedSink : Sink, WritableByteChannel {
   @Deprecated(
     message = "moved to val: use getBuffer() instead",
     replaceWith = ReplaceWith(expression = "buffer"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.WARNING,
   )
   fun buffer(): Buffer
 

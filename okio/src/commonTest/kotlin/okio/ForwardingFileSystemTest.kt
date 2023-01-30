@@ -28,7 +28,7 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
   fileSystem = object : ForwardingFileSystem(FakeFileSystem().apply { emulateUnix() }) {},
   windowsLimitations = false,
   allowClobberingEmptyDirectories = false,
-  temporaryDirectory = "/".toPath()
+  temporaryDirectory = "/".toPath(),
 ) {
   @Test
   fun pathBlocking() {

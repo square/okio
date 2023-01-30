@@ -38,7 +38,7 @@ abstract class FileHandle(
    * including [write], [sink], [resize], and [flush] will all throw [IllegalStateException] if
    * called.
    */
-  val readWrite: Boolean
+  val readWrite: Boolean,
 ) : Closeable {
   /**
    * True once the file handle is closed. Resources should be released with [protectedClose] once
@@ -64,7 +64,7 @@ abstract class FileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Int {
     lock.withLock {
       check(!closed) { "closed" }
@@ -113,7 +113,7 @@ abstract class FileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) {
     check(readWrite) { "file handle is read-only" }
     lock.withLock {
@@ -298,7 +298,7 @@ abstract class FileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Int
 
   /** Like [write] but not performing any close check. */
@@ -307,7 +307,7 @@ abstract class FileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   )
 
   /** Like [flush] but not performing any close check. */
@@ -342,7 +342,7 @@ abstract class FileHandle(
         fileOffset = currentOffset,
         array = tail.data,
         arrayOffset = tail.limit,
-        byteCount = minOf(targetOffset - currentOffset, Segment.SIZE - tail.limit).toInt()
+        byteCount = minOf(targetOffset - currentOffset, Segment.SIZE - tail.limit).toInt(),
       )
 
       if (readByteCount == -1) {
@@ -387,7 +387,7 @@ abstract class FileHandle(
 
   private class FileHandleSink(
     val fileHandle: FileHandle,
-    var position: Long
+    var position: Long,
   ) : Sink {
     var closed = false
 
@@ -417,7 +417,7 @@ abstract class FileHandle(
 
   private class FileHandleSource(
     val fileHandle: FileHandle,
-    var position: Long
+    var position: Long,
   ) : Source {
     var closed = false
 

@@ -60,7 +60,7 @@ class KotlinGoldenValue {
 
   private fun assertEquals(
     a: Point,
-    b: Point
+    b: Point,
   ) {
     if (a.x != b.x || a.y != b.y) throw AssertionError()
   }

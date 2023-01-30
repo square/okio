@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("-FileSystem") // A leading '-' hides this class from Java.
+
 package okio.internal
 
+import kotlin.jvm.JvmName
 import okio.FileMetadata
 import okio.FileNotFoundException
 import okio.FileSystem
@@ -74,7 +77,7 @@ internal fun FileSystem.commonDeleteRecursively(fileOrDirectory: Path, mustExist
       stack = ArrayDeque(),
       path = fileOrDirectory,
       followSymlinks = false,
-      postorder = true
+      postorder = true,
     )
   }
   val iterator = sequence.iterator()
@@ -95,7 +98,7 @@ internal fun FileSystem.commonListRecursively(dir: Path, followSymlinks: Boolean
         stack = stack,
         path = child,
         followSymlinks = followSymlinks,
-        postorder = false
+        postorder = false,
       )
     }
   }
@@ -106,7 +109,7 @@ internal suspend fun SequenceScope<Path>.collectRecursively(
   stack: ArrayDeque<Path>,
   path: Path,
   followSymlinks: Boolean,
-  postorder: Boolean
+  postorder: Boolean,
 ) {
   // For listRecursively, visit enclosing directory first.
   if (!postorder) {

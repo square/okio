@@ -31,7 +31,7 @@ class NioSystemFileSystemTest : AbstractFileSystemTest(
   fileSystem = FileSystem.SYSTEM,
   windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
-  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
 )
 
 class JvmSystemFileSystemTest : AbstractFileSystemTest(
@@ -39,7 +39,7 @@ class JvmSystemFileSystemTest : AbstractFileSystemTest(
   fileSystem = JvmSystemFileSystem(),
   windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
-  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
 ) {
 
   @Test fun checkInterruptedBeforeDeleting() {

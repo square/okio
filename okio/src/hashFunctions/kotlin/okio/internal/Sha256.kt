@@ -35,7 +35,7 @@ internal class Sha256 : HashFunction {
   override fun update(
     input: ByteArray,
     offset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) {
     messageLength += byteCount
     var pos = offset
@@ -100,7 +100,7 @@ internal class Sha256 : HashFunction {
   }
 
   private fun hash(
-    words: IntArray
+    words: IntArray,
   ) {
     val localK = k
     var a = h0
@@ -247,7 +247,7 @@ internal class Sha256 : HashFunction {
       1986661051, -2117940946, -1838011259, -1564481375, -1474664885, -1035236496, -949202525,
       -778901479, -694614492, -200395387, 275423344, 430227734, 506948616, 659060556, 883997877,
       958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, -2067236844,
-      -1933114872, -1866530822, -1538233109, -1090935817, -965641998
+      -1933114872, -1866530822, -1538233109, -1090935817, -965641998,
     )
   }
 }

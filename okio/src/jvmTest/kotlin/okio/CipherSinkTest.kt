@@ -84,7 +84,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val cipherSink = buffer.cipherSink(cipherFactory.encrypt)
     cipherSink.buffer().use {
       data.forEach {
-        byte ->
+          byte ->
         it.writeByte(byte.toInt())
       }
     }

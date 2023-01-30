@@ -50,7 +50,7 @@ actual abstract class FileSystem {
   actual abstract fun openReadWrite(
     file: Path,
     mustCreate: Boolean,
-    mustExist: Boolean
+    mustExist: Boolean,
   ): FileHandle
 
   @Throws(IOException::class)
@@ -70,7 +70,7 @@ actual abstract class FileSystem {
   actual inline fun <T> write(
     file: Path,
     mustCreate: Boolean,
-    writerAction: BufferedSink.() -> T
+    writerAction: BufferedSink.() -> T,
   ): T {
     return sink(file, mustCreate).buffer().use {
       it.writerAction()

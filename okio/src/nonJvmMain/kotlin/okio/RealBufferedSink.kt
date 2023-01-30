@@ -37,7 +37,7 @@ import okio.internal.commonWriteUtf8
 import okio.internal.commonWriteUtf8CodePoint
 
 internal actual class RealBufferedSink actual constructor(
-  actual val sink: Sink
+  actual val sink: Sink,
 ) : BufferedSink {
   actual var closed: Boolean = false
   override val buffer = Buffer()

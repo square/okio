@@ -39,7 +39,7 @@ import okio.internal.commonVolumeLetter
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 actual class Path internal actual constructor(
-  internal actual val bytes: ByteString
+  internal actual val bytes: ByteString,
 ) : Comparable<Path> {
   actual val root: Path?
     get() = commonRoot()
@@ -114,13 +114,19 @@ actual class Path internal actual constructor(
     @JvmField
     actual val DIRECTORY_SEPARATOR: String = File.separator
 
-    @JvmName("get") @JvmStatic @JvmOverloads
+    @JvmName("get")
+    @JvmStatic
+    @JvmOverloads
     actual fun String.toPath(normalize: Boolean): Path = commonToPath(normalize)
 
-    @JvmName("get") @JvmStatic @JvmOverloads
+    @JvmName("get")
+    @JvmStatic
+    @JvmOverloads
     fun File.toOkioPath(normalize: Boolean = false): Path = toString().toPath(normalize)
 
-    @JvmName("get") @JvmStatic @JvmOverloads
+    @JvmName("get")
+    @JvmStatic
+    @JvmOverloads
     @IgnoreJRERequirement // Can only be invoked on platforms that have java.nio.file.
     fun NioPath.toOkioPath(normalize: Boolean = false): Path = toString().toPath(normalize)
   }

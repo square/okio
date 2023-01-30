@@ -20,7 +20,7 @@ import kotlin.jvm.JvmStatic
 /** An indexed set of values that may be read with [BufferedSource.select].  */
 class Options private constructor(
   internal val byteStrings: Array<out ByteString>,
-  internal val trie: IntArray
+  internal val trie: IntArray,
 ) : AbstractList<ByteString>(), RandomAccess {
 
   override val size: Int
@@ -111,7 +111,7 @@ class Options private constructor(
       byteStrings: List<ByteString>,
       fromIndex: Int = 0,
       toIndex: Int = byteStrings.size,
-      indexes: List<Int>
+      indexes: List<Int>,
     ) {
       require(fromIndex < toIndex)
       for (i in fromIndex until toIndex) {
@@ -179,7 +179,7 @@ class Options private constructor(
               byteStrings = byteStrings,
               fromIndex = rangeStart,
               toIndex = rangeEnd,
-              indexes = indexes
+              indexes = indexes,
             )
           }
 
@@ -223,7 +223,7 @@ class Options private constructor(
             byteStrings = byteStrings,
             fromIndex = fromIndex,
             toIndex = toIndex,
-            indexes = indexes
+            indexes = indexes,
           )
           node.writeAll(childNodes)
         }

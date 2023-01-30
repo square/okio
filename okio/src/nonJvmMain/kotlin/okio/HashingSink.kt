@@ -24,7 +24,7 @@ import okio.internal.Sha512
 
 actual class HashingSink internal constructor(
   private val sink: Sink,
-  private val hashFunction: HashFunction
+  private val hashFunction: HashFunction,
 ) : Sink {
 
   override fun write(source: Buffer, byteCount: Long) {

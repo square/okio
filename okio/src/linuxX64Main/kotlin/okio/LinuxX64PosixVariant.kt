@@ -38,9 +38,9 @@ internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
       isDirectory = stat.st_mode.toInt() and S_IFMT == S_IFDIR,
       symlinkTarget = symlinkTarget(stat, path),
       size = stat.st_size,
-      createdAtMillis = stat.st_ctimespec.epochMillis,
-      lastModifiedAtMillis = stat.st_mtimespec.epochMillis,
-      lastAccessedAtMillis = stat.st_atimespec.epochMillis
+      createdAtMillis = stat.st_ctim.epochMillis,
+      lastModifiedAtMillis = stat.st_mtim.epochMillis,
+      lastAccessedAtMillis = stat.st_atim.epochMillis,
     )
   }
 }

@@ -42,7 +42,7 @@ package okio
  */
 internal expect class SegmentedByteString internal constructor(
   segments: Array<ByteArray>,
-  directory: IntArray
+  directory: IntArray,
 ) : ByteString {
 
   internal val segments: Array<ByteArray>

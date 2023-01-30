@@ -29,9 +29,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "file.appendingSink()",
-      imports = ["okio.appendingSink"]
+      imports = ["okio.appendingSink"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun appendingSink(file: File) = file.appendingSink()
 
@@ -39,9 +39,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "sink.buffer()",
-      imports = ["okio.buffer"]
+      imports = ["okio.buffer"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun buffer(sink: Sink) = sink.buffer()
 
@@ -49,9 +49,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "source.buffer()",
-      imports = ["okio.buffer"]
+      imports = ["okio.buffer"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun buffer(source: Source) = source.buffer()
 
@@ -59,9 +59,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "file.sink()",
-      imports = ["okio.sink"]
+      imports = ["okio.sink"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun sink(file: File) = file.sink()
 
@@ -69,9 +69,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "outputStream.sink()",
-      imports = ["okio.sink"]
+      imports = ["okio.sink"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun sink(outputStream: OutputStream) = outputStream.sink()
 
@@ -79,9 +79,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "path.sink(*options)",
-      imports = ["okio.sink"]
+      imports = ["okio.sink"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun sink(path: NioPath, vararg options: OpenOption) = path.sink(*options)
 
@@ -89,9 +89,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "socket.sink()",
-      imports = ["okio.sink"]
+      imports = ["okio.sink"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun sink(socket: Socket) = socket.sink()
 
@@ -99,9 +99,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "file.source()",
-      imports = ["okio.source"]
+      imports = ["okio.source"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun source(file: File) = file.source()
 
@@ -109,9 +109,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "inputStream.source()",
-      imports = ["okio.source"]
+      imports = ["okio.source"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun source(inputStream: InputStream) = inputStream.source()
 
@@ -119,9 +119,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "path.source(*options)",
-      imports = ["okio.source"]
+      imports = ["okio.source"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun source(path: NioPath, vararg options: OpenOption) = path.source(*options)
 
@@ -129,9 +129,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "socket.source()",
-      imports = ["okio.source"]
+      imports = ["okio.source"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun source(socket: Socket) = socket.source()
 
@@ -139,9 +139,9 @@ object `-DeprecatedOkio` {
     message = "moved to extension function",
     replaceWith = ReplaceWith(
       expression = "blackholeSink()",
-      imports = ["okio.blackholeSink"]
+      imports = ["okio.blackholeSink"],
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun blackhole() = blackholeSink()
 }

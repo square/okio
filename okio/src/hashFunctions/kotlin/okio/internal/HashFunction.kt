@@ -20,7 +20,7 @@ internal interface HashFunction {
   fun update(
     input: ByteArray,
     offset: Int = 0,
-    byteCount: Int = input.size
+    byteCount: Int = input.size,
   )
 
   fun digest(): ByteArray

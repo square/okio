@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("-SegmentedByteString") // A leading '-' hides this class from Java.
 
 package okio
 
+import kotlin.jvm.JvmName
 import kotlin.native.concurrent.SharedImmutable
 import okio.internal.HEX_DIGIT_CHARS
 
@@ -91,7 +93,7 @@ internal fun arrayRangeEquals(
   aOffset: Int,
   b: ByteArray,
   bOffset: Int,
-  byteCount: Int
+  byteCount: Int,
 ): Boolean {
   for (i in 0 until byteCount) {
     if (a[i + aOffset] != b[i + bOffset]) return false

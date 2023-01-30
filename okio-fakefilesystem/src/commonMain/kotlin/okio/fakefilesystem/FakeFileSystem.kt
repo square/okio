@@ -62,7 +62,7 @@ import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
  */
 class FakeFileSystem(
   @JvmField
-  val clock: Clock = Clock.System
+  val clock: Clock = Clock.System,
 ) : FileSystem() {
 
   /** File system roots. Each element is a Directory and is created on-demand. */
@@ -168,7 +168,7 @@ class FakeFileSystem(
       |expected 0 open files, but found:
       |    ${openFiles.joinToString(separator = "\n    ") { it.canonicalPath.toString() }}
       """.trimMargin(),
-      firstOpenFile.backtrace
+      firstOpenFile.backtrace,
     )
   }
 
@@ -234,7 +234,7 @@ class FakeFileSystem(
     val lookupResult = lookupPath(
       canonicalPath = canonicalPath,
       createRootOnDemand = canonicalPath.isRoot,
-      resolveLastSymlink = false
+      resolveLastSymlink = false,
     )
     val element = lookupResult?.element ?: throw FileNotFoundException("no such file: $path")
     if (value == null) {
@@ -249,7 +249,7 @@ class FakeFileSystem(
     val lookupResult = lookupPath(
       canonicalPath = canonicalPath,
       createRootOnDemand = canonicalPath.isRoot,
-      resolveLastSymlink = false
+      resolveLastSymlink = false,
     )
     return lookupResult?.element?.metadata
   }
@@ -370,7 +370,7 @@ class FakeFileSystem(
     return FakeFileHandle(
       readWrite = readWrite,
       openFile = openFile,
-      file = element
+      file = element,
     )
   }
 
@@ -394,7 +394,7 @@ class FakeFileSystem(
 
   override fun atomicMove(
     source: Path,
-    target: Path
+    target: Path,
   ) {
     val canonicalSource = canonicalizeInternal(source)
     val canonicalTarget = canonicalizeInternal(target)
@@ -433,7 +433,7 @@ class FakeFileSystem(
     val lookupResult = lookupPath(
       canonicalPath = canonicalPath,
       createRootOnDemand = true,
-      resolveLastSymlink = false
+      resolveLastSymlink = false,
     )
 
     if (lookupResult?.element == null) {
@@ -460,7 +460,7 @@ class FakeFileSystem(
 
   override fun createSymlink(
     source: Path,
-    target: Path
+    target: Path,
   ) {
     val canonicalSource = canonicalizeInternal(source)
 
@@ -553,7 +553,7 @@ class FakeFileSystem(
         val symlinkLookupResult = lookupPath(
           canonicalPath = currentPath,
           recurseCount = recurseCount + 1,
-          createRootOnDemand = createRootOnDemand
+          createRootOnDemand = createRootOnDemand,
         ) ?: break
         parent = symlinkLookupResult.parent
         lastSegment = symlinkLookupResult.segment
@@ -574,7 +574,7 @@ class FakeFileSystem(
     /** Only null if the looked up path is a root. */
     val segment: ByteString?,
     /** Non-null if this is a root. Also not null if this file exists. */
-    val element: Element?
+    val element: Element?,
   )
 
   private fun PathLookupResult?.requireParent(): Directory {
@@ -582,7 +582,7 @@ class FakeFileSystem(
   }
 
   private sealed class Element(
-    val createdAt: Instant
+    val createdAt: Instant,
   ) {
     var lastModifiedAt: Instant = createdAt
     var lastAccessedAt: Instant = createdAt
@@ -619,7 +619,7 @@ class FakeFileSystem(
     class Symlink(
       createdAt: Instant,
       /** This may be an absolute or relative path. */
-      val target: Path
+      val target: Path,
     ) : Element(createdAt) {
       override val metadata: FileMetadata
         get() = FileMetadata(
@@ -633,7 +633,7 @@ class FakeFileSystem(
 
     fun access(
       now: Instant,
-      modified: Boolean = false
+      modified: Boolean = false,
     ) {
       lastAccessedAt = now
       if (modified) {
@@ -646,7 +646,7 @@ class FakeFileSystem(
 
   private fun findOpenFile(
     canonicalPath: Path,
-    operation: Operation? = null
+    operation: Operation? = null,
   ): OpenFile? {
     return openFiles.firstOrNull {
       it.canonicalPath == canonicalPath && (operation == null || operation == it.operation)
@@ -656,7 +656,7 @@ class FakeFileSystem(
   private fun checkOffsetAndCount(
     size: Long,
     offset: Long,
-    byteCount: Long
+    byteCount: Long,
   ) {
     if (offset or byteCount < 0 || offset > size || size - offset < byteCount) {
       throw ArrayIndexOutOfBoundsException("size=$size offset=$offset byteCount=$byteCount")
@@ -666,18 +666,18 @@ class FakeFileSystem(
   private class OpenFile(
     val canonicalPath: Path,
     val operation: Operation,
-    val backtrace: Throwable
+    val backtrace: Throwable,
   )
 
   private enum class Operation {
     READ,
-    WRITE
+    WRITE,
   }
 
   private inner class FakeFileHandle(
     readWrite: Boolean,
     private val openFile: OpenFile,
-    private val file: File
+    private val file: File,
   ) : FileHandle(readWrite) {
     private var closed = false
 
@@ -706,7 +706,7 @@ class FakeFileSystem(
       fileOffset: Long,
       array: ByteArray,
       arrayOffset: Int,
-      byteCount: Int
+      byteCount: Int,
     ): Int {
       check(!closed) { "closed" }
       checkOffsetAndCount(array.size.toLong(), arrayOffset.toLong(), byteCount.toLong())
@@ -724,7 +724,7 @@ class FakeFileSystem(
       fileOffset: Long,
       array: ByteArray,
       arrayOffset: Int,
-      byteCount: Int
+      byteCount: Int,
     ) {
       check(!closed) { "closed" }
       checkOffsetAndCount(array.size.toLong(), arrayOffset.toLong(), byteCount.toLong())

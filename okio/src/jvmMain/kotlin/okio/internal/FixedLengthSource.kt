@@ -31,7 +31,7 @@ import okio.Source
 internal class FixedLengthSource(
   delegate: Source,
   private val size: Long,
-  private val truncate: Boolean
+  private val truncate: Boolean,
 ) : ForwardingSource(delegate) {
   private var bytesReceived = 0L
 

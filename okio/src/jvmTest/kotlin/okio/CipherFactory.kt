@@ -19,7 +19,7 @@ import javax.crypto.Cipher
 
 class CipherFactory(
   private val transformation: String,
-  private val init: Cipher.(mode: Int) -> Unit
+  private val init: Cipher.(mode: Int) -> Unit,
 ) {
   val blockSize
     get() = newCipher().blockSize

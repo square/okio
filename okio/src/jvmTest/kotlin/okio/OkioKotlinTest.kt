@@ -96,7 +96,8 @@ class OkioKotlinTest {
   }
 
   @Ignore("Not sure how to test this")
-  @Test fun pathSourceWithOptions() {
+  @Test
+  fun pathSourceWithOptions() {
     val folder = temp.newFolder()
     val file = File(folder, "new.txt")
     file.toPath().source(StandardOpenOption.CREATE_NEW)

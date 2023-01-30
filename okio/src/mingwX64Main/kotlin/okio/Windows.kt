@@ -47,7 +47,7 @@ internal fun lastErrorString(lastError: DWORD): String {
       dwLanguageId = (SUBLANG_DEFAULT * 1024 + LANG_NEUTRAL).toUInt(), // MAKELANGID macro.
       lpBuffer = message,
       nSize = messageMaxSize.toUInt(),
-      Arguments = null
+      Arguments = null,
     )
     return Buffer().writeNullTerminated(message).readUtf8().trim()
   }

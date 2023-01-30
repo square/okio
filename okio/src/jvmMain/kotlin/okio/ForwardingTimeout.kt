@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 open class ForwardingTimeout(
   @get:JvmName("delegate")
   @set:JvmSynthetic // So .java callers get the setter that returns this.
-  var delegate: Timeout
+  var delegate: Timeout,
 ) : Timeout() {
 
   // For backwards compatibility with Okio 1.x, this exists so it can return `ForwardingTimeout`.
@@ -40,7 +40,7 @@ open class ForwardingTimeout(
   override fun deadlineNanoTime() = delegate.deadlineNanoTime()
 
   override fun deadlineNanoTime(deadlineNanoTime: Long) = delegate.deadlineNanoTime(
-    deadlineNanoTime
+    deadlineNanoTime,
   )
 
   override fun clearTimeout() = delegate.clearTimeout()

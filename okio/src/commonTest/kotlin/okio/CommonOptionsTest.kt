@@ -32,12 +32,13 @@ class CommonOptionsTest {
     assertEquals(
       utf8Options("hotdog", "hoth", "hot").trieString(),
       """
-        |hot
-        |   -> 2
-        |   d
-        |    og -> 0
-        |   h -> 1
-        |""".trimMargin()
+      |hot
+      |   -> 2
+      |   d
+      |    og -> 0
+      |   h -> 1
+      |
+      """.trimMargin(),
     )
   }
 
@@ -70,81 +71,82 @@ class CommonOptionsTest {
       "connectTimeout",
       "readTimeout",
       "writeTimeout",
-      "pingInterval"
+      "pingInterval",
     )
     assertEquals(
       options.trieString(),
       """
-        |a
-        | uthenticator -> 17
-        |c
-        | a
-        |  che -> 9
-        | e
-        |  rtificate
-        |           C
-        |            hainCleaner -> 13
-        |           P
-        |            inner -> 15
-        | o
-        |  n
-        |   nect
-        |       T
-        |        imeout -> 23
-        |       i
-        |        on
-        |          P
-        |           ool -> 18
-        |          S
-        |           pecs -> 3
-        |  o
-        |   kieJar -> 8
-        |d
-        | i
-        |  spatcher -> 0
-        | n
-        |  s -> 19
-        |e
-        | ventListenerFactory -> 6
-        |f
-        | ollow
-        |      R
-        |       edirects -> 21
-        |      S
-        |       slRedirects -> 20
-        |h
-        | ostnameVerifier -> 14
-        |i
-        | nter
-        |     c
-        |      eptors -> 4
-        |     n
-        |      alCache -> 10
-        |n
-        | etworkInterceptors -> 5
-        |p
-        | i
-        |  ngInterval -> 26
-        | r
-        |  o
-        |   t
-        |    ocols -> 2
-        |   x
-        |    y -> 1
-        |r
-        | e
-        |  a
-        |   dTimeout -> 24
-        |  t
-        |   ryOnConnectionFailure -> 22
-        |s
-        | o
-        |  cketFactory -> 11
-        | s
-        |  lSocketFactory -> 12
-        |w
-        | riteTimeout -> 25
-        |""".trimMargin()
+      |a
+      | uthenticator -> 17
+      |c
+      | a
+      |  che -> 9
+      | e
+      |  rtificate
+      |           C
+      |            hainCleaner -> 13
+      |           P
+      |            inner -> 15
+      | o
+      |  n
+      |   nect
+      |       T
+      |        imeout -> 23
+      |       i
+      |        on
+      |          P
+      |           ool -> 18
+      |          S
+      |           pecs -> 3
+      |  o
+      |   kieJar -> 8
+      |d
+      | i
+      |  spatcher -> 0
+      | n
+      |  s -> 19
+      |e
+      | ventListenerFactory -> 6
+      |f
+      | ollow
+      |      R
+      |       edirects -> 21
+      |      S
+      |       slRedirects -> 20
+      |h
+      | ostnameVerifier -> 14
+      |i
+      | nter
+      |     c
+      |      eptors -> 4
+      |     n
+      |      alCache -> 10
+      |n
+      | etworkInterceptors -> 5
+      |p
+      | i
+      |  ngInterval -> 26
+      | r
+      |  o
+      |   t
+      |    ocols -> 2
+      |   x
+      |    y -> 1
+      |r
+      | e
+      |  a
+      |   dTimeout -> 24
+      |  t
+      |   ryOnConnectionFailure -> 22
+      |s
+      | o
+      |  cketFactory -> 11
+      | s
+      |  lSocketFactory -> 12
+      |w
+      | riteTimeout -> 25
+      |
+      """.trimMargin(),
     )
     assertSelect("", -1, options)
     assertSelect("a", -1, options)
@@ -212,10 +214,11 @@ class CommonOptionsTest {
     assertEquals(
       options.trieString(),
       """
-        |abc
-        |   -> 1
-        |   A -> 0
-        |""".trimMargin()
+      |abc
+      |   -> 1
+      |   A -> 0
+      |
+      """.trimMargin(),
     )
     assertSelect("abc", 1, options)
     assertSelect("abcA", 0, options)
@@ -228,35 +231,39 @@ class CommonOptionsTest {
     assertEquals(
       utf8Options("a", "ab", "abc", "abcd", "abcde").trieString(),
       """
-        |a -> 0
-        |""".trimMargin()
+      |a -> 0
+      |
+      """.trimMargin(),
     )
     assertEquals(
       utf8Options("abc", "a", "ab", "abe", "abcd", "abcf").trieString(),
       """
-        |a
-        | -> 1
-        | bc -> 0
-        |""".trimMargin()
+      |a
+      | -> 1
+      | bc -> 0
+      |
+      """.trimMargin(),
     )
     assertEquals(
       utf8Options("abc", "ab", "a").trieString(),
       """
-        |a
-        | -> 2
-        | b
-        |  -> 1
-        |  c -> 0
-        |""".trimMargin()
+      |a
+      | -> 2
+      | b
+      |  -> 1
+      |  c -> 0
+      |
+      """.trimMargin(),
     )
     assertEquals(
       utf8Options("abcd", "abce", "abc", "abcf", "abcg").trieString(),
       """
-        |abc
-        |   -> 2
-        |   d -> 0
-        |   e -> 1
-        |""".trimMargin()
+      |abc
+      |   -> 2
+      |   d -> 0
+      |   e -> 1
+      |
+      """.trimMargin(),
     )
   }
 

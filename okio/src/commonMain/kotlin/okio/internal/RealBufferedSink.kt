@@ -17,8 +17,11 @@
 // TODO move to RealBufferedSink class: https://youtrack.jetbrains.com/issue/KT-20427
 @file:Suppress("NOTHING_TO_INLINE")
 
+@file:JvmName("-RealBufferedSink") // A leading '-' hides this class from Java.
+
 package okio.internal
 
+import kotlin.jvm.JvmName
 import okio.Buffer
 import okio.BufferedSink
 import okio.ByteString
@@ -42,7 +45,7 @@ internal inline fun RealBufferedSink.commonWrite(byteString: ByteString): Buffer
 internal inline fun RealBufferedSink.commonWrite(
   byteString: ByteString,
   offset: Int,
-  byteCount: Int
+  byteCount: Int,
 ): BufferedSink {
   check(!closed) { "closed" }
   buffer.write(byteString, offset, byteCount)
@@ -58,7 +61,7 @@ internal inline fun RealBufferedSink.commonWriteUtf8(string: String): BufferedSi
 internal inline fun RealBufferedSink.commonWriteUtf8(
   string: String,
   beginIndex: Int,
-  endIndex: Int
+  endIndex: Int,
 ): BufferedSink {
   check(!closed) { "closed" }
   buffer.writeUtf8(string, beginIndex, endIndex)
@@ -80,7 +83,7 @@ internal inline fun RealBufferedSink.commonWrite(source: ByteArray): BufferedSin
 internal inline fun RealBufferedSink.commonWrite(
   source: ByteArray,
   offset: Int,
-  byteCount: Int
+  byteCount: Int,
 ): BufferedSink {
   check(!closed) { "closed" }
   buffer.write(source, offset, byteCount)

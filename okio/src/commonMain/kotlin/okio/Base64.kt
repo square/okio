@@ -14,9 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+@file:JvmName("-Base64") // A leading '-' hides this class from Java.
 
 package okio
 
+import kotlin.jvm.JvmName
 import kotlin.native.concurrent.SharedImmutable
 import okio.ByteString.Companion.encodeUtf8
 
@@ -25,6 +27,7 @@ import okio.ByteString.Companion.encodeUtf8
 @SharedImmutable
 internal val BASE64 =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".encodeUtf8().data
+
 @SharedImmutable
 internal val BASE64_URL_SAFE =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".encodeUtf8().data

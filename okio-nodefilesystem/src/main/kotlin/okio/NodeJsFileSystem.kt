@@ -65,7 +65,7 @@ object NodeJsFileSystem : FileSystem() {
       size = stat.size.toLong(),
       createdAtMillis = stat.ctimeMs.toLong(),
       lastModifiedAtMillis = stat.mtimeMs.toLong(),
-      lastAccessedAtMillis = stat.atimeMs.toLong()
+      lastAccessedAtMillis = stat.atimeMs.toLong(),
     )
   }
 
@@ -98,8 +98,11 @@ object NodeJsFileSystem : FileSystem() {
         opendir.closeSync()
       }
     } catch (e: Throwable) {
-      if (throwOnFailure) throw e.toIOException()
-      else return null
+      if (throwOnFailure) {
+        throw e.toIOException()
+      } else {
+        return null
+      }
     }
   }
 
@@ -173,8 +176,11 @@ object NodeJsFileSystem : FileSystem() {
     } catch (e: Throwable) {
       val alreadyExist = metadataOrNull(dir)?.isDirectory == true
       if (alreadyExist) {
-        if (mustCreate) throw IOException("$dir already exist.")
-        else return
+        if (mustCreate) {
+          throw IOException("$dir already exist.")
+        } else {
+          return
+        }
       }
 
       throw e.toIOException()
@@ -205,8 +211,11 @@ object NodeJsFileSystem : FileSystem() {
       rmdirSync(path.toString())
     } catch (e: Throwable) {
       if (e.errorCode == "ENOENT") {
-        if (mustExist) throw FileNotFoundException("no such file: $path")
-        else return
+        if (mustExist) {
+          throw FileNotFoundException("no such file: $path")
+        } else {
+          return
+        }
       }
       throw e.toIOException()
     }

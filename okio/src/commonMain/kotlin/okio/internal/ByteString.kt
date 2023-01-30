@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("-ByteString") // A leading '-' hides this class from Java.
 
 package okio.internal
 
+import kotlin.jvm.JvmName
 import kotlin.native.concurrent.SharedImmutable
 import okio.BASE64_URL_SAFE
 import okio.Buffer
@@ -156,7 +158,7 @@ internal inline fun ByteString.commonRangeEquals(
   offset: Int,
   other: ByteString,
   otherOffset: Int,
-  byteCount: Int
+  byteCount: Int,
 ): Boolean = other.rangeEquals(otherOffset, this.data, offset, byteCount)
 
 @Suppress("NOTHING_TO_INLINE")
@@ -164,7 +166,7 @@ internal inline fun ByteString.commonRangeEquals(
   offset: Int,
   other: ByteArray,
   otherOffset: Int,
-  byteCount: Int
+  byteCount: Int,
 ): Boolean {
   return (
     offset >= 0 && offset <= data.size - byteCount &&
@@ -178,7 +180,7 @@ internal inline fun ByteString.commonCopyInto(
   offset: Int,
   target: ByteArray,
   targetOffset: Int,
-  byteCount: Int
+  byteCount: Int,
 ) {
   data.copyInto(target, targetOffset, offset, offset + byteCount)
 }
@@ -213,7 +215,7 @@ internal inline fun ByteString.commonIndexOf(other: ByteArray, fromIndex: Int): 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonLastIndexOf(
   other: ByteString,
-  fromIndex: Int
+  fromIndex: Int,
 ) = lastIndexOf(other.internalArray(), fromIndex)
 
 @Suppress("NOTHING_TO_INLINE")

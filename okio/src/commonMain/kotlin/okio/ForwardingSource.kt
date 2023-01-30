@@ -18,7 +18,7 @@ package okio
 /** A [Source] which forwards calls to another. Useful for subclassing. */
 expect abstract class ForwardingSource constructor(
   /** [Source] to which this instance is delegating. */
-  delegate: Source
+  delegate: Source,
 ) : Source {
   /** [Source] to which this instance is delegating. */
   val delegate: Source

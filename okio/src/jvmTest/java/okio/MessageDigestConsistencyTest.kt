@@ -55,7 +55,7 @@ class MessageDigestConsistencyTest {
           algorithm = algorithm,
           hashFunction = newHashFunction(),
           seed = seed,
-          updateCount = updateCount
+          updateCount = updateCount,
         )
       }
     }
@@ -65,7 +65,7 @@ class MessageDigestConsistencyTest {
     algorithm: String,
     hashFunction: HashFunction,
     seed: Long,
-    updateCount: Int
+    updateCount: Int,
   ) {
     val data = Buffer()
 
@@ -79,13 +79,13 @@ class MessageDigestConsistencyTest {
       hashFunction.update(
         input = byteArray,
         offset = offset,
-        byteCount = byteCount
+        byteCount = byteCount,
       )
 
       data.write(
         source = byteArray,
         offset = offset,
-        byteCount = byteCount
+        byteCount = byteCount,
       )
     }
 

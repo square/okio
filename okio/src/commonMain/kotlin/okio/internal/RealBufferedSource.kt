@@ -17,8 +17,11 @@
 // TODO move to RealBufferedSource class: https://youtrack.jetbrains.com/issue/KT-20427
 @file:Suppress("NOTHING_TO_INLINE")
 
+@file:JvmName("-RealBufferedSource") // A leading '-' hides this class from Java.
+
 package okio.internal
 
+import kotlin.jvm.JvmName
 import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
@@ -206,7 +209,7 @@ internal inline fun RealBufferedSource.commonReadUtf8LineStrict(limit: Long): St
   buffer.copyTo(data, 0, okio.minOf(32, buffer.size))
   throw EOFException(
     "\\n not found: limit=" + minOf(buffer.size, limit) +
-      " content=" + data.readByteString().hex() + '…'.toString()
+      " content=" + data.readByteString().hex() + '…'.toString(),
   )
 }
 
@@ -363,7 +366,7 @@ internal inline fun RealBufferedSource.commonRangeEquals(
   offset: Long,
   bytes: ByteString,
   bytesOffset: Int,
-  byteCount: Int
+  byteCount: Int,
 ): Boolean {
   check(!closed) { "closed" }
 

@@ -43,7 +43,7 @@ class Throttler internal constructor(
    * The nanoTime that we've consumed all bytes through. This is never greater than the current
    * nanoTime plus nanosForMaxByteCount.
    */
-  private var allocatedUntil: Long
+  private var allocatedUntil: Long,
 ) {
   private var bytesPerSecond: Long = 0L
   private var waitByteCount: Long = 8 * 1024 // 8 KiB.
@@ -59,7 +59,7 @@ class Throttler internal constructor(
   fun bytesPerSecond(
     bytesPerSecond: Long,
     waitByteCount: Long = this.waitByteCount,
-    maxByteCount: Long = this.maxByteCount
+    maxByteCount: Long = this.maxByteCount,
   ) {
     lock.withLock {
       require(bytesPerSecond >= 0)
