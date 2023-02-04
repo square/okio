@@ -63,7 +63,7 @@ object NodeJsFileSystem : FileSystem() {
       isDirectory = (stat.mode.toInt() and S_IFMT) == S_IFDIR,
       symlinkTarget = symlinkTarget,
       size = stat.size.toLong(),
-      createdAtMillis = stat.ctimeMs.toLong(),
+      createdAtMillis = stat.birthtimeMs.toLong(),
       lastModifiedAtMillis = stat.mtimeMs.toLong(),
       lastAccessedAtMillis = stat.atimeMs.toLong()
     )
