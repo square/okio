@@ -18,6 +18,8 @@ package okio
 import java.io.File
 import java.nio.file.Paths
 import kotlin.test.Test
+import okio.Path.Companion.extension
+import okio.Path.Companion.nameWithoutExtension
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
 import org.assertj.core.api.Assertions.assertThat
@@ -36,6 +38,26 @@ class JvmTest {
     val okioPath = string.toPath()
     assertThat(javaIoFile.toOkioPath()).isEqualTo(okioPath)
     assertThat(okioPath.toFile()).isEqualTo(javaIoFile)
+  }
+
+  @Test
+  fun extensionOfOkioPath() {
+    val dirString = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR)
+    val fileString = "/foo/bar/baz.zip".replace("/", Path.DIRECTORY_SEPARATOR)
+    val dirPath = dirString.toPath()
+    val filePath = fileString.toPath()
+    assertThat(dirPath.extension).isEqualTo("")
+    assertThat(filePath.extension).isEqualTo("zip")
+  }
+
+  @Test
+  fun nameWithoutExtensionOfOkioPath() {
+    val dirString = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR)
+    val fileString = "/foo/bar/baz.zip".replace("/", Path.DIRECTORY_SEPARATOR)
+    val dirPath = dirString.toPath()
+    val filePath = fileString.toPath()
+    assertThat(dirPath.nameWithoutExtension).isEqualTo("baz")
+    assertThat(filePath.nameWithoutExtension).isEqualTo("baz")
   }
 
   @Test

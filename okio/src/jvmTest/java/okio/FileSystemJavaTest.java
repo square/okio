@@ -59,6 +59,28 @@ public final class FileSystemJavaTest {
 
   /** Like the same test in JvmTest, but this is using the Java APIs. */
   @Test
+  public void extensionOfOkioPath() {
+    String dirString = "/foo/bar/baz".replace("/", okio.Path.DIRECTORY_SEPARATOR);
+    String fileString = "/foo/bar/baz.zip".replace("/", okio.Path.DIRECTORY_SEPARATOR);
+    Path dirPath = Path.get(dirString, false);
+    Path filePath = Path.get(fileString, false);
+    assertThat(Path.getExtension(dirPath)).isEqualTo("");
+    assertThat(Path.getExtension(filePath)).isEqualTo("zip");
+  }
+
+  /** Like the same test in JvmTest, but this is using the Java APIs. */
+  @Test
+  public void nameWithoutExtensionOfOkioPath() {
+    String dirString = "/foo/bar/baz".replace("/", okio.Path.DIRECTORY_SEPARATOR);
+    String fileString = "/foo/bar/baz.zip".replace("/", okio.Path.DIRECTORY_SEPARATOR);
+    Path dirPath = Path.get(dirString, false);
+    Path filePath = Path.get(fileString, false);
+    assertThat(Path.getNameWithoutExtension(dirPath)).isEqualTo("baz");
+    assertThat(Path.getNameWithoutExtension(filePath)).isEqualTo("baz");
+  }
+
+  /** Like the same test in JvmTest, but this is using the Java APIs. */
+  @Test
   public void nioPathToOkioPath() {
     String string = "/foo/bar/baz".replace("/", okio.Path.DIRECTORY_SEPARATOR);
     java.nio.file.Path nioPath = Paths.get(string);

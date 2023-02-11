@@ -305,5 +305,17 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
      * ```
      */
     fun String.toPath(normalize: Boolean = false): Path
+
+    /**
+     * Returns the extension of this path (not including the dot),
+     * or an empty string if it doesn't have one.
+     */
+    val Path.extension: String
+
+    /**
+     * Returns the name of this file or directory without an extension,
+     * or an empty string if this path has zero path elements.
+     */
+    val Path.nameWithoutExtension: String
   }
 }

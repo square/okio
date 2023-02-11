@@ -20,12 +20,14 @@ import java.nio.file.Path as NioPath
 import java.nio.file.Paths
 import okio.internal.commonCompareTo
 import okio.internal.commonEquals
+import okio.internal.commonExtension
 import okio.internal.commonHashCode
 import okio.internal.commonIsAbsolute
 import okio.internal.commonIsRelative
 import okio.internal.commonIsRoot
 import okio.internal.commonName
 import okio.internal.commonNameBytes
+import okio.internal.commonNameWithoutExtension
 import okio.internal.commonNormalized
 import okio.internal.commonParent
 import okio.internal.commonRelativeTo
@@ -118,6 +120,16 @@ actual class Path internal actual constructor(
     @JvmStatic
     @JvmOverloads
     actual fun String.toPath(normalize: Boolean): Path = commonToPath(normalize)
+
+    @get:JvmName("getExtension")
+    @JvmStatic
+    actual val Path.extension: String
+      get() = commonExtension
+
+    @get:JvmName("getNameWithoutExtension")
+    @JvmStatic
+    actual val Path.nameWithoutExtension: String
+      get() = commonNameWithoutExtension
 
     @JvmName("get")
     @JvmStatic

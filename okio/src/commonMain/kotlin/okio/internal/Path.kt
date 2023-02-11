@@ -297,6 +297,12 @@ internal inline fun Path.commonToString(): String {
   return bytes.utf8()
 }
 
+internal inline val Path.commonExtension: String
+  get() = name.substringAfterLast('.', "")
+
+internal inline val Path.commonNameWithoutExtension: String
+  get() = name.substringBeforeLast(".")
+
 internal fun String.commonToPath(normalize: Boolean): Path {
   return Buffer().writeUtf8(this).toPath(normalize)
 }

@@ -17,12 +17,14 @@ package okio
 
 import okio.internal.commonCompareTo
 import okio.internal.commonEquals
+import okio.internal.commonExtension
 import okio.internal.commonHashCode
 import okio.internal.commonIsAbsolute
 import okio.internal.commonIsRelative
 import okio.internal.commonIsRoot
 import okio.internal.commonName
 import okio.internal.commonNameBytes
+import okio.internal.commonNameWithoutExtension
 import okio.internal.commonNormalized
 import okio.internal.commonParent
 import okio.internal.commonRelativeTo
@@ -98,5 +100,11 @@ actual class Path internal actual constructor(
     actual val DIRECTORY_SEPARATOR: String = PLATFORM_DIRECTORY_SEPARATOR
 
     actual fun String.toPath(normalize: Boolean): Path = commonToPath(normalize)
+
+    actual val Path.extension: String
+      get() = commonExtension
+
+    actual val Path.nameWithoutExtension: String
+      get() = commonNameWithoutExtension
   }
 }
