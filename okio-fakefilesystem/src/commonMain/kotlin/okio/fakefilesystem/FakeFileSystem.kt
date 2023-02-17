@@ -208,11 +208,12 @@ class FakeFileSystem(
   override fun canonicalize(path: Path): Path {
     val canonicalPath = canonicalizeInternal(path)
 
-    if (lookupPath(canonicalPath)?.element == null) {
+    val lookupResult = lookupPath(canonicalPath)
+    if (lookupResult?.element == null) {
       throw FileNotFoundException("no such file: $path")
     }
 
-    return canonicalPath
+    return lookupResult.element.metadata.symlinkTarget ?: canonicalPath
   }
 
   /** Don't throw [FileNotFoundException] if the path doesn't identify a file. */

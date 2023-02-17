@@ -380,6 +380,15 @@ abstract class FakeFileSystemTest internal constructor(
   }
 
   @Test
+  fun canonicalizeResolvesSymlinks() {
+    fakeFileSystem.allowSymlinks = true
+    val target = base / "symlink-target"
+    val source = base / "symlink-source"
+    fileSystem.createSymlink(source, target)
+    assertEquals(target, fileSystem.canonicalize(source))
+  }
+
+  @Test
   fun fileExtras() {
     val path = base / "a.txt"
     path.writeUtf8("hello")
