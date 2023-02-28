@@ -181,13 +181,13 @@ fun File.appendingSink(): Sink = FileOutputStream(this, true).sink()
 @Throws(FileNotFoundException::class)
 fun File.source(): Source = InputStreamSource(inputStream(), Timeout.NONE)
 
-/** Returns a source that reads from `path`. */
+/** Returns a sink that writes to `path`. */
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
 fun NioPath.sink(vararg options: OpenOption): Sink =
   Files.newOutputStream(this, *options).sink()
 
-/** Returns a sink that writes to `path`. */
+/** Returns a source that reads from `path`. */
 @Throws(IOException::class)
 @IgnoreJRERequirement // Can only be invoked on Java 7+.
 fun NioPath.source(vararg options: OpenOption): Source =
