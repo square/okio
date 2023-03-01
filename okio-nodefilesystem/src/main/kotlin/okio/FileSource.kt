@@ -16,7 +16,7 @@
 package okio
 
 internal class FileSource(
-  private val fd: Number
+  private val fd: Number,
 ) : Source {
   private var position_ = 0L
   private var closed = false
@@ -31,7 +31,7 @@ internal class FileSource(
       buffer = data,
       length = byteCount.toDouble(),
       offset = 0.0,
-      position = position_.toDouble()
+      position = position_.toDouble(),
     ).toInt()
 
     if (readByteCount == 0) return -1L

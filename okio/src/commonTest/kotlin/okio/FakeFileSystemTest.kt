@@ -15,8 +15,6 @@
  */
 package okio
 
-import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,31 +23,33 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
+import okio.Path.Companion.toPath
+import okio.fakefilesystem.FakeFileSystem
 
 class FakeWindowsFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateWindows() },
-  temporaryDirectory = "C:\\".toPath()
+  temporaryDirectory = "C:\\".toPath(),
 )
 
 class FakeUnixFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()).also { it.emulateUnix() },
-  temporaryDirectory = "/".toPath()
+  temporaryDirectory = "/".toPath(),
 )
 
 class StrictFakeFileSystemTest : FakeFileSystemTest(
   FakeFileSystem(clock = FakeClock()),
-  temporaryDirectory = "/".toPath()
+  temporaryDirectory = "/".toPath(),
 )
 
 abstract class FakeFileSystemTest internal constructor(
   private val fakeFileSystem: FakeFileSystem,
-  temporaryDirectory: Path
+  temporaryDirectory: Path,
 ) : AbstractFileSystemTest(
   clock = fakeFileSystem.clock,
   fileSystem = fakeFileSystem,
   windowsLimitations = !fakeFileSystem.allowMovingOpenFiles,
   allowClobberingEmptyDirectories = fakeFileSystem.allowClobberingEmptyDirectories,
-  temporaryDirectory = temporaryDirectory
+  temporaryDirectory = temporaryDirectory,
 ) {
   private val fakeClock: FakeClock = fakeFileSystem.clock as FakeClock
 
@@ -215,7 +215,7 @@ abstract class FakeFileSystemTest internal constructor(
       |expected 0 open files, but found:
       |    $path
       """.trimMargin(),
-      exception.message
+      exception.message,
     )
     assertEquals("file opened for READ here", exception.cause?.message)
 
@@ -237,7 +237,7 @@ abstract class FakeFileSystemTest internal constructor(
       |expected 0 open files, but found:
       |    $path
       """.trimMargin(),
-      exception.message
+      exception.message,
     )
     assertEquals("file opened for WRITE here", exception.cause?.message)
 
@@ -455,7 +455,7 @@ abstract class FakeFileSystemTest internal constructor(
   @Test
   fun createExtrasDefensiveCopy() {
     val extras = mutableMapOf<KClass<*>, Any>(
-      ContentTypeExtra::class to ContentTypeExtra("text/plain")
+      ContentTypeExtra::class to ContentTypeExtra("text/plain"),
     )
     val metadata = FileMetadata(
       isRegularFile = true,
@@ -489,6 +489,6 @@ abstract class FakeFileSystemTest internal constructor(
   }
 
   internal data class ContentTypeExtra(
-    val contentType: String
+    val contentType: String,
   )
 }

@@ -193,7 +193,7 @@ expect abstract class FileSystem() {
   abstract fun openReadWrite(
     file: Path,
     mustCreate: Boolean = false,
-    mustExist: Boolean = false
+    mustExist: Boolean = false,
   ): FileHandle
 
   /**
@@ -238,7 +238,7 @@ expect abstract class FileSystem() {
   inline fun <T> write(
     file: Path,
     mustCreate: Boolean = false,
-    writerAction: BufferedSink.() -> T
+    writerAction: BufferedSink.() -> T,
   ): T
 
   /**

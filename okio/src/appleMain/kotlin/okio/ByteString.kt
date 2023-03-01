@@ -57,13 +57,14 @@ import platform.posix.memcpy
 
 actual open class ByteString
 internal actual constructor(
-  internal actual val data: ByteArray
+  internal actual val data: ByteArray,
 ) : Comparable<ByteString> {
   @Suppress("SetterBackingFieldAssignment")
   internal actual var hashCode: Int = 0 // 0 if unknown.
     set(value) {
       // Do nothing to avoid IllegalImmutabilityException.
     }
+
   @Suppress("SetterBackingFieldAssignment")
   internal actual var utf8: String? = null
     set(value) {
@@ -131,21 +132,21 @@ internal actual constructor(
     offset: Int,
     other: ByteString,
     otherOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
 
   actual open fun rangeEquals(
     offset: Int,
     other: ByteArray,
     otherOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
 
   actual open fun copyInto(
     offset: Int,
     target: ByteArray,
     targetOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) = commonCopyInto(offset, target, targetOffset, byteCount)
 
   actual fun startsWith(prefix: ByteString) = commonStartsWith(prefix)
@@ -201,7 +202,7 @@ internal actual constructor(
             usePinned { pinned ->
               memcpy(pinned.addressOf(0), data.bytes, data.length)
             }
-          }
+          },
         )
       } else {
         EMPTY

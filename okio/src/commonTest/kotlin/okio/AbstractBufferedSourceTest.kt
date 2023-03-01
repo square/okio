@@ -16,13 +16,13 @@
 
 package okio
 
-import okio.ByteString.Companion.decodeHex
-import okio.ByteString.Companion.encodeUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import okio.ByteString.Companion.decodeHex
+import okio.ByteString.Companion.encodeUtf8
 
 class BufferSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.BUFFER)
 class RealBufferedSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.REAL_BUFFERED_SOURCE)
@@ -32,7 +32,7 @@ class PeekBufferTest : AbstractBufferedSourceTest(BufferedSourceFactory.PEEK_BUF
 class PeekBufferedSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.PEEK_BUFFERED_SOURCE)
 
 abstract class AbstractBufferedSourceTest internal constructor(
-  private val factory: BufferedSourceFactory
+  private val factory: BufferedSourceFactory,
 ) {
   private val sink: BufferedSink
   private val source: BufferedSource
@@ -110,8 +110,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
         0x87.toByte(),
         0x65.toByte(),
         0x43.toByte(),
-        0x21.toByte()
-      )
+        0x21.toByte(),
+      ),
     )
     sink.emit()
     assertEquals(-0x543210ff, source.readInt().toLong())
@@ -129,8 +129,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
         0x87.toByte(),
         0x65.toByte(),
         0x43.toByte(),
-        0x21.toByte()
-      )
+        0x21.toByte(),
+      ),
     )
     sink.emit()
     assertEquals(0x10efcdab, source.readIntLe().toLong())
@@ -183,8 +183,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
         0x12.toByte(),
         0x23.toByte(),
         0x34.toByte(),
-        0x45.toByte()
-      )
+        0x45.toByte(),
+      ),
     )
     sink.emit()
     assertEquals(-0x543210ef789abcdfL, source.readLong())
@@ -210,8 +210,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
         0x12.toByte(),
         0x23.toByte(),
         0x34.toByte(),
-        0x45.toByte()
-      )
+        0x45.toByte(),
+      ),
     )
     sink.emit()
     assertEquals(0x2143658710efcdabL, source.readLongLe())
@@ -230,8 +230,8 @@ abstract class AbstractBufferedSourceTest internal constructor(
         0x87.toByte(),
         0x65.toByte(),
         0x43.toByte(),
-        0x21.toByte()
-      )
+        0x21.toByte(),
+      ),
     )
     sink.emit()
     source.skip((Segment.SIZE - 7).toLong())
@@ -345,9 +345,9 @@ abstract class AbstractBufferedSourceTest internal constructor(
         'l'.code.toByte(),
         'l'.code.toByte(),
         'o'.code.toByte(),
-        0
+        0,
       ),
-      array
+      array,
     )
   }
 
@@ -585,7 +585,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
       size - Segment.SIZE + 1,
       size - 3,
       size - 2,
-      size - 1
+      size - 1,
     )
 
     // In each iteration, we write c to the known point and then search for it using different
@@ -643,55 +643,55 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.emit()
     assertEquals(
       (Segment.SIZE - 3).toLong(),
-      source.indexOf("aabc".encodeUtf8(), (Segment.SIZE - 4).toLong())
+      source.indexOf("aabc".encodeUtf8(), (Segment.SIZE - 4).toLong()),
     )
     assertEquals(
       (Segment.SIZE - 3).toLong(),
-      source.indexOf("aabc".encodeUtf8(), (Segment.SIZE - 3).toLong())
+      source.indexOf("aabc".encodeUtf8(), (Segment.SIZE - 3).toLong()),
     )
     assertEquals(
       (Segment.SIZE - 2).toLong(),
-      source.indexOf("abcd".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("abcd".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       (Segment.SIZE - 2).toLong(),
-      source.indexOf("abc".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("abc".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       (Segment.SIZE - 2).toLong(),
-      source.indexOf("abc".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("abc".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       (Segment.SIZE - 2).toLong(),
-      source.indexOf("ab".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("ab".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       (Segment.SIZE - 2).toLong(),
-      source.indexOf("a".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("a".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       (Segment.SIZE - 1).toLong(),
-      source.indexOf("bc".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("bc".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       (Segment.SIZE - 1).toLong(),
-      source.indexOf("b".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("b".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       Segment.SIZE.toLong(),
-      source.indexOf("c".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("c".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       Segment.SIZE.toLong(),
-      source.indexOf("c".encodeUtf8(), Segment.SIZE.toLong())
+      source.indexOf("c".encodeUtf8(), Segment.SIZE.toLong()),
     )
     assertEquals(
       (Segment.SIZE + 1).toLong(),
-      source.indexOf("d".encodeUtf8(), (Segment.SIZE - 2).toLong())
+      source.indexOf("d".encodeUtf8(), (Segment.SIZE - 2).toLong()),
     )
     assertEquals(
       (Segment.SIZE + 1).toLong(),
-      source.indexOf("d".encodeUtf8(), (Segment.SIZE + 1).toLong())
+      source.indexOf("d".encodeUtf8(), (Segment.SIZE + 1).toLong()),
     )
   }
 
@@ -994,7 +994,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
     val options = Options.of(
       "ROCK".encodeUtf8(),
       "SCISSORS".encodeUtf8(),
-      "PAPER".encodeUtf8()
+      "PAPER".encodeUtf8(),
     )
 
     sink.writeUtf8("PAPER,SCISSORS,ROCK")
@@ -1033,7 +1033,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
     val options = Options.of(
       "ROCK".encodeUtf8(),
       "SCISSORS".encodeUtf8(),
-      "PAPER".encodeUtf8()
+      "PAPER".encodeUtf8(),
     )
 
     sink.writeUtf8("SPOCK")
@@ -1046,7 +1046,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
     val options = Options.of(
       "abcd".encodeUtf8(),
       "abce".encodeUtf8(),
-      "abcc".encodeUtf8()
+      "abcc".encodeUtf8(),
     )
 
     sink.writeUtf8("abcc").writeUtf8("abcd").writeUtf8("abce")
@@ -1060,7 +1060,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
     val options = Options.of(
       "abcd".encodeUtf8(),
       "abce".encodeUtf8(),
-      "abcc".encodeUtf8()
+      "abcc".encodeUtf8(),
     )
     sink.writeUtf8("abc")
     sink.emit()
@@ -1072,7 +1072,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
     val options = Options.of(
       "abcd".encodeUtf8(),
       "abc".encodeUtf8(),
-      "abcde".encodeUtf8()
+      "abcde".encodeUtf8(),
     )
     sink.writeUtf8("abcdef")
     sink.emit()
@@ -1083,7 +1083,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
   @Test fun selectFromEmptySource() {
     val options = Options.of(
       "abc".encodeUtf8(),
-      "def".encodeUtf8()
+      "def".encodeUtf8(),
     )
     assertEquals(-1, source.select(options).toLong())
   }

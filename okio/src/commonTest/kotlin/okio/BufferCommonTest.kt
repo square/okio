@@ -15,9 +15,9 @@
  */
 package okio
 
-import okio.ByteString.Companion.encodeUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import okio.ByteString.Companion.encodeUtf8
 
 class BufferCommonTest {
 

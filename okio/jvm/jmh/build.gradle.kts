@@ -16,11 +16,11 @@ jmh {
 }
 
 dependencies {
-  api(project(":okio"))
-  api(deps.jmh.core)
-  jmh(project(path = ":okio", configuration = "jvmRuntimeElements"))
-  jmh(deps.jmh.core)
-  jmh(deps.jmh.generator)
+  api(projects.okio)
+  api(libs.jmh.core)
+  jmh(projects.okio) { targetConfiguration = "jvmRuntimeElements" }
+  jmh(libs.jmh.core)
+  jmh(libs.jmh.generator)
 }
 
 tasks {

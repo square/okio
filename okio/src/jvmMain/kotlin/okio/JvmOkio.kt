@@ -20,8 +20,6 @@
 
 package okio
 
-import okio.internal.ResourceFileSystem
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -32,19 +30,21 @@ import java.net.Socket
 import java.net.SocketTimeoutException
 import java.nio.file.Files
 import java.nio.file.OpenOption
+import java.nio.file.Path as NioPath
 import java.security.MessageDigest
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
-import java.nio.file.Path as NioPath
+import okio.internal.ResourceFileSystem
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
 
 private class OutputStreamSink(
   private val out: OutputStream,
-  private val timeout: Timeout
+  private val timeout: Timeout,
 ) : Sink {
 
   override fun write(source: Buffer, byteCount: Long) {
@@ -81,7 +81,7 @@ fun InputStream.source(): Source = InputStreamSource(this, Timeout())
 
 private open class InputStreamSource(
   private val input: InputStream,
-  private val timeout: Timeout
+  private val timeout: Timeout,
 ) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {

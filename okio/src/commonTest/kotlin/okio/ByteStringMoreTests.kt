@@ -16,9 +16,9 @@
 
 package okio
 
-import okio.ByteString.Companion.toByteString
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import okio.ByteString.Companion.toByteString
 
 class ByteStringMoreTests {
   @Test fun arrayToByteString() {

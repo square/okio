@@ -62,7 +62,7 @@ actual class HashingSource : ForwardingSource, Source { // Need to explicitly de
       }
     } catch (e: InvalidKeyException) {
       throw IllegalArgumentException(e)
-    }
+    },
   )
 
   @Throws(IOException::class)
@@ -114,7 +114,7 @@ actual class HashingSource : ForwardingSource, Source { // Need to explicitly de
   @Deprecated(
     message = "moved to val",
     replaceWith = ReplaceWith(expression = "hash"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun hash() = hash
 

@@ -15,6 +15,11 @@
  */
 package okio
 
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 import okio.Buffer.UnsafeCursor
 import okio.TestUtil.deepCopy
 import org.junit.Assume.assumeTrue
@@ -23,11 +28,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameter
 import org.junit.runners.Parameterized.Parameters
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotSame
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
 
 @RunWith(Parameterized::class)
 class BufferCursorKotlinTest {

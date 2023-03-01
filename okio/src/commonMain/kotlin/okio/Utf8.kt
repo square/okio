@@ -132,7 +132,7 @@ internal inline fun isUtf8Continuation(byte: Byte): Boolean {
 internal inline fun String.processUtf8Bytes(
   beginIndex: Int,
   endIndex: Int,
-  yield: (Byte) -> Unit
+  yield: (Byte) -> Unit,
 ) {
   // Transcode a UTF-16 String to UTF-8 bytes.
   var index = beginIndex
@@ -207,7 +207,7 @@ internal inline fun String.processUtf8Bytes(
 internal inline fun ByteArray.processUtf8CodePoints(
   beginIndex: Int,
   endIndex: Int,
-  yield: (Int) -> Unit
+  yield: (Int) -> Unit,
 ) {
   var index = beginIndex
   while (index < endIndex) {
@@ -247,6 +247,7 @@ internal inline fun ByteArray.processUtf8CodePoints(
 
 // Value added to the high UTF-16 surrogate after shifting
 internal const val HIGH_SURROGATE_HEADER = 0xd800 - (0x010000 ushr 10)
+
 // Value added to the low UTF-16 surrogate after masking
 internal const val LOG_SURROGATE_HEADER = 0xdc00
 
@@ -254,7 +255,7 @@ internal const val LOG_SURROGATE_HEADER = 0xdc00
 internal inline fun ByteArray.processUtf16Chars(
   beginIndex: Int,
   endIndex: Int,
-  yield: (Char) -> Unit
+  yield: (Char) -> Unit,
 ) {
   var index = beginIndex
   while (index < endIndex) {
@@ -391,7 +392,7 @@ internal const val MASK_2BYTES = 0x0f80
 internal inline fun ByteArray.process2Utf8Bytes(
   beginIndex: Int,
   endIndex: Int,
-  yield: (Int) -> Unit
+  yield: (Int) -> Unit,
 ): Int {
   if (endIndex <= beginIndex + 1) {
     yield(REPLACEMENT_CODE_POINT)
@@ -434,7 +435,7 @@ internal const val MASK_3BYTES = -0x01e080
 internal inline fun ByteArray.process3Utf8Bytes(
   beginIndex: Int,
   endIndex: Int,
-  yield: (Int) -> Unit
+  yield: (Int) -> Unit,
 ): Int {
   if (endIndex <= beginIndex + 2) {
     // At least 2 bytes remaining
@@ -494,7 +495,7 @@ internal const val MASK_4BYTES = 0x381f80
 internal inline fun ByteArray.process4Utf8Bytes(
   beginIndex: Int,
   endIndex: Int,
-  yield: (Int) -> Unit
+  yield: (Int) -> Unit,
 ): Int {
   if (endIndex <= beginIndex + 3) {
     // At least 3 bytes remaining

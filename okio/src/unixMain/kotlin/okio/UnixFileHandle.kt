@@ -32,7 +32,7 @@ import platform.posix.stat
 
 internal class UnixFileHandle(
   readWrite: Boolean,
-  private val file: CPointer<FILE>
+  private val file: CPointer<FILE>,
 ) : FileHandle(readWrite) {
   override fun protectedSize(): Long {
     memScoped {
@@ -48,7 +48,7 @@ internal class UnixFileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Int {
     val bytesRead = array.usePinned { pinned ->
       variantPread(file, pinned.addressOf(arrayOffset), byteCount, fileOffset)
@@ -62,7 +62,7 @@ internal class UnixFileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) {
     val bytesWritten = array.usePinned { pinned ->
       variantPwrite(file, pinned.addressOf(arrayOffset), byteCount, fileOffset)

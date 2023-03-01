@@ -15,14 +15,14 @@
  */
 package okio.internal
 
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import kotlin.random.Random
 import okio.ByteString
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
-import kotlin.random.Random
 
 /**
  * Check the [Hmac] implementation against the reference [Mac] JVM implementation.
@@ -44,7 +44,7 @@ class HmacTest(val parameters: Parameters) {
               Parameters(
                 algorithm,
                 keySize,
-                dataSize
+                dataSize,
               )
             }
           }
@@ -88,7 +88,7 @@ class HmacTest(val parameters: Parameters) {
   data class Parameters(
     val algorithm: Algorithm,
     val keySize: Int,
-    val dataSize: Int
+    val dataSize: Int,
   ) {
     val algorithmName
       get() = algorithm.algorithmName
@@ -98,7 +98,7 @@ class HmacTest(val parameters: Parameters) {
 
     enum class Algorithm(
       val algorithmName: String,
-      internal val HmacFactory: (key: ByteString) -> Hmac
+      internal val HmacFactory: (key: ByteString) -> Hmac,
     ) {
       SHA_1("HmacSha1", Hmac.Companion::sha1),
       SHA_256("HmacSha256", Hmac.Companion::sha256),

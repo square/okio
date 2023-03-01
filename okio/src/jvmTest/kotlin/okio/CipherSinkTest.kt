@@ -15,10 +15,10 @@
  */
 package okio
 
+import kotlin.random.Random
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import kotlin.random.Random
 
 @RunWith(Parameterized::class)
 class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
@@ -84,7 +84,7 @@ class CipherSinkTest(private val cipherAlgorithm: CipherAlgorithm) {
     val cipherSink = buffer.cipherSink(cipherFactory.encrypt)
     cipherSink.buffer().use {
       data.forEach {
-        byte ->
+          byte ->
         it.writeByte(byte.toInt())
       }
     }

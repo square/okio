@@ -95,7 +95,7 @@ Releases
 Our [change log][changelog] has release history.
 
 ```kotlin
-implementation("com.squareup.okio:okio:3.2.0")
+implementation("com.squareup.okio:okio:3.3.0")
 ```
 
 <details>
@@ -107,7 +107,7 @@ repositories {
 }
 
 dependencies {
-   implementation("com.squareup.okio:okio:3.2.0")
+   implementation("com.squareup.okio:okio:3.3.0")
 }
 ```
 

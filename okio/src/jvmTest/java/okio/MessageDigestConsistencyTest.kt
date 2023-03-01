@@ -15,6 +15,9 @@
  */
 package okio
 
+import java.security.MessageDigest
+import java.util.Random
+import kotlin.test.Test
 import okio.ByteString.Companion.toByteString
 import okio.internal.HashFunction
 import okio.internal.Md5
@@ -22,9 +25,6 @@ import okio.internal.Sha1
 import okio.internal.Sha256
 import okio.internal.Sha512
 import org.assertj.core.api.Assertions.assertThat
-import java.security.MessageDigest
-import java.util.Random
-import kotlin.test.Test
 
 /**
  * Confirm Okio is consistent with the JDK's MessageDigest algorithms for various sizes and slices.
@@ -55,7 +55,7 @@ class MessageDigestConsistencyTest {
           algorithm = algorithm,
           hashFunction = newHashFunction(),
           seed = seed,
-          updateCount = updateCount
+          updateCount = updateCount,
         )
       }
     }
@@ -65,7 +65,7 @@ class MessageDigestConsistencyTest {
     algorithm: String,
     hashFunction: HashFunction,
     seed: Long,
-    updateCount: Int
+    updateCount: Int,
   ) {
     val data = Buffer()
 
@@ -79,13 +79,13 @@ class MessageDigestConsistencyTest {
       hashFunction.update(
         input = byteArray,
         offset = offset,
-        byteCount = byteCount
+        byteCount = byteCount,
       )
 
       data.write(
         source = byteArray,
         offset = offset,
-        byteCount = byteCount
+        byteCount = byteCount,
       )
     }
 

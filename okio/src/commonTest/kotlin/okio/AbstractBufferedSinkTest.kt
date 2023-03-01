@@ -16,17 +16,17 @@
 
 package okio
 
-import okio.ByteString.Companion.decodeHex
-import okio.ByteString.Companion.encodeUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import okio.ByteString.Companion.decodeHex
+import okio.ByteString.Companion.encodeUtf8
 
 class BufferSinkTest : AbstractBufferedSinkTest(BufferedSinkFactory.BUFFER)
 class RealBufferedSinkTest : AbstractBufferedSinkTest(BufferedSinkFactory.REAL_BUFFERED_SINK)
 
 abstract class AbstractBufferedSinkTest internal constructor(
-  factory: BufferedSinkFactory
+  factory: BufferedSinkFactory,
 ) {
   private val data: Buffer = Buffer()
   private val sink: BufferedSink = factory.create(data)

@@ -15,13 +15,13 @@
  */
 package okio
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlinx.cinterop.UnsafeNumber
 import platform.Foundation.NSData
 import platform.Foundation.NSString
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.dataUsingEncoding
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 @OptIn(UnsafeNumber::class)
 class AppleByteStringTest {

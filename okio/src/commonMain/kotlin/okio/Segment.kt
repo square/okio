@@ -167,8 +167,10 @@ internal class Segment {
     }
 
     data.copyInto(
-      sink.data, destinationOffset = sink.limit, startIndex = pos,
-      endIndex = pos + byteCount
+      sink.data,
+      destinationOffset = sink.limit,
+      startIndex = pos,
+      endIndex = pos + byteCount,
     )
     sink.limit += byteCount
     pos += byteCount

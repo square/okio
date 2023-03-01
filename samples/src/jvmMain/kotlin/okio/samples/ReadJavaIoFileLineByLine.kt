@@ -15,10 +15,10 @@
  */
 package okio.samples
 
-import okio.buffer
-import okio.source
 import java.io.File
 import java.io.IOException
+import okio.buffer
+import okio.source
 
 @Throws(IOException::class)
 fun readLines(file: File) {

@@ -19,17 +19,17 @@ plugins {
 
 buildscript {
   dependencies {
-    classpath(deps.android.gradlePlugin)
-    classpath(deps.animalSniffer.gradlePlugin)
-    classpath(deps.japicmp)
-    classpath(deps.dokka)
-    classpath(deps.shadow)
-    classpath(deps.jmh.gradlePlugin)
-    classpath(deps.spotless)
-    classpath(deps.bnd)
+    classpath(libs.android.gradle.plugin)
+    classpath(libs.animalSniffer.gradle.plugin)
+    classpath(libs.japicmp)
+    classpath(libs.dokka)
+    classpath(libs.shadow)
+    classpath(libs.jmh.gradle.plugin)
+    classpath(libs.spotless)
+    classpath(libs.bnd)
     // https://github.com/melix/japicmp-gradle-plugin/issues/36
-    classpath(deps.guava)
-    classpath(deps.vanniktechPublishPlugin)
+    classpath(libs.guava)
+    classpath(libs.vanniktech.publish.plugin)
   }
 
   repositories {
@@ -91,10 +91,10 @@ allprojects {
   plugins.withId("com.vanniktech.maven.publish.base") {
     val publishingExtension = extensions.getByType(PublishingExtension::class.java)
     configure<MavenPublishBaseExtension> {
-      publishToMavenCentral(SonatypeHost.S01)
+      publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
       signAllPublications()
       pom {
-        description.set("A modern I/O API for Java")
+        description.set("A modern I/O library for Android, Java, and Kotlin Multiplatform.")
         name.set(project.name)
         url.set("https://github.com/square/okio/")
         licenses {
@@ -150,9 +150,7 @@ subprojects {
   configure<SpotlessExtension> {
     kotlin {
       target("**/*.kt")
-      ktlint(versions.ktlint).userData(mapOf("indent_size" to "2"))
-      trimTrailingWhitespace()
-      endWithNewline()
+      ktlint(libs.versions.ktlint.get())
     }
   }
 
@@ -170,11 +168,38 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8.toString()
   }
 
+  val testJavaVersion = System.getProperty("test.java.version", "19").toInt()
   tasks.withType<Test> {
+    val javaToolchains = project.extensions.getByType<JavaToolchainService>()
+    javaLauncher.set(javaToolchains.launcherFor {
+      languageVersion.set(JavaLanguageVersion.of(testJavaVersion))
+    })
+
     testLogging {
       events(STARTED, PASSED, SKIPPED, FAILED)
       exceptionFormat = TestExceptionFormat.FULL
       showStandardStreams = false
+    }
+
+    if (loomEnabled) {
+      jvmArgs = jvmArgs!! + listOf(
+        "-Djdk.tracePinnedThread=full",
+        "--enable-preview",
+        "-DloomEnabled=true"
+      )
+    }
+  }
+
+  tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+  }
+
+  normalization {
+    runtimeClasspath {
+      metaInf {
+        ignoreAttribute("Bnd-LastModified")
+      }
     }
   }
 }

@@ -26,13 +26,11 @@ android {
     freeCompilerArgs += "-Xmulti-platform"
   }
 
-  compileSdkVersion(30)
+  compileSdkVersion(33)
 
   defaultConfig {
     minSdkVersion(15)
-    targetSdkVersion(30)
-    versionCode = 1
-    versionName = "1.0"
+    targetSdkVersion(33)
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     // AndroidJUnitRunner wasn't finding tests in multidex artifacts when running on Android 4.0.3.
@@ -61,12 +59,12 @@ android {
 }
 
 dependencies {
-  coreLibraryDesugaring(deps.android.desugarJdkLibs)
-  androidTestImplementation(deps.androidx.testExtJunit)
-  androidTestImplementation(deps.androidx.testRunner)
-  androidTestImplementation(deps.animalSniffer.annotations)
-  androidTestImplementation(deps.kotlin.test)
-  androidTestImplementation(deps.kotlin.time)
-  androidTestImplementation(deps.test.assertj)
-  androidTestImplementation(deps.test.junit)
+  coreLibraryDesugaring(libs.android.desugar.jdk.libs)
+  androidTestImplementation(libs.androidx.test.ext.junit)
+  androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.animalSniffer.annotations)
+  androidTestImplementation(libs.kotlin.test)
+  androidTestImplementation(libs.kotlin.time)
+  androidTestImplementation(libs.test.assertj)
+  androidTestImplementation(libs.test.junit)
 }

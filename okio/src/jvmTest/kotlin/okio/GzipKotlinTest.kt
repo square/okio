@@ -16,9 +16,9 @@
 
 package okio
 
+import kotlin.test.assertEquals
 import okio.ByteString.Companion.decodeHex
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class GzipKotlinTest {
   @Test fun sink() {

@@ -15,10 +15,10 @@
  */
 package okio.samples
 
-import okio.buffer
-import okio.sink
 import java.io.File
 import java.io.IOException
+import okio.buffer
+import okio.sink
 
 @Throws(IOException::class)
 fun writeEnv(file: File) {

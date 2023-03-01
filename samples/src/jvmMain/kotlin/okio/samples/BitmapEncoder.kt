@@ -15,16 +15,16 @@
  */
 package okio.samples
 
+import kotlin.math.hypot
 import okio.BufferedSink
 import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
-import kotlin.math.hypot
 
 class KotlinBitmapEncoder {
   class Bitmap(
-    private val pixels: Array<IntArray>
+    private val pixels: Array<IntArray>,
   ) {
     val width: Int = pixels[0].size
     val height: Int = pixels.size

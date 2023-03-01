@@ -103,7 +103,7 @@ class FileMetadata(
    */
   val lastAccessedAtMillis: Long? = null,
 
-  extras: Map<KClass<*>, Any> = mapOf()
+  extras: Map<KClass<*>, Any> = mapOf(),
 ) {
   /**
    * Additional file system-specific metadata organized by the class of that metadata. File systems

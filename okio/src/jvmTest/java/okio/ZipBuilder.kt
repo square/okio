@@ -27,7 +27,7 @@ import org.junit.Assume.assumeTrue
  * always named `-`.
  */
 class ZipBuilder(
-  private val directory: Path
+  private val directory: Path,
 ) {
   private val fileSystem = FileSystem.SYSTEM
 
@@ -43,7 +43,7 @@ class ZipBuilder(
     comment: String = "",
     modifiedAt: String? = null,
     accessedAt: String? = null,
-    zip64: Boolean = false
+    zip64: Boolean = false,
   ) = apply {
     entries += Entry(path, content, directory, comment, modifiedAt, accessedAt, zip64)
   }
@@ -144,7 +144,7 @@ class ZipBuilder(
     val comment: String,
     val modifiedAt: String?,
     val accessedAt: String?,
-    val zip64: Boolean
+    val zip64: Boolean,
   ) {
     init {
       require(directory != (content != null)) { "must be a directory or have content" }

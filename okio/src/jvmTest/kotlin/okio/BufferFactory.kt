@@ -15,9 +15,9 @@
  */
 package okio
 
+import java.util.Random
 import okio.TestUtil.bufferWithRandomSegmentLayout
 import okio.TestUtil.bufferWithSegments
-import java.util.Random
 
 enum class BufferFactory {
   EMPTY {
@@ -59,7 +59,8 @@ enum class BufferFactory {
 
       return bufferWithRandomSegmentLayout(dice, largeByteArray)
     }
-  };
+  },
+  ;
 
   @Throws(Exception::class)
   abstract fun newBuffer(): Buffer

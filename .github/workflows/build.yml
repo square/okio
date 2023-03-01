@@ -14,30 +14,26 @@ jobs:
       matrix:
         java-version:
           - 8
-          - 9
-          - 10
           - 11
-          - 12
-          - 13
-          - 14
-          - 15
+          - 17
+          - 19
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
 
       - name: Configure JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: ${{ matrix.java-version }}
+          java-version: 19
 
       - name: Test
         run: |
-          ./gradlew -Dkjs=false -Dknative=false build --stacktrace
+          ./gradlew -Dkjs=false -Dknative=false -Dtest.java.version=${{ matrix.java-version }} build --stacktrace
 
       - name: Upload Japicmp report
         if: failure()
@@ -45,6 +41,29 @@ jobs:
         with:
           name: japicmp-report
           path: okio/jvm/japicmp/build/reports/japi.txt
+
+  loom:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 19
+
+      - name: Test
+        run: |
+          ./gradlew -DloomEnabled=true build
 
   all-platforms:
     runs-on: ${{ matrix.os }}
@@ -56,16 +75,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
 
       - name: Configure JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 19
 
       - name: Test
         run: |
@@ -78,13 +97,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Configure JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 19
 
       - name: Upload Artifacts
         run: |
@@ -101,13 +120,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Configure JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 19
 
       - name: Upload Artifacts
         run: |
@@ -124,18 +143,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Configure JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 14
+          java-version: 19
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
 

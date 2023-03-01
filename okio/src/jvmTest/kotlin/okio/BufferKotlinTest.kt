@@ -15,9 +15,9 @@
  */
 package okio
 
+import kotlin.test.assertFailsWith
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import kotlin.test.assertFailsWith
 
 class BufferKotlinTest {
   @Test fun get() {

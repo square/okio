@@ -18,6 +18,9 @@ package okio
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * This timeout uses a background thread to take action exactly when the timeout occurs. Use this to
@@ -179,7 +182,7 @@ open class AsyncTimeout : Timeout() {
       while (true) {
         try {
           var timedOut: AsyncTimeout? = null
-          synchronized(AsyncTimeout::class.java) {
+          AsyncTimeout.lock.withLock {
             timedOut = awaitTimeout()
 
             // The queue is completely empty. Let this thread exit and let another watchdog thread
@@ -199,6 +202,9 @@ open class AsyncTimeout : Timeout() {
   }
 
   companion object {
+    val lock: ReentrantLock = ReentrantLock()
+    val condition: Condition = lock.newCondition()
+
     /**
      * Don't write more than 64 KiB of data at a time, give or take a segment. Otherwise slow
      * connections may suffer timeouts even when they're making (slow) progress. Without this,
@@ -221,7 +227,7 @@ open class AsyncTimeout : Timeout() {
     private var head: AsyncTimeout? = null
 
     private fun scheduleTimeout(node: AsyncTimeout, timeoutNanos: Long, hasDeadline: Boolean) {
-      synchronized(AsyncTimeout::class.java) {
+      AsyncTimeout.lock.withLock {
         check(!node.inQueue) { "Unbalanced enter/exit" }
         node.inQueue = true
 
@@ -253,7 +259,7 @@ open class AsyncTimeout : Timeout() {
             prev.next = node
             if (prev === head) {
               // Wake up the watchdog when inserting at the front.
-              (AsyncTimeout::class.java as Object).notify()
+              condition.signal()
             }
             break
           }
@@ -264,7 +270,7 @@ open class AsyncTimeout : Timeout() {
 
     /** Returns true if the timeout occurred. */
     private fun cancelScheduledTimeout(node: AsyncTimeout): Boolean {
-      synchronized(AsyncTimeout::class.java) {
+      AsyncTimeout.lock.withLock {
         if (!node.inQueue) return false
         node.inQueue = false
 
@@ -299,7 +305,7 @@ open class AsyncTimeout : Timeout() {
       // The queue is empty. Wait until either something is enqueued or the idle timeout elapses.
       if (node == null) {
         val startNanos = System.nanoTime()
-        (AsyncTimeout::class.java as Object).wait(IDLE_TIMEOUT_MILLIS)
+        condition.await(IDLE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
         return if (head!!.next == null && System.nanoTime() - startNanos >= IDLE_TIMEOUT_NANOS) {
           head // The idle timeout elapsed.
         } else {
@@ -311,11 +317,7 @@ open class AsyncTimeout : Timeout() {
 
       // The head of the queue hasn't timed out yet. Await that.
       if (waitNanos > 0) {
-        // Waiting is made complicated by the fact that we work in nanoseconds,
-        // but the API wants (millis, nanos) in two arguments.
-        val waitMillis = waitNanos / 1000000L
-        waitNanos -= waitMillis * 1000000L
-        (AsyncTimeout::class.java as Object).wait(waitMillis, waitNanos.toInt())
+        condition.await(waitNanos, TimeUnit.NANOSECONDS)
         return null
       }
 

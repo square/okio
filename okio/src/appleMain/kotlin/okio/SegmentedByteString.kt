@@ -29,7 +29,7 @@ import okio.internal.forEachSegment
 
 internal actual class SegmentedByteString internal actual constructor(
   internal actual val segments: Array<ByteArray>,
-  internal actual val directory: IntArray
+  internal actual val directory: IntArray,
 ) : ByteString(EMPTY.data) {
 
   override fun base64() = toByteString().base64()
@@ -58,28 +58,28 @@ internal actual class SegmentedByteString internal actual constructor(
     offset: Int,
     other: ByteString,
     otherOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
 
   override fun rangeEquals(
     offset: Int,
     other: ByteArray,
     otherOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Boolean = commonRangeEquals(offset, other, otherOffset, byteCount)
 
   override fun copyInto(
     offset: Int,
     target: ByteArray,
     targetOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) = commonCopyInto(offset, target, targetOffset, byteCount)
 
   override fun indexOf(other: ByteArray, fromIndex: Int) = toByteString().indexOf(other, fromIndex)
 
   override fun lastIndexOf(other: ByteArray, fromIndex: Int) = toByteString().lastIndexOf(
     other,
-    fromIndex
+    fromIndex,
   )
 
   override fun digest(hashFunction: HashFunction): ByteString {

@@ -15,10 +15,10 @@
  */
 package okio
 
+import kotlin.random.Random
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import kotlin.random.Random
 
 @RunWith(Parameterized::class)
 class CipherSourceTest(private val cipherAlgorithm: CipherAlgorithm) {

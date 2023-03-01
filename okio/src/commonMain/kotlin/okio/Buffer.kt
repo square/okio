@@ -46,7 +46,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
   fun copyTo(
     out: Buffer,
     offset: Long = 0L,
-    byteCount: Long
+    byteCount: Long,
   ): Buffer
 
   /**
@@ -55,7 +55,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    */
   fun copyTo(
     out: Buffer,
-    offset: Long = 0L
+    offset: Long = 0L,
   ): Buffer
 
   /**
@@ -339,12 +339,17 @@ expect class Buffer() : BufferedSource, BufferedSink {
    */
   class UnsafeCursor constructor() {
     @JvmField var buffer: Buffer?
+
     @JvmField var readWrite: Boolean
 
     internal var segment: Segment?
+
     @JvmField var offset: Long
+
     @JvmField var data: ByteArray?
+
     @JvmField var start: Int
+
     @JvmField var end: Int
 
     /**

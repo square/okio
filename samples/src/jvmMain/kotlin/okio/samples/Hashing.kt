@@ -15,6 +15,7 @@
  */
 package okio.samples
 
+import java.io.IOException
 import okio.Buffer
 import okio.ByteString
 import okio.ByteString.Companion.decodeHex
@@ -25,7 +26,6 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.blackholeSink
 import okio.buffer
-import java.io.IOException
 
 class KotlinHashing {
   fun run() {

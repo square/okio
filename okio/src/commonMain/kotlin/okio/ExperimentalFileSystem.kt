@@ -23,7 +23,7 @@ import kotlin.annotation.AnnotationTarget.PROPERTY
 
 @Deprecated(
   message = "This annotation is obsolete and should be removed.",
-  level = HIDDEN
+  level = HIDDEN,
 )
 @Retention(SOURCE)
 @Target(CLASS, FUNCTION, PROPERTY)

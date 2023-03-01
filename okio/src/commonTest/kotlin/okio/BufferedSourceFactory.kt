@@ -19,7 +19,7 @@ package okio
 interface BufferedSourceFactory {
   class Pipe(
     var sink: BufferedSink,
-    var source: BufferedSource
+    var source: BufferedSource,
   )
 
   val isOneByteAtATime: Boolean
@@ -36,7 +36,7 @@ interface BufferedSourceFactory {
         val buffer = Buffer()
         return Pipe(
           buffer,
-          buffer
+          buffer,
         )
       }
     }
@@ -51,7 +51,7 @@ interface BufferedSourceFactory {
         val buffer = Buffer()
         return Pipe(
           buffer,
-          (buffer as Source).buffer()
+          (buffer as Source).buffer(),
         )
       }
     }
@@ -79,7 +79,7 @@ interface BufferedSourceFactory {
               if (result > 0L) sink.write(box.copy(), result)
               return result
             }
-          }.buffer()
+          }.buffer(),
         )
       }
     }
@@ -104,7 +104,7 @@ interface BufferedSourceFactory {
               }
             }
           }.buffer(),
-          buffer
+          buffer,
         )
       }
     }
@@ -118,7 +118,7 @@ interface BufferedSourceFactory {
         val buffer = Buffer()
         return Pipe(
           buffer,
-          buffer.peek()
+          buffer.peek(),
         )
       }
     }
@@ -133,7 +133,7 @@ interface BufferedSourceFactory {
         val buffer = Buffer()
         return Pipe(
           buffer,
-          (buffer as Source).buffer().peek()
+          (buffer as Source).buffer().peek(),
         )
       }
     }
@@ -144,7 +144,7 @@ interface BufferedSourceFactory {
       arrayOf(ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE),
       arrayOf(ONE_BYTE_AT_A_TIME_BUFFER),
       arrayOf(PEEK_BUFFER),
-      arrayOf(PEEK_BUFFERED_SOURCE)
+      arrayOf(PEEK_BUFFERED_SOURCE),
     )
   }
 }

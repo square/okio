@@ -19,8 +19,9 @@ import java.io.RandomAccessFile
 
 internal class JvmFileHandle(
   readWrite: Boolean,
-  private val randomAccessFile: RandomAccessFile
+  private val randomAccessFile: RandomAccessFile,
 ) : FileHandle(readWrite) {
+
   @Synchronized
   override fun protectedResize(size: Long) {
     val currentSize = size()
@@ -42,7 +43,7 @@ internal class JvmFileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Int {
     randomAccessFile.seek(fileOffset)
     var bytesRead = 0
@@ -62,7 +63,7 @@ internal class JvmFileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) {
     randomAccessFile.seek(fileOffset)
     randomAccessFile.write(array, arrayOffset, byteCount)

@@ -15,10 +15,10 @@
  */
 package okio
 
+import kotlin.test.fail
 import okio.internal.FixedLengthSource
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import kotlin.test.fail
 
 internal class FixedLengthSourceTest {
   @Test

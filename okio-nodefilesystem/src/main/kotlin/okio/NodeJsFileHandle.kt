@@ -17,7 +17,7 @@ package okio
 
 internal class NodeJsFileHandle(
   private val fd: Number,
-  readWrite: Boolean
+  readWrite: Boolean,
 ) : FileHandle(readWrite) {
   override fun protectedSize(): Long {
     val stats = fstatSync(fd)
@@ -28,14 +28,14 @@ internal class NodeJsFileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ): Int {
     val readByteCount = readSync(
       fd = fd,
       buffer = array,
       length = byteCount.toDouble(),
       offset = arrayOffset.toDouble(),
-      position = fileOffset.toDouble()
+      position = fileOffset.toDouble(),
     ).toInt()
 
     if (readByteCount == 0) return -1
@@ -47,14 +47,14 @@ internal class NodeJsFileHandle(
     fileOffset: Long,
     array: ByteArray,
     arrayOffset: Int,
-    byteCount: Int
+    byteCount: Int,
   ) {
     val writtenByteCount = writeSync(
       fd = fd,
       buffer = array,
       offset = arrayOffset.toDouble(),
       length = byteCount.toDouble(),
-      position = fileOffset.toDouble()
+      position = fileOffset.toDouble(),
     )
 
     if (writtenByteCount.toInt() != byteCount) {

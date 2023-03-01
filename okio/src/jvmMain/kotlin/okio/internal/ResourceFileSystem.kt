@@ -15,6 +15,10 @@
  */
 package okio.internal
 
+import java.io.File
+import java.io.IOException
+import java.net.URI
+import java.net.URL
 import okio.FileHandle
 import okio.FileMetadata
 import okio.FileNotFoundException
@@ -24,10 +28,6 @@ import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
 import okio.Sink
 import okio.Source
-import java.io.File
-import java.io.IOException
-import java.net.URI
-import java.net.URL
 
 /**
  * A file system exposing Java classpath resources. It is equivalent to the files returned by
@@ -201,7 +201,7 @@ internal class ResourceFileSystem internal constructor(
       val zip = openZip(
         zipPath = path,
         fileSystem = SYSTEM,
-        predicate = { entry -> keepPath(entry.canonicalPath) }
+        predicate = { entry -> keepPath(entry.canonicalPath) },
       )
       return zip to ROOT
     }

@@ -21,7 +21,7 @@ import java.io.IOException
 abstract class ForwardingSink(
   /** [Sink] to which this instance is delegating. */
   @get:JvmName("delegate")
-  val delegate: Sink
+  val delegate: Sink,
 ) : Sink {
   // TODO 'Sink by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
@@ -42,7 +42,7 @@ abstract class ForwardingSink(
   @Deprecated(
     message = "moved to val",
     replaceWith = ReplaceWith(expression = "delegate"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.ERROR,
   )
   fun delegate() = delegate
 }

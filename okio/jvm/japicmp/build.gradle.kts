@@ -24,23 +24,23 @@ val baseline: Configuration = configurations.create("baseline")
 val latest: Configuration = configurations.create("latest")
 
 dependencies {
-  baseline("com.squareup.okio:okio:1.14.1") {
+  baseline("com.squareup.okio:okio:1.17.5") {
     isTransitive = false
     isForce = true
   }
-  latest(project(":okio", "jvmRuntimeElements"))
+  latest(projects.okio) { targetConfiguration = "jvmRuntimeElements" }
 }
 
 val japicmp = tasks.register<JapicmpTask>("japicmp") {
   dependsOn(tasks.jar)
-  oldClasspath = baseline
-  newClasspath = latest
-  isOnlyBinaryIncompatibleModified = true
-  isFailOnModification = true
-  txtOutputFile = file("$buildDir/reports/japi.txt")
-  isIgnoreMissingClasses = true
-  isIncludeSynthetic = true
-  classExcludes = listOf(
+  oldClasspath.setFrom(baseline)
+  newClasspath.setFrom(latest)
+  onlyBinaryIncompatibleModified.set(true)
+  failOnModification.set(true)
+  txtOutputFile.set(file("$buildDir/reports/japi.txt"))
+  ignoreMissingClasses.set(true)
+  includeSynthetic.set(true)
+  classExcludes.set(listOf(
     "okio.ByteString", // Bytecode version changed from 51.0 to 50.0
     "okio.RealBufferedSink", // Internal.
     "okio.RealBufferedSource", // Internal.
@@ -48,11 +48,11 @@ val japicmp = tasks.register<JapicmpTask>("japicmp") {
     "okio.SegmentPool", // Internal.
     "okio.Util", // Internal.
     "okio.Options" // Bytecode version changed from 51.0 to 50.0
-  )
-  methodExcludes = listOf(
+  ))
+  methodExcludes.set(listOf(
     "okio.ByteString#getByte(int)", // Became "final" in 1.15.0.
     "okio.ByteString#size()" // Became "final" in 1.15.0.
-  )
+  ))
 }
 
 tasks.check.configure {

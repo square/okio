@@ -15,6 +15,10 @@
  */
 package okio
 
+import java.io.IOException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.test.assertFailsWith
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -22,19 +26,16 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
-import java.io.IOException
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertFailsWith
 import org.junit.rules.Timeout as JUnitTimeout
 
 class PipeKotlinTest {
-  @JvmField @Rule val timeout = JUnitTimeout(5, TimeUnit.SECONDS)
+  @JvmField @Rule
+  val timeout = JUnitTimeout(5, TimeUnit.SECONDS)
 
-  private val executorService = Executors.newScheduledThreadPool(1)
+  private val executorService = TestingExecutors.newScheduledExecutorService(1)
 
-  @After @Throws(Exception::class)
+  @After
+  @Throws(Exception::class)
   fun tearDown() {
     executorService.shutdown()
   }
@@ -108,7 +109,8 @@ class PipeKotlinTest {
         pipe.fold(foldSink)
         latch.countDown()
       },
-      500, TimeUnit.MILLISECONDS
+      500,
+      TimeUnit.MILLISECONDS,
     )
 
     val sink = pipe.sink.buffer()
@@ -536,7 +538,8 @@ class PipeKotlinTest {
         }
         assertEquals("boom", foldFailure.message)
       },
-      500, TimeUnit.MILLISECONDS
+      500,
+      TimeUnit.MILLISECONDS,
     )
 
     val writeFailure = assertFailsWith<IOException> {
@@ -656,7 +659,8 @@ class PipeKotlinTest {
       {
         pipe.cancel()
       },
-      smallerTimeoutNanos, TimeUnit.NANOSECONDS
+      smallerTimeoutNanos,
+      TimeUnit.NANOSECONDS,
     )
 
     val pipeSink = pipe.sink.buffer()
@@ -699,7 +703,8 @@ class PipeKotlinTest {
       {
         pipe.cancel()
       },
-      smallerTimeoutNanos, TimeUnit.NANOSECONDS
+      smallerTimeoutNanos,
+      TimeUnit.NANOSECONDS,
     )
 
     val pipeSource = pipe.source.buffer()
@@ -783,8 +788,9 @@ class PipeKotlinTest {
     val elapsed = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis() - start)
 
     assertEquals(
-      expected.toDouble(), elapsed.toDouble(),
-      TimeUnit.MILLISECONDS.toNanos(200).toDouble()
+      expected.toDouble(),
+      elapsed.toDouble(),
+      TimeUnit.MILLISECONDS.toNanos(200).toDouble(),
     )
   }
 
