@@ -28,7 +28,7 @@ fun NSInputStream.source(): Source = NSInputStreamSource(this)
 
 @OptIn(UnsafeNumber::class)
 private open class NSInputStreamSource(
-  private val input: NSInputStream
+  private val input: NSInputStream,
 ) : Source {
 
   init {

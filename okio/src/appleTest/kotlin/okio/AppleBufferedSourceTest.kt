@@ -15,6 +15,11 @@
  */
 package okio
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlinx.cinterop.CPointerVar
 import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.addressOf
@@ -29,11 +34,6 @@ import kotlinx.cinterop.value
 import platform.Foundation.NSInputStream
 import platform.darwin.NSUIntegerVar
 import platform.darwin.UInt8Var
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @OptIn(UnsafeNumber::class)
 class AppleBufferedSourceTest {

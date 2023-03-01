@@ -42,7 +42,7 @@ fun BufferedSource.inputStream(): NSInputStream = BufferedSourceInputStream(this
 
 @OptIn(UnsafeNumber::class)
 private class BufferedSourceInputStream(
-  private val bufferedSource: BufferedSource
+  private val bufferedSource: BufferedSource,
 ) : NSInputStream(NSData()) {
 
   private var error: NSError? = null
@@ -71,7 +71,7 @@ private class BufferedSourceInputStream(
 
   override fun getBuffer(
     buffer: CPointer<CPointerVar<uint8_tVar>>?,
-    length: CPointer<NSUIntegerVar>?
+    length: CPointer<NSUIntegerVar>?,
   ): Boolean {
     if (bufferedSource.buffer.size > 0) {
       bufferedSource.buffer.head?.let { s ->
@@ -103,8 +103,8 @@ private class BufferedSourceInputStream(
       0,
       mapOf(
         NSLocalizedDescriptionKey to message,
-        NSUnderlyingErrorKey to this
-      )
+        NSUnderlyingErrorKey to this,
+      ),
     )
   }
 

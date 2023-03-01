@@ -15,11 +15,11 @@
  */
 package okio
 
-import kotlinx.cinterop.UnsafeNumber
-import platform.Foundation.NSInputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
+import kotlinx.cinterop.UnsafeNumber
+import platform.Foundation.NSInputStream
 
 @OptIn(UnsafeNumber::class)
 class AppleSourceTest {
@@ -33,7 +33,7 @@ class AppleSourceTest {
 
   @Test fun sourceFromInputStream() {
     val nsis = NSInputStream(
-      ("a" + "b".repeat(SEGMENT_SIZE * 2) + "c").encodeToByteArray().toNSData()
+      ("a" + "b".repeat(SEGMENT_SIZE * 2) + "c").encodeToByteArray().toNSData(),
     )
 
     // Source: ab...bc
