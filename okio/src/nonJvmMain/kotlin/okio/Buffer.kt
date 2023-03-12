@@ -297,7 +297,7 @@ actual class Buffer : BufferedSource, BufferedSink {
   actual fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor =
     commonReadAndWriteUnsafe(unsafeCursor)
 
-  actual class UnsafeCursor {
+  actual class UnsafeCursor : Closeable {
     actual var buffer: Buffer? = null
     actual var readWrite: Boolean = false
 
@@ -315,7 +315,7 @@ actual class Buffer : BufferedSource, BufferedSink {
 
     actual fun expandBuffer(minByteCount: Int): Long = commonExpandBuffer(minByteCount)
 
-    actual fun close() {
+    actual override fun close() {
       commonClose()
     }
   }

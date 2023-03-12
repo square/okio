@@ -337,7 +337,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * You can reuse instances of this class if you like. Use the overloads of [Buffer.readUnsafe] and
    * [Buffer.readAndWriteUnsafe] that take a cursor and close it after use.
    */
-  class UnsafeCursor constructor() {
+  class UnsafeCursor constructor() : Closeable {
     @JvmField var buffer: Buffer?
 
     @JvmField var readWrite: Boolean
@@ -408,6 +408,6 @@ expect class Buffer() : BufferedSource, BufferedSink {
      */
     fun expandBuffer(minByteCount: Int): Long
 
-    fun close()
+    override fun close()
   }
 }
