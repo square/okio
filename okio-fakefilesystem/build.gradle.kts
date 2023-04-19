@@ -12,9 +12,7 @@ plugins {
 }
 
 kotlin {
-  jvm {
-    withJava()
-  }
+  jvm()
   if (kmpJsEnabled) {
     js {
       compilations.all {
