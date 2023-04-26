@@ -206,7 +206,7 @@ private class AssetFileHandle(
   override fun protectedSize(): Long {
     if (size == -1) {
       while (true) {
-        val skipped = inputStream.skip(128).toInt()
+        val skipped = inputStream.skip(1024 * 1024).toInt()
         if (skipped == 0) {
           size = currentOffset
           break
