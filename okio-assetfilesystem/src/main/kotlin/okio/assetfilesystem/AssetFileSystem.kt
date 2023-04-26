@@ -18,6 +18,7 @@ package okio.assetfilesystem
 import android.content.res.AssetManager
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.io.InputStream
 import okio.FileHandle
 import okio.FileMetadata
 import okio.FileSystem
@@ -115,7 +116,9 @@ private class AssetFileSystem(
   }
 
   override fun openReadOnly(file: Path): FileHandle {
-    TODO("not implemented yet!")
+    val pathString = canonicalizeInternal(file).toAssetRelativePathString()
+    val inputStream = assets.open(pathString)
+    return AssetFileHandle(assets, pathString, inputStream)
   }
 
   override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
@@ -152,5 +155,86 @@ private class AssetFileSystem(
 
   private companion object {
     val ROOT = "/".toPath()
+  }
+}
+
+private class AssetFileHandle(
+  private val assets: AssetManager,
+  private val pathString: String,
+  private var inputStream: InputStream,
+) : FileHandle(false) {
+  private var currentOffset = 0
+  private var size = -1
+
+  override fun protectedRead(
+    fileOffset: Long,
+    array: ByteArray,
+    arrayOffset: Int,
+    byteCount: Int,
+  ): Int {
+    // If we need to jump backwards or have reached the end of the file,
+    // close the existing stream and open a new one.
+    if (currentOffset > fileOffset || currentOffset == size) {
+      inputStream.close()
+      inputStream = assets.open(pathString)
+      currentOffset = 0
+    }
+
+    while (true) {
+      val skip = fileOffset - currentOffset
+      if (skip == 0L) break
+      val skipped = inputStream.skip(skip).toInt()
+      if (skipped == 0) {
+        // Since we know skip is never negative, a skip of 0 means EOF.
+        // Record this as the file size to trigger stream recreation.
+        size = currentOffset
+        throw IllegalArgumentException("fileOffset $fileOffset > size $size")
+      }
+      currentOffset += skipped
+    }
+
+    val read = inputStream.read(array, arrayOffset, byteCount)
+    if (read == -1) {
+      // A read of -1 means EOF. Record this as the file size to trigger stream recreation.
+      size = currentOffset
+    } else {
+      currentOffset += read
+    }
+    return read
+  }
+
+  override fun protectedSize(): Long {
+    if (size == -1) {
+      while (true) {
+        val skipped = inputStream.skip(1024 * 1024).toInt()
+        if (skipped == 0) {
+          size = currentOffset
+          break
+        }
+        currentOffset += skipped
+      }
+    }
+    return size.toLong()
+  }
+
+  override fun protectedClose() {
+    inputStream.close()
+  }
+
+  override fun protectedWrite(
+    fileOffset: Long,
+    array: ByteArray,
+    arrayOffset: Int,
+    byteCount: Int,
+  ) {
+    throw AssertionError()
+  }
+
+  override fun protectedFlush() {
+    throw AssertionError()
+  }
+
+  override fun protectedResize(size: Long) {
+    throw AssertionError()
   }
 }

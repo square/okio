@@ -27,7 +27,9 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import kotlin.test.assertFailsWith
+import okio.Buffer
 import okio.BufferedSource
+import okio.FileHandle
 import okio.FileNotFoundException
 import okio.IOException
 import okio.Path.Companion.toPath
@@ -61,6 +63,7 @@ class AssetFileSystemTest {
     assertThat(list).containsAll(
       "dir".toPath(),
       "file.txt".toPath(),
+      "moby10b.txt".toPath(),
     )
   }
 
@@ -69,6 +72,7 @@ class AssetFileSystemTest {
     assertThat(list).containsAll(
       "dir".toPath(),
       "file.txt".toPath(),
+      "moby10b.txt".toPath(),
     )
   }
 
@@ -172,6 +176,79 @@ class AssetFileSystemTest {
   @Test fun sourceNonExistent() {
     assertFailsWith<FileNotFoundException> {
       fs.source("not/a/path".toPath())
+    }
+  }
+
+  @Test fun openReadOnlyInvalidThrows() {
+    assertFailsWith<FileNotFoundException> {
+      fs.openReadOnly("not/a/path".toPath())
+    }
+  }
+
+  @Test fun openReadOnlyDirectoryThrows() {
+    assertFailsWith<FileNotFoundException> {
+      fs.openReadOnly("dir".toPath())
+    }
+  }
+
+  @Test fun openReadOnlySize() {
+    val smallSize = fs.openReadOnly("file.txt".toPath()).use(FileHandle::size)
+    assertThat(smallSize).isEqualTo(6)
+
+    val mobySize = fs.openReadOnly("moby10b.txt".toPath()).use(FileHandle::size)
+    assertThat(mobySize).isEqualTo(1232923)
+  }
+
+  @Test fun openReadOnlyRandomAccessForward() {
+    fs.openReadOnly("moby10b.txt".toPath()).use { handle ->
+      val buffer = Buffer()
+      handle.read(34251, buffer, 16)
+      assertThat(buffer.readUtf8()).isEqualTo("Call me Ishmael.")
+      handle.read(148605, buffer, 49)
+      assertThat(buffer.readUtf8()).isEqualTo("It is not down in any map; true places never are.")
+      handle.read(1051694, buffer, 50)
+      assertThat(buffer.readUtf8()).isEqualTo("his forehead's veins swelled like overladen brooks")
+      handle.read(148605, buffer, 49)
+      assertThat(buffer.readUtf8()).isEqualTo("It is not down in any map; true places never are.")
+      handle.read(34251, buffer, 16)
+      assertThat(buffer.readUtf8()).isEqualTo("Call me Ishmael.")
+    }
+  }
+
+  @Test fun openReadOnlyRandomAccessThenSize() {
+    fs.openReadOnly("moby10b.txt".toPath()).use { handle ->
+      val buffer = Buffer()
+      handle.read(34251, buffer, 16)
+      assertThat(buffer.readUtf8()).isEqualTo("Call me Ishmael.")
+
+      assertThat(handle.size()).isEqualTo(1232923)
+    }
+  }
+
+  @Test fun openReadOnlyFlushThrows() {
+    fs.openReadOnly("file.txt".toPath()).use { handle ->
+      val t = assertFailsWith<IllegalStateException> {
+        handle.flush()
+      }
+      assertThat(t).hasMessage("file handle is read-only")
+    }
+  }
+
+  @Test fun openReadOnlyResizeThrows() {
+    fs.openReadOnly("file.txt".toPath()).use { handle ->
+      val t = assertFailsWith<IllegalStateException> {
+        handle.resize(10L)
+      }
+      assertThat(t).hasMessage("file handle is read-only")
+    }
+  }
+
+  @Test fun openReadOnlyWriteThrows() {
+    fs.openReadOnly("file.txt".toPath()).use { handle ->
+      val t = assertFailsWith<IllegalStateException> {
+        handle.write(0, Buffer().writeUtf8("Sup"), 3)
+      }
+      assertThat(t).hasMessage("file handle is read-only")
     }
   }
 
