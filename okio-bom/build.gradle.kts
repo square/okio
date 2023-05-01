@@ -6,6 +6,7 @@ plugins {
 dependencies {
   constraints {
     api(projects.okio)
+    api(projects.okio.group + ":okio-jvm:" + projects.okio.version)
     api(projects.okioFakefilesystem)
     if (kmpJsEnabled) {
       // No typesafe project accessor as the accessor won't exist if kmpJs is not enabled.
