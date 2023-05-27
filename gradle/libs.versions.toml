@@ -22,7 +22,7 @@ dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.7.20"
 shadow = { module = "gradle.plugin.com.github.johnrengelman:shadow", version = "7.1.2" }
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.19.0" }
 bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.4.0" }
-guava = { module = "com.google.guava:guava", version = "31.1-jre" }
+guava = { module = "com.google.guava:guava", version = "32.0.0-jre" }
 vanniktech-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.0" }
 test-junit = { module = "junit:junit", version = "4.13.2" }
 test-assertj = { module = "org.assertj:assertj-core", version = "3.24.2" }
