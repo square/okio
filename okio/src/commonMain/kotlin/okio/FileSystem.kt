@@ -74,7 +74,7 @@ package okio
  * directory or could not be listed. This class always throws an [IOException] when an operation
  * doesn't succeed.
  *
- * The `java.nio.Path` and `java.nio.Files` classes are the entry points of Java's new file system
+ * The `java.nio.file.Path` and `java.nio.file.Files` classes are the entry points of Java's new file system
  * API. Each `Path` instance is scoped to a particular file system, though that is often implicit
  * because the `Paths.get()` function automatically uses the default (ie. system) file system.
  * In Okio's API paths are just identifiers; you must use a specific `FileSystem` object to do

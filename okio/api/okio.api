@@ -484,6 +484,7 @@ public abstract class okio/FileSystem {
 	public fun deleteRecursively (Lokio/Path;Z)V
 	public static synthetic fun deleteRecursively$default (Lokio/FileSystem;Lokio/Path;ZILjava/lang/Object;)V
 	public final fun exists (Lokio/Path;)Z
+	public static final fun get (Ljava/nio/file/FileSystem;)Lokio/FileSystem;
 	public abstract fun list (Lokio/Path;)Ljava/util/List;
 	public abstract fun listOrNull (Lokio/Path;)Ljava/util/List;
 	public final fun listRecursively (Lokio/Path;)Lkotlin/sequences/Sequence;
@@ -502,6 +503,7 @@ public abstract class okio/FileSystem {
 }
 
 public final class okio/FileSystem$Companion {
+	public final fun get (Ljava/nio/file/FileSystem;)Lokio/FileSystem;
 }
 
 public abstract class okio/ForwardingFileSystem : okio/FileSystem {
