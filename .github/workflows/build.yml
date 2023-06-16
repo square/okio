@@ -42,13 +42,6 @@ jobs:
         run: |
           ./gradlew -Dkjs=false -Dknative=false -Dtest.java.version=${{ matrix.java-version }} build --stacktrace
 
-      - name: Upload Japicmp report
-        if: failure()
-        uses: actions/upload-artifact@master
-        with:
-          name: japicmp-report
-          path: okio/jvm/japicmp/build/reports/japi.txt
-
   emulator:
     runs-on: macos-latest
     steps:
