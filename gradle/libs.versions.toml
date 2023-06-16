@@ -7,18 +7,17 @@ android-gradle-plugin = { module = "com.android.tools.build:gradle", version = "
 android-desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version = "2.0.3" }
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version = "1.1.5" }
 androidx-test-runner = { module = "androidx.test:runner", version = "1.5.2" }
+binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.13.2" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit" }
 kotlin-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.4.0" }
 jmh-gradle-plugin = { module = "me.champeau.gradle:jmh-gradle-plugin", version = "0.5.3" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
-japicmp = { module = "me.champeau.gradle:japicmp-gradle-plugin", version = "0.4.1" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.8.20" }
 shadow = { module = "gradle.plugin.com.github.johnrengelman:shadow", version = "7.1.2" }
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.19.0" }
 bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.4.0" }
-guava = { module = "com.google.guava:guava", version = "32.0.1-jre" }
 vanniktech-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.2" }
 test-junit = { module = "junit:junit", version = "4.13.2" }
 test-assertj = { module = "org.assertj:assertj-core", version = "3.24.2" }

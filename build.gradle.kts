@@ -4,7 +4,7 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
 import groovy.util.Node
 import groovy.util.NodeList
-import java.nio.charset.StandardCharsets
+import kotlinx.validation.ApiValidationExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
@@ -12,6 +12,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.nio.charset.StandardCharsets
 
 plugins {
   id("build-support").apply(false)
@@ -20,14 +21,12 @@ plugins {
 buildscript {
   dependencies {
     classpath(libs.android.gradle.plugin)
-    classpath(libs.japicmp)
     classpath(libs.dokka)
     classpath(libs.shadow)
     classpath(libs.jmh.gradle.plugin)
+    classpath(libs.binaryCompatibilityValidator)
     classpath(libs.spotless)
     classpath(libs.bnd)
-    // https://github.com/melix/japicmp-gradle-plugin/issues/36
-    classpath(libs.guava)
     classpath(libs.vanniktech.publish.plugin)
   }
 
@@ -150,6 +149,12 @@ subprojects {
     kotlin {
       target("**/*.kt")
       ktlint(libs.versions.ktlint.get())
+    }
+  }
+
+  plugins.withId("binary-compatibility-validator") {
+    configure<ApiValidationExtension> {
+      ignoredPackages += "okio.internal"
     }
   }
 

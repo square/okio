@@ -2,6 +2,7 @@ import aQute.bnd.gradle.BundleTaskConvention
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import kotlinx.validation.ApiValidationExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
@@ -11,6 +12,7 @@ plugins {
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")
+  id("binary-compatibility-validator")
 }
 
 /*
@@ -177,4 +179,10 @@ configure<MavenPublishBaseExtension> {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )
+}
+
+plugins.withId("binary-compatibility-validator") {
+  configure<ApiValidationExtension> {
+    ignoredProjects += "jmh"
+  }
 }
