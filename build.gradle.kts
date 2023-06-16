@@ -20,7 +20,6 @@ plugins {
 buildscript {
   dependencies {
     classpath(libs.android.gradle.plugin)
-    classpath(libs.animalSniffer.gradle.plugin)
     classpath(libs.japicmp)
     classpath(libs.dokka)
     classpath(libs.shadow)

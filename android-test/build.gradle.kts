@@ -62,7 +62,6 @@ dependencies {
   coreLibraryDesugaring(libs.android.desugar.jdk.libs)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
-  androidTestImplementation(libs.animalSniffer.annotations)
   androidTestImplementation(libs.kotlin.test)
   androidTestImplementation(libs.kotlin.time)
   androidTestImplementation(libs.test.assertj)

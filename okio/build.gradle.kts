@@ -5,11 +5,9 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 
 plugins {
   kotlin("multiplatform")
-  id("ru.vyarus.animalsniffer")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")
@@ -101,9 +99,6 @@ kotlin {
     }
 
     val jvmMain by getting {
-      dependencies {
-        compileOnly(libs.animalSniffer.annotations)
-      }
     }
     val jvmTest by getting {
       kotlin.srcDir("src/jvmTest/hashFunctions")
@@ -176,17 +171,6 @@ tasks {
       bndConvention.buildBundle()
     }
   }
-}
-
-configure<AnimalSnifferExtension> {
-  sourceSets = listOf(project.sourceSets.getByName("main"))
-}
-
-val signature: Configuration by configurations
-
-dependencies {
-  signature(variantOf(libs.animalSniffer.android) { artifactType("signature") })
-  signature(variantOf(libs.animalSniffer.java) { artifactType("signature") })
 }
 
 configure<MavenPublishBaseExtension> {

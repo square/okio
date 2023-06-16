@@ -1,11 +1,9 @@
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 
 plugins {
   kotlin("multiplatform")
-  id("ru.vyarus.animalsniffer")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")
@@ -63,17 +61,6 @@ tasks {
       bndConvention.buildBundle()
     }
   }
-}
-
-configure<AnimalSnifferExtension> {
-  sourceSets = listOf(project.sourceSets.getByName("main"))
-}
-
-val signature: Configuration by configurations
-
-dependencies {
-  signature(variantOf(libs.animalSniffer.android) { artifactType("signature") })
-  signature(variantOf(libs.animalSniffer.java) { artifactType("signature") })
 }
 
 configure<MavenPublishBaseExtension> {
