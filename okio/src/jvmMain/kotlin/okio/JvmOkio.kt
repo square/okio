@@ -37,7 +37,6 @@ import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
 import okio.internal.ResourceFileSystem
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -183,13 +182,11 @@ fun File.source(): Source = InputStreamSource(inputStream(), Timeout.NONE)
 
 /** Returns a sink that writes to `path`. */
 @Throws(IOException::class)
-@IgnoreJRERequirement // Can only be invoked on Java 7+.
 fun NioPath.sink(vararg options: OpenOption): Sink =
   Files.newOutputStream(this, *options).sink()
 
 /** Returns a source that reads from `path`. */
 @Throws(IOException::class)
-@IgnoreJRERequirement // Can only be invoked on Java 7+.
 fun NioPath.source(vararg options: OpenOption): Source =
   Files.newInputStream(this, *options).source()
 

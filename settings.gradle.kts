@@ -3,13 +3,13 @@ rootProject.name = "okio-parent"
 includeBuild("build-support")
 
 include(":okio")
+include(":okio-assetfilesystem")
 include(":okio-bom")
 include(":okio-fakefilesystem")
 if (System.getProperty("kjs", "true").toBoolean()) {
   include(":okio-nodefilesystem")
 }
 include(":okio-testing-support")
-include(":okio:jvm:japicmp")
 include(":okio:jvm:jmh")
 include(":samples")
 

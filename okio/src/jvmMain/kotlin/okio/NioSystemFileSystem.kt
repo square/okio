@@ -25,13 +25,11 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import okio.Path.Companion.toOkioPath
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /**
  * Extends [JvmSystemFileSystem] for platforms that support `java.nio.files` first introduced in
  * Java 7 and Android 8.0 (API level 26).
  */
-@IgnoreJRERequirement // Only used on platforms that support java.nio.file.
 internal class NioSystemFileSystem : JvmSystemFileSystem() {
   override fun metadataOrNull(path: Path): FileMetadata? {
     val nioPath = path.toNioPath()

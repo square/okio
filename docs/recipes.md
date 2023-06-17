@@ -98,7 +98,7 @@ it will return null.
 
     ```kotlin
     @Throws(IOException::class)
-    fun readLines(file: File) {
+    fun readLines(path: Path) {
       FileSystem.SYSTEM.read(path) {
         while (true) {
           val line = readUtf8Line() ?: break
@@ -134,7 +134,7 @@ strict variant also permits a byte limit to defend against malformed input.
 
     ```kotlin
     @Throws(IOException::class)
-    fun readLines(file: File) {
+    fun readLines(path: Path) {
       FileSystem.SYSTEM.read(path) {
         while (!source.exhausted()) {
           val line = source.readUtf8LineStrict(1024)

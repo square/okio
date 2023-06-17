@@ -17,6 +17,7 @@ package okio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class UnsafeCursorTest {
   @Test fun acquireForRead() {
@@ -83,5 +84,9 @@ class UnsafeCursorTest {
     }
 
     assertEquals("z".repeat(100), buffer.readUtf8())
+  }
+
+  @Test fun testUnsafeCursorIsClosable() {
+    assertTrue(Closeable::class.isInstance(Buffer.UnsafeCursor()))
   }
 }
