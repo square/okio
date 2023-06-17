@@ -87,6 +87,26 @@ allprojects {
   }
 
   plugins.withId("com.vanniktech.maven.publish.base") {
+    configure<PublishingExtension> {
+      repositories {
+        /**
+         * Want to push to an internal repository for testing? Set the following properties in
+         * `~/.gradle/gradle.properties`.
+         *
+         * internalMavenUrl=YOUR_INTERNAL_MAVEN_REPOSITORY_URL
+         * internalMavenUsername=YOUR_USERNAME
+         * internalMavenPassword=YOUR_PASSWORD
+         */
+        val internalUrl = providers.gradleProperty("internalUrl")
+        if (internalUrl.isPresent) {
+          maven {
+            name = "internal"
+            setUrl(internalUrl)
+            credentials(PasswordCredentials::class)
+          }
+        }
+      }
+    }
     val publishingExtension = extensions.getByType(PublishingExtension::class.java)
     configure<MavenPublishBaseExtension> {
       publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
