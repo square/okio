@@ -41,6 +41,7 @@ abstract class AbstractFileSystemTest(
   val fileSystem: FileSystem,
   val windowsLimitations: Boolean,
   val allowClobberingEmptyDirectories: Boolean,
+  val allowAtomicMoveFromFileToDirectory: Boolean,
   temporaryDirectory: Path,
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
@@ -48,7 +49,7 @@ abstract class AbstractFileSystemTest(
 
   @BeforeTest
   fun setUp() {
-    fileSystem.createDirectory(base)
+    fileSystem.createDirectories(base)
   }
 
   @Test
@@ -864,10 +865,16 @@ abstract class AbstractFileSystemTest(
     source.writeUtf8("hello, world!")
     val target = base / "target"
     fileSystem.createDirectory(target)
-    val exception = assertFailsWith<IOException> {
+
+    if (allowAtomicMoveFromFileToDirectory) {
       fileSystem.atomicMove(source, target)
+      assertEquals("hello, world!", target.readUtf8())
+    } else {
+      val exception = assertFailsWith<IOException> {
+        fileSystem.atomicMove(source, target)
+      }
+      assertTrue(exception !is FileNotFoundException)
     }
-    assertTrue(exception !is FileNotFoundException)
   }
 
   @Test
@@ -2308,6 +2315,7 @@ abstract class AbstractFileSystemTest(
       "FakeFileSystem",
       "JvmSystemFileSystem",
       "NioSystemFileSystem",
+      "NioFileSystemWrappingFileSystem",
       "PosixFileSystem",
       "NodeJsFileSystem",
       -> true
@@ -2322,6 +2330,8 @@ abstract class AbstractFileSystemTest(
       "NodeJsFileSystem",
       "PosixFileSystem",
       "NioSystemFileSystem",
+      // TODO(Benoit) We have troubles with relative symlinks.
+      // "NioFileSystemWrappingFileSystem",
       -> true
       else -> false
     }

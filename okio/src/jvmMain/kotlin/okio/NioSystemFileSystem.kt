@@ -27,13 +27,15 @@ import java.nio.file.attribute.FileTime
 import okio.Path.Companion.toOkioPath
 
 /**
- * Extends [JvmSystemFileSystem] for platforms that support `java.nio.files` first introduced in
+ * Extends [JvmSystemFileSystem] for platforms that support `java.nio.file` first introduced in
  * Java 7 and Android 8.0 (API level 26).
  */
-internal class NioSystemFileSystem : JvmSystemFileSystem() {
+internal open class NioSystemFileSystem : JvmSystemFileSystem() {
   override fun metadataOrNull(path: Path): FileMetadata? {
-    val nioPath = path.toNioPath()
+    return metadataOrNull(path.toNioPath())
+  }
 
+  protected fun metadataOrNull(nioPath: NioPath): FileMetadata? {
     val attributes = try {
       Files.readAttributes(
         nioPath,

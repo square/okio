@@ -15,7 +15,11 @@
  */
 package okio
 
+import com.google.common.jimfs.Configuration
+import com.google.common.jimfs.Jimfs
 import kotlinx.datetime.Clock
+import okio.FileHandleFileSystemTest.FileHandleTestingFileSystem
+import okio.FileSystem.Companion.asOkioFileSystem
 
 /**
  * Run a regular file system test, but use [FileHandle] for more file system operations than usual.
@@ -26,6 +30,7 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
   fileSystem = FileHandleTestingFileSystem(FileSystem.SYSTEM),
   windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
+  allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
 ) {
   /**
@@ -40,7 +45,7 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
     }
 
     override fun sink(file: Path, mustCreate: Boolean): Sink {
-      val fileHandle = openReadWrite(file, mustCreate)
+      val fileHandle = openReadWrite(file, mustCreate = mustCreate, mustExist = false)
       fileHandle.resize(0L) // If the file already has data, get rid of it.
       return fileHandle.sink()
         .also { fileHandle.close() }
@@ -53,3 +58,18 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
     }
   }
 }
+
+class FileHandleNioFileSystemWrapperFileSystemTest : AbstractFileSystemTest(
+  clock = Clock.System,
+  fileSystem = Jimfs
+    .newFileSystem(
+      when (Path.DIRECTORY_SEPARATOR == "\\") {
+        true -> Configuration.windows()
+        false -> Configuration.unix()
+      },
+    ).asOkioFileSystem(),
+  windowsLimitations = false,
+  allowClobberingEmptyDirectories = true,
+  allowAtomicMoveFromFileToDirectory = true,
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+)
