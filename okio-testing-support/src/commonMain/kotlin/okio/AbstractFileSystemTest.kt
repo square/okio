@@ -95,6 +95,152 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
+  fun canonicalizeFollowsSymlinkDirectories() {
+    if (!supportsSymlink()) return
+    val base = fileSystem.canonicalize(base)
+
+    fileSystem.createDirectory(base / "real-directory")
+
+    val expected = base / "real-directory" / "real-file.txt"
+    expected.writeUtf8("hello")
+
+    fileSystem.createSymlink(base / "symlink-directory", base / "real-directory")
+
+    val canonicalPath = fileSystem.canonicalize(base / "symlink-directory" / "real-file.txt")
+    assertEquals(expected, canonicalPath)
+  }
+
+  @Test
+  fun canonicalizeFollowsSymlinkFiles() {
+    if (!supportsSymlink()) return
+    val base = fileSystem.canonicalize(base)
+
+    fileSystem.createDirectory(base / "real-directory")
+
+    val expected = base / "real-directory" / "real-file.txt"
+    expected.writeUtf8("hello")
+
+    fileSystem.createSymlink(
+      base / "real-directory" / "symlink-file.txt",
+      expected,
+    )
+
+    val canonicalPath = fileSystem.canonicalize(base / "real-directory" / "symlink-file.txt")
+    assertEquals(expected, canonicalPath)
+  }
+
+  @Test
+  fun canonicalizeFollowsMultipleDirectoriesAndMultipleFiles() {
+    if (!supportsSymlink()) return
+    val base = fileSystem.canonicalize(base)
+
+    fileSystem.createDirectory(base / "real-directory")
+
+    val expected = base / "real-directory" / "real-file.txt"
+    expected.writeUtf8("hello")
+
+    fileSystem.createSymlink(
+      base / "real-directory" / "one-symlink-file.txt",
+      expected,
+    )
+
+    fileSystem.createSymlink(
+      base / "real-directory" / "two-symlink-file.txt",
+      base / "real-directory" / "one-symlink-file.txt",
+    )
+
+    fileSystem.createSymlink(
+      base / "one-symlink-directory",
+      base / "real-directory",
+    )
+
+    fileSystem.createSymlink(
+      base / "two-symlink-directory",
+      base / "one-symlink-directory",
+    )
+
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "two-symlink-directory" / "two-symlink-file.txt"),
+    )
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "two-symlink-directory" / "one-symlink-file.txt"),
+    )
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "two-symlink-directory" / "real-file.txt"),
+    )
+
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "one-symlink-directory" / "two-symlink-file.txt"),
+    )
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "one-symlink-directory" / "one-symlink-file.txt"),
+    )
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "one-symlink-directory" / "real-file.txt"),
+    )
+
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "real-directory" / "two-symlink-file.txt"),
+    )
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "real-directory" / "one-symlink-file.txt"),
+    )
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(expected),
+    )
+  }
+
+  @Test
+  fun canonicalizeReturnsDeeperPath() {
+    if (!supportsSymlink()) return
+    val base = fileSystem.canonicalize(base)
+
+    fileSystem.createDirectories(base / "a" / "b" / "c")
+
+    val expected = base / "a" / "b" / "c" / "d.txt"
+    expected.writeUtf8("hello")
+
+    fileSystem.createSymlink(
+      base / "e.txt",
+      "a".toPath() / "b" / "c" / "d.txt",
+    )
+
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "e.txt"),
+    )
+  }
+
+  @Test
+  fun canonicalizeReturnsShallowerPath() {
+    if (!supportsSymlink()) return
+    val base = fileSystem.canonicalize(base)
+
+    val expected = base / "a.txt"
+    expected.writeUtf8("hello")
+
+    fileSystem.createDirectories(base / "b" / "c" / "d")
+    fileSystem.createSymlink(
+      base / "b" / "c" / "d" / "e.txt",
+      "../".toPath() / ".." / ".." / "a.txt",
+    )
+
+    assertEquals(
+      expected,
+      fileSystem.canonicalize(base / "b" / "c" / "d" / "e.txt"),
+    )
+  }
+
+  @Test
   fun list() {
     val target = base / "list"
     target.writeUtf8("hello, world!")
