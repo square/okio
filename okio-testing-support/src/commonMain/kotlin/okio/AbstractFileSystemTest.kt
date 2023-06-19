@@ -2458,14 +2458,9 @@ abstract class AbstractFileSystemTest(
 
   private fun supportsFileHandle(): Boolean {
     return when (fileSystem::class.simpleName) {
-      "FakeFileSystem",
-      "JvmSystemFileSystem",
-      "NioSystemFileSystem",
-      "NioFileSystemWrappingFileSystem",
-      "PosixFileSystem",
-      "NodeJsFileSystem",
-      -> true
-      else -> false
+      "AddFileSystemNameIfNotSupportingAny",
+      -> false
+      else -> true
     }
   }
 
@@ -2473,13 +2468,10 @@ abstract class AbstractFileSystemTest(
     if (fileSystem is FakeFileSystem) return fileSystem.allowSymlinks
     if (windowsLimitations) return false
     return when (fileSystem::class.simpleName) {
-      "NodeJsFileSystem",
-      "PosixFileSystem",
-      "NioSystemFileSystem",
-      // TODO(Benoit) We have troubles with relative symlinks.
-      // "NioFileSystemWrappingFileSystem",
-      -> true
-      else -> false
+      "JvmSystemFileSystem",
+      "NioFileSystemWrappingFileSystem",
+      -> false
+      else -> true
     }
   }
 
