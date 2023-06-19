@@ -17,7 +17,7 @@ package okio
 
 import java.io.InterruptedIOException
 import java.nio.channels.FileChannel
-import java.nio.file.FileSystem as JavaNioFileSystem
+import java.nio.file.FileSystem as NioFileSystem
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path as NioPath
@@ -36,21 +36,26 @@ import okio.Path.Companion.toOkioPath
  * A file system that wraps a `java.nio.file.FileSystem` and executes all operations in the context of the wrapped file
  * system.
  */
-internal class NioFileSystemWrappingFileSystem(javaNioFileSystem: JavaNioFileSystem) : NioSystemFileSystem() {
-  // TODO(Benoit) How do deal with multiple directories? Test with Windows someday.
-  private val delegateRoot = javaNioFileSystem.rootDirectories.first()
-
+internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFileSystem) : NioSystemFileSystem() {
   /**
    * On a `java.nio.file.FileSystem`, `java.nio.file.Path` are stateful and hold a reference to the file system they
    * got provided from. We need to [resolve][java.nio.file.Path.resolve] all okio paths before doing operations on the
    * nio file system in order for things to work properly.
    */
   private fun Path.resolve(readSymlink: Boolean = false): NioPath {
-    val resolved = delegateRoot.resolve(toString())
+    val resolved = nioFileSystem.getPath(toString())
     return if (readSymlink && resolved.isSymbolicLink()) {
       resolved.readSymbolicLink()
     } else {
       resolved
+    }
+  }
+
+  override fun canonicalize(path: Path): Path {
+    try {
+      return path.resolve(readSymlink = true).toRealPath().toOkioPath()
+    } catch (e: NoSuchFileException) {
+      throw FileNotFoundException("no such file: $this")
     }
   }
 
@@ -74,17 +79,7 @@ internal class NioFileSystemWrappingFileSystem(javaNioFileSystem: JavaNioFileSys
         return null
       }
     }
-    val result = entries.mapTo(mutableListOf()) { entry ->
-      // TODO(Benoit) This whole block can surely be improved.
-      val path = dir / entry.toOkioPath()
-      if (dir.isRelative) {
-        // All `entries` are absolute and resolving them against `dir` won't have any effect. We need to manually
-        // relativize them back.
-        nioDir.relativize(path.resolve()).toOkioPath()
-      } else {
-        path
-      }
-    }
+    val result = entries.mapTo(mutableListOf()) { entry -> dir / entry.toString() }
     result.sort()
     return result
   }
@@ -195,7 +190,14 @@ internal class NioFileSystemWrappingFileSystem(javaNioFileSystem: JavaNioFileSys
   }
 
   override fun createSymlink(source: Path, target: Path) {
-    Files.createSymbolicLink(source.resolve(), target.resolve())
+    val sourceNioPath = source.resolve()
+    val targetNioPath =
+      if (source.isAbsolute && target.isRelative) {
+        sourceNioPath.parent.resolve(target.toString())
+      } else {
+        target.resolve()
+      }
+    Files.createSymbolicLink(sourceNioPath, targetNioPath)
   }
 
   override fun toString(): String = "NioFileSystemWrappingFileSystem"

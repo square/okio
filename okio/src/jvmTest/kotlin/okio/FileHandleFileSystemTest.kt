@@ -59,7 +59,7 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
   }
 }
 
-class FileHandleNioFileSystemWrapperFileSystemTest : AbstractFileSystemTest(
+class FileHandleNioJimFileSystemWrapperFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = Jimfs
     .newFileSystem(
