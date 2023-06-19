@@ -2,17 +2,17 @@ import aQute.bnd.gradle.BundleTaskConvention
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import kotlinx.validation.ApiValidationExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 
 plugins {
   kotlin("multiplatform")
-  id("ru.vyarus.animalsniffer")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")
+  id("binary-compatibility-validator")
 }
 
 /*
@@ -101,15 +101,13 @@ kotlin {
     }
 
     val jvmMain by getting {
-      dependencies {
-        compileOnly(libs.animalSniffer.annotations)
-      }
     }
     val jvmTest by getting {
       kotlin.srcDir("src/jvmTest/hashFunctions")
       dependencies {
         implementation(libs.test.junit)
         implementation(libs.test.assertj)
+        implementation(libs.test.jimfs)
       }
     }
 
@@ -178,19 +176,14 @@ tasks {
   }
 }
 
-configure<AnimalSnifferExtension> {
-  sourceSets = listOf(project.sourceSets.getByName("main"))
-}
-
-val signature: Configuration by configurations
-
-dependencies {
-  signature(variantOf(libs.animalSniffer.android) { artifactType("signature") })
-  signature(variantOf(libs.animalSniffer.java) { artifactType("signature") })
-}
-
 configure<MavenPublishBaseExtension> {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
   )
+}
+
+plugins.withId("binary-compatibility-validator") {
+  configure<ApiValidationExtension> {
+    ignoredProjects += "jmh"
+  }
 }

@@ -577,7 +577,10 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   actual fun copy(): Buffer = commonCopy()
 
-  /** Returns a deep copy of this buffer. */
+  /**
+   * Returns a deep copy of this buffer. This is the same as [copy] but allows [Buffer] to implement
+   * the [Cloneable] interface on the JVM.
+   */
   public override fun clone(): Buffer = copy()
 
   actual fun snapshot(): ByteString = commonSnapshot()

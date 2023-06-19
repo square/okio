@@ -21,7 +21,6 @@ package okio
 
 import java.io.IOException
 import java.util.zip.Deflater
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /**
  * A sink that uses [DEFLATE](http://tools.ietf.org/html/rfc1951) to
@@ -75,7 +74,6 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
     }
   }
 
-  @IgnoreJRERequirement
   private fun deflate(syncFlush: Boolean) {
     val buffer = sink.buffer
     while (true) {
