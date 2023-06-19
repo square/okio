@@ -42,6 +42,7 @@ abstract class AbstractFileSystemTest(
   val windowsLimitations: Boolean,
   val allowClobberingEmptyDirectories: Boolean,
   val allowAtomicMoveFromFileToDirectory: Boolean,
+  val allowRenameWhenTargetIsOpen: Boolean = !windowsLimitations,
   temporaryDirectory: Path,
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
@@ -1501,10 +1502,15 @@ abstract class AbstractFileSystemTest(
     val to = base / "to.txt"
     from.writeUtf8("source file")
     to.writeUtf8("target file")
-    expectIOExceptionOnWindows {
+
+    val expectCrash = !allowRenameWhenTargetIsOpen
+    try {
       fileSystem.source(to).use {
         fileSystem.atomicMove(from, to)
       }
+      assertFalse(expectCrash)
+    } catch (_: IOException) {
+      assertTrue(expectCrash)
     }
   }
 
