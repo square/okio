@@ -31,6 +31,7 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.outputStream
 import kotlin.io.path.readSymbolicLink
 import okio.Path.Companion.toOkioPath
+import okio.Path.Companion.toPath
 
 /**
  * A file system that wraps a `java.nio.file.FileSystem` and executes all operations in the context of the wrapped file
@@ -51,6 +52,19 @@ internal class NioFileSystemWrappingFileSystem(javaNioFileSystem: JavaNioFileSys
       resolved.readSymbolicLink()
     } else {
       resolved
+    }
+  }
+
+  override fun canonicalize(path: Path): Path {
+    if (path.isAbsolute) {
+      try {
+        return path.resolve(readSymlink = true).toRealPath().toOkioPath()
+      } catch (e: NoSuchFileException) {
+        throw FileNotFoundException("no such file $path")
+      }
+
+    } else {
+      return super.canonicalize(path)
     }
   }
 
@@ -195,7 +209,14 @@ internal class NioFileSystemWrappingFileSystem(javaNioFileSystem: JavaNioFileSys
   }
 
   override fun createSymlink(source: Path, target: Path) {
-    Files.createSymbolicLink(source.resolve(), target.resolve())
+    val sourceNioPath = source.resolve()
+    val targetNioPath =
+      if (source.isAbsolute && target.isRelative) {
+        sourceNioPath.parent.resolve(target.toString())
+      } else {
+        target.resolve()
+      }
+    Files.createSymbolicLink(sourceNioPath, targetNioPath)
   }
 
   override fun toString(): String = "NioFileSystemWrappingFileSystem"

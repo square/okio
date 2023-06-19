@@ -24,6 +24,7 @@ import kotlin.test.fail
 import kotlinx.datetime.Clock
 import okio.FileSystem.Companion.asOkioFileSystem
 import org.junit.Test
+import java.nio.file.FileSystems
 
 /**
  * This test will run using [NioSystemFileSystem] by default. If [java.nio.file.Files] is not found
@@ -71,5 +72,15 @@ class NioFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
   windowsLimitations = false,
   allowClobberingEmptyDirectories = true,
   allowAtomicMoveFromFileToDirectory = true,
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+)
+
+class NioDefaultFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
+  clock = Clock.System,
+  fileSystem = FileSystems.getDefault().asOkioFileSystem(),
+  windowsLimitations = false,
+  allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
+  allowAtomicMoveFromFileToDirectory = false,
+  allowRenameWhenTargetIsOpen = Path.DIRECTORY_SEPARATOR != "\\",
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
 )

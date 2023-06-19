@@ -90,9 +90,16 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
-  fun canonicalizeNoSuchFile() {
+  fun canonicalizeAbsolutePathNoSuchFile() {
     assertFailsWith<FileNotFoundException> {
       fileSystem.canonicalize(base / "no-such-file")
+    }
+  }
+
+  @Test
+  fun canonicalizeRelativePathNoSuchFile() {
+    assertFailsWith<FileNotFoundException> {
+      fileSystem.canonicalize("no-such-file".toPath())
     }
   }
 
@@ -2411,7 +2418,6 @@ abstract class AbstractFileSystemTest(
     if (windowsLimitations) return false
     return when (fileSystem::class.simpleName) {
       "JvmSystemFileSystem",
-      "NioFileSystemWrappingFileSystem",
       -> false
       else -> true
     }
