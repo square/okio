@@ -42,6 +42,7 @@ abstract class AbstractFileSystemTest(
   val windowsLimitations: Boolean,
   val allowClobberingEmptyDirectories: Boolean,
   val allowAtomicMoveFromFileToDirectory: Boolean,
+  val allowRenameWhenTargetIsOpen: Boolean = !windowsLimitations,
   temporaryDirectory: Path,
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
@@ -1501,10 +1502,15 @@ abstract class AbstractFileSystemTest(
     val to = base / "to.txt"
     from.writeUtf8("source file")
     to.writeUtf8("target file")
-    expectIOExceptionOnWindows {
+
+    val expectCrash = !allowRenameWhenTargetIsOpen
+    try {
       fileSystem.source(to).use {
         fileSystem.atomicMove(from, to)
       }
+      assertFalse(expectCrash)
+    } catch (_: IOException) {
+      assertTrue(expectCrash)
     }
   }
 
@@ -1529,8 +1535,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleWriteAndRead() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-write-and-read"
     fileSystem.openReadWrite(path).use { handle ->
 
@@ -1546,8 +1550,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleWriteAndOverwrite() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-write-and-overwrite"
     fileSystem.openReadWrite(path).use { handle ->
 
@@ -1566,8 +1568,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleWriteBeyondEnd() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-write-beyond-end"
     fileSystem.openReadWrite(path).use { handle ->
 
@@ -1583,8 +1583,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleResizeSmaller() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-resize-smaller"
     fileSystem.openReadWrite(path).use { handle ->
 
@@ -1601,8 +1599,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleResizeLarger() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-resize-larger"
     fileSystem.openReadWrite(path).use { handle ->
 
@@ -1620,7 +1616,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleFlush() {
-    if (!supportsFileHandle()) return
     if (windowsLimitations) return // Open for reading and writing simultaneously.
 
     val path = base / "file-handle-flush"
@@ -1639,7 +1634,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleLargeBufferedWriteAndRead() {
-    if (!supportsFileHandle()) return
     if (isBrowser()) return // This test errors on browsers in CI.
 
     val data = randomBytes(1024 * 1024 * 8)
@@ -1659,7 +1653,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleLargeArrayWriteAndRead() {
-    if (!supportsFileHandle()) return
     if (isBrowser()) return // This test errors on browsers in CI.
 
     val path = base / "file-handle-large-array-write-and-read"
@@ -1679,8 +1672,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleSinkPosition() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-sink-position"
 
     fileSystem.openReadWrite(path).use { handle ->
@@ -1701,8 +1692,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleBufferedSinkPosition() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-buffered-sink-position"
 
     fileSystem.openReadWrite(path).use { handle ->
@@ -1723,8 +1712,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleSinkReposition() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-sink-reposition"
 
     fileSystem.openReadWrite(path).use { handle ->
@@ -1756,8 +1743,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleBufferedSinkReposition() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-buffered-sink-reposition"
 
     fileSystem.openReadWrite(path).use { handle ->
@@ -1789,8 +1774,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleSourceHappyPath() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -1824,8 +1807,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleSourceReposition() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source-reposition"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -1866,8 +1847,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleBufferedSourceReposition() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-buffered-source-reposition"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -1916,8 +1895,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun fileHandleSourceSeekBackwards() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source-backwards"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -1943,8 +1920,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun bufferedFileHandleSourceHappyPath() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -1978,8 +1953,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun bufferedFileHandleSourceSeekBackwards() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source-backwards"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -2005,8 +1978,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun openReadOnlyThrowsOnAttemptToWrite() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source"
     fileSystem.write(path) {
       writeUtf8("abcdefghijklmnop")
@@ -2040,8 +2011,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun openReadOnlyFailsOnAbsentFile() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source"
 
     try {
@@ -2052,8 +2021,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun openReadWriteCreatesAbsentFile() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source"
 
     fileSystem.openReadWrite(path).use {
@@ -2063,8 +2030,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun openReadWriteCreatesAbsentFileMustCreate() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source"
 
     fileSystem.openReadWrite(path, mustCreate = true).use {
@@ -2074,7 +2039,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun openReadWriteMustCreateThrowsIfAlreadyExists() {
-    if (!supportsFileHandle()) return
     val path = base / "file-handle-source"
     path.writeUtf8("First!")
 
@@ -2084,8 +2048,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun openReadWriteMustExist() {
-    if (!supportsFileHandle()) return
-
     val path = base / "file-handle-source"
     path.writeUtf8("one")
 
@@ -2097,7 +2059,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun openReadWriteMustExistThrowsIfAbsent() {
-    if (!supportsFileHandle()) return
     val path = base / "file-handle-source"
 
     assertFailsWith<IOException> {
@@ -2106,7 +2067,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun openReadWriteThrowsIfBothMustCreateAndMustExist() {
-    if (!supportsFileHandle()) return
     val path = base / "file-handle-source"
 
     assertFailsWith<IllegalArgumentException> {
@@ -2115,8 +2075,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun sinkPositionFailsAfterClose() {
-    if (!supportsFileHandle()) return
-
     val path = base / "sink-position-fails-after-close"
 
     fileSystem.openReadWrite(path).use { handle ->
@@ -2136,8 +2094,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun sinkRepositionFailsAfterClose() {
-    if (!supportsFileHandle()) return
-
     val path = base / "sink-reposition-fails-after-close"
 
     fileSystem.openReadWrite(path).use { handle ->
@@ -2157,8 +2113,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun sourcePositionFailsAfterClose() {
-    if (!supportsFileHandle()) return
-
     val path = base / "source-position-fails-after-close"
 
     fileSystem.openReadWrite(path).use { handle ->
@@ -2178,8 +2132,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun sourceRepositionFailsAfterClose() {
-    if (!supportsFileHandle()) return
-
     val path = base / "source-reposition-fails-after-close"
 
     fileSystem.openReadWrite(path).use { handle ->
@@ -2199,8 +2151,6 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test fun sizeFailsAfterClose() {
-    if (!supportsFileHandle()) return
-
     val path = base / "size-fails-after-close"
 
     val handle = fileSystem.openReadWrite(path)
@@ -2454,14 +2404,6 @@ abstract class AbstractFileSystemTest(
         exceptionType == "ClosedChannelException",
       "unexpected exception: $exception",
     )
-  }
-
-  private fun supportsFileHandle(): Boolean {
-    return when (fileSystem::class.simpleName) {
-      "AddFileSystemNameIfNotSupportingAny",
-      -> false
-      else -> true
-    }
   }
 
   protected fun supportsSymlink(): Boolean {

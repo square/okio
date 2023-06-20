@@ -17,8 +17,8 @@ package okio
 
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import java.nio.file.FileSystems
 import kotlinx.datetime.Clock
-import okio.FileHandleFileSystemTest.FileHandleTestingFileSystem
 import okio.FileSystem.Companion.asOkioFileSystem
 
 /**
@@ -71,5 +71,15 @@ class FileHandleNioFileSystemWrapperFileSystemTest : AbstractFileSystemTest(
   windowsLimitations = false,
   allowClobberingEmptyDirectories = true,
   allowAtomicMoveFromFileToDirectory = true,
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+)
+
+class FileHandleNioDefaultFileSystemWrapperFileSystemTest : AbstractFileSystemTest(
+  clock = Clock.System,
+  fileSystem = FileSystems.getDefault().asOkioFileSystem(),
+  windowsLimitations = false,
+  allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
+  allowAtomicMoveFromFileToDirectory = false,
+  allowRenameWhenTargetIsOpen = Path.DIRECTORY_SEPARATOR != "\\",
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
 )
