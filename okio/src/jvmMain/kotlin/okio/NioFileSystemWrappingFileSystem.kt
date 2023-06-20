@@ -18,18 +18,18 @@ package okio
 import java.io.InterruptedIOException
 import java.nio.channels.FileChannel
 import java.nio.file.FileSystem as NioFileSystem
-import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path as NioPath
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.createDirectory
+import kotlin.io.path.createSymbolicLinkPointingTo
+import kotlin.io.path.deleteExisting
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
-import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.moveTo
 import kotlin.io.path.outputStream
-import kotlin.io.path.readSymbolicLink
 import okio.Path.Companion.toOkioPath
 
 /**
@@ -38,24 +38,19 @@ import okio.Path.Companion.toOkioPath
  */
 internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFileSystem) : NioSystemFileSystem() {
   /**
-   * On a `java.nio.file.FileSystem`, `java.nio.file.Path` are stateful and hold a reference to the file system they
-   * got provided from. We need to [resolve][java.nio.file.Path.resolve] all okio paths before doing operations on the
-   * nio file system in order for things to work properly.
+   * On a [java.nio.file.FileSystem], paths are stateful and hold a reference to the file system they got provided from.
+   * Using [getPath][NioFileSystem.getPath], we ask [nioFileSystem] to wrap the [Path]'s value in order to set itself as
+   * its provider which is needed for operations on the nio file system to work properly.
    */
-  private fun Path.resolve(readSymlink: Boolean = false): NioPath {
-    val resolved = nioFileSystem.getPath(toString())
-    return if (readSymlink && resolved.isSymbolicLink()) {
-      resolved.readSymbolicLink()
-    } else {
-      resolved
-    }
+  private fun Path.resolve(): NioPath {
+    return nioFileSystem.getPath(toString())
   }
 
   override fun canonicalize(path: Path): Path {
     try {
-      return path.resolve(readSymlink = true).toRealPath().toOkioPath()
+      return path.resolve().toRealPath().toOkioPath()
     } catch (e: NoSuchFileException) {
-      throw FileNotFoundException("no such file: $this")
+      throw FileNotFoundException("no such file: $path")
     }
   }
 
@@ -115,7 +110,7 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
 
   override fun source(file: Path): Source {
     try {
-      return file.resolve(readSymlink = true).inputStream().source()
+      return file.resolve().inputStream().source()
     } catch (e: NoSuchFileException) {
       throw FileNotFoundException("no such file: $file")
     }
@@ -126,7 +121,7 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
       if (mustCreate) add(StandardOpenOption.CREATE_NEW)
     }
     try {
-      return file.resolve(readSymlink = true)
+      return file.resolve()
         .outputStream(*openOptions.toTypedArray())
         .sink()
     } catch (e: NoSuchFileException) {
@@ -161,8 +156,7 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
   // Note that `java.nio.file.FileSystem` allows atomic moves of a file even if the target is an existing directory.
   override fun atomicMove(source: Path, target: Path) {
     try {
-      Files.move(
-        source.resolve(),
+      source.resolve().moveTo(
         target.resolve(),
         StandardCopyOption.ATOMIC_MOVE,
         StandardCopyOption.REPLACE_EXISTING,
@@ -181,7 +175,7 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
     }
     val nioPath = path.resolve()
     try {
-      Files.delete(nioPath)
+      nioPath.deleteExisting()
     } catch (e: NoSuchFileException) {
       if (mustExist) throw FileNotFoundException("no such file: $path")
     } catch (e: IOException) {
@@ -190,15 +184,8 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
   }
 
   override fun createSymlink(source: Path, target: Path) {
-    val sourceNioPath = source.resolve()
-    val targetNioPath =
-      if (source.isAbsolute && target.isRelative) {
-        sourceNioPath.parent.resolve(target.toString())
-      } else {
-        target.resolve()
-      }
-    Files.createSymbolicLink(sourceNioPath, targetNioPath)
+    source.resolve().createSymbolicLinkPointingTo(target.resolve())
   }
 
-  override fun toString(): String = "NioFileSystemWrappingFileSystem"
+  override fun toString() = nioFileSystem::class.simpleName!!
 }

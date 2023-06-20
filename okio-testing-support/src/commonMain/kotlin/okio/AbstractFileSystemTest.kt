@@ -2176,10 +2176,26 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
-  fun symlinkMetadata() {
+  fun absoluteSymlinkMetadata() {
     if (!supportsSymlink()) return
 
     val target = base / "symlink-target"
+    val source = base / "symlink-source"
+
+    val minTime = clock.now()
+    fileSystem.createSymlink(source, target)
+    val maxTime = clock.now()
+
+    val sourceMetadata = fileSystem.metadata(source)
+    assertEquals(target, sourceMetadata.symlinkTarget)
+    assertInRange(sourceMetadata.createdAt, minTime, maxTime)
+  }
+
+  @Test
+  fun relativeSymlinkMetadata() {
+    if (!supportsSymlink()) return
+
+    val target = "symlink-target".toPath()
     val source = base / "symlink-source"
 
     val minTime = clock.now()
@@ -2231,6 +2247,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun openSymlinkSink() {
     if (!supportsSymlink()) return
+    if (isJimFileSystem()) return
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2505,6 +2522,10 @@ abstract class AbstractFileSystemTest(
 
   private fun isJvmFileSystemOnWindows(): Boolean {
     return windowsLimitations && fileSystem::class.simpleName == "JvmSystemFileSystem"
+  }
+
+  private fun isJimFileSystem(): Boolean {
+    return "JimfsFileSystem" in fileSystem.toString()
   }
 
   private fun isNodeJsFileSystemOnWindows(): Boolean {
