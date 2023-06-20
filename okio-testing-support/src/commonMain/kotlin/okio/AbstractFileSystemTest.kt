@@ -1114,15 +1114,8 @@ abstract class AbstractFileSystemTest(
   @Test
   fun deleteFailsOnNoSuchFileIfMustExist() {
     val path = base / "no-such-file"
-    // TODO(jwilson): fix Windows to throw FileNotFoundException on deleting an absent file.
-    if (windowsLimitations) {
-      assertFailsWith<IOException> {
-        fileSystem.delete(path, mustExist = true)
-      }
-    } else {
-      assertFailsWith<FileNotFoundException> {
-        fileSystem.delete(path, mustExist = true)
-      }
+    assertFailsWith<FileNotFoundException> {
+      fileSystem.delete(path, mustExist = true)
     }
   }
 
