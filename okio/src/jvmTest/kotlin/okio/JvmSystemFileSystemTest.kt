@@ -18,6 +18,7 @@ package okio
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import java.io.InterruptedIOException
+import java.nio.file.FileSystems
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.fail
@@ -59,7 +60,7 @@ class JvmSystemFileSystemTest : AbstractFileSystemTest(
   }
 }
 
-class NioFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
+class NioJimFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
   fileSystem = Jimfs
     .newFileSystem(
@@ -71,5 +72,15 @@ class NioFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
   windowsLimitations = false,
   allowClobberingEmptyDirectories = true,
   allowAtomicMoveFromFileToDirectory = true,
+  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+)
+
+class NioDefaultFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
+  clock = Clock.System,
+  fileSystem = FileSystems.getDefault().asOkioFileSystem(),
+  windowsLimitations = false,
+  allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
+  allowAtomicMoveFromFileToDirectory = false,
+  allowRenameWhenTargetIsOpen = Path.DIRECTORY_SEPARATOR != "\\",
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
 )

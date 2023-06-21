@@ -47,6 +47,7 @@ abstract class AbstractFileSystemTest(
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
   private val isNodeJsFileSystem = fileSystem::class.simpleName?.startsWith("NodeJs") ?: false
+  private val isWrappingJimFileSystem = this::class.simpleName?.contains("JimFileSystem") ?: false
 
   @BeforeTest
   fun setUp() {
@@ -72,13 +73,17 @@ abstract class AbstractFileSystemTest(
     val cwdString = cwd.toString()
     val slash = Path.DIRECTORY_SEPARATOR
     assertTrue(cwdString) {
-      cwdString.endsWith("okio${slash}okio") ||
-        cwdString.endsWith("${slash}okio-parent-okio-js-legacy-test") ||
-        cwdString.endsWith("${slash}okio-parent-okio-js-ir-test") ||
-        cwdString.endsWith("${slash}okio-parent-okio-nodefilesystem-js-ir-test") ||
-        cwdString.endsWith("${slash}okio-parent-okio-nodefilesystem-js-legacy-test") ||
-        cwdString.contains("/CoreSimulator/Devices/") || // iOS simulator.
-        cwdString == "/" // Android emulator.
+      if (isWrappingJimFileSystem) {
+        cwdString.endsWith("work")
+      } else {
+        cwdString.endsWith("okio${slash}okio") ||
+          cwdString.endsWith("${slash}okio-parent-okio-js-legacy-test") ||
+          cwdString.endsWith("${slash}okio-parent-okio-js-ir-test") ||
+          cwdString.endsWith("${slash}okio-parent-okio-nodefilesystem-js-ir-test") ||
+          cwdString.endsWith("${slash}okio-parent-okio-nodefilesystem-js-legacy-test") ||
+          cwdString.contains("/CoreSimulator/Devices/") || // iOS simulator.
+          cwdString == "/" // Android emulator.
+      }
     }
   }
 
@@ -90,9 +95,16 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
-  fun canonicalizeNoSuchFile() {
+  fun canonicalizeAbsolutePathNoSuchFile() {
     assertFailsWith<FileNotFoundException> {
       fileSystem.canonicalize(base / "no-such-file")
+    }
+  }
+
+  @Test
+  fun canonicalizeRelativePathNoSuchFile() {
+    assertFailsWith<FileNotFoundException> {
+      fileSystem.canonicalize("no-such-file".toPath())
     }
   }
 
@@ -260,6 +272,10 @@ abstract class AbstractFileSystemTest(
       fileSystem.write("a.txt".toPath()) {
         writeUtf8("hello, world!")
       }
+    } else if (isWrappingJimFileSystem) {
+      fileSystem.write("a.txt".toPath()) {
+        writeUtf8("hello, world!")
+      }
     }
 
     val entries = fileSystem.list(".".toPath())
@@ -316,6 +332,10 @@ abstract class AbstractFileSystemTest(
       val workingDirectory = "/directory".toPath()
       fileSystem.createDirectory(workingDirectory)
       fileSystem.workingDirectory = workingDirectory
+      fileSystem.write("a.txt".toPath()) {
+        writeUtf8("hello, world!")
+      }
+    } else if (isWrappingJimFileSystem) {
       fileSystem.write("a.txt".toPath()) {
         writeUtf8("hello, world!")
       }
@@ -2156,10 +2176,26 @@ abstract class AbstractFileSystemTest(
   }
 
   @Test
-  fun symlinkMetadata() {
+  fun absoluteSymlinkMetadata() {
     if (!supportsSymlink()) return
 
     val target = base / "symlink-target"
+    val source = base / "symlink-source"
+
+    val minTime = clock.now()
+    fileSystem.createSymlink(source, target)
+    val maxTime = clock.now()
+
+    val sourceMetadata = fileSystem.metadata(source)
+    assertEquals(target, sourceMetadata.symlinkTarget)
+    assertInRange(sourceMetadata.createdAt, minTime, maxTime)
+  }
+
+  @Test
+  fun relativeSymlinkMetadata() {
+    if (!supportsSymlink()) return
+
+    val target = "symlink-target".toPath()
     val source = base / "symlink-source"
 
     val minTime = clock.now()
@@ -2211,6 +2247,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun openSymlinkSink() {
     if (!supportsSymlink()) return
+    if (isJimFileSystem()) return
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2404,7 +2441,6 @@ abstract class AbstractFileSystemTest(
     if (windowsLimitations) return false
     return when (fileSystem::class.simpleName) {
       "JvmSystemFileSystem",
-      "NioFileSystemWrappingFileSystem",
       -> false
       else -> true
     }
@@ -2486,6 +2522,10 @@ abstract class AbstractFileSystemTest(
 
   private fun isJvmFileSystemOnWindows(): Boolean {
     return windowsLimitations && fileSystem::class.simpleName == "JvmSystemFileSystem"
+  }
+
+  private fun isJimFileSystem(): Boolean {
+    return "JimfsFileSystem" in fileSystem.toString()
   }
 
   private fun isNodeJsFileSystemOnWindows(): Boolean {
