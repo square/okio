@@ -4,7 +4,6 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
 import groovy.util.Node
 import groovy.util.NodeList
-import kotlinx.validation.ApiValidationExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
@@ -169,12 +168,6 @@ subprojects {
     kotlin {
       target("**/*.kt")
       ktlint(libs.versions.ktlint.get())
-    }
-  }
-
-  plugins.withId("binary-compatibility-validator") {
-    configure<ApiValidationExtension> {
-      ignoredPackages += "okio.internal"
     }
   }
 

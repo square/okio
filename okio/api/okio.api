@@ -800,3 +800,9 @@ public final class okio/Utf8 {
 	public static synthetic fun size$default (Ljava/lang/String;IIILjava/lang/Object;)J
 }
 
+public final class okio/internal/-Utf8 {
+	public static final fun commonAsUtf8ToByteArray (Ljava/lang/String;)[B
+	public static final fun commonToUtf8String ([BII)Ljava/lang/String;
+	public static synthetic fun commonToUtf8String$default ([BIIILjava/lang/Object;)Ljava/lang/String;
+}
+
