@@ -43,10 +43,6 @@ public final class okio/-InflaterSourceExtensions {
 	public static synthetic fun inflate$default (Lokio/Source;Ljava/util/zip/Inflater;ILjava/lang/Object;)Lokio/InflaterSource;
 }
 
-public final class okio/-JvmPlatform {
-	public static final fun withLock (Ljava/util/concurrent/locks/ReentrantLock;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
-}
-
 public class okio/AsyncTimeout : okio/Timeout {
 	public static final field Companion Lokio/AsyncTimeout$Companion;
 	public fun <init> ()V
@@ -800,7 +796,11 @@ public final class okio/Utf8 {
 	public static synthetic fun size$default (Ljava/lang/String;IIILjava/lang/Object;)J
 }
 
-public final class okio/internal/-Utf8 {
+public final class okio/_JvmPlatformKt {
+	public static final fun withLock (Ljava/util/concurrent/locks/ReentrantLock;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+}
+
+public final class okio/internal/_Utf8Kt {
 	public static final fun commonAsUtf8ToByteArray (Ljava/lang/String;)[B
 	public static final fun commonToUtf8String ([BII)Ljava/lang/String;
 	public static synthetic fun commonToUtf8String$default ([BIIILjava/lang/Object;)Ljava/lang/String;
