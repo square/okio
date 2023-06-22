@@ -117,7 +117,7 @@ class GzipSource(source: Source) : Source {
     if (flags.getBit(FEXTRA)) {
       source.require(2)
       if (fhcrc) updateCrc(source.buffer, 0, 2)
-      val xlen = source.buffer.readShortLe().toLong()
+      val xlen = (source.buffer.readShortLe().toInt() and 0xffff).toLong()
       source.require(xlen)
       if (fhcrc) updateCrc(source.buffer, 0, xlen)
       source.skip(xlen)
