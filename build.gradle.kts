@@ -21,7 +21,6 @@ buildscript {
   dependencies {
     classpath(libs.android.gradle.plugin)
     classpath(libs.dokka)
-    classpath(libs.shadow)
     classpath(libs.jmh.gradle.plugin)
     classpath(libs.binaryCompatibilityValidator)
     classpath(libs.spotless)
