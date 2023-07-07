@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+## Version 3.4.0
+
+_2023-07-07_
+
+ * New: Adapt a Java NIO FileSystem (`java.nio.file.FileSystem`) as an Okio FileSystem using
+   `fileSystem.asOkioFileSystem()`.
+ * New: Adapt Android’s `AssetManager` as an Okio FileSystem using `AssetFileSystem`. This is in the
+   new `okio-assetfilesystem` module. Android applications should prefer this over
+   `FileSystem.RESOURCES` as it’s faster to load.
+ * Fix: Don't crash decoding GZIP files when the optional extra data (`XLEN`) is 32 KiB or larger.
+ * Fix: Resolve symlinks in `FakeFileSystem.canonicalize()`.
+ * Fix: Report the correct `createdAtMillis` in `NodeJsFileSystem` file metadata. We were
+   incorrectly using `ctimeMs`, where `c` means _changed_, not _created_.
+ * Fix: `UnsafeCursor` is now `Closeable`.
+
+
 ## Version 3.3.0
 
 _2023-01-07_
