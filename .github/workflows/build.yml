@@ -129,29 +129,6 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ARTIFACT_SIGNING_PRIVATE_KEY }}
 
-  publish-windows:
-    runs-on: windows-latest
-    if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
-    needs: [jvm, all-platforms, emulator]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Configure JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 19
-
-      - name: Upload Artifacts
-        run: |
-          ./gradlew clean publishMingwX64PublicationToMavenCentralRepository --stacktrace
-        env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ARTIFACT_SIGNING_PRIVATE_KEY }}
-
   publish-website:
     runs-on: ubuntu-latest
     if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
