@@ -73,6 +73,13 @@ kotlin {
     configureOrCreateNativePlatforms()
   }
   sourceSets {
+    all {
+      languageSettings.apply {
+        // Required for CPointer etc. since Kotlin 1.9.
+        optIn("kotlinx.cinterop.ExperimentalForeignApi")
+      }
+    }
+
     val commonMain by getting
     val commonTest by getting {
       dependencies {
