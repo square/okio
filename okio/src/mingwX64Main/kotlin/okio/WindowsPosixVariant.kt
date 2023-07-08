@@ -93,7 +93,7 @@ internal actual fun PosixFileSystem.variantMkdir(dir: Path): Int {
 
 internal actual fun PosixFileSystem.variantCanonicalize(path: Path): Path {
   // Note that _fullpath() returns normally if the file doesn't exist.
-  val fullpath = _fullpath(null, path.toString(), PATH_MAX)
+  val fullpath = _fullpath(null, path.toString(), PATH_MAX.toULong())
     ?: throw errnoToIOException(errno)
   try {
     val pathString = Buffer().writeNullTerminated(fullpath).readUtf8()
@@ -126,7 +126,7 @@ internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
 }
 
 internal actual fun PosixFileSystem.variantMove(source: Path, target: Path) {
-  if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING) == 0) {
+  if (MoveFileExA(source.toString(), target.toString(), MOVEFILE_REPLACE_EXISTING.toUInt()) == 0) {
     throw lastErrorToIOException()
   }
 }
@@ -159,10 +159,10 @@ internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle 
   val openFile = CreateFileA(
     lpFileName = file.toString(),
     dwDesiredAccess = GENERIC_READ,
-    dwShareMode = FILE_SHARE_WRITE,
+    dwShareMode = FILE_SHARE_WRITE.toUInt(),
     lpSecurityAttributes = null,
-    dwCreationDisposition = OPEN_EXISTING,
-    dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
+    dwCreationDisposition = OPEN_EXISTING.toUInt(),
+    dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL.toUInt(),
     hTemplateFile = null,
   )
   if (openFile == INVALID_HANDLE_VALUE) {
@@ -189,10 +189,10 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(
   val openFile = CreateFileA(
     lpFileName = file.toString(),
     dwDesiredAccess = GENERIC_READ or GENERIC_WRITE.toUInt(),
-    dwShareMode = FILE_SHARE_WRITE,
+    dwShareMode = FILE_SHARE_WRITE.toUInt(),
     lpSecurityAttributes = null,
     dwCreationDisposition = creationDisposition,
-    dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
+    dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL.toUInt(),
     hTemplateFile = null,
   )
   if (openFile == INVALID_HANDLE_VALUE) {
@@ -202,5 +202,5 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(
 }
 
 internal actual fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path) {
-  throw okio.IOException("Not supported")
+  throw IOException("Not supported")
 }

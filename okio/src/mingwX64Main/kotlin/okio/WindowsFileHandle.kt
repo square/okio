@@ -136,7 +136,7 @@ internal class WindowsFileHandle(
         hFile = file,
         lDistanceToMove = size.toInt(),
         lpDistanceToMoveHigh = distanceToMoveHigh.ptr,
-        dwMoveMethod = FILE_BEGIN,
+        dwMoveMethod = FILE_BEGIN.toUInt(),
       )
       if (movePointerResult == 0U) {
         throw lastErrorToIOException()
