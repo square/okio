@@ -77,10 +77,7 @@ abstract class AbstractFileSystemTest(
         cwdString.endsWith("work")
       } else {
         cwdString.endsWith("okio${slash}okio") ||
-          cwdString.endsWith("${slash}okio-parent-okio-js-legacy-test") ||
-          cwdString.endsWith("${slash}okio-parent-okio-js-ir-test") ||
-          cwdString.endsWith("${slash}okio-parent-okio-nodefilesystem-js-ir-test") ||
-          cwdString.endsWith("${slash}okio-parent-okio-nodefilesystem-js-legacy-test") ||
+          cwdString.endsWith("${slash}okio-parent-okio-nodefilesystem-test") ||
           cwdString.contains("/CoreSimulator/Devices/") || // iOS simulator.
           cwdString == "/" // Android emulator.
       }
