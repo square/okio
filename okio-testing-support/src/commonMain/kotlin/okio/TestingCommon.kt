@@ -37,3 +37,5 @@ fun randomBytes(length: Int): ByteString {
 fun randomToken(length: Int) = Random.nextBytes(length).toByteString(0, length).hex()
 
 expect fun isBrowser(): Boolean
+
+expect fun isWasm(): Boolean

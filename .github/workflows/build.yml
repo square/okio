@@ -40,7 +40,7 @@ jobs:
 
       - name: Test
         run: |
-          ./gradlew -Dkjs=false -Dknative=false -Dtest.java.version=${{ matrix.java-version }} build --stacktrace
+          ./gradlew -Dkjs=false -Dknative=false -Dkwasm=false -Dtest.java.version=${{ matrix.java-version }} build --stacktrace
 
   emulator:
     runs-on: macos-latest

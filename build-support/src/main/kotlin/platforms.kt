@@ -15,8 +15,23 @@
  */
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.jvm
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+
+fun KotlinMultiplatformExtension.configureOrCreateOkioPlatforms() {
+  jvm {
+  }
+  if (kmpJsEnabled) {
+    configureOrCreateJsPlatforms()
+  }
+  if (kmpNativeEnabled) {
+    configureOrCreateNativePlatforms()
+  }
+  if (kmpWasmEnabled) {
+    configureOrCreateWasmPlatform()
+  }
+}
 
 fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
   iosX64()
@@ -90,5 +105,32 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.createSourceSet(
   }
 
   return result
+}
+
+fun KotlinMultiplatformExtension.configureOrCreateJsPlatforms() {
+  js {
+    compilations.all {
+      kotlinOptions {
+        moduleKind = "umd"
+        sourceMap = true
+        metaInfo = true
+      }
+    }
+    nodejs {
+      testTask {
+        useMocha {
+          timeout = "30s"
+        }
+      }
+    }
+    browser {
+    }
+  }
+}
+
+fun KotlinMultiplatformExtension.configureOrCreateWasmPlatform() {
+  wasm {
+    nodejs()
+  }
 }
 

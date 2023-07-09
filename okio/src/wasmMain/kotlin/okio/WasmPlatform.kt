@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Square, Inc.
+ * Copyright (C) 2023 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,5 @@
  */
 package okio
 
-actual fun isBrowser(): Boolean {
-  return js("""(globalThis.window || null)""") != null
-}
-
-actual fun isWasm() = false
+internal actual val PLATFORM_DIRECTORY_SEPARATOR: String
+  get() = "/"

@@ -16,3 +16,5 @@
 package okio
 
 actual fun isBrowser() = false
+
+actual fun isWasm() = false
