@@ -15,7 +15,6 @@
  */
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.jvm
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
