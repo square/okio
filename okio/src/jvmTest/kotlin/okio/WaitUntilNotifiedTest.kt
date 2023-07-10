@@ -13,160 +13,169 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.InterruptedIOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import org.junit.After;
-import org.junit.Test;
+import java.io.InterruptedIOException
+import java.util.concurrent.TimeUnit
+import okio.TestUtil.assumeNotWindows
+import okio.TestingExecutors.newScheduledExecutorService
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
+import org.junit.Test
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+class WaitUntilNotifiedTest {
+  private val executorService = newScheduledExecutorService(0)
 
-public final class WaitUntilNotifiedTest {
-  final ScheduledExecutorService executorService = TestingExecutors.INSTANCE.newScheduledExecutorService(0);
-
-  @After public void tearDown() {
-    executorService.shutdown();
+  @After
+  fun tearDown() {
+    executorService.shutdown()
   }
 
-  @Test public synchronized void notified() throws InterruptedIOException {
-    Timeout timeout = new Timeout();
-    timeout.timeout(5000, TimeUnit.MILLISECONDS);
-
-    double start = now();
-    executorService.schedule(new Runnable() {
-      @Override public void run() {
-        synchronized (WaitUntilNotifiedTest.this) {
-          WaitUntilNotifiedTest.this.notify();
+  @Test
+  @Synchronized
+  fun notified() {
+    val timeout = Timeout()
+    timeout.timeout(5000, TimeUnit.MILLISECONDS)
+    val start = now()
+    executorService.schedule(
+      {
+        synchronized(this@WaitUntilNotifiedTest) {
+          (this as Object).notify()
         }
-      }
-    }, 1000, TimeUnit.MILLISECONDS);
-
-    timeout.waitUntilNotified(this);
-    assertElapsed(1000.0, start);
+      },
+      1000,
+      TimeUnit.MILLISECONDS,
+    )
+    timeout.waitUntilNotified(this)
+    assertElapsed(1000.0, start)
   }
 
-  @Test public synchronized void timeout() {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Timeout timeout = new Timeout();
-    timeout.timeout(1000, TimeUnit.MILLISECONDS);
-    double start = now();
+  @Test
+  @Synchronized
+  fun timeout() {
+    assumeNotWindows()
+    val timeout = Timeout()
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    val start = now()
     try {
-      timeout.waitUntilNotified(this);
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("timeout", expected.getMessage());
+      timeout.waitUntilNotified(this)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("timeout", expected.message)
     }
-    assertElapsed(1000.0, start);
+    assertElapsed(1000.0, start)
   }
 
-  @Test public synchronized void deadline() {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Timeout timeout = new Timeout();
-    timeout.deadline(1000, TimeUnit.MILLISECONDS);
-    double start = now();
+  @Test
+  @Synchronized
+  fun deadline() {
+    assumeNotWindows()
+    val timeout = Timeout()
+    timeout.deadline(1000, TimeUnit.MILLISECONDS)
+    val start = now()
     try {
-      timeout.waitUntilNotified(this);
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("timeout", expected.getMessage());
+      timeout.waitUntilNotified(this)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("timeout", expected.message)
     }
-    assertElapsed(1000.0, start);
+    assertElapsed(1000.0, start)
   }
 
-  @Test public synchronized void deadlineBeforeTimeout() {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Timeout timeout = new Timeout();
-    timeout.timeout(5000, TimeUnit.MILLISECONDS);
-    timeout.deadline(1000, TimeUnit.MILLISECONDS);
-    double start = now();
+  @Test
+  @Synchronized
+  fun deadlineBeforeTimeout() {
+    assumeNotWindows()
+    val timeout = Timeout()
+    timeout.timeout(5000, TimeUnit.MILLISECONDS)
+    timeout.deadline(1000, TimeUnit.MILLISECONDS)
+    val start = now()
     try {
-      timeout.waitUntilNotified(this);
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("timeout", expected.getMessage());
+      timeout.waitUntilNotified(this)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("timeout", expected.message)
     }
-    assertElapsed(1000.0, start);
+    assertElapsed(1000.0, start)
   }
 
-  @Test public synchronized void timeoutBeforeDeadline() {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Timeout timeout = new Timeout();
-    timeout.timeout(1000, TimeUnit.MILLISECONDS);
-    timeout.deadline(5000, TimeUnit.MILLISECONDS);
-    double start = now();
+  @Test
+  @Synchronized
+  fun timeoutBeforeDeadline() {
+    assumeNotWindows()
+    val timeout = Timeout()
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.deadline(5000, TimeUnit.MILLISECONDS)
+    val start = now()
     try {
-      timeout.waitUntilNotified(this);
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("timeout", expected.getMessage());
+      timeout.waitUntilNotified(this)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("timeout", expected.message)
     }
-    assertElapsed(1000.0, start);
+    assertElapsed(1000.0, start)
   }
 
-  @Test public synchronized void deadlineAlreadyReached() {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Timeout timeout = new Timeout();
-    timeout.deadlineNanoTime(System.nanoTime());
-    double start = now();
+  @Test
+  @Synchronized
+  fun deadlineAlreadyReached() {
+    assumeNotWindows()
+    val timeout = Timeout()
+    timeout.deadlineNanoTime(System.nanoTime())
+    val start = now()
     try {
-      timeout.waitUntilNotified(this);
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("timeout", expected.getMessage());
+      timeout.waitUntilNotified(this)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("timeout", expected.message)
     }
-    assertElapsed(0.0, start);
+    assertElapsed(0.0, start)
   }
 
-  @Test public synchronized void threadInterrupted() {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Timeout timeout = new Timeout();
-    double start = now();
-    Thread.currentThread().interrupt();
+  @Test
+  @Synchronized
+  fun threadInterrupted() {
+    assumeNotWindows()
+    val timeout = Timeout()
+    val start = now()
+    Thread.currentThread().interrupt()
     try {
-      timeout.waitUntilNotified(this);
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("interrupted", expected.getMessage());
-      assertTrue(Thread.interrupted());
+      timeout.waitUntilNotified(this)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("interrupted", expected.message)
+      assertTrue(Thread.interrupted())
     }
-    assertElapsed(0.0, start);
+    assertElapsed(0.0, start)
   }
 
-  @Test public synchronized void threadInterruptedOnThrowIfReached() throws Exception {
-    TestUtil.INSTANCE.assumeNotWindows();
-
-    Timeout timeout = new Timeout();
-    Thread.currentThread().interrupt();
+  @Test
+  @Synchronized
+  fun threadInterruptedOnThrowIfReached() {
+    assumeNotWindows()
+    val timeout = Timeout()
+    Thread.currentThread().interrupt()
     try {
-      timeout.throwIfReached();
-      fail();
-    } catch (InterruptedIOException expected) {
-      assertEquals("interrupted", expected.getMessage());
-      assertTrue(Thread.interrupted());
+      timeout.throwIfReached()
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("interrupted", expected.message)
+      assertTrue(Thread.interrupted())
     }
   }
 
-  /** Returns the nanotime in milliseconds as a double for measuring timeouts. */
-  private double now() {
-    return System.nanoTime() / 1000000.0d;
+  /** Returns the nanotime in milliseconds as a double for measuring timeouts.  */
+  private fun now(): Double {
+    return System.nanoTime() / 1000000.0
   }
 
   /**
    * Fails the test unless the time from start until now is duration, accepting differences in
    * -50..+450 milliseconds.
    */
-  private void assertElapsed(double duration, double start) {
-    assertEquals(duration, now() - start - 200d, 250.0);
+  private fun assertElapsed(duration: Double, start: Double) {
+    assertEquals(duration, now() - start - 200.0, 250.0)
   }
 }

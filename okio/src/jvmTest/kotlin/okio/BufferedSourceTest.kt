@@ -13,1480 +13,1491 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import java.io.EOFException
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
+import java.util.Arrays
+import kotlin.text.Charsets.US_ASCII
+import kotlin.text.Charsets.UTF_8
+import okio.ByteString.Companion.decodeHex
+import okio.ByteString.Companion.encodeUtf8
+import okio.Options.Companion.of
+import okio.TestUtil.SEGMENT_SIZE
+import okio.TestUtil.assertByteArrayEquals
+import okio.TestUtil.assertByteArraysEquals
+import okio.TestUtil.randomBytes
+import okio.TestUtil.segmentSizes
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
+import org.junit.Assume
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
-import static kotlin.text.Charsets.US_ASCII;
-import static kotlin.text.Charsets.UTF_8;
-import static kotlin.text.StringsKt.repeat;
-import static okio.TestUtil.SEGMENT_SIZE;
-import static okio.TestUtil.assertByteArrayEquals;
-import static okio.TestUtil.assertByteArraysEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
-@RunWith(Parameterized.class)
-public final class BufferedSourceTest {
+@RunWith(Parameterized::class)
+class BufferedSourceTest(
+  private val factory: Factory,
+) {
   interface Factory {
-    Factory BUFFER = new Factory() {
-      @Override public Pipe pipe() {
-        Buffer buffer = new Buffer();
-        Pipe result = new Pipe();
-        result.sink = buffer;
-        result.source = buffer;
-        return result;
+    fun pipe(): Pipe
+    val isOneByteAtATime: Boolean
+
+    companion object {
+      val BUFFER: Factory = object : Factory {
+        override fun pipe(): Pipe {
+          val buffer = Buffer()
+          return Pipe(buffer, buffer)
+        }
+
+        override val isOneByteAtATime: Boolean get() = false
+
+        override fun toString() = "Buffer"
       }
 
-      @Override public boolean isOneByteAtATime() {
-        return false;
+      val REAL_BUFFERED_SOURCE: Factory = object : Factory {
+        override fun pipe(): Pipe {
+          val buffer = Buffer()
+          return Pipe(
+            sink = buffer,
+            source = (buffer as Source).buffer(),
+          )
+        }
+
+        override val isOneByteAtATime: Boolean get() = false
+
+        override fun toString() = "RealBufferedSource"
       }
 
-      @Override public String toString() {
-        return "Buffer";
-      }
-    };
+      /**
+       * A factory deliberately written to create buffers whose internal segments are always 1 byte
+       * long. We like testing with these segments because are likely to trigger bugs!
+       */
+      val ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE: Factory = object : Factory {
+        override fun pipe(): Pipe {
+          val buffer = Buffer()
+          return Pipe(
+            sink = buffer,
+            source = object : ForwardingSource(buffer) {
+              override fun read(sink: Buffer, byteCount: Long): Long {
+                // Read one byte into a new buffer, then clone it so that the segment is shared.
+                // Shared segments cannot be compacted so we'll get a long chain of short segments.
+                val box = Buffer()
+                val result = super.read(box, Math.min(byteCount, 1L))
+                if (result > 0L) sink.write(box.clone(), result)
+                return result
+              }
+            }.buffer(),
+          )
+        }
 
-    Factory REAL_BUFFERED_SOURCE = new Factory() {
-      @Override public Pipe pipe() {
-        Buffer buffer = new Buffer();
-        Pipe result = new Pipe();
-        result.sink = buffer;
-        result.source = Okio.buffer((Source) buffer);
-        return result;
-      }
+        override val isOneByteAtATime: Boolean get() = true
 
-      @Override public boolean isOneByteAtATime() {
-        return false;
-      }
-
-      @Override public String toString() {
-        return "RealBufferedSource";
-      }
-    };
-
-    /**
-     * A factory deliberately written to create buffers whose internal segments are always 1 byte
-     * long. We like testing with these segments because are likely to trigger bugs!
-     */
-    Factory ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE = new Factory() {
-      @Override public Pipe pipe() {
-        Buffer buffer = new Buffer();
-        Pipe result = new Pipe();
-        result.sink = buffer;
-        result.source = Okio.buffer(new ForwardingSource(buffer) {
-          @Override public long read(Buffer sink, long byteCount) throws IOException {
-            // Read one byte into a new buffer, then clone it so that the segment is shared.
-            // Shared segments cannot be compacted so we'll get a long chain of short segments.
-            Buffer box = new Buffer();
-            long result = super.read(box, Math.min(byteCount, 1L));
-            if (result > 0L) sink.write(box.clone(), result);
-            return result;
-          }
-        });
-        return result;
+        override fun toString() = "OneByteAtATimeBufferedSource"
       }
 
-      @Override public boolean isOneByteAtATime() {
-        return true;
-      }
-
-      @Override public String toString() {
-        return "OneByteAtATimeBufferedSource";
-      }
-    };
-
-    Factory ONE_BYTE_AT_A_TIME_BUFFER = new Factory() {
-      @Override public Pipe pipe() {
-        Buffer buffer = new Buffer();
-        Pipe result = new Pipe();
-        result.source = buffer;
-        result.sink = Okio.buffer(new ForwardingSink(buffer) {
-          @Override public void write(Buffer source, long byteCount) throws IOException {
-            // Write each byte into a new buffer, then clone it so that the segments are shared.
-            // Shared segments cannot be compacted so we'll get a long chain of short segments.
-            for (int i = 0; i < byteCount; i++) {
-              Buffer box = new Buffer();
-              box.write(source, 1);
-              super.write(box.clone(), 1);
+      val ONE_BYTE_AT_A_TIME_BUFFER: Factory = object : Factory {
+        override fun pipe(): Pipe {
+          val buffer = Buffer()
+          val sink = object : ForwardingSink(buffer) {
+            override fun write(source: Buffer, byteCount: Long) {
+              // Write each byte into a new buffer, then clone it so that the segments are shared.
+              // Shared segments cannot be compacted so we'll get a long chain of short segments.
+              for (i in 0 until byteCount) {
+                val box = Buffer()
+                box.write(source, 1)
+                super.write(box.clone(), 1)
+              }
             }
-          }
-        });
-        return result;
+          }.buffer()
+          return Pipe(
+            sink = sink,
+            source = buffer,
+          )
+        }
+
+        override val isOneByteAtATime: Boolean get() = true
+
+        override fun toString() = "OneByteAtATimeBuffer"
       }
 
-      @Override public boolean isOneByteAtATime() {
-        return true;
+      val PEEK_BUFFER: Factory = object : Factory {
+        override fun pipe(): Pipe {
+          val buffer = Buffer()
+          return Pipe(
+            sink = buffer,
+            source = buffer.peek(),
+          )
+        }
+
+        override val isOneByteAtATime: Boolean get() = false
+
+        override fun toString() = "PeekBuffer"
       }
 
-      @Override public String toString() {
-        return "OneByteAtATimeBuffer";
+      val PEEK_BUFFERED_SOURCE: Factory = object : Factory {
+        override fun pipe(): Pipe {
+          val buffer = Buffer()
+          return Pipe(
+            sink = buffer,
+            source = (buffer as Source).buffer().peek(),
+          )
+        }
+
+        override val isOneByteAtATime: Boolean get() = false
+
+        override fun toString() = "PeekBufferedSource"
       }
-    };
-
-    Factory PEEK_BUFFER = new Factory() {
-      @Override public Pipe pipe() {
-        Buffer buffer = new Buffer();
-        Pipe result = new Pipe();
-        result.sink = buffer;
-        result.source = buffer.peek();
-        return result;
-      }
-
-      @Override public boolean isOneByteAtATime() {
-        return false;
-      }
-
-      @Override public String toString() {
-        return "PeekBuffer";
-      }
-    };
-
-    Factory PEEK_BUFFERED_SOURCE = new Factory() {
-      @Override public Pipe pipe() {
-        Buffer buffer = new Buffer();
-        Pipe result = new Pipe();
-        result.sink = buffer;
-        result.source = Okio.buffer((Source) buffer).peek();
-        return result;
-      }
-
-      @Override public boolean isOneByteAtATime() {
-        return false;
-      }
-
-      @Override public String toString() {
-        return "PeekBufferedSource";
-      }
-    };
-
-    Pipe pipe();
-
-    boolean isOneByteAtATime();
-  }
-
-  private static class Pipe {
-    BufferedSink sink;
-    BufferedSource source;
-  }
-
-  @Parameters(name = "{0}")
-  public static List<Object[]> parameters() {
-    return Arrays.asList(
-        new Object[] { Factory.BUFFER },
-        new Object[] { Factory.REAL_BUFFERED_SOURCE },
-        new Object[] { Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE },
-        new Object[] { Factory.ONE_BYTE_AT_A_TIME_BUFFER },
-        new Object[] { Factory.PEEK_BUFFER },
-        new Object[] { Factory.PEEK_BUFFERED_SOURCE });
-  }
-
-  @Parameter public Factory factory;
-  private BufferedSink sink;
-  private BufferedSource source;
-
-  @Before public void setUp() {
-    Pipe pipe = factory.pipe();
-    sink = pipe.sink;
-    source = pipe.source;
-  }
-
-  @Test public void readBytes() throws Exception {
-    sink.write(new byte[] { (byte) 0xab, (byte) 0xcd });
-    sink.emit();
-    assertEquals(0xab, source.readByte() & 0xff);
-    assertEquals(0xcd, source.readByte() & 0xff);
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readByteTooShortThrows() throws IOException {
-    try {
-      source.readByte();
-      fail();
-    } catch (EOFException expected) {
     }
   }
 
-  @Test public void readShort() throws Exception {
-    sink.write(new byte[] {
-        (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01
-    });
-    sink.emit();
-    assertEquals((short) 0xabcd, source.readShort());
-    assertEquals((short) 0xef01, source.readShort());
-    assertTrue(source.exhausted());
+  class Pipe(
+    var sink: BufferedSink,
+    var source: BufferedSource,
+  )
+
+  private val pipe = factory.pipe()
+  private val sink: BufferedSink = pipe.sink
+  private val source: BufferedSource = pipe.source
+
+  @Test
+  fun readBytes() {
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte()))
+    sink.emit()
+    assertEquals(0xab, (source.readByte().toInt() and 0xff).toLong())
+    assertEquals(0xcd, (source.readByte().toInt() and 0xff).toLong())
+    assertTrue(source.exhausted())
   }
 
-  @Test public void readShortLe() throws Exception {
-    sink.write(new byte[] {
-        (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10
-    });
-    sink.emit();
-    assertEquals((short) 0xcdab, source.readShortLe());
-    assertEquals((short) 0x10ef, source.readShortLe());
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readShortSplitAcrossMultipleSegments() throws Exception {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE - 1));
-    sink.write(new byte[] { (byte) 0xab, (byte) 0xcd });
-    sink.emit();
-    source.skip(SEGMENT_SIZE - 1);
-    assertEquals((short) 0xabcd, source.readShort());
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readShortTooShortThrows() throws IOException {
-    sink.writeShort(Short.MAX_VALUE);
-    sink.emit();
-    source.readByte();
+  @Test
+  fun readByteTooShortThrows() {
     try {
-      source.readShort();
-      fail();
-    } catch (EOFException expected) {
+      source.readByte()
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void readShortLeTooShortThrows() throws IOException {
-    sink.writeShortLe(Short.MAX_VALUE);
-    sink.emit();
-    source.readByte();
+  @Test
+  fun readShort() {
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte(), 0xef.toByte(), 0x01.toByte()))
+    sink.emit()
+    assertEquals(0xabcd.toShort().toLong(), source.readShort().toLong())
+    assertEquals(0xef01.toShort().toLong(), source.readShort().toLong())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readShortLe() {
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte(), 0xef.toByte(), 0x10.toByte()))
+    sink.emit()
+    assertEquals(0xcdab.toShort().toLong(), source.readShortLe().toLong())
+    assertEquals(0x10ef.toShort().toLong(), source.readShortLe().toLong())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readShortSplitAcrossMultipleSegments() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE - 1))
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte()))
+    sink.emit()
+    source.skip((SEGMENT_SIZE - 1).toLong())
+    assertEquals(0xabcd.toShort().toLong(), source.readShort().toLong())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readShortTooShortThrows() {
+    sink.writeShort(Short.MAX_VALUE.toInt())
+    sink.emit()
+    source.readByte()
     try {
-      source.readShortLe();
-      fail();
-    } catch (EOFException expected) {
+      source.readShort()
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void readInt() throws Exception {
-    sink.write(new byte[] {
-        (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01, (byte) 0x87, (byte) 0x65, (byte) 0x43,
-        (byte) 0x21
-    });
-    sink.emit();
-    assertEquals(0xabcdef01, source.readInt());
-    assertEquals(0x87654321, source.readInt());
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readIntLe() throws Exception {
-    sink.write(new byte[] {
-        (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10, (byte) 0x87, (byte) 0x65, (byte) 0x43,
-        (byte) 0x21
-    });
-    sink.emit();
-    assertEquals(0x10efcdab, source.readIntLe());
-    assertEquals(0x21436587, source.readIntLe());
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readIntSplitAcrossMultipleSegments() throws Exception {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE - 3));
-    sink.write(new byte[] {
-        (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01
-    });
-    sink.emit();
-    source.skip(SEGMENT_SIZE - 3);
-    assertEquals(0xabcdef01, source.readInt());
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readIntTooShortThrows() throws IOException {
-    sink.writeInt(Integer.MAX_VALUE);
-    sink.emit();
-    source.readByte();
+  @Test
+  fun readShortLeTooShortThrows() {
+    sink.writeShortLe(Short.MAX_VALUE.toInt())
+    sink.emit()
+    source.readByte()
     try {
-      source.readInt();
-      fail();
-    } catch (EOFException expected) {
+      source.readShortLe()
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void readIntLeTooShortThrows() throws IOException {
-    sink.writeIntLe(Integer.MAX_VALUE);
-    sink.emit();
-    source.readByte();
+  @Test
+  fun readInt() {
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte(), 0xef.toByte(), 0x01.toByte(), 0x87.toByte(), 0x65.toByte(), 0x43.toByte(), 0x21.toByte()))
+    sink.emit()
+    assertEquals(-0x543210ff, source.readInt().toLong())
+    assertEquals(-0x789abcdf, source.readInt().toLong())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readIntLe() {
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte(), 0xef.toByte(), 0x10.toByte(), 0x87.toByte(), 0x65.toByte(), 0x43.toByte(), 0x21.toByte()))
+    sink.emit()
+    assertEquals(0x10efcdab, source.readIntLe().toLong())
+    assertEquals(0x21436587, source.readIntLe().toLong())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readIntSplitAcrossMultipleSegments() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE - 3))
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte(), 0xef.toByte(), 0x01.toByte()))
+    sink.emit()
+    source.skip((SEGMENT_SIZE - 3).toLong())
+    assertEquals(-0x543210ff, source.readInt().toLong())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readIntTooShortThrows() {
+    sink.writeInt(Int.MAX_VALUE)
+    sink.emit()
+    source.readByte()
     try {
-      source.readIntLe();
-      fail();
-    } catch (EOFException expected) {
+      source.readInt()
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void readLong() throws Exception {
-    sink.write(new byte[] {
-        (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10, (byte) 0x87, (byte) 0x65, (byte) 0x43,
-        (byte) 0x21, (byte) 0x36, (byte) 0x47, (byte) 0x58, (byte) 0x69, (byte) 0x12, (byte) 0x23,
-        (byte) 0x34, (byte) 0x45
-    });
-    sink.emit();
-    assertEquals(0xabcdef1087654321L, source.readLong());
-    assertEquals(0x3647586912233445L, source.readLong());
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readLongLe() throws Exception {
-    sink.write(new byte[] {
-        (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10, (byte) 0x87, (byte) 0x65, (byte) 0x43,
-        (byte) 0x21, (byte) 0x36, (byte) 0x47, (byte) 0x58, (byte) 0x69, (byte) 0x12, (byte) 0x23,
-        (byte) 0x34, (byte) 0x45
-    });
-    sink.emit();
-    assertEquals(0x2143658710efcdabL, source.readLongLe());
-    assertEquals(0x4534231269584736L, source.readLongLe());
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readLongSplitAcrossMultipleSegments() throws Exception {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE - 7));
-    sink.write(new byte[] {
-        (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x01, (byte) 0x87, (byte) 0x65, (byte) 0x43,
-        (byte) 0x21,
-    });
-    sink.emit();
-    source.skip(SEGMENT_SIZE - 7);
-    assertEquals(0xabcdef0187654321L, source.readLong());
-    assertTrue(source.exhausted());
-  }
-
-  @Test public void readLongTooShortThrows() throws IOException {
-    sink.writeLong(Long.MAX_VALUE);
-    sink.emit();
-    source.readByte();
+  @Test
+  fun readIntLeTooShortThrows() {
+    sink.writeIntLe(Int.MAX_VALUE)
+    sink.emit()
+    source.readByte()
     try {
-      source.readLong();
-      fail();
-    } catch (EOFException expected) {
+      source.readIntLe()
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void readLongLeTooShortThrows() throws IOException {
-    sink.writeLongLe(Long.MAX_VALUE);
-    sink.emit();
-    source.readByte();
+  @Test
+  fun readLong() {
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte(), 0xef.toByte(), 0x10.toByte(), 0x87.toByte(), 0x65.toByte(), 0x43.toByte(), 0x21.toByte(), 0x36.toByte(), 0x47.toByte(), 0x58.toByte(), 0x69.toByte(), 0x12.toByte(), 0x23.toByte(), 0x34.toByte(), 0x45.toByte()))
+    sink.emit()
+    assertEquals(-0x543210ef789abcdfL, source.readLong())
+    assertEquals(0x3647586912233445L, source.readLong())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readLongLe() {
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte(), 0xef.toByte(), 0x10.toByte(), 0x87.toByte(), 0x65.toByte(), 0x43.toByte(), 0x21.toByte(), 0x36.toByte(), 0x47.toByte(), 0x58.toByte(), 0x69.toByte(), 0x12.toByte(), 0x23.toByte(), 0x34.toByte(), 0x45.toByte()))
+    sink.emit()
+    assertEquals(0x2143658710efcdabL, source.readLongLe())
+    assertEquals(0x4534231269584736L, source.readLongLe())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readLongSplitAcrossMultipleSegments() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE - 7))
+    sink.write(byteArrayOf(0xab.toByte(), 0xcd.toByte(), 0xef.toByte(), 0x01.toByte(), 0x87.toByte(), 0x65.toByte(), 0x43.toByte(), 0x21.toByte()))
+    sink.emit()
+    source.skip((SEGMENT_SIZE - 7).toLong())
+    assertEquals(-0x543210fe789abcdfL, source.readLong())
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readLongTooShortThrows() {
+    sink.writeLong(Long.MAX_VALUE)
+    sink.emit()
+    source.readByte()
     try {
-      source.readLongLe();
-      fail();
-    } catch (EOFException expected) {
+      source.readLong()
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void readAll() throws IOException {
-    source.getBuffer().writeUtf8("abc");
-    sink.writeUtf8("def");
-    sink.emit();
-
-    Buffer sink = new Buffer();
-    assertEquals(6, source.readAll(sink));
-    assertEquals("abcdef", sink.readUtf8());
-    assertTrue(source.exhausted());
+  @Test
+  fun readLongLeTooShortThrows() {
+    sink.writeLongLe(Long.MAX_VALUE)
+    sink.emit()
+    source.readByte()
+    try {
+      source.readLongLe()
+      fail()
+    } catch (expected: EOFException) {
+    }
   }
 
-  @Test public void readAllExhausted() throws IOException {
-    MockSink mockSink = new MockSink();
-    assertEquals(0, source.readAll(mockSink));
-    assertTrue(source.exhausted());
-    mockSink.assertLog();
+  @Test
+  fun readAll() {
+    source.buffer.writeUtf8("abc")
+    sink.writeUtf8("def")
+    sink.emit()
+    val sink = Buffer()
+    assertEquals(6, source.readAll(sink))
+    assertEquals("abcdef", sink.readUtf8())
+    assertTrue(source.exhausted())
   }
 
-  @Test public void readExhaustedSource() throws Exception {
-    Buffer sink = new Buffer();
-    sink.writeUtf8(repeat("a", 10));
-    assertEquals(-1, source.read(sink, 10));
-    assertEquals(10, sink.size());
-    assertTrue(source.exhausted());
+  @Test
+  fun readAllExhausted() {
+    val mockSink = MockSink()
+    assertEquals(0, source.readAll(mockSink))
+    assertTrue(source.exhausted())
+    mockSink.assertLog()
   }
 
-  @Test public void readZeroBytesFromSource() throws Exception {
-    Buffer sink = new Buffer();
-    sink.writeUtf8(repeat("a", 10));
+  @Test
+  fun readExhaustedSource() {
+    val sink = Buffer()
+    sink.writeUtf8("a".repeat(10))
+    assertEquals(-1, source.read(sink, 10))
+    assertEquals(10, sink.size)
+    assertTrue(source.exhausted())
+  }
+
+  @Test
+  fun readZeroBytesFromSource() {
+    val sink = Buffer()
+    sink.writeUtf8("a".repeat(10))
 
     // Either 0 or -1 is reasonable here. For consistency with Android's
     // ByteArrayInputStream we return 0.
-    assertEquals(-1, source.read(sink, 0));
-    assertEquals(10, sink.size());
-    assertTrue(source.exhausted());
+    assertEquals(-1, source.read(sink, 0))
+    assertEquals(10, sink.size)
+    assertTrue(source.exhausted())
   }
 
-  @Test public void readFully() throws Exception {
-    sink.writeUtf8(repeat("a", 10000));
-    sink.emit();
-    Buffer sink = new Buffer();
-    source.readFully(sink, 9999);
-    assertEquals(repeat("a", 9999), sink.readUtf8());
-    assertEquals("a", source.readUtf8());
+  @Test
+  fun readFully() {
+    sink.writeUtf8("a".repeat(10000))
+    sink.emit()
+    val sink = Buffer()
+    source.readFully(sink, 9999)
+    assertEquals("a".repeat(9999), sink.readUtf8())
+    assertEquals("a", source.readUtf8())
   }
 
-  @Test public void readFullyTooShortThrows() throws IOException {
-    sink.writeUtf8("Hi");
-    sink.emit();
-    Buffer sink = new Buffer();
+  @Test
+  fun readFullyTooShortThrows() {
+    sink.writeUtf8("Hi")
+    sink.emit()
+    val sink = Buffer()
     try {
-      source.readFully(sink, 5);
-      fail();
-    } catch (EOFException ignored) {
+      source.readFully(sink, 5)
+      fail()
+    } catch (ignored: EOFException) {
     }
 
     // Verify we read all that we could from the source.
-    assertEquals("Hi", sink.readUtf8());
+    assertEquals("Hi", sink.readUtf8())
   }
 
-  @Test public void readFullyByteArray() throws IOException {
-    Buffer data = new Buffer();
-    data.writeUtf8("Hello").writeUtf8(repeat("e", SEGMENT_SIZE));
-
-    byte[] expected = data.clone().readByteArray();
-    sink.write(data, data.size());
-    sink.emit();
-
-    byte[] sink = new byte[SEGMENT_SIZE + 5];
-    source.readFully(sink);
-    assertByteArraysEquals(expected, sink);
+  @Test
+  fun readFullyByteArray() {
+    val data = Buffer()
+    data.writeUtf8("Hello").writeUtf8("e".repeat(SEGMENT_SIZE))
+    val expected = data.clone().readByteArray()
+    sink.write(data, data.size)
+    sink.emit()
+    val sink = ByteArray(SEGMENT_SIZE + 5)
+    source.readFully(sink)
+    assertByteArraysEquals(expected, sink)
   }
 
-  @Test public void readFullyByteArrayTooShortThrows() throws IOException {
-    sink.writeUtf8("Hello");
-    sink.emit();
-
-    byte[] array = new byte[6];
+  @Test
+  fun readFullyByteArrayTooShortThrows() {
+    sink.writeUtf8("Hello")
+    sink.emit()
+    val array = ByteArray(6)
     try {
-      source.readFully(array);
-      fail();
-    } catch (EOFException ignored) {
+      source.readFully(array)
+      fail()
+    } catch (ignored: EOFException) {
     }
 
     // Verify we read all that we could from the source.
-    assertByteArraysEquals(new byte[] { 'H', 'e', 'l', 'l', 'o', 0 }, array);
+    assertByteArraysEquals(byteArrayOf('H'.code.toByte(), 'e'.code.toByte(), 'l'.code.toByte(), 'l'.code.toByte(), 'o'.code.toByte(), 0), array)
   }
 
-  @Test public void readIntoByteArray() throws IOException {
-    sink.writeUtf8("abcd");
-    sink.emit();
-
-    byte[] sink = new byte[3];
-    int read = source.read(sink);
-    if (factory.isOneByteAtATime()) {
-      assertEquals(1, read);
-      byte[] expected = { 'a', 0, 0 };
-      assertByteArraysEquals(expected, sink);
+  @Test
+  fun readIntoByteArray() {
+    sink.writeUtf8("abcd")
+    sink.emit()
+    val sink = ByteArray(3)
+    val read = source.read(sink)
+    if (factory.isOneByteAtATime) {
+      assertEquals(1, read.toLong())
+      val expected = byteArrayOf('a'.code.toByte(), 0, 0)
+      assertByteArraysEquals(expected, sink)
     } else {
-      assertEquals(3, read);
-      byte[] expected = { 'a', 'b', 'c' };
-      assertByteArraysEquals(expected, sink);
+      assertEquals(3, read.toLong())
+      val expected = byteArrayOf('a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte())
+      assertByteArraysEquals(expected, sink)
     }
   }
 
-  @Test public void readIntoByteArrayNotEnough() throws IOException {
-    sink.writeUtf8("abcd");
-    sink.emit();
-
-    byte[] sink = new byte[5];
-    int read = source.read(sink);
-    if (factory.isOneByteAtATime()) {
-      assertEquals(1, read);
-      byte[] expected = { 'a', 0, 0, 0, 0 };
-      assertByteArraysEquals(expected, sink);
+  @Test
+  fun readIntoByteArrayNotEnough() {
+    sink.writeUtf8("abcd")
+    sink.emit()
+    val sink = ByteArray(5)
+    val read = source.read(sink)
+    if (factory.isOneByteAtATime) {
+      assertEquals(1, read.toLong())
+      val expected = byteArrayOf('a'.code.toByte(), 0, 0, 0, 0)
+      assertByteArraysEquals(expected, sink)
     } else {
-      assertEquals(4, read);
-      byte[] expected = { 'a', 'b', 'c', 'd', 0 };
-      assertByteArraysEquals(expected, sink);
+      assertEquals(4, read.toLong())
+      val expected = byteArrayOf('a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte(), 'd'.code.toByte(), 0)
+      assertByteArraysEquals(expected, sink)
     }
   }
 
-  @Test public void readIntoByteArrayOffsetAndCount() throws IOException {
-    sink.writeUtf8("abcd");
-    sink.emit();
-
-    byte[] sink = new byte[7];
-    int read = source.read(sink, 2, 3);
-    if (factory.isOneByteAtATime()) {
-      assertEquals(1, read);
-      byte[] expected = { 0, 0, 'a', 0, 0, 0, 0 };
-      assertByteArraysEquals(expected, sink);
+  @Test
+  fun readIntoByteArrayOffsetAndCount() {
+    sink.writeUtf8("abcd")
+    sink.emit()
+    val sink = ByteArray(7)
+    val read = source.read(sink, 2, 3)
+    if (factory.isOneByteAtATime) {
+      assertEquals(1, read.toLong())
+      val expected = byteArrayOf(0, 0, 'a'.code.toByte(), 0, 0, 0, 0)
+      assertByteArraysEquals(expected, sink)
     } else {
-      assertEquals(3, read);
-      byte[] expected = { 0, 0, 'a', 'b', 'c', 0, 0 };
-      assertByteArraysEquals(expected, sink);
+      assertEquals(3, read.toLong())
+      val expected = byteArrayOf(0, 0, 'a'.code.toByte(), 'b'.code.toByte(), 'c'.code.toByte(), 0, 0)
+      assertByteArraysEquals(expected, sink)
     }
   }
 
-  @Test public void readByteArray() throws IOException {
-    String string = "abcd" + repeat("e", SEGMENT_SIZE);
-    sink.writeUtf8(string);
-    sink.emit();
-    assertByteArraysEquals(string.getBytes(UTF_8), source.readByteArray());
+  @Test
+  fun readByteArray() {
+    val string = "abcd" + "e".repeat(SEGMENT_SIZE)
+    sink.writeUtf8(string)
+    sink.emit()
+    assertByteArraysEquals(string.toByteArray(UTF_8), source.readByteArray())
   }
 
-  @Test public void readByteArrayPartial() throws IOException {
-    sink.writeUtf8("abcd");
-    sink.emit();
-    assertEquals("[97, 98, 99]", Arrays.toString(source.readByteArray(3)));
-    assertEquals("d", source.readUtf8(1));
+  @Test
+  fun readByteArrayPartial() {
+    sink.writeUtf8("abcd")
+    sink.emit()
+    assertEquals("[97, 98, 99]", Arrays.toString(source.readByteArray(3)))
+    assertEquals("d", source.readUtf8(1))
   }
 
-  @Test public void readByteArrayTooShortThrows() throws IOException {
-    sink.writeUtf8("abc");
-    sink.emit();
+  @Test
+  fun readByteArrayTooShortThrows() {
+    sink.writeUtf8("abc")
+    sink.emit()
     try {
-      source.readByteArray(4);
-      fail();
-    } catch (EOFException expected) {
+      source.readByteArray(4)
+      fail()
+    } catch (expected: EOFException) {
     }
-    assertEquals("abc", source.readUtf8()); // The read shouldn't consume any data.
+    assertEquals("abc", source.readUtf8()) // The read shouldn't consume any data.
   }
 
-  @Test public void readByteString() throws IOException {
-    sink.writeUtf8("abcd").writeUtf8(repeat("e", SEGMENT_SIZE));
-    sink.emit();
-    assertEquals("abcd" + repeat("e", SEGMENT_SIZE), source.readByteString().utf8());
+  @Test
+  fun readByteString() {
+    sink.writeUtf8("abcd").writeUtf8("e".repeat(SEGMENT_SIZE))
+    sink.emit()
+    assertEquals("abcd" + "e".repeat(SEGMENT_SIZE), source.readByteString().utf8())
   }
 
-  @Test public void readByteStringPartial() throws IOException {
-    sink.writeUtf8("abcd").writeUtf8(repeat("e", SEGMENT_SIZE));
-    sink.emit();
-    assertEquals("abc", source.readByteString(3).utf8());
-    assertEquals("d", source.readUtf8(1));
+  @Test
+  fun readByteStringPartial() {
+    sink.writeUtf8("abcd").writeUtf8("e".repeat(SEGMENT_SIZE))
+    sink.emit()
+    assertEquals("abc", source.readByteString(3).utf8())
+    assertEquals("d", source.readUtf8(1))
   }
 
-  @Test public void readByteStringTooShortThrows() throws IOException {
-    sink.writeUtf8("abc");
-    sink.emit();
+  @Test
+  fun readByteStringTooShortThrows() {
+    sink.writeUtf8("abc")
+    sink.emit()
     try {
-      source.readByteString(4);
-      fail();
-    } catch (EOFException expected) {
+      source.readByteString(4)
+      fail()
+    } catch (expected: EOFException) {
     }
-    assertEquals("abc", source.readUtf8()); // The read shouldn't consume any data.
+    assertEquals("abc", source.readUtf8()) // The read shouldn't consume any data.
   }
 
-  @Test public void readSpecificCharsetPartial() throws Exception {
-    sink.write(ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
-        + "000002cc000000720000006100000070000000740000025900000072"));
-    sink.emit();
-    assertEquals("vəˈläsə", source.readString(7 * 4, Charset.forName("utf-32")));
+  @Test
+  fun readSpecificCharsetPartial() {
+    sink.write(
+      (
+        "0000007600000259000002c80000006c000000e40000007300000259" +
+          "000002cc000000720000006100000070000000740000025900000072"
+        ).decodeHex(),
+    )
+    sink.emit()
+    assertEquals("vəˈläsə", source.readString((7 * 4).toLong(), Charset.forName("utf-32")))
   }
 
-  @Test public void readSpecificCharset() throws Exception {
-    sink.write(ByteString.decodeHex("0000007600000259000002c80000006c000000e40000007300000259"
-        + "000002cc000000720000006100000070000000740000025900000072"));
-    sink.emit();
-    assertEquals("vəˈläsəˌraptər", source.readString(Charset.forName("utf-32")));
+  @Test
+  fun readSpecificCharset() {
+    sink.write(
+      (
+        "0000007600000259000002c80000006c000000e40000007300000259" +
+          "000002cc000000720000006100000070000000740000025900000072"
+        ).decodeHex(),
+    )
+    sink.emit()
+    assertEquals("vəˈläsəˌraptər", source.readString(Charset.forName("utf-32")))
   }
 
-  @Test public void readStringTooShortThrows() throws IOException {
-    sink.writeString("abc", US_ASCII);
-    sink.emit();
+  @Test
+  fun readStringTooShortThrows() {
+    sink.writeString("abc", US_ASCII)
+    sink.emit()
     try {
-      source.readString(4, US_ASCII);
-      fail();
-    } catch (EOFException expected) {
+      source.readString(4, US_ASCII)
+      fail()
+    } catch (expected: EOFException) {
     }
-    assertEquals("abc", source.readUtf8()); // The read shouldn't consume any data.
+    assertEquals("abc", source.readUtf8()) // The read shouldn't consume any data.
   }
 
-  @Test public void readUtf8SpansSegments() throws Exception {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE * 2));
-    sink.emit();
-    source.skip(SEGMENT_SIZE - 1);
-    assertEquals("aa", source.readUtf8(2));
+  @Test
+  fun readUtf8SpansSegments() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE * 2))
+    sink.emit()
+    source.skip((SEGMENT_SIZE - 1).toLong())
+    assertEquals("aa", source.readUtf8(2))
   }
 
-  @Test public void readUtf8Segment() throws Exception {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE));
-    sink.emit();
-    assertEquals(repeat("a", SEGMENT_SIZE), source.readUtf8(SEGMENT_SIZE));
+  @Test
+  fun readUtf8Segment() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE))
+    sink.emit()
+    assertEquals("a".repeat(SEGMENT_SIZE), source.readUtf8(SEGMENT_SIZE.toLong()))
   }
 
-  @Test public void readUtf8PartialBuffer() throws Exception {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE + 20));
-    sink.emit();
-    assertEquals(repeat("a", SEGMENT_SIZE + 10), source.readUtf8(SEGMENT_SIZE + 10));
+  @Test
+  fun readUtf8PartialBuffer() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE + 20))
+    sink.emit()
+    assertEquals("a".repeat(SEGMENT_SIZE + 10), source.readUtf8((SEGMENT_SIZE + 10).toLong()))
   }
 
-  @Test public void readUtf8EntireBuffer() throws Exception {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE * 2));
-    sink.emit();
-    assertEquals(repeat("a", SEGMENT_SIZE * 2), source.readUtf8());
+  @Test
+  fun readUtf8EntireBuffer() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE * 2))
+    sink.emit()
+    assertEquals("a".repeat(SEGMENT_SIZE * 2), source.readUtf8())
   }
 
-  @Test public void readUtf8TooShortThrows() throws IOException {
-    sink.writeUtf8("abc");
-    sink.emit();
+  @Test
+  fun readUtf8TooShortThrows() {
+    sink.writeUtf8("abc")
+    sink.emit()
     try {
-      source.readUtf8(4L);
-      fail();
-    } catch (EOFException expected) {
+      source.readUtf8(4L)
+      fail()
+    } catch (expected: EOFException) {
     }
-    assertEquals("abc", source.readUtf8()); // The read shouldn't consume any data.
+    assertEquals("abc", source.readUtf8()) // The read shouldn't consume any data.
   }
 
-  @Test public void skip() throws Exception {
-    sink.writeUtf8("a");
-    sink.writeUtf8(repeat("b", SEGMENT_SIZE));
-    sink.writeUtf8("c");
-    sink.emit();
-    source.skip(1);
-    assertEquals('b', source.readByte() & 0xff);
-    source.skip(SEGMENT_SIZE - 2);
-    assertEquals('b', source.readByte() & 0xff);
-    source.skip(1);
-    assertTrue(source.exhausted());
+  @Test
+  fun skip() {
+    sink.writeUtf8("a")
+    sink.writeUtf8("b".repeat(SEGMENT_SIZE))
+    sink.writeUtf8("c")
+    sink.emit()
+    source.skip(1)
+    assertEquals('b'.code.toLong(), (source.readByte().toInt() and 0xff).toLong())
+    source.skip((SEGMENT_SIZE - 2).toLong())
+    assertEquals('b'.code.toLong(), (source.readByte().toInt() and 0xff).toLong())
+    source.skip(1)
+    assertTrue(source.exhausted())
   }
 
-  @Test public void skipInsufficientData() throws Exception {
-    sink.writeUtf8("a");
-    sink.emit();
-
+  @Test
+  fun skipInsufficientData() {
+    sink.writeUtf8("a")
+    sink.emit()
     try {
-      source.skip(2);
-      fail();
-    } catch (EOFException ignored) {
+      source.skip(2)
+      fail()
+    } catch (ignored: EOFException) {
     }
   }
 
-  @Test public void indexOf() throws Exception {
+  @Test
+  fun indexOf() {
     // The segment is empty.
-    assertEquals(-1, source.indexOf((byte) 'a'));
+    assertEquals(-1, source.indexOf('a'.code.toByte()))
 
     // The segment has one value.
-    sink.writeUtf8("a"); // a
-    sink.emit();
-    assertEquals(0, source.indexOf((byte) 'a'));
-    assertEquals(-1, source.indexOf((byte) 'b'));
+    sink.writeUtf8("a") // a
+    sink.emit()
+    assertEquals(0, source.indexOf('a'.code.toByte()))
+    assertEquals(-1, source.indexOf('b'.code.toByte()))
 
     // The segment has lots of data.
-    sink.writeUtf8(repeat("b", SEGMENT_SIZE - 2)); // ab...b
-    sink.emit();
-    assertEquals(0, source.indexOf((byte) 'a'));
-    assertEquals(1, source.indexOf((byte) 'b'));
-    assertEquals(-1, source.indexOf((byte) 'c'));
+    sink.writeUtf8("b".repeat(SEGMENT_SIZE - 2)) // ab...b
+    sink.emit()
+    assertEquals(0, source.indexOf('a'.code.toByte()))
+    assertEquals(1, source.indexOf('b'.code.toByte()))
+    assertEquals(-1, source.indexOf('c'.code.toByte()))
 
     // The segment doesn't start at 0, it starts at 2.
-    source.skip(2); // b...b
-    assertEquals(-1, source.indexOf((byte) 'a'));
-    assertEquals(0, source.indexOf((byte) 'b'));
-    assertEquals(-1, source.indexOf((byte) 'c'));
+    source.skip(2) // b...b
+    assertEquals(-1, source.indexOf('a'.code.toByte()))
+    assertEquals(0, source.indexOf('b'.code.toByte()))
+    assertEquals(-1, source.indexOf('c'.code.toByte()))
 
     // The segment is full.
-    sink.writeUtf8("c"); // b...bc
-    sink.emit();
-    assertEquals(-1, source.indexOf((byte) 'a'));
-    assertEquals(0, source.indexOf((byte) 'b'));
-    assertEquals(SEGMENT_SIZE - 3, source.indexOf((byte) 'c'));
+    sink.writeUtf8("c") // b...bc
+    sink.emit()
+    assertEquals(-1, source.indexOf('a'.code.toByte()))
+    assertEquals(0, source.indexOf('b'.code.toByte()))
+    assertEquals((SEGMENT_SIZE - 3).toLong(), source.indexOf('c'.code.toByte()))
 
     // The segment doesn't start at 2, it starts at 4.
-    source.skip(2); // b...bc
-    assertEquals(-1, source.indexOf((byte) 'a'));
-    assertEquals(0, source.indexOf((byte) 'b'));
-    assertEquals(SEGMENT_SIZE - 5, source.indexOf((byte) 'c'));
+    source.skip(2) // b...bc
+    assertEquals(-1, source.indexOf('a'.code.toByte()))
+    assertEquals(0, source.indexOf('b'.code.toByte()))
+    assertEquals((SEGMENT_SIZE - 5).toLong(), source.indexOf('c'.code.toByte()))
 
     // Two segments.
-    sink.writeUtf8("d"); // b...bcd, d is in the 2nd segment.
-    sink.emit();
-    assertEquals(SEGMENT_SIZE - 4, source.indexOf((byte) 'd'));
-    assertEquals(-1, source.indexOf((byte) 'e'));
+    sink.writeUtf8("d") // b...bcd, d is in the 2nd segment.
+    sink.emit()
+    assertEquals((SEGMENT_SIZE - 4).toLong(), source.indexOf('d'.code.toByte()))
+    assertEquals(-1, source.indexOf('e'.code.toByte()))
   }
 
-  @Test public void indexOfByteWithStartOffset() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat("b", SEGMENT_SIZE)).writeUtf8("c");
-    sink.emit();
-    assertEquals(-1, source.indexOf((byte) 'a', 1));
-    assertEquals(15, source.indexOf((byte) 'b', 15));
+  @Test
+  fun indexOfByteWithStartOffset() {
+    sink.writeUtf8("a").writeUtf8("b".repeat(SEGMENT_SIZE)).writeUtf8("c")
+    sink.emit()
+    assertEquals(-1, source.indexOf('a'.code.toByte(), 1))
+    assertEquals(15, source.indexOf('b'.code.toByte(), 15))
   }
 
-  @Test public void indexOfByteWithBothOffsets() throws IOException {
-    if (factory.isOneByteAtATime()) {
+  @Test
+  fun indexOfByteWithBothOffsets() {
+    if (factory.isOneByteAtATime) {
       // When run on Travis this causes out-of-memory errors.
-      return;
+      return
     }
-    byte a = (byte) 'a';
-    byte c = (byte) 'c';
-
-    int size = SEGMENT_SIZE * 5;
-    byte[] bytes = new byte[size];
-    Arrays.fill(bytes, a);
+    val a = 'a'.code.toByte()
+    val c = 'c'.code.toByte()
+    val size: Int = SEGMENT_SIZE * 5
+    val bytes = ByteArray(size)
+    Arrays.fill(bytes, a)
 
     // These are tricky places where the buffer
     // starts, ends, or segments come together.
-    int[] points = {
-        0,                       1,                   2,
-        SEGMENT_SIZE - 1,        SEGMENT_SIZE,        SEGMENT_SIZE + 1,
-        size / 2 - 1,            size / 2,            size / 2 + 1,
-        size - SEGMENT_SIZE - 1, size - SEGMENT_SIZE, size - SEGMENT_SIZE + 1,
-        size - 3,                size - 2,            size - 1
-    };
+    val points = intArrayOf(
+      0, 1, 2,
+      SEGMENT_SIZE - 1, SEGMENT_SIZE, SEGMENT_SIZE + 1,
+      size / 2 - 1, size / 2, size / 2 + 1,
+      size - SEGMENT_SIZE - 1, size - SEGMENT_SIZE, size - SEGMENT_SIZE + 1,
+      size - 3, size - 2, size - 1,
+    )
 
     // In each iteration, we write c to the known point and then search for it using different
     // windows. Some of the windows don't overlap with c's position, and therefore a match shouldn't
     // be found.
-    for (int p : points) {
-      bytes[p] = c;
-      sink.write(bytes);
-      sink.emit();
-
-      assertEquals( p, source.indexOf(c, 0,      size     ));
-      assertEquals( p, source.indexOf(c, 0,      p + 1    ));
-      assertEquals( p, source.indexOf(c, p,      size     ));
-      assertEquals( p, source.indexOf(c, p,      p + 1    ));
-      assertEquals( p, source.indexOf(c, p / 2,  p * 2 + 1));
-      assertEquals(-1, source.indexOf(c, 0,      p / 2    ));
-      assertEquals(-1, source.indexOf(c, 0,      p        ));
-      assertEquals(-1, source.indexOf(c, 0,      0        ));
-      assertEquals(-1, source.indexOf(c, p,      p        ));
+    for (p in points) {
+      bytes[p] = c
+      sink.write(bytes)
+      sink.emit()
+      assertEquals(p.toLong(), source.indexOf(c, 0, size.toLong()))
+      assertEquals(p.toLong(), source.indexOf(c, 0, (p + 1).toLong()))
+      assertEquals(p.toLong(), source.indexOf(c, p.toLong(), size.toLong()))
+      assertEquals(p.toLong(), source.indexOf(c, p.toLong(), (p + 1).toLong()))
+      assertEquals(p.toLong(), source.indexOf(c, (p / 2).toLong(), (p * 2 + 1).toLong()))
+      assertEquals(-1, source.indexOf(c, 0, (p / 2).toLong()))
+      assertEquals(-1, source.indexOf(c, 0, p.toLong()))
+      assertEquals(-1, source.indexOf(c, 0, 0))
+      assertEquals(-1, source.indexOf(c, p.toLong(), p.toLong()))
 
       // Reset.
-      source.readUtf8();
-      bytes[p] = a;
+      source.readUtf8()
+      bytes[p] = a
     }
   }
 
-  @Test public void indexOfByteInvalidBoundsThrows() throws IOException {
-    sink.writeUtf8("abc");
-    sink.emit();
-
+  @Test
+  fun indexOfByteInvalidBoundsThrows() {
+    sink.writeUtf8("abc")
+    sink.emit()
     try {
-      source.indexOf((byte) 'a', -1);
-      fail("Expected failure: fromIndex < 0");
-    } catch (IllegalArgumentException expected) {
+      source.indexOf('a'.code.toByte(), -1)
+      fail("Expected failure: fromIndex < 0")
+    } catch (expected: IllegalArgumentException) {
     }
-
     try {
-      source.indexOf((byte) 'a', 10, 0);
-      fail("Expected failure: fromIndex > toIndex");
-    } catch (IllegalArgumentException expected) {
+      source.indexOf('a'.code.toByte(), 10, 0)
+      fail("Expected failure: fromIndex > toIndex")
+    } catch (expected: IllegalArgumentException) {
     }
   }
 
-  @Test public void indexOfByteString() throws IOException {
-    assertEquals(-1, source.indexOf(ByteString.encodeUtf8("flop")));
-
-    sink.writeUtf8("flip flop");
-    sink.emit();
-    assertEquals(5, source.indexOf(ByteString.encodeUtf8("flop")));
-    source.readUtf8(); // Clear stream.
+  @Test
+  fun indexOfByteString() {
+    assertEquals(-1, source.indexOf("flop".encodeUtf8()))
+    sink.writeUtf8("flip flop")
+    sink.emit()
+    assertEquals(5, source.indexOf("flop".encodeUtf8()))
+    source.readUtf8() // Clear stream.
 
     // Make sure we backtrack and resume searching after partial match.
-    sink.writeUtf8("hi hi hi hey");
-    sink.emit();
-    assertEquals(3, source.indexOf(ByteString.encodeUtf8("hi hi hey")));
+    sink.writeUtf8("hi hi hi hey")
+    sink.emit()
+    assertEquals(3, source.indexOf("hi hi hey".encodeUtf8()))
   }
 
-  @Test public void indexOfByteStringAtSegmentBoundary() throws IOException {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE - 1));
-    sink.writeUtf8("bcd");
-    sink.emit();
-    assertEquals(SEGMENT_SIZE - 3, source.indexOf(ByteString.encodeUtf8("aabc"), SEGMENT_SIZE - 4));
-    assertEquals(SEGMENT_SIZE - 3, source.indexOf(ByteString.encodeUtf8("aabc"), SEGMENT_SIZE - 3));
-    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("abcd"), SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("abc"),  SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("abc"),  SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("ab"),   SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE - 2, source.indexOf(ByteString.encodeUtf8("a"),    SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE - 1, source.indexOf(ByteString.encodeUtf8("bc"),   SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE - 1, source.indexOf(ByteString.encodeUtf8("b"),    SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE,     source.indexOf(ByteString.encodeUtf8("c"),    SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE,     source.indexOf(ByteString.encodeUtf8("c"),    SEGMENT_SIZE    ));
-    assertEquals(SEGMENT_SIZE + 1, source.indexOf(ByteString.encodeUtf8("d"),    SEGMENT_SIZE - 2));
-    assertEquals(SEGMENT_SIZE + 1, source.indexOf(ByteString.encodeUtf8("d"),    SEGMENT_SIZE + 1));
+  @Test
+  fun indexOfByteStringAtSegmentBoundary() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE - 1))
+    sink.writeUtf8("bcd")
+    sink.emit()
+    assertEquals((SEGMENT_SIZE - 3).toLong(), source.indexOf("aabc".encodeUtf8(), (SEGMENT_SIZE - 4).toLong()))
+    assertEquals((SEGMENT_SIZE - 3).toLong(), source.indexOf("aabc".encodeUtf8(), (SEGMENT_SIZE - 3).toLong()))
+    assertEquals((SEGMENT_SIZE - 2).toLong(), source.indexOf("abcd".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals((SEGMENT_SIZE - 2).toLong(), source.indexOf("abc".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals((SEGMENT_SIZE - 2).toLong(), source.indexOf("abc".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals((SEGMENT_SIZE - 2).toLong(), source.indexOf("ab".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals((SEGMENT_SIZE - 2).toLong(), source.indexOf("a".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals((SEGMENT_SIZE - 1).toLong(), source.indexOf("bc".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals((SEGMENT_SIZE - 1).toLong(), source.indexOf("b".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals(SEGMENT_SIZE.toLong(), source.indexOf("c".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals(SEGMENT_SIZE.toLong(), source.indexOf("c".encodeUtf8(), SEGMENT_SIZE.toLong()))
+    assertEquals((SEGMENT_SIZE + 1).toLong(), source.indexOf("d".encodeUtf8(), (SEGMENT_SIZE - 2).toLong()))
+    assertEquals((SEGMENT_SIZE + 1).toLong(), source.indexOf("d".encodeUtf8(), (SEGMENT_SIZE + 1).toLong()))
   }
 
-  @Test public void indexOfDoesNotWrapAround() throws IOException {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE - 1));
-    sink.writeUtf8("bcd");
-    sink.emit();
-    assertEquals(-1, source.indexOf(ByteString.encodeUtf8("abcda"), SEGMENT_SIZE - 3));
+  @Test
+  fun indexOfDoesNotWrapAround() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE - 1))
+    sink.writeUtf8("bcd")
+    sink.emit()
+    assertEquals(-1, source.indexOf("abcda".encodeUtf8(), (SEGMENT_SIZE - 3).toLong()))
   }
 
-  @Test public void indexOfByteStringWithOffset() throws IOException {
-    assertEquals(-1, source.indexOf(ByteString.encodeUtf8("flop"), 1));
-
-    sink.writeUtf8("flop flip flop");
-    sink.emit();
-    assertEquals(10, source.indexOf(ByteString.encodeUtf8("flop"), 1));
-    source.readUtf8(); // Clear stream
+  @Test
+  fun indexOfByteStringWithOffset() {
+    assertEquals(-1, source.indexOf("flop".encodeUtf8(), 1))
+    sink.writeUtf8("flop flip flop")
+    sink.emit()
+    assertEquals(10, source.indexOf("flop".encodeUtf8(), 1))
+    source.readUtf8() // Clear stream
 
     // Make sure we backtrack and resume searching after partial match.
-    sink.writeUtf8("hi hi hi hi hey");
-    sink.emit();
-    assertEquals(6, source.indexOf(ByteString.encodeUtf8("hi hi hey"), 1));
+    sink.writeUtf8("hi hi hi hi hey")
+    sink.emit()
+    assertEquals(6, source.indexOf("hi hi hey".encodeUtf8(), 1))
   }
 
-  @Test public void indexOfByteStringInvalidArgumentsThrows() throws IOException {
+  @Test
+  fun indexOfByteStringInvalidArgumentsThrows() {
     try {
-      source.indexOf(ByteString.of());
-      fail();
-    } catch (IllegalArgumentException e) {
-      assertEquals("bytes is empty", e.getMessage());
+      source.indexOf(ByteString.of())
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("bytes is empty", e.message)
     }
     try {
-      source.indexOf(ByteString.encodeUtf8("hi"), -1);
-      fail();
-    } catch (IllegalArgumentException e) {
-      assertEquals("fromIndex < 0: -1", e.getMessage());
+      source.indexOf("hi".encodeUtf8(), -1)
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("fromIndex < 0: -1", e.message)
     }
   }
 
   /**
-   * With {@link Factory#ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE}, this code was extremely slow.
+   * With [Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE], this code was extremely slow.
    * https://github.com/square/okio/issues/171
    */
-  @Test public void indexOfByteStringAcrossSegmentBoundaries() throws IOException {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE * 2 - 3));
-    sink.writeUtf8("bcdefg");
-    sink.emit();
-    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("ab")));
-    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abc")));
-    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcd")));
-    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcde")));
-    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcdef")));
-    assertEquals(SEGMENT_SIZE * 2 - 4, source.indexOf(ByteString.encodeUtf8("abcdefg")));
-    assertEquals(SEGMENT_SIZE * 2 - 3, source.indexOf(ByteString.encodeUtf8("bcdefg")));
-    assertEquals(SEGMENT_SIZE * 2 - 2, source.indexOf(ByteString.encodeUtf8("cdefg")));
-    assertEquals(SEGMENT_SIZE * 2 - 1, source.indexOf(ByteString.encodeUtf8("defg")));
-    assertEquals(SEGMENT_SIZE * 2,     source.indexOf(ByteString.encodeUtf8("efg")));
-    assertEquals(SEGMENT_SIZE * 2 + 1, source.indexOf(ByteString.encodeUtf8("fg")));
-    assertEquals(SEGMENT_SIZE * 2 + 2, source.indexOf(ByteString.encodeUtf8("g")));
+  @Test
+  fun indexOfByteStringAcrossSegmentBoundaries() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE * 2 - 3))
+    sink.writeUtf8("bcdefg")
+    sink.emit()
+    assertEquals((SEGMENT_SIZE * 2 - 4).toLong(), source.indexOf("ab".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 - 4).toLong(), source.indexOf("abc".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 - 4).toLong(), source.indexOf("abcd".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 - 4).toLong(), source.indexOf("abcde".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 - 4).toLong(), source.indexOf("abcdef".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 - 4).toLong(), source.indexOf("abcdefg".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 - 3).toLong(), source.indexOf("bcdefg".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 - 2).toLong(), source.indexOf("cdefg".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 - 1).toLong(), source.indexOf("defg".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2).toLong(), source.indexOf("efg".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 + 1).toLong(), source.indexOf("fg".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE * 2 + 2).toLong(), source.indexOf("g".encodeUtf8()))
   }
 
-  @Test public void indexOfElement() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat("b", SEGMENT_SIZE)).writeUtf8("c");
-    sink.emit();
-    assertEquals(0, source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK")));
-    assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb")));
-    assertEquals(SEGMENT_SIZE + 1, source.indexOfElement(ByteString.encodeUtf8("cDEFGHIJK")));
-    assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("DEFbGHIc")));
-    assertEquals(-1L, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJK")));
-    assertEquals(-1L, source.indexOfElement(ByteString.encodeUtf8("")));
+  @Test
+  fun indexOfElement() {
+    sink.writeUtf8("a").writeUtf8("b".repeat(SEGMENT_SIZE)).writeUtf8("c")
+    sink.emit()
+    assertEquals(0, source.indexOfElement("DEFGaHIJK".encodeUtf8()))
+    assertEquals(1, source.indexOfElement("DEFGHIJKb".encodeUtf8()))
+    assertEquals((SEGMENT_SIZE + 1).toLong(), source.indexOfElement("cDEFGHIJK".encodeUtf8()))
+    assertEquals(1, source.indexOfElement("DEFbGHIc".encodeUtf8()))
+    assertEquals(-1L, source.indexOfElement("DEFGHIJK".encodeUtf8()))
+    assertEquals(-1L, source.indexOfElement("".encodeUtf8()))
   }
 
-  @Test public void indexOfElementWithOffset() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat("b", SEGMENT_SIZE)).writeUtf8("c");
-    sink.emit();
-    assertEquals(-1, source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK"), 1));
-    assertEquals(15, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb"), 15));
+  @Test
+  fun indexOfElementWithOffset() {
+    sink.writeUtf8("a").writeUtf8("b".repeat(SEGMENT_SIZE)).writeUtf8("c")
+    sink.emit()
+    assertEquals(-1, source.indexOfElement("DEFGaHIJK".encodeUtf8(), 1))
+    assertEquals(15, source.indexOfElement("DEFGHIJKb".encodeUtf8(), 15))
   }
 
-  @Test public void indexOfByteWithFromIndex() throws Exception {
-    sink.writeUtf8("aaa");
-    sink.emit();
-    assertEquals(0, source.indexOf((byte) 'a'));
-    assertEquals(0, source.indexOf((byte) 'a', 0));
-    assertEquals(1, source.indexOf((byte) 'a', 1));
-    assertEquals(2, source.indexOf((byte) 'a', 2));
+  @Test
+  fun indexOfByteWithFromIndex() {
+    sink.writeUtf8("aaa")
+    sink.emit()
+    assertEquals(0, source.indexOf('a'.code.toByte()))
+    assertEquals(0, source.indexOf('a'.code.toByte(), 0))
+    assertEquals(1, source.indexOf('a'.code.toByte(), 1))
+    assertEquals(2, source.indexOf('a'.code.toByte(), 2))
   }
 
-  @Test public void indexOfByteStringWithFromIndex() throws Exception {
-    sink.writeUtf8("aaa");
-    sink.emit();
-    assertEquals(0, source.indexOf(ByteString.encodeUtf8("a")));
-    assertEquals(0, source.indexOf(ByteString.encodeUtf8("a"), 0));
-    assertEquals(1, source.indexOf(ByteString.encodeUtf8("a"), 1));
-    assertEquals(2, source.indexOf(ByteString.encodeUtf8("a"), 2));
+  @Test
+  fun indexOfByteStringWithFromIndex() {
+    sink.writeUtf8("aaa")
+    sink.emit()
+    assertEquals(0, source.indexOf("a".encodeUtf8()))
+    assertEquals(0, source.indexOf("a".encodeUtf8(), 0))
+    assertEquals(1, source.indexOf("a".encodeUtf8(), 1))
+    assertEquals(2, source.indexOf("a".encodeUtf8(), 2))
   }
 
-  @Test public void indexOfElementWithFromIndex() throws Exception {
-    sink.writeUtf8("aaa");
-    sink.emit();
-    assertEquals(0, source.indexOfElement(ByteString.encodeUtf8("a")));
-    assertEquals(0, source.indexOfElement(ByteString.encodeUtf8("a"), 0));
-    assertEquals(1, source.indexOfElement(ByteString.encodeUtf8("a"), 1));
-    assertEquals(2, source.indexOfElement(ByteString.encodeUtf8("a"), 2));
+  @Test
+  fun indexOfElementWithFromIndex() {
+    sink.writeUtf8("aaa")
+    sink.emit()
+    assertEquals(0, source.indexOfElement("a".encodeUtf8()))
+    assertEquals(0, source.indexOfElement("a".encodeUtf8(), 0))
+    assertEquals(1, source.indexOfElement("a".encodeUtf8(), 1))
+    assertEquals(2, source.indexOfElement("a".encodeUtf8(), 2))
   }
 
-  @Test public void request() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat("b", SEGMENT_SIZE)).writeUtf8("c");
-    sink.emit();
-    assertTrue(source.request(SEGMENT_SIZE + 2));
-    assertFalse(source.request(SEGMENT_SIZE + 3));
+  @Test
+  fun request() {
+    sink.writeUtf8("a").writeUtf8("b".repeat(SEGMENT_SIZE)).writeUtf8("c")
+    sink.emit()
+    assertTrue(source.request((SEGMENT_SIZE + 2).toLong()))
+    assertFalse(source.request((SEGMENT_SIZE + 3).toLong()))
   }
 
-  @Test public void require() throws IOException {
-    sink.writeUtf8("a").writeUtf8(repeat("b", SEGMENT_SIZE)).writeUtf8("c");
-    sink.emit();
-    source.require(SEGMENT_SIZE + 2);
+  @Test
+  fun require() {
+    sink.writeUtf8("a").writeUtf8("b".repeat(SEGMENT_SIZE)).writeUtf8("c")
+    sink.emit()
+    source.require((SEGMENT_SIZE + 2).toLong())
     try {
-      source.require(SEGMENT_SIZE + 3);
-      fail();
-    } catch (EOFException expected) {
+      source.require((SEGMENT_SIZE + 3).toLong())
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void inputStream() throws Exception {
-    sink.writeUtf8("abc");
-    sink.emit();
-    InputStream in = source.inputStream();
-    byte[] bytes = { 'z', 'z', 'z' };
-    int read = in.read(bytes);
-    if (factory.isOneByteAtATime()) {
-      assertEquals(1, read);
-      assertByteArrayEquals("azz", bytes);
-
-      read = in.read(bytes);
-      assertEquals(1, read);
-      assertByteArrayEquals("bzz", bytes);
-
-      read = in.read(bytes);
-      assertEquals(1, read);
-      assertByteArrayEquals("czz", bytes);
+  @Test
+  fun inputStream() {
+    sink.writeUtf8("abc")
+    sink.emit()
+    val `in` = source.inputStream()
+    val bytes = byteArrayOf('z'.code.toByte(), 'z'.code.toByte(), 'z'.code.toByte())
+    var read = `in`.read(bytes)
+    if (factory.isOneByteAtATime) {
+      assertEquals(1, read.toLong())
+      assertByteArrayEquals("azz", bytes)
+      read = `in`.read(bytes)
+      assertEquals(1, read.toLong())
+      assertByteArrayEquals("bzz", bytes)
+      read = `in`.read(bytes)
+      assertEquals(1, read.toLong())
+      assertByteArrayEquals("czz", bytes)
     } else {
-      assertEquals(3, read);
-      assertByteArrayEquals("abc", bytes);
+      assertEquals(3, read.toLong())
+      assertByteArrayEquals("abc", bytes)
     }
-
-    assertEquals(-1, in.read());
+    assertEquals(-1, `in`.read().toLong())
   }
 
-  @Test public void inputStreamOffsetCount() throws Exception {
-    sink.writeUtf8("abcde");
-    sink.emit();
-    InputStream in = source.inputStream();
-    byte[] bytes = { 'z', 'z', 'z', 'z', 'z' };
-    int read = in.read(bytes, 1, 3);
-    if (factory.isOneByteAtATime()) {
-      assertEquals(1, read);
-      assertByteArrayEquals("zazzz", bytes);
+  @Test
+  fun inputStreamOffsetCount() {
+    sink.writeUtf8("abcde")
+    sink.emit()
+    val `in` = source.inputStream()
+    val bytes = byteArrayOf('z'.code.toByte(), 'z'.code.toByte(), 'z'.code.toByte(), 'z'.code.toByte(), 'z'.code.toByte())
+    val read = `in`.read(bytes, 1, 3)
+    if (factory.isOneByteAtATime) {
+      assertEquals(1, read.toLong())
+      assertByteArrayEquals("zazzz", bytes)
     } else {
-      assertEquals(3, read);
-      assertByteArrayEquals("zabcz", bytes);
+      assertEquals(3, read.toLong())
+      assertByteArrayEquals("zabcz", bytes)
     }
   }
 
-  @Test public void inputStreamSkip() throws Exception {
-    sink.writeUtf8("abcde");
-    sink.emit();
-    InputStream in = source.inputStream();
-    assertEquals(4, in.skip(4));
-    assertEquals('e', in.read());
-
-    sink.writeUtf8("abcde");
-    sink.emit();
-    assertEquals(5, in.skip(10)); // Try to skip too much.
-    assertEquals(0, in.skip(1)); // Try to skip when exhausted.
+  @Test
+  fun inputStreamSkip() {
+    sink.writeUtf8("abcde")
+    sink.emit()
+    val `in` = source.inputStream()
+    assertEquals(4, `in`.skip(4))
+    assertEquals('e'.code.toLong(), `in`.read().toLong())
+    sink.writeUtf8("abcde")
+    sink.emit()
+    assertEquals(5, `in`.skip(10)) // Try to skip too much.
+    assertEquals(0, `in`.skip(1)) // Try to skip when exhausted.
   }
 
-  @Test public void inputStreamCharByChar() throws Exception {
-    sink.writeUtf8("abc");
-    sink.emit();
-    InputStream in = source.inputStream();
-    assertEquals('a', in.read());
-    assertEquals('b', in.read());
-    assertEquals('c', in.read());
-    assertEquals(-1, in.read());
+  @Test
+  fun inputStreamCharByChar() {
+    sink.writeUtf8("abc")
+    sink.emit()
+    val `in` = source.inputStream()
+    assertEquals('a'.code.toLong(), `in`.read().toLong())
+    assertEquals('b'.code.toLong(), `in`.read().toLong())
+    assertEquals('c'.code.toLong(), `in`.read().toLong())
+    assertEquals(-1, `in`.read().toLong())
   }
 
-  @Test public void inputStreamBounds() throws IOException {
-    sink.writeUtf8(repeat("a", 100));
-    sink.emit();
-    InputStream in = source.inputStream();
+  @Test
+  fun inputStreamBounds() {
+    sink.writeUtf8("a".repeat(100))
+    sink.emit()
+    val `in` = source.inputStream()
     try {
-      in.read(new byte[100], 50, 51);
-      fail();
-    } catch (ArrayIndexOutOfBoundsException expected) {
+      `in`.read(ByteArray(100), 50, 51)
+      fail()
+    } catch (expected: java.lang.ArrayIndexOutOfBoundsException) {
     }
   }
 
-  @Test public void longHexString() throws IOException {
-    assertLongHexString("8000000000000000", 0x8000000000000000L);
-    assertLongHexString("fffffffffffffffe", 0xFFFFFFFFFFFFFFFEL);
-    assertLongHexString("FFFFFFFFFFFFFFFe", 0xFFFFFFFFFFFFFFFEL);
-    assertLongHexString("ffffffffffffffff", 0xffffffffffffffffL);
-    assertLongHexString("FFFFFFFFFFFFFFFF", 0xFFFFFFFFFFFFFFFFL);
-    assertLongHexString("0000000000000000", 0x0);
-    assertLongHexString("0000000000000001", 0x1);
-    assertLongHexString("7999999999999999", 0x7999999999999999L);
-
-    assertLongHexString("FF", 0xFF);
-    assertLongHexString("0000000000000001", 0x1);
+  @Test
+  fun longHexString() {
+    assertLongHexString("8000000000000000", -0x7fffffffffffffffL - 1L)
+    assertLongHexString("fffffffffffffffe", -0x2L)
+    assertLongHexString("FFFFFFFFFFFFFFFe", -0x2L)
+    assertLongHexString("ffffffffffffffff", -0x1L)
+    assertLongHexString("FFFFFFFFFFFFFFFF", -0x1L)
+    assertLongHexString("0000000000000000", 0x0)
+    assertLongHexString("0000000000000001", 0x1)
+    assertLongHexString("7999999999999999", 0x7999999999999999L)
+    assertLongHexString("FF", 0xFF)
+    assertLongHexString("0000000000000001", 0x1)
   }
 
-  @Test public void hexStringWithManyLeadingZeros() throws IOException {
-    assertLongHexString("00000000000000001", 0x1);
-    assertLongHexString("0000000000000000ffffffffffffffff", 0xffffffffffffffffL);
-    assertLongHexString("00000000000000007fffffffffffffff", 0x7fffffffffffffffL);
-    assertLongHexString(repeat("0", SEGMENT_SIZE + 1) + "1", 0x1);
+  @Test
+  fun hexStringWithManyLeadingZeros() {
+    assertLongHexString("00000000000000001", 0x1)
+    assertLongHexString("0000000000000000ffffffffffffffff", -0x1L)
+    assertLongHexString("00000000000000007fffffffffffffff", 0x7fffffffffffffffL)
+    assertLongHexString("0".repeat(SEGMENT_SIZE + 1) + "1", 0x1)
   }
 
-  private void assertLongHexString(String s, long expected) throws IOException {
-    sink.writeUtf8(s);
-    sink.emit();
-    long actual = source.readHexadecimalUnsignedLong();
-    assertEquals(s + " --> " + expected, expected, actual);
+  private fun assertLongHexString(s: String, expected: Long) {
+    sink.writeUtf8(s)
+    sink.emit()
+    val actual = source.readHexadecimalUnsignedLong()
+    assertEquals("$s --> $expected", expected, actual)
   }
 
-  @Test public void longHexStringAcrossSegment() throws IOException {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE - 8)).writeUtf8("FFFFFFFFFFFFFFFF");
-    sink.emit();
-    source.skip(SEGMENT_SIZE - 8);
-    assertEquals(-1, source.readHexadecimalUnsignedLong());
+  @Test
+  fun longHexStringAcrossSegment() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE - 8)).writeUtf8("FFFFFFFFFFFFFFFF")
+    sink.emit()
+    source.skip((SEGMENT_SIZE - 8).toLong())
+    assertEquals(-1, source.readHexadecimalUnsignedLong())
   }
 
-  @Test public void longHexStringTooLongThrows() throws IOException {
+  @Test
+  fun longHexStringTooLongThrows() {
     try {
-      sink.writeUtf8("fffffffffffffffff");
-      sink.emit();
-      source.readHexadecimalUnsignedLong();
-      fail();
-    } catch (NumberFormatException e) {
-      assertEquals("Number too large: fffffffffffffffff", e.getMessage());
+      sink.writeUtf8("fffffffffffffffff")
+      sink.emit()
+      source.readHexadecimalUnsignedLong()
+      fail()
+    } catch (e: NumberFormatException) {
+      assertEquals("Number too large: fffffffffffffffff", e.message)
     }
   }
 
-  @Test public void longHexStringTooShortThrows() throws IOException {
+  @Test
+  fun longHexStringTooShortThrows() {
     try {
-      sink.writeUtf8(" ");
-      sink.emit();
-      source.readHexadecimalUnsignedLong();
-      fail();
-    } catch (NumberFormatException e) {
-      assertEquals("Expected leading [0-9a-fA-F] character but was 0x20", e.getMessage());
+      sink.writeUtf8(" ")
+      sink.emit()
+      source.readHexadecimalUnsignedLong()
+      fail()
+    } catch (e: NumberFormatException) {
+      assertEquals("Expected leading [0-9a-fA-F] character but was 0x20", e.message)
     }
   }
 
-  @Test public void longHexEmptySourceThrows() throws IOException {
+  @Test
+  fun longHexEmptySourceThrows() {
     try {
-      sink.writeUtf8("");
-      sink.emit();
-      source.readHexadecimalUnsignedLong();
-      fail();
-    } catch (EOFException expected) {
+      sink.writeUtf8("")
+      sink.emit()
+      source.readHexadecimalUnsignedLong()
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void longDecimalString() throws IOException {
-    assertLongDecimalString("-9223372036854775808", -9223372036854775808L);
-    assertLongDecimalString("-1", -1L);
-    assertLongDecimalString("0", 0L);
-    assertLongDecimalString("1", 1L);
-    assertLongDecimalString("9223372036854775807", 9223372036854775807L);
-
-    assertLongDecimalString("00000001", 1L);
-    assertLongDecimalString("-000001", -1L);
+  @Test
+  fun longDecimalString() {
+    assertLongDecimalString("-9223372036854775808", -9223372036854775807L - 1L)
+    assertLongDecimalString("-1", -1L)
+    assertLongDecimalString("0", 0L)
+    assertLongDecimalString("1", 1L)
+    assertLongDecimalString("9223372036854775807", 9223372036854775807L)
+    assertLongDecimalString("00000001", 1L)
+    assertLongDecimalString("-000001", -1L)
   }
 
-  private void assertLongDecimalString(String s, long expected) throws IOException {
-    sink.writeUtf8(s);
-    sink.writeUtf8("zzz");
-    sink.emit();
-    long actual = source.readDecimalLong();
-    assertEquals(s + " --> " + expected, expected, actual);
-    assertEquals("zzz", source.readUtf8());
+  private fun assertLongDecimalString(s: String, expected: Long) {
+    sink.writeUtf8(s)
+    sink.writeUtf8("zzz")
+    sink.emit()
+    val actual = source.readDecimalLong()
+    assertEquals("$s --> $expected", expected, actual)
+    assertEquals("zzz", source.readUtf8())
   }
 
-  @Test public void longDecimalStringAcrossSegment() throws IOException {
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE - 8)).writeUtf8("1234567890123456");
-    sink.writeUtf8("zzz");
-    sink.emit();
-    source.skip(SEGMENT_SIZE - 8);
-    assertEquals(1234567890123456L, source.readDecimalLong());
-    assertEquals("zzz", source.readUtf8());
+  @Test
+  fun longDecimalStringAcrossSegment() {
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE - 8)).writeUtf8("1234567890123456")
+    sink.writeUtf8("zzz")
+    sink.emit()
+    source.skip((SEGMENT_SIZE - 8).toLong())
+    assertEquals(1234567890123456L, source.readDecimalLong())
+    assertEquals("zzz", source.readUtf8())
   }
 
-  @Test public void longDecimalStringTooLongThrows() throws IOException {
+  @Test
+  fun longDecimalStringTooLongThrows() {
     try {
-      sink.writeUtf8("12345678901234567890"); // Too many digits.
-      sink.emit();
-      source.readDecimalLong();
-      fail();
-    } catch (NumberFormatException e) {
-      assertEquals("Number too large: 12345678901234567890", e.getMessage());
+      sink.writeUtf8("12345678901234567890") // Too many digits.
+      sink.emit()
+      source.readDecimalLong()
+      fail()
+    } catch (e: NumberFormatException) {
+      assertEquals("Number too large: 12345678901234567890", e.message)
     }
   }
 
-  @Test public void longDecimalStringTooHighThrows() throws IOException {
+  @Test
+  fun longDecimalStringTooHighThrows() {
     try {
-      sink.writeUtf8("9223372036854775808"); // Right size but cannot fit.
-      sink.emit();
-      source.readDecimalLong();
-      fail();
-    } catch (NumberFormatException e) {
-      assertEquals("Number too large: 9223372036854775808", e.getMessage());
+      sink.writeUtf8("9223372036854775808") // Right size but cannot fit.
+      sink.emit()
+      source.readDecimalLong()
+      fail()
+    } catch (e: NumberFormatException) {
+      assertEquals("Number too large: 9223372036854775808", e.message)
     }
   }
 
-  @Test public void longDecimalStringTooLowThrows() throws IOException {
+  @Test
+  fun longDecimalStringTooLowThrows() {
     try {
-      sink.writeUtf8("-9223372036854775809"); // Right size but cannot fit.
-      sink.emit();
-      source.readDecimalLong();
-      fail();
-    } catch (NumberFormatException e) {
-      assertEquals("Number too large: -9223372036854775809", e.getMessage());
+      sink.writeUtf8("-9223372036854775809") // Right size but cannot fit.
+      sink.emit()
+      source.readDecimalLong()
+      fail()
+    } catch (e: NumberFormatException) {
+      assertEquals("Number too large: -9223372036854775809", e.message)
     }
   }
 
-  @Test public void longDecimalStringTooShortThrows() throws IOException {
+  @Test
+  fun longDecimalStringTooShortThrows() {
     try {
-      sink.writeUtf8(" ");
-      sink.emit();
-      source.readDecimalLong();
-      fail();
-    } catch (NumberFormatException e) {
-      assertEquals("Expected a digit or '-' but was 0x20", e.getMessage());
+      sink.writeUtf8(" ")
+      sink.emit()
+      source.readDecimalLong()
+      fail()
+    } catch (e: NumberFormatException) {
+      assertEquals("Expected a digit or '-' but was 0x20", e.message)
     }
   }
 
-  @Test public void longDecimalEmptyThrows() throws IOException {
+  @Test
+  fun longDecimalEmptyThrows() {
     try {
-      sink.writeUtf8("");
-      sink.emit();
-      source.readDecimalLong();
-      fail();
-    } catch (EOFException expected) {
+      sink.writeUtf8("")
+      sink.emit()
+      source.readDecimalLong()
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void codePoints() throws IOException {
-    sink.write(ByteString.decodeHex("7f"));
-    sink.emit();
-    assertEquals(0x7f, source.readUtf8CodePoint());
-
-    sink.write(ByteString.decodeHex("dfbf"));
-    sink.emit();
-    assertEquals(0x07ff, source.readUtf8CodePoint());
-
-    sink.write(ByteString.decodeHex("efbfbf"));
-    sink.emit();
-    assertEquals(0xffff, source.readUtf8CodePoint());
-
-    sink.write(ByteString.decodeHex("f48fbfbf"));
-    sink.emit();
-    assertEquals(0x10ffff, source.readUtf8CodePoint());
+  @Test
+  fun codePoints() {
+    sink.write("7f".decodeHex())
+    sink.emit()
+    assertEquals(0x7f, source.readUtf8CodePoint().toLong())
+    sink.write("dfbf".decodeHex())
+    sink.emit()
+    assertEquals(0x07ff, source.readUtf8CodePoint().toLong())
+    sink.write("efbfbf".decodeHex())
+    sink.emit()
+    assertEquals(0xffff, source.readUtf8CodePoint().toLong())
+    sink.write("f48fbfbf".decodeHex())
+    sink.emit()
+    assertEquals(0x10ffff, source.readUtf8CodePoint().toLong())
   }
 
-  @Test public void decimalStringWithManyLeadingZeros() throws IOException {
-    assertLongDecimalString("00000000000000001", 1);
-    assertLongDecimalString("00000000000000009223372036854775807", 9223372036854775807L);
-    assertLongDecimalString("-00000000000000009223372036854775808", -9223372036854775808L);
-    assertLongDecimalString(repeat("0", SEGMENT_SIZE + 1) + "1", 1);
+  @Test
+  fun decimalStringWithManyLeadingZeros() {
+    assertLongDecimalString("00000000000000001", 1)
+    assertLongDecimalString("00000000000000009223372036854775807", 9223372036854775807L)
+    assertLongDecimalString("-00000000000000009223372036854775808", -9223372036854775807L - 1L)
+    assertLongDecimalString("0".repeat(SEGMENT_SIZE + 1) + "1", 1)
   }
 
-  @Test public void select() throws IOException {
-    Options options = Options.Companion.of(
-        ByteString.encodeUtf8("ROCK"),
-        ByteString.encodeUtf8("SCISSORS"),
-        ByteString.encodeUtf8("PAPER"));
-
-    sink.writeUtf8("PAPER,SCISSORS,ROCK");
-    sink.emit();
-    assertEquals(2, source.select(options));
-    assertEquals(',', source.readByte());
-    assertEquals(1, source.select(options));
-    assertEquals(',', source.readByte());
-    assertEquals(0, source.select(options));
-    assertTrue(source.exhausted());
+  @Test
+  fun select() {
+    val options = of(
+      "ROCK".encodeUtf8(),
+      "SCISSORS".encodeUtf8(),
+      "PAPER".encodeUtf8(),
+    )
+    sink.writeUtf8("PAPER,SCISSORS,ROCK")
+    sink.emit()
+    assertEquals(2, source.select(options).toLong())
+    assertEquals(','.code.toLong(), source.readByte().toLong())
+    assertEquals(1, source.select(options).toLong())
+    assertEquals(','.code.toLong(), source.readByte().toLong())
+    assertEquals(0, source.select(options).toLong())
+    assertTrue(source.exhausted())
   }
 
-  /** Note that this test crashes the VM on Android. */
-  @Test public void selectSpanningMultipleSegments() throws IOException {
-    ByteString commonPrefix = TestUtil.randomBytes(SEGMENT_SIZE + 10);
-    ByteString a = new Buffer().write(commonPrefix).writeUtf8("a").readByteString();
-    ByteString bc = new Buffer().write(commonPrefix).writeUtf8("bc").readByteString();
-    ByteString bd = new Buffer().write(commonPrefix).writeUtf8("bd").readByteString();
-    Options options = Options.Companion.of(a, bc, bd);
-
-    sink.write(bd);
-    sink.write(a);
-    sink.write(bc);
-    sink.emit();
-
-    assertEquals(2, source.select(options));
-    assertEquals(0, source.select(options));
-    assertEquals(1, source.select(options));
-    assertTrue(source.exhausted());
+  /** Note that this test crashes the VM on Android.  */
+  @Test
+  fun selectSpanningMultipleSegments() {
+    val commonPrefix = randomBytes(SEGMENT_SIZE + 10)
+    val a = Buffer().write(commonPrefix).writeUtf8("a").readByteString()
+    val bc = Buffer().write(commonPrefix).writeUtf8("bc").readByteString()
+    val bd = Buffer().write(commonPrefix).writeUtf8("bd").readByteString()
+    val options = of(a, bc, bd)
+    sink.write(bd)
+    sink.write(a)
+    sink.write(bc)
+    sink.emit()
+    assertEquals(2, source.select(options).toLong())
+    assertEquals(0, source.select(options).toLong())
+    assertEquals(1, source.select(options).toLong())
+    assertTrue(source.exhausted())
   }
 
-  @Test public void selectNotFound() throws IOException {
-    Options options = Options.Companion.of(
-        ByteString.encodeUtf8("ROCK"),
-        ByteString.encodeUtf8("SCISSORS"),
-        ByteString.encodeUtf8("PAPER"));
-
-    sink.writeUtf8("SPOCK");
-    sink.emit();
-    assertEquals(-1, source.select(options));
-    assertEquals("SPOCK", source.readUtf8());
+  @Test
+  fun selectNotFound() {
+    val options = of(
+      "ROCK".encodeUtf8(),
+      "SCISSORS".encodeUtf8(),
+      "PAPER".encodeUtf8(),
+    )
+    sink.writeUtf8("SPOCK")
+    sink.emit()
+    assertEquals(-1, source.select(options).toLong())
+    assertEquals("SPOCK", source.readUtf8())
   }
 
-  @Test public void selectValuesHaveCommonPrefix() throws IOException {
-    Options options = Options.Companion.of(
-        ByteString.encodeUtf8("abcd"),
-        ByteString.encodeUtf8("abce"),
-        ByteString.encodeUtf8("abcc"));
-
-    sink.writeUtf8("abcc").writeUtf8("abcd").writeUtf8("abce");
-    sink.emit();
-    assertEquals(2, source.select(options));
-    assertEquals(0, source.select(options));
-    assertEquals(1, source.select(options));
+  @Test
+  fun selectValuesHaveCommonPrefix() {
+    val options = of(
+      "abcd".encodeUtf8(),
+      "abce".encodeUtf8(),
+      "abcc".encodeUtf8(),
+    )
+    sink.writeUtf8("abcc").writeUtf8("abcd").writeUtf8("abce")
+    sink.emit()
+    assertEquals(2, source.select(options).toLong())
+    assertEquals(0, source.select(options).toLong())
+    assertEquals(1, source.select(options).toLong())
   }
 
-  @Test public void selectLongerThanSource() throws IOException {
-    Options options = Options.Companion.of(
-        ByteString.encodeUtf8("abcd"),
-        ByteString.encodeUtf8("abce"),
-        ByteString.encodeUtf8("abcc"));
-    sink.writeUtf8("abc");
-    sink.emit();
-    assertEquals(-1, source.select(options));
-    assertEquals("abc", source.readUtf8());
+  @Test
+  fun selectLongerThanSource() {
+    val options = of(
+      "abcd".encodeUtf8(),
+      "abce".encodeUtf8(),
+      "abcc".encodeUtf8(),
+    )
+    sink.writeUtf8("abc")
+    sink.emit()
+    assertEquals(-1, source.select(options).toLong())
+    assertEquals("abc", source.readUtf8())
   }
 
-  @Test public void selectReturnsFirstByteStringThatMatches() throws IOException {
-    Options options = Options.Companion.of(
-        ByteString.encodeUtf8("abcd"),
-        ByteString.encodeUtf8("abc"),
-        ByteString.encodeUtf8("abcde"));
-    sink.writeUtf8("abcdef");
-    sink.emit();
-    assertEquals(0, source.select(options));
-    assertEquals("ef", source.readUtf8());
+  @Test
+  fun selectReturnsFirstByteStringThatMatches() {
+    val options = of(
+      "abcd".encodeUtf8(),
+      "abc".encodeUtf8(),
+      "abcde".encodeUtf8(),
+    )
+    sink.writeUtf8("abcdef")
+    sink.emit()
+    assertEquals(0, source.select(options).toLong())
+    assertEquals("ef", source.readUtf8())
   }
 
-  @Test public void selectFromEmptySource() throws IOException {
-    Options options = Options.Companion.of(
-        ByteString.encodeUtf8("abc"),
-        ByteString.encodeUtf8("def"));
-    assertEquals(-1, source.select(options));
+  @Test
+  fun selectFromEmptySource() {
+    val options = of(
+      "abc".encodeUtf8(),
+      "def".encodeUtf8(),
+    )
+    assertEquals(-1, source.select(options).toLong())
   }
 
-  @Test public void selectNoByteStringsFromEmptySource() throws IOException {
-    Options options = Options.of();
-    assertEquals(-1, source.select(options));
+  @Test
+  fun selectNoByteStringsFromEmptySource() {
+    val options = Options.of()
+    assertEquals(-1, source.select(options).toLong())
   }
 
-  @Test public void peek() throws IOException {
-    sink.writeUtf8("abcdefghi");
-    sink.emit();
-
-    assertEquals("abc", source.readUtf8(3));
-
-    BufferedSource peek = source.peek();
-    assertEquals("def", peek.readUtf8(3));
-    assertEquals("ghi", peek.readUtf8(3));
-    assertFalse(peek.request(1));
-
-    assertEquals("def", source.readUtf8(3));
+  @Test
+  fun peek() {
+    sink.writeUtf8("abcdefghi")
+    sink.emit()
+    assertEquals("abc", source.readUtf8(3))
+    val peek = source.peek()
+    assertEquals("def", peek.readUtf8(3))
+    assertEquals("ghi", peek.readUtf8(3))
+    assertFalse(peek.request(1))
+    assertEquals("def", source.readUtf8(3))
   }
 
-  @Test public void peekMultiple() throws IOException {
-    sink.writeUtf8("abcdefghi");
-    sink.emit();
-
-    assertEquals("abc", source.readUtf8(3));
-
-    BufferedSource peek1 = source.peek();
-    BufferedSource peek2 = source.peek();
-
-    assertEquals("def", peek1.readUtf8(3));
-
-    assertEquals("def", peek2.readUtf8(3));
-    assertEquals("ghi", peek2.readUtf8(3));
-    assertFalse(peek2.request(1));
-
-    assertEquals("ghi", peek1.readUtf8(3));
-    assertFalse(peek1.request(1));
-
-    assertEquals("def", source.readUtf8(3));
+  @Test
+  fun peekMultiple() {
+    sink.writeUtf8("abcdefghi")
+    sink.emit()
+    assertEquals("abc", source.readUtf8(3))
+    val peek1 = source.peek()
+    val peek2 = source.peek()
+    assertEquals("def", peek1.readUtf8(3))
+    assertEquals("def", peek2.readUtf8(3))
+    assertEquals("ghi", peek2.readUtf8(3))
+    assertFalse(peek2.request(1))
+    assertEquals("ghi", peek1.readUtf8(3))
+    assertFalse(peek1.request(1))
+    assertEquals("def", source.readUtf8(3))
   }
 
-  @Test public void peekLarge() throws IOException {
-    sink.writeUtf8("abcdef");
-    sink.writeUtf8(repeat("g", 2 * SEGMENT_SIZE));
-    sink.writeUtf8("hij");
-    sink.emit();
-
-    assertEquals("abc", source.readUtf8(3));
-
-    BufferedSource peek = source.peek();
-    assertEquals("def", peek.readUtf8(3));
-    peek.skip(2 * SEGMENT_SIZE);
-    assertEquals("hij", peek.readUtf8(3));
-    assertFalse(peek.request(1));
-
-    assertEquals("def", source.readUtf8(3));
-    source.skip(2 * SEGMENT_SIZE);
-    assertEquals("hij", source.readUtf8(3));
+  @Test
+  fun peekLarge() {
+    sink.writeUtf8("abcdef")
+    sink.writeUtf8("g".repeat(2 * SEGMENT_SIZE))
+    sink.writeUtf8("hij")
+    sink.emit()
+    assertEquals("abc", source.readUtf8(3))
+    val peek = source.peek()
+    assertEquals("def", peek.readUtf8(3))
+    peek.skip((2 * SEGMENT_SIZE).toLong())
+    assertEquals("hij", peek.readUtf8(3))
+    assertFalse(peek.request(1))
+    assertEquals("def", source.readUtf8(3))
+    source.skip((2 * SEGMENT_SIZE).toLong())
+    assertEquals("hij", source.readUtf8(3))
   }
 
-  @Test public void peekInvalid() throws IOException {
-    sink.writeUtf8("abcdefghi");
-    sink.emit();
-
-    assertEquals("abc", source.readUtf8(3));
-
-    BufferedSource peek = source.peek();
-    assertEquals("def", peek.readUtf8(3));
-    assertEquals("ghi", peek.readUtf8(3));
-    assertFalse(peek.request(1));
-
-    assertEquals("def", source.readUtf8(3));
-
+  @Test
+  fun peekInvalid() {
+    sink.writeUtf8("abcdefghi")
+    sink.emit()
+    assertEquals("abc", source.readUtf8(3))
+    val peek = source.peek()
+    assertEquals("def", peek.readUtf8(3))
+    assertEquals("ghi", peek.readUtf8(3))
+    assertFalse(peek.request(1))
+    assertEquals("def", source.readUtf8(3))
     try {
-      peek.readUtf8();
-      fail();
-    } catch (IllegalStateException e) {
-      assertEquals("Peek source is invalid because upstream source was used", e.getMessage());
+      peek.readUtf8()
+      fail()
+    } catch (e: IllegalStateException) {
+      assertEquals("Peek source is invalid because upstream source was used", e.message)
     }
   }
 
-  @Test public void peekSegmentThenInvalid() throws IOException {
-    sink.writeUtf8("abc");
-    sink.writeUtf8(repeat("d", 2 * SEGMENT_SIZE));
-    sink.emit();
-
-    assertEquals("abc", source.readUtf8(3));
+  @Test
+  fun peekSegmentThenInvalid() {
+    sink.writeUtf8("abc")
+    sink.writeUtf8("d".repeat(2 * SEGMENT_SIZE))
+    sink.emit()
+    assertEquals("abc", source.readUtf8(3))
 
     // Peek a little data and skip the rest of the upstream source
-    BufferedSource peek = source.peek();
-    assertEquals("ddd", peek.readUtf8(3));
-    source.readAll(Okio.blackhole());
+    val peek = source.peek()
+    assertEquals("ddd", peek.readUtf8(3))
+    source.readAll(blackholeSink())
 
     // Skip the rest of the buffered data
-    peek.skip(peek.getBuffer().size());
-
+    peek.skip(peek.buffer.size)
     try {
-      peek.readByte();
-      fail();
-    } catch (IllegalStateException e) {
-      assertEquals("Peek source is invalid because upstream source was used", e.getMessage());
+      peek.readByte()
+      fail()
+    } catch (e: IllegalStateException) {
+      assertEquals("Peek source is invalid because upstream source was used", e.message)
     }
   }
 
-  @Test public void peekDoesntReadTooMuch() throws IOException {
+  @Test
+  fun peekDoesntReadTooMuch() {
     // 6 bytes in source's buffer plus 3 bytes upstream.
-    sink.writeUtf8("abcdef");
-    sink.emit();
-    source.require(6L);
-    sink.writeUtf8("ghi");
-    sink.emit();
-
-    BufferedSource peek = source.peek();
+    sink.writeUtf8("abcdef")
+    sink.emit()
+    source.require(6L)
+    sink.writeUtf8("ghi")
+    sink.emit()
+    val peek = source.peek()
 
     // Read 3 bytes. This reads some of the buffered data.
-    assertTrue(peek.request(3));
-    if (!(source instanceof Buffer)) {
-      assertEquals(6, source.getBuffer().size());
-      assertEquals(6, peek.getBuffer().size());
+    assertTrue(peek.request(3))
+    if (source !is Buffer) {
+      assertEquals(6, source.buffer.size)
+      assertEquals(6, peek.buffer.size)
     }
-    assertEquals("abc", peek.readUtf8(3L));
+    assertEquals("abc", peek.readUtf8(3L))
 
     // Read 3 more bytes. This exhausts the buffered data.
-    assertTrue(peek.request(3));
-    if (!(source instanceof Buffer)) {
-      assertEquals(6, source.getBuffer().size());
-      assertEquals(3, peek.getBuffer().size());
+    assertTrue(peek.request(3))
+    if (source !is Buffer) {
+      assertEquals(6, source.buffer.size)
+      assertEquals(3, peek.buffer.size)
     }
-    assertEquals("def", peek.readUtf8(3L));
+    assertEquals("def", peek.readUtf8(3L))
 
     // Read 3 more bytes. This draws new bytes.
-    assertTrue(peek.request(3));
-    assertEquals(9, source.getBuffer().size());
-    assertEquals(3, peek.getBuffer().size());
-    assertEquals("ghi", peek.readUtf8(3L));
+    assertTrue(peek.request(3))
+    assertEquals(9, source.buffer.size)
+    assertEquals(3, peek.buffer.size)
+    assertEquals("ghi", peek.readUtf8(3L))
   }
 
-  @Test public void rangeEquals() throws IOException {
-    sink.writeUtf8("A man, a plan, a canal. Panama.");
-    sink.emit();
-    assertTrue(source.rangeEquals(7 , ByteString.encodeUtf8("a plan")));
-    assertTrue(source.rangeEquals(0 , ByteString.encodeUtf8("A man")));
-    assertTrue(source.rangeEquals(24, ByteString.encodeUtf8("Panama")));
-    assertFalse(source.rangeEquals(24, ByteString.encodeUtf8("Panama. Panama. Panama.")));
+  @Test
+  fun rangeEquals() {
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertTrue(source.rangeEquals(7, "a plan".encodeUtf8()))
+    assertTrue(source.rangeEquals(0, "A man".encodeUtf8()))
+    assertTrue(source.rangeEquals(24, "Panama".encodeUtf8()))
+    assertFalse(source.rangeEquals(24, "Panama. Panama. Panama.".encodeUtf8()))
   }
 
-  @Test public void rangeEqualsWithOffsetAndCount() throws IOException {
-    sink.writeUtf8("A man, a plan, a canal. Panama.");
-    sink.emit();
-    assertTrue(source.rangeEquals(7 , ByteString.encodeUtf8("aaa plannn"), 2, 6));
-    assertTrue(source.rangeEquals(0 , ByteString.encodeUtf8("AAA mannn"), 2, 5));
-    assertTrue(source.rangeEquals(24, ByteString.encodeUtf8("PPPanamaaa"), 2, 6));
+  @Test
+  fun rangeEqualsWithOffsetAndCount() {
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertTrue(source.rangeEquals(7, "aaa plannn".encodeUtf8(), 2, 6))
+    assertTrue(source.rangeEquals(0, "AAA mannn".encodeUtf8(), 2, 5))
+    assertTrue(source.rangeEquals(24, "PPPanamaaa".encodeUtf8(), 2, 6))
   }
 
-  @Test public void rangeEqualsOnlyReadsUntilMismatch() throws IOException {
-    assumeTrue(factory == Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE); // Other sources read in chunks anyway.
-
-    sink.writeUtf8("A man, a plan, a canal. Panama.");
-    sink.emit();
-    assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A man.")));
-    assertEquals("A man,", source.getBuffer().readUtf8());
+  @Test
+  fun rangeEqualsOnlyReadsUntilMismatch() {
+    Assume.assumeTrue(factory === Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE) // Other sources read in chunks anyway.
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertFalse(source.rangeEquals(0, "A man.".encodeUtf8()))
+    assertEquals("A man,", source.buffer.readUtf8())
   }
 
-  @Test public void rangeEqualsArgumentValidation() throws IOException {
+  @Test
+  fun rangeEqualsArgumentValidation() {
     // Negative source offset.
-    assertFalse(source.rangeEquals(-1, ByteString.encodeUtf8("A")));
+    assertFalse(source.rangeEquals(-1, "A".encodeUtf8()))
     // Negative bytes offset.
-    assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), -1, 1));
+    assertFalse(source.rangeEquals(0, "A".encodeUtf8(), -1, 1))
     // Bytes offset longer than bytes length.
-    assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), 2, 1));
+    assertFalse(source.rangeEquals(0, "A".encodeUtf8(), 2, 1))
     // Negative byte count.
-    assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), 0, -1));
+    assertFalse(source.rangeEquals(0, "A".encodeUtf8(), 0, -1))
     // Byte count longer than bytes length.
-    assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), 0, 2));
+    assertFalse(source.rangeEquals(0, "A".encodeUtf8(), 0, 2))
     // Bytes offset plus byte count longer than bytes length.
-    assertFalse(source.rangeEquals(0, ByteString.encodeUtf8("A"), 1, 1));
+    assertFalse(source.rangeEquals(0, "A".encodeUtf8(), 1, 1))
   }
 
-  @Test public void readNioBuffer() throws Exception {
-    String expected = factory.isOneByteAtATime() ? "a" : "abcdefg";
-    sink.writeUtf8("abcdefg");
-    sink.emit();
-
-    ByteBuffer nioByteBuffer = ByteBuffer.allocate(1024);
-    int byteCount = source.read(nioByteBuffer);
-    assertEquals(expected.length(), byteCount);
-    assertEquals(expected.length(), nioByteBuffer.position());
-    assertEquals(nioByteBuffer.capacity(), nioByteBuffer.limit());
-
-    ((java.nio.Buffer) nioByteBuffer).flip(); // Cast necessary for Java 8.
-    byte[] data = new byte[expected.length()];
-    nioByteBuffer.get(data);
-    assertEquals(expected, new String(data));
+  @Test
+  fun readNioBuffer() {
+    val expected = if (factory.isOneByteAtATime) "a" else "abcdefg"
+    sink.writeUtf8("abcdefg")
+    sink.emit()
+    val nioByteBuffer = ByteBuffer.allocate(1024)
+    val byteCount = source.read(nioByteBuffer)
+    assertEquals(expected.length.toLong(), byteCount.toLong())
+    assertEquals(expected.length.toLong(), nioByteBuffer.position().toLong())
+    assertEquals(nioByteBuffer.capacity().toLong(), nioByteBuffer.limit().toLong())
+    (nioByteBuffer as java.nio.Buffer).flip() // Cast necessary for Java 8.
+    val data = ByteArray(expected.length)
+    nioByteBuffer[data]
+    assertEquals(expected, data.decodeToString())
   }
 
-  /** Note that this test crashes the VM on Android. */
-  @Test public void readLargeNioBufferOnlyReadsOneSegment() throws Exception {
-    String expected = factory.isOneByteAtATime()
-        ? "a"
-        : repeat("a", SEGMENT_SIZE);
-    sink.writeUtf8(repeat("a", SEGMENT_SIZE * 4));
-    sink.emit();
-
-    ByteBuffer nioByteBuffer = ByteBuffer.allocate(SEGMENT_SIZE * 3);
-    int byteCount = source.read(nioByteBuffer);
-    assertEquals(expected.length(), byteCount);
-    assertEquals(expected.length(), nioByteBuffer.position());
-    assertEquals(nioByteBuffer.capacity(), nioByteBuffer.limit());
-
-    ((java.nio.Buffer) nioByteBuffer).flip(); // Cast necessary for Java 8.
-    byte[] data = new byte[expected.length()];
-    nioByteBuffer.get(data);
-    assertEquals(expected, new String(data));
+  /** Note that this test crashes the VM on Android.  */
+  @Test
+  fun readLargeNioBufferOnlyReadsOneSegment() {
+    val expected = if (factory.isOneByteAtATime) "a" else "a".repeat(SEGMENT_SIZE)
+    sink.writeUtf8("a".repeat(SEGMENT_SIZE * 4))
+    sink.emit()
+    val nioByteBuffer = ByteBuffer.allocate(SEGMENT_SIZE * 3)
+    val byteCount = source.read(nioByteBuffer)
+    assertEquals(expected.length.toLong(), byteCount.toLong())
+    assertEquals(expected.length.toLong(), nioByteBuffer.position().toLong())
+    assertEquals(nioByteBuffer.capacity().toLong(), nioByteBuffer.limit().toLong())
+    (nioByteBuffer as java.nio.Buffer).flip() // Cast necessary for Java 8.
+    val data = ByteArray(expected.length)
+    nioByteBuffer[data]
+    assertEquals(expected, data.decodeToString())
   }
 
-  @Test public void factorySegmentSizes() throws Exception {
-    sink.writeUtf8("abc");
-    sink.emit();
-    source.require(3);
-    if (factory.isOneByteAtATime()) {
-      assertEquals(Arrays.asList(1, 1, 1), TestUtil.segmentSizes(source.getBuffer()));
+  @Test
+  fun factorySegmentSizes() {
+    sink.writeUtf8("abc")
+    sink.emit()
+    source.require(3)
+    if (factory.isOneByteAtATime) {
+      assertEquals(mutableListOf(1, 1, 1), segmentSizes(source.buffer))
     } else {
-      assertEquals(Collections.singletonList(3), TestUtil.segmentSizes(source.getBuffer()));
+      assertEquals(listOf(3), segmentSizes(source.buffer))
+    }
+  }
+
+  companion object {
+    @JvmStatic
+    @Parameters(name = "{0}")
+    fun parameters(): List<Array<Any>> {
+      return listOf(
+        arrayOf(Factory.BUFFER),
+        arrayOf(Factory.REAL_BUFFERED_SOURCE),
+        arrayOf(Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE),
+        arrayOf(Factory.ONE_BYTE_AT_A_TIME_BUFFER),
+        arrayOf(Factory.PEEK_BUFFER),
+        arrayOf(Factory.PEEK_BUFFERED_SOURCE),
+      )
     }
   }
 }

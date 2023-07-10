@@ -13,197 +13,188 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import org.junit.Test;
-
-import static kotlin.text.Charsets.UTF_8;
-import static kotlin.text.StringsKt.repeat;
-import static okio.TestUtil.SEGMENT_SIZE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import java.io.EOFException
+import java.io.IOException
+import kotlin.text.Charsets.UTF_8
+import okio.TestUtil.SEGMENT_SIZE
+import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
+import org.junit.Test
 
 /**
  * Tests solely for the behavior of RealBufferedSource's implementation. For generic
  * BufferedSource behavior use BufferedSourceTest.
  */
-public final class BufferedSourceJavaTest {
-  @Test public void inputStreamTracksSegments() throws Exception {
-    Buffer source = new Buffer();
-    source.writeUtf8("a");
-    source.writeUtf8(repeat("b", SEGMENT_SIZE));
-    source.writeUtf8("c");
-
-    InputStream in = Okio.buffer((Source) source).inputStream();
-    assertEquals(0, in.available());
-    assertEquals(SEGMENT_SIZE + 2, source.size());
+class BufferedSourceJavaTest {
+  @Test
+  fun inputStreamTracksSegments() {
+    val source = Buffer()
+    source.writeUtf8("a")
+    source.writeUtf8("b".repeat(SEGMENT_SIZE))
+    source.writeUtf8("c")
+    val `in` = (source as Source).buffer().inputStream()
+    assertEquals(0, `in`.available().toLong())
+    assertEquals((SEGMENT_SIZE + 2).toLong(), source.size)
 
     // Reading one byte buffers a full segment.
-    assertEquals('a', in.read());
-    assertEquals(SEGMENT_SIZE - 1, in.available());
-    assertEquals(2, source.size());
+    assertEquals('a'.code.toLong(), `in`.read().toLong())
+    assertEquals((SEGMENT_SIZE - 1).toLong(), `in`.available().toLong())
+    assertEquals(2, source.size)
 
     // Reading as much as possible reads the rest of that buffered segment.
-    byte[] data = new byte[SEGMENT_SIZE * 2];
-    assertEquals(SEGMENT_SIZE - 1, in.read(data, 0, data.length));
-    assertEquals(repeat("b", SEGMENT_SIZE - 1), new String(data, 0, SEGMENT_SIZE - 1, UTF_8));
-    assertEquals(2, source.size());
+    val data = ByteArray(SEGMENT_SIZE * 2)
+    assertEquals((SEGMENT_SIZE - 1).toLong(), `in`.read(data, 0, data.size).toLong())
+    assertEquals("b".repeat(SEGMENT_SIZE - 1), String(data, 0, SEGMENT_SIZE - 1, UTF_8))
+    assertEquals(2, source.size)
 
     // Continuing to read buffers the next segment.
-    assertEquals('b', in.read());
-    assertEquals(1, in.available());
-    assertEquals(0, source.size());
+    assertEquals('b'.code.toLong(), `in`.read().toLong())
+    assertEquals(1, `in`.available().toLong())
+    assertEquals(0, source.size)
 
     // Continuing to read reads from the buffer.
-    assertEquals('c', in.read());
-    assertEquals(0, in.available());
-    assertEquals(0, source.size());
+    assertEquals('c'.code.toLong(), `in`.read().toLong())
+    assertEquals(0, `in`.available().toLong())
+    assertEquals(0, source.size)
 
     // Once we've exhausted the source, we're done.
-    assertEquals(-1, in.read());
-    assertEquals(0, source.size());
+    assertEquals(-1, `in`.read().toLong())
+    assertEquals(0, source.size)
   }
 
-  @Test public void inputStreamCloses() throws Exception {
-    BufferedSource source = Okio.buffer((Source) new Buffer());
-    InputStream in = source.inputStream();
-    in.close();
+  @Test
+  fun inputStreamCloses() {
+    val source = (Buffer() as Source).buffer()
+    val inputStream = source.inputStream()
+    inputStream.close()
     try {
-      source.require(1);
-      fail();
-    } catch (IllegalStateException e) {
-      assertEquals("closed", e.getMessage());
+      source.require(1)
+      fail()
+    } catch (e: IllegalStateException) {
+      assertEquals("closed", e.message)
     }
   }
 
-  @Test public void indexOfStopsReadingAtLimit() throws Exception {
-    Buffer buffer = new Buffer().writeUtf8("abcdef");
-    BufferedSource bufferedSource = Okio.buffer(new ForwardingSource(buffer) {
-      @Override public long read(Buffer sink, long byteCount) throws IOException {
-        return super.read(sink, Math.min(1, byteCount));
+  @Test
+  fun indexOfStopsReadingAtLimit() {
+    val buffer = Buffer().writeUtf8("abcdef")
+    val bufferedSource = object : ForwardingSource(buffer) {
+      override fun read(sink: Buffer, byteCount: Long): Long {
+        return super.read(sink, Math.min(1, byteCount))
       }
-    });
-
-    assertEquals(6, buffer.size());
-    assertEquals(-1, bufferedSource.indexOf((byte) 'e', 0, 4));
-    assertEquals(2, buffer.size());
+    }.buffer()
+    assertEquals(6, buffer.size)
+    assertEquals(-1, bufferedSource.indexOf('e'.code.toByte(), 0, 4))
+    assertEquals(2, buffer.size)
   }
 
-  @Test public void requireTracksBufferFirst() throws Exception {
-    Buffer source = new Buffer();
-    source.writeUtf8("bb");
-
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.getBuffer().writeUtf8("aa");
-
-    bufferedSource.require(2);
-    assertEquals(2, bufferedSource.getBuffer().size());
-    assertEquals(2, source.size());
+  @Test
+  fun requireTracksBufferFirst() {
+    val source = Buffer()
+    source.writeUtf8("bb")
+    val bufferedSource = (source as Source).buffer()
+    bufferedSource.buffer.writeUtf8("aa")
+    bufferedSource.require(2)
+    assertEquals(2, bufferedSource.buffer.size)
+    assertEquals(2, source.size)
   }
 
-  @Test public void requireIncludesBufferBytes() throws Exception {
-    Buffer source = new Buffer();
-    source.writeUtf8("b");
-
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.getBuffer().writeUtf8("a");
-
-    bufferedSource.require(2);
-    assertEquals("ab", bufferedSource.getBuffer().readUtf8(2));
+  @Test
+  fun requireIncludesBufferBytes() {
+    val source = Buffer()
+    source.writeUtf8("b")
+    val bufferedSource = (source as Source).buffer()
+    bufferedSource.buffer.writeUtf8("a")
+    bufferedSource.require(2)
+    assertEquals("ab", bufferedSource.buffer.readUtf8(2))
   }
 
-  @Test public void requireInsufficientData() throws Exception {
-    Buffer source = new Buffer();
-    source.writeUtf8("a");
-
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-
+  @Test
+  fun requireInsufficientData() {
+    val source = Buffer()
+    source.writeUtf8("a")
+    val bufferedSource = (source as Source).buffer()
     try {
-      bufferedSource.require(2);
-      fail();
-    } catch (EOFException expected) {
+      bufferedSource.require(2)
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void requireReadsOneSegmentAtATime() throws Exception {
-    Buffer source = new Buffer();
-    source.writeUtf8(repeat("a", SEGMENT_SIZE));
-    source.writeUtf8(repeat("b", SEGMENT_SIZE));
-
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-
-    bufferedSource.require(2);
-    assertEquals(SEGMENT_SIZE, source.size());
-    assertEquals(SEGMENT_SIZE, bufferedSource.getBuffer().size());
+  @Test
+  fun requireReadsOneSegmentAtATime() {
+    val source = Buffer()
+    source.writeUtf8("a".repeat(SEGMENT_SIZE))
+    source.writeUtf8("b".repeat(SEGMENT_SIZE))
+    val bufferedSource = (source as Source).buffer()
+    bufferedSource.require(2)
+    assertEquals(SEGMENT_SIZE.toLong(), source.size)
+    assertEquals(SEGMENT_SIZE.toLong(), bufferedSource.buffer.size)
   }
 
-  @Test public void skipReadsOneSegmentAtATime() throws Exception {
-    Buffer source = new Buffer();
-    source.writeUtf8(repeat("a", SEGMENT_SIZE));
-    source.writeUtf8(repeat("b", SEGMENT_SIZE));
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.skip(2);
-    assertEquals(SEGMENT_SIZE, source.size());
-    assertEquals(SEGMENT_SIZE - 2, bufferedSource.getBuffer().size());
+  @Test
+  fun skipReadsOneSegmentAtATime() {
+    val source = Buffer()
+    source.writeUtf8("a".repeat(SEGMENT_SIZE))
+    source.writeUtf8("b".repeat(SEGMENT_SIZE))
+    val bufferedSource = (source as Source).buffer()
+    bufferedSource.skip(2)
+    assertEquals(SEGMENT_SIZE.toLong(), source.size)
+    assertEquals((SEGMENT_SIZE - 2).toLong(), bufferedSource.buffer.size)
   }
 
-  @Test public void skipTracksBufferFirst() throws Exception {
-    Buffer source = new Buffer();
-    source.writeUtf8("bb");
-
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.getBuffer().writeUtf8("aa");
-
-    bufferedSource.skip(2);
-    assertEquals(0, bufferedSource.getBuffer().size());
-    assertEquals(2, source.size());
+  @Test
+  fun skipTracksBufferFirst() {
+    val source = Buffer()
+    source.writeUtf8("bb")
+    val bufferedSource = (source as Source).buffer()
+    bufferedSource.buffer.writeUtf8("aa")
+    bufferedSource.skip(2)
+    assertEquals(0, bufferedSource.buffer.size)
+    assertEquals(2, source.size)
   }
 
-  @Test public void operationsAfterClose() throws IOException {
-    Buffer source = new Buffer();
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-    bufferedSource.close();
+  @Test
+  fun operationsAfterClose() {
+    val source = Buffer()
+    val bufferedSource = (source as Source).buffer()
+    bufferedSource.close()
 
     // Test a sample set of methods.
     try {
-      bufferedSource.indexOf((byte) 1);
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSource.indexOf(1.toByte())
+      fail()
+    } catch (expected: IllegalStateException) {
     }
-
     try {
-      bufferedSource.skip(1);
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSource.skip(1)
+      fail()
+    } catch (expected: IllegalStateException) {
     }
-
     try {
-      bufferedSource.readByte();
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSource.readByte()
+      fail()
+    } catch (expected: IllegalStateException) {
     }
-
     try {
-      bufferedSource.readByteString(10);
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSource.readByteString(10)
+      fail()
+    } catch (expected: IllegalStateException) {
     }
 
     // Test a sample set of methods on the InputStream.
-    InputStream is = bufferedSource.inputStream();
+    val inputStream = bufferedSource.inputStream()
     try {
-      is.read();
-      fail();
-    } catch (IOException expected) {
+      inputStream.read()
+      fail()
+    } catch (expected: IOException) {
     }
-
     try {
-      is.read(new byte[10]);
-      fail();
-    } catch (IOException expected) {
+      inputStream.read(ByteArray(10))
+      fail()
+    } catch (expected: IOException) {
     }
   }
 
@@ -211,22 +202,24 @@ public final class BufferedSourceJavaTest {
    * We don't want readAll to buffer an unbounded amount of data. Instead it
    * should buffer a segment, write it, and repeat.
    */
-  @Test public void readAllReadsOneSegmentAtATime() throws IOException {
-    Buffer write1 = new Buffer().writeUtf8(repeat("a", SEGMENT_SIZE));
-    Buffer write2 = new Buffer().writeUtf8(repeat("b", SEGMENT_SIZE));
-    Buffer write3 = new Buffer().writeUtf8(repeat("c", SEGMENT_SIZE));
-
-    Buffer source = new Buffer().writeUtf8(""
-        + repeat("a", SEGMENT_SIZE)
-        + repeat("b", SEGMENT_SIZE)
-        + repeat("c", SEGMENT_SIZE));
-
-    MockSink mockSink = new MockSink();
-    BufferedSource bufferedSource = Okio.buffer((Source) source);
-    assertEquals(SEGMENT_SIZE * 3, bufferedSource.readAll(mockSink));
+  @Test
+  fun readAllReadsOneSegmentAtATime() {
+    val write1 = Buffer().writeUtf8("a".repeat(SEGMENT_SIZE))
+    val write2 = Buffer().writeUtf8("b".repeat(SEGMENT_SIZE))
+    val write3 = Buffer().writeUtf8("c".repeat(SEGMENT_SIZE))
+    val source = Buffer().writeUtf8(
+      "" +
+        "a".repeat(SEGMENT_SIZE) +
+        "b".repeat(SEGMENT_SIZE) +
+        "c".repeat(SEGMENT_SIZE),
+    )
+    val mockSink = MockSink()
+    val bufferedSource = (source as Source).buffer()
+    assertEquals((SEGMENT_SIZE * 3).toLong(), bufferedSource.readAll(mockSink))
     mockSink.assertLog(
-        "write(" + write1 + ", " + write1.size() + ")",
-        "write(" + write2 + ", " + write2.size() + ")",
-        "write(" + write3 + ", " + write3.size() + ")");
+      "write(" + write1 + ", " + write1.size + ")",
+      "write(" + write2 + ", " + write2.size + ")",
+      "write(" + write3 + ", " + write3.size + ")",
+    )
   }
 }

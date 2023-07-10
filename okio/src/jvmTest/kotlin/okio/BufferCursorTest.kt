@@ -13,456 +13,447 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import java.util.Arrays
+import okio.ByteString.Companion.of
+import okio.TestUtil.SEGMENT_SIZE
+import okio.TestUtil.deepCopy
+import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.fail
+import org.junit.Assume.assumeTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
-import static kotlin.text.StringsKt.repeat;
-import static okio.Buffer.UnsafeCursor;
-import static okio.TestUtil.SEGMENT_SIZE;
-import static okio.TestUtil.deepCopy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+@RunWith(Parameterized::class)
+class BufferCursorTest(
+  private var bufferFactory: BufferFactory,
+) {
 
-@RunWith(Parameterized.class)
-public final class BufferCursorTest {
-
-  @Parameters(name = "{0}")
-  public static List<Object[]> parameters() throws Exception {
-    List<Object[]> result = new ArrayList<>();
-    for (BufferFactory bufferFactory : BufferFactory.values()) {
-      result.add(new Object[] {bufferFactory});
-    }
-    return result;
-  }
-
-  @Parameter public BufferFactory bufferFactory;
-
-  @Test public void apiExample() throws Exception {
-    Buffer buffer = new Buffer();
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.resizeBuffer(1000_000);
-
+  @Test
+  fun apiExample() {
+    val buffer = Buffer()
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.resizeBuffer(1000000)
       do {
-        Arrays.fill(cursor.data, cursor.start, cursor.end, (byte) 'x');
-      } while (cursor.next() != -1);
-
-      cursor.seek(3);
-      cursor.data[cursor.start] = 'o';
-
-      cursor.seek(1);
-      cursor.data[cursor.start] = 'o';
-
-      cursor.resizeBuffer(4);
+        Arrays.fill(cursor.data, cursor.start, cursor.end, 'x'.code.toByte())
+      } while (cursor.next() != -1)
+      cursor.seek(3)
+      cursor.data!![cursor.start] = 'o'.code.toByte()
+      cursor.seek(1)
+      cursor.data!![cursor.start] = 'o'.code.toByte()
+      cursor.resizeBuffer(4)
     }
-
-    assertEquals(new Buffer().writeUtf8("xoxo"), buffer);
+    assertEquals(Buffer().writeUtf8("xoxo"), buffer)
   }
 
-  @Test public void accessSegmentBySegment() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      Buffer actual = new Buffer();
-      while (cursor.next() != -1L) {
-        actual.write(cursor.data, cursor.start, cursor.end - cursor.start);
+  @Test
+  fun accessSegmentBySegment() {
+    val buffer = bufferFactory.newBuffer()
+    buffer.readUnsafe().use { cursor ->
+      val actual = Buffer()
+      while (cursor.next().toLong() != -1L) {
+        actual.write(cursor.data!!, cursor.start, cursor.end - cursor.start)
       }
-      assertEquals(buffer, actual);
+      assertEquals(buffer, actual)
     }
   }
 
-  @Test public void seekToNegativeOneSeeksBeforeFirstSegment() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      cursor.seek(-1L);
-      assertEquals(-1, cursor.offset);
-      assertNull(cursor.data);
-      assertEquals(-1, cursor.start);
-      assertEquals(-1, cursor.end);
-
-      cursor.next();
-      assertEquals(0, cursor.offset);
+  @Test
+  fun seekToNegativeOneSeeksBeforeFirstSegment() {
+    val buffer = bufferFactory.newBuffer()
+    buffer.readUnsafe().use { cursor ->
+      cursor.seek(-1L)
+      assertEquals(-1, cursor.offset)
+      assertNull(cursor.data)
+      assertEquals(-1, cursor.start.toLong())
+      assertEquals(-1, cursor.end.toLong())
+      cursor.next()
+      assertEquals(0, cursor.offset)
     }
   }
 
-  @Test public void accessByteByByte() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      byte[] actual = new byte[(int) buffer.size()];
-      for (int i = 0; i < buffer.size(); i++) {
-        cursor.seek(i);
-        actual[i] = cursor.data[cursor.start];
+  @Test
+  fun accessByteByByte() {
+    val buffer = bufferFactory.newBuffer()
+    buffer.readUnsafe().use { cursor ->
+      val actual = ByteArray(buffer.size.toInt())
+      for (i in 0 until buffer.size) {
+        cursor.seek(i)
+        actual[i.toInt()] = cursor.data!![cursor.start]
       }
-      assertEquals(ByteString.of(actual), buffer.snapshot());
+      assertEquals(of(*actual), buffer.snapshot())
     }
   }
 
-  @Test public void accessByteByByteReverse() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      byte[] actual = new byte[(int) buffer.size()];
-      for (int i = (int) (buffer.size() - 1); i >= 0; i--) {
-        cursor.seek(i);
-        actual[i] = cursor.data[cursor.start];
+  @Test
+  fun accessByteByByteReverse() {
+    val buffer = bufferFactory.newBuffer()
+    buffer.readUnsafe().use { cursor ->
+      val actual = ByteArray(buffer.size.toInt())
+      for (i in (buffer.size - 1).toInt() downTo 0) {
+        cursor.seek(i.toLong())
+        actual[i] = cursor.data!![cursor.start]
       }
-      assertEquals(ByteString.of(actual), buffer.snapshot());
+      assertEquals(of(*actual), buffer.snapshot())
     }
   }
 
-  @Test public void accessByteByByteAlwaysResettingToZero() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      byte[] actual = new byte[(int) buffer.size()];
-      for (int i = 0; i < buffer.size(); i++) {
-        cursor.seek(i);
-        actual[i] = cursor.data[cursor.start];
-        cursor.seek(0L);
+  @Test
+  fun accessByteByByteAlwaysResettingToZero() {
+    val buffer = bufferFactory.newBuffer()
+    buffer.readUnsafe().use { cursor ->
+      val actual = ByteArray(buffer.size.toInt())
+      for (i in 0 until buffer.size) {
+        cursor.seek(i)
+        actual[i.toInt()] = cursor.data!![cursor.start]
+        cursor.seek(0L)
       }
-      assertEquals(ByteString.of(actual), buffer.snapshot());
+      assertEquals(of(*actual), buffer.snapshot())
     }
   }
 
-  @Test public void segmentBySegmentNavigation() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    UnsafeCursor cursor = buffer.readUnsafe();
-    assertEquals(-1, cursor.offset);
+  @Test
+  fun segmentBySegmentNavigation() {
+    val buffer = bufferFactory.newBuffer()
+    val cursor = buffer.readUnsafe()
+    assertEquals(-1, cursor.offset)
     try {
-      long lastOffset = cursor.offset;
-      while (cursor.next() != -1L) {
-        assertTrue(cursor.offset > lastOffset);
-        lastOffset = cursor.offset;
+      var lastOffset = cursor.offset
+      while (cursor.next().toLong() != -1L) {
+        Assert.assertTrue(cursor.offset > lastOffset)
+        lastOffset = cursor.offset
       }
-      assertEquals(buffer.size(), cursor.offset);
-      assertNull(cursor.data);
-      assertEquals(-1, cursor.start);
-      assertEquals(-1, cursor.end);
+      assertEquals(buffer.size, cursor.offset)
+      assertNull(cursor.data)
+      assertEquals(-1, cursor.start.toLong())
+      assertEquals(-1, cursor.end.toLong())
     } finally {
-      cursor.close();
+      cursor.close()
     }
   }
 
-  @Test public void seekWithinSegment() throws Exception {
-    assumeTrue(bufferFactory == BufferFactory.SMALL_SEGMENTED_BUFFER);
-    Buffer buffer = bufferFactory.newBuffer();
-    assertEquals("abcdefghijkl", buffer.clone().readUtf8());
-
-    // Seek to the 'f' in the "defg" segment.
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      assertEquals(2, cursor.seek(5)); // 2 for 2 bytes left in the segment: "fg".
-      assertEquals(5, cursor.offset);
-      assertEquals(2, cursor.end - cursor.start);
-      assertEquals('d', (char) cursor.data[cursor.start - 2]); // Out of bounds!
-      assertEquals('e', (char) cursor.data[cursor.start - 1]); // Out of bounds!
-      assertEquals('f', (char) cursor.data[cursor.start]);
-      assertEquals('g', (char) cursor.data[cursor.start + 1]);
+  @Test
+  fun seekWithinSegment() {
+    assumeTrue(bufferFactory === BufferFactory.SMALL_SEGMENTED_BUFFER)
+    val buffer = bufferFactory.newBuffer()
+    assertEquals("abcdefghijkl", buffer.clone().readUtf8())
+    buffer.readUnsafe().use { cursor ->
+      assertEquals(2, cursor.seek(5).toLong()) // 2 for 2 bytes left in the segment: "fg".
+      assertEquals(5, cursor.offset)
+      assertEquals(2, (cursor.end - cursor.start).toLong())
+      assertEquals('d'.code.toLong(), Char(cursor.data!![cursor.start - 2].toUShort()).code.toLong()) // Out of bounds!
+      assertEquals('e'.code.toLong(), Char(cursor.data!![cursor.start - 1].toUShort()).code.toLong()) // Out of bounds!
+      assertEquals('f'.code.toLong(), Char(cursor.data!![cursor.start].toUShort()).code.toLong())
+      assertEquals('g'.code.toLong(), Char(cursor.data!![cursor.start + 1].toUShort()).code.toLong())
     }
   }
 
-  @Test public void acquireAndRelease() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    UnsafeCursor cursor = new UnsafeCursor();
+  @Test
+  fun acquireAndRelease() {
+    val buffer = bufferFactory.newBuffer()
+    val cursor = Buffer.UnsafeCursor()
 
     // Nothing initialized before acquire.
-    assertEquals(-1, cursor.offset);
-    assertNull(cursor.data);
-    assertEquals(-1, cursor.start);
-    assertEquals(-1, cursor.end);
-
-    buffer.readUnsafe(cursor);
-    cursor.close();
+    assertEquals(-1, cursor.offset)
+    assertNull(cursor.data)
+    assertEquals(-1, cursor.start.toLong())
+    assertEquals(-1, cursor.end.toLong())
+    buffer.readUnsafe(cursor)
+    cursor.close()
 
     // Nothing initialized after close.
-    assertEquals(-1, cursor.offset);
-    assertNull(cursor.data);
-    assertEquals(-1, cursor.start);
-    assertEquals(-1, cursor.end);
+    assertEquals(-1, cursor.offset)
+    assertNull(cursor.data)
+    assertEquals(-1, cursor.start.toLong())
+    assertEquals(-1, cursor.end.toLong())
   }
 
-  @Test public void doubleAcquire() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      buffer.readUnsafe(cursor);
-      fail();
-    } catch (IllegalStateException expected) {
-    }
-  }
-
-  @Test public void releaseWithoutAcquire() throws Exception {
-    UnsafeCursor cursor = new UnsafeCursor();
+  @Test
+  fun doubleAcquire() {
+    val buffer = bufferFactory.newBuffer()
     try {
-      cursor.close();
-      fail();
-    } catch (IllegalStateException expected) {
-    }
-  }
-
-  @Test public void releaseAfterRelease() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    UnsafeCursor cursor = buffer.readUnsafe();
-    cursor.close();
-    try {
-      cursor.close();
-      fail();
-    } catch (IllegalStateException expected) {
-    }
-  }
-
-  @Test public void enlarge() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
-
-    Buffer expected = deepCopy(buffer);
-    expected.writeUtf8("abc");
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      assertEquals(originalSize, cursor.resizeBuffer(originalSize + 3));
-      cursor.seek(originalSize);
-      cursor.data[cursor.start] = 'a';
-      cursor.seek(originalSize + 1);
-      cursor.data[cursor.start] = 'b';
-      cursor.seek(originalSize + 2);
-      cursor.data[cursor.start] = 'c';
-    }
-
-    assertEquals(expected, buffer);
-  }
-
-  @Test public void enlargeByManySegments() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
-
-    Buffer expected = deepCopy(buffer);
-    expected.writeUtf8(repeat("x", 1_000_000));
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.resizeBuffer(originalSize + 1_000_000);
-      cursor.seek(originalSize);
-      do {
-        Arrays.fill(cursor.data, cursor.start, cursor.end, (byte) 'x');
-      } while (cursor.next() != -1);
-    }
-
-    assertEquals(expected, buffer);
-  }
-
-  @Test public void resizeNotAcquired() throws Exception {
-    UnsafeCursor cursor = new UnsafeCursor();
-    try {
-      cursor.resizeBuffer(10);
-      fail();
-    } catch (IllegalStateException expected) {
-    }
-  }
-
-  @Test public void expandNotAcquired() throws Exception {
-    UnsafeCursor cursor = new UnsafeCursor();
-    try {
-      cursor.expandBuffer(10);
-      fail();
-    } catch (IllegalStateException expected) {
-    }
-  }
-
-  @Test public void resizeAcquiredReadOnly() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      cursor.resizeBuffer(10);
-      fail();
-    } catch (IllegalStateException expected) {
-    }
-  }
-
-  @Test public void expandAcquiredReadOnly() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-
-    try (UnsafeCursor cursor = buffer.readUnsafe()) {
-      cursor.expandBuffer(10);
-      fail();
-    } catch (IllegalStateException expected) {
-    }
-  }
-
-  @Test public void shrink() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    assumeTrue(buffer.size() > 3);
-    long originalSize = buffer.size();
-
-    Buffer expected = new Buffer();
-    deepCopy(buffer).copyTo(expected, 0, originalSize - 3);
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      assertEquals(originalSize, cursor.resizeBuffer(originalSize - 3));
-    }
-
-    assertEquals(expected, buffer);
-  }
-
-  @Test public void shrinkByManySegments() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    assumeTrue(buffer.size() <= 1_000_000);
-    long originalSize = buffer.size();
-
-    Buffer toShrink = new Buffer();
-    toShrink.writeUtf8(repeat("x", 1_000_000));
-    deepCopy(buffer).copyTo(toShrink, 0, originalSize);
-
-    UnsafeCursor cursor = new UnsafeCursor();
-    toShrink.readAndWriteUnsafe(cursor);
-    try {
-      cursor.resizeBuffer(originalSize);
-    } finally {
-      cursor.close();
-    }
-
-    Buffer expected = new Buffer();
-    expected.writeUtf8(repeat("x", (int) originalSize));
-    assertEquals(expected, toShrink);
-  }
-
-  @Test public void shrinkAdjustOffset() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    assumeTrue(buffer.size() > 4);
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(buffer.size() - 1);
-      cursor.resizeBuffer(3);
-      assertEquals(3, cursor.offset);
-      assertNull(cursor.data);
-      assertEquals(-1, cursor.start);
-      assertEquals(-1, cursor.end);
-    }
-  }
-
-  @Test public void resizeToSameSizeSeeksToEnd() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(buffer.size() / 2);
-      assertEquals(originalSize, buffer.size());
-      cursor.resizeBuffer(originalSize);
-      assertEquals(originalSize, buffer.size());
-      assertEquals(originalSize, cursor.offset);
-      assertNull(cursor.data);
-      assertEquals(-1, cursor.start);
-      assertEquals(-1, cursor.end);
-    }
-  }
-
-  @Test public void resizeEnlargeMovesCursorToOldSize() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
-
-    Buffer expected = deepCopy(buffer);
-    expected.writeUtf8("a");
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(buffer.size() / 2);
-      assertEquals(originalSize, buffer.size());
-      cursor.resizeBuffer(originalSize + 1);
-      assertEquals(originalSize, cursor.offset);
-      assertNotNull(cursor.data);
-      assertNotEquals(-1, cursor.start);
-      assertEquals(cursor.start + 1, cursor.end);
-      cursor.data[cursor.start] = 'a';
-    }
-
-    assertEquals(expected, buffer);
-  }
-
-  @Test public void resizeShrinkMovesCursorToEnd() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    assumeTrue(buffer.size() > 0);
-    long originalSize = buffer.size();
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(buffer.size() / 2);
-      assertEquals(originalSize, buffer.size());
-      cursor.resizeBuffer(originalSize - 1);
-      assertEquals(originalSize - 1, cursor.offset);
-      assertNull(cursor.data);
-      assertEquals(-1, cursor.start);
-      assertEquals(-1, cursor.end);
-    }
-  }
-
-  @Test public void expand() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
-
-    Buffer expected = deepCopy(buffer);
-    expected.writeUtf8("abcde");
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.expandBuffer(5);
-
-      for (int i = 0; i < 5; i++) {
-        cursor.data[cursor.start + i] = (byte) ('a' + i);
+      buffer.readUnsafe().use { cursor ->
+        buffer.readUnsafe(cursor)
+        fail()
       }
-
-      cursor.resizeBuffer(originalSize + 5);
-    }
-
-    assertEquals(expected, buffer);
-  }
-
-  @Test public void expandSameSegment() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
-    assumeTrue(originalSize > 0);
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(originalSize - 1);
-      int originalEnd = cursor.end;
-      assumeTrue(originalEnd < SEGMENT_SIZE);
-
-      long addedByteCount = cursor.expandBuffer(1);
-      assertEquals(SEGMENT_SIZE - originalEnd, addedByteCount);
-
-      assertEquals(originalSize + addedByteCount, buffer.size());
-      assertEquals(originalSize, cursor.offset);
-      assertEquals(originalEnd, cursor.start);
-      assertEquals(SEGMENT_SIZE, cursor.end);
+    } catch (expected: IllegalStateException) {
     }
   }
 
-  @Test public void expandNewSegment() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
-
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      long addedByteCount = cursor.expandBuffer(SEGMENT_SIZE);
-      assertEquals(SEGMENT_SIZE, addedByteCount);
-
-      assertEquals(originalSize, cursor.offset);
-      assertEquals(0, cursor.start);
-      assertEquals(SEGMENT_SIZE, cursor.end);
+  @Test
+  fun releaseWithoutAcquire() {
+    val cursor = Buffer.UnsafeCursor()
+    try {
+      cursor.close()
+      fail()
+    } catch (expected: IllegalStateException) {
     }
   }
 
-  @Test public void expandMovesOffsetToOldSize() throws Exception {
-    Buffer buffer = bufferFactory.newBuffer();
-    long originalSize = buffer.size();
+  @Test
+  fun releaseAfterRelease() {
+    val buffer = bufferFactory.newBuffer()
+    val cursor = buffer.readUnsafe()
+    cursor.close()
+    try {
+      cursor.close()
+      fail()
+    } catch (expected: IllegalStateException) {
+    }
+  }
 
-    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
-      cursor.seek(buffer.size() / 2);
-      assertEquals(originalSize, buffer.size());
-      long addedByteCount = cursor.expandBuffer(5);
-      assertEquals(originalSize + addedByteCount, buffer.size());
-      assertEquals(originalSize, cursor.offset);
+  @Test
+  fun enlarge() {
+    val buffer = bufferFactory.newBuffer()
+    val originalSize = buffer.size
+    val expected = deepCopy(buffer)
+    expected.writeUtf8("abc")
+    buffer.readAndWriteUnsafe().use { cursor ->
+      assertEquals(originalSize, cursor.resizeBuffer(originalSize + 3))
+      cursor.seek(originalSize)
+      cursor.data!![cursor.start] = 'a'.code.toByte()
+      cursor.seek(originalSize + 1)
+      cursor.data!![cursor.start] = 'b'.code.toByte()
+      cursor.seek(originalSize + 2)
+      cursor.data!![cursor.start] = 'c'.code.toByte()
+    }
+    assertEquals(expected, buffer)
+  }
+
+  @Test
+  fun enlargeByManySegments() {
+    val buffer = bufferFactory.newBuffer()
+    val originalSize = buffer.size
+    val expected = deepCopy(buffer)
+    expected.writeUtf8("x".repeat(1000000))
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.resizeBuffer(originalSize + 1000000)
+      cursor.seek(originalSize)
+      do {
+        Arrays.fill(cursor.data, cursor.start, cursor.end, 'x'.code.toByte())
+      } while (cursor.next() != -1)
+    }
+    assertEquals(expected, buffer)
+  }
+
+  @Test
+  fun resizeNotAcquired() {
+    val cursor = Buffer.UnsafeCursor()
+    try {
+      cursor.resizeBuffer(10)
+      fail()
+    } catch (expected: IllegalStateException) {
+    }
+  }
+
+  @Test
+  fun expandNotAcquired() {
+    val cursor = Buffer.UnsafeCursor()
+    try {
+      cursor.expandBuffer(10)
+      fail()
+    } catch (expected: IllegalStateException) {
+    }
+  }
+
+  @Test
+  fun resizeAcquiredReadOnly() {
+    val buffer = bufferFactory.newBuffer()
+    try {
+      buffer.readUnsafe().use { cursor ->
+        cursor.resizeBuffer(10)
+        fail()
+      }
+    } catch (expected: IllegalStateException) {
+    }
+  }
+
+  @Test
+  fun expandAcquiredReadOnly() {
+    val buffer = bufferFactory.newBuffer()
+    try {
+      buffer.readUnsafe().use { cursor ->
+        cursor.expandBuffer(10)
+        fail()
+      }
+    } catch (expected: IllegalStateException) {
+    }
+  }
+
+  @Test
+  fun shrink() {
+    val buffer = bufferFactory.newBuffer()
+    assumeTrue(buffer.size > 3)
+    val originalSize = buffer.size
+    val expected = Buffer()
+    deepCopy(buffer).copyTo(expected, 0, originalSize - 3)
+    buffer.readAndWriteUnsafe().use { cursor ->
+      assertEquals(originalSize, cursor.resizeBuffer(originalSize - 3))
+    }
+    assertEquals(expected, buffer)
+  }
+
+  @Test
+  fun shrinkByManySegments() {
+    val buffer = bufferFactory.newBuffer()
+    assumeTrue(buffer.size <= 1000000)
+    val originalSize = buffer.size
+    val toShrink = Buffer()
+    toShrink.writeUtf8("x".repeat(1000000))
+    deepCopy(buffer).copyTo(toShrink, 0, originalSize)
+    val cursor = Buffer.UnsafeCursor()
+    toShrink.readAndWriteUnsafe(cursor)
+    try {
+      cursor.resizeBuffer(originalSize)
+    } finally {
+      cursor.close()
+    }
+    val expected = Buffer()
+    expected.writeUtf8("x".repeat(originalSize.toInt()))
+    assertEquals(expected, toShrink)
+  }
+
+  @Test
+  fun shrinkAdjustOffset() {
+    val buffer = bufferFactory.newBuffer()
+    assumeTrue(buffer.size > 4)
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.seek(buffer.size - 1)
+      cursor.resizeBuffer(3)
+      assertEquals(3, cursor.offset)
+      assertNull(cursor.data)
+      assertEquals(-1, cursor.start.toLong())
+      assertEquals(-1, cursor.end.toLong())
+    }
+  }
+
+  @Test
+  fun resizeToSameSizeSeeksToEnd() {
+    val buffer = bufferFactory.newBuffer()
+    val originalSize = buffer.size
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.seek(buffer.size / 2)
+      assertEquals(originalSize, buffer.size)
+      cursor.resizeBuffer(originalSize)
+      assertEquals(originalSize, buffer.size)
+      assertEquals(originalSize, cursor.offset)
+      assertNull(cursor.data)
+      assertEquals(-1, cursor.start.toLong())
+      assertEquals(-1, cursor.end.toLong())
+    }
+  }
+
+  @Test
+  fun resizeEnlargeMovesCursorToOldSize() {
+    val buffer = bufferFactory.newBuffer()
+    val originalSize = buffer.size
+    val expected = deepCopy(buffer)
+    expected.writeUtf8("a")
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.seek(buffer.size / 2)
+      assertEquals(originalSize, buffer.size)
+      cursor.resizeBuffer(originalSize + 1)
+      assertEquals(originalSize, cursor.offset)
+      assertNotNull(cursor.data)
+      assertNotEquals(-1, cursor.start.toLong())
+      assertEquals((cursor.start + 1).toLong(), cursor.end.toLong())
+      cursor.data!![cursor.start] = 'a'.code.toByte()
+    }
+    assertEquals(expected, buffer)
+  }
+
+  @Test
+  fun resizeShrinkMovesCursorToEnd() {
+    val buffer = bufferFactory.newBuffer()
+    assumeTrue(buffer.size > 0)
+    val originalSize = buffer.size
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.seek(buffer.size / 2)
+      assertEquals(originalSize, buffer.size)
+      cursor.resizeBuffer(originalSize - 1)
+      assertEquals(originalSize - 1, cursor.offset)
+      assertNull(cursor.data)
+      assertEquals(-1, cursor.start.toLong())
+      assertEquals(-1, cursor.end.toLong())
+    }
+  }
+
+  @Test
+  fun expand() {
+    val buffer = bufferFactory.newBuffer()
+    val originalSize = buffer.size
+    val expected = deepCopy(buffer)
+    expected.writeUtf8("abcde")
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.expandBuffer(5)
+      for (i in 0..4) {
+        cursor.data!![cursor.start + i] = ('a'.code + i).toByte()
+      }
+      cursor.resizeBuffer(originalSize + 5)
+    }
+    assertEquals(expected, buffer)
+  }
+
+  @Test
+  fun expandSameSegment() {
+    val buffer = bufferFactory.newBuffer()
+    val originalSize = buffer.size
+    assumeTrue(originalSize > 0)
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.seek(originalSize - 1)
+      val originalEnd = cursor.end
+      assumeTrue(originalEnd < SEGMENT_SIZE)
+      val addedByteCount = cursor.expandBuffer(1)
+      assertEquals((SEGMENT_SIZE - originalEnd).toLong(), addedByteCount)
+      assertEquals(originalSize + addedByteCount, buffer.size)
+      assertEquals(originalSize, cursor.offset)
+      assertEquals(originalEnd.toLong(), cursor.start.toLong())
+      assertEquals(SEGMENT_SIZE.toLong(), cursor.end.toLong())
+    }
+  }
+
+  @Test
+  fun expandNewSegment() {
+    val buffer = bufferFactory.newBuffer()
+    val originalSize = buffer.size
+    buffer.readAndWriteUnsafe().use { cursor ->
+      val addedByteCount = cursor.expandBuffer(SEGMENT_SIZE)
+      assertEquals(SEGMENT_SIZE.toLong(), addedByteCount)
+      assertEquals(originalSize, cursor.offset)
+      assertEquals(0, cursor.start.toLong())
+      assertEquals(SEGMENT_SIZE.toLong(), cursor.end.toLong())
+    }
+  }
+
+  @Test
+  fun expandMovesOffsetToOldSize() {
+    val buffer = bufferFactory.newBuffer()
+    val originalSize = buffer.size
+    buffer.readAndWriteUnsafe().use { cursor ->
+      cursor.seek(buffer.size / 2)
+      assertEquals(originalSize, buffer.size)
+      val addedByteCount = cursor.expandBuffer(5)
+      assertEquals(originalSize + addedByteCount, buffer.size)
+      assertEquals(originalSize, cursor.offset)
+    }
+  }
+
+  companion object {
+    @JvmStatic
+    @Parameters(name = "{0}")
+    fun parameters(): List<Array<Any>> {
+      val result = mutableListOf<Array<Any>>()
+      for (bufferFactory in BufferFactory.values()) {
+        result += arrayOf(bufferFactory)
+      }
+      return result
     }
   }
 }

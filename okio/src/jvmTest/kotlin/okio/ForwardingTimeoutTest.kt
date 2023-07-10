@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import java.util.concurrent.TimeUnit
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-public class ForwardingTimeoutTest {
-  @Test public void getAndSetDelegate() {
-    Timeout timeout1 = new Timeout();
-    Timeout timeout2 = new Timeout();
-
-    ForwardingTimeout forwardingTimeout = new ForwardingTimeout(timeout1);
-    forwardingTimeout.timeout(5, TimeUnit.SECONDS);
-    assertThat(timeout1.timeoutNanos()).isNotEqualTo(0L);
-    assertThat(timeout2.timeoutNanos()).isEqualTo(0L);
-    forwardingTimeout.clearTimeout();
-    assertThat(timeout1.timeoutNanos()).isEqualTo(0L);
-    assertThat(timeout2.timeoutNanos()).isEqualTo(0L);
-    assertThat(forwardingTimeout.delegate()).isEqualTo(timeout1);
-
-    assertThat(forwardingTimeout.setDelegate(timeout2)).isEqualTo(forwardingTimeout);
-    forwardingTimeout.timeout(5, TimeUnit.SECONDS);
-    assertThat(timeout1.timeoutNanos()).isEqualTo(0L);
-    assertThat(timeout2.timeoutNanos()).isNotEqualTo(0L);
-    forwardingTimeout.clearTimeout();
-    assertThat(timeout1.timeoutNanos()).isEqualTo(0L);
-    assertThat(timeout2.timeoutNanos()).isEqualTo(0L);
-    assertThat(forwardingTimeout.delegate()).isEqualTo(timeout2);
+class ForwardingTimeoutTest {
+  @Test
+  fun getAndSetDelegate() {
+    val timeout1 = Timeout()
+    val timeout2 = Timeout()
+    val forwardingTimeout = ForwardingTimeout(timeout1)
+    forwardingTimeout.timeout(5, TimeUnit.SECONDS)
+    assertThat(timeout1.timeoutNanos()).isNotEqualTo(0L)
+    assertThat(timeout2.timeoutNanos()).isEqualTo(0L)
+    forwardingTimeout.clearTimeout()
+    assertThat(timeout1.timeoutNanos()).isEqualTo(0L)
+    assertThat(timeout2.timeoutNanos()).isEqualTo(0L)
+    assertThat(forwardingTimeout.delegate).isEqualTo(timeout1)
+    assertThat(forwardingTimeout.setDelegate(timeout2)).isEqualTo(forwardingTimeout)
+    forwardingTimeout.timeout(5, TimeUnit.SECONDS)
+    assertThat(timeout1.timeoutNanos()).isEqualTo(0L)
+    assertThat(timeout2.timeoutNanos()).isNotEqualTo(0L)
+    forwardingTimeout.clearTimeout()
+    assertThat(timeout1.timeoutNanos()).isEqualTo(0L)
+    assertThat(timeout2.timeoutNanos()).isEqualTo(0L)
+    assertThat(forwardingTimeout.delegate).isEqualTo(timeout2)
   }
 }

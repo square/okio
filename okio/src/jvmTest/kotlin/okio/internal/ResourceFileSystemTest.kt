@@ -405,7 +405,8 @@ class ResourceFileSystemTest {
       .isEqualTo("Hello World")
   }
 
-  @Test fun listSpecialCharacterNamedFiles() {
+  @Test
+  fun listSpecialCharacterNamedFiles() {
     val path = "okio/resourcefilesystem/non-ascii".toPath()
 
     assertThat(fileSystem.listRecursively(path).toList()).containsExactly(

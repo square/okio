@@ -13,34 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.IOException;
-import org.junit.Before;
-import org.junit.Test;
+import okio.Path.Companion.toPath
+import org.assertj.core.api.Assertions
+import org.junit.Before
+import org.junit.Test
 
-import static okio.TestingCommonKt.randomToken;
-import static org.assertj.core.api.Assertions.assertThat;
-
-public final class ZipFileSystemJavaTest {
-  private FileSystem fileSystem = FileSystem.SYSTEM;
-  private Path base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve(randomToken(16));
+class ZipFileSystemJavaTest {
+  private val fileSystem = FileSystem.SYSTEM
+  private val base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.div(randomToken(16))
 
   @Before
-  public void setUp() throws Exception {
-    fileSystem.createDirectory(base);
+  fun setUp() {
+    fileSystem.createDirectory(base)
   }
 
   @Test
-  public void zipFileSystemApi() throws IOException {
-    Path zipPath = new ZipBuilder(base)
-        .addEntry("hello.txt", "Hello World")
-        .build();
-    FileSystem zipFileSystem = Okio.openZip(fileSystem, zipPath);
-
-    try (BufferedSource source = Okio.buffer(zipFileSystem.source(Path.get("hello.txt", false)))) {
-      String content = source.readUtf8();
-      assertThat(content).isEqualTo("Hello World");
+  fun zipFileSystemApi() {
+    val zipPath = ZipBuilder(base)
+      .addEntry("hello.txt", "Hello World")
+      .build()
+    val zipFileSystem = fileSystem.openZip(zipPath)
+    zipFileSystem.source("hello.txt".toPath(false)).buffer().use { source ->
+      val content = source.readUtf8()
+      Assertions.assertThat(content).isEqualTo("Hello World")
     }
   }
 }

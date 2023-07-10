@@ -13,106 +13,100 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.zip.Deflater;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import org.junit.Test;
+import java.util.concurrent.Future
+import java.util.zip.Deflater
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
+import okio.ByteString.Companion.decodeHex
+import okio.HashingSink.Companion.sha256
+import okio.TestUtil.SEGMENT_SIZE
+import okio.TestUtil.randomSource
+import okio.TestingExecutors.newExecutorService
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-import static okio.TestUtil.SEGMENT_SIZE;
-import static okio.TestUtil.randomSource;
-import static org.junit.Assert.assertEquals;
-
-/** Slow running tests that run a large amount of data through a stream. */
-public final class LargeStreamsTest {
-  /** 4 GiB plus 1 byte. This is greater than what can be expressed in an unsigned int. */
-  public static final long FOUR_GIB_PLUS_ONE = 0x100000001L;
-
-  /** SHA-256 of {@code TestUtil.randomSource(FOUR_GIB_PLUS_ONE)}. */
-  public static final ByteString SHA256_RANDOM_FOUR_GIB_PLUS_1 = ByteString.decodeHex(
-      "9654947a655c5efc445502fd1bf11117d894b7812b7974fde8ca4a02c5066315");
-
-  @Test public void test() throws Exception {
-    Pipe pipe = new Pipe(1024 * 1024);
-
-    Future<Long> future = readAllAndCloseAsync(randomSource(FOUR_GIB_PLUS_ONE), pipe.sink());
-
-    HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
-    readAllAndClose(pipe.source(), hashingSink);
-
-    assertEquals(FOUR_GIB_PLUS_ONE, (long) future.get());
-    assertEquals(SHA256_RANDOM_FOUR_GIB_PLUS_1, hashingSink.hash());
+/** Slow running tests that run a large amount of data through a stream.  */
+class LargeStreamsTest {
+  @Test
+  fun test() {
+    val pipe = Pipe((1024 * 1024).toLong())
+    val future = readAllAndCloseAsync(randomSource(FOUR_GIB_PLUS_ONE), pipe.sink)
+    val hashingSink = sha256(blackholeSink())
+    readAllAndClose(pipe.source, hashingSink)
+    assertEquals(FOUR_GIB_PLUS_ONE, future.get() as Long)
+    assertEquals(SHA256_RANDOM_FOUR_GIB_PLUS_1, hashingSink.hash)
   }
 
-  /** Note that this test hangs on Android. */
-  @Test public void gzipSource() throws Exception {
-    Pipe pipe = new Pipe(1024 * 1024);
-
-    OutputStream gzipOut = new GZIPOutputStream(Okio.buffer(pipe.sink()).outputStream()) {
-      {
+  /** Note that this test hangs on Android.  */
+  @Test
+  fun gzipSource() {
+    val pipe = Pipe(1024L * 1024)
+    val gzipOut = object : GZIPOutputStream(pipe.sink.buffer().outputStream()) {
+      init {
         // Disable compression to speed up a slow test. Improved from 141s to 33s on one machine.
-        def.setLevel(Deflater.NO_COMPRESSION);
+        def.setLevel(Deflater.NO_COMPRESSION)
       }
-    };
-    Future<Long> future = readAllAndCloseAsync(
-        randomSource(FOUR_GIB_PLUS_ONE), Okio.sink(gzipOut));
-
-    HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
-    GzipSource gzipSource = new GzipSource(pipe.source());
-    readAllAndClose(gzipSource, hashingSink);
-
-    assertEquals(FOUR_GIB_PLUS_ONE, (long) future.get());
-    assertEquals(SHA256_RANDOM_FOUR_GIB_PLUS_1, hashingSink.hash());
+    }
+    val future = readAllAndCloseAsync(
+      randomSource(FOUR_GIB_PLUS_ONE),
+      gzipOut.sink(),
+    )
+    val hashingSink = sha256(blackholeSink())
+    val gzipSource = GzipSource(pipe.source)
+    readAllAndClose(gzipSource, hashingSink)
+    assertEquals(FOUR_GIB_PLUS_ONE, future.get() as Long)
+    assertEquals(SHA256_RANDOM_FOUR_GIB_PLUS_1, hashingSink.hash)
   }
 
-  /** Note that this test hangs on Android. */
-  @Test public void gzipSink() throws Exception {
-    Pipe pipe = new Pipe(1024 * 1024);
-
-    GzipSink gzipSink = new GzipSink(pipe.sink());
+  /** Note that this test hangs on Android.  */
+  @Test
+  fun gzipSink() {
+    val pipe = Pipe(1024L * 1024)
+    val gzipSink = GzipSink(pipe.sink)
 
     // Disable compression to speed up a slow test. Improved from 141s to 35s on one machine.
-    gzipSink.deflater().setLevel(Deflater.NO_COMPRESSION);
-    Future<Long> future = readAllAndCloseAsync(randomSource(FOUR_GIB_PLUS_ONE), gzipSink);
-
-    HashingSink hashingSink = HashingSink.sha256(Okio.blackhole());
-    GZIPInputStream gzipIn = new GZIPInputStream(Okio.buffer(pipe.source()).inputStream());
-    readAllAndClose(Okio.source(gzipIn), hashingSink);
-
-    assertEquals(FOUR_GIB_PLUS_ONE, (long) future.get());
-    assertEquals(SHA256_RANDOM_FOUR_GIB_PLUS_1, hashingSink.hash());
+    gzipSink.deflater.setLevel(Deflater.NO_COMPRESSION)
+    val future = readAllAndCloseAsync(randomSource(FOUR_GIB_PLUS_ONE), gzipSink)
+    val hashingSink = sha256(blackholeSink())
+    val gzipIn = GZIPInputStream(pipe.source.buffer().inputStream())
+    readAllAndClose(gzipIn.source(), hashingSink)
+    assertEquals(FOUR_GIB_PLUS_ONE, future.get() as Long)
+    assertEquals(SHA256_RANDOM_FOUR_GIB_PLUS_1, hashingSink.hash)
   }
 
-  /** Reads all bytes from {@code source} and writes them to {@code sink}. */
-  private Long readAllAndClose(Source source, Sink sink) throws IOException {
-    long result = 0L;
-    Buffer buffer = new Buffer();
-    for (long count; (count = source.read(buffer, SEGMENT_SIZE)) != -1L; result += count) {
-      sink.write(buffer, count);
+  /** Reads all bytes from `source` and writes them to `sink`.  */
+  private fun readAllAndClose(source: Source, sink: Sink): Long {
+    var result = 0L
+    val buffer = Buffer()
+    while (true) {
+      val count = source.read(buffer, SEGMENT_SIZE.toLong())
+      if (count == -1L) break
+      sink.write(buffer, count)
+      result += count
     }
-    source.close();
-    sink.close();
-    return result;
+    source.close()
+    sink.close()
+    return result
   }
 
-  /** Calls {@link #readAllAndClose} on a background thread. */
-  private Future<Long> readAllAndCloseAsync(final Source source, final Sink sink) {
-    ExecutorService executor = TestingExecutors.INSTANCE.newExecutorService(0);
-    try {
-      return executor.submit(new Callable<Long>() {
-        @Override public Long call() throws Exception {
-          return readAllAndClose(source, sink);
-        }
-      });
+  /** Calls [readAllAndClose] on a background thread.  */
+  private fun readAllAndCloseAsync(source: Source, sink: Sink): Future<Long> {
+    val executor = newExecutorService(0)
+    return try {
+      executor.submit<Long> { readAllAndClose(source, sink) }
     } finally {
-      executor.shutdown();
+      executor.shutdown()
     }
+  }
+
+  companion object {
+    /** 4 GiB plus 1 byte. This is greater than what can be expressed in an unsigned int.  */
+    const val FOUR_GIB_PLUS_ONE = 0x100000001L
+
+    /** SHA-256 of `TestUtil.randomSource(FOUR_GIB_PLUS_ONE)`.  */
+    val SHA256_RANDOM_FOUR_GIB_PLUS_1 =
+      "9654947a655c5efc445502fd1bf11117d894b7812b7974fde8ca4a02c5066315".decodeHex()
   }
 }

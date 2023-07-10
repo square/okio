@@ -13,198 +13,203 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.List;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.Inflater;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import java.io.EOFException
+import java.util.zip.DeflaterOutputStream
+import java.util.zip.Inflater
+import okio.BufferedSourceFactory.Companion.PARAMETERIZED_TEST_VALUES
+import okio.ByteString.Companion.decodeBase64
+import okio.ByteString.Companion.encodeUtf8
+import okio.TestUtil.SEGMENT_SIZE
+import okio.TestUtil.randomBytes
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
+import org.junit.Assume.assumeFalse
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
-import static kotlin.text.StringsKt.repeat;
-import static okio.TestUtil.SEGMENT_SIZE;
-import static okio.TestUtil.randomBytes;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+@RunWith(Parameterized::class)
+class InflaterSourceTest(
+  private val bufferFactory: BufferedSourceFactory,
+) {
+  private lateinit var deflatedSink: BufferedSink
+  private lateinit var deflatedSource: BufferedSource
 
-@RunWith(Parameterized.class)
-public final class InflaterSourceTest {
-  /**
-   * Use a parameterized test to control how many bytes the InflaterSource gets with each request
-   * for more bytes.
-   */
-  @Parameters(name = "{0}")
-  public static List<Object[]> parameters() {
-    return BufferedSourceFactory.Companion.getPARAMETERIZED_TEST_VALUES();
+  init {
+    resetDeflatedSourceAndSink()
   }
 
-  public final BufferedSourceFactory bufferFactory;
-  public BufferedSink deflatedSink;
-  public BufferedSource deflatedSource;
-
-  public InflaterSourceTest(BufferedSourceFactory bufferFactory) {
-    this.bufferFactory = bufferFactory;
-    resetDeflatedSourceAndSink();
+  private fun resetDeflatedSourceAndSink() {
+    val pipe = bufferFactory.pipe()
+    deflatedSink = pipe.sink
+    deflatedSource = pipe.source
   }
 
-  private void resetDeflatedSourceAndSink() {
-    BufferedSourceFactory.Pipe pipe = bufferFactory.pipe();
-    this.deflatedSink = pipe.getSink();
-    this.deflatedSource = pipe.getSource();
+  @Test
+  fun inflate() {
+    decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=")
+    val inflated = inflate(deflatedSource)
+    assertEquals("God help us, we're in the hands of engineers.", inflated.readUtf8())
   }
 
-  @Test public void inflate() throws Exception {
-    decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=");
-    Buffer inflated = inflate(deflatedSource);
-    assertEquals("God help us, we're in the hands of engineers.", inflated.readUtf8());
-  }
-
-  @Test public void inflateTruncated() throws Exception {
-    decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CDw==");
+  @Test
+  fun inflateTruncated() {
+    decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CDw==")
     try {
-      inflate(deflatedSource);
-      fail();
-    } catch (EOFException expected) {
+      inflate(deflatedSource)
+      fail()
+    } catch (expected: EOFException) {
     }
   }
 
-  @Test public void inflateWellCompressed() throws Exception {
-    decodeBase64("eJztwTEBAAAAwqCs61/CEL5AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8BtFeWvE=");
-    String original = repeat("a", 1024 * 1024);
-    deflate(ByteString.encodeUtf8(original));
-    Buffer inflated = inflate(deflatedSource);
-    assertEquals(original, inflated.readUtf8());
+  @Test
+  fun inflateWellCompressed() {
+    decodeBase64(
+      "eJztwTEBAAAAwqCs61/CEL5AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8BtFeWvE=",
+    )
+    val original = "a".repeat(1024 * 1024)
+    deflate(original.encodeUtf8())
+    val inflated = inflate(deflatedSource)
+    assertEquals(original, inflated.readUtf8())
   }
 
-  @Test public void inflatePoorlyCompressed() throws Exception {
-    assumeFalse(bufferFactory.isOneByteAtATime()); // 8 GiB for 1 byte per segment!
-
-    ByteString original = randomBytes(1024 * 1024);
-    deflate(original);
-    Buffer inflated = inflate(deflatedSource);
-    assertEquals(original, inflated.readByteString());
+  @Test
+  fun inflatePoorlyCompressed() {
+    assumeFalse(bufferFactory.isOneByteAtATime) // 8 GiB for 1 byte per segment!
+    val original = randomBytes(1024 * 1024)
+    deflate(original)
+    val inflated = inflate(deflatedSource)
+    assertEquals(original, inflated.readByteString())
   }
 
-  @Test public void inflateIntoNonemptySink() throws Exception {
-    for (int i = 0; i < SEGMENT_SIZE; i++) {
-      resetDeflatedSourceAndSink();
-      Buffer inflated = new Buffer().writeUtf8(repeat("a", i));
-      deflate(ByteString.encodeUtf8("God help us, we're in the hands of engineers."));
-      InflaterSource source = new InflaterSource(deflatedSource, new Inflater());
-      while (source.read(inflated, Integer.MAX_VALUE) != -1) {
+  @Test
+  fun inflateIntoNonemptySink() {
+    for (i in 0 until SEGMENT_SIZE) {
+      resetDeflatedSourceAndSink()
+      val inflated = Buffer().writeUtf8("a".repeat(i))
+      deflate("God help us, we're in the hands of engineers.".encodeUtf8())
+      val source = InflaterSource(deflatedSource, Inflater())
+      while (source.read(inflated, Int.MAX_VALUE.toLong()) != -1L) {
       }
-      inflated.skip(i);
-      assertEquals("God help us, we're in the hands of engineers.", inflated.readUtf8());
+      inflated.skip(i.toLong())
+      assertEquals("God help us, we're in the hands of engineers.", inflated.readUtf8())
     }
   }
 
-  @Test public void inflateSingleByte() throws Exception {
-    Buffer inflated = new Buffer();
-    decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=");
-    InflaterSource source = new InflaterSource(deflatedSource, new Inflater());
-    source.read(inflated, 1);
-    source.close();
-    assertEquals("G", inflated.readUtf8());
-    assertEquals(0, inflated.size());
+  @Test
+  fun inflateSingleByte() {
+    val inflated = Buffer()
+    decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=")
+    val source = InflaterSource(deflatedSource, Inflater())
+    source.read(inflated, 1)
+    source.close()
+    assertEquals("G", inflated.readUtf8())
+    assertEquals(0, inflated.size)
   }
 
-  @Test public void inflateByteCount() throws Exception {
-    assumeFalse(bufferFactory.isOneByteAtATime()); // This test assumes one step.
-
-    Buffer inflated = new Buffer();
-    decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=");
-    InflaterSource source = new InflaterSource(deflatedSource, new Inflater());
-    source.read(inflated, 11);
-    source.close();
-    assertEquals("God help us", inflated.readUtf8());
-    assertEquals(0, inflated.size());
+  @Test
+  fun inflateByteCount() {
+    assumeFalse(bufferFactory.isOneByteAtATime) // This test assumes one step.
+    val inflated = Buffer()
+    decodeBase64("eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=")
+    val source = InflaterSource(deflatedSource, Inflater())
+    source.read(inflated, 11)
+    source.close()
+    assertEquals("God help us", inflated.readUtf8())
+    assertEquals(0, inflated.size)
   }
 
-  @Test public void sourceExhaustedPrematurelyOnRead() throws Exception {
+  @Test
+  fun sourceExhaustedPrematurelyOnRead() {
     // Deflate 0 bytes of data that lacks the in-stream terminator.
-    decodeBase64("eJwAAAD//w==");
-
-    Buffer inflated = new Buffer();
-    Inflater inflater = new Inflater();
-    InflaterSource source = new InflaterSource(deflatedSource, inflater);
-    assertThat(deflatedSource.exhausted()).isFalse();
+    decodeBase64("eJwAAAD//w==")
+    val inflated = Buffer()
+    val inflater = Inflater()
+    val source = InflaterSource(deflatedSource, inflater)
+    assertThat(deflatedSource.exhausted()).isFalse
     try {
-      source.read(inflated, Long.MAX_VALUE);
-      fail();
-    } catch (EOFException expected) {
-      assertThat(expected).hasMessage("source exhausted prematurely");
+      source.read(inflated, Long.MAX_VALUE)
+      fail()
+    } catch (expected: EOFException) {
+      assertThat(expected).hasMessage("source exhausted prematurely")
     }
 
     // Despite the exception, the read() call made forward progress on the underlying stream!
-    assertThat(deflatedSource.exhausted()).isTrue();
+    assertThat(deflatedSource.exhausted()).isTrue
   }
 
   /**
-   * Confirm that {@link InflaterSource#readOrInflate} consumes a byte on each call even if it
+   * Confirm that [InflaterSource.readOrInflate] consumes a byte on each call even if it
    * doesn't produce a byte on every call.
    */
-  @Test public void readOrInflateMakesByteByByteProgress() throws Exception {
+  @Test
+  fun readOrInflateMakesByteByByteProgress() {
     // Deflate 0 bytes of data that lacks the in-stream terminator.
-    decodeBase64("eJwAAAD//w==");
-    int deflatedByteCount = 7;
-
-    Buffer inflated = new Buffer();
-    Inflater inflater = new Inflater();
-    InflaterSource source = new InflaterSource(deflatedSource, inflater);
-    assertThat(deflatedSource.exhausted()).isFalse();
-
-    if (bufferFactory.isOneByteAtATime()) {
-      for (int i = 0; i < deflatedByteCount; i++) {
-        assertThat(inflater.getBytesRead()).isEqualTo(i);
-        assertThat(source.readOrInflate(inflated, Long.MAX_VALUE)).isEqualTo(0L);
+    decodeBase64("eJwAAAD//w==")
+    val deflatedByteCount = 7
+    val inflated = Buffer()
+    val inflater = Inflater()
+    val source = InflaterSource(deflatedSource, inflater)
+    assertThat(deflatedSource.exhausted()).isFalse
+    if (bufferFactory.isOneByteAtATime) {
+      for (i in 0 until deflatedByteCount) {
+        assertThat(inflater.bytesRead).isEqualTo(i.toLong())
+        assertThat(source.readOrInflate(inflated, Long.MAX_VALUE)).isEqualTo(0L)
       }
     } else {
-      assertThat(source.readOrInflate(inflated, Long.MAX_VALUE)).isEqualTo(0L);
+      assertThat(source.readOrInflate(inflated, Long.MAX_VALUE)).isEqualTo(0L)
     }
-
-    assertThat(inflater.getBytesRead()).isEqualTo(deflatedByteCount);
-    assertThat(deflatedSource.exhausted());
+    assertThat(inflater.bytesRead).isEqualTo(deflatedByteCount.toLong())
+    assertThat(deflatedSource.exhausted()).isTrue()
   }
 
-  private void decodeBase64(String s) throws IOException {
-    deflatedSink.write(ByteString.decodeBase64(s));
-    deflatedSink.flush();
+  private fun decodeBase64(s: String) {
+    deflatedSink.write(s.decodeBase64()!!)
+    deflatedSink.flush()
   }
 
-  /** Use DeflaterOutputStream to deflate source. */
-  private void deflate(ByteString source) throws IOException {
-    Sink sink = Okio.sink(new DeflaterOutputStream(deflatedSink.outputStream()));
-    sink.write(new Buffer().write(source), source.size());
-    sink.close();
+  /** Use DeflaterOutputStream to deflate source.  */
+  private fun deflate(source: ByteString) {
+    val sink = DeflaterOutputStream(deflatedSink.outputStream()).sink()
+    sink.write(Buffer().write(source), source.size.toLong())
+    sink.close()
   }
 
-  /** Returns a new buffer containing the inflated contents of {@code deflated}. */
-  private Buffer inflate(BufferedSource deflated) throws IOException {
-    Buffer result = new Buffer();
-    InflaterSource source = new InflaterSource(deflated, new Inflater());
-    while (source.read(result, Integer.MAX_VALUE) != -1) {
+  /** Returns a new buffer containing the inflated contents of `deflated`.  */
+  private fun inflate(deflated: BufferedSource?): Buffer {
+    val result = Buffer()
+    val source = InflaterSource(deflated!!, Inflater())
+    while (source.read(result, Int.MAX_VALUE.toLong()) != -1L) {
     }
-    return result;
+    return result
+  }
+
+  companion object {
+    /**
+     * Use a parameterized test to control how many bytes the InflaterSource gets with each request
+     * for more bytes.
+     */
+    @JvmStatic
+    @Parameters(name = "{0}")
+    fun parameters(): List<Array<Any>> = PARAMETERIZED_TEST_VALUES
   }
 }

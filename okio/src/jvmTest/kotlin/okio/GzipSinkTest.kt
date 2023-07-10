@@ -13,49 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.IOException;
-import org.junit.Test;
+import java.io.IOException
+import okio.TestUtil.SEGMENT_SIZE
+import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
+import org.junit.Test
 
-import static kotlin.text.StringsKt.repeat;
-import static okio.TestUtil.SEGMENT_SIZE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-public final class GzipSinkTest {
-  @Test public void gzipGunzip() throws Exception {
-    Buffer data = new Buffer();
-    String original = "It's a UNIX system! I know this!";
-    data.writeUtf8(original);
-    Buffer sink = new Buffer();
-    GzipSink gzipSink = new GzipSink(sink);
-    gzipSink.write(data, data.size());
-    gzipSink.close();
-    Buffer inflated = gunzip(sink);
-    assertEquals(original, inflated.readUtf8());
+class GzipSinkTest {
+  @Test
+  fun gzipGunzip() {
+    val data = Buffer()
+    val original = "It's a UNIX system! I know this!"
+    data.writeUtf8(original)
+    val sink = Buffer()
+    val gzipSink = GzipSink(sink)
+    gzipSink.write(data, data.size)
+    gzipSink.close()
+    val inflated = gunzip(sink)
+    assertEquals(original, inflated.readUtf8())
   }
 
-  @Test public void closeWithExceptionWhenWritingAndClosing() throws IOException {
-    MockSink mockSink = new MockSink();
-    mockSink.scheduleThrow(0, new IOException("first"));
-    mockSink.scheduleThrow(1, new IOException("second"));
-    GzipSink gzipSink = new GzipSink(mockSink);
-    gzipSink.write(new Buffer().writeUtf8(repeat("a", SEGMENT_SIZE)), SEGMENT_SIZE);
+  @Test
+  fun closeWithExceptionWhenWritingAndClosing() {
+    val mockSink = MockSink()
+    mockSink.scheduleThrow(0, IOException("first"))
+    mockSink.scheduleThrow(1, IOException("second"))
+    val gzipSink = GzipSink(mockSink)
+    gzipSink.write(Buffer().writeUtf8("a".repeat(SEGMENT_SIZE)), SEGMENT_SIZE.toLong())
     try {
-      gzipSink.close();
-      fail();
-    } catch (IOException expected) {
-      assertEquals("first", expected.getMessage());
+      gzipSink.close()
+      fail()
+    } catch (expected: IOException) {
+      assertEquals("first", expected.message)
     }
-    mockSink.assertLogContains("close()");
+    mockSink.assertLogContains("close()")
   }
 
-  private Buffer gunzip(Buffer gzipped) throws IOException {
-    Buffer result = new Buffer();
-    GzipSource source = new GzipSource(gzipped);
-    while (source.read(result, Integer.MAX_VALUE) != -1) {
+  private fun gunzip(gzipped: Buffer): Buffer {
+    val result = Buffer()
+    val source = GzipSource(gzipped)
+    while (source.read(result, Int.MAX_VALUE.toLong()) != -1L) {
     }
-    return result;
+    return result
   }
 }

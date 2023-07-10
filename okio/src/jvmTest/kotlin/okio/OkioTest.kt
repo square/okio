@@ -13,156 +13,135 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.nio.file.Files
+import kotlin.text.Charsets.UTF_8
+import okio.TestUtil.SEGMENT_SIZE
+import okio.TestUtil.assertNoEmptySegments
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
-import static kotlin.text.Charsets.UTF_8;
-import static kotlin.text.StringsKt.repeat;
-import static okio.TestUtil.SEGMENT_SIZE;
-import static okio.TestUtil.assertNoEmptySegments;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+class OkioTest {
+  @JvmField
+  @Rule
+  var temporaryFolder = TemporaryFolder()
 
-public final class OkioTest {
-  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Test public void readWriteFile() throws Exception {
-    File file = temporaryFolder.newFile();
-
-    BufferedSink sink = Okio.buffer(Okio.sink(file));
-    sink.writeUtf8("Hello, java.io file!");
-    sink.close();
-    assertTrue(file.exists());
-    assertEquals(20, file.length());
-
-    BufferedSource source = Okio.buffer(Okio.source(file));
-    assertEquals("Hello, java.io file!", source.readUtf8());
-    source.close();
+  @Test
+  fun readWriteFile() {
+    val file = temporaryFolder.newFile()
+    val sink = file.sink().buffer()
+    sink.writeUtf8("Hello, java.io file!")
+    sink.close()
+    assertTrue(file.exists())
+    assertEquals(20, file.length())
+    val source = file.source().buffer()
+    assertEquals("Hello, java.io file!", source.readUtf8())
+    source.close()
   }
 
-  @Test public void appendFile() throws Exception {
-    File file = temporaryFolder.newFile();
-
-    BufferedSink sink = Okio.buffer(Okio.appendingSink(file));
-    sink.writeUtf8("Hello, ");
-    sink.close();
-    assertTrue(file.exists());
-    assertEquals(7, file.length());
-
-    sink = Okio.buffer(Okio.appendingSink(file));
-    sink.writeUtf8("java.io file!");
-    sink.close();
-    assertEquals(20, file.length());
-
-    BufferedSource source = Okio.buffer(Okio.source(file));
-    assertEquals("Hello, java.io file!", source.readUtf8());
-    source.close();
+  @Test
+  fun appendFile() {
+    val file = temporaryFolder.newFile()
+    var sink = file.appendingSink().buffer()
+    sink.writeUtf8("Hello, ")
+    sink.close()
+    assertTrue(file.exists())
+    assertEquals(7, file.length())
+    sink = file.appendingSink().buffer()
+    sink.writeUtf8("java.io file!")
+    sink.close()
+    assertEquals(20, file.length())
+    val source = file.source().buffer()
+    assertEquals("Hello, java.io file!", source.readUtf8())
+    source.close()
   }
 
-  @Test public void readWritePath() throws Exception {
-    java.nio.file.Path path = temporaryFolder.newFile().toPath();
-
-    BufferedSink sink = Okio.buffer(Okio.sink(path));
-    sink.writeUtf8("Hello, java.nio file!");
-    sink.close();
-    assertTrue(Files.exists(path));
-    assertEquals(21, Files.size(path));
-
-    BufferedSource source = Okio.buffer(Okio.source(path));
-    assertEquals("Hello, java.nio file!", source.readUtf8());
-    source.close();
+  @Test
+  fun readWritePath() {
+    val path = temporaryFolder.newFile().toPath()
+    val sink = path.sink().buffer()
+    sink.writeUtf8("Hello, java.nio file!")
+    sink.close()
+    assertTrue(Files.exists(path))
+    assertEquals(21, Files.size(path))
+    val source = path.source().buffer()
+    assertEquals("Hello, java.nio file!", source.readUtf8())
+    source.close()
   }
 
-  @Test public void sinkFromOutputStream() throws Exception {
-    Buffer data = new Buffer();
-    data.writeUtf8("a");
-    data.writeUtf8(repeat("b", 9998));
-    data.writeUtf8("c");
-
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    Sink sink = Okio.sink(out);
-    sink.write(data, 3);
-    assertEquals("abb", out.toString("UTF-8"));
-    sink.write(data, data.size());
-    assertEquals("a" + repeat("b", 9998) + "c", out.toString("UTF-8"));
+  @Test
+  fun sinkFromOutputStream() {
+    val data = Buffer()
+    data.writeUtf8("a")
+    data.writeUtf8("b".repeat(9998))
+    data.writeUtf8("c")
+    val out = ByteArrayOutputStream()
+    val sink = out.sink()
+    sink.write(data, 3)
+    assertEquals("abb", out.toString("UTF-8"))
+    sink.write(data, data.size)
+    assertEquals("a" + "b".repeat(9998) + "c", out.toString("UTF-8"))
   }
 
-  @Test public void sourceFromInputStream() throws Exception {
-    InputStream in = new ByteArrayInputStream(
-        ("a" + repeat("b", SEGMENT_SIZE * 2) + "c").getBytes(UTF_8));
+  @Test
+  fun sourceFromInputStream() {
+    val inputStream = ByteArrayInputStream(
+      ("a" + "b".repeat(SEGMENT_SIZE * 2) + "c").toByteArray(UTF_8),
+    )
 
     // Source: ab...bc
-    Source source = Okio.source(in);
-    Buffer sink = new Buffer();
+    val source = inputStream.source()
+    val sink = Buffer()
 
     // Source: b...bc. Sink: abb.
-    assertEquals(3, source.read(sink, 3));
-    assertEquals("abb", sink.readUtf8(3));
+    assertEquals(3, source.read(sink, 3))
+    assertEquals("abb", sink.readUtf8(3))
 
     // Source: b...bc. Sink: b...b.
-    assertEquals(SEGMENT_SIZE, source.read(sink, 20000));
-    assertEquals(repeat("b", SEGMENT_SIZE), sink.readUtf8());
+    assertEquals(SEGMENT_SIZE.toLong(), source.read(sink, 20000))
+    assertEquals("b".repeat(SEGMENT_SIZE), sink.readUtf8())
 
     // Source: b...bc. Sink: b...bc.
-    assertEquals(SEGMENT_SIZE - 1, source.read(sink, 20000));
-    assertEquals(repeat("b", SEGMENT_SIZE - 2) + "c", sink.readUtf8());
+    assertEquals((SEGMENT_SIZE - 1).toLong(), source.read(sink, 20000))
+    assertEquals("b".repeat(SEGMENT_SIZE - 2) + "c", sink.readUtf8())
 
     // Source and sink are empty.
-    assertEquals(-1, source.read(sink, 1));
+    assertEquals(-1, source.read(sink, 1))
   }
 
-  @Test public void sourceFromInputStreamWithSegmentSize() throws Exception {
-    InputStream in = new ByteArrayInputStream(new byte[SEGMENT_SIZE]);
-    Source source = Okio.source(in);
-    Buffer sink = new Buffer();
-
-    assertEquals(SEGMENT_SIZE, source.read(sink, SEGMENT_SIZE));
-    assertEquals(-1, source.read(sink, SEGMENT_SIZE));
-
-    assertNoEmptySegments(sink);
+  @Test
+  fun sourceFromInputStreamWithSegmentSize() {
+    val inputStream = ByteArrayInputStream(ByteArray(SEGMENT_SIZE))
+    val source = inputStream.source()
+    val sink = Buffer()
+    assertEquals(SEGMENT_SIZE.toLong(), source.read(sink, SEGMENT_SIZE.toLong()))
+    assertEquals(-1, source.read(sink, SEGMENT_SIZE.toLong()))
+    assertNoEmptySegments(sink)
   }
 
-  @Test public void sourceFromInputStreamBounds() throws Exception {
-    Source source = Okio.source(new ByteArrayInputStream(new byte[100]));
+  @Test
+  fun sourceFromInputStreamBounds() {
+    val source = ByteArrayInputStream(ByteArray(100)).source()
     try {
-      source.read(new Buffer(), -1);
-      fail();
-    } catch (IllegalArgumentException expected) {
+      source.read(Buffer(), -1)
+      fail()
+    } catch (expected: IllegalArgumentException) {
     }
   }
 
-  @Test public void bufferSinkThrowsOnNull() {
-    try {
-      Okio.buffer((Sink) null);
-      fail();
-    } catch (NullPointerException expected) {
-    }
-  }
-
-  @Test public void bufferSourceThrowsOnNull() {
-    try {
-      Okio.buffer((Source) null);
-      fail();
-    } catch (NullPointerException expected) {
-    }
-  }
-
-  @Test public void blackhole() throws Exception {
-    Buffer data = new Buffer();
-    data.writeUtf8("blackhole");
-
-    Sink blackhole = Okio.blackhole();
-    blackhole.write(data, 5);
-
-    assertEquals("hole", data.readUtf8());
+  @Test
+  fun blackhole() {
+    val data = Buffer()
+    data.writeUtf8("blackhole")
+    val blackhole = blackholeSink()
+    blackhole.write(data, 5)
+    assertEquals("hole", data.readUtf8())
   }
 }

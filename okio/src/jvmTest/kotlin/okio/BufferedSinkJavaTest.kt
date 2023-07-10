@@ -13,233 +13,238 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.IOException;
-import java.io.OutputStream;
-import org.junit.Test;
-
-import static kotlin.text.StringsKt.repeat;
-import static okio.TestUtil.SEGMENT_SIZE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import java.io.IOException
+import okio.TestUtil.SEGMENT_SIZE
+import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
+import org.junit.Test
 
 /**
  * Tests solely for the behavior of RealBufferedSink's implementation. For generic
  * BufferedSink behavior use BufferedSinkTest.
  */
-public final class BufferedSinkJavaTest {
-  @Test public void inputStreamCloses() throws Exception {
-    BufferedSink sink = Okio.buffer((Sink) new Buffer());
-    OutputStream out = sink.outputStream();
-    out.close();
+class BufferedSinkJavaTest {
+  @Test
+  fun inputStreamCloses() {
+    val sink = (Buffer() as Sink).buffer()
+    val out = sink.outputStream()
+    out.close()
     try {
-      sink.writeUtf8("Hi!");
-      fail();
-    } catch (IllegalStateException e) {
-      assertEquals("closed", e.getMessage());
+      sink.writeUtf8("Hi!")
+      fail()
+    } catch (e: IllegalStateException) {
+      assertEquals("closed", e.message)
     }
   }
 
-  @Test public void bufferedSinkEmitsTailWhenItIsComplete() throws IOException {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE - 1));
-    assertEquals(0, sink.size());
-    bufferedSink.writeByte(0);
-    assertEquals(SEGMENT_SIZE, sink.size());
-    assertEquals(0, bufferedSink.getBuffer().size());
+  @Test
+  fun bufferedSinkEmitsTailWhenItIsComplete() {
+    val sink = Buffer()
+    val bufferedSink = (sink as Sink).buffer()
+    bufferedSink.writeUtf8("a".repeat(SEGMENT_SIZE - 1))
+    assertEquals(0, sink.size)
+    bufferedSink.writeByte(0)
+    assertEquals(SEGMENT_SIZE.toLong(), sink.size)
+    assertEquals(0, bufferedSink.buffer.size)
   }
 
-  @Test public void bufferedSinkEmitMultipleSegments() throws IOException {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 4 - 1));
-    assertEquals(SEGMENT_SIZE * 3, sink.size());
-    assertEquals(SEGMENT_SIZE - 1, bufferedSink.getBuffer().size());
+  @Test
+  fun bufferedSinkEmitMultipleSegments() {
+    val sink = Buffer()
+    val bufferedSink = (sink as Sink).buffer()
+    bufferedSink.writeUtf8("a".repeat(SEGMENT_SIZE * 4 - 1))
+    assertEquals((SEGMENT_SIZE * 3).toLong(), sink.size)
+    assertEquals((SEGMENT_SIZE - 1).toLong(), bufferedSink.buffer.size)
   }
 
-  @Test public void bufferedSinkFlush() throws IOException {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeByte('a');
-    assertEquals(0, sink.size());
-    bufferedSink.flush();
-    assertEquals(0, bufferedSink.getBuffer().size());
-    assertEquals(1, sink.size());
+  @Test
+  fun bufferedSinkFlush() {
+    val sink = Buffer()
+    val bufferedSink = (sink as Sink).buffer()
+    bufferedSink.writeByte('a'.code)
+    assertEquals(0, sink.size)
+    bufferedSink.flush()
+    assertEquals(0, bufferedSink.buffer.size)
+    assertEquals(1, sink.size)
   }
 
-  @Test public void bytesEmittedToSinkWithFlush() throws Exception {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8("abc");
-    bufferedSink.flush();
-    assertEquals(3, sink.size());
+  @Test
+  fun bytesEmittedToSinkWithFlush() {
+    val sink = Buffer()
+    val bufferedSink = (sink as Sink).buffer()
+    bufferedSink.writeUtf8("abc")
+    bufferedSink.flush()
+    assertEquals(3, sink.size)
   }
 
-  @Test public void bytesNotEmittedToSinkWithoutFlush() throws Exception {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8("abc");
-    assertEquals(0, sink.size());
+  @Test
+  fun bytesNotEmittedToSinkWithoutFlush() {
+    val sink = Buffer()
+    val bufferedSink = (sink as Sink).buffer()
+    bufferedSink.writeUtf8("abc")
+    assertEquals(0, sink.size)
   }
 
-  @Test public void bytesEmittedToSinkWithEmit() throws Exception {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8("abc");
-    bufferedSink.emit();
-    assertEquals(3, sink.size());
+  @Test
+  fun bytesEmittedToSinkWithEmit() {
+    val sink = Buffer()
+    val bufferedSink = (sink as Sink).buffer()
+    bufferedSink.writeUtf8("abc")
+    bufferedSink.emit()
+    assertEquals(3, sink.size)
   }
 
-  @Test public void completeSegmentsEmitted() throws Exception {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 3));
-    assertEquals(SEGMENT_SIZE * 3, sink.size());
+  @Test
+  fun completeSegmentsEmitted() {
+    val sink = Buffer()
+    val bufferedSink = (sink as Sink).buffer()
+    bufferedSink.writeUtf8("a".repeat(SEGMENT_SIZE * 3))
+    assertEquals((SEGMENT_SIZE * 3).toLong(), sink.size)
   }
 
-  @Test public void incompleteSegmentsNotEmitted() throws Exception {
-    Buffer sink = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) sink);
-    bufferedSink.writeUtf8(repeat("a", SEGMENT_SIZE * 3 - 1));
-    assertEquals(SEGMENT_SIZE * 2, sink.size());
+  @Test
+  fun incompleteSegmentsNotEmitted() {
+    val sink = Buffer()
+    val bufferedSink = (sink as Sink).buffer()
+    bufferedSink.writeUtf8("a".repeat(SEGMENT_SIZE * 3 - 1))
+    assertEquals((SEGMENT_SIZE * 2).toLong(), sink.size)
   }
 
-  @Test public void closeWithExceptionWhenWriting() throws IOException {
-    MockSink mockSink = new MockSink();
-    mockSink.scheduleThrow(0, new IOException());
-    BufferedSink bufferedSink = Okio.buffer(mockSink);
-    bufferedSink.writeByte('a');
+  @Test
+  fun closeWithExceptionWhenWriting() {
+    val mockSink = MockSink()
+    mockSink.scheduleThrow(0, IOException())
+    val bufferedSink = mockSink.buffer()
+    bufferedSink.writeByte('a'.code)
     try {
-      bufferedSink.close();
-      fail();
-    } catch (IOException expected) {
+      bufferedSink.close()
+      fail()
+    } catch (expected: IOException) {
     }
-    mockSink.assertLog("write([text=a], 1)", "close()");
+    mockSink.assertLog("write([text=a], 1)", "close()")
   }
 
-  @Test public void closeWithExceptionWhenClosing() throws IOException {
-    MockSink mockSink = new MockSink();
-    mockSink.scheduleThrow(1, new IOException());
-    BufferedSink bufferedSink = Okio.buffer(mockSink);
-    bufferedSink.writeByte('a');
+  @Test
+  fun closeWithExceptionWhenClosing() {
+    val mockSink = MockSink()
+    mockSink.scheduleThrow(1, IOException())
+    val bufferedSink = mockSink.buffer()
+    bufferedSink.writeByte('a'.code)
     try {
-      bufferedSink.close();
-      fail();
-    } catch (IOException expected) {
+      bufferedSink.close()
+      fail()
+    } catch (expected: IOException) {
     }
-    mockSink.assertLog("write([text=a], 1)", "close()");
+    mockSink.assertLog("write([text=a], 1)", "close()")
   }
 
-  @Test public void closeWithExceptionWhenWritingAndClosing() throws IOException {
-    MockSink mockSink = new MockSink();
-    mockSink.scheduleThrow(0, new IOException("first"));
-    mockSink.scheduleThrow(1, new IOException("second"));
-    BufferedSink bufferedSink = Okio.buffer(mockSink);
-    bufferedSink.writeByte('a');
+  @Test
+  fun closeWithExceptionWhenWritingAndClosing() {
+    val mockSink = MockSink()
+    mockSink.scheduleThrow(0, IOException("first"))
+    mockSink.scheduleThrow(1, IOException("second"))
+    val bufferedSink = mockSink.buffer()
+    bufferedSink.writeByte('a'.code)
     try {
-      bufferedSink.close();
-      fail();
-    } catch (IOException expected) {
-      assertEquals("first", expected.getMessage());
+      bufferedSink.close()
+      fail()
+    } catch (expected: IOException) {
+      assertEquals("first", expected.message)
     }
-    mockSink.assertLog("write([text=a], 1)", "close()");
+    mockSink.assertLog("write([text=a], 1)", "close()")
   }
 
-  @Test public void operationsAfterClose() throws IOException {
-    MockSink mockSink = new MockSink();
-    BufferedSink bufferedSink = Okio.buffer(mockSink);
-    bufferedSink.writeByte('a');
-    bufferedSink.close();
+  @Test
+  fun operationsAfterClose() {
+    val mockSink = MockSink()
+    val bufferedSink = mockSink.buffer()
+    bufferedSink.writeByte('a'.code)
+    bufferedSink.close()
 
     // Test a sample set of methods.
     try {
-      bufferedSink.writeByte('a');
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSink.writeByte('a'.code)
+      fail()
+    } catch (expected: IllegalStateException) {
     }
-
     try {
-      bufferedSink.write(new byte[10]);
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSink.write(ByteArray(10))
+      fail()
+    } catch (expected: IllegalStateException) {
     }
-
     try {
-      bufferedSink.emitCompleteSegments();
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSink.emitCompleteSegments()
+      fail()
+    } catch (expected: IllegalStateException) {
     }
-
     try {
-      bufferedSink.emit();
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSink.emit()
+      fail()
+    } catch (expected: IllegalStateException) {
     }
-
     try {
-      bufferedSink.flush();
-      fail();
-    } catch (IllegalStateException expected) {
+      bufferedSink.flush()
+      fail()
+    } catch (expected: IllegalStateException) {
     }
 
     // Test a sample set of methods on the OutputStream.
-    OutputStream os = bufferedSink.outputStream();
+    val os = bufferedSink.outputStream()
     try {
-      os.write('a');
-      fail();
-    } catch (IOException expected) {
+      os.write('a'.code)
+      fail()
+    } catch (expected: IOException) {
     }
-
     try {
-      os.write(new byte[10]);
-      fail();
-    } catch (IOException expected) {
+      os.write(ByteArray(10))
+      fail()
+    } catch (expected: IOException) {
     }
 
     // Permitted
-    os.flush();
+    os.flush()
   }
 
-  @Test public void writeAll() throws IOException {
-    MockSink mockSink = new MockSink();
-    BufferedSink bufferedSink = Okio.buffer(mockSink);
+  @Test
+  fun writeAll() {
+    val mockSink = MockSink()
+    val bufferedSink = mockSink.buffer()
+    bufferedSink.buffer.writeUtf8("abc")
+    assertEquals(3, bufferedSink.writeAll(Buffer().writeUtf8("def")))
+    assertEquals(6, bufferedSink.buffer.size)
+    assertEquals("abcdef", bufferedSink.buffer.readUtf8(6))
+    mockSink.assertLog() // No writes.
+  }
 
-    bufferedSink.getBuffer().writeUtf8("abc");
-    assertEquals(3, bufferedSink.writeAll(new Buffer().writeUtf8("def")));
+  @Test
+  fun writeAllExhausted() {
+    val mockSink = MockSink()
+    val bufferedSink = mockSink.buffer()
+    assertEquals(0, bufferedSink.writeAll(Buffer()))
+    assertEquals(0, bufferedSink.buffer.size)
+    mockSink.assertLog() // No writes.
+  }
 
-    assertEquals(6, bufferedSink.getBuffer().size());
-    assertEquals("abcdef", bufferedSink.getBuffer().readUtf8(6));
-    mockSink.assertLog(); // No writes.
- }
-
-  @Test public void writeAllExhausted() throws IOException {
-    MockSink mockSink = new MockSink();
-    BufferedSink bufferedSink = Okio.buffer(mockSink);
-
-    assertEquals(0, bufferedSink.writeAll(new Buffer()));
-    assertEquals(0, bufferedSink.getBuffer().size());
-    mockSink.assertLog(); // No writes.
- }
-
-  @Test public void writeAllWritesOneSegmentAtATime() throws IOException {
-    Buffer write1 = new Buffer().writeUtf8(repeat("a", SEGMENT_SIZE));
-    Buffer write2 = new Buffer().writeUtf8(repeat("b", SEGMENT_SIZE));
-    Buffer write3 = new Buffer().writeUtf8(repeat("c", SEGMENT_SIZE));
-
-    Buffer source = new Buffer().writeUtf8(""
-        + repeat("a", SEGMENT_SIZE)
-        + repeat("b", SEGMENT_SIZE)
-        + repeat("c", SEGMENT_SIZE));
-
-    MockSink mockSink = new MockSink();
-    BufferedSink bufferedSink = Okio.buffer(mockSink);
-    assertEquals(SEGMENT_SIZE * 3, bufferedSink.writeAll(source));
-
+  @Test
+  fun writeAllWritesOneSegmentAtATime() {
+    val write1 = Buffer().writeUtf8("a".repeat(SEGMENT_SIZE))
+    val write2 = Buffer().writeUtf8("b".repeat(SEGMENT_SIZE))
+    val write3 = Buffer().writeUtf8("c".repeat(SEGMENT_SIZE))
+    val source = Buffer().writeUtf8(
+      "" +
+        "a".repeat(SEGMENT_SIZE) +
+        "b".repeat(SEGMENT_SIZE) +
+        "c".repeat(SEGMENT_SIZE),
+    )
+    val mockSink = MockSink()
+    val bufferedSink = mockSink.buffer()
+    assertEquals((SEGMENT_SIZE * 3).toLong(), bufferedSink.writeAll(source))
     mockSink.assertLog(
-        "write(" + write1 + ", " + write1.size() + ")",
-        "write(" + write2 + ", " + write2.size() + ")",
-        "write(" + write3 + ", " + write3.size() + ")");
- }
+      "write(" + write1 + ", " + write1.size + ")",
+      "write(" + write2 + ", " + write2.size + ")",
+      "write(" + write3 + ", " + write3.size + ")",
+    )
+  }
 }

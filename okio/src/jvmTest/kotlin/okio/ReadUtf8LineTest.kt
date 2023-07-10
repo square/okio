@@ -13,201 +13,205 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import java.io.EOFException
+import okio.TestUtil.SEGMENT_SIZE
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameter
+import org.junit.runners.Parameterized.Parameters
 
-import static kotlin.text.StringsKt.repeat;
-import static okio.TestUtil.SEGMENT_SIZE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-@RunWith(Parameterized.class)
-public final class ReadUtf8LineTest {
-  private interface Factory {
-    BufferedSource create(Buffer data);
+@RunWith(Parameterized::class)
+class ReadUtf8LineTest {
+  interface Factory {
+    fun create(data: Buffer): BufferedSource
   }
 
-  @Parameterized.Parameters(name = "{0}")
-  public static List<Object[]> parameters() {
-    return Arrays.asList(
-        new Object[] { new Factory() {
-          @Override public BufferedSource create(Buffer data) {
-            return data;
-          }
+  @Parameter
+  lateinit var factory: Factory
+  private lateinit var data: Buffer
+  private lateinit var source: BufferedSource
 
-          @Override public String toString() {
-            return "Buffer";
-          }
-        }},
-        new Object[] { new Factory() {
-          @Override public BufferedSource create(Buffer data) {
-            return new RealBufferedSource(data);
-          }
-
-          @Override public String toString() {
-            return "RealBufferedSource";
-          }
-        }},
-        new Object[] { new Factory() {
-          @Override public BufferedSource create(Buffer data) {
-            return new RealBufferedSource(new ForwardingSource(data) {
-              @Override public long read(Buffer sink, long byteCount) throws IOException {
-                return super.read(sink, Math.min(1, byteCount));
-              }
-            });
-          }
-
-          @Override public String toString() {
-            return "Slow RealBufferedSource";
-          }
-        }}
-    );
+  @Before
+  fun setUp() {
+    data = Buffer()
+    source = factory.create(data)
   }
 
-  @Parameterized.Parameter
-  public Factory factory;
-
-  private Buffer data;
-  private BufferedSource source;
-
-  @Before public void setUp() {
-    data = new Buffer();
-    source = factory.create(data);
-  }
-
-  @Test public void readLines() throws IOException {
-    data.writeUtf8("abc\ndef\n");
-    assertEquals("abc", source.readUtf8LineStrict());
-    assertEquals("def", source.readUtf8LineStrict());
+  @Test
+  fun readLines() {
+    data.writeUtf8("abc\ndef\n")
+    assertEquals("abc", source.readUtf8LineStrict())
+    assertEquals("def", source.readUtf8LineStrict())
     try {
-      source.readUtf8LineStrict();
-      fail();
-    } catch (EOFException expected) {
-      assertEquals("\\n not found: limit=0 content=…", expected.getMessage());
+      source.readUtf8LineStrict()
+      fail()
+    } catch (expected: EOFException) {
+      assertEquals("\\n not found: limit=0 content=…", expected.message)
     }
   }
 
-  @Test public void readUtf8LineStrictWithLimits() throws IOException {
-    int[] lens = {1, SEGMENT_SIZE - 2, SEGMENT_SIZE - 1, SEGMENT_SIZE, SEGMENT_SIZE * 10};
-    for (int len : lens) {
-      data.writeUtf8(repeat("a", len)).writeUtf8("\n");
-      assertEquals(len, source.readUtf8LineStrict(len).length());
-      source.readUtf8();
-
-      data.writeUtf8(repeat("a", len)).writeUtf8("\n").writeUtf8(repeat("a", len));
-      assertEquals(len, source.readUtf8LineStrict(len).length());
-      source.readUtf8();
-
-      data.writeUtf8(repeat("a", len)).writeUtf8("\r\n");
-      assertEquals(len, source.readUtf8LineStrict(len).length());
-      source.readUtf8();
-
-      data.writeUtf8(repeat("a", len)).writeUtf8("\r\n").writeUtf8(repeat("a", len));
-      assertEquals(len, source.readUtf8LineStrict(len).length());
-      source.readUtf8();
+  @Test
+  fun readUtf8LineStrictWithLimits() {
+    val lens = intArrayOf(1, SEGMENT_SIZE - 2, SEGMENT_SIZE - 1, SEGMENT_SIZE, SEGMENT_SIZE * 10)
+    for (len in lens) {
+      data.writeUtf8("a".repeat(len)).writeUtf8("\n")
+      assertEquals(len.toLong(), source.readUtf8LineStrict(len.toLong()).length.toLong())
+      source.readUtf8()
+      data.writeUtf8("a".repeat(len)).writeUtf8("\n").writeUtf8("a".repeat(len))
+      assertEquals(len.toLong(), source.readUtf8LineStrict(len.toLong()).length.toLong())
+      source.readUtf8()
+      data.writeUtf8("a".repeat(len)).writeUtf8("\r\n")
+      assertEquals(len.toLong(), source.readUtf8LineStrict(len.toLong()).length.toLong())
+      source.readUtf8()
+      data.writeUtf8("a".repeat(len)).writeUtf8("\r\n").writeUtf8("a".repeat(len))
+      assertEquals(len.toLong(), source.readUtf8LineStrict(len.toLong()).length.toLong())
+      source.readUtf8()
     }
   }
 
-  @Test public void readUtf8LineStrictNoBytesConsumedOnFailure() throws IOException {
-    data.writeUtf8("abc\n");
+  @Test
+  fun readUtf8LineStrictNoBytesConsumedOnFailure() {
+    data.writeUtf8("abc\n")
     try {
-      source.readUtf8LineStrict(2);
-      fail();
-    } catch (EOFException expected) {
-      assertTrue(expected.getMessage().startsWith("\\n not found: limit=2 content=61626"));
+      source.readUtf8LineStrict(2)
+      fail()
+    } catch (expected: EOFException) {
+      assertTrue(expected.message!!.startsWith("\\n not found: limit=2 content=61626"))
     }
-    assertEquals("abc", source.readUtf8LineStrict(3));
+    assertEquals("abc", source.readUtf8LineStrict(3))
   }
 
-  @Test public void readUtf8LineStrictEmptyString() throws IOException {
-    data.writeUtf8("\r\nabc");
-    assertEquals("", source.readUtf8LineStrict(0));
-    assertEquals("abc", source.readUtf8());
+  @Test
+  fun readUtf8LineStrictEmptyString() {
+    data.writeUtf8("\r\nabc")
+    assertEquals("", source.readUtf8LineStrict(0))
+    assertEquals("abc", source.readUtf8())
   }
 
-  @Test public void readUtf8LineStrictNonPositive() throws IOException {
-    data.writeUtf8("\r\n");
+  @Test
+  fun readUtf8LineStrictNonPositive() {
+    data.writeUtf8("\r\n")
     try {
-      source.readUtf8LineStrict(-1);
-      fail("Expected failure: limit must be greater than 0");
-    } catch (IllegalArgumentException expected) {
+      source.readUtf8LineStrict(-1)
+      fail("Expected failure: limit must be greater than 0")
+    } catch (expected: IllegalArgumentException) {
     }
   }
 
-  @Test public void eofExceptionProvidesLimitedContent() throws IOException {
-    data.writeUtf8("aaaaaaaabbbbbbbbccccccccdddddddde");
+  @Test
+  fun eofExceptionProvidesLimitedContent() {
+    data.writeUtf8("aaaaaaaabbbbbbbbccccccccdddddddde")
     try {
-      source.readUtf8LineStrict();
-      fail();
-    } catch (EOFException expected) {
-      assertEquals("\\n not found: limit=33 content=616161616161616162626262626262626363636363636363"
-          + "6464646464646464…", expected.getMessage());
+      source.readUtf8LineStrict()
+      fail()
+    } catch (expected: EOFException) {
+      assertEquals(
+        "\\n not found: limit=33 content=616161616161616162626262626262626363636363636363" +
+          "6464646464646464…",
+        expected.message,
+      )
     }
   }
 
-  @Test public void newlineAtEnd() throws IOException {
-    data.writeUtf8("abc\n");
-    assertEquals("abc", source.readUtf8LineStrict(3));
-    assertTrue(source.exhausted());
-
-    data.writeUtf8("abc\r\n");
-    assertEquals("abc", source.readUtf8LineStrict(3));
-    assertTrue(source.exhausted());
-
-    data.writeUtf8("abc\r");
+  @Test
+  fun newlineAtEnd() {
+    data.writeUtf8("abc\n")
+    assertEquals("abc", source.readUtf8LineStrict(3))
+    assertTrue(source.exhausted())
+    data.writeUtf8("abc\r\n")
+    assertEquals("abc", source.readUtf8LineStrict(3))
+    assertTrue(source.exhausted())
+    data.writeUtf8("abc\r")
     try {
-      source.readUtf8LineStrict(3);
-      fail();
-    } catch (EOFException expected) {
-      assertEquals("\\n not found: limit=3 content=6162630d…", expected.getMessage());
+      source.readUtf8LineStrict(3)
+      fail()
+    } catch (expected: EOFException) {
+      assertEquals("\\n not found: limit=3 content=6162630d…", expected.message)
     }
-    source.readUtf8();
-
-    data.writeUtf8("abc");
+    source.readUtf8()
+    data.writeUtf8("abc")
     try {
-      source.readUtf8LineStrict(3);
-      fail();
-    } catch (EOFException expected) {
-      assertEquals("\\n not found: limit=3 content=616263…", expected.getMessage());
+      source.readUtf8LineStrict(3)
+      fail()
+    } catch (expected: EOFException) {
+      assertEquals("\\n not found: limit=3 content=616263…", expected.message)
     }
   }
 
-  @Test public void emptyLines() throws IOException {
-    data.writeUtf8("\n\n\n");
-    assertEquals("", source.readUtf8LineStrict());
-    assertEquals("", source.readUtf8LineStrict());
-    assertEquals("", source.readUtf8LineStrict());
-    assertTrue(source.exhausted());
+  @Test
+  fun emptyLines() {
+    data.writeUtf8("\n\n\n")
+    assertEquals("", source.readUtf8LineStrict())
+    assertEquals("", source.readUtf8LineStrict())
+    assertEquals("", source.readUtf8LineStrict())
+    assertTrue(source.exhausted())
   }
 
-  @Test public void crDroppedPrecedingLf() throws IOException {
-    data.writeUtf8("abc\r\ndef\r\nghi\rjkl\r\n");
-    assertEquals("abc", source.readUtf8LineStrict());
-    assertEquals("def", source.readUtf8LineStrict());
-    assertEquals("ghi\rjkl", source.readUtf8LineStrict());
+  @Test
+  fun crDroppedPrecedingLf() {
+    data.writeUtf8("abc\r\ndef\r\nghi\rjkl\r\n")
+    assertEquals("abc", source.readUtf8LineStrict())
+    assertEquals("def", source.readUtf8LineStrict())
+    assertEquals("ghi\rjkl", source.readUtf8LineStrict())
   }
 
-  @Test public void bufferedReaderCompatible() throws IOException {
-    data.writeUtf8("abc\ndef");
-    assertEquals("abc", source.readUtf8Line());
-    assertEquals("def", source.readUtf8Line());
-    assertNull(source.readUtf8Line());
+  @Test
+  fun bufferedReaderCompatible() {
+    data.writeUtf8("abc\ndef")
+    assertEquals("abc", source.readUtf8Line())
+    assertEquals("def", source.readUtf8Line())
+    assertNull(source.readUtf8Line())
   }
 
-  @Test public void bufferedReaderCompatibleWithTrailingNewline() throws IOException {
-    data.writeUtf8("abc\ndef\n");
-    assertEquals("abc", source.readUtf8Line());
-    assertEquals("def", source.readUtf8Line());
-    assertNull(source.readUtf8Line());
+  @Test
+  fun bufferedReaderCompatibleWithTrailingNewline() {
+    data.writeUtf8("abc\ndef\n")
+    assertEquals("abc", source.readUtf8Line())
+    assertEquals("def", source.readUtf8Line())
+    assertNull(source.readUtf8Line())
+  }
+
+  companion object {
+    @JvmStatic
+    @Parameters(name = "{0}")
+    fun parameters(): List<Array<Any>> {
+      return listOf(
+        arrayOf(
+          object : Factory {
+            override fun create(data: Buffer) = data
+            override fun toString() = "Buffer"
+          },
+        ),
+        arrayOf(
+          object : Factory {
+            override fun create(data: Buffer) = RealBufferedSource(data)
+            override fun toString() = "RealBufferedSource"
+          },
+        ),
+        arrayOf(
+          object : Factory {
+            override fun create(data: Buffer): BufferedSource {
+              return RealBufferedSource(
+                object : ForwardingSource(data) {
+                  override fun read(sink: Buffer, byteCount: Long): Long {
+                    return super.read(sink, 1L.coerceAtMost(byteCount))
+                  }
+                },
+              )
+            }
+
+            override fun toString() = "Slow RealBufferedSource"
+          },
+        ),
+      )
+    }
   }
 }

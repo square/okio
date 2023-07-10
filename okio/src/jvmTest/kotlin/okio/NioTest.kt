@@ -13,135 +13,130 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package okio;
+package okio
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.nio.file.StandardOpenOption;
-import kotlin.text.Charsets;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+import java.nio.channels.ReadableByteChannel
+import java.nio.channels.WritableByteChannel
+import java.nio.file.StandardOpenOption
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.text.Charsets.UTF_8
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+/** Test interop between our beloved Okio and java.nio.  */
+class NioTest {
+  @JvmField @Rule
+  var temporaryFolder = TemporaryFolder()
 
-/** Test interop between our beloved Okio and java.nio. */
-public final class NioTest {
-  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Test public void sourceIsOpen() throws Exception {
-    BufferedSource source = Okio.buffer((Source) new Buffer());
-    assertTrue(source.isOpen());
-    source.close();
-    assertFalse(source.isOpen());
+  @Test
+  fun sourceIsOpen() {
+    val source = (Buffer() as Source).buffer()
+    assertTrue(source.isOpen())
+    source.close()
+    assertFalse(source.isOpen())
   }
 
-  @Test public void sinkIsOpen() throws Exception {
-    BufferedSink sink = Okio.buffer((Sink) new Buffer());
-    assertTrue(sink.isOpen());
-    sink.close();
-    assertFalse(sink.isOpen());
+  @Test
+  fun sinkIsOpen() {
+    val sink = (Buffer() as Sink).buffer()
+    assertTrue(sink.isOpen)
+    sink.close()
+    assertFalse(sink.isOpen)
   }
 
-  @Test public void writableChannelNioFile() throws Exception {
-    File file = temporaryFolder.newFile();
-    FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE);
-    testWritableByteChannel(fileChannel);
-
-    BufferedSource emitted = Okio.buffer(Okio.source(file));
-    assertEquals("defghijklmnopqrstuvw", emitted.readUtf8());
-    emitted.close();
+  @Test
+  fun writableChannelNioFile() {
+    val file = temporaryFolder.newFile()
+    val fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE)
+    testWritableByteChannel(fileChannel)
+    val emitted = file.source().buffer()
+    assertEquals("defghijklmnopqrstuvw", emitted.readUtf8())
+    emitted.close()
   }
 
-  @Test public void writableChannelBuffer() throws Exception {
-    Buffer buffer = new Buffer();
-    testWritableByteChannel(buffer);
-    assertEquals("defghijklmnopqrstuvw", buffer.readUtf8());
+  @Test
+  fun writableChannelBuffer() {
+    val buffer = Buffer()
+    testWritableByteChannel(buffer)
+    assertEquals("defghijklmnopqrstuvw", buffer.readUtf8())
   }
 
-  @Test public void writableChannelBufferedSink() throws Exception {
-    Buffer buffer = new Buffer();
-    BufferedSink bufferedSink = Okio.buffer((Sink) buffer);
-    testWritableByteChannel(bufferedSink);
-    assertEquals("defghijklmnopqrstuvw", buffer.readUtf8());
+  @Test
+  fun writableChannelBufferedSink() {
+    val buffer = Buffer()
+    val bufferedSink = (buffer as Sink).buffer()
+    testWritableByteChannel(bufferedSink)
+    assertEquals("defghijklmnopqrstuvw", buffer.readUtf8())
   }
 
-  @Test public void readableChannelNioFile() throws Exception {
-    File file = temporaryFolder.newFile();
-
-    BufferedSink initialData = Okio.buffer(Okio.sink(file));
-    initialData.writeUtf8("abcdefghijklmnopqrstuvwxyz");
-    initialData.close();
-
-    FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
-    testReadableByteChannel(fileChannel);
+  @Test
+  fun readableChannelNioFile() {
+    val file = temporaryFolder.newFile()
+    val initialData = file.sink().buffer()
+    initialData.writeUtf8("abcdefghijklmnopqrstuvwxyz")
+    initialData.close()
+    val fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.READ)
+    testReadableByteChannel(fileChannel)
   }
 
-  @Test public void readableChannelBuffer() throws Exception {
-    Buffer buffer = new Buffer();
-    buffer.writeUtf8("abcdefghijklmnopqrstuvwxyz");
-
-    testReadableByteChannel(buffer);
+  @Test
+  fun readableChannelBuffer() {
+    val buffer = Buffer()
+    buffer.writeUtf8("abcdefghijklmnopqrstuvwxyz")
+    testReadableByteChannel(buffer)
   }
 
-  @Test public void readableChannelBufferedSource() throws Exception {
-    Buffer buffer = new Buffer();
-    BufferedSource bufferedSource = Okio.buffer((Source) buffer);
-    buffer.writeUtf8("abcdefghijklmnopqrstuvwxyz");
-
-    testReadableByteChannel(bufferedSource);
-  }
-
-  /**
-   * Does some basic writes to {@code channel}. We execute this against both Okio's channels and
-   * also a standard implementation from the JDK to confirm that their behavior is consistent.
-   */
-  private void testWritableByteChannel(WritableByteChannel channel) throws Exception {
-    assertTrue(channel.isOpen());
-
-    ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-    byteBuffer.put("abcdefghijklmnopqrstuvwxyz".getBytes(Charsets.UTF_8));
-    ((java.nio.Buffer) byteBuffer).flip(); // Cast necessary for Java 8.
-    ((java.nio.Buffer) byteBuffer).position(3); // Cast necessary for Java 8.
-    ((java.nio.Buffer) byteBuffer).limit(23); // Cast necessary for Java 8.
-
-    int byteCount = channel.write(byteBuffer);
-    assertEquals(20, byteCount);
-    assertEquals(23, byteBuffer.position());
-    assertEquals(23, byteBuffer.limit());
-
-    channel.close();
-    assertEquals(channel instanceof Buffer, channel.isOpen()); // Buffer.close() does nothing.
+  @Test
+  fun readableChannelBufferedSource() {
+    val buffer = Buffer()
+    val bufferedSource = (buffer as Source).buffer()
+    buffer.writeUtf8("abcdefghijklmnopqrstuvwxyz")
+    testReadableByteChannel(bufferedSource)
   }
 
   /**
-   * Does some basic reads from {@code channel}. We execute this against both Okio's channels and
+   * Does some basic writes to `channel`. We execute this against both Okio's channels and
    * also a standard implementation from the JDK to confirm that their behavior is consistent.
    */
-  private void testReadableByteChannel(ReadableByteChannel channel) throws Exception {
-    assertTrue(channel.isOpen());
+  private fun testWritableByteChannel(channel: WritableByteChannel) {
+    assertTrue(channel.isOpen)
+    val byteBuffer = ByteBuffer.allocate(1024)
+    byteBuffer.put("abcdefghijklmnopqrstuvwxyz".toByteArray(UTF_8))
+    (byteBuffer as java.nio.Buffer).flip() // Cast necessary for Java 8.
+    (byteBuffer as java.nio.Buffer).position(3) // Cast necessary for Java 8.
+    (byteBuffer as java.nio.Buffer).limit(23) // Cast necessary for Java 8.
+    val byteCount = channel.write(byteBuffer)
+    assertEquals(20, byteCount)
+    assertEquals(23, byteBuffer.position())
+    assertEquals(23, byteBuffer.limit())
+    channel.close()
+    assertEquals(channel is Buffer, channel.isOpen) // Buffer.close() does nothing.
+  }
 
-    ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-    ((java.nio.Buffer) byteBuffer).position(3); // Cast necessary for Java 8.
-    ((java.nio.Buffer) byteBuffer).limit(23); // Cast necessary for Java 8.
-
-    int byteCount = channel.read(byteBuffer);
-    assertEquals(20, byteCount);
-    assertEquals(23, byteBuffer.position());
-    assertEquals(23, byteBuffer.limit());
-
-    channel.close();
-    assertEquals(channel instanceof Buffer, channel.isOpen()); // Buffer.close() does nothing.
-
-    ((java.nio.Buffer) byteBuffer).flip(); // Cast necessary for Java 8.
-    ((java.nio.Buffer) byteBuffer).position(3); // Cast necessary for Java 8.
-    byte[] data = new byte[byteBuffer.remaining()];
-    byteBuffer.get(data);
-    assertEquals("abcdefghijklmnopqrst", new String(data, Charsets.UTF_8));
+  /**
+   * Does some basic reads from `channel`. We execute this against both Okio's channels and
+   * also a standard implementation from the JDK to confirm that their behavior is consistent.
+   */
+  private fun testReadableByteChannel(channel: ReadableByteChannel) {
+    assertTrue(channel.isOpen)
+    val byteBuffer = ByteBuffer.allocate(1024)
+    (byteBuffer as java.nio.Buffer).position(3) // Cast necessary for Java 8.
+    (byteBuffer as java.nio.Buffer).limit(23) // Cast necessary for Java 8.
+    val byteCount = channel.read(byteBuffer)
+    assertEquals(20, byteCount)
+    assertEquals(23, byteBuffer.position())
+    assertEquals(23, byteBuffer.limit())
+    channel.close()
+    assertEquals(channel is Buffer, channel.isOpen) // Buffer.close() does nothing.
+    (byteBuffer as java.nio.Buffer).flip() // Cast necessary for Java 8.
+    (byteBuffer as java.nio.Buffer).position(3) // Cast necessary for Java 8.
+    val data = ByteArray(byteBuffer.remaining())
+    byteBuffer[data]
+    assertEquals("abcdefghijklmnopqrst", String(data, UTF_8))
   }
 }

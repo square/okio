@@ -19,7 +19,7 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random
 import okio.ByteString
-import org.junit.Assert.assertArrayEquals
+import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -72,7 +72,7 @@ class HmacTest(val parameters: Parameters) {
     mac.update(bytes)
     val hmacValue = mac.digest()
 
-    assertArrayEquals(expected, hmacValue)
+    Assert.assertArrayEquals(expected, hmacValue)
   }
 
   @Test
@@ -82,7 +82,7 @@ class HmacTest(val parameters: Parameters) {
     }
     val hmacValue = mac.digest()
 
-    assertArrayEquals(expected, hmacValue)
+    Assert.assertArrayEquals(expected, hmacValue)
   }
 
   data class Parameters(
