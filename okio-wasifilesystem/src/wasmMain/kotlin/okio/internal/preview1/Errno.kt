@@ -3,6 +3,7 @@
 // https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md
 package okio.internal.preview1
 
+@Suppress("ktlint:enum-entry-name-case")
 enum class Errno {
   /** `success`: No error occurred. System call completed successfully. */
   success,

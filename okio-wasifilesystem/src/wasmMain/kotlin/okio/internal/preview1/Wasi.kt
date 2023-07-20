@@ -24,7 +24,6 @@ import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
 import kotlin.wasm.unsafe.withScopedMemoryAllocator
 import okio.Path.Companion.toPath
 
-
 internal fun pathOpen(path: String, oflags: oflags, rightsBase: rights): fd {
   withScopedMemoryAllocator { allocator ->
     val (pathAddress, pathSize) = allocator.write(path)

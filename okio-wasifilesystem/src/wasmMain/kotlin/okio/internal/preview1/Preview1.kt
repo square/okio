@@ -87,7 +87,6 @@ val Stdout: fd = 1
 val Stderr: fd = 2
 val UnspecifiedFd: fd = 3
 
-
 /**
  * path_open(fd: fd, dirflags: lookupflags, path: string, oflags: oflags, fs_rights_base: rights, fs_rights_inheriting: rights, fdflags: fdflags) -> Result<fd, errno>
  *
@@ -99,7 +98,6 @@ val UnspecifiedFd: fd = 3
  * guaranteed to be less than 2**31.
  * Note: This is similar to `openat` in POSIX.
  */
-//@WasmImport("wasi", "path_open")
 @WasmImport("wasi_snapshot_preview1", "path_open")
 internal external fun path_open(
   fd: fd,
@@ -127,7 +125,6 @@ internal external fun path_open(
  * entry, or skip the oversized directory entry.
  */
 @WasmImport("wasi_snapshot_preview1", "fd_readdir")
-//@WasmImport("wasi", "fd_readdir")
 internal external fun fd_readdir(
   fd: fd,
   buf: PointerU8,
@@ -135,4 +132,3 @@ internal external fun fd_readdir(
   cookie: dircookie,
   returnPointer: PointerU8,
 ): Int // should be Short??
-
