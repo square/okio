@@ -57,8 +57,12 @@ internal class WindowsFileHandle(
     arrayOffset: Int,
     byteCount: Int,
   ): Int {
-    val bytesRead = array.usePinned { pinned ->
-      variantPread(pinned.addressOf(arrayOffset), byteCount, fileOffset)
+    val bytesRead = if (array.isNotEmpty()) {
+      array.usePinned { pinned ->
+        variantPread(pinned.addressOf(arrayOffset), byteCount, fileOffset)
+      }
+    } else {
+      0
     }
     if (bytesRead == 0) return -1
     return bytesRead
@@ -93,8 +97,12 @@ internal class WindowsFileHandle(
     arrayOffset: Int,
     byteCount: Int,
   ) {
-    val bytesWritten = array.usePinned { pinned ->
-      variantPwrite(pinned.addressOf(arrayOffset), byteCount, fileOffset)
+    val bytesWritten = if (array.isNotEmpty()) {
+      array.usePinned { pinned ->
+        variantPwrite(pinned.addressOf(arrayOffset), byteCount, fileOffset)
+      }
+    } else {
+      0
     }
     if (bytesWritten != byteCount) throw IOException("bytesWritten=$bytesWritten")
   }

@@ -18,6 +18,7 @@ package okio
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
@@ -1679,6 +1680,23 @@ abstract class AbstractFileSystemTest(
     }
 
     assertEquals(writtenBytes, readBytes)
+  }
+
+  @Test fun fileHandleEmptyArrayWriteAndRead() {
+    val path = base / "file-handle-empty-array-write-and-read"
+
+    val writtenBytes = ByteArray(0)
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.write(0, writtenBytes, 0, writtenBytes.size)
+    }
+
+    val readBytes = fileSystem.openReadWrite(path).use { handle ->
+      val byteArray = ByteArray(writtenBytes.size)
+      handle.read(0, byteArray, 0, byteArray.size)
+      return@use byteArray
+    }
+
+    assertContentEquals(writtenBytes, readBytes)
   }
 
   @Test fun fileHandleSinkPosition() {
