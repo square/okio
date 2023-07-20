@@ -12,7 +12,6 @@ plugins {
 
 kotlin {
   jvm {
-    withJava()
   }
   if (kmpJsEnabled) {
     js {
@@ -49,6 +48,8 @@ kotlin {
 
 tasks {
   val jvmJar by getting(Jar::class) {
+    // BundleTaskConvention() crashes unless there's a 'main' source set.
+    sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
     val bndConvention = aQute.bnd.gradle.BundleTaskConvention(this)
     bndConvention.setBnd(
       """
