@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-reports
-          path: '**/build/reports'
+          path: 'okio-wasifilesystem/build/reports'
 
   publish:
     runs-on: macos-11
