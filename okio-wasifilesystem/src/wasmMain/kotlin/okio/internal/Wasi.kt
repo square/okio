@@ -13,14 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:OptIn(UnsafeWasmMemoryApi::class)
-
 package okio.internal
 
 import kotlin.wasm.unsafe.MemoryAllocator
 import kotlin.wasm.unsafe.Pointer
-import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
 import okio.internal.preview1.fd
 import okio.internal.preview1.fd_close
 import okio.internal.preview1.size

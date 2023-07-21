@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
+package okio
+
 import kotlin.wasm.unsafe.withScopedMemoryAllocator
-import okio.Buffer
-import okio.IOException
-import okio.Sink
-import okio.Timeout
 import okio.internal.ErrnoException
-import okio.internal.preview1.fd
 import okio.internal.fdClose
+import okio.internal.preview1.fd
 import okio.internal.preview1.fd_write
 import okio.internal.preview1.size
 import okio.internal.write
 
-@OptIn(UnsafeWasmMemoryApi::class)
 internal class FileSink(
   private val fd: fd,
 ) : Sink {

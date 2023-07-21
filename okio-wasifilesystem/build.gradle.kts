@@ -14,6 +14,9 @@ plugins {
 kotlin {
   configureOrCreateWasmPlatform()
   sourceSets {
+    all {
+      languageSettings.optIn("kotlin.wasm.unsafe.UnsafeWasmMemoryApi")
+    }
     val wasmMain by getting {
       dependencies {
         implementation(projects.okio)

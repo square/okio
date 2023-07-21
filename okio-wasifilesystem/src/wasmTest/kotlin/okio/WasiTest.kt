@@ -15,7 +15,6 @@
  */
 package okio
 
-import WasiFileSystem
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

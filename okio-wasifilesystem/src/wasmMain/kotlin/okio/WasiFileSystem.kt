@@ -13,20 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package okio
+
 import kotlin.wasm.unsafe.Pointer
-import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
 import kotlin.wasm.unsafe.withScopedMemoryAllocator
-import okio.FileHandle
-import okio.FileMetadata
-import okio.FileSystem
-import okio.Path
-import okio.Sink
-import okio.Source
 import okio.internal.ErrnoException
+import okio.internal.fdClose
 import okio.internal.preview1.FirstPreopenDirectoryTmp
 import okio.internal.preview1.dirnamelen
 import okio.internal.preview1.fd
-import okio.internal.fdClose
 import okio.internal.preview1.fd_readdir
 import okio.internal.preview1.oflag_creat
 import okio.internal.preview1.oflag_directory
@@ -34,10 +29,10 @@ import okio.internal.preview1.oflag_excl
 import okio.internal.preview1.oflags
 import okio.internal.preview1.path_create_directory
 import okio.internal.preview1.path_open
-import okio.internal.readString
 import okio.internal.preview1.right_fd_readdir
 import okio.internal.preview1.right_fd_write
 import okio.internal.preview1.rights
+import okio.internal.readString
 import okio.internal.write
 
 /**
@@ -45,7 +40,6 @@ import okio.internal.write
  *
  * [WASI]: https://wasi.dev/
  */
-@OptIn(UnsafeWasmMemoryApi::class)
 object WasiFileSystem : FileSystem() {
   override fun canonicalize(path: Path): Path {
     TODO("Not yet implemented")
@@ -203,5 +197,5 @@ object WasiFileSystem : FileSystem() {
     }
   }
 
-  override fun toString() = "WasiFileSystem"
+  override fun toString() = "okio.WasiFileSystem"
 }
