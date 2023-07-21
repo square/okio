@@ -19,12 +19,12 @@ import okio.Buffer
 import okio.IOException
 import okio.Sink
 import okio.Timeout
-import okio.internal.preview1.ErrnoException
+import okio.internal.ErrnoException
 import okio.internal.preview1.fd
-import okio.internal.preview1.fdClose
+import okio.internal.fdClose
 import okio.internal.preview1.fd_write
 import okio.internal.preview1.size
-import okio.internal.preview1.write
+import okio.internal.write
 
 @OptIn(UnsafeWasmMemoryApi::class)
 internal class FileSink(

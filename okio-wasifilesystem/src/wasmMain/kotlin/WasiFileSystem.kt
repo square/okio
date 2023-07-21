@@ -22,11 +22,11 @@ import okio.FileSystem
 import okio.Path
 import okio.Sink
 import okio.Source
-import okio.internal.preview1.ErrnoException
+import okio.internal.ErrnoException
 import okio.internal.preview1.FirstPreopenDirectoryTmp
 import okio.internal.preview1.dirnamelen
 import okio.internal.preview1.fd
-import okio.internal.preview1.fdClose
+import okio.internal.fdClose
 import okio.internal.preview1.fd_readdir
 import okio.internal.preview1.oflag_creat
 import okio.internal.preview1.oflag_directory
@@ -34,11 +34,11 @@ import okio.internal.preview1.oflag_excl
 import okio.internal.preview1.oflags
 import okio.internal.preview1.path_create_directory
 import okio.internal.preview1.path_open
-import okio.internal.preview1.readString
+import okio.internal.readString
 import okio.internal.preview1.right_fd_readdir
 import okio.internal.preview1.right_fd_write
 import okio.internal.preview1.rights
-import okio.internal.preview1.write
+import okio.internal.write
 
 /**
  * Use [WASI] to implement the Okio file system interface.

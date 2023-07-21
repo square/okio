@@ -16,11 +16,14 @@
 
 @file:OptIn(UnsafeWasmMemoryApi::class)
 
-package okio.internal.preview1
+package okio.internal
 
 import kotlin.wasm.unsafe.MemoryAllocator
 import kotlin.wasm.unsafe.Pointer
 import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
+import okio.internal.preview1.fd
+import okio.internal.preview1.fd_close
+import okio.internal.preview1.size
 
 internal fun fdClose(fd: fd) {
   val errno = fd_close(fd = fd)
