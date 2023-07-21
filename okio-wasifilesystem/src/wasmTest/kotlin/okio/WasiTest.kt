@@ -15,32 +15,48 @@
  */
 package okio
 
+import WasiFileSystem
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import okio.Path.Companion.toPath
-import okio.internal.preview1.fdReadDir
-import okio.internal.preview1.oflag_directory
-import okio.internal.preview1.pathOpen
-import okio.internal.preview1.right_fd_readdir
 
 class WasiTest {
-  @Test
-  fun happyPath() {
-    val fd = pathOpen(
-      path = "/okio/okio-wasifilesystem/src/wasmTest/sampleData",
-      oflags = oflag_directory,
-      rightsBase = right_fd_readdir,
-    )
+  private val fileSystem = WasiFileSystem
+  private val base: Path = "/tmp".toPath() / "${this::class.simpleName}-${randomToken(16)}"
 
-    val expectedFileNames = listOf(
-      "a".toPath(),
-      "a.txt".toPath(),
-    )
-    val dir = fdReadDir(fd)
+  @BeforeTest
+  fun setUp() {
+    fileSystem.createDirectory(base)
+  }
+
+  @Test
+  fun createDirectory() {
+    fileSystem.createDirectory(base / "child")
+  }
+
+  @Test
+  fun writeFiles() {
+    fileSystem.write(base / "hello.txt") {
+      writeUtf8("hello\n")
+    }
+  }
+
+  @Test
+  fun listDirectory() {
+    fileSystem.write(base / "a") {
+      writeUtf8("this file has a 1-byte file name")
+    }
+    fileSystem.write(base / "a.txt") {
+      writeUtf8("this file has a 5-byte file name")
+    }
 
     assertEquals(
-      expectedFileNames,
-      dir.map { it.name }.sorted(),
+      listOf(
+        base / "a",
+        base / "a.txt",
+      ),
+      fileSystem.list(base),
     )
   }
 }

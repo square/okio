@@ -22,7 +22,19 @@ import kotlin.wasm.unsafe.MemoryAllocator
 import kotlin.wasm.unsafe.Pointer
 import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
 import kotlin.wasm.unsafe.withScopedMemoryAllocator
-import okio.Path.Companion.toPath
+
+internal fun pathCreateDirectory(path: String) {
+  withScopedMemoryAllocator { allocator ->
+    val (pathAddress, pathSize) = allocator.write(path)
+
+    val errno = path_create_directory(
+      fd = FirstPreopenDirectoryTmp,
+      path = pathAddress.address.toInt(),
+      pathSize = pathSize,
+    )
+    if (errno != 0) throw ErrnoException(errno.toShort())
+  }
+}
 
 internal fun pathOpen(path: String, oflags: oflags, rightsBase: rights): fd {
   withScopedMemoryAllocator { allocator ->
@@ -30,7 +42,7 @@ internal fun pathOpen(path: String, oflags: oflags, rightsBase: rights): fd {
 
     val returnPointer: Pointer = allocator.allocate(4) // fd is u32.
     val errno = path_open(
-      fd = UnspecifiedFd,
+      fd = FirstPreopenDirectoryTmp,
       dirflags = 0,
       path = pathAddress.address.toInt(),
       pathSize = pathSize,
@@ -45,8 +57,12 @@ internal fun pathOpen(path: String, oflags: oflags, rightsBase: rights): fd {
   }
 }
 
-@OptIn(UnsafeWasmMemoryApi::class)
-internal fun fdReadDir(fd: fd): List<DirectoryEntry> {
+internal fun fdClose(fd: fd) {
+  val errno = fd_close(fd = fd)
+  if (errno != 0) throw ErrnoException(errno.toShort())
+}
+
+internal fun fdReadDir(fd: fd): List<String> {
   withScopedMemoryAllocator { allocator ->
     var bufSize = 2048
     var bufPointer = allocator.allocate(bufSize)
@@ -76,26 +92,41 @@ internal fun fdReadDir(fd: fd): List<DirectoryEntry> {
 
     var pos = bufPointer
     val limit = bufPointer + pageSize
-    val result = mutableListOf<DirectoryEntry>()
+    val result = mutableListOf<String>()
     while (pos.address < limit.address) {
       pos += 8 // Skip dircookie.
-      val d_inod: inode = pos.loadLong()
-      pos += 8
+      pos += 8 // Skip inode.
       val d_namelen: dirnamelen = pos.loadInt()
-      pos += 4
-      val d_type = pos.loadInt()
-      pos += 4
+      pos += 4 // Consume d_namelen.
+      pos += 4 // Skip d_type.
 
       val name = pos.readString(d_namelen)
       pos += d_namelen
 
-      result += DirectoryEntry(
-        inode = d_inod,
-        type = d_type.toByte(),
-        name = name.toPath(),
-      )
+      result += name
     }
     return result
+  }
+}
+
+internal fun fdWrite(fd: fd, data: ByteArray, offset: Int, count: Int): size {
+  withScopedMemoryAllocator { allocator ->
+    val data = allocator.write(data, offset, count)
+
+    val iovec = allocator.allocate(8)
+    iovec.storeInt(data.address.toInt())
+    (iovec + 4).storeInt(count)
+
+    val returnPointer = allocator.allocate(4) // `size` is u32, 4 bytes.
+    val errno = fd_write(
+      fd = fd,
+      iovs = iovec.address.toInt(),
+      iovsSize = 1,
+      returnPointer = returnPointer.address.toInt(),
+    )
+    if (errno != 0) throw ErrnoException(errno.toShort())
+
+    return returnPointer.loadInt()
   }
 }
 
@@ -126,11 +157,15 @@ private fun MemoryAllocator.write(path: String): Pair<Pointer, size> {
   return write(bytes) to bytes.size
 }
 
-private fun MemoryAllocator.write(byteArray: ByteArray): Pointer {
-  val result = allocate(byteArray.size)
+private fun MemoryAllocator.write(
+  byteArray: ByteArray,
+  offset: Int = 0,
+  count: Int = byteArray.size - offset,
+): Pointer {
+  val result = allocate(count)
   var pos = result
-  for (b in byteArray) {
-    pos.storeByte(b)
+  for (b in offset until (offset + count)) {
+    pos.storeByte(byteArray[b])
     pos += 1
   }
   return result

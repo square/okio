@@ -85,7 +85,26 @@ typealias fdflags = Short
 val Stdin: fd = 0
 val Stdout: fd = 1
 val Stderr: fd = 2
-val UnspecifiedFd: fd = 3
+
+/**
+ * Assume the /tmp directory is fd 3.
+ *
+ * TODO: look this up at runtime from whatever parent directory is requested.
+ */
+val FirstPreopenDirectoryTmp: fd = 3
+
+/**
+ * path_create_directory(fd: fd, path: string) -> Result<(), errno>
+ *
+ * Create a directory.
+ * Note: This is similar to `mkdirat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_create_directory")
+internal external fun path_create_directory(
+  fd: fd,
+  path: PointerU8,
+  pathSize: size,
+): Int // should be Short??
 
 /**
  * path_open(fd: fd, dirflags: lookupflags, path: string, oflags: oflags, fs_rights_base: rights, fs_rights_inheriting: rights, fdflags: fdflags) -> Result<fd, errno>
@@ -112,6 +131,17 @@ internal external fun path_open(
 ): Int // should be Short??
 
 /**
+ * fd_close(fd: fd) -> Result<(), errno>
+ *
+ * Close a file descriptor.
+ * Note: This is similar to `close` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_close")
+internal external fun fd_close(
+  fd: fd,
+): Int // should be Short??
+
+/**
  * fd_readdir(fd: fd, buf: Pointer<u8>, buf_len: size, cookie: dircookie) -> Result<size, errno>
  *
  * Read directory entries from a directory.
@@ -130,5 +160,23 @@ internal external fun fd_readdir(
   buf: PointerU8,
   buf_len: size,
   cookie: dircookie,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
+ * fd_write(fd: fd, iovs: ciovec_array) -> Result<size, errno>
+ *
+ * Write to a file descriptor.
+ * Note: This is similar to `writev` in POSIX.
+ *
+ * Like POSIX, any calls of `write` (and other functions to read or write)
+ * for a regular file by other threads in the WASI process should not be
+ * interleaved while `write` is executed.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_write")
+internal external fun fd_write(
+  fd: fd,
+  iovs: PointerU8,
+  iovsSize: size,
   returnPointer: PointerU8,
 ): Int // should be Short??

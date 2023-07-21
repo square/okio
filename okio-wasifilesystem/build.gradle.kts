@@ -21,6 +21,7 @@ kotlin {
     }
     val wasmTest by getting {
       dependencies {
+        implementation(projects.okioTestingSupport)
         implementation(libs.kotlin.test)
       }
     }
@@ -57,6 +58,9 @@ val injectWasiInit by tasks.creating {
   outputs.file(entryPointMjs)
 
   doLast {
+    val tmpdir = File(System.getProperty("java.io.tmpdir"), "okio-wasifilesystem-test")
+    tmpdir.mkdirs()
+
     entryPointMjs.writeText(
       """
       import {instantiate} from './$moduleName.uninstantiated.mjs';
@@ -65,7 +69,7 @@ val injectWasiInit by tasks.creating {
       export const wasi = new WASI({
         version: 'preview1',
         preopens: {
-          '/okio': '$rootDir'
+          '/tmp': '$tmpdir'
         }
       });
 
