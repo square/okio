@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
+import kotlin.wasm.unsafe.withScopedMemoryAllocator
 import okio.Buffer
 import okio.IOException
 import okio.Sink
 import okio.Timeout
+import okio.internal.preview1.ErrnoException
 import okio.internal.preview1.fd
 import okio.internal.preview1.fdClose
-import okio.internal.preview1.fdWrite
+import okio.internal.preview1.fd_write
+import okio.internal.preview1.size
+import okio.internal.preview1.write
 
-class FileSink(
+@OptIn(UnsafeWasmMemoryApi::class)
+internal class FileSink(
   private val fd: fd,
 ) : Sink {
   private var closed = false
@@ -39,7 +45,7 @@ class FileSink(
         check(cursor.next() != -1)
 
         val count = minOf(bytesRemaining, cursor.end.toLong() - cursor.start).toInt()
-        if (fdWrite(fd, cursor.data!!, cursor.start, count) != count) {
+        if (fdWrite(cursor.data!!, cursor.start, count) != count) {
           throw IOException("write failed")
         }
         bytesRemaining -= count
@@ -47,6 +53,27 @@ class FileSink(
     } finally {
       cursor.close()
       source.skip(byteCount)
+    }
+  }
+
+  private fun fdWrite(data: ByteArray, offset: Int, count: Int): size {
+    withScopedMemoryAllocator { allocator ->
+      val dataPointer = allocator.write(data, offset, count)
+
+      val iovec = allocator.allocate(8)
+      iovec.storeInt(dataPointer.address.toInt())
+      (iovec + 4).storeInt(count)
+
+      val returnPointer = allocator.allocate(4) // `size` is u32, 4 bytes.
+      val errno = fd_write(
+        fd = fd,
+        iovs = iovec.address.toInt(),
+        iovsSize = 1,
+        returnPointer = returnPointer.address.toInt(),
+      )
+      if (errno != 0) throw ErrnoException(errno.toShort())
+
+      return returnPointer.loadInt()
     }
   }
 
