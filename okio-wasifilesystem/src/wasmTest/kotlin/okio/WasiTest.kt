@@ -55,7 +55,7 @@ class WasiTest {
         base / "a",
         base / "a.txt",
       ),
-      fileSystem.list(base),
+      fileSystem.list(base).sorted(),
     )
   }
 }
