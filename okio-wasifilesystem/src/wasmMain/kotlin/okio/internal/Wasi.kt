@@ -42,10 +42,19 @@ internal fun Pointer.readString(byteCount: Int): String {
 
 private fun Pointer.readByteArray(byteCount: Int): ByteArray {
   val result = ByteArray(byteCount)
-  for (i in 0 until byteCount) {
-    result[i] = (this + i).loadByte()
-  }
+  read(result, 0, byteCount)
   return result
+}
+
+internal fun Pointer.read(
+  sink: ByteArray,
+  offset: Int,
+  count: Int,
+): ByteArray {
+  for (i in 0 until count) {
+    sink[offset + i] = (this + i).loadByte()
+  }
+  return sink
 }
 
 internal fun MemoryAllocator.write(

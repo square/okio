@@ -142,6 +142,20 @@ internal external fun fd_close(
 ): Int // should be Short??
 
 /**
+ * fd_read(fd: fd, iovs: iovec_array) -> Result<size, errno>
+ *
+ * Read from a file descriptor.
+ * Note: This is similar to `readv` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_read")
+internal external fun fd_read(
+  fd: fd,
+  iovs: PointerU8,
+  iovsSize: size,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
  * fd_readdir(fd: fd, buf: Pointer<u8>, buf_len: size, cookie: dircookie) -> Result<size, errno>
  *
  * Read directory entries from a directory.
