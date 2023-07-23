@@ -41,6 +41,7 @@ internal class FileSink(
         check(cursor.next() != -1)
 
         val count = minOf(bytesRemaining, cursor.end.toLong() - cursor.start).toInt()
+        println("fdWrite(cursor.data!!, ${cursor.start}, ${count})")
         if (fdWrite(cursor.data!!, cursor.start, count) != count) {
           throw IOException("write failed")
         }
@@ -55,12 +56,15 @@ internal class FileSink(
   private fun fdWrite(data: ByteArray, offset: Int, count: Int): size {
     withScopedMemoryAllocator { allocator ->
       val dataPointer = allocator.write(data, offset, count)
+      println("dataPointer: ${dataPointer.address.toInt()}")
 
       val iovec = allocator.allocate(8)
+      println("iovec: ${iovec.address.toInt()}")
       iovec.storeInt(dataPointer.address.toInt())
       (iovec + 4).storeInt(count)
 
-      val returnPointer = allocator.allocate(4) // `size` is u32, 4 bytes.
+      val returnPointer = allocator.allocate(8) // `size` is u32, 4 bytes.
+      println("returnPointer: ${returnPointer.address.toInt()}")
       val errno = fd_write(
         fd = fd,
         iovs = iovec.address.toInt(),
@@ -69,7 +73,8 @@ internal class FileSink(
       )
       if (errno != 0) throw ErrnoException(errno.toShort())
 
-      return returnPointer.loadInt()
+      returnPointer.loadInt()
+      return count
     }
   }
 

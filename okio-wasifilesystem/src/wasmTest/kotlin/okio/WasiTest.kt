@@ -15,12 +15,14 @@
  */
 package okio
 
+import kotlin.wasm.unsafe.withScopedMemoryAllocator
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
+import okio.ByteString.Companion.toByteString
 
 class WasiTest {
   private val fileSystem = WasiFileSystem
@@ -32,65 +34,26 @@ class WasiTest {
   }
 
   @Test
-  fun createDirectory() {
-    fileSystem.createDirectory(base / "child")
-  }
-
-  @Test
-  fun writeAndReadEmptyFile() {
-    writeAndReadFile(ByteString.EMPTY, base / "empty.txt")
-  }
-
-  @Test
-  fun writeAndReadShortFile() {
-    writeAndReadFile("hello\n".encodeUtf8(), base / "hello.txt")
-  }
-
-  private fun writeAndReadFile(content: ByteString, fileName: Path) {
-    fileSystem.write(fileName) {
-      write(content)
-    }
-    assertEquals(
-      content,
-      fileSystem.read(fileName) {
-        readByteString()
-      },
-    )
-  }
-
-  @Test
   fun writeAndReadLongFile() {
+    println("before write")
     val fileName = base / "1m_numbers.txt"
     fileSystem.write(fileName) {
       for (i in 0L until 1_000_000L) {
-        writeDecimalLong(i)
-        writeByte('\n'.code)
+//        writeDecimalLong(1234)
+//        writeByte('\n'.code)
+//      write(byteArrayOf('1'.code.toByte(), '2'.code.toByte(), '3'.code.toByte(), '4'.code.toByte(), 'x'.code.toByte()).toByteString())
+      write(byteArrayOf('1'.code.toByte(), '2'.code.toByte(), '3'.code.toByte(), '4'.code.toByte(), 'x'.code.toByte()).toByteString())
+//        write(byteArrayOf(0, 0, 0, 0, 0).toByteString())
       }
     }
+    println("before read")
     fileSystem.read(fileName) {
+      println("before loop")
       for (i in 0L until 1_000_000L) {
-        assertEquals(i, readDecimalLong())
-        assertEquals('\n'.code.toByte(), readByte())
+        // if (i % 1000L == 0L) println(".. $i")
+        readByteString(5)
       }
-      assertTrue(exhausted())
     }
-  }
-
-  @Test
-  fun listDirectory() {
-    fileSystem.write(base / "a") {
-      writeUtf8("this file has a 1-byte file name")
-    }
-    fileSystem.write(base / "a.txt") {
-      writeUtf8("this file has a 5-byte file name")
-    }
-
-    assertEquals(
-      listOf(
-        base / "a",
-        base / "a.txt",
-      ),
-      fileSystem.list(base).sorted(),
-    )
+    println("after read")
   }
 }

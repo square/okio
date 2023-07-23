@@ -75,7 +75,7 @@ object WasiFileSystem : FileSystem() {
       // don't progress. Instead, just grow the buffer until the entire directory fits.
       var bufSize = 2048
       var bufPointer = allocator.allocate(bufSize)
-      val returnPointer = allocator.allocate(4) // `size` is u32, 4 bytes.
+      val returnPointer = allocator.allocate(8) // `size` is u32, 4 bytes.
       var pageSize: Int
       while (true) {
         val errno = fd_readdir(
@@ -187,7 +187,7 @@ object WasiFileSystem : FileSystem() {
     withScopedMemoryAllocator { allocator ->
       val (pathAddress, pathSize) = allocator.write(path)
 
-      val returnPointer: Pointer = allocator.allocate(4) // fd is u32.
+      val returnPointer: Pointer = allocator.allocate(8) // fd is u32.
       val errno = path_open(
         fd = FirstPreopenDirectoryTmp,
         dirflags = 0,

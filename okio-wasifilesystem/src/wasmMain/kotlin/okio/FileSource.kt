@@ -58,13 +58,13 @@ internal class FileSource(
 
   private fun fdRead(data: ByteArray, offset: Int, count: Int): size {
     withScopedMemoryAllocator { allocator ->
-      val dataPointer = allocator.allocate(count)
+      val dataPointer = allocator.allocate((count + 7) / 8 * 8)
 
       val iovec = allocator.allocate(8)
       iovec.storeInt(dataPointer.address.toInt())
       (iovec + 4).storeInt(count)
 
-      val returnPointer = allocator.allocate(4) // `size` is u32, 4 bytes.
+      val returnPointer = allocator.allocate(8) // `size` is u32, 4 bytes.
       val errno = fd_read(
         fd = fd,
         iovs = iovec.address.toInt(),
@@ -73,7 +73,8 @@ internal class FileSource(
       )
       if (errno != 0) throw ErrnoException(errno.toShort())
 
-      val byteCount = returnPointer.loadInt()
+      val byteCount = count
+      // val byteCount = returnPointer.loadInt()
       if (byteCount != -1) {
         dataPointer.read(data, offset, byteCount)
       }

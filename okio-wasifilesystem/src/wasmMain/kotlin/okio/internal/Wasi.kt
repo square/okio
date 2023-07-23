@@ -69,7 +69,7 @@ internal fun MemoryAllocator.write(
   offset: Int = 0,
   count: Int = byteArray.size - offset,
 ): Pointer {
-  val result = allocate(count)
+  val result = allocate((count + 7) / 8 * 8)
   var pos = result
   for (b in offset until (offset + count)) {
     pos.storeByte(byteArray[b])
