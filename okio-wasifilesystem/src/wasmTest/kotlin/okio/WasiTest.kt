@@ -60,17 +60,23 @@ class WasiTest {
 
   @Test
   fun writeAndReadLongFile() {
-    val fileName = base / "1m_numbers.txt"
+    val fileName = base / "5m_bytes.txt"
     fileSystem.write(fileName) {
       for (i in 0L until 1_000_000L) {
-        writeDecimalLong(i)
-        writeByte('\n'.code)
+        writeByte(i.toInt())
+        writeByte(0)
+        writeByte(0)
+        writeByte(0)
+        writeByte(0)
       }
     }
     fileSystem.read(fileName) {
       for (i in 0L until 1_000_000L) {
-        assertEquals(i, readDecimalLong())
-        assertEquals('\n'.code.toByte(), readByte())
+        assertEquals(i.toByte(), readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
       }
       assertTrue(exhausted())
     }
