@@ -61,7 +61,14 @@ internal fun MemoryAllocator.write(
   string: String,
 ): Pair<Pointer, size> {
   val bytes = string.encodeToByteArray()
-  return write(bytes) to bytes.size
+  val result = allocate(bytes.size + 1)
+  var pos = result
+  for (element in bytes) {
+    pos.storeByte(element)
+    pos += 1
+  }
+  pos.storeByte(0)
+  return result to bytes.size
 }
 
 internal fun MemoryAllocator.write(
