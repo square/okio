@@ -18,6 +18,8 @@ package okio
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 
 class WasiTest {
@@ -35,9 +37,48 @@ class WasiTest {
   }
 
   @Test
-  fun writeFiles() {
-    fileSystem.write(base / "hello.txt") {
-      writeUtf8("hello\n")
+  fun writeAndReadEmptyFile() {
+    writeAndReadFile(ByteString.EMPTY, base / "empty.txt")
+  }
+
+  @Test
+  fun writeAndReadShortFile() {
+    writeAndReadFile("hello\n".encodeUtf8(), base / "hello.txt")
+  }
+
+  private fun writeAndReadFile(content: ByteString, fileName: Path) {
+    fileSystem.write(fileName) {
+      write(content)
+    }
+    assertEquals(
+      content,
+      fileSystem.read(fileName) {
+        readByteString()
+      },
+    )
+  }
+
+  @Test
+  fun writeAndReadLongFile() {
+    val fileName = base / "5m_bytes.txt"
+    fileSystem.write(fileName) {
+      for (i in 0L until 1_000_000L) {
+        writeByte(i.toInt())
+        writeByte(0)
+        writeByte(0)
+        writeByte(0)
+        writeByte(0)
+      }
+    }
+    fileSystem.read(fileName) {
+      for (i in 0L until 1_000_000L) {
+        assertEquals(i.toByte(), readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
+      }
+      assertTrue(exhausted())
     }
   }
 

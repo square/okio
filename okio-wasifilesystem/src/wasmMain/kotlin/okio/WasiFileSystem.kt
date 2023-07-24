@@ -29,6 +29,7 @@ import okio.internal.preview1.oflag_excl
 import okio.internal.preview1.oflags
 import okio.internal.preview1.path_create_directory
 import okio.internal.preview1.path_open
+import okio.internal.preview1.right_fd_read
 import okio.internal.preview1.right_fd_readdir
 import okio.internal.preview1.right_fd_write
 import okio.internal.preview1.rights
@@ -124,7 +125,13 @@ object WasiFileSystem : FileSystem() {
   }
 
   override fun source(file: Path): Source {
-    TODO("Not yet implemented")
+    return FileSource(
+      fd = pathOpen(
+        path = file.toString(),
+        oflags = 0,
+        rightsBase = right_fd_read,
+      ),
+    )
   }
 
   override fun sink(file: Path, mustCreate: Boolean): Sink {
