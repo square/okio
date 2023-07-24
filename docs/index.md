@@ -114,12 +114,6 @@ dependencies {
 </details>
 
 
-R8 / ProGuard
---------
-
-If you are using R8 or ProGuard add the options from [this file][proguard].
-
-
 License
 --------
 
@@ -153,4 +147,3 @@ License
  [encoding_slides]: https://speakerdeck.com/swankjesse/decoding-the-secrets-of-binary-data-droidcon-nyc-2016
  [ok_multiplatform_talk]: https://www.youtube.com/watch?v=Q8B4eDirgk0
  [ok_multiplatform_slides]: https://speakerdeck.com/swankjesse/ok-multiplatform
- [proguard]: https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro
