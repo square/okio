@@ -138,12 +138,12 @@ License
     limitations under the License.
 
  [1]: https://github.com/square/okhttp
- [3]: https://square.github.io/okio/2.x/okio/okio/-byte-string/index.html
- [4]: https://square.github.io/okio/2.x/okio/okio/-buffer/index.html
- [5]: https://square.github.io/okio/2.x/okio/okio/-source/index.html
- [6]: https://square.github.io/okio/2.x/okio/okio/-sink/index.html
- [7]: https://square.github.io/okio/2.x/okio/okio/-buffered-source/index.html
- [8]: https://square.github.io/okio/2.x/okio/okio/-buffered-sink/index.html
+ [3]: https://square.github.io/okio/3.x/okio/okio/okio/-byte-string/index.html
+ [4]: https://square.github.io/okio/3.x/okio/okio/okio/-buffer/index.html
+ [5]: https://square.github.io/okio/3.x/okio/okio/okio/-source/index.html
+ [6]: https://square.github.io/okio/3.x/okio/okio/okio/-sink/index.html
+ [7]: https://square.github.io/okio/3.x/okio/okio/okio/-buffered-source/index.html
+ [8]: https://square.github.io/okio/3.x/okio/okio/okio/-buffered-sink/index.html
  [changelog]: http://square.github.io/okio/changelog/
  [javadoc]: https://square.github.io/okio/2.x/okio/okio/index.html
  [kotlin]: https://kotlinlang.org/
