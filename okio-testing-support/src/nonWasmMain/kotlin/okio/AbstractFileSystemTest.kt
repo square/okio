@@ -20,7 +20,6 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -278,6 +277,112 @@ abstract class AbstractFileSystemTest(
 
     val entries = fileSystem.list(".".toPath())
     assertTrue(entries.toString()) { entries.isNotEmpty() && entries.all { it.isRelative } }
+  }
+
+  @Test
+  fun listOnRelativePathWhichIsNotDotReturnsRelativePaths() {
+    if (isNodeJsFileSystem) return
+
+    // Make sure there's always at least one file so our assertion is useful. We copy the first 2
+    // entries of the real working directory of the JVM to validate the results on all environment.
+    if (
+      fileSystem is FakeFileSystem ||
+      fileSystem is ForwardingFileSystem && fileSystem.delegate is FakeFileSystem
+    ) {
+      val workingDirectory = "/directory".toPath()
+      fileSystem.createDirectory(workingDirectory)
+      (fileSystem as? FakeFileSystem)?.workingDirectory = workingDirectory
+      ((fileSystem as? ForwardingFileSystem)?.delegate as? FakeFileSystem)?.workingDirectory =
+        workingDirectory
+      val apiDir = "api".toPath()
+      fileSystem.createDirectory(apiDir)
+      fileSystem.write(apiDir / "okio.api".toPath()) {
+        writeUtf8("hello, world!")
+      }
+    } else if (isWrappingJimFileSystem) {
+      val apiDir = "api".toPath()
+      fileSystem.createDirectory(apiDir)
+      fileSystem.write(apiDir / "okio.api".toPath()) {
+        writeUtf8("hello, world!")
+      }
+    }
+
+    try {
+      assertEquals(
+        listOf("api".toPath() / "okio.api".toPath()),
+        fileSystem.list("api".toPath()),
+        // List some entries to help debugging.
+        fileSystem.listRecursively(".".toPath()).take(5).toList().joinToString(),
+      )
+    } catch (e: Throwable) {
+      if (e !is AssertionError && e !is FileNotFoundException) { throw e }
+
+      // Non JVM environments.
+      val firstChild = fileSystem.list("Library".toPath()).first()
+      assertTrue(
+        // List some entries to help debugging.
+        fileSystem.listRecursively(".".toPath()).take(5).toList().joinToString(),
+      ) {
+        // To avoid relying too much on the environment we check that the path contains its parent
+        // once and that it's relative.
+        firstChild.isRelative &&
+          firstChild.toString().startsWith("Library") &&
+          firstChild.toString().split("Library").size == 2
+      }
+    }
+  }
+
+  @Test
+  fun listOrNullOnRelativePathWhichIsNotDotReturnsRelativePaths() {
+    if (isNodeJsFileSystem) return
+
+    // Make sure there's always at least one file so our assertion is useful. We copy the first 2
+    // entries of the real working directory of the JVM to validate the results on all environment.
+    if (
+      fileSystem is FakeFileSystem ||
+      fileSystem is ForwardingFileSystem && fileSystem.delegate is FakeFileSystem
+    ) {
+      val workingDirectory = "/directory".toPath()
+      fileSystem.createDirectory(workingDirectory)
+      (fileSystem as? FakeFileSystem)?.workingDirectory = workingDirectory
+      ((fileSystem as? ForwardingFileSystem)?.delegate as? FakeFileSystem)?.workingDirectory =
+        workingDirectory
+      val apiDir = "api".toPath()
+      fileSystem.createDirectory(apiDir)
+      fileSystem.write(apiDir / "okio.api".toPath()) {
+        writeUtf8("hello, world!")
+      }
+    } else if (isWrappingJimFileSystem) {
+      val apiDir = "api".toPath()
+      fileSystem.createDirectory(apiDir)
+      fileSystem.write(apiDir / "okio.api".toPath()) {
+        writeUtf8("hello, world!")
+      }
+    }
+
+    try {
+      assertEquals(
+        listOf("api".toPath() / "okio.api".toPath()),
+        fileSystem.listOrNull("api".toPath()),
+        // List some entries to help debugging.
+        fileSystem.listRecursively(".".toPath()).take(5).toList().joinToString(),
+      )
+    } catch (e: Throwable) {
+      if (e !is AssertionError && e !is FileNotFoundException) { throw e }
+
+      // Non JVM environments.
+      val firstChild = fileSystem.list("Library".toPath()).first()
+      assertTrue(
+        // List some entries to help debugging.
+        fileSystem.listRecursively(".".toPath()).take(5).toList().joinToString(),
+      ) {
+        // To avoid relying too much on the environment we check that the path contains its parent
+        // once and that it's relative.
+        firstChild.isRelative &&
+          firstChild.toString().startsWith("Library") &&
+          firstChild.toString().split("Library").size == 2
+      }
+    }
   }
 
   @Test
@@ -2436,19 +2541,6 @@ abstract class AbstractFileSystemTest(
     assertFailsWith<IOException> {
       pathB.readUtf8()
     }
-  }
-
-  private fun assertClosedFailure(block: () -> Unit) {
-    val exception = assertFails {
-      block()
-    }
-    val exceptionType = exception::class.simpleName
-    assertTrue(
-      exceptionType == "IOException" ||
-        exceptionType == "IllegalStateException" ||
-        exceptionType == "ClosedChannelException",
-      "unexpected exception: $exception",
-    )
   }
 
   protected fun supportsSymlink(): Boolean {
