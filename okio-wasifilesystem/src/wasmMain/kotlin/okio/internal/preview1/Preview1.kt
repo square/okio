@@ -131,6 +131,22 @@ internal external fun path_open(
 ): Int // should be Short??
 
 /**
+ * path_rename(fd: fd, old_path: string, new_fd: fd, new_path: string) -> Result<(), errno>
+ *
+ * Rename a file or directory.
+ * Note: This is similar to `renameat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_rename")
+internal external fun path_rename(
+  fd: fd,
+  old_path: PointerU8,
+  old_pathSize: size,
+  new_fd: fd,
+  new_path: PointerU8,
+  new_pathSize: size,
+): Int // should be Short??
+
+/**
  * path_symlink(old_path: string, fd: fd, new_path: string) -> Result<(), errno>
  *
  * Create a symbolic link.

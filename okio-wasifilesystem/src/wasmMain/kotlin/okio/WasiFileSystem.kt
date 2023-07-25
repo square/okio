@@ -29,6 +29,7 @@ import okio.internal.preview1.oflag_excl
 import okio.internal.preview1.oflags
 import okio.internal.preview1.path_create_directory
 import okio.internal.preview1.path_open
+import okio.internal.preview1.path_rename
 import okio.internal.preview1.path_symlink
 import okio.internal.preview1.path_unlink_file
 import okio.internal.preview1.right_fd_read
@@ -170,7 +171,20 @@ object WasiFileSystem : FileSystem() {
   }
 
   override fun atomicMove(source: Path, target: Path) {
-    TODO("Not yet implemented")
+    withScopedMemoryAllocator { allocator ->
+      val (sourcePathAddress, sourcePathSize) = allocator.write(source.toString())
+      val (targetPathAddress, targetPathSize) = allocator.write(target.toString())
+
+      val errno = path_rename(
+        fd = FirstPreopenDirectoryTmp,
+        old_path = sourcePathAddress.address.toInt(),
+        old_pathSize = sourcePathSize,
+        new_fd = FirstPreopenDirectoryTmp,
+        new_path = targetPathAddress.address.toInt(),
+        new_pathSize = targetPathSize,
+      )
+      if (errno != 0) throw ErrnoException(errno.toShort())
+    }
   }
 
   override fun delete(path: Path, mustExist: Boolean) {

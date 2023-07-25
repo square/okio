@@ -124,15 +124,36 @@ class WasiTest {
     val targetPath = base / "target"
     val sourcePath = base / "source"
     fileSystem.write(targetPath) {
-      writeUtf8("this is the the target file's contents")
+      writeUtf8("this is the target file's contents")
     }
     fileSystem.createSymlink(sourcePath, "target".toPath())
 
     assertEquals(
-      "this is the the target file's contents",
+      "this is the target file's contents",
       fileSystem.read(sourcePath) {
         readUtf8()
       },
+    )
+  }
+
+  @Test
+  fun rename() {
+    val targetPath = base / "target"
+    val sourcePath = base / "source"
+    fileSystem.write(sourcePath) {
+      writeUtf8("this is the file's contents")
+    }
+    fileSystem.atomicMove(sourcePath, targetPath)
+
+    assertEquals(
+      "this is the file's contents",
+      fileSystem.read(targetPath) {
+        readUtf8()
+      },
+    )
+    assertEquals(
+      listOf(targetPath),
+      fileSystem.list(base),
     )
   }
 }
