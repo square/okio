@@ -29,6 +29,9 @@ import okio.internal.preview1.oflag_excl
 import okio.internal.preview1.oflags
 import okio.internal.preview1.path_create_directory
 import okio.internal.preview1.path_open
+import okio.internal.preview1.path_rename
+import okio.internal.preview1.path_symlink
+import okio.internal.preview1.path_unlink_file
 import okio.internal.preview1.right_fd_read
 import okio.internal.preview1.right_fd_readdir
 import okio.internal.preview1.right_fd_write
@@ -168,15 +171,50 @@ object WasiFileSystem : FileSystem() {
   }
 
   override fun atomicMove(source: Path, target: Path) {
-    TODO("Not yet implemented")
+    withScopedMemoryAllocator { allocator ->
+      val (sourcePathAddress, sourcePathSize) = allocator.write(source.toString())
+      val (targetPathAddress, targetPathSize) = allocator.write(target.toString())
+
+      val errno = path_rename(
+        fd = FirstPreopenDirectoryTmp,
+        old_path = sourcePathAddress.address.toInt(),
+        old_pathSize = sourcePathSize,
+        new_fd = FirstPreopenDirectoryTmp,
+        new_path = targetPathAddress.address.toInt(),
+        new_pathSize = targetPathSize,
+      )
+      if (errno != 0) throw ErrnoException(errno.toShort())
+    }
   }
 
   override fun delete(path: Path, mustExist: Boolean) {
-    TODO("Not yet implemented")
+    // TODO: honor mustExist.
+    withScopedMemoryAllocator { allocator ->
+      val (pathAddress, pathSize) = allocator.write(path.toString())
+
+      val errno = path_unlink_file(
+        fd = FirstPreopenDirectoryTmp,
+        path = pathAddress.address.toInt(),
+        pathSize = pathSize,
+      )
+      if (errno != 0) throw ErrnoException(errno.toShort())
+    }
   }
 
   override fun createSymlink(source: Path, target: Path) {
-    TODO("Not yet implemented")
+    withScopedMemoryAllocator { allocator ->
+      val (sourcePathAddress, sourcePathSize) = allocator.write(source.toString())
+      val (targetPathAddress, targetPathSize) = allocator.write(target.toString())
+
+      val errno = path_symlink(
+        old_path = targetPathAddress.address.toInt(),
+        old_pathSize = targetPathSize,
+        fd = FirstPreopenDirectoryTmp,
+        new_path = sourcePathAddress.address.toInt(),
+        new_pathSize = sourcePathSize,
+      )
+      if (errno != 0) throw ErrnoException(errno.toShort())
+    }
   }
 
   private fun pathOpen(

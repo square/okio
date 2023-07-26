@@ -99,4 +99,61 @@ class WasiTest {
       fileSystem.list(base).sorted(),
     )
   }
+
+  @Test
+  fun delete() {
+    fileSystem.write(base / "a") {
+    }
+    fileSystem.write(base / "b") {
+    }
+    fileSystem.write(base / "c") {
+    }
+    fileSystem.delete(base / "b")
+
+    assertEquals(
+      listOf(
+        base / "a",
+        base / "c",
+      ),
+      fileSystem.list(base).sorted(),
+    )
+  }
+
+  @Test
+  fun createSymlink() {
+    val targetPath = base / "target"
+    val sourcePath = base / "source"
+    fileSystem.write(targetPath) {
+      writeUtf8("this is the target file's contents")
+    }
+    fileSystem.createSymlink(sourcePath, "target".toPath())
+
+    assertEquals(
+      "this is the target file's contents",
+      fileSystem.read(sourcePath) {
+        readUtf8()
+      },
+    )
+  }
+
+  @Test
+  fun rename() {
+    val targetPath = base / "target"
+    val sourcePath = base / "source"
+    fileSystem.write(sourcePath) {
+      writeUtf8("this is the file's contents")
+    }
+    fileSystem.atomicMove(sourcePath, targetPath)
+
+    assertEquals(
+      "this is the file's contents",
+      fileSystem.read(targetPath) {
+        readUtf8()
+      },
+    )
+    assertEquals(
+      listOf(targetPath),
+      fileSystem.list(base),
+    )
+  }
 }

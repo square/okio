@@ -131,6 +131,51 @@ internal external fun path_open(
 ): Int // should be Short??
 
 /**
+ * path_rename(fd: fd, old_path: string, new_fd: fd, new_path: string) -> Result<(), errno>
+ *
+ * Rename a file or directory.
+ * Note: This is similar to `renameat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_rename")
+internal external fun path_rename(
+  fd: fd,
+  old_path: PointerU8,
+  old_pathSize: size,
+  new_fd: fd,
+  new_path: PointerU8,
+  new_pathSize: size,
+): Int // should be Short??
+
+/**
+ * path_symlink(old_path: string, fd: fd, new_path: string) -> Result<(), errno>
+ *
+ * Create a symbolic link.
+ * Note: This is similar to `symlinkat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_symlink")
+internal external fun path_symlink(
+  old_path: PointerU8,
+  old_pathSize: size,
+  fd: fd,
+  new_path: PointerU8,
+  new_pathSize: size,
+): Int // should be Short??
+
+/**
+ * path_unlink_file(fd: fd, path: string) -> Result<(), errno>
+ *
+ * Unlink a file.
+ * Return [`errno::isdir`](#errno.isdir) if the path refers to a directory.
+ * Note: This is similar to `unlinkat(fd, path, 0)` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_unlink_file")
+internal external fun path_unlink_file(
+  fd: fd,
+  path: PointerU8,
+  pathSize: size,
+): Int // should be Short??
+
+/**
  * fd_close(fd: fd) -> Result<(), errno>
  *
  * Close a file descriptor.
