@@ -156,4 +156,34 @@ class WasiTest {
       fileSystem.list(base),
     )
   }
+
+  @Test
+  fun fileMetadata() {
+    val regularFile = base / "regularFile"
+    val directory = base / "directory"
+    val symlink = base / "symlink"
+    fileSystem.write(regularFile) {
+      writeUtf8("this is a regular file")
+    }
+    fileSystem.createDirectory(directory)
+    fileSystem.createSymlink(symlink, "regularFile".toPath())
+
+    val regularFileMetadata = fileSystem.metadata(regularFile)
+    assertEquals(true, regularFileMetadata.isRegularFile)
+    assertEquals(false, regularFileMetadata.isDirectory)
+    assertEquals(null, regularFileMetadata.symlinkTarget)
+    assertEquals(22L, regularFileMetadata.size)
+
+    val directoryMetadata = fileSystem.metadata(directory)
+    assertEquals(false, directoryMetadata.isRegularFile)
+    assertEquals(true, directoryMetadata.isDirectory)
+    assertEquals(null, directoryMetadata.symlinkTarget)
+    // Note: no assertions about directory size.
+
+    val symlinkMetadata = fileSystem.metadata(symlink)
+    assertEquals(false, symlinkMetadata.isRegularFile)
+    assertEquals(false, symlinkMetadata.isDirectory)
+    assertEquals("regularFile".toPath(), symlinkMetadata.symlinkTarget)
+    assertEquals("regularFile".length.toLong(), symlinkMetadata.size)
+  }
 }

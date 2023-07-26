@@ -17,18 +17,25 @@ package okio
 
 import kotlin.wasm.unsafe.Pointer
 import kotlin.wasm.unsafe.withScopedMemoryAllocator
+import okio.Path.Companion.toPath
 import okio.internal.ErrnoException
 import okio.internal.fdClose
 import okio.internal.preview1.FirstPreopenDirectoryTmp
 import okio.internal.preview1.dirnamelen
 import okio.internal.preview1.fd
 import okio.internal.preview1.fd_readdir
+import okio.internal.preview1.filetype
+import okio.internal.preview1.filetype_directory
+import okio.internal.preview1.filetype_regular_file
+import okio.internal.preview1.filetype_symbolic_link
 import okio.internal.preview1.oflag_creat
 import okio.internal.preview1.oflag_directory
 import okio.internal.preview1.oflag_excl
 import okio.internal.preview1.oflags
 import okio.internal.preview1.path_create_directory
+import okio.internal.preview1.path_filestat_get
 import okio.internal.preview1.path_open
+import okio.internal.preview1.path_readlink
 import okio.internal.preview1.path_rename
 import okio.internal.preview1.path_symlink
 import okio.internal.preview1.path_unlink_file
@@ -50,7 +57,60 @@ object WasiFileSystem : FileSystem() {
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
-    TODO("Not yet implemented")
+    withScopedMemoryAllocator { allocator ->
+      val returnPointer = allocator.allocate(64)
+      val (pathAddress, pathSize) = allocator.write(path.toString())
+
+      val errno = path_filestat_get(
+        fd = FirstPreopenDirectoryTmp,
+        flags = 0,
+        path = pathAddress.address.toInt(),
+        pathSize = pathSize,
+        returnPointer = returnPointer.address.toInt(),
+      )
+      if (errno != 0) throw ErrnoException(errno.toShort())
+
+      // Skip device, offset 0.
+      // Skip ino, offset 8.
+      val filetype: filetype = (returnPointer + 16).loadByte()
+      // Skip nlink, offset 24.
+      val filesize: Long = (returnPointer + 32).loadLong()
+      val atim: Long = (returnPointer + 40).loadLong() // Access time, Nanoseconds.
+      val mtim: Long = (returnPointer + 48).loadLong() // Modification time, Nanoseconds.
+      val ctim: Long = (returnPointer + 56).loadLong() // Status change time, Nanoseconds.
+
+      val symlinkTarget: Path? = when (filetype) {
+        filetype_symbolic_link -> {
+          val bufLen = filesize.toInt() + 1
+          val bufPointer = allocator.allocate(bufLen)
+          val readlinkReturnPointer = allocator.allocate(4) // `size` is u32, 4 bytes.
+          val readlinkErrno = path_readlink(
+            fd = FirstPreopenDirectoryTmp,
+            path = pathAddress.address.toInt(),
+            pathSize = pathSize,
+            buf = bufPointer.address.toInt(),
+            buf_len = bufLen,
+            returnPointer = readlinkReturnPointer.address.toInt(),
+          )
+          if (readlinkErrno != 0) throw ErrnoException(readlinkErrno.toShort())
+          val symlinkSize = readlinkReturnPointer.loadInt()
+          val symlink = bufPointer.readString(symlinkSize)
+          symlink.toPath()
+        }
+
+        else -> null
+      }
+
+      return FileMetadata(
+        isRegularFile = filetype == filetype_regular_file,
+        isDirectory = filetype == filetype_directory,
+        symlinkTarget = symlinkTarget,
+        size = filesize,
+        createdAtMillis = ctim / 1_000_000L, // Nanos to millis.
+        lastModifiedAtMillis = mtim / 1_000_000L, // Nanos to millis.
+        lastAccessedAtMillis = atim / 1_000_000L, // Nanos to millis.
+      )
+    }
   }
 
   override fun list(dir: Path): List<Path> {
