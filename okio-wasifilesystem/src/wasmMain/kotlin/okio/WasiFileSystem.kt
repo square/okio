@@ -318,12 +318,15 @@ object WasiFileSystem : FileSystem() {
         pathSize = pathSize,
       )
       // If unlink failed, try remove_directory.
-      if (Errno.entries[errno] == Errno.perm) {
-        errno = path_remove_directory(
-          fd = FirstPreopenDirectoryTmp,
-          path = pathAddress.address.toInt(),
-          pathSize = pathSize,
-        )
+      when (errno) {
+        Errno.perm.ordinal,
+        Errno.isdir.ordinal -> {
+          errno = path_remove_directory(
+            fd = FirstPreopenDirectoryTmp,
+            path = pathAddress.address.toInt(),
+            pathSize = pathSize,
+          )
+        }
       }
       if (errno != 0) throw ErrnoException(errno.toShort())
     }
