@@ -18,6 +18,7 @@ package okio
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
@@ -34,6 +35,58 @@ class WasiTest {
   @Test
   fun createDirectory() {
     fileSystem.createDirectory(base / "child")
+  }
+
+  @Test
+  fun canonicalizeAbsolutePathNoSymlinks() {
+    val path = base / "regular_file.txt"
+    fileSystem.write(path) {
+      writeUtf8("hello")
+    }
+    assertEquals(
+      path,
+      fileSystem.canonicalize(path),
+    )
+  }
+
+  @Test
+  fun canonicalizeAbsolutePathWithSymlinksInFiles() {
+    val target = base / "target"
+    val source = base / "source"
+    fileSystem.write(target) {
+      writeUtf8("hello")
+    }
+    fileSystem.createSymlink(source, "target".toPath())
+    assertEquals(
+      target,
+      fileSystem.canonicalize(source),
+    )
+  }
+
+  @Test
+  fun canonicalizeAbsolutePathWithSymlinksInDirectories() {
+    val target = base / "target"
+    val source = base / "source"
+    fileSystem.createDirectory(target)
+    fileSystem.write(target / "file.txt") {
+      writeUtf8("hello")
+    }
+    fileSystem.createSymlink(source, "target".toPath())
+    assertEquals(
+      target / "file.txt",
+      fileSystem.canonicalize(source / "file.txt"),
+    )
+  }
+
+  @Test
+  fun canonicalizeAbsolutePathWithSymlinkCycle() {
+    fileSystem.createSymlink(base / "rock", "scissors".toPath())
+    fileSystem.createSymlink(base / "scissors", "paper".toPath())
+    fileSystem.createSymlink(base / "paper", "rock".toPath())
+    val e = assertFailsWith<IOException> {
+      fileSystem.canonicalize(base / "rock")
+    }
+    assertEquals("symlink cycle?", e.message)
   }
 
   @Test
@@ -83,6 +136,23 @@ class WasiTest {
   }
 
   @Test
+  fun appendToFile() {
+    val fileName = base / "append.txt"
+    fileSystem.write(fileName) {
+      writeUtf8("hello")
+    }
+    fileSystem.appendingSink(fileName).buffer().use {
+      it.writeUtf8(" world")
+    }
+    assertEquals(
+      "hello world",
+      fileSystem.read(fileName) {
+        readUtf8()
+      },
+    )
+  }
+
+  @Test
   fun listDirectory() {
     fileSystem.write(base / "a") {
       writeUtf8("this file has a 1-byte file name")
@@ -101,13 +171,29 @@ class WasiTest {
   }
 
   @Test
-  fun delete() {
+  fun deleteFile() {
     fileSystem.write(base / "a") {
     }
     fileSystem.write(base / "b") {
     }
     fileSystem.write(base / "c") {
     }
+    fileSystem.delete(base / "b")
+
+    assertEquals(
+      listOf(
+        base / "a",
+        base / "c",
+      ),
+      fileSystem.list(base).sorted(),
+    )
+  }
+
+  @Test
+  fun deleteDirectory() {
+    fileSystem.createDirectory(base / "a")
+    fileSystem.createDirectory(base / "b")
+    fileSystem.createDirectory(base / "c")
     fileSystem.delete(base / "b")
 
     assertEquals(
