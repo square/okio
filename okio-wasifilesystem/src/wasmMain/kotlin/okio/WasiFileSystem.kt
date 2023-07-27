@@ -320,7 +320,8 @@ object WasiFileSystem : FileSystem() {
       // If unlink failed, try remove_directory.
       when (errno) {
         Errno.perm.ordinal,
-        Errno.isdir.ordinal -> {
+        Errno.isdir.ordinal,
+        -> {
           errno = path_remove_directory(
             fd = FirstPreopenDirectoryTmp,
             path = pathAddress.address.toInt(),
