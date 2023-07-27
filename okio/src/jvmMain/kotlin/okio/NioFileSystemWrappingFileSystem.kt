@@ -74,7 +74,7 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
         return null
       }
     }
-    val result = entries.mapTo(mutableListOf()) { entry -> dir / entry.toString() }
+    val result = entries.mapTo(mutableListOf()) { entry -> entry.toOkioPath() }
     result.sort()
     return result
   }

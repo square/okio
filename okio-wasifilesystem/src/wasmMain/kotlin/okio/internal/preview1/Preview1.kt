@@ -34,13 +34,6 @@ typealias dircookie = Long
 typealias errno = Short
 
 /**
- * `Variant`.
- *
- * The type of a file descriptor or file.
- */
-typealias filetype = Byte
-
-/**
  * `u64`.
  *
  * File serial number that is unique within its file system.
@@ -58,16 +51,6 @@ typealias dirnamelen = Int
  * `Pointer<u8>`.
  */
 typealias PointerU8 = Int
-
-/**
- * `lookupflags: Record`.
- *
- * Flags determining the method of how paths are resolved.
- *
- * Bit0:
- * symlink_follow: As long as the resolved path corresponds to a symbolic link, it is expanded.
- */
-typealias lookupflags = Int
 
 /**
  * `fdflags: Record`.
@@ -107,6 +90,21 @@ internal external fun path_create_directory(
 ): Int // should be Short??
 
 /**
+ * path_filestat_get(fd: fd, flags: lookupflags, path: string) -> Result<filestat, errno>
+ *
+ * Return the attributes of a file or directory.
+ * Note: This is similar to `stat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_filestat_get")
+internal external fun path_filestat_get(
+  fd: fd,
+  flags: lookupflags,
+  path: PointerU8,
+  pathSize: size,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
  * path_open(fd: fd, dirflags: lookupflags, path: string, oflags: oflags, fs_rights_base: rights, fs_rights_inheriting: rights, fdflags: fdflags) -> Result<fd, errno>
  *
  * Open a file or directory.
@@ -131,6 +129,67 @@ internal external fun path_open(
 ): Int // should be Short??
 
 /**
+ * path_readlink(fd: fd, path: string, buf: Pointer<u8>, buf_len: size) -> Result<size, errno>
+ *
+ * Read the contents of a symbolic link.
+ * Note: This is similar to `readlinkat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_readlink")
+internal external fun path_readlink(
+  fd: fd,
+  path: PointerU8,
+  pathSize: size,
+  buf: PointerU8,
+  buf_len: size,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
+ * path_rename(fd: fd, old_path: string, new_fd: fd, new_path: string) -> Result<(), errno>
+ *
+ * Rename a file or directory.
+ * Note: This is similar to `renameat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_rename")
+internal external fun path_rename(
+  fd: fd,
+  old_path: PointerU8,
+  old_pathSize: size,
+  new_fd: fd,
+  new_path: PointerU8,
+  new_pathSize: size,
+): Int // should be Short??
+
+/**
+ * path_symlink(old_path: string, fd: fd, new_path: string) -> Result<(), errno>
+ *
+ * Create a symbolic link.
+ * Note: This is similar to `symlinkat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_symlink")
+internal external fun path_symlink(
+  old_path: PointerU8,
+  old_pathSize: size,
+  fd: fd,
+  new_path: PointerU8,
+  new_pathSize: size,
+): Int // should be Short??
+
+/**
+ * path_unlink_file(fd: fd, path: string) -> Result<(), errno>
+ *
+ * Unlink a file.
+ * Return [`errno::isdir`](#errno.isdir) if the path refers to a directory.
+ * Note: This is similar to `unlinkat(fd, path, 0)` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_unlink_file")
+internal external fun path_unlink_file(
+  fd: fd,
+  path: PointerU8,
+  pathSize: size,
+): Int // should be Short??
+
+/**
  * fd_close(fd: fd) -> Result<(), errno>
  *
  * Close a file descriptor.
@@ -139,6 +198,20 @@ internal external fun path_open(
 @WasmImport("wasi_snapshot_preview1", "fd_close")
 internal external fun fd_close(
   fd: fd,
+): Int // should be Short??
+
+/**
+ * fd_read(fd: fd, iovs: iovec_array) -> Result<size, errno>
+ *
+ * Read from a file descriptor.
+ * Note: This is similar to `readv` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_read")
+internal external fun fd_read(
+  fd: fd,
+  iovs: PointerU8,
+  iovsSize: size,
+  returnPointer: PointerU8,
 ): Int // should be Short??
 
 /**

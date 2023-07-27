@@ -18,6 +18,8 @@ package okio
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 
 class WasiTest {
@@ -35,9 +37,48 @@ class WasiTest {
   }
 
   @Test
-  fun writeFiles() {
-    fileSystem.write(base / "hello.txt") {
-      writeUtf8("hello\n")
+  fun writeAndReadEmptyFile() {
+    writeAndReadFile(ByteString.EMPTY, base / "empty.txt")
+  }
+
+  @Test
+  fun writeAndReadShortFile() {
+    writeAndReadFile("hello\n".encodeUtf8(), base / "hello.txt")
+  }
+
+  private fun writeAndReadFile(content: ByteString, fileName: Path) {
+    fileSystem.write(fileName) {
+      write(content)
+    }
+    assertEquals(
+      content,
+      fileSystem.read(fileName) {
+        readByteString()
+      },
+    )
+  }
+
+  @Test
+  fun writeAndReadLongFile() {
+    val fileName = base / "5m_bytes.txt"
+    fileSystem.write(fileName) {
+      for (i in 0L until 1_000_000L) {
+        writeByte(i.toInt())
+        writeByte(0)
+        writeByte(0)
+        writeByte(0)
+        writeByte(0)
+      }
+    }
+    fileSystem.read(fileName) {
+      for (i in 0L until 1_000_000L) {
+        assertEquals(i.toByte(), readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
+        assertEquals(0, readByte())
+      }
+      assertTrue(exhausted())
     }
   }
 
@@ -57,5 +98,92 @@ class WasiTest {
       ),
       fileSystem.list(base).sorted(),
     )
+  }
+
+  @Test
+  fun delete() {
+    fileSystem.write(base / "a") {
+    }
+    fileSystem.write(base / "b") {
+    }
+    fileSystem.write(base / "c") {
+    }
+    fileSystem.delete(base / "b")
+
+    assertEquals(
+      listOf(
+        base / "a",
+        base / "c",
+      ),
+      fileSystem.list(base).sorted(),
+    )
+  }
+
+  @Test
+  fun createSymlink() {
+    val targetPath = base / "target"
+    val sourcePath = base / "source"
+    fileSystem.write(targetPath) {
+      writeUtf8("this is the target file's contents")
+    }
+    fileSystem.createSymlink(sourcePath, "target".toPath())
+
+    assertEquals(
+      "this is the target file's contents",
+      fileSystem.read(sourcePath) {
+        readUtf8()
+      },
+    )
+  }
+
+  @Test
+  fun rename() {
+    val targetPath = base / "target"
+    val sourcePath = base / "source"
+    fileSystem.write(sourcePath) {
+      writeUtf8("this is the file's contents")
+    }
+    fileSystem.atomicMove(sourcePath, targetPath)
+
+    assertEquals(
+      "this is the file's contents",
+      fileSystem.read(targetPath) {
+        readUtf8()
+      },
+    )
+    assertEquals(
+      listOf(targetPath),
+      fileSystem.list(base),
+    )
+  }
+
+  @Test
+  fun fileMetadata() {
+    val regularFile = base / "regularFile"
+    val directory = base / "directory"
+    val symlink = base / "symlink"
+    fileSystem.write(regularFile) {
+      writeUtf8("this is a regular file")
+    }
+    fileSystem.createDirectory(directory)
+    fileSystem.createSymlink(symlink, "regularFile".toPath())
+
+    val regularFileMetadata = fileSystem.metadata(regularFile)
+    assertEquals(true, regularFileMetadata.isRegularFile)
+    assertEquals(false, regularFileMetadata.isDirectory)
+    assertEquals(null, regularFileMetadata.symlinkTarget)
+    assertEquals(22L, regularFileMetadata.size)
+
+    val directoryMetadata = fileSystem.metadata(directory)
+    assertEquals(false, directoryMetadata.isRegularFile)
+    assertEquals(true, directoryMetadata.isDirectory)
+    assertEquals(null, directoryMetadata.symlinkTarget)
+    // Note: no assertions about directory size.
+
+    val symlinkMetadata = fileSystem.metadata(symlink)
+    assertEquals(false, symlinkMetadata.isRegularFile)
+    assertEquals(false, symlinkMetadata.isDirectory)
+    assertEquals("regularFile".toPath(), symlinkMetadata.symlinkTarget)
+    assertEquals("regularFile".length.toLong(), symlinkMetadata.size)
   }
 }
