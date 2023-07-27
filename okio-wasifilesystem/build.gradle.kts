@@ -1,4 +1,4 @@
-import com.vanniktech.maven.publish.JavadocJar.Dokka
+import com.vanniktech.maven.publish.JavadocJar.Empty
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
@@ -33,8 +33,10 @@ kotlin {
 }
 
 configure<MavenPublishBaseExtension> {
+  // TODO: switch from 'Empty' to 'Dokka' once this issue is resolved.
+  //     https://github.com/Kotlin/dokka/issues/3038
   configure(
-    KotlinMultiplatform(javadocJar = Dokka("dokkaGfm")),
+    KotlinMultiplatform(javadocJar = Empty()),
   )
 }
 
