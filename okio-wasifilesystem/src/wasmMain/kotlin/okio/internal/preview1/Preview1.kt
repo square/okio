@@ -128,7 +128,6 @@ internal external fun path_open(
   returnPointer: PointerU8,
 ): Int // should be Short??
 
-
 /**
  * path_readlink(fd: fd, path: string, buf: Pointer<u8>, buf_len: size) -> Result<size, errno>
  *
