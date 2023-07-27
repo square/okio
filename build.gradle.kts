@@ -169,6 +169,11 @@ subprojects {
     kotlin {
       target("**/*.kt")
       ktlint(libs.versions.ktlint.get())
+      licenseHeaderFile(rootProject.file("gradle/license-header.txt"))
+      targetExcludeIfContentContainsRegex("" +
+        "// Copyright 2019-2023 the Contributors to the WASI Specification|" +
+        "// ktlint-disable filename|" +
+        "Licensed to the Apache Software Foundation \\(ASF\\) under one or more")
     }
   }
 
