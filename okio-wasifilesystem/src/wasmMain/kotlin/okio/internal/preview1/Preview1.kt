@@ -34,13 +34,6 @@ typealias dircookie = Long
 typealias errno = Short
 
 /**
- * `Variant`.
- *
- * The type of a file descriptor or file.
- */
-typealias filetype = Byte
-
-/**
  * `u64`.
  *
  * File serial number that is unique within its file system.
@@ -58,16 +51,6 @@ typealias dirnamelen = Int
  * `Pointer<u8>`.
  */
 typealias PointerU8 = Int
-
-/**
- * `lookupflags: Record`.
- *
- * Flags determining the method of how paths are resolved.
- *
- * Bit0:
- * symlink_follow: As long as the resolved path corresponds to a symbolic link, it is expanded.
- */
-typealias lookupflags = Int
 
 /**
  * `fdflags: Record`.
@@ -107,6 +90,21 @@ internal external fun path_create_directory(
 ): Int // should be Short??
 
 /**
+ * path_filestat_get(fd: fd, flags: lookupflags, path: string) -> Result<filestat, errno>
+ *
+ * Return the attributes of a file or directory.
+ * Note: This is similar to `stat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_filestat_get")
+internal external fun path_filestat_get(
+  fd: fd,
+  flags: lookupflags,
+  path: PointerU8,
+  pathSize: size,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
  * path_open(fd: fd, dirflags: lookupflags, path: string, oflags: oflags, fs_rights_base: rights, fs_rights_inheriting: rights, fdflags: fdflags) -> Result<fd, errno>
  *
  * Open a file or directory.
@@ -127,6 +125,22 @@ internal external fun path_open(
   fs_rights_base: rights,
   fs_rights_inheriting: rights,
   fdflags: fdflags,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
+ * path_readlink(fd: fd, path: string, buf: Pointer<u8>, buf_len: size) -> Result<size, errno>
+ *
+ * Read the contents of a symbolic link.
+ * Note: This is similar to `readlinkat` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_readlink")
+internal external fun path_readlink(
+  fd: fd,
+  path: PointerU8,
+  pathSize: size,
+  buf: PointerU8,
+  buf_len: size,
   returnPointer: PointerU8,
 ): Int // should be Short??
 
