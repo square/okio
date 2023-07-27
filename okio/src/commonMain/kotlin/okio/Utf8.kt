@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("Utf8")
 
 /**
  * Okio assumes most applications use UTF-8 exclusively, and offers optimized implementations of
@@ -61,7 +62,6 @@
  * </tr>
  * </table>
  */
-@file:JvmName("Utf8")
 
 package okio
 

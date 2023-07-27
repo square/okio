@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 @file:JvmName("-GzipSinkExtensions")
 @file:Suppress("NOTHING_TO_INLINE") // Aliases to public API.
 

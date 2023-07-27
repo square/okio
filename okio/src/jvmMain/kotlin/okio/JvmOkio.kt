@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/** Essential APIs for working with Okio. */
 @file:JvmMultifileClass
 @file:JvmName("Okio")
+
+/** Essential APIs for working with Okio. */
 
 package okio
 

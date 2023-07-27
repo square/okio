@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JsModule("fs")
+@file:JsNonModule
 
 /**
  * This class declares the subset of Node.js file system APIs that we need in Okio.
@@ -69,8 +71,6 @@
  * [Dukat]: https://github.com/kotlin/dukat
  * [kotlinx_nodejs]: https://github.com/Kotlin/kotlinx-nodejs
  */
-@file:JsModule("fs")
-@file:JsNonModule
 
 package okio
 
