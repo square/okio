@@ -272,4 +272,106 @@ class WasiTest {
     assertEquals("regularFile".toPath(), symlinkMetadata.symlinkTarget)
     assertEquals("regularFile".length.toLong(), symlinkMetadata.size)
   }
+
+  @Test
+  fun fileHandleRead() {
+    val path = base / "file.txt"
+    fileSystem.write(path) {
+      writeUtf8("this is a file about dogs and cats")
+    }
+    fileSystem.openReadOnly(path).use { handle ->
+      val sink = Buffer()
+      handle.read(21L, sink, 4L)
+
+      assertEquals(
+        "dogs",
+        sink.readUtf8(),
+      )
+    }
+  }
+
+  @Test
+  fun fileHandleWrite() {
+    val path = base / "file.txt"
+    fileSystem.write(path) {
+      writeUtf8("this is a file about cats and cats")
+    }
+    fileSystem.openReadWrite(path).use { handle ->
+      val source = Buffer().writeUtf8("dogs")
+      handle.write(21L, source, 4L)
+
+      assertEquals(
+        "this is a file about dogs and cats",
+        fileSystem.read(path) {
+          readUtf8()
+        },
+      )
+    }
+  }
+
+  @Test
+  fun fileHandleGetSize() {
+    val path = base / "file.txt"
+    fileSystem.write(path) {
+      writeUtf8("this is a file about dogs and cats")
+    }
+    fileSystem.openReadOnly(path).use { handle ->
+      assertEquals(
+        34L,
+        handle.size(),
+      )
+    }
+  }
+
+  @Test
+  fun fileHandleResize() {
+    val path = base / "file.txt"
+    fileSystem.write(path) {
+      writeUtf8("this is a file about dogs and cats")
+    }
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.resize(25L)
+
+      assertEquals(
+        "this is a file about dogs",
+        fileSystem.read(path) {
+          readUtf8()
+        },
+      )
+    }
+  }
+
+  @Test
+  fun fileHandleFlush() {
+    val path = base / "file.txt"
+    fileSystem.openReadWrite(path).use { handle ->
+      handle.sink().buffer().use {
+        it.writeUtf8("hello")
+      }
+      handle.flush()
+
+      assertEquals(
+        "hello",
+        fileSystem.read(path) {
+          readUtf8()
+        },
+      )
+    }
+  }
+
+  @Test
+  fun fileSinkFlush() {
+    val path = base / "file.txt"
+    fileSystem.write(path) {
+      writeUtf8("hello")
+      flush()
+
+      assertEquals(
+        "hello",
+        fileSystem.read(path) {
+          readUtf8()
+        },
+      )
+    }
+  }
 }

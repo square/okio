@@ -202,6 +202,51 @@ internal external fun fd_close(
 ): Int // should be Short??
 
 /**
+ * fd_filestat_get(fd: fd) -> Result<filestat, errno>
+ *
+ * Return the attributes of an open file.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_filestat_get")
+internal external fun fd_filestat_get(
+  fd: fd,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
+ * fd_pread(fd: fd, iovs: iovec_array, offset: filesize) -> Result<size, errno>
+ *
+ * Read from a file descriptor.
+ * Note: This is similar to `readv` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_pread")
+internal external fun fd_pread(
+  fd: fd,
+  iovs: PointerU8,
+  iovsSize: size,
+  offset: Long,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
+ * fd_pwrite(fd: fd, iovs: ciovec_array, offset: filesize) -> Result<size, errno>`
+ *
+ * Write to a file descriptor, without using and updating the file descriptor's offset.
+ * Note: This is similar to `pwritev` in Linux (and other Unix-es).
+ *
+ * Like Linux (and other Unix-es), any calls of `pwrite` (and other
+ * functions to read or write) for a regular file by other threads in the
+ * WASI process should not be interleaved while `pwrite` is executed.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_pwrite")
+internal external fun fd_pwrite(
+  fd: fd,
+  iovs: PointerU8,
+  iovsSize: size,
+  offset: Long,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
  * fd_read(fd: fd, iovs: iovec_array) -> Result<size, errno>
  *
  * Read from a file descriptor.
@@ -235,6 +280,29 @@ internal external fun fd_readdir(
   buf_len: size,
   cookie: dircookie,
   returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
+ * fd_filestat_set_size(fd: fd, size: filesize) -> Result<(), errno>
+ *
+ * Adjust the size of an open file. If this increases the file's size, the extra bytes are filled with zeros.
+ * Note: This is similar to `ftruncate` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_filestat_set_size")
+internal external fun fd_filestat_set_size(
+  fd: fd,
+  size: Long,
+): Int // should be Short??
+
+/**
+ * fd_sync(fd: fd) -> Result<(), errno>
+ *
+ * Synchronize the data and metadata of a file to disk.
+ * Note: This is similar to `fsync` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_sync")
+internal external fun fd_sync(
+  fd: fd,
 ): Int // should be Short??
 
 /**
