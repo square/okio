@@ -52,19 +52,6 @@ typealias dirnamelen = Int
  */
 typealias PointerU8 = Int
 
-/**
- * `fdflags: Record`.
- *
- * File descriptor flags.
- *
- * bit0: append: Data written to the file is always appended to the file's end.
- * bit1: dsync: Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.
- * bit2: nonblock: Non-blocking mode.
- * bit3: rsync: bool Synchronized read I/O operations.
- * bit4: sync: bool Write according to synchronized I/O file integrity completion. In addition to synchronizing the data stored in the file, the implementation may also synchronously update the file's metadata.
- */
-typealias fdflags = Short
-
 val Stdin: fd = 0
 val Stdout: fd = 1
 val Stderr: fd = 2
@@ -142,6 +129,20 @@ internal external fun path_readlink(
   buf: PointerU8,
   buf_len: size,
   returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
+ * path_remove_directory(fd: fd, path: string) -> Result<(), errno>
+ *
+ * Remove a directory.
+ * Return [`errno::notempty`](#errno.notempty) if the directory is not empty.
+ * Note: This is similar to `unlinkat(fd, path, AT_REMOVEDIR)` in POSIX.
+ */
+@WasmImport("wasi_snapshot_preview1", "path_remove_directory")
+internal external fun path_remove_directory(
+  fd: fd,
+  path: PointerU8,
+  pathSize: size,
 ): Int // should be Short??
 
 /**

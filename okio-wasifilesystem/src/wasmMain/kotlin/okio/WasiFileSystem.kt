@@ -20,10 +20,13 @@ import kotlin.wasm.unsafe.withScopedMemoryAllocator
 import okio.Path.Companion.toPath
 import okio.internal.ErrnoException
 import okio.internal.fdClose
+import okio.internal.preview1.Errno
 import okio.internal.preview1.FirstPreopenDirectoryTmp
 import okio.internal.preview1.dirnamelen
 import okio.internal.preview1.fd
 import okio.internal.preview1.fd_readdir
+import okio.internal.preview1.fdflags
+import okio.internal.preview1.fdflags_append
 import okio.internal.preview1.filetype
 import okio.internal.preview1.filetype_directory
 import okio.internal.preview1.filetype_regular_file
@@ -36,6 +39,7 @@ import okio.internal.preview1.path_create_directory
 import okio.internal.preview1.path_filestat_get
 import okio.internal.preview1.path_open
 import okio.internal.preview1.path_readlink
+import okio.internal.preview1.path_remove_directory
 import okio.internal.preview1.path_rename
 import okio.internal.preview1.path_symlink
 import okio.internal.preview1.path_unlink_file
@@ -53,7 +57,44 @@ import okio.internal.write
  */
 object WasiFileSystem : FileSystem() {
   override fun canonicalize(path: Path): Path {
-    TODO("Not yet implemented")
+    // There's no APIs in preview1 to canonicalize a path. We give it a best effort by resolving
+    // all symlinks, but this could result in a relative path.
+    val candidate = resolveSymlinks(path, 0)
+
+    if (!candidate.isAbsolute) {
+      throw IOException("WASI preview1 cannot canonicalize relative paths")
+    }
+
+    return candidate
+  }
+
+  private fun resolveSymlinks(
+    path: Path,
+    recurseCount: Int = 0,
+  ): Path {
+    // 40 is chosen for consistency with the Linux kernel (which previously used 8).
+    if (recurseCount > 40) throw IOException("symlink cycle?")
+
+    val parent = path.parent
+    val resolvedParent = when {
+      parent != null -> resolveSymlinks(parent, recurseCount + 1)
+      else -> null
+    }
+    val pathWithResolvedParent = when {
+      resolvedParent != null -> resolvedParent / path.name
+      else -> path
+    }
+
+    val symlinkTarget = metadata(pathWithResolvedParent).symlinkTarget
+      ?: return pathWithResolvedParent
+
+    val resolvedSymlinkTarget = when {
+      symlinkTarget.isAbsolute -> symlinkTarget
+      resolvedParent != null -> resolvedParent / symlinkTarget
+      else -> symlinkTarget
+    }
+
+    return resolveSymlinks(resolvedSymlinkTarget, recurseCount + 1)
   }
 
   override fun metadataOrNull(path: Path): FileMetadata? {
@@ -68,6 +109,13 @@ object WasiFileSystem : FileSystem() {
         pathSize = pathSize,
         returnPointer = returnPointer.address.toInt(),
       )
+
+      // When calling path_filestat_get on '/', don't crash.
+      when (errno) {
+        Errno.notcapable.ordinal -> return FileMetadata(isDirectory = true)
+        Errno.noent.ordinal -> throw FileNotFoundException("no such file: $path")
+      }
+
       if (errno != 0) throw ErrnoException(errno.toShort())
 
       // Skip device, offset 0.
@@ -213,7 +261,19 @@ object WasiFileSystem : FileSystem() {
   }
 
   override fun appendingSink(file: Path, mustExist: Boolean): Sink {
-    TODO("Not yet implemented")
+    val oflags = when {
+      mustExist -> 0
+      else -> oflag_creat
+    }
+
+    return FileSink(
+      fd = pathOpen(
+        path = file.toString(),
+        oflags = oflags,
+        rightsBase = right_fd_write,
+        fdflags = fdflags_append,
+      ),
+    )
   }
 
   override fun createDirectory(dir: Path, mustCreate: Boolean) {
@@ -252,11 +312,23 @@ object WasiFileSystem : FileSystem() {
     withScopedMemoryAllocator { allocator ->
       val (pathAddress, pathSize) = allocator.write(path.toString())
 
-      val errno = path_unlink_file(
+      var errno = path_unlink_file(
         fd = FirstPreopenDirectoryTmp,
         path = pathAddress.address.toInt(),
         pathSize = pathSize,
       )
+      // If unlink failed, try remove_directory.
+      when (errno) {
+        Errno.perm.ordinal,
+        Errno.isdir.ordinal,
+        -> {
+          errno = path_remove_directory(
+            fd = FirstPreopenDirectoryTmp,
+            path = pathAddress.address.toInt(),
+            pathSize = pathSize,
+          )
+        }
+      }
       if (errno != 0) throw ErrnoException(errno.toShort())
     }
   }
@@ -281,6 +353,7 @@ object WasiFileSystem : FileSystem() {
     path: String,
     oflags: oflags,
     rightsBase: rights,
+    fdflags: fdflags = 0,
   ): fd {
     withScopedMemoryAllocator { allocator ->
       val (pathAddress, pathSize) = allocator.write(path)
@@ -294,7 +367,7 @@ object WasiFileSystem : FileSystem() {
         oflags = oflags,
         fs_rights_base = rightsBase,
         fs_rights_inheriting = 0,
-        fdflags = 0,
+        fdflags = fdflags,
         returnPointer = returnPointer.address.toInt(),
       )
       if (errno != 0) throw ErrnoException(errno.toShort())
