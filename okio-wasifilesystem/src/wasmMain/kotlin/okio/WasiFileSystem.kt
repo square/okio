@@ -43,8 +43,12 @@ import okio.internal.preview1.path_remove_directory
 import okio.internal.preview1.path_rename
 import okio.internal.preview1.path_symlink
 import okio.internal.preview1.path_unlink_file
+import okio.internal.preview1.right_fd_filestat_get
+import okio.internal.preview1.right_fd_filestat_set_size
 import okio.internal.preview1.right_fd_read
 import okio.internal.preview1.right_fd_readdir
+import okio.internal.preview1.right_fd_seek
+import okio.internal.preview1.right_fd_sync
 import okio.internal.preview1.right_fd_write
 import okio.internal.preview1.rights
 import okio.internal.readString
@@ -228,11 +232,39 @@ object WasiFileSystem : FileSystem() {
   }
 
   override fun openReadOnly(file: Path): FileHandle {
-    TODO("Not yet implemented")
+    val rightsBase = right_fd_filestat_get or
+      right_fd_read or
+      right_fd_seek or
+      right_fd_sync
+    val fd = pathOpen(
+      path = file.toString(),
+      oflags = 0,
+      rightsBase = rightsBase,
+    )
+    return WasiFileHandle(fd, readWrite = false)
   }
 
   override fun openReadWrite(file: Path, mustCreate: Boolean, mustExist: Boolean): FileHandle {
-    TODO("Not yet implemented")
+    val oflags = when {
+      mustCreate && mustExist -> {
+        throw IllegalArgumentException("Cannot require mustCreate and mustExist at the same time.")
+      }
+      mustCreate -> oflag_creat or oflag_excl
+      mustExist -> 0
+      else -> oflag_creat
+    }
+    val rightsBase = right_fd_filestat_get or
+      right_fd_filestat_set_size or
+      right_fd_read or
+      right_fd_seek or
+      right_fd_sync or
+      right_fd_write
+    val fd = pathOpen(
+      path = file.toString(),
+      oflags = oflags,
+      rightsBase = rightsBase,
+    )
+    return WasiFileHandle(fd, readWrite = true)
   }
 
   override fun source(file: Path): Source {
@@ -255,7 +287,7 @@ object WasiFileSystem : FileSystem() {
       fd = pathOpen(
         path = file.toString(),
         oflags = oflags,
-        rightsBase = right_fd_write,
+        rightsBase = right_fd_write or right_fd_sync,
       ),
     )
   }
