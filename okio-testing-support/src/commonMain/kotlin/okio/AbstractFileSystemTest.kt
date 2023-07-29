@@ -44,6 +44,7 @@ abstract class AbstractFileSystemTest(
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
   private val isNodeJsFileSystem = fileSystem::class.simpleName?.startsWith("NodeJs") ?: false
+  private val isWasiFileSystem = fileSystem::class.simpleName?.startsWith("Wasi") ?: false
   private val isWrappingJimFileSystem = this::class.simpleName?.contains("JimFileSystem") ?: false
 
   @BeforeTest
@@ -66,6 +67,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun canonicalizeDotReturnsCurrentWorkingDirectory() {
     if (fileSystem.isFakeFileSystem || fileSystem is ForwardingFileSystem) return
+    if (isWasiFileSystem) return // Canonicalize is limited on WASI.
     val cwd = fileSystem.canonicalize(".".toPath())
     val cwdString = cwd.toString()
     val slash = Path.DIRECTORY_SEPARATOR
@@ -231,6 +233,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun canonicalizeReturnsShallowerPath() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Canonicalize is limited on WASI.
     val base = fileSystem.canonicalize(base)
 
     val expected = base / "a.txt"
@@ -270,6 +273,8 @@ abstract class AbstractFileSystemTest(
       fileSystem.write("a.txt".toPath()) {
         writeUtf8("hello, world!")
       }
+    } else if (isWasiFileSystem) {
+      return // TODO: implement this behavior.
     }
 
     val entries = fileSystem.list(".".toPath())
@@ -279,6 +284,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listOnRelativePathWhichIsNotDotReturnsRelativePaths() {
     if (isNodeJsFileSystem) return
+    if (isWasiFileSystem) return // TODO: implement this behavior.
 
     // Make sure there's always at least one file so our assertion is useful. We copy the first 2
     // entries of the real working directory of the JVM to validate the results on all environment.
@@ -330,6 +336,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listOrNullOnRelativePathWhichIsNotDotReturnsRelativePaths() {
     if (isNodeJsFileSystem) return
+    if (isWasiFileSystem) return // TODO: implement this behavior.
 
     // Make sure there's always at least one file so our assertion is useful. We copy the first 2
     // entries of the real working directory of the JVM to validate the results on all environment.
@@ -600,6 +607,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listRecursivelyFollowsSymlinks() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = baseA / "a"
@@ -631,6 +639,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listRecursivelyOnSymlink() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = baseA / "a"
@@ -664,6 +673,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listRecursiveOnSymlinkWithSpecialCharacterNamedFiles() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "ä"
     val baseASuperSaiyan = baseA / "超サイヤ人"
@@ -681,6 +691,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listRecursivelyOnSymlinkCycleThrows() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAB = baseA / "b"
@@ -2348,6 +2359,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun openSymlinkSource() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2361,6 +2373,7 @@ abstract class AbstractFileSystemTest(
   fun openSymlinkSink() {
     if (!supportsSymlink()) return
     if (isJimFileSystem()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2374,6 +2387,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun openFileWithDirectorySymlink() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = base / "a" / "a"
@@ -2389,6 +2403,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun openSymlinkFileHandle() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2403,6 +2418,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listSymlinkDirectory() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = base / "a" / "a"
@@ -2420,6 +2436,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun symlinkFileLastAccessedAt() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2435,6 +2452,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun symlinkDirectoryLastAccessedAt() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = base / "a" / "a"
@@ -2465,6 +2483,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun moveSymlinkDoesntMoveTargetFile() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source1 = base / "symlink-source-1"
@@ -2506,6 +2525,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun followingRecursiveSymlinksIsOkay() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val pathA = base / "symlink-a"
     val pathB = base / "symlink-b"

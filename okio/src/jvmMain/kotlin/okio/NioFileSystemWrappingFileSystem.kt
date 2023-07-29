@@ -142,7 +142,7 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
   override fun createDirectory(dir: Path, mustCreate: Boolean) {
     val alreadyExist = metadataOrNull(dir)?.isDirectory == true
     if (alreadyExist && mustCreate) {
-      throw IOException("$dir already exist.")
+      throw IOException("$dir already exists.")
     }
 
     try {

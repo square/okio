@@ -34,6 +34,7 @@ import okio.internal.preview1.filetype_symbolic_link
 import okio.internal.preview1.oflag_creat
 import okio.internal.preview1.oflag_directory
 import okio.internal.preview1.oflag_excl
+import okio.internal.preview1.oflag_trunc
 import okio.internal.preview1.oflags
 import okio.internal.preview1.path_create_directory
 import okio.internal.preview1.path_filestat_get
@@ -114,9 +115,15 @@ object WasiFileSystem : FileSystem() {
         returnPointer = returnPointer.address.toInt(),
       )
 
-      // When calling path_filestat_get on '/', don't crash.
       when (errno) {
-        Errno.notcapable.ordinal -> return FileMetadata(isDirectory = true)
+        Errno.notcapable.ordinal -> {
+          // Both of these paths return `notcapable`:
+          //  * The root, '/', which is a parent of real paths.
+          //  * Non-existent paths like '/127.0.0.1/../localhost/c$/Windows', which don't matter.
+          // Treat the root path as special.
+          if (path.isRoot) return FileMetadata(isDirectory = true)
+          return null
+        }
         Errno.noent.ordinal -> return null
       }
 
@@ -179,8 +186,15 @@ object WasiFileSystem : FileSystem() {
   }
 
   override fun listOrNull(dir: Path): List<Path>? {
-    // TODO: don't throw if the directory doesn't exist, etc.
-    return list(dir)
+    // TODO: stop using exceptions for flow control.
+    try {
+      return list(dir)
+    } catch (e: FileNotFoundException) {
+      return null
+    } catch (e: ErrnoException) {
+      if (e.errno == Errno.notdir) return null
+      throw e
+    }
   }
 
   private fun list(dir: Path, fd: fd): List<Path> {
@@ -227,6 +241,7 @@ object WasiFileSystem : FileSystem() {
         result += dir / name
       }
 
+      result.sort()
       return result
     }
   }
@@ -279,8 +294,8 @@ object WasiFileSystem : FileSystem() {
 
   override fun sink(file: Path, mustCreate: Boolean): Sink {
     val oflags = when {
-      mustCreate -> oflag_creat or oflag_excl
-      else -> oflag_creat
+      mustCreate -> oflag_creat or oflag_excl or oflag_trunc
+      else -> oflag_creat or oflag_trunc
     }
 
     return FileSink(
@@ -309,7 +324,6 @@ object WasiFileSystem : FileSystem() {
   }
 
   override fun createDirectory(dir: Path, mustCreate: Boolean) {
-    // TODO: honor mustCreate.
     withScopedMemoryAllocator { allocator ->
       val (pathAddress, pathSize) = allocator.write(dir.toString())
 
@@ -318,6 +332,11 @@ object WasiFileSystem : FileSystem() {
         path = pathAddress.address.toInt(),
         pathSize = pathSize,
       )
+      if (errno == Errno.exist.ordinal) {
+        if (mustCreate) throw IOException("already exists: $dir")
+        return
+      }
+
       if (errno != 0) throw ErrnoException(errno.toShort())
     }
   }
@@ -335,12 +354,15 @@ object WasiFileSystem : FileSystem() {
         new_path = targetPathAddress.address.toInt(),
         new_pathSize = targetPathSize,
       )
+      if (errno == Errno.noent.ordinal) {
+        throw FileNotFoundException("no such file: $source")
+      }
+
       if (errno != 0) throw ErrnoException(errno.toShort())
     }
   }
 
   override fun delete(path: Path, mustExist: Boolean) {
-    // TODO: honor mustExist.
     withScopedMemoryAllocator { allocator ->
       val (pathAddress, pathSize) = allocator.write(path.toString())
 
@@ -351,6 +373,11 @@ object WasiFileSystem : FileSystem() {
       )
       // If unlink failed, try remove_directory.
       when (errno) {
+        Errno.noent.ordinal -> {
+          if (mustExist) throw FileNotFoundException("no such file: $path")
+          return // Nothing to delete.
+        }
+
         Errno.perm.ordinal,
         Errno.isdir.ordinal,
         -> {
@@ -402,6 +429,9 @@ object WasiFileSystem : FileSystem() {
         fdflags = fdflags,
         returnPointer = returnPointer.address.toInt(),
       )
+      if (errno == Errno.noent.ordinal) {
+        throw FileNotFoundException("no such file: $path")
+      }
       if (errno != 0) throw ErrnoException(errno.toShort())
       return returnPointer.loadInt()
     }
