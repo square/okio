@@ -40,12 +40,16 @@ actual val FileSystem.allowReadsWhileWriting: Boolean
 
 actual var FileSystem.workingDirectory: Path
   get() {
-    if (this is FakeFileSystem) return workingDirectory
-    if (this is ForwardingFileSystem) return delegate.workingDirectory
-    error("cannot get working directory: $this")
+    return when (this) {
+      is FakeFileSystem -> workingDirectory
+      is ForwardingFileSystem -> delegate.workingDirectory
+      else -> error("cannot get working directory: $this")
+    }
   }
   set(value) {
-    if (this is FakeFileSystem) workingDirectory = value
-    if (this is ForwardingFileSystem) delegate.workingDirectory = value
-    error("cannot set working directory: $this")
+    when (this) {
+      is FakeFileSystem -> workingDirectory = value
+      is ForwardingFileSystem -> delegate.workingDirectory = value
+      else -> error("cannot set working directory: $this")
+    }
   }
