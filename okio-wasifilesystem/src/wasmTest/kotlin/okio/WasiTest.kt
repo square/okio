@@ -24,7 +24,7 @@ import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 
 class WasiTest {
-  private val fileSystem = WasiFileSystem
+  private val fileSystem = WasiFileSystem()
   private val base: Path = "/tmp".toPath() / "${this::class.simpleName}-${randomToken(16)}"
 
   @BeforeTest

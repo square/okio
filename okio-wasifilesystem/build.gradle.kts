@@ -64,8 +64,12 @@ val injectWasiInit by tasks.creating {
   outputs.file(entryPointMjs)
 
   doLast {
-    val tmpdir = File(System.getProperty("java.io.tmpdir"), "okio-wasifilesystem-test")
-    tmpdir.mkdirs()
+    val base = File(System.getProperty("java.io.tmpdir"), "okio-wasifilesystem-test")
+    val baseA = File(base, "a")
+    val baseB = File(base, "b")
+    base.mkdirs()
+    baseA.mkdirs()
+    baseB.mkdirs()
 
     entryPointMjs.writeText(
       """
@@ -75,7 +79,9 @@ val injectWasiInit by tasks.creating {
       export const wasi = new WASI({
         version: 'preview1',
         preopens: {
-          '/tmp': '$tmpdir'
+          '/tmp': '$base',
+          '/a': '$baseA',
+          '/b': '$baseB'
         }
       });
 
