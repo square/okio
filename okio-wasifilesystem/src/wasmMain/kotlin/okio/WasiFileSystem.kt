@@ -117,7 +117,7 @@ object WasiFileSystem : FileSystem() {
       // When calling path_filestat_get on '/', don't crash.
       when (errno) {
         Errno.notcapable.ordinal -> return FileMetadata(isDirectory = true)
-        Errno.noent.ordinal -> throw FileNotFoundException("no such file: $path")
+        Errno.noent.ordinal -> return null
       }
 
       if (errno != 0) throw ErrnoException(errno.toShort())

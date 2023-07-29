@@ -17,6 +17,7 @@ package okio
 
 import kotlin.random.Random
 import kotlin.test.assertEquals
+import kotlin.time.Duration
 import okio.ByteString.Companion.toByteString
 
 fun Char.repeat(count: Int): String {
@@ -39,3 +40,53 @@ fun randomToken(length: Int) = Random.nextBytes(length).toByteString(0, length).
 expect fun isBrowser(): Boolean
 
 expect fun isWasm(): Boolean
+
+val FileMetadata.createdAt: Instant?
+  get() {
+    val createdAt = createdAtMillis ?: return null
+    return fromEpochMilliseconds(createdAt)
+  }
+
+val FileMetadata.lastModifiedAt: Instant?
+  get() {
+    val lastModifiedAt = lastModifiedAtMillis ?: return null
+    return fromEpochMilliseconds(lastModifiedAt)
+  }
+
+val FileMetadata.lastAccessedAt: Instant?
+  get() {
+    val lastAccessedAt = lastAccessedAtMillis ?: return null
+    return fromEpochMilliseconds(lastAccessedAt)
+  }
+
+/*
+ * This file contains some declarations from kotlinx.datetime used by [AbstractFileSystemTest], but
+ * that we can't use because that library isn't yet available for WASM. We should delete these when
+ * WASM is supported in kotlinx.datetime.
+ */
+
+expect interface Clock {
+  fun now(): Instant
+}
+
+expect class Instant : Comparable<Instant> {
+  val epochSeconds: Long
+
+  operator fun plus(duration: Duration): Instant
+
+  operator fun minus(duration: Duration): Instant
+}
+
+expect fun fromEpochSeconds(
+  epochSeconds: Long,
+): Instant
+
+expect fun fromEpochMilliseconds(epochMilliseconds: Long): Instant
+
+expect val FileSystem.isFakeFileSystem: Boolean
+
+expect val FileSystem.allowSymlinks: Boolean
+
+expect val FileSystem.allowReadsWhileWriting: Boolean
+
+expect var FileSystem.workingDirectory: Path

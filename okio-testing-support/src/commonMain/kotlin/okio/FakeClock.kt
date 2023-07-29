@@ -15,22 +15,14 @@
  */
 package okio
 
-import kotlinx.datetime.Instant
+import kotlin.time.Duration
 
-val FileMetadata.createdAt: Instant?
-  get() {
-    val createdAt = createdAtMillis ?: return null
-    return Instant.fromEpochMilliseconds(createdAt)
-  }
+class FakeClock : Clock {
+  var time = fromEpochSeconds(1609459200L) // 2021-01-01T00:00:00Z
 
-val FileMetadata.lastModifiedAt: Instant?
-  get() {
-    val lastModifiedAt = lastModifiedAtMillis ?: return null
-    return Instant.fromEpochMilliseconds(lastModifiedAt)
-  }
+  override fun now() = time
 
-val FileMetadata.lastAccessedAt: Instant?
-  get() {
-    val lastAccessedAt = lastAccessedAtMillis ?: return null
-    return Instant.fromEpochMilliseconds(lastAccessedAt)
+  fun sleep(duration: Duration) {
+    time = time.plus(duration)
   }
+}
