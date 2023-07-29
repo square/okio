@@ -274,6 +274,14 @@ class WasiTest {
   }
 
   @Test
+  fun absentMetadata() {
+    assertEquals(null, fileSystem.metadataOrNull(base / "no-such-file"))
+    assertFailsWith<FileNotFoundException> {
+      fileSystem.metadata(base / "no-such-file")
+    }
+  }
+
+  @Test
   fun fileHandleRead() {
     val path = base / "file.txt"
     fileSystem.write(path) {

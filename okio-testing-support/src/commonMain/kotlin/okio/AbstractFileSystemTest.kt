@@ -28,12 +28,9 @@ import kotlin.test.fail
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
 
 /** This test assumes that okio-files/ is the current working directory when executed. */
 abstract class AbstractFileSystemTest(
@@ -47,6 +44,7 @@ abstract class AbstractFileSystemTest(
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
   private val isNodeJsFileSystem = fileSystem::class.simpleName?.startsWith("NodeJs") ?: false
+  private val isWasiFileSystem = fileSystem::class.simpleName?.startsWith("Wasi") ?: false
   private val isWrappingJimFileSystem = this::class.simpleName?.contains("JimFileSystem") ?: false
 
   @BeforeTest
@@ -68,7 +66,8 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun canonicalizeDotReturnsCurrentWorkingDirectory() {
-    if (fileSystem is FakeFileSystem || fileSystem is ForwardingFileSystem) return
+    if (fileSystem.isFakeFileSystem || fileSystem is ForwardingFileSystem) return
+    if (isWasiFileSystem) return // Canonicalize is limited on WASI.
     val cwd = fileSystem.canonicalize(".".toPath())
     val cwdString = cwd.toString()
     val slash = Path.DIRECTORY_SEPARATOR
@@ -234,6 +233,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun canonicalizeReturnsShallowerPath() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Canonicalize is limited on WASI.
     val base = fileSystem.canonicalize(base)
 
     val expected = base / "a.txt"
@@ -262,7 +262,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listOnRelativePathReturnsRelativePaths() {
     // Make sure there's always at least one file so our assertion is useful.
-    if (fileSystem is FakeFileSystem) {
+    if (fileSystem.isFakeFileSystem) {
       val workingDirectory = "/directory".toPath()
       fileSystem.createDirectory(workingDirectory)
       fileSystem.workingDirectory = workingDirectory
@@ -273,6 +273,8 @@ abstract class AbstractFileSystemTest(
       fileSystem.write("a.txt".toPath()) {
         writeUtf8("hello, world!")
       }
+    } else if (isWasiFileSystem) {
+      return // TODO: implement this behavior.
     }
 
     val entries = fileSystem.list(".".toPath())
@@ -282,18 +284,17 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listOnRelativePathWhichIsNotDotReturnsRelativePaths() {
     if (isNodeJsFileSystem) return
+    if (isWasiFileSystem) return // TODO: implement this behavior.
 
     // Make sure there's always at least one file so our assertion is useful. We copy the first 2
     // entries of the real working directory of the JVM to validate the results on all environment.
     if (
-      fileSystem is FakeFileSystem ||
-      fileSystem is ForwardingFileSystem && fileSystem.delegate is FakeFileSystem
+      fileSystem.isFakeFileSystem ||
+      fileSystem is ForwardingFileSystem && fileSystem.delegate.isFakeFileSystem
     ) {
       val workingDirectory = "/directory".toPath()
       fileSystem.createDirectory(workingDirectory)
-      (fileSystem as? FakeFileSystem)?.workingDirectory = workingDirectory
-      ((fileSystem as? ForwardingFileSystem)?.delegate as? FakeFileSystem)?.workingDirectory =
-        workingDirectory
+      fileSystem.workingDirectory = workingDirectory
       val apiDir = "api".toPath()
       fileSystem.createDirectory(apiDir)
       fileSystem.write(apiDir / "okio.api".toPath()) {
@@ -335,18 +336,17 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listOrNullOnRelativePathWhichIsNotDotReturnsRelativePaths() {
     if (isNodeJsFileSystem) return
+    if (isWasiFileSystem) return // TODO: implement this behavior.
 
     // Make sure there's always at least one file so our assertion is useful. We copy the first 2
     // entries of the real working directory of the JVM to validate the results on all environment.
     if (
-      fileSystem is FakeFileSystem ||
-      fileSystem is ForwardingFileSystem && fileSystem.delegate is FakeFileSystem
+      fileSystem.isFakeFileSystem ||
+      fileSystem is ForwardingFileSystem && fileSystem.delegate.isFakeFileSystem
     ) {
       val workingDirectory = "/directory".toPath()
       fileSystem.createDirectory(workingDirectory)
-      (fileSystem as? FakeFileSystem)?.workingDirectory = workingDirectory
-      ((fileSystem as? ForwardingFileSystem)?.delegate as? FakeFileSystem)?.workingDirectory =
-        workingDirectory
+      fileSystem.workingDirectory = workingDirectory
       val apiDir = "api".toPath()
       fileSystem.createDirectory(apiDir)
       fileSystem.write(apiDir / "okio.api".toPath()) {
@@ -431,7 +431,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listOrNullOnRelativePathReturnsRelativePaths() {
     // Make sure there's always at least one file so our assertion is useful.
-    if (fileSystem is FakeFileSystem) {
+    if (fileSystem.isFakeFileSystem) {
       val workingDirectory = "/directory".toPath()
       fileSystem.createDirectory(workingDirectory)
       fileSystem.workingDirectory = workingDirectory
@@ -607,6 +607,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listRecursivelyFollowsSymlinks() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = baseA / "a"
@@ -638,6 +639,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listRecursivelyOnSymlink() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = baseA / "a"
@@ -671,6 +673,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listRecursiveOnSymlinkWithSpecialCharacterNamedFiles() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "ä"
     val baseASuperSaiyan = baseA / "超サイヤ人"
@@ -688,6 +691,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listRecursivelyOnSymlinkCycleThrows() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAB = baseA / "b"
@@ -918,7 +922,7 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun appendingSinkDoesNotImpactExistingFile() {
-    if (fileSystem is FakeFileSystem && !fileSystem.allowReadsWhileWriting) return
+    if (fileSystem.isFakeFileSystem && !fileSystem.allowReadsWhileWriting) return
 
     val path = base / "appending-sink-does-not-impact-existing-file"
     path.writeUtf8("hello, world!\n")
@@ -962,7 +966,7 @@ abstract class AbstractFileSystemTest(
 
   @Test
   fun fileSinkFlush() {
-    if (fileSystem is FakeFileSystem && !fileSystem.allowReadsWhileWriting) return
+    if (fileSystem.isFakeFileSystem && !fileSystem.allowReadsWhileWriting) return
 
     val path = base / "file-sink"
     val sink = fileSystem.sink(path)
@@ -2355,6 +2359,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun openSymlinkSource() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2368,6 +2373,7 @@ abstract class AbstractFileSystemTest(
   fun openSymlinkSink() {
     if (!supportsSymlink()) return
     if (isJimFileSystem()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2381,6 +2387,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun openFileWithDirectorySymlink() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = base / "a" / "a"
@@ -2396,6 +2403,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun openSymlinkFileHandle() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2410,6 +2418,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listSymlinkDirectory() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = base / "a" / "a"
@@ -2427,6 +2436,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun symlinkFileLastAccessedAt() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source = base / "symlink-source"
@@ -2442,6 +2452,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun symlinkDirectoryLastAccessedAt() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val baseA = base / "a"
     val baseAA = base / "a" / "a"
@@ -2472,6 +2483,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun moveSymlinkDoesntMoveTargetFile() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val target = base / "symlink-target"
     val source1 = base / "symlink-source-1"
@@ -2513,6 +2525,7 @@ abstract class AbstractFileSystemTest(
   @Test
   fun followingRecursiveSymlinksIsOkay() {
     if (!supportsSymlink()) return
+    if (isWasiFileSystem) return // Symlinks to absolute paths are broken on WASI.
 
     val pathA = base / "symlink-a"
     val pathB = base / "symlink-b"
@@ -2544,7 +2557,7 @@ abstract class AbstractFileSystemTest(
   }
 
   protected fun supportsSymlink(): Boolean {
-    if (fileSystem is FakeFileSystem) return fileSystem.allowSymlinks
+    if (fileSystem.isFakeFileSystem) return fileSystem.allowSymlinks
     if (windowsLimitations) return false
     return when (fileSystem::class.simpleName) {
       "JvmSystemFileSystem",
@@ -2592,7 +2605,7 @@ abstract class AbstractFileSystemTest(
    */
   private fun Instant.minFileSystemTime(): Instant {
     val paddedInstant = minus(200.milliseconds)
-    return Instant.fromEpochSeconds(paddedInstant.epochSeconds)
+    return fromEpochSeconds(paddedInstant.epochSeconds)
   }
 
   /**
@@ -2607,7 +2620,7 @@ abstract class AbstractFileSystemTest(
    */
   private fun Instant.maxFileSystemTime(): Instant {
     val paddedInstant = plus(200.milliseconds)
-    return Instant.fromEpochSeconds(paddedInstant.plus(2.seconds).epochSeconds)
+    return fromEpochSeconds(paddedInstant.plus(2.seconds).epochSeconds)
   }
 
   /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Square, Inc.
+ * Copyright (C) 2023 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,13 @@
  */
 package okio
 
-import kotlin.time.Duration
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import okio.Path.Companion.toPath
 
-class FakeClock : Clock {
-  var time = Instant.parse("2021-01-01T00:00:00Z")
-
-  override fun now() = time
-
-  fun sleep(duration: Duration) {
-    time = time.plus(duration)
-  }
-}
+class WasiFileSystemTest : AbstractFileSystemTest(
+  clock = WasiClock,
+  fileSystem = WasiFileSystem,
+  windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
+  allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
+  allowAtomicMoveFromFileToDirectory = false,
+  temporaryDirectory = "/tmp".toPath(),
+)
