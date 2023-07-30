@@ -29,8 +29,8 @@ internal fun fdClose(fd: fd) {
 internal fun Pointer.readString(byteCount: Int): String {
   if (byteCount == 0) return ""
 
-  // Drop the last byte if it's \0.
-  // TODO: confirm this is necessary in practice.
+  // Drop the last byte if it's 0. At least in NodeJS' implementation, strings are returned with
+  // a trailing NUL byte.
   val lastByte = (this + byteCount - 1).loadByte()
   val byteArray = when {
     lastByte.toInt() == 0 -> readByteArray(byteCount - 1)
@@ -61,6 +61,9 @@ internal fun MemoryAllocator.write(
   string: String,
 ): Pair<Pointer, size> {
   val bytes = string.encodeToByteArray()
+
+  // Append a trailing NUL byte. This shouldn't be necessary, but it reduces crashes in practice,
+  // at least on NodeJS 20.0. https://github.com/WebAssembly/WASI/issues/492
   val result = allocate(bytes.size + 1)
   var pos = result
   for (element in bytes) {
