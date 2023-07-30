@@ -23,6 +23,8 @@ import okio.internal.fdClose
 import okio.internal.preview1.Errno
 import okio.internal.preview1.dirnamelen
 import okio.internal.preview1.fd
+import okio.internal.preview1.fd_prestat_dir_name
+import okio.internal.preview1.fd_prestat_get
 import okio.internal.preview1.fd_readdir
 import okio.internal.preview1.fdflags
 import okio.internal.preview1.fdflags_append
@@ -59,17 +61,42 @@ import okio.internal.write
  *
  * [WASI]: https://wasi.dev/
  */
-class WasiFileSystem(
-  private val relativePathPreopen: Int = DEFAULT_FIRST_PREOPEN,
-  pathToPreopen: Map<Path, Int> = mapOf("/".toPath() to DEFAULT_FIRST_PREOPEN),
-) : FileSystem() {
-  private val pathSegmentsToPreopen = pathToPreopen.mapKeys { (key, _) -> key.segmentsBytes }
+object WasiFileSystem : FileSystem() {
+  private val pathToPreopen: Map<Path, Int> = run {
+    // File descriptor of the first preopen in the `WASI` instance's configured `preopens` property.
+    // This is 3 by default, assuming `stdin` is 0, `stdout` is 1, and `stderr` is 2. Other preopens
+    // are assigned sequentially starting at this value.
+    val firstPreopen = 3
 
-  init {
-    require(pathSegmentsToPreopen.isNotEmpty()) {
-      "pathToPreopen must be non-empty"
+    withScopedMemoryAllocator { allocator ->
+      val map = mutableMapOf<Path, Int>()
+
+      val bufSize = 2048
+      val bufPointer = allocator.allocate(bufSize)
+
+      for (fd in firstPreopen..Int.MAX_VALUE) {
+        val getReturnPointer = allocator.allocate(12)
+
+        val getErrno = fd_prestat_get(fd, getReturnPointer.address.toInt())
+        if (getErrno == Errno.badf.ordinal) break // No more preopens.
+        if (getErrno != 0) throw ErrnoException(getErrno.toShort())
+
+        val size = (getReturnPointer + 4).loadInt()
+        require(size + 1 < bufSize) { "unexpected preopen size: $size" }
+        val dirNameErrno = fd_prestat_dir_name(fd, bufPointer.address.toInt(), size + 1)
+        if (dirNameErrno != 0) throw ErrnoException(dirNameErrno.toShort())
+        val dirName = bufPointer.readString(size)
+        map[dirName.toPath()] = fd
+      }
+
+      return@run map
     }
   }
+
+  private val pathSegmentsToPreopen: Map<List<ByteString>, Int> =
+    pathToPreopen.mapKeys { (key, _) -> key.segmentsBytes }
+  private val relativePathPreopen: Int = pathToPreopen.values.firstOrNull()
+    ?: throw IllegalStateException("no preopens")
 
   override fun canonicalize(path: Path): Path {
     // There's no APIs in preview1 to canonicalize a path. We give it a best effort by resolving
@@ -126,14 +153,9 @@ class WasiFileSystem(
       )
 
       when (errno) {
-        Errno.notcapable.ordinal -> {
-          // Both of these paths return `notcapable`:
-          //  * The root, '/', which is a parent of real paths.
-          //  * Non-existent paths like '/127.0.0.1/../localhost/c$/Windows', which don't matter.
-          // Treat the root path as special.
-          if (path.isRoot) return FileMetadata(isDirectory = true)
-          return null
-        }
+        // 'notcapable' means our preopens don't cover this path. This will happen for paths
+        // like '/' that are an ancestor of our preopens.
+        Errno.notcapable.ordinal -> return FileMetadata(isDirectory = true)
         Errno.noent.ordinal -> return null
       }
 
@@ -450,30 +472,27 @@ class WasiFileSystem(
   }
 
   /**
-   * Returns the file descriptor of the preopened path that is an ancestor of [path]. Returns null
-   * if there is no such file descriptor.
+   * Returns the file descriptor of the preopened path that is either an ancestor of [path], or that
+   * [path] is an ancestor of.
+   *
+   * If [path] is an ancestor of our preopen, then operating on the path will ultimately fail with a
+   * `notcapable` errno.
    */
   private fun preopenFd(path: Path): fd? {
     if (path.isRelative) return relativePathPreopen
 
     val pathSegmentsBytes = path.segmentsBytes
+
+    preopens@
     for ((candidate, fd) in pathSegmentsToPreopen) {
-      if (pathSegmentsBytes.size < candidate.size) continue
-      if (pathSegmentsBytes.subList(0, candidate.size) != candidate) continue
+      val commonSize = minOf(pathSegmentsBytes.size, candidate.size)
+      for (i in 0 until commonSize) {
+        if (pathSegmentsBytes[i] != candidate[i]) continue@preopens
+      }
       return fd
     }
     return null
   }
 
   override fun toString() = "okio.WasiFileSystem"
-
-  companion object {
-    /**
-     * File descriptor of the first preopen in the `WASI` instance's configured `preopens` property.
-     * This is 3 by default, assuming `stdin` is 0, `stdout` is 1, and `stderr` is 2.
-     *
-     * Other preopens are assigned sequentially starting at this value.
-     */
-    val DEFAULT_FIRST_PREOPEN = 3
-  }
 }
