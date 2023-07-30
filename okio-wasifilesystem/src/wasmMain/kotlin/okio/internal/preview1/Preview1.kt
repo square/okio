@@ -52,17 +52,6 @@ typealias dirnamelen = Int
  */
 typealias PointerU8 = Int
 
-val Stdin: fd = 0
-val Stdout: fd = 1
-val Stderr: fd = 2
-
-/**
- * Assume the /tmp directory is fd 3.
- *
- * TODO: look this up at runtime from whatever parent directory is requested.
- */
-val FirstPreopenDirectoryTmp: fd = 3
-
 /**
  * path_create_directory(fd: fd, path: string) -> Result<(), errno>
  *
