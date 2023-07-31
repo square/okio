@@ -19,7 +19,7 @@ import okio.Path.Companion.toPath
 
 class WasiFileSystemTest : AbstractFileSystemTest(
   clock = WasiClock,
-  fileSystem = WasiFileSystem(),
+  fileSystem = WasiFileSystem,
   windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
   allowAtomicMoveFromFileToDirectory = false,

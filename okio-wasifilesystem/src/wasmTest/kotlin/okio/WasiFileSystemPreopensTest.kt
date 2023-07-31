@@ -21,7 +21,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import okio.Path.Companion.toPath
-import okio.WasiFileSystem.Companion.DEFAULT_FIRST_PREOPEN
 
 /**
  * Confirm the [WasiFileSystem] can operate on different preopened directories independently.
@@ -29,15 +28,7 @@ import okio.WasiFileSystem.Companion.DEFAULT_FIRST_PREOPEN
  * This tracks the `preopens` attribute in `.mjs` script in `okio-wasifilesystem/build.gradle.kts`.
  */
 class WasiFileSystemPreopensTest {
-  private val fileSystem = WasiFileSystem(
-    relativePathPreopen = DEFAULT_FIRST_PREOPEN,
-    pathToPreopen = mapOf(
-      "/tmp".toPath() to DEFAULT_FIRST_PREOPEN,
-      "/a".toPath() to DEFAULT_FIRST_PREOPEN + 1,
-      "/b".toPath() to DEFAULT_FIRST_PREOPEN + 2,
-    ),
-  )
-
+  private val fileSystem = WasiFileSystem
   private val testId = "${this::class.simpleName}-${randomToken(16)}"
   private val baseA: Path = "/a".toPath() / testId
   private val baseB: Path = "/b".toPath() / testId

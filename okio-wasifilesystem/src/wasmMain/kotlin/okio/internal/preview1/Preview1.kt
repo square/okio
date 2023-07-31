@@ -217,6 +217,29 @@ internal external fun fd_pread(
 ): Int // should be Short??
 
 /**
+ * fd_prestat_dir_name(fd: fd, path: Pointer<u8>, path_len: size) -> Result<(), errno>
+ *
+ * Return a description of the given preopened file descriptor.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_prestat_dir_name")
+internal external fun fd_prestat_dir_name(
+  fd: fd,
+  path: PointerU8,
+  pathSize: size,
+): Int // should be Short??
+
+/**
+ * fd_prestat_get(fd: fd) -> Result<prestat, errno>
+ *
+ * Return a description of the given preopened file descriptor.
+ */
+@WasmImport("wasi_snapshot_preview1", "fd_prestat_get")
+internal external fun fd_prestat_get(
+  fd: fd,
+  returnPointer: PointerU8,
+): Int // should be Short??
+
+/**
  * fd_pwrite(fd: fd, iovs: ciovec_array, offset: filesize) -> Result<size, errno>`
  *
  * Write to a file descriptor, without using and updating the file descriptor's offset.
