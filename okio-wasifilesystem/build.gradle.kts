@@ -6,7 +6,9 @@ import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 plugins {
   kotlin("multiplatform")
-  id("org.jetbrains.dokka")
+  // TODO: Restore Dokka once this issue is resolved.
+  //     https://github.com/Kotlin/dokka/issues/3038
+  // id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")
   id("binary-compatibility-validator")
