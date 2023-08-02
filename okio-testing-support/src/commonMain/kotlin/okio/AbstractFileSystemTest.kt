@@ -67,13 +67,14 @@ abstract class AbstractFileSystemTest(
   @Test
   fun canonicalizeDotReturnsCurrentWorkingDirectory() {
     if (fileSystem.isFakeFileSystem || fileSystem is ForwardingFileSystem) return
-    if (isWasiFileSystem) return // Canonicalize is limited on WASI.
     val cwd = fileSystem.canonicalize(".".toPath())
     val cwdString = cwd.toString()
     val slash = Path.DIRECTORY_SEPARATOR
     assertTrue(cwdString) {
       if (isWrappingJimFileSystem) {
         cwdString.endsWith("work")
+      } else if (isWasiFileSystem) {
+        cwdString.endsWith("/tmp")
       } else {
         cwdString.endsWith("okio${slash}okio") ||
           cwdString.endsWith("${slash}okio-parent-okio-nodefilesystem-test") ||
@@ -233,7 +234,6 @@ abstract class AbstractFileSystemTest(
   @Test
   fun canonicalizeReturnsShallowerPath() {
     if (!supportsSymlink()) return
-    if (isWasiFileSystem) return // Canonicalize is limited on WASI.
     val base = fileSystem.canonicalize(base)
 
     val expected = base / "a.txt"
@@ -269,12 +269,10 @@ abstract class AbstractFileSystemTest(
       fileSystem.write("a.txt".toPath()) {
         writeUtf8("hello, world!")
       }
-    } else if (isWrappingJimFileSystem) {
+    } else if (isWrappingJimFileSystem || isWasiFileSystem) {
       fileSystem.write("a.txt".toPath()) {
         writeUtf8("hello, world!")
       }
-    } else if (isWasiFileSystem) {
-      return // TODO: implement this behavior.
     }
 
     val entries = fileSystem.list(".".toPath())
@@ -284,7 +282,6 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listOnRelativePathWhichIsNotDotReturnsRelativePaths() {
     if (isNodeJsFileSystem) return
-    if (isWasiFileSystem) return // TODO: implement this behavior.
 
     // Make sure there's always at least one file so our assertion is useful. We copy the first 2
     // entries of the real working directory of the JVM to validate the results on all environment.
@@ -300,7 +297,7 @@ abstract class AbstractFileSystemTest(
       fileSystem.write(apiDir / "okio.api".toPath()) {
         writeUtf8("hello, world!")
       }
-    } else if (isWrappingJimFileSystem) {
+    } else if (isWrappingJimFileSystem || isWasiFileSystem) {
       val apiDir = "api".toPath()
       fileSystem.createDirectory(apiDir)
       fileSystem.write(apiDir / "okio.api".toPath()) {
@@ -336,7 +333,6 @@ abstract class AbstractFileSystemTest(
   @Test
   fun listOrNullOnRelativePathWhichIsNotDotReturnsRelativePaths() {
     if (isNodeJsFileSystem) return
-    if (isWasiFileSystem) return // TODO: implement this behavior.
 
     // Make sure there's always at least one file so our assertion is useful. We copy the first 2
     // entries of the real working directory of the JVM to validate the results on all environment.

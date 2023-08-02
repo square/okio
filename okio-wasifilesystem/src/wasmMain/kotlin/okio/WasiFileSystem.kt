@@ -85,7 +85,7 @@ object WasiFileSystem : FileSystem() {
         if (dirNameErrno != 0) throw ErrnoException(dirNameErrno.toShort())
         val dirName = bufPointer.readString(size)
         val dirNamePath = dirName.toPath()
-        add(Preopen(dirNamePath.segmentsBytes, fd))
+        add(Preopen(dirNamePath, dirNamePath.segmentsBytes, fd))
       }
     }
   }
@@ -94,15 +94,20 @@ object WasiFileSystem : FileSystem() {
     ?: throw IllegalStateException("no preopens")
 
   override fun canonicalize(path: Path): Path {
-    // There's no APIs in preview1 to canonicalize a path. We give it a best effort by resolving
-    // all symlinks, but this could result in a relative path.
-    val candidate = resolveSymlinks(path, 0)
-
-    if (!candidate.isAbsolute) {
-      throw IOException("WASI preview1 cannot canonicalize relative paths")
+    val absolutePath = when {
+      path.isAbsolute -> path
+      else -> relativePathPreopen.path.resolve(path, normalize = true)
     }
 
-    return candidate
+    // There's no APIs in preview1 to canonicalize a path. We give it a best effort by resolving
+    // all symlinks, but this could result in a relative path.
+    val result = resolveSymlinks(absolutePath, 0).normalized()
+
+    check(result.isAbsolute) {
+      "Canonicalize $path returned non-absolute path: $result"
+    }
+
+    return result
   }
 
   private fun resolveSymlinks(
@@ -118,7 +123,7 @@ object WasiFileSystem : FileSystem() {
       else -> null
     }
     val pathWithResolvedParent = when {
-      resolvedParent != null -> resolvedParent / path.name
+      resolvedParent != null -> resolvedParent.resolve(path.name)
       else -> path
     }
 
@@ -127,7 +132,7 @@ object WasiFileSystem : FileSystem() {
 
     val resolvedSymlinkTarget = when {
       symlinkTarget.isAbsolute -> symlinkTarget
-      resolvedParent != null -> resolvedParent / symlinkTarget
+      resolvedParent != null -> resolvedParent.resolve(symlinkTarget)
       else -> symlinkTarget
     }
 
@@ -500,6 +505,7 @@ object WasiFileSystem : FileSystem() {
   override fun toString() = "okio.WasiFileSystem"
 
   private class Preopen(
+    val path: Path,
     val segmentsBytes: List<ByteString>,
     val fd: fd,
   )
