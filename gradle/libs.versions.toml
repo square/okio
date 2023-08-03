@@ -1,5 +1,5 @@
 [versions]
-jmh = "1.36"
+jmh = "1.37"
 ktlint = "0.48.2"
 
 [libraries]
