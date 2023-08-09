@@ -28,6 +28,7 @@ import kotlin.test.fail
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
+import okio.ByteString.Companion.toByteString
 import okio.internal.commonAsUtf8ToByteArray
 
 class ByteStringTest : AbstractByteStringTest(ByteStringFactory.BYTE_STRING)
@@ -564,5 +565,33 @@ abstract class AbstractByteStringTest internal constructor(
     assertEquals("WwwwXxxxYyyyZzzz", byteArray.decodeToString())
     byteString.copyInto(offset = 8, target = byteArray, targetOffset = 0, byteCount = 0)
     assertEquals("WwwwXxxxYyyyZzzz", byteArray.decodeToString())
+  }
+
+  @Test
+  fun ofCopy() {
+    val bytes = "Hello, World!".encodeToByteArray()
+    val byteString = ByteString.of(*bytes)
+    // Verify that the bytes were copied out.
+    bytes[4] = 'a'.code.toByte()
+    assertEquals("Hello, World!", byteString.utf8())
+  }
+
+  @Test
+  fun ofCopyRange() {
+    val bytes = "Hello, World!".encodeToByteArray()
+    val byteString: ByteString = bytes.toByteString(2, 9)
+    // Verify that the bytes were copied out.
+    bytes[4] = 'a'.code.toByte()
+    assertEquals("llo, Worl", byteString.utf8())
+  }
+
+  @Test
+  fun getByteOutOfBounds() {
+    val byteString = factory.decodeHex("ab12")
+    try {
+      byteString[2]
+      fail()
+    } catch (expected: IndexOutOfBoundsException) {
+    }
   }
 }

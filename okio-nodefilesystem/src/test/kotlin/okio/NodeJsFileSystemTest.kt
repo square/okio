@@ -22,5 +22,6 @@ class NodeJsFileSystemTest : AbstractFileSystemTest(
   fileSystem = NodeJsFileSystem,
   windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
+  allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
 )

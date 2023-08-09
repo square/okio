@@ -6,6 +6,7 @@ plugins {
   kotlin("js")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
+  id("binary-compatibility-validator")
 }
 
 kotlin {

@@ -1,19 +1,17 @@
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 
 plugins {
   kotlin("multiplatform")
-  id("ru.vyarus.animalsniffer")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
+  id("binary-compatibility-validator")
   id("build-support")
 }
 
 kotlin {
   jvm {
-    withJava()
   }
   if (kmpJsEnabled) {
     js {
@@ -50,6 +48,8 @@ kotlin {
 
 tasks {
   val jvmJar by getting(Jar::class) {
+    // BundleTaskConvention() crashes unless there's a 'main' source set.
+    sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
     val bndConvention = aQute.bnd.gradle.BundleTaskConvention(this)
     bndConvention.setBnd(
       """
@@ -63,17 +63,6 @@ tasks {
       bndConvention.buildBundle()
     }
   }
-}
-
-configure<AnimalSnifferExtension> {
-  sourceSets = listOf(project.sourceSets.getByName("main"))
-}
-
-val signature: Configuration by configurations
-
-dependencies {
-  signature(variantOf(libs.animalSniffer.android) { artifactType("signature") })
-  signature(variantOf(libs.animalSniffer.java) { artifactType("signature") })
 }
 
 configure<MavenPublishBaseExtension> {

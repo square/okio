@@ -111,7 +111,7 @@ internal open class JvmSystemFileSystem : FileSystem() {
       val alreadyExist = metadataOrNull(dir)?.isDirectory == true
       if (alreadyExist) {
         if (mustCreate) {
-          throw IOException("$dir already exist.")
+          throw IOException("$dir already exists.")
         } else {
           return
         }
