@@ -114,7 +114,7 @@ jobs:
           path: '**/build/reports'
 
   publish:
-    runs-on: macos-11
+    runs-on: macos-13
     if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
     needs: [jvm, all-platforms, emulator]
 
