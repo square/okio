@@ -21,7 +21,9 @@ import kotlinx.cinterop.convert
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSInputStream
-import platform.darwin.UInt8Var
+import platform.Foundation.NSStreamStatusClosed
+import platform.Foundation.NSStreamStatusNotOpen
+import platform.posix.uint8_tVar
 
 /** Returns a source that reads from `in`. */
 fun NSInputStream.source(): Source = NSInputStreamSource(this)
@@ -32,19 +34,23 @@ private open class NSInputStreamSource(
 ) : Source {
 
   init {
-    input.open()
+    if (input.streamStatus == NSStreamStatusNotOpen) input.open()
   }
 
   override fun read(sink: Buffer, byteCount: Long): Long {
+    if (input.streamStatus == NSStreamStatusClosed) throw IOException("Stream Closed")
+
     if (byteCount == 0L) return 0L
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
+
     val tail = sink.writableSegment(1)
     val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit)
     val bytesRead = tail.data.usePinned {
-      val bytes = it.addressOf(tail.limit).reinterpret<UInt8Var>()
+      val bytes = it.addressOf(tail.limit).reinterpret<uint8_tVar>()
       input.read(bytes, maxToCopy.convert()).toLong()
     }
-    if (bytesRead < 0) throw IOException(input.streamError?.localizedDescription)
+
+    if (bytesRead < 0L) throw IOException(input.streamError?.localizedDescription ?: "Unknown error")
     if (bytesRead == 0L) {
       if (tail.pos == tail.limit) {
         // We allocated a tail segment, but didn't end up needing it. Recycle!
@@ -55,7 +61,7 @@ private open class NSInputStreamSource(
     }
     tail.limit += bytesRead.toInt()
     sink.size += bytesRead
-    return bytesRead.convert()
+    return bytesRead
   }
 
   override fun close() = input.close()

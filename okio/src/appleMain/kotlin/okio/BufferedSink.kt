@@ -18,45 +18,43 @@ package okio
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.CPointerVar
 import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.convert
-import platform.Foundation.NSData
 import platform.Foundation.NSError
-import platform.Foundation.NSInputStream
+import platform.Foundation.NSOutputStream
 import platform.Foundation.NSRunLoop
 import platform.Foundation.NSRunLoopMode
 import platform.Foundation.NSStream
+import platform.Foundation.NSStreamDataWrittenToMemoryStreamKey
 import platform.Foundation.NSStreamDelegateProtocol
 import platform.Foundation.NSStreamEvent
-import platform.Foundation.NSStreamEventEndEncountered
 import platform.Foundation.NSStreamEventErrorOccurred
-import platform.Foundation.NSStreamEventHasBytesAvailable
+import platform.Foundation.NSStreamEventHasSpaceAvailable
 import platform.Foundation.NSStreamEventOpenCompleted
 import platform.Foundation.NSStreamPropertyKey
-import platform.Foundation.NSStreamStatusAtEnd
 import platform.Foundation.NSStreamStatusClosed
 import platform.Foundation.NSStreamStatusError
 import platform.Foundation.NSStreamStatusNotOpen
 import platform.Foundation.NSStreamStatusOpen
 import platform.Foundation.NSStreamStatusOpening
-import platform.Foundation.NSStreamStatusReading
+import platform.Foundation.NSStreamStatusWriting
 import platform.Foundation.performInModes
 import platform.darwin.NSInteger
 import platform.darwin.NSUInteger
-import platform.darwin.NSUIntegerVar
 import platform.posix.uint8_tVar
 
-/** Returns an input stream that reads from this source. */
-fun BufferedSource.inputStream(): NSInputStream = BufferedSourceInputStream(this)
+/**
+ * Returns an output stream that writes to this sink. Closing the stream will also close this sink.
+ */
+fun BufferedSink.outputStream(): NSOutputStream = BufferedSinkNSOutputStream(this)
 
 @OptIn(UnsafeNumber::class, ExperimentalNativeApi::class)
-private class BufferedSourceInputStream(
-  private val source: BufferedSource,
-) : NSInputStream(NSData()), NSStreamDelegateProtocol {
+private class BufferedSinkNSOutputStream(
+  private val sink: BufferedSink,
+) : NSOutputStream(toMemory = Unit), NSStreamDelegateProtocol {
 
-  private val isClosed: () -> Boolean = when (source) {
-    is RealBufferedSource -> source::closed
+  private val isClosed: () -> Boolean = when (sink) {
+    is RealBufferedSink -> sink::closed
     is Buffer -> {
       { false }
     }
@@ -67,7 +65,8 @@ private class BufferedSourceInputStream(
     set(value) {
       status = NSStreamStatusError
       field = value
-      source.close()
+      postEvent(NSStreamEventErrorOccurred)
+      sink.close()
     }
 
   override fun streamStatus() = if (status != NSStreamStatusError && isClosed()) NSStreamStatusClosed else status
@@ -79,7 +78,7 @@ private class BufferedSourceInputStream(
       status = NSStreamStatusOpening
       status = NSStreamStatusOpen
       postEvent(NSStreamEventOpenCompleted)
-      checkBytes()
+      postEvent(NSStreamEventHasSpaceAvailable)
     }
   }
 
@@ -88,32 +87,25 @@ private class BufferedSourceInputStream(
     status = NSStreamStatusClosed
     runLoop = null
     runLoopModes = listOf()
-    source.close()
+    sink.close()
   }
 
-  override fun read(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
-    if (streamStatus != NSStreamStatusOpen && streamStatus != NSStreamStatusAtEnd || buffer == null) return -1
-    status = NSStreamStatusReading
-    try {
-      if (source.exhausted()) {
-        status = NSStreamStatusAtEnd
-        return 0
-      }
-      val toRead = minOf(maxLength.toLong(), source.buffer.size, Int.MAX_VALUE.toLong()).toInt()
-      val read = source.buffer.read(buffer, toRead).convert<NSInteger>()
+  override fun write(buffer: CPointer<uint8_tVar>?, maxLength: NSUInteger): NSInteger {
+    if (streamStatus != NSStreamStatusOpen || buffer == null) return -1
+    status = NSStreamStatusWriting
+    val toWrite = minOf(maxLength, Int.MAX_VALUE.convert()).toInt()
+    return try {
+      sink.buffer.write(buffer, toWrite)
+      sink.emitCompleteSegments()
       status = NSStreamStatusOpen
-      checkBytes()
-      return read
+      toWrite.convert()
     } catch (e: Exception) {
       error = e.toNSError()
-      postEvent(NSStreamEventErrorOccurred)
-      return -1
+      -1
     }
   }
 
-  override fun getBuffer(buffer: CPointer<CPointerVar<uint8_tVar>>?, length: CPointer<NSUIntegerVar>?) = false
-
-  override fun hasBytesAvailable() = !isFinished
+  override fun hasSpaceAvailable() = !isFinished
 
   private val isFinished
     get() = when (streamStatus) {
@@ -121,7 +113,10 @@ private class BufferedSourceInputStream(
       else -> false
     }
 
-  override fun propertyForKey(key: NSStreamPropertyKey): Any? = null
+  override fun propertyForKey(key: NSStreamPropertyKey): Any? = when (key) {
+    NSStreamDataWrittenToMemoryStreamKey -> sink.buffer.snapshotAsNSData()
+    else -> null
+  }
 
   override fun setProperty(property: Any?, forKey: NSStreamPropertyKey) = false
 
@@ -137,25 +132,6 @@ private class BufferedSourceInputStream(
       if (runLoop == this.runLoop) {
         delegateOrSelf.stream(this, event)
       }
-    }
-  }
-
-  private fun checkBytes() {
-    val runLoop = runLoop ?: return
-    runLoop.performInModes(runLoopModes) {
-      if (runLoop != this.runLoop || isFinished) return@performInModes
-      val event = try {
-        if (source.exhausted()) {
-          status = NSStreamStatusAtEnd
-          NSStreamEventEndEncountered
-        } else {
-          NSStreamEventHasBytesAvailable
-        }
-      } catch (e: Exception) {
-        error = e.toNSError()
-        NSStreamEventErrorOccurred
-      }
-      delegateOrSelf.stream(this, event)
     }
   }
 
@@ -179,7 +155,7 @@ private class BufferedSourceInputStream(
       runLoopModes += forMode
     }
     if (status == NSStreamStatusOpen) {
-      checkBytes()
+      postEvent(NSStreamEventHasSpaceAvailable)
     }
   }
 
@@ -192,5 +168,5 @@ private class BufferedSourceInputStream(
     }
   }
 
-  override fun description(): String = "$source.inputStream()"
+  override fun description() = "$sink.outputStream()"
 }

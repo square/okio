@@ -132,6 +132,11 @@ kotlin {
           nativeTest.dependsOn(nonJvmTest)
           nativeTest.dependsOn(nonWasmTest)
           createSourceSet("appleTest", parent = nativeTest, children = appleTargets)
+            .apply {
+              dependencies {
+                implementation(libs.kotlin.coroutines)
+              }
+            }
         }
     }
 
