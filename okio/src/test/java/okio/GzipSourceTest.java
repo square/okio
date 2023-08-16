@@ -15,9 +15,11 @@
  */
 package okio;
 
+import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.CRC32;
-import org.junit.Test;
 
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -180,6 +182,18 @@ public final class GzipSourceTest {
       fail();
     } catch (IOException expected) {
     }
+  }
+
+  @Test public void extraLongXlen() throws Exception {
+    int xlen = 0xffff;
+    Buffer gzippedSource = new Buffer()
+        .write(gzipHeaderWithFlags((byte) 0x04));
+    gzippedSource.writeShort((short) xlen);
+    gzippedSource.write(new byte[xlen]);
+    gzippedSource.write(ByteString.decodeHex("f3c8540400dac59e7903000000"));
+
+    Buffer gunzipped = gunzip(gzippedSource);
+    assertEquals("Hi!", gunzipped.readUtf8());
   }
 
   private ByteString gzipHeaderWithFlags(byte flags) {
