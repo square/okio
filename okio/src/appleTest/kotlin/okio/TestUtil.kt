@@ -11,6 +11,7 @@ import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.refTo
+import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.runBlocking
@@ -19,6 +20,7 @@ import kotlinx.coroutines.withTimeout
 import platform.Foundation.NSData
 import platform.Foundation.NSDefaultRunLoopMode
 import platform.Foundation.NSMachPort
+import platform.Foundation.NSOutputStream
 import platform.Foundation.NSRunLoop
 import platform.Foundation.NSStreamEvent
 import platform.Foundation.NSStreamEventEndEncountered
@@ -83,6 +85,12 @@ fun NSStreamEvent.asString(): String {
     NSStreamEventErrorOccurred -> "NSStreamEventErrorOccurred"
     NSStreamEventEndEncountered -> "NSStreamEventEndEncountered"
     else -> "Unknown event $this"
+  }
+}
+
+fun ByteArray.write(to: NSOutputStream): Int {
+  this.usePinned {
+    return to.write(it.addressOf(0).reinterpret(), size.convert()).convert()
   }
 }
 

@@ -47,7 +47,7 @@ internal fun Buffer.write(source: CPointer<uint8_tVar>, maxLength: Int) {
 
     val toCopy = minOf(maxLength - currentOffset, Segment.SIZE - tail.limit)
     tail.data.usePinned {
-      memcpy(it.addressOf(tail.pos), source + currentOffset, toCopy.convert())
+      memcpy(it.addressOf(tail.limit), source + currentOffset, toCopy.convert())
     }
 
     currentOffset += toCopy

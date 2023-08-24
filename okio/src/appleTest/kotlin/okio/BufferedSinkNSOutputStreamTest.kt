@@ -48,8 +48,34 @@ import platform.darwin.NSObject
 import platform.darwin.NSUInteger
 import platform.posix.uint8_tVar
 
+private fun NSOutputStream.write(vararg strings: String) {
+  for (str in strings) {
+    str.encodeToByteArray().apply {
+      assertEquals(size, this.write(this@write))
+    }
+  }
+}
+
 @OptIn(UnsafeNumber::class)
 class BufferedSinkNSOutputStreamTest {
+  @Test
+  fun multipleWrites() {
+    val buffer = Buffer()
+    buffer.outputStream().apply {
+      open()
+      write("hello", " ", "world")
+      close()
+    }
+    assertEquals("hello world", buffer.readUtf8())
+
+    RealBufferedSink(buffer).outputStream().apply {
+      open()
+      write("hello", " ", "real", " sink")
+      close()
+    }
+    assertEquals("hello real sink", buffer.readUtf8())
+  }
+
   @Test
   fun bufferOutputStream() {
     testOutputStream(Buffer(), "abc")
