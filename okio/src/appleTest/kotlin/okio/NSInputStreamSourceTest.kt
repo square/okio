@@ -37,8 +37,6 @@ class NSInputStreamSourceTest {
   @OptIn(ExperimentalStdlibApi::class)
   @Test
   fun nsInputStreamSourceFromFile() {
-    // can be replaced with createTempFile() when #183 is fixed
-    // https://github.com/Kotlin/kotlinx-io/issues/183
     val file = "${NSTemporaryDirectory()}${NSUUID().UUIDString()}"
     try {
       FileSystem.SYSTEM.write(file.toPath()) {
