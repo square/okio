@@ -156,7 +156,7 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
   // Note that `java.nio.file.FileSystem` allows atomic moves of a file even if the target is an existing directory.
   override fun atomicMove(source: Path, target: Path) {
     try {
-      source.resolve().moveTo(
+      val unused = source.resolve().moveTo(
         target.resolve(),
         StandardCopyOption.ATOMIC_MOVE,
         StandardCopyOption.REPLACE_EXISTING,
@@ -184,7 +184,7 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
   }
 
   override fun createSymlink(source: Path, target: Path) {
-    source.resolve().createSymbolicLinkPointingTo(target.resolve())
+    val unused = source.resolve().createSymbolicLinkPointingTo(target.resolve())
   }
 
   override fun toString() = nioFileSystem::class.simpleName!!
