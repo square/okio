@@ -37,7 +37,7 @@ plugins {
  *   |       |   |-- watchosArm64
  *   |       |   '-- watchosX86
  *   |       '-- linux
- *   |           '-- linuxX64
+ *   |           |-- linuxX64
  *   |           '-- linuxArm64
  *   '-- wasm
  * ```
