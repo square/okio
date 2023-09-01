@@ -1,6 +1,23 @@
 Change Log
 ==========
 
+## Version 3.5.0
+
+_2023-08-02_
+
+ * New: Support the WebAssembly (WASM) platform. Okio's support for WASM is experimental, but
+   improving, just like Kotlin's own support for WASM.
+ * New: Adapt WebAssembly System Interface (WASI) API's as an Okio FileSystem using
+   `WasiFileSystem`. This is in the new `okio-wasifilesystem` module. It requires the [preview1]
+   WASI API. We’ll make backwards-incompatible upgrades to new WASI API versions as they become
+   available.
+ * Fix: Return relative paths in the NIO adapter FileSystem when required. `FileSystem.list()`
+   had always returned absolute paths, even when the target directory was supplied as a relative
+   path.
+ * Fix: Don't crash when reading into an empty array using `FileHandle` on Kotlin/Native.
+ * Upgrade: [Kotlin 1.9.0][kotlin_1_9_0].
+
+
 ## Version 3.4.0
 
 _2023-07-07_
@@ -840,6 +857,8 @@ _2014-04-08_
 [kotlin_1_5_31]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.31
 [kotlin_1_6_20]: https://blog.jetbrains.com/kotlin/2022/04/kotlin-1-6-20-released/
 [kotlin_1_8_0]: https://kotlinlang.org/docs/whatsnew18.html
+[kotlin_1_9_0]: https://kotlinlang.org/docs/whatsnew19.html
 [loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
+[preview1]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md
 [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302

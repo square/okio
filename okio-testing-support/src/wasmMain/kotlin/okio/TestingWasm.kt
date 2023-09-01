@@ -15,6 +15,47 @@
  */
 package okio
 
+import kotlin.time.Duration
+
 actual fun isBrowser() = false
 
 actual fun isWasm() = true
+
+actual interface Clock {
+  actual fun now(): Instant
+}
+
+actual class Instant(
+  private val epochMilliseconds: Long,
+) : Comparable<Instant> {
+  actual val epochSeconds: Long
+    get() = epochMilliseconds / 1_000L
+
+  actual operator fun plus(duration: Duration) =
+    Instant(epochMilliseconds + duration.inWholeMilliseconds)
+
+  actual operator fun minus(duration: Duration) =
+    Instant(epochMilliseconds - duration.inWholeMilliseconds)
+
+  override fun compareTo(other: Instant) =
+    epochMilliseconds.compareTo(other.epochMilliseconds)
+}
+
+actual fun fromEpochSeconds(epochSeconds: Long) =
+  Instant(epochSeconds * 1_000L)
+
+actual fun fromEpochMilliseconds(epochMilliseconds: Long) =
+  Instant(epochMilliseconds)
+
+actual val FileSystem.isFakeFileSystem: Boolean
+  get() = false
+
+actual val FileSystem.allowSymlinks: Boolean
+  get() = error("unexpected call")
+
+actual val FileSystem.allowReadsWhileWriting: Boolean
+  get() = error("unexpected call")
+
+actual var FileSystem.workingDirectory: Path
+  get() = error("unexpected call")
+  set(_) = error("unexpected call")

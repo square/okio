@@ -19,6 +19,7 @@ import kotlin.wasm.unsafe.withScopedMemoryAllocator
 import okio.internal.ErrnoException
 import okio.internal.fdClose
 import okio.internal.preview1.fd
+import okio.internal.preview1.fd_sync
 import okio.internal.preview1.fd_write
 import okio.internal.preview1.size
 import okio.internal.write
@@ -74,7 +75,8 @@ internal class FileSink(
   }
 
   override fun flush() {
-    // TODO
+    val errno = fd_sync(fd)
+    if (errno != 0) throw ErrnoException(errno.toShort())
   }
 
   override fun timeout() = Timeout.NONE

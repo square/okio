@@ -1,4 +1,4 @@
-import com.vanniktech.maven.publish.JavadocJar.Dokka
+import com.vanniktech.maven.publish.JavadocJar.Empty
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
@@ -6,7 +6,9 @@ import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 plugins {
   kotlin("multiplatform")
-  id("org.jetbrains.dokka")
+  // TODO: Restore Dokka once this issue is resolved.
+  //     https://github.com/Kotlin/dokka/issues/3038
+  // id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")
   id("binary-compatibility-validator")
@@ -33,8 +35,10 @@ kotlin {
 }
 
 configure<MavenPublishBaseExtension> {
+  // TODO: switch from 'Empty' to 'Dokka' once this issue is resolved.
+  //     https://github.com/Kotlin/dokka/issues/3038
   configure(
-    KotlinMultiplatform(javadocJar = Dokka("dokkaGfm")),
+    KotlinMultiplatform(javadocJar = Empty()),
   )
 }
 
@@ -62,8 +66,12 @@ val injectWasiInit by tasks.creating {
   outputs.file(entryPointMjs)
 
   doLast {
-    val tmpdir = File(System.getProperty("java.io.tmpdir"), "okio-wasifilesystem-test")
-    tmpdir.mkdirs()
+    val base = File(System.getProperty("java.io.tmpdir"), "okio-wasifilesystem-test")
+    val baseA = File(base, "a")
+    val baseB = File(base, "b")
+    base.mkdirs()
+    baseA.mkdirs()
+    baseB.mkdirs()
 
     entryPointMjs.writeText(
       """
@@ -73,7 +81,9 @@ val injectWasiInit by tasks.creating {
       export const wasi = new WASI({
         version: 'preview1',
         preopens: {
-          '/tmp': '$tmpdir'
+          '/tmp': '$base',
+          '/a': '$baseA',
+          '/b': '$baseB'
         }
       });
 
