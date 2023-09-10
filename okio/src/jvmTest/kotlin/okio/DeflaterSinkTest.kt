@@ -15,7 +15,6 @@
  */
 package okio
 
-import java.io.IOException
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 import java.util.zip.InflaterInputStream
@@ -127,6 +126,29 @@ class DeflaterSinkTest {
       Assert.assertEquals("first", expected.message)
     }
     mockSink.assertLogContains("close()")
+  }
+
+  /**
+   * This test deflates a single segment of without compression because that's
+   * the easiest way to force close() to emit a large amount of data to the
+   * underlying sink.
+   */
+  @Test
+  fun rethrowNullPointerAsIOException() {
+    val deflater = Deflater()
+    // Close to cause a NullPointerException
+    deflater.end()
+
+    val data = Buffer().apply {
+      writeUtf8("They're moving in herds. They do move in herds.")
+    }
+    val deflaterSink = DeflaterSink(Buffer(), deflater)
+
+    val ioe = Assert.assertThrows("", IOException::class.java) {
+      deflaterSink.write(data, data.size)
+    }
+
+    Assert.assertTrue(ioe.cause is NullPointerException)
   }
 
   /**
