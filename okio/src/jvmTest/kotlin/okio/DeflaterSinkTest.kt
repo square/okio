@@ -129,9 +129,8 @@ class DeflaterSinkTest {
   }
 
   /**
-   * This test deflates a single segment of without compression because that's
-   * the easiest way to force close() to emit a large amount of data to the
-   * underlying sink.
+   * This test confirms that we swallow NullPointerException from Deflater and
+   * rethrow as an IOException.
    */
   @Test
   fun rethrowNullPointerAsIOException() {
