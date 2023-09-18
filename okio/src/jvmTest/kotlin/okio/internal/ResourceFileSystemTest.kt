@@ -24,7 +24,9 @@ import kotlin.test.assertFailsWith
 import kotlin.test.fail
 import okio.BufferedSource
 import okio.ByteString
+import okio.FileNotFoundException
 import okio.FileSystem
+import okio.ForwardingFileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
@@ -48,6 +50,7 @@ class ResourceFileSystemTest {
     assertThat(metadata.isDirectory).isFalse()
 
     val content = fileSystem.read(path) { readUtf8() }
+    assertThat(fileSystem.metadata(path).isRegularFile).isTrue()
 
     assertThat(content).isEqualTo("a")
   }
@@ -63,6 +66,7 @@ class ResourceFileSystemTest {
     assertThat(metadata.isDirectory).isFalse()
 
     val content = fileSystem.read(path) { readUtf8() }
+    assertThat(fileSystem.metadata(path).isRegularFile).isTrue()
 
     assertThat(content).isEqualTo("b/b")
   }
@@ -81,9 +85,15 @@ class ResourceFileSystemTest {
 
     assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
       .isEqualTo("Hello World")
+    assertThat(
+      resourceFileSystem.metadata("hello.txt".toPath()).isRegularFile,
+    ).isTrue()
 
     assertThat(resourceFileSystem.read("directory/subdirectory/child.txt".toPath()) { readUtf8() })
       .isEqualTo("Another file!")
+    assertThat(
+      resourceFileSystem.metadata("directory/subdirectory/child.txt".toPath()).isRegularFile,
+    ).isTrue()
 
     assertThat(resourceFileSystem.list("/".toPath()))
       .hasSameElementsAs(listOf("/META-INF".toPath(), "/hello.txt".toPath(), "/directory".toPath()))
@@ -125,6 +135,10 @@ class ResourceFileSystemTest {
       .isEqualTo("Grass is green")
     assertThat(resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() })
       .isEqualTo("The sky is blue")
+
+    assertThat(resourceFileSystem.metadata("/colors/red.txt".toPath()).isRegularFile).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors/green.txt".toPath()).isRegularFile).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors/blue.txt".toPath()).isRegularFile).isTrue()
 
     assertThat(resourceFileSystem.list("/".toPath()))
       .hasSameElementsAs(listOf("/META-INF".toPath(), "/colors".toPath()))
@@ -169,6 +183,10 @@ class ResourceFileSystemTest {
     assertThat(resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() })
       .isEqualTo("The sky is blue")
 
+    assertThat(resourceFileSystem.metadata("/colors/red.txt".toPath()).isRegularFile).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors/green.txt".toPath()).isRegularFile).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors/blue.txt".toPath()).isRegularFile).isTrue()
+
     assertThat(resourceFileSystem.list("/".toPath()))
       .hasSameElementsAs(listOf("/colors".toPath()))
     assertThat(resourceFileSystem.list("/colors".toPath())).hasSameElementsAs(
@@ -212,6 +230,10 @@ class ResourceFileSystemTest {
       .isEqualTo("Grass is green")
     assertThat(resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() })
       .isEqualTo("The sky is blue")
+
+    assertThat(resourceFileSystem.metadata("/colors/red.txt".toPath()).isRegularFile).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors/green.txt".toPath()).isRegularFile).isTrue()
+    assertThat(resourceFileSystem.metadata("/colors/blue.txt".toPath()).isRegularFile).isTrue()
 
     assertThat(resourceFileSystem.list("/".toPath()))
       .hasSameElementsAs(listOf("/META-INF".toPath(), "/colors".toPath()))
@@ -292,6 +314,9 @@ class ResourceFileSystemTest {
     assertThat(resourceFileSystem.list("/com/example/project".toPath())).isEmpty()
     assertThat(resourceFileSystem.metadataOrNull("/com/example/project/Hello.class".toPath()))
       .isNull()
+    assertFailsWith<FileNotFoundException> {
+      resourceFileSystem.source("/com/example/project/Hello.class".toPath())
+    }
   }
 
   @Test
@@ -364,6 +389,57 @@ class ResourceFileSystemTest {
     ).hasMessage("finding a resource")
   }
 
+  /** Confirm we can read individual files without triggering indexing. */
+  @Test
+  fun testSourceDoesntTriggerIndexing() {
+    val processedPaths = mutableSetOf<Path>()
+    val recordingFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {
+      override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
+        processedPaths += path
+        return super.onPathParameter(path, functionName, parameterName)
+      }
+    }
+
+    val zipAPath = ZipBuilder(base)
+      .addEntry("colors/red.txt", "Apples are red")
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .build()
+    val zipBPath = ZipBuilder(base)
+      .addEntry("colors/blue.txt", "The sky is blue")
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .build()
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = URLClassLoader(
+        arrayOf(
+          zipAPath.toFile().toURI().toURL(),
+          zipBPath.toFile().toURI().toURL(),
+        ),
+        null,
+      ),
+      indexEagerly = false,
+      systemFileSystem = recordingFileSystem,
+    )
+
+    // Reading paths with source() or read() doesn't index zips.
+    assertThat(
+      resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() },
+    ).isEqualTo("Apples are red")
+    assertThat(
+      resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() },
+    ).isEqualTo("The sky is blue")
+    assertThat(processedPaths).isEmpty()
+
+    // Calling list() does though.
+    assertThat(resourceFileSystem.list("/colors".toPath())).containsExactlyInAnyOrder(
+      "/colors/red.txt".toPath(),
+      "/colors/blue.txt".toPath(),
+    )
+    assertThat(processedPaths).containsExactlyInAnyOrder(
+      zipAPath,
+      zipBPath,
+    )
+  }
+
   /**
    * Our resource file system uses [URLClassLoader] internally, which means we need to go back and
    * forth between [File], [URL], and [URI] models for component paths. This is a big hazard for
@@ -382,6 +458,7 @@ class ResourceFileSystemTest {
 
     assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
       .isEqualTo("Hello World")
+    assertThat(resourceFileSystem.metadata("hello.txt".toPath())).isNotNull()
   }
 
   @Test
