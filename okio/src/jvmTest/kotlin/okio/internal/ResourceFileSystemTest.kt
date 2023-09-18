@@ -86,13 +86,13 @@ class ResourceFileSystemTest {
     assertThat(resourceFileSystem.read("hello.txt".toPath()) { readUtf8() })
       .isEqualTo("Hello World")
     assertThat(
-      resourceFileSystem.metadata("hello.txt".toPath()).isRegularFile
+      resourceFileSystem.metadata("hello.txt".toPath()).isRegularFile,
     ).isTrue()
 
     assertThat(resourceFileSystem.read("directory/subdirectory/child.txt".toPath()) { readUtf8() })
       .isEqualTo("Another file!")
     assertThat(
-      resourceFileSystem.metadata("directory/subdirectory/child.txt".toPath()).isRegularFile
+      resourceFileSystem.metadata("directory/subdirectory/child.txt".toPath()).isRegularFile,
     ).isTrue()
 
     assertThat(resourceFileSystem.list("/".toPath()))
@@ -422,10 +422,10 @@ class ResourceFileSystemTest {
 
     // Reading paths with source() or read() doesn't index zips.
     assertThat(
-      resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() }
+      resourceFileSystem.read("/colors/red.txt".toPath()) { readUtf8() },
     ).isEqualTo("Apples are red")
     assertThat(
-      resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() }
+      resourceFileSystem.read("/colors/blue.txt".toPath()) { readUtf8() },
     ).isEqualTo("The sky is blue")
     assertThat(processedPaths).isEmpty()
 
