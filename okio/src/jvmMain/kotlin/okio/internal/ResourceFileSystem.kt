@@ -28,6 +28,7 @@ import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
 import okio.Sink
 import okio.Source
+import okio.source
 
 /**
  * A file system exposing Java classpath resources. It is equivalent to the files returned by
@@ -41,8 +42,9 @@ import okio.Source
  * This file system is read-only.
  */
 internal class ResourceFileSystem internal constructor(
-  classLoader: ClassLoader,
+  private val classLoader: ClassLoader,
   indexEagerly: Boolean,
+  private val systemFileSystem: FileSystem = SYSTEM,
 ) : FileSystem() {
   private val roots: List<Pair<FileSystem, Path>> by lazy { classLoader.toClasspathRoots() }
 
@@ -122,14 +124,10 @@ internal class ResourceFileSystem internal constructor(
 
   override fun source(file: Path): Source {
     if (!keepPath(file)) throw FileNotFoundException("file not found: $file")
-    val relativePath = file.toRelativePath()
-    for ((fileSystem, base) in roots) {
-      try {
-        return fileSystem.source(base / relativePath)
-      } catch (_: FileNotFoundException) {
-      }
-    }
-    throw FileNotFoundException("file not found: $file")
+    // Make sure we have a path that doesn't start with '/'.
+    val relativePath = ROOT.resolve(file).relativeTo(ROOT)
+    return classLoader.getResourceAsStream(relativePath.toString())?.source()
+      ?: throw FileNotFoundException("file not found: $file")
   }
 
   override fun sink(file: Path, mustCreate: Boolean): Sink {
@@ -157,53 +155,53 @@ internal class ResourceFileSystem internal constructor(
     return canonicalThis.relativeTo(ROOT).toString()
   }
 
+  /**
+   * Returns a search path of classpath roots. Each element contains a file system to use, and
+   * the base directory of that file system to search from.
+   */
+  private fun ClassLoader.toClasspathRoots(): List<Pair<FileSystem, Path>> {
+    // We'd like to build this upon an API like ClassLoader.getURLs() but unfortunately that
+    // API exists only on URLClassLoader (and that isn't the default class loader implementation).
+    //
+    // The closest we have is `ClassLoader.getResources("")`. It returns all classpath roots that
+    // are directories but none that are .jar files. To mitigate that we also search for all
+    // `META-INF/MANIFEST.MF` files, hastily assuming that every .jar file will have such an
+    // entry.
+    //
+    // Classpath entries that aren't directories and don't have a META-INF/MANIFEST.MF file will
+    // not be visible in this file system.
+    return getResources("").toList().mapNotNull { it.toFileRoot() } +
+      getResources("META-INF/MANIFEST.MF").toList().mapNotNull { it.toJarRoot() }
+  }
+
+  private fun URL.toFileRoot(): Pair<FileSystem, Path>? {
+    if (protocol != "file") return null // Ignore unexpected URLs.
+    return systemFileSystem to File(toURI()).toOkioPath()
+  }
+
+  private fun URL.toJarRoot(): Pair<FileSystem, Path>? {
+    val urlString = toString()
+    if (!urlString.startsWith("jar:file:")) return null // Ignore unexpected URLs.
+
+    // Given a URL like `jar:file:/tmp/foo.jar!/META-INF/MANIFEST.MF`, get the path to the archive
+    // file, like `/tmp/foo.jar`.
+    val suffixStart = urlString.lastIndexOf("!")
+    if (suffixStart == -1) return null
+    val path = File(URI.create(urlString.substring("jar:".length, suffixStart))).toOkioPath()
+    val zip = openZip(
+      zipPath = path,
+      fileSystem = systemFileSystem,
+      predicate = { entry -> keepPath(entry.canonicalPath) },
+    )
+    return zip to ROOT
+  }
+
   private companion object {
     val ROOT = "/".toPath()
 
     fun Path.removeBase(base: Path): Path {
       val prefix = base.toString()
       return ROOT / (toString().removePrefix(prefix).replace('\\', '/'))
-    }
-
-    /**
-     * Returns a search path of classpath roots. Each element contains a file system to use, and
-     * the base directory of that file system to search from.
-     */
-    fun ClassLoader.toClasspathRoots(): List<Pair<FileSystem, Path>> {
-      // We'd like to build this upon an API like ClassLoader.getURLs() but unfortunately that
-      // API exists only on URLClassLoader (and that isn't the default class loader implementation).
-      //
-      // The closest we have is `ClassLoader.getResources("")`. It returns all classpath roots that
-      // are directories but none that are .jar files. To mitigate that we also search for all
-      // `META-INF/MANIFEST.MF` files, hastily assuming that every .jar file will have such an
-      // entry.
-      //
-      // Classpath entries that aren't directories and don't have a META-INF/MANIFEST.MF file will
-      // not be visible in this file system.
-      return getResources("").toList().mapNotNull { it.toFileRoot() } +
-        getResources("META-INF/MANIFEST.MF").toList().mapNotNull { it.toJarRoot() }
-    }
-
-    fun URL.toFileRoot(): Pair<FileSystem, Path>? {
-      if (protocol != "file") return null // Ignore unexpected URLs.
-      return SYSTEM to File(toURI()).toOkioPath()
-    }
-
-    fun URL.toJarRoot(): Pair<FileSystem, Path>? {
-      val urlString = toString()
-      if (!urlString.startsWith("jar:file:")) return null // Ignore unexpected URLs.
-
-      // Given a URL like `jar:file:/tmp/foo.jar!/META-INF/MANIFEST.MF`, get the path to the archive
-      // file, like `/tmp/foo.jar`.
-      val suffixStart = urlString.lastIndexOf("!")
-      if (suffixStart == -1) return null
-      val path = File(URI.create(urlString.substring("jar:".length, suffixStart))).toOkioPath()
-      val zip = openZip(
-        zipPath = path,
-        fileSystem = SYSTEM,
-        predicate = { entry -> keepPath(entry.canonicalPath) },
-      )
-      return zip to ROOT
     }
 
     private fun keepPath(path: Path) = !path.name.endsWith(".class", ignoreCase = true)
