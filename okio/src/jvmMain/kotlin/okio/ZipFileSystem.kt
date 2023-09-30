@@ -99,10 +99,11 @@ internal class ZipFileSystem internal constructor(
       return basicMetadata
     }
 
-    val source = fileSystem.openReadOnly(zipPath).use { fileHandle ->
-      fileHandle.source(entry.offset).buffer()
+    return fileSystem.openReadOnly(zipPath).use { fileHandle ->
+      return@use fileHandle.source(entry.offset).buffer().use { source ->
+        source.readLocalHeader(basicMetadata)
+      }
     }
-    return source.readLocalHeader(basicMetadata)
   }
 
   override fun openReadOnly(file: Path): FileHandle {
