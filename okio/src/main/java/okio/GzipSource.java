@@ -127,7 +127,7 @@ public final class GzipSource implements Source {
     if (((flags >> FEXTRA) & 1) == 1) {
       source.require(2);
       if (fhcrc) updateCrc(source.buffer(), 0, 2);
-      int xlen = source.buffer().readShortLe();
+      int xlen = source.buffer().readShortLe() & 0xffff;
       source.require(xlen);
       if (fhcrc) updateCrc(source.buffer(), 0, xlen);
       source.skip(xlen);
