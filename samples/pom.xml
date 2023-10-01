@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.squareup.okio</groupId>
     <artifactId>okio-parent</artifactId>
-    <version>1.17.6</version>
+    <version>1.17.7-SNAPSHOT</version>
   </parent>
 
   <artifactId>samples</artifactId>
