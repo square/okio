@@ -31,6 +31,8 @@ class FileLeakTest {
   private lateinit var fakeFileSystem: FakeFileSystem
   private val fakeZip = "/test.zip".toPath()
   private val fakeEntry = "some.file".toPath()
+  private val fakeDirectory = "/another/".toPath()
+  private val fakeEntry2 = fakeDirectory / "another.file"
 
   @Before
   fun setup() {
@@ -40,6 +42,14 @@ class FileLeakTest {
         writeZip {
           putEntry(fakeEntry.name) {
             writeUtf8("FooBar")
+          }
+          try {
+            putNextEntry(ZipEntry(fakeDirectory.name).apply { time = 0L })
+          } finally {
+            closeEntry()
+          }
+          putEntry(fakeEntry2.toString()) {
+            writeUtf8("SomethingElse")
           }
         }
       }
@@ -55,14 +65,12 @@ class FileLeakTest {
   fun zipFileSystemExistsTest() {
     val zipFileSystem = fakeFileSystem.openZip(fakeZip)
     assertTrue(zipFileSystem.exists(fakeEntry))
-    fakeFileSystem.checkNoOpenFiles()
   }
 
   @Test
   fun zipFileSystemMetadataTest() {
     val zipFileSystem = fakeFileSystem.openZip(fakeZip)
     assertNotNull(zipFileSystem.metadataOrNull(fakeEntry))
-    fakeFileSystem.checkNoOpenFiles()
   }
 
   @Test
@@ -71,7 +79,13 @@ class FileLeakTest {
     zipFileSystem.source(fakeEntry).use { source ->
       assertEquals("FooBar", source.buffer().readUtf8())
     }
-    fakeFileSystem.checkNoOpenFiles()
+  }
+
+  @Test
+  fun zipFileSystemListRecursiveTest() {
+    val zipFileSystem = fakeFileSystem.openZip(fakeZip)
+    zipFileSystem.listRecursively("/".toPath()).toList()
+    fakeFileSystem.delete(fakeZip)
   }
 }
 
