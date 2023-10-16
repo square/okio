@@ -14,7 +14,7 @@ kotlin-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.
 jmh-gradle-plugin = { module = "me.champeau.jmh:jmh-gradle-plugin", version = "0.7.1" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.0" }
+dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.10" }
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.22.0" }
 bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.4.0" }
 vanniktech-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.3" }
