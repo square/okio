@@ -77,6 +77,9 @@ works and how Okio does it.
 [Ok Multiplatform!][ok_multiplatform_talk] ([slides][ok_multiplatform_slides]): How we changed
 Okio’s implementation language from Java to Kotlin.
 
+[Nerding Out On Okio][apis_talk]: The story of the Okio APIs, their design and tradeoffs, as well 
+as implementation notes with animated marbles diagrams.
+
 
 Requirements
 ------------
@@ -147,3 +150,4 @@ License
  [encoding_slides]: https://speakerdeck.com/swankjesse/decoding-the-secrets-of-binary-data-droidcon-nyc-2016
  [ok_multiplatform_talk]: https://www.youtube.com/watch?v=Q8B4eDirgk0
  [ok_multiplatform_slides]: https://speakerdeck.com/swankjesse/ok-multiplatform
+ [apis_talk]: https://www.youtube.com/watch?v=Du7YXPAV1M8
