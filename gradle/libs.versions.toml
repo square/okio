@@ -4,7 +4,7 @@ ktlint = "0.48.2"
 
 [libraries]
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version = "7.4.2" }
-android-desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version = "2.0.3" }
+android-desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version = "2.0.4" }
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version = "1.1.5" }
 androidx-test-runner = { module = "androidx.test:runner", version = "1.5.2" }
 binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.13.2" }
