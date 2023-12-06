@@ -20,5 +20,5 @@ bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.4.0" }
 vanniktech-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.3" }
 test-junit = { module = "junit:junit", version = "4.13.2" }
 test-assertj = { module = "org.assertj:assertj-core", version = "3.24.2" }
-test-assertk = "com.willowtreeapps.assertk:assertk:0.27.0"
+test-assertk = "com.willowtreeapps.assertk:assertk:0.28.0"
 test-jimfs = "com.google.jimfs:jimfs:1.3.0"
