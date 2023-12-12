@@ -787,6 +787,8 @@ public class okio/Timeout {
 
 public final class okio/Timeout$Companion {
 	public final fun minTimeout (JJ)J
+	public final fun timeout (Lokio/Timeout;JLkotlin/time/DurationUnit;)Lokio/Timeout;
+	public final fun timeout-HG0u8IE (Lokio/Timeout;J)Lokio/Timeout;
 }
 
 public final class okio/Utf8 {
