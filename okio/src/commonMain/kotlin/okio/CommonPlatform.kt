@@ -34,6 +34,7 @@ internal expect fun newLock(): Lock
 
 expect open class IOException(message: String?, cause: Throwable?) : Exception {
   constructor(message: String?)
+  constructor()
 }
 
 expect class ProtocolException(message: String) : IOException

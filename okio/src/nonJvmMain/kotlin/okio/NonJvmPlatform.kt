@@ -44,6 +44,7 @@ actual open class IOException actual constructor(
   cause: Throwable?,
 ) : Exception(message, cause) {
   actual constructor(message: String?) : this(message, null)
+  actual constructor() : this(null, null)
 }
 
 actual class ProtocolException actual constructor(message: String) : IOException(message)
