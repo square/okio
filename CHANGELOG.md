@@ -1,6 +1,60 @@
 Change Log
 ==========
 
+## Version 3.6.0
+
+_2023-10-01_
+
+ * Fix: Don't leak file handles when using `metadata` functions on `ZipFileSystem`. We had a bug
+   where we were closing the `.zip` file, but not a stream inside of it. We would have prevented
+   this bug if only we’d used `FakeFileSystem.checkNoOpenFiles()` in our tests!
+ * Fix: Don't build an index of a class loader's resources in `ResourceFileSystem.read()`. This
+   operation doesn't need this index, and building it is potentially expensive.
+ * New: Experimentally support Linux on ARM64 for Kotlin/Native targets (`linuxArm64`). Note that
+   we haven't yet added CI test coverage for this platform.
+ * Upgrade: [Kotlin 1.9.10][kotlin_1_9_10].
+
+
+## Version 1.17.6
+
+_2023-10-01_
+
+ * Fix: Don't crash decoding GZIP files when the optional extra data (`XLEN`) is 32 KiB or larger.
+
+
+## Version 3.5.0
+
+_2023-08-02_
+
+ * New: Support the WebAssembly (WASM) platform. Okio's support for WASM is experimental, but
+   improving, just like Kotlin's own support for WASM.
+ * New: Adapt WebAssembly System Interface (WASI) API's as an Okio FileSystem using
+   `WasiFileSystem`. This is in the new `okio-wasifilesystem` module. It requires the [preview1]
+   WASI API. We’ll make backwards-incompatible upgrades to new WASI API versions as they become
+   available.
+ * Fix: Return relative paths in the NIO adapter FileSystem when required. `FileSystem.list()`
+   had always returned absolute paths, even when the target directory was supplied as a relative
+   path.
+ * Fix: Don't crash when reading into an empty array using `FileHandle` on Kotlin/Native.
+ * Upgrade: [Kotlin 1.9.0][kotlin_1_9_0].
+
+
+## Version 3.4.0
+
+_2023-07-07_
+
+ * New: Adapt a Java NIO FileSystem (`java.nio.file.FileSystem`) as an Okio FileSystem using
+   `fileSystem.asOkioFileSystem()`.
+ * New: Adapt Android’s `AssetManager` as an Okio FileSystem using `AssetFileSystem`. This is in the
+   new `okio-assetfilesystem` module. Android applications should prefer this over
+   `FileSystem.RESOURCES` as it’s faster to load.
+ * Fix: Don't crash decoding GZIP files when the optional extra data (`XLEN`) is 32 KiB or larger.
+ * Fix: Resolve symlinks in `FakeFileSystem.canonicalize()`.
+ * Fix: Report the correct `createdAtMillis` in `NodeJsFileSystem` file metadata. We were
+   incorrectly using `ctimeMs`, where `c` means _changed_, not _created_.
+ * Fix: `UnsafeCursor` is now `Closeable`.
+
+
 ## Version 3.3.0
 
 _2023-01-07_
@@ -320,20 +374,20 @@ _2019-12-11_
    in a crash when subsequent reads encountered an unexpected empty segment.
 
 
-### Version 2.4.1
+## Version 2.4.1
 
 _2019-10-04_
 
  * Fix: Don't cache hash code and UTF-8 string in `ByteString` on Kotlin/Native which prevented freezing.
 
-### Version 2.4.0
+## Version 2.4.0
 
 _2019-08-26_
 
  * New: Upgrade to Kotlin 1.3.50.
 
 
-### Version 2.3.0
+## Version 2.3.0
 
 _2019-07-29_
 
@@ -824,6 +878,9 @@ _2014-04-08_
 [kotlin_1_5_31]: https://github.com/JetBrains/kotlin/releases/tag/v1.5.31
 [kotlin_1_6_20]: https://blog.jetbrains.com/kotlin/2022/04/kotlin-1-6-20-released/
 [kotlin_1_8_0]: https://kotlinlang.org/docs/whatsnew18.html
+[kotlin_1_9_0]: https://kotlinlang.org/docs/whatsnew19.html
+[kotlin_1_9_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.10
 [loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
+[preview1]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md
 [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302

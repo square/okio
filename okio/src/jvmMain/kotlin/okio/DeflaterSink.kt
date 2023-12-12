@@ -19,9 +19,7 @@
 
 package okio
 
-import java.io.IOException
 import java.util.zip.Deflater
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 /**
  * A sink that uses [DEFLATE](http://tools.ietf.org/html/rfc1951) to
@@ -75,7 +73,6 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
     }
   }
 
-  @IgnoreJRERequirement
   private fun deflate(syncFlush: Boolean) {
     val buffer = sink.buffer
     while (true) {
@@ -85,10 +82,14 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
       // Java 1.7, and is public (although with @hide) on Android since 2.3.
       // The @hide tag means that this code won't compile against the Android
       // 2.3 SDK, but it will run fine there.
-      val deflated = if (syncFlush) {
-        deflater.deflate(s.data, s.limit, Segment.SIZE - s.limit, Deflater.SYNC_FLUSH)
-      } else {
-        deflater.deflate(s.data, s.limit, Segment.SIZE - s.limit)
+      val deflated = try {
+        if (syncFlush) {
+          deflater.deflate(s.data, s.limit, Segment.SIZE - s.limit, Deflater.SYNC_FLUSH)
+        } else {
+          deflater.deflate(s.data, s.limit, Segment.SIZE - s.limit)
+        }
+      } catch (npe: NullPointerException) {
+        throw IOException("Deflater already closed", npe)
       }
 
       if (deflated > 0) {

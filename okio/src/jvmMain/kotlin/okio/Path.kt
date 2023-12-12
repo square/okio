@@ -38,7 +38,6 @@ import okio.internal.commonSegmentsBytes
 import okio.internal.commonToPath
 import okio.internal.commonToString
 import okio.internal.commonVolumeLetter
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 actual class Path internal actual constructor(
   internal actual val bytes: ByteString,
@@ -101,7 +100,7 @@ actual class Path internal actual constructor(
 
   fun toFile(): File = File(toString())
 
-  @IgnoreJRERequirement // Can only be invoked on platforms that have java.nio.file.
+  // Can only be invoked on platforms that have java.nio.file.
   fun toNioPath(): NioPath = Paths.get(toString())
 
   actual override fun compareTo(other: Path): Int = commonCompareTo(other)
@@ -139,7 +138,6 @@ actual class Path internal actual constructor(
     @JvmName("get")
     @JvmStatic
     @JvmOverloads
-    @IgnoreJRERequirement // Can only be invoked on platforms that have java.nio.file.
     fun NioPath.toOkioPath(normalize: Boolean = false): Path = toString().toPath(normalize)
   }
 }

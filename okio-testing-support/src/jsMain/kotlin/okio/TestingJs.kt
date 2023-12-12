@@ -18,3 +18,5 @@ package okio
 actual fun isBrowser(): Boolean {
   return js("""(globalThis.window || null)""") != null
 }
+
+actual fun isWasm() = false

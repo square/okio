@@ -77,6 +77,9 @@ works and how Okio does it.
 [Ok Multiplatform!][ok_multiplatform_talk] ([slides][ok_multiplatform_slides]): How we changed
 Okio’s implementation language from Java to Kotlin.
 
+[Nerding Out On Okio][apis_talk]: The story of the Okio APIs, their design and tradeoffs, as well 
+as implementation notes with animated marbles diagrams.
+
 
 Requirements
 ------------
@@ -95,7 +98,7 @@ Releases
 Our [change log][changelog] has release history.
 
 ```kotlin
-implementation("com.squareup.okio:okio:3.3.0")
+implementation("com.squareup.okio:okio:3.6.0")
 ```
 
 <details>
@@ -107,17 +110,11 @@ repositories {
 }
 
 dependencies {
-   implementation("com.squareup.okio:okio:3.3.0")
+   implementation("com.squareup.okio:okio:3.6.0")
 }
 ```
 
 </details>
-
-
-R8 / ProGuard
---------
-
-If you are using R8 or ProGuard add the options from [this file][proguard].
 
 
 License
@@ -138,12 +135,12 @@ License
     limitations under the License.
 
  [1]: https://github.com/square/okhttp
- [3]: https://square.github.io/okio/2.x/okio/okio/-byte-string/index.html
- [4]: https://square.github.io/okio/2.x/okio/okio/-buffer/index.html
- [5]: https://square.github.io/okio/2.x/okio/okio/-source/index.html
- [6]: https://square.github.io/okio/2.x/okio/okio/-sink/index.html
- [7]: https://square.github.io/okio/2.x/okio/okio/-buffered-source/index.html
- [8]: https://square.github.io/okio/2.x/okio/okio/-buffered-sink/index.html
+ [3]: https://square.github.io/okio/3.x/okio/okio/okio/-byte-string/index.html
+ [4]: https://square.github.io/okio/3.x/okio/okio/okio/-buffer/index.html
+ [5]: https://square.github.io/okio/3.x/okio/okio/okio/-source/index.html
+ [6]: https://square.github.io/okio/3.x/okio/okio/okio/-sink/index.html
+ [7]: https://square.github.io/okio/3.x/okio/okio/okio/-buffered-source/index.html
+ [8]: https://square.github.io/okio/3.x/okio/okio/okio/-buffered-sink/index.html
  [changelog]: http://square.github.io/okio/changelog/
  [javadoc]: https://square.github.io/okio/2.x/okio/okio/index.html
  [kotlin]: https://kotlinlang.org/
@@ -153,4 +150,4 @@ License
  [encoding_slides]: https://speakerdeck.com/swankjesse/decoding-the-secrets-of-binary-data-droidcon-nyc-2016
  [ok_multiplatform_talk]: https://www.youtube.com/watch?v=Q8B4eDirgk0
  [ok_multiplatform_slides]: https://speakerdeck.com/swankjesse/ok-multiplatform
- [proguard]: https://github.com/square/okio/blob/master/okio/src/jvmMain/resources/META-INF/proguard/okio.pro
+ [apis_talk]: https://www.youtube.com/watch?v=Du7YXPAV1M8

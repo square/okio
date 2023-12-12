@@ -15,6 +15,7 @@
  */
 package okio
 
+import java.nio.file.FileSystem as JavaNioFileSystem
 import okio.Path.Companion.toPath
 import okio.internal.ResourceFileSystem
 import okio.internal.commonCopy
@@ -155,5 +156,9 @@ actual abstract class FileSystem {
       classLoader = ResourceFileSystem::class.java.classLoader,
       indexEagerly = false,
     )
+
+    @JvmName("get")
+    @JvmStatic
+    fun JavaNioFileSystem.asOkioFileSystem(): FileSystem = NioFileSystemWrappingFileSystem(this)
   }
 }

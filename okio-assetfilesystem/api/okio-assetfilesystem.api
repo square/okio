@@ -1,0 +1,4 @@
+public final class okio/assetfilesystem/AssetFileSystemKt {
+	public static final fun asFileSystem (Landroid/content/res/AssetManager;)Lokio/FileSystem;
+}
+

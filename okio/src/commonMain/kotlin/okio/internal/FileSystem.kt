@@ -51,7 +51,7 @@ internal fun FileSystem.commonCreateDirectories(dir: Path, mustCreate: Boolean) 
     path = path.parent
   }
 
-  if (mustCreate && directories.isEmpty()) throw IOException("$dir already exist.")
+  if (mustCreate && directories.isEmpty()) throw IOException("$dir already exists.")
 
   // Create them.
   for (toCreate in directories) {

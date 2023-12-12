@@ -19,6 +19,9 @@ import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toTimeUnit
 
 actual open class Timeout {
   /**
@@ -303,6 +306,14 @@ actual open class Timeout {
       override fun deadlineNanoTime(deadlineNanoTime: Long): Timeout = this
 
       override fun throwIfReached() {}
+    }
+
+    fun Timeout.timeout(timeout: Long, unit: DurationUnit): Timeout {
+      return timeout(timeout, unit.toTimeUnit())
+    }
+
+    fun Timeout.timeout(duration: Duration): Timeout {
+      return timeout(duration.inWholeNanoseconds, TimeUnit.NANOSECONDS)
     }
 
     fun minTimeout(aNanos: Long, bNanos: Long) = when {

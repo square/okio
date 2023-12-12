@@ -1,7 +1,36 @@
+/*
+ * Copyright (C) 2023 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+
+fun KotlinMultiplatformExtension.configureOrCreateOkioPlatforms() {
+  jvm {
+  }
+  if (kmpJsEnabled) {
+    configureOrCreateJsPlatforms()
+  }
+  if (kmpNativeEnabled) {
+    configureOrCreateNativePlatforms()
+  }
+  if (kmpWasmEnabled) {
+    configureOrCreateWasmPlatform()
+  }
+}
 
 fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
   iosX64()
@@ -12,11 +41,13 @@ fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
   tvosSimulatorArm64()
   watchosArm32()
   watchosArm64()
+  watchosDeviceArm64()
   watchosX86()
   watchosX64()
   watchosSimulatorArm64()
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
   linuxX64()
+  linuxArm64()
   macosX64()
   macosArm64()
   mingwX64()
@@ -33,6 +64,7 @@ val appleTargets = listOf(
   "tvosSimulatorArm64",
   "watchosArm32",
   "watchosArm64",
+  "watchosDeviceArm64",
   "watchosX86",
   "watchosX64",
   "watchosSimulatorArm64"
@@ -43,7 +75,8 @@ val mingwTargets = listOf(
 )
 
 val linuxTargets = listOf(
-  "linuxX64"
+  "linuxX64",
+  "linuxArm64",
 )
 
 val nativeTargets = appleTargets + linuxTargets + mingwTargets
@@ -75,5 +108,32 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.createSourceSet(
   }
 
   return result
+}
+
+fun KotlinMultiplatformExtension.configureOrCreateJsPlatforms() {
+  js {
+    compilations.all {
+      kotlinOptions {
+        moduleKind = "umd"
+        sourceMap = true
+        metaInfo = true
+      }
+    }
+    nodejs {
+      testTask {
+        useMocha {
+          timeout = "30s"
+        }
+      }
+    }
+    browser {
+    }
+  }
+}
+
+fun KotlinMultiplatformExtension.configureOrCreateWasmPlatform() {
+  wasm {
+    nodejs()
+  }
 }
 

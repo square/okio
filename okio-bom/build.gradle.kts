@@ -3,16 +3,7 @@ plugins {
   id("java-platform")
 }
 
-dependencies {
-  constraints {
-    api(projects.okio)
-    api(projects.okioFakefilesystem)
-    if (kmpJsEnabled) {
-      // No typesafe project accessor as the accessor won't exist if kmpJs is not enabled.
-      api(project(":okio-nodefilesystem"))
-    }
-  }
-}
+collectBomConstraints()
 
 extensions.configure<PublishingExtension> {
   publications.create("maven", MavenPublication::class) {

@@ -208,11 +208,12 @@ class FakeFileSystem(
   override fun canonicalize(path: Path): Path {
     val canonicalPath = canonicalizeInternal(path)
 
-    if (lookupPath(canonicalPath)?.element == null) {
+    val lookupResult = lookupPath(canonicalPath)
+    if (lookupResult?.element == null) {
       throw FileNotFoundException("no such file: $path")
     }
 
-    return canonicalPath
+    return lookupResult.path
   }
 
   /** Don't throw [FileNotFoundException] if the path doesn't identify a file. */
@@ -558,17 +559,24 @@ class FakeFileSystem(
         parent = symlinkLookupResult.parent
         lastSegment = symlinkLookupResult.segment
         current = symlinkLookupResult.element ?: break
+        currentPath = symlinkLookupResult.path
       }
     }
 
     return when (segmentsTraversed) {
-      segments.size -> PathLookupResult(parent, lastSegment, current) // The file.
-      segments.size - 1 -> PathLookupResult(parent, lastSegment, null) // The enclosing directory.
+      segments.size -> {
+        PathLookupResult(currentPath, parent, lastSegment, current) // The file.
+      }
+      segments.size - 1 -> {
+        PathLookupResult(currentPath, parent, lastSegment, null) // The enclosing directory.
+      }
       else -> null // We found nothing.
     }
   }
 
   private class PathLookupResult(
+    /** The canonical path for the looked up path or its enclosing directory. */
+    val path: Path,
     /** Only null if the looked up path is a root. */
     val parent: Directory?,
     /** Only null if the looked up path is a root. */

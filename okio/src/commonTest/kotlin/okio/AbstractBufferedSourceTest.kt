@@ -966,6 +966,10 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   @Test fun codePoints() {
+    // TODO: remove this suppression once this issue is fixed.
+    // https://youtrack.jetbrains.com/issue/KT-60212
+    if (isWasm()) return
+
     sink.write("7f".decodeHex())
     sink.emit()
     assertEquals(0x7f, source.readUtf8CodePoint().toLong())

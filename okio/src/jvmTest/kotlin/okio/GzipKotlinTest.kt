@@ -23,14 +23,28 @@ import org.junit.Test
 class GzipKotlinTest {
   @Test fun sink() {
     val data = Buffer()
-    val gzip = (data as Sink).gzip()
-    gzip.buffer().writeUtf8("Hi!").close()
+    (data as Sink).gzip().buffer().use { gzip ->
+      gzip.writeUtf8("Hi!")
+    }
     assertEquals("1f8b0800000000000000f3c8540400dac59e7903000000", data.readByteString().hex())
   }
 
   @Test fun source() {
     val buffer = Buffer().write("1f8b0800000000000000f3c8540400dac59e7903000000".decodeHex())
-    val gzip = (buffer as Source).gzip()
-    assertEquals("Hi!", gzip.buffer().readUtf8())
+    (buffer as Source).gzip().buffer().use { gzip ->
+      assertEquals("Hi!", gzip.readUtf8())
+    }
+  }
+
+  @Test fun extraLongXlen() {
+    val xlen = 0xffff
+    val buffer = Buffer()
+      .write("1f8b0804000000000000".decodeHex())
+      .writeShort(xlen)
+      .write(ByteArray(xlen))
+      .write("f3c8540400dac59e7903000000".decodeHex())
+    (buffer as Source).gzip().buffer().use { gzip ->
+      assertEquals("Hi!", gzip.readUtf8())
+    }
   }
 }
