@@ -35,11 +35,12 @@ plugins {
  *   |       |   |-- tvosX64
  *   |       |   |-- watchosArm32
  *   |       |   |-- watchosArm64
- *   |       |   '-- watchosX86
  *   |       '-- linux
  *   |           |-- linuxX64
  *   |           '-- linuxArm64
  *   '-- wasm
+ *       '-- wasmJs
+ *       '-- wasmWasi
  * ```
  *
  * The `nonJvm` source set excludes that platform.
@@ -137,13 +138,15 @@ kotlin {
     }
 
     if (kmpWasmEnabled) {
-      val wasmMain by getting {
-        dependsOn(nonJvmMain)
-        dependsOn(nonAppleMain)
-      }
-      val wasmTest by getting {
-        dependsOn(nonJvmTest)
-      }
+      createSourceSet("wasmMain", parent = commonMain, children = wasmTargets)
+        .also { wasmMain ->
+          wasmMain.dependsOn(nonJvmMain)
+          wasmMain.dependsOn(nonAppleMain)
+        }
+      createSourceSet("wasmTest", parent = commonTest, children = wasmTargets)
+        .also { wasmTest ->
+          wasmTest.dependsOn(nonJvmTest)
+        }
     }
   }
 

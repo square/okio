@@ -42,7 +42,6 @@ fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
   watchosArm32()
   watchosArm64()
   watchosDeviceArm64()
-  watchosX86()
   watchosX64()
   watchosSimulatorArm64()
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
@@ -65,13 +64,12 @@ val appleTargets = listOf(
   "watchosArm32",
   "watchosArm64",
   "watchosDeviceArm64",
-  "watchosX86",
   "watchosX64",
-  "watchosSimulatorArm64"
+  "watchosSimulatorArm64",
 )
 
 val mingwTargets = listOf(
-  "mingwX64"
+  "mingwX64",
 )
 
 val linuxTargets = listOf(
@@ -80,6 +78,11 @@ val linuxTargets = listOf(
 )
 
 val nativeTargets = appleTargets + linuxTargets + mingwTargets
+
+val wasmTargets = listOf(
+  "wasmJs",
+  "wasmWasi",
+)
 
 /**
  * Creates a source set for a directory that isn't already a built-in platform. Use this to create
@@ -131,9 +134,19 @@ fun KotlinMultiplatformExtension.configureOrCreateJsPlatforms() {
   }
 }
 
-fun KotlinMultiplatformExtension.configureOrCreateWasmPlatform() {
-  wasm {
-    nodejs()
+fun KotlinMultiplatformExtension.configureOrCreateWasmPlatform(
+  js: Boolean = true,
+  wasi: Boolean = true,
+) {
+  if (js) {
+    wasmJs {
+      nodejs()
+    }
+  }
+  if (wasi) {
+    wasmWasi {
+      nodejs()
+    }
   }
 }
 

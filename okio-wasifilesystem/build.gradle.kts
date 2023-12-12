@@ -15,17 +15,20 @@ plugins {
 }
 
 kotlin {
-  configureOrCreateWasmPlatform()
+  configureOrCreateWasmPlatform(
+    js = false,
+    wasi = true,
+  )
   sourceSets {
     all {
       languageSettings.optIn("kotlin.wasm.unsafe.UnsafeWasmMemoryApi")
     }
-    val wasmMain by getting {
+    val wasmWasiMain by getting {
       dependencies {
         implementation(projects.okio)
       }
     }
-    val wasmTest by getting {
+    val wasmWasiTest by getting {
       dependencies {
         implementation(projects.okioTestingSupport)
         implementation(libs.kotlin.test)
@@ -49,18 +52,18 @@ configure<MavenPublishBaseExtension> {
  *  * https://github.com/kowasm/kowasm
  *  * https://github.com/nodejs/node/blob/main/doc/api/wasi.md
  *
- * This task overwrites the output of `compileTestKotlinWasm` and must run after that task. It
- * must also run before the WASM test execution tasks that read this script.
+ * This task overwrites the output of `compileTestDevelopmentExecutableKotlinWasmWasi` and must run
+ * after that task. It must also run before the WASM test execution tasks that read this script.
  *
  * Note that this includes which file paths are exposed to the WASI sandbox.
  */
 val injectWasiInit by tasks.creating {
-  dependsOn("compileTestKotlinWasm")
-  val moduleName = "${rootProject.name}-${project.name}-wasm-test"
+  dependsOn("compileTestDevelopmentExecutableKotlinWasmWasi")
+  val moduleName = "${rootProject.name}-${project.name}-wasm-wasi-test"
 
   val entryPointMjs = File(
     buildDir,
-    "compileSync/wasm/test/testDevelopmentExecutable/kotlin/$moduleName.mjs"
+    "compileSync/wasmWasi/test/testDevelopmentExecutable/kotlin/$moduleName.mjs"
   )
 
   outputs.file(entryPointMjs)
@@ -75,8 +78,8 @@ val injectWasiInit by tasks.creating {
 
     entryPointMjs.writeText(
       """
-      import {instantiate} from './$moduleName.uninstantiated.mjs';
-      import {WASI} from "wasi";
+      import { WASI } from 'wasi';
+      import { argv, env } from 'node:process';
 
       export const wasi = new WASI({
         version: 'preview1',
@@ -87,11 +90,20 @@ val injectWasiInit by tasks.creating {
         }
       });
 
-      const {instance, exports} = await instantiate({wasi_snapshot_preview1: wasi.wasiImport});
+      const module = await import(/* webpackIgnore: true */'node:module');
+      const require = module.default.createRequire(import.meta.url);
+      const fs = require('fs');
+      const path = require('path');
+      const url = require('url');
+      const filepath = url.fileURLToPath(import.meta.url);
+      const dirpath = path.dirname(filepath);
+      const wasmBuffer = fs.readFileSync(path.resolve(dirpath, './$moduleName.wasm'));
+      const wasmModule = new WebAssembly.Module(wasmBuffer);
+      const wasmInstance = new WebAssembly.Instance(wasmModule, wasi.getImportObject());
 
-      wasi.initialize(instance);
+      wasi.initialize(wasmInstance);
 
-      export default exports;
+      export default wasmInstance.exports;
       """.trimIndent()
     )
   }
@@ -106,9 +118,6 @@ tasks.withType<KotlinJsTest>().configureEach {
   }
   nodeJsArgs += "--experimental-wasi-unstable-preview1"
 }
-tasks.named("wasmTestTestDevelopmentExecutableCompileSync").configure {
-  dependsOn(injectWasiInit)
-}
-tasks.named("wasmTestTestProductionExecutableCompileSync").configure {
+tasks.named("wasmWasiNodeTest").configure {
   dependsOn(injectWasiInit)
 }

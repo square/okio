@@ -222,8 +222,13 @@ subprojects {
   }
 }
 
+/**
+ * Select a NodeJS version with WASI and WASM GC.
+ * https://github.com/Kotlin/kotlin-wasm-examples/blob/main/wasi-example/build.gradle.kts
+ */
 plugins.withType<NodeJsRootPlugin> {
   extensions.getByType<NodeJsRootExtension>().apply {
-    nodeVersion = "20.0.0"
+    nodeVersion = "21.0.0-v8-canary202309143a48826a08"
+    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
   }
 }
