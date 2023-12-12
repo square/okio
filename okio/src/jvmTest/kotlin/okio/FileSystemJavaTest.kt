@@ -18,6 +18,8 @@ package okio
 import java.io.File
 import java.nio.file.Paths
 import okio.ByteString.Companion.encodeUtf8
+import okio.Path.Companion.extension
+import okio.Path.Companion.nameWithoutExtension
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
@@ -52,6 +54,32 @@ class FileSystemJavaTest {
     val okioPath: Path = string.toPath(false)
     assertThat(javaIoFile.toOkioPath(false)).isEqualTo(okioPath)
     assertThat(okioPath.toFile()).isEqualTo(javaIoFile)
+  }
+
+  /** Like the same test in JvmTest, but this is using the Java APIs.  */
+  @Test
+  fun extensionOfOkioPath() {
+    val dirString = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR)
+    val fileString = "/foo/bar/baz.zip".replace("/", Path.DIRECTORY_SEPARATOR)
+    val dirPath = dirString.toPath(false)
+    val filePath = fileString.toPath(false)
+    assertThat(dirPath.extension).isEqualTo("")
+      .isEqualTo(dirPath.toFile().extension)
+    assertThat(filePath.extension).isEqualTo("zip")
+      .isEqualTo(filePath.toFile().extension)
+  }
+
+  /** Like the same test in JvmTest, but this is using the Java APIs.  */
+  @Test
+  fun nameWithoutExtensionOfOkioPath() {
+    val dirString = "/foo/bar/baz".replace("/", Path.DIRECTORY_SEPARATOR)
+    val fileString = "/foo/bar/baz.zip".replace("/", Path.DIRECTORY_SEPARATOR)
+    val dirPath = dirString.toPath(false)
+    val filePath = fileString.toPath(false)
+    assertThat(dirPath.nameWithoutExtension).isEqualTo("baz")
+      .isEqualTo(dirPath.toFile().nameWithoutExtension)
+    assertThat(filePath.nameWithoutExtension).isEqualTo("baz")
+      .isEqualTo(dirPath.toFile().nameWithoutExtension)
   }
 
   /** Like the same test in JvmTest, but this is using the Java APIs.  */
