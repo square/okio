@@ -691,6 +691,8 @@ public final class okio/Path : java/lang/Comparable {
 	public static final fun get (Ljava/lang/String;Z)Lokio/Path;
 	public static final fun get (Ljava/nio/file/Path;)Lokio/Path;
 	public static final fun get (Ljava/nio/file/Path;Z)Lokio/Path;
+	public static final fun getExtension (Lokio/Path;)Ljava/lang/String;
+	public static final fun getNameWithoutExtension (Lokio/Path;)Ljava/lang/String;
 	public final fun getRoot ()Lokio/Path;
 	public final fun getSegments ()Ljava/util/List;
 	public final fun getSegmentsBytes ()Ljava/util/List;
@@ -728,6 +730,8 @@ public final class okio/Path$Companion {
 	public static synthetic fun get$default (Lokio/Path$Companion;Ljava/io/File;ZILjava/lang/Object;)Lokio/Path;
 	public static synthetic fun get$default (Lokio/Path$Companion;Ljava/lang/String;ZILjava/lang/Object;)Lokio/Path;
 	public static synthetic fun get$default (Lokio/Path$Companion;Ljava/nio/file/Path;ZILjava/lang/Object;)Lokio/Path;
+	public final fun getExtension (Lokio/Path;)Ljava/lang/String;
+	public final fun getNameWithoutExtension (Lokio/Path;)Ljava/lang/String;
 }
 
 public final class okio/Pipe {
