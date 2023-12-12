@@ -4,7 +4,7 @@ plugins {
 }
 
 kotlin {
-  configureOrCreateOkioPlatforms()
+  configureOrCreateOkioPlatforms(project)
 
   sourceSets {
     all {

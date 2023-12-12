@@ -14,6 +14,7 @@ plugins {
 
 kotlin {
   configureOrCreateWasmPlatform(
+    project = project,
     js = false,
     wasi = true,
   )

@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.withType
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
-fun KotlinMultiplatformExtension.configureOrCreateOkioPlatforms() {
+fun KotlinMultiplatformExtension.configureOrCreateOkioPlatforms(project: Project) {
   jvm {
   }
   if (kmpJsEnabled) {
@@ -28,7 +33,7 @@ fun KotlinMultiplatformExtension.configureOrCreateOkioPlatforms() {
     configureOrCreateNativePlatforms()
   }
   if (kmpWasmEnabled) {
-    configureOrCreateWasmPlatform()
+    configureOrCreateWasmPlatform(project)
   }
 }
 
@@ -135,6 +140,7 @@ fun KotlinMultiplatformExtension.configureOrCreateJsPlatforms() {
 }
 
 fun KotlinMultiplatformExtension.configureOrCreateWasmPlatform(
+  project: Project,
   js: Boolean = true,
   wasi: Boolean = true,
 ) {
@@ -148,5 +154,16 @@ fun KotlinMultiplatformExtension.configureOrCreateWasmPlatform(
       nodejs()
     }
   }
-}
 
+  // TODO: get WASM tests working on Windows.
+  //     > command 'C:\Users\runneradmin\.gradle\nodejs\node-v20.0.0-win-x64\node.exe'
+  //       exited with errors (exit code: 1)
+  project.plugins.withType<NodeJsRootPlugin> {
+    project.tasks.withType<KotlinJsTest>().all {
+      onlyIf {
+        !name.startsWith("wasm")
+          || !DefaultNativePlatform.getCurrentOperatingSystem().isWindows
+      }
+    }
+  }
+}

@@ -49,7 +49,7 @@ plugins {
  * platforms and as a test source set on the JVM platform.
  */
 kotlin {
-  configureOrCreateOkioPlatforms()
+  configureOrCreateOkioPlatforms(project)
 
   sourceSets {
     all {
