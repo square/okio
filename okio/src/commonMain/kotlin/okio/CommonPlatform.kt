@@ -38,7 +38,9 @@ expect open class IOException(message: String?, cause: Throwable?) : Exception {
 
 expect class ProtocolException(message: String) : IOException
 
-expect open class EOFException(message: String?) : IOException
+expect open class EOFException(message: String?) : IOException {
+  constructor()
+}
 
 expect class FileNotFoundException(message: String?) : IOException
 
