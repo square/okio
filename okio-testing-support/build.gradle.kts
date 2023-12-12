@@ -50,5 +50,12 @@ kotlin {
           nativeMain.dependsOn(nonWasmMain)
         }
     }
+
+    if (kmpWasmEnabled) {
+      createSourceSet("wasmMain", children = wasmTargets)
+        .also { wasmMain ->
+          wasmMain.dependsOn(commonMain)
+        }
+    }
   }
 }

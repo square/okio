@@ -103,8 +103,14 @@ jobs:
           java-version: 19
 
       - name: Test
+        if: matrix.os != 'windows-latest'
         run: |
           ./gradlew build
+
+      - name: Test (No WASM)
+        if: matrix.os == 'windows-latest'
+        run: |
+          ./gradlew build -Dkwasm=false
 
       - name: Save Test Reports
         if: failure()

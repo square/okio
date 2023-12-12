@@ -93,7 +93,7 @@ class CommonRealBufferedSinkTest {
 
   @Test fun closeWithExceptionWhenWriting() {
     val mockSink = MockSink()
-    mockSink.scheduleThrow(0, IOException())
+    mockSink.scheduleThrow(0, IOException("boom"))
     val bufferedSink = mockSink.buffer()
     bufferedSink.writeByte('a'.code)
     assertFailsWith<IOException> {
@@ -105,7 +105,7 @@ class CommonRealBufferedSinkTest {
 
   @Test fun closeWithExceptionWhenClosing() {
     val mockSink = MockSink()
-    mockSink.scheduleThrow(1, IOException())
+    mockSink.scheduleThrow(1, IOException("boom"))
     val bufferedSink = mockSink.buffer()
     bufferedSink.writeByte('a'.code)
     assertFailsWith<IOException> {

@@ -16,6 +16,7 @@
 
 package okio
 
+import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
@@ -191,7 +192,7 @@ internal actual constructor(
 
     actual fun String.decodeHex() = commonDecodeHex()
 
-    @OptIn(UnsafeNumber::class)
+    @OptIn(UnsafeNumber::class, ExperimentalNativeApi::class)
     @CName("of")
     fun NSData.toByteString(): ByteString {
       val data = this

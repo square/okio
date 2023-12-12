@@ -10,9 +10,11 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -222,8 +224,25 @@ subprojects {
   }
 }
 
+/**
+ * Select a NodeJS version with WASI and WASM GC.
+ * https://github.com/Kotlin/kotlin-wasm-examples/blob/main/wasi-example/build.gradle.kts
+ */
 plugins.withType<NodeJsRootPlugin> {
   extensions.getByType<NodeJsRootExtension>().apply {
-    nodeVersion = "20.0.0"
+    if (DefaultNativePlatform.getCurrentOperatingSystem().isWindows) {
+      // We're waiting for a Windows build of NodeJS that can do WASM GC + WASI.
+      nodeVersion = "21.4.0"
+    } else {
+      nodeVersion = "21.0.0-v8-canary202309143a48826a08"
+      nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+    }
+  }
+  // Suppress an error because yarn doesn't like our Node version string.
+  //   warning You are using Node "21.0.0-v8-canary202309143a48826a08" which is not supported and
+  //   may encounter bugs or unexpected behavior.
+  //   error typescript@5.0.4: The engine "node" is incompatible with this module.
+  tasks.withType<KotlinNpmInstallTask>().all {
+    args += "--ignore-engines"
   }
 }
