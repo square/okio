@@ -10,6 +10,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
@@ -229,8 +230,13 @@ subprojects {
  */
 plugins.withType<NodeJsRootPlugin> {
   extensions.getByType<NodeJsRootExtension>().apply {
-    nodeVersion = "21.0.0-v8-canary202309143a48826a08"
-    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+    if (DefaultNativePlatform.getCurrentOperatingSystem().isWindows) {
+      // We're waiting for a Windows build of NodeJS that can do WASM GC + WASI.
+      nodeVersion = "21.4.0"
+    } else {
+      nodeVersion = "21.0.0-v8-canary202309143a48826a08"
+      nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+    }
   }
   // Suppress an error because yarn doesn't like our Node version string.
   //   warning You are using Node "21.0.0-v8-canary202309143a48826a08" which is not supported and
