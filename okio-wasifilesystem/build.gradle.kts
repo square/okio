@@ -1,8 +1,6 @@
 import com.vanniktech.maven.publish.JavadocJar.Empty
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 
 plugins {
   kotlin("multiplatform")
@@ -107,16 +105,6 @@ val injectWasiInit by tasks.creating {
       """.trimIndent()
     )
   }
-}
-tasks.withType<KotlinJsTest>().configureEach {
-  // TODO: get this working on Windows.
-  //     > command 'C:\Users\runneradmin\.gradle\nodejs\node-v20.0.0-win-x64\node.exe'
-  //       exited with errors (exit code: 1)
-  onlyIf {
-    val os = DefaultNativePlatform.getCurrentOperatingSystem()
-    !os.isWindows
-  }
-  nodeJsArgs += "--experimental-wasi-unstable-preview1"
 }
 tasks.named("wasmWasiNodeTest").configure {
   dependsOn(injectWasiInit)

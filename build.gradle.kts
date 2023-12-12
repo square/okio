@@ -15,6 +15,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -244,5 +245,15 @@ plugins.withType<NodeJsRootPlugin> {
   //   error typescript@5.0.4: The engine "node" is incompatible with this module.
   tasks.withType<KotlinNpmInstallTask>().all {
     args += "--ignore-engines"
+  }
+  tasks.withType<KotlinJsTest>().configureEach {
+    // TODO: get this working on Windows.
+    //     > command 'C:\Users\runneradmin\.gradle\nodejs\node-v20.0.0-win-x64\node.exe'
+    //       exited with errors (exit code: 1)
+    if (name.startsWith("wasm")) {
+      onlyIf {
+        !DefaultNativePlatform.getCurrentOperatingSystem().isWindows
+      }
+    }
   }
 }
