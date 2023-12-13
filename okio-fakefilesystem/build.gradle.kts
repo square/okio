@@ -37,11 +37,18 @@ kotlin {
     configureOrCreateNativePlatforms()
   }
   sourceSets {
-    commonMain {
+    val commonMain by getting {
       dependencies {
         api(libs.kotlin.time)
         api(projects.okio)
       }
+    }
+    val commonTest by getting
+    if (kmpWasmEnabled) {
+      // Add support for wasmWasi when https://github.com/Kotlin/kotlinx-datetime/issues/324 is resolved.
+      configureOrCreateWasmPlatform(wasi = false)
+      createSourceSet("wasmMain", parent = commonMain, children = listOf("wasmJs"))
+      createSourceSet("wasmTest", parent = commonTest, children = listOf("wasmJs"))
     }
   }
 }
