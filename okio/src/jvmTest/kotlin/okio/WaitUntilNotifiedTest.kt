@@ -166,6 +166,49 @@ class WaitUntilNotifiedTest {
     }
   }
 
+  @Test
+  @Synchronized
+  fun cancelBeforeWaitDoesNothing() {
+    assumeNotWindows()
+    val timeout = Timeout()
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancel()
+    val start = now()
+    try {
+      timeout.waitUntilNotified(this)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("timeout", expected.message)
+    }
+    assertElapsed(1000.0, start)
+  }
+
+  @Test
+  @Synchronized
+  fun canceledTimeoutDoesNotThrowWhenNotNotifiedOnTime() {
+    val timeout = Timeout()
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancelLater(500)
+
+    val start = now()
+    timeout.waitUntilNotified(this) // Returns early but doesn't throw.
+    assertElapsed(1000.0, start)
+  }
+
+  @Test
+  @Synchronized
+  fun multipleCancelsAreIdempotent() {
+    val timeout = Timeout()
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancelLater(250)
+    timeout.cancelLater(500)
+    timeout.cancelLater(750)
+
+    val start = now()
+    timeout.waitUntilNotified(this) // Returns early but doesn't throw.
+    assertElapsed(1000.0, start)
+  }
+
   /** Returns the nanotime in milliseconds as a double for measuring timeouts.  */
   private fun now(): Double {
     return System.nanoTime() / 1000000.0
@@ -177,5 +220,15 @@ class WaitUntilNotifiedTest {
    */
   private fun assertElapsed(duration: Double, start: Double) {
     assertEquals(duration, now() - start - 200.0, 250.0)
+  }
+
+  private fun Timeout.cancelLater(delay: Long) {
+    executorService.schedule(
+      {
+        cancel()
+      },
+      delay,
+      TimeUnit.MILLISECONDS,
+    )
   }
 }
