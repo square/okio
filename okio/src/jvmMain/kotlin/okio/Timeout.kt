@@ -161,27 +161,21 @@ actual open class Timeout {
       }
 
       // Compute how long we'll wait.
-      val start = System.nanoTime()
       val waitNanos = if (hasDeadline && timeoutNanos != 0L) {
-        val deadlineNanos = deadlineNanoTime() - start
+        val deadlineNanos = deadlineNanoTime() - System.nanoTime()
         minOf(timeoutNanos, deadlineNanos)
       } else if (hasDeadline) {
-        deadlineNanoTime() - start
+        deadlineNanoTime() - System.nanoTime()
       } else {
         timeoutNanos
       }
 
-      // Attempt to wait that long. This will break out early if the monitor is notified.
-      var elapsedNanos = 0L
-      if (waitNanos > 0L) {
-        condition.await(waitNanos, TimeUnit.NANOSECONDS)
-        elapsedNanos = System.nanoTime() - start
-      }
+      if (waitNanos <= 0) throw InterruptedIOException("timeout")
 
-      // Throw if the timeout elapsed before the monitor was notified.
-      if (elapsedNanos >= waitNanos) {
-        throw InterruptedIOException("timeout")
-      }
+      // Attempt to wait that long. This will return early if the monitor is notified.
+      val nanosRemaining = condition.awaitNanos(waitNanos)
+
+      if (nanosRemaining <= 0) throw InterruptedIOException("timeout")
     } catch (e: InterruptedException) {
       Thread.currentThread().interrupt() // Retain interrupted status.
       throw InterruptedIOException("interrupted")
