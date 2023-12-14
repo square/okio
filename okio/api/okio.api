@@ -772,6 +772,7 @@ public class okio/Timeout {
 	public static final field NONE Lokio/Timeout;
 	public fun <init> ()V
 	public final fun awaitSignal (Ljava/util/concurrent/locks/Condition;)V
+	public fun cancel ()V
 	public fun clearDeadline ()Lokio/Timeout;
 	public fun clearTimeout ()Lokio/Timeout;
 	public final fun deadline (JLjava/util/concurrent/TimeUnit;)Lokio/Timeout;
