@@ -19,6 +19,7 @@ import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
+import kotlin.concurrent.Volatile
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toTimeUnit
@@ -31,6 +32,12 @@ actual open class Timeout {
   private var hasDeadline = false
   private var deadlineNanoTime = 0L
   private var timeoutNanos = 0L
+
+  /**
+   * A sentinel that is updated to a new object on each call to [cancel]. Sample this property
+   * before and after an operation to test if the timeout was canceled during the operation.
+   */
+  @Volatile private var cancelMark: Any? = null
 
   /**
    * Wait at most `timeout` time before aborting an operation. Using a per-operation timeout means
@@ -105,6 +112,20 @@ actual open class Timeout {
     if (hasDeadline && deadlineNanoTime - System.nanoTime() <= 0) {
       throw InterruptedIOException("deadline reached")
     }
+  }
+
+  /**
+   * Prevent all current applications of this timeout from firing. Use this when a time-limited
+   * operation should no longer be time-limited because the nature of the operation has changed.
+   *
+   * This function does not mutate the [deadlineNanoTime] or [timeoutNanos] properties of this
+   * timeout. It only applies to active operations that are limited by this timeout, and applies by
+   * allowing those operations to run indefinitely.
+   *
+   * Subclasses that override this method must call `super.cancel()`.
+   */
+  open fun cancel() {
+    cancelMark = Any()
   }
 
   /**
@@ -245,18 +266,23 @@ actual open class Timeout {
         timeoutNanos
       }
 
-      // Attempt to wait that long. This will break out early if the monitor is notified.
-      var elapsedNanos = 0L
-      if (waitNanos > 0L) {
-        val waitMillis = waitNanos / 1000000L
-        (monitor as Object).wait(waitMillis, (waitNanos - waitMillis * 1000000L).toInt())
-        elapsedNanos = System.nanoTime() - start
-      }
+      if (waitNanos <= 0) throw InterruptedIOException("timeout")
 
-      // Throw if the timeout elapsed before the monitor was notified.
-      if (elapsedNanos >= waitNanos) {
-        throw InterruptedIOException("timeout")
-      }
+      val cancelMarkBefore = cancelMark
+
+      // Attempt to wait that long. This will return early if the monitor is notified.
+      val waitMillis = waitNanos / 1000000L
+      (monitor as Object).wait(waitMillis, (waitNanos - waitMillis * 1000000L).toInt())
+      val elapsedNanos = System.nanoTime() - start
+
+      // If there's time remaining, we probably got the call we were waiting for.
+      if (elapsedNanos < waitNanos) return
+
+      // Return without throwing if this timeout was canceled while we were waiting. Note that this
+      // return is a 'spurious wakeup' because Object.notify() was not called.
+      if (cancelMark !== cancelMarkBefore) return
+
+      throw InterruptedIOException("timeout")
     } catch (e: InterruptedException) {
       Thread.currentThread().interrupt() // Retain interrupted status.
       throw InterruptedIOException("interrupted")
