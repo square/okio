@@ -48,6 +48,9 @@ open class AsyncTimeout : Timeout() {
   /** If scheduled, this is the time that the watchdog should time this out.  */
   private var timeoutAt = 0L
 
+  private var isCanceled = false
+  private var hadTimeoutWhenCanceled = false
+
   fun enter() {
     val timeoutNanos = timeoutNanos()
     val hasDeadline = hasDeadline()
@@ -59,7 +62,28 @@ open class AsyncTimeout : Timeout() {
 
   /** Returns true if the timeout occurred.  */
   fun exit(): Boolean {
-    return cancelScheduledTimeout(this)
+    lock.withLock {
+      if (isCanceled) {
+        return hadTimeoutWhenCanceled
+          .also {
+            isCanceled = false
+            hadTimeoutWhenCanceled = false
+          }
+      }
+
+      return cancelScheduledTimeout(this)
+    }
+  }
+
+  override fun cancel() {
+    super.cancel()
+
+    lock.withLock {
+      if (isCanceled) return
+      if (!inQueue) return
+      isCanceled = true
+      hadTimeoutWhenCanceled = cancelScheduledTimeout(this)
+    }
   }
 
   /**
@@ -270,24 +294,22 @@ open class AsyncTimeout : Timeout() {
 
     /** Returns true if the timeout occurred. */
     private fun cancelScheduledTimeout(node: AsyncTimeout): Boolean {
-      AsyncTimeout.lock.withLock {
-        if (!node.inQueue) return false
-        node.inQueue = false
+      if (!node.inQueue) return false
+      node.inQueue = false
 
-        // Remove the node from the linked list.
-        var prev = head
-        while (prev != null) {
-          if (prev.next === node) {
-            prev.next = node.next
-            node.next = null
-            return false
-          }
-          prev = prev.next
+      // Remove the node from the linked list.
+      var prev = head
+      while (prev != null) {
+        if (prev.next === node) {
+          prev.next = node.next
+          node.next = null
+          return false
         }
-
-        // The node wasn't found in the linked list: it must have timed out!
-        return true
+        prev = prev.next
       }
+
+      // The node wasn't found in the linked list: it must have timed out!
+      return true
     }
 
     /**
