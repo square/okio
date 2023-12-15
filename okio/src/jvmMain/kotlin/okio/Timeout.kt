@@ -193,10 +193,19 @@ actual open class Timeout {
 
       if (waitNanos <= 0) throw InterruptedIOException("timeout")
 
+      val cancelMarkBefore = cancelMark
+
       // Attempt to wait that long. This will return early if the monitor is notified.
       val nanosRemaining = condition.awaitNanos(waitNanos)
 
-      if (nanosRemaining <= 0) throw InterruptedIOException("timeout")
+      // If there's time remaining, we probably got the call we were waiting for.
+      if (nanosRemaining > 0) return
+
+      // Return without throwing if this timeout was canceled while we were waiting. Note that this
+      // return is a 'spurious wakeup' because Condition.signal() was not called.
+      if (cancelMark !== cancelMarkBefore) return
+
+      throw InterruptedIOException("timeout")
     } catch (e: InterruptedException) {
       Thread.currentThread().interrupt() // Retain interrupted status.
       throw InterruptedIOException("interrupted")
