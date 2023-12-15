@@ -547,6 +547,8 @@ public abstract class okio/ForwardingSource : okio/Source {
 
 public class okio/ForwardingTimeout : okio/Timeout {
 	public fun <init> (Lokio/Timeout;)V
+	public fun awaitSignal (Ljava/util/concurrent/locks/Condition;)V
+	public fun cancel ()V
 	public fun clearDeadline ()Lokio/Timeout;
 	public fun clearTimeout ()Lokio/Timeout;
 	public fun deadlineNanoTime ()J
@@ -558,6 +560,7 @@ public class okio/ForwardingTimeout : okio/Timeout {
 	public fun throwIfReached ()V
 	public fun timeout (JLjava/util/concurrent/TimeUnit;)Lokio/Timeout;
 	public fun timeoutNanos ()J
+	public fun waitUntilNotified (Ljava/lang/Object;)V
 }
 
 public final class okio/GzipSink : okio/Sink {
@@ -771,7 +774,7 @@ public class okio/Timeout {
 	public static final field Companion Lokio/Timeout$Companion;
 	public static final field NONE Lokio/Timeout;
 	public fun <init> ()V
-	public final fun awaitSignal (Ljava/util/concurrent/locks/Condition;)V
+	public fun awaitSignal (Ljava/util/concurrent/locks/Condition;)V
 	public fun cancel ()V
 	public fun clearDeadline ()Lokio/Timeout;
 	public fun clearTimeout ()Lokio/Timeout;
@@ -783,7 +786,7 @@ public class okio/Timeout {
 	public fun throwIfReached ()V
 	public fun timeout (JLjava/util/concurrent/TimeUnit;)Lokio/Timeout;
 	public fun timeoutNanos ()J
-	public final fun waitUntilNotified (Ljava/lang/Object;)V
+	public fun waitUntilNotified (Ljava/lang/Object;)V
 }
 
 public final class okio/Timeout$Companion {
