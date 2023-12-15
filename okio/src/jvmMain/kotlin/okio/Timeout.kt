@@ -171,7 +171,7 @@ actual open class Timeout {
    * ```
    */
   @Throws(InterruptedIOException::class)
-  fun awaitSignal(condition: Condition) {
+  open fun awaitSignal(condition: Condition) {
     try {
       val hasDeadline = hasDeadline()
       val timeoutNanos = timeoutNanos()
@@ -248,7 +248,7 @@ actual open class Timeout {
    * ```
    */
   @Throws(InterruptedIOException::class)
-  fun waitUntilNotified(monitor: Any) {
+  open fun waitUntilNotified(monitor: Any) {
     try {
       val hasDeadline = hasDeadline()
       val timeoutNanos = timeoutNanos()
