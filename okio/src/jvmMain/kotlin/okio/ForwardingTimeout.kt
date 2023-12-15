@@ -17,6 +17,7 @@ package okio
 
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.Condition
 
 /** A [Timeout] which forwards calls to another. Useful for subclassing.  */
 open class ForwardingTimeout(
@@ -49,4 +50,10 @@ open class ForwardingTimeout(
 
   @Throws(IOException::class)
   override fun throwIfReached() = delegate.throwIfReached()
+
+  override fun cancel() = delegate.cancel()
+
+  override fun awaitSignal(condition: Condition) = delegate.awaitSignal(condition)
+
+  override fun waitUntilNotified(monitor: Any) = delegate.waitUntilNotified(monitor)
 }
