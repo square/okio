@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+## Version 3.7.0
+
+_2023-12-16_
+
+ * New: `Timeout.cancel()` prevents a timeout from firing.
+ * Breaking: Drop the `watchosX86` Kotlin/Native target. From [the Kotlin blog][watchosX86],
+   _‘This is an obsolete simulator for Intel Macs. Use the watchosX64 target instead.’_
+ * New: Add the `watchosDeviceArm64` Kotlin/Native target.
+ * New: `Timeout` APIs that accept `kotlin.time.Duration`.
+ * Upgrade: [Kotlin 1.9.21][kotlin_1_9_21].
+
+
 ## Version 3.6.0
 
 _2023-10-01_
@@ -880,7 +892,9 @@ _2014-04-08_
 [kotlin_1_8_0]: https://kotlinlang.org/docs/whatsnew18.html
 [kotlin_1_9_0]: https://kotlinlang.org/docs/whatsnew19.html
 [kotlin_1_9_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.10
+[kotlin_1_9_21]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.21
 [loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
 [preview1]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md
+[watchosX86]: https://blog.jetbrains.com/kotlin/2023/02/update-regarding-kotlin-native-targets/
 [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302
