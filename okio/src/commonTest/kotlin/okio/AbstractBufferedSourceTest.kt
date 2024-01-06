@@ -1011,6 +1011,26 @@ abstract class AbstractBufferedSourceTest internal constructor(
     assertTrue(source.exhausted())
   }
 
+  enum class Roshambo(override val byteString: ByteString) : EnumOption {
+    Rock("ROCK".encodeUtf8()),
+    Scissors("SCISSORS".encodeUtf8()),
+    Paper("PAPER".encodeUtf8()),
+    ;
+
+    companion object : EnumOptions<Roshambo>(entries)
+  }
+
+  @Test fun selectEnum() {
+    sink.writeUtf8("PAPER,SCISSORS,ROCK")
+    sink.emit()
+    assertEquals(Roshambo.Paper, source.select(Roshambo))
+    assertEquals(','.code.toLong(), source.readByte().toLong())
+    assertEquals(Roshambo.Scissors, source.select(Roshambo))
+    assertEquals(','.code.toLong(), source.readByte().toLong())
+    assertEquals(Roshambo.Rock, source.select(Roshambo))
+    assertTrue(source.exhausted())
+  }
+
   /** Note that this test crashes the VM on Android. */
   @Test fun selectSpanningMultipleSegments() {
     if (factory.isOneByteAtATime && isBrowser()) {
@@ -1033,6 +1053,29 @@ abstract class AbstractBufferedSourceTest internal constructor(
     assertTrue(source.exhausted())
   }
 
+  /** Note that this test crashes the VM on Android. */
+  @Test fun selectEnumSpanningMultipleSegments() {
+    if (factory.isOneByteAtATime && isBrowser()) {
+      return // This test times out on browsers.
+    }
+    val commonPrefix = randomBytes(Segment.SIZE + 10)
+    class MyOption(override val byteString: ByteString) : EnumOption
+    val a = MyOption(Buffer().write(commonPrefix).writeUtf8("a").readByteString())
+    val bc = MyOption(Buffer().write(commonPrefix).writeUtf8("bc").readByteString())
+    val bd = MyOption(Buffer().write(commonPrefix).writeUtf8("bd").readByteString())
+
+    val options = EnumOptions.of(listOf(a, bc, bd))
+    sink.write(bd.byteString)
+    sink.write(a.byteString)
+    sink.write(bc.byteString)
+    sink.emit()
+
+    assertEquals(bd, source.select(options))
+    assertEquals(a, source.select(options))
+    assertEquals(bc, source.select(options))
+    assertTrue(source.exhausted())
+  }
+
   @Test fun selectNotFound() {
     val options = Options.of(
       "ROCK".encodeUtf8(),
@@ -1043,6 +1086,13 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeUtf8("SPOCK")
     sink.emit()
     assertEquals(-1, source.select(options).toLong())
+    assertEquals("SPOCK", source.readUtf8())
+  }
+
+  @Test fun selectEnumNotFound() {
+    sink.writeUtf8("SPOCK")
+    sink.emit()
+    assertEquals(null, source.select(Roshambo))
     assertEquals("SPOCK", source.readUtf8())
   }
 
@@ -1060,6 +1110,23 @@ abstract class AbstractBufferedSourceTest internal constructor(
     assertEquals(1, source.select(options).toLong())
   }
 
+  enum class ValuesWithCommonPrefix(override val byteString: ByteString) : EnumOption {
+    Abcd("abcd".encodeUtf8()),
+    Abce("abce".encodeUtf8()),
+    Abcc("abcc".encodeUtf8()),
+    ;
+
+    companion object : EnumOptions<ValuesWithCommonPrefix>(entries)
+  }
+
+  @Test fun selectEnumValuesHaveCommonPrefix() {
+    sink.writeUtf8("abcc").writeUtf8("abcd").writeUtf8("abce")
+    sink.emit()
+    assertEquals(ValuesWithCommonPrefix.Abcc, source.select(ValuesWithCommonPrefix))
+    assertEquals(ValuesWithCommonPrefix.Abcd, source.select(ValuesWithCommonPrefix))
+    assertEquals(ValuesWithCommonPrefix.Abce, source.select(ValuesWithCommonPrefix))
+  }
+
   @Test fun selectLongerThanSource() {
     val options = Options.of(
       "abcd".encodeUtf8(),
@@ -1069,6 +1136,13 @@ abstract class AbstractBufferedSourceTest internal constructor(
     sink.writeUtf8("abc")
     sink.emit()
     assertEquals(-1, source.select(options).toLong())
+    assertEquals("abc", source.readUtf8())
+  }
+
+  @Test fun selectEnumLongerThanSource() {
+    sink.writeUtf8("abc")
+    sink.emit()
+    assertEquals(null, source.select(ValuesWithCommonPrefix))
     assertEquals("abc", source.readUtf8())
   }
 
@@ -1084,6 +1158,22 @@ abstract class AbstractBufferedSourceTest internal constructor(
     assertEquals("ef", source.readUtf8())
   }
 
+  enum class FirstMatching(override val byteString: ByteString) : EnumOption {
+    Abcd("abcd".encodeUtf8()),
+    Abc("abc".encodeUtf8()),
+    Abcde("abcde".encodeUtf8()),
+    ;
+
+    companion object : EnumOptions<FirstMatching>(entries)
+  }
+
+  @Test fun selectEnumReturnsFirstByteStringThatMatches() {
+    sink.writeUtf8("abcdef")
+    sink.emit()
+    assertEquals(FirstMatching.Abcd, source.select(FirstMatching))
+    assertEquals("ef", source.readUtf8())
+  }
+
   @Test fun selectFromEmptySource() {
     val options = Options.of(
       "abc".encodeUtf8(),
@@ -1092,9 +1182,20 @@ abstract class AbstractBufferedSourceTest internal constructor(
     assertEquals(-1, source.select(options).toLong())
   }
 
+  @Test fun selectEnumFromEmptySource() {
+    assertEquals(null, source.select(FirstMatching))
+  }
+
   @Test fun selectNoByteStringsFromEmptySource() {
     val options = Options.of()
     assertEquals(-1, source.select(options).toLong())
+  }
+
+  @Suppress("IMPLICIT_NOTHING_TYPE_ARGUMENT_IN_RETURN_POSITION")
+  @Test
+  fun selectEnumNoByteStringsFromEmptySource() {
+    val options = EnumOptions.of<Nothing>(emptyList())
+    assertEquals(null, source.select(options))
   }
 
   @Test fun peek() {

@@ -396,6 +396,26 @@ public final class okio/DeflaterSink : okio/Sink {
 	public fun write (Lokio/Buffer;J)V
 }
 
+public abstract interface class okio/EnumOption {
+	public abstract fun getByteString ()Lokio/ByteString;
+}
+
+public abstract class okio/EnumOptions {
+	public static final field Companion Lokio/EnumOptions$Companion;
+	public fun <init> (Ljava/util/List;)V
+	public final fun getEntries ()Ljava/util/List;
+	public final fun getOptions ()Lokio/Options;
+	public static final fun of (Ljava/util/List;)Lokio/EnumOptions;
+}
+
+public final class okio/EnumOptions$Companion {
+	public final fun of (Ljava/util/List;)Lokio/EnumOptions;
+}
+
+public final class okio/EnumOptionsKt {
+	public static final fun select (Lokio/BufferedSource;Lokio/EnumOptions;)Lokio/EnumOption;
+}
+
 public abstract interface annotation class okio/ExperimentalFileSystem : java/lang/annotation/Annotation {
 }
 
