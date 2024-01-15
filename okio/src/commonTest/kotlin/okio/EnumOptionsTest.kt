@@ -164,14 +164,14 @@ class EnumOptionsTest {
     assertSelect("ab", null, PrefixedOption)
   }
 
-  enum class AbcOption(override val byteString: ByteString) : EnumOption {
+  enum class SingleOption(override val byteString: ByteString) : EnumOption {
     Abc("abc".encodeUtf8()),
     ;
-    companion object : EnumOptions<AbcOption>(entries)
+    companion object : EnumOptions<SingleOption>(entries)
   }
 
   @Test fun scan() {
-    assertSelect("abcde", AbcOption.Abc, AbcOption)
+    assertSelect("abcde", SingleOption.Abc, SingleOption)
   }
 
   enum class AbcdefgOption(override val byteString: ByteString) : EnumOption {
