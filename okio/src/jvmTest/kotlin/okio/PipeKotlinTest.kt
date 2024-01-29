@@ -18,6 +18,7 @@ package okio
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.assertFailsWith
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -27,7 +28,6 @@ import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout as JUnitTimeout
-import java.util.concurrent.atomic.AtomicBoolean
 
 class PipeKotlinTest {
   @JvmField @Rule
