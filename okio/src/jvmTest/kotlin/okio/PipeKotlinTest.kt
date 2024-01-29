@@ -27,6 +27,7 @@ import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout as JUnitTimeout
+import java.util.concurrent.atomic.AtomicBoolean
 
 class PipeKotlinTest {
   @JvmField @Rule
@@ -127,6 +128,46 @@ class PipeKotlinTest {
     assertFailsWith<IllegalStateException> {
       pipe.source.read(Buffer(), 1L)
     }
+  }
+
+  @Test fun closeWhileFolding() {
+    val pipe = Pipe(100L)
+    val writing = CountDownLatch(1)
+    val closed = CountDownLatch(1)
+    val sinkBuffer = Buffer()
+    val sinkClosed = AtomicBoolean()
+    val data = byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8)
+    pipe.sink.write(Buffer().write(data), data.size.toLong())
+    val foldResult = executorService.submit {
+      val sink = object : Sink {
+        override fun write(source: Buffer, byteCount: Long) {
+          writing.countDown()
+          closed.await()
+          sinkBuffer.write(source, byteCount)
+        }
+
+        override fun flush() {
+          sinkBuffer.flush()
+        }
+
+        override fun timeout(): Timeout {
+          return sinkBuffer.timeout()
+        }
+
+        override fun close() {
+          sinkBuffer.close()
+          sinkClosed.set(true)
+        }
+      }
+      pipe.fold(sink)
+    }
+    writing.await()
+    pipe.sink.close()
+    closed.countDown()
+    foldResult.get()
+
+    assertTrue(sinkClosed.get())
+    assertArrayEquals(data, sinkBuffer.readByteArray())
   }
 
   @Test fun honorsPipeSinkTimeoutOnWritingWhenItIsSmaller() {
