@@ -80,6 +80,9 @@ actual sealed interface BufferedSource : Source, ReadableByteChannel {
   actual fun select(options: Options): Int
 
   @Throws(IOException::class)
+  actual fun <T : Any> select(options: TypedOptions<T>): T?
+
+  @Throws(IOException::class)
   actual fun readByteArray(): ByteArray
 
   @Throws(IOException::class)

@@ -71,6 +71,7 @@ internal actual class RealBufferedSource actual constructor(
   override fun readByteString(): ByteString = commonReadByteString()
   override fun readByteString(byteCount: Long): ByteString = commonReadByteString(byteCount)
   override fun select(options: Options): Int = commonSelect(options)
+  override fun <T : Any> select(options: TypedOptions<T>): T? = commonSelect(options)
   override fun readByteArray(): ByteArray = commonReadByteArray()
   override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
   override fun read(sink: ByteArray): Int = read(sink, 0, sink.size)
