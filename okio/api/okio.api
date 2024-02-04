@@ -141,6 +141,7 @@ public final class okio/Buffer : java/lang/Cloneable, java/nio/channels/ByteChan
 	public fun request (J)Z
 	public fun require (J)V
 	public fun select (Lokio/Options;)I
+	public fun select (Lokio/TypedOptions;)Ljava/lang/Object;
 	public final fun sha1 ()Lokio/ByteString;
 	public final fun sha256 ()Lokio/ByteString;
 	public final fun sha512 ()Lokio/ByteString;
@@ -284,6 +285,7 @@ public abstract interface class okio/BufferedSource : java/nio/channels/Readable
 	public abstract fun request (J)Z
 	public abstract fun require (J)V
 	public abstract fun select (Lokio/Options;)I
+	public abstract fun select (Lokio/TypedOptions;)Ljava/lang/Object;
 	public abstract fun skip (J)V
 }
 
@@ -788,6 +790,18 @@ public final class okio/Timeout$Companion {
 	public final fun minTimeout (JJ)J
 	public final fun timeout (Lokio/Timeout;JLkotlin/time/DurationUnit;)Lokio/Timeout;
 	public final fun timeout-HG0u8IE (Lokio/Timeout;J)Lokio/Timeout;
+}
+
+public final class okio/TypedOptions : kotlin/collections/AbstractList, java/util/RandomAccess {
+	public static final field Companion Lokio/TypedOptions$Companion;
+	public synthetic fun <init> (Ljava/util/List;Lokio/Options;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun get (I)Ljava/lang/Object;
+	public fun getSize ()I
+	public static final fun of (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lokio/TypedOptions;
+}
+
+public final class okio/TypedOptions$Companion {
+	public final fun of (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lokio/TypedOptions;
 }
 
 public final class okio/Utf8 {
