@@ -35,6 +35,33 @@ class TypedOptionsTest {
   }
 
   @Test
+  fun typedOptionsConstructor() {
+    val colors = listOf("Red", "Green", "Blue")
+    val colorOptions = TypedOptions(
+      colors,
+      Options.of("red".encodeUtf8(), "green".encodeUtf8(), "blue".encodeUtf8())
+    )
+    val buffer = Buffer().writeUtf8("bluegreenyellow")
+    assertEquals("Blue", buffer.select(colorOptions))
+    assertEquals("greenyellow", buffer.snapshot().utf8())
+    assertEquals("Green", buffer.select(colorOptions))
+    assertEquals("yellow", buffer.snapshot().utf8())
+    assertEquals(null, buffer.select(colorOptions))
+    assertEquals("yellow", buffer.snapshot().utf8())
+  }
+
+  @Test
+  fun typedOptionsConstructorEnforcesSizeMatch() {
+    val colors = listOf("Red", "Green", "Blue")
+    assertFailsWith<IllegalArgumentException> {
+      TypedOptions(
+        colors,
+        Options.of("red".encodeUtf8(), "green".encodeUtf8())
+      )
+    }
+  }
+
+  @Test
   fun listFunctionsWork() {
     val colors = listOf("Red", "Green", "Blue")
     val colorOptions = TypedOptions.of(colors) { it.lowercase().encodeUtf8() }

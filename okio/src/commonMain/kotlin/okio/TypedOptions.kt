@@ -22,10 +22,15 @@ import kotlin.jvm.JvmStatic
  *
  * Also consider [Options] to select an integer index.
  */
-class TypedOptions<T : Any> private constructor(
-  internal val list: List<T>,
+class TypedOptions<T : Any>(
+  list: List<T>,
   internal val options: Options,
 ) : AbstractList<T>(), RandomAccess {
+  internal val list = list.toList() // Defensive copy.
+
+  init {
+    require(this.list.size == options.size)
+  }
 
   override val size: Int
     get() = list.size
@@ -34,11 +39,11 @@ class TypedOptions<T : Any> private constructor(
 
   companion object {
     @JvmStatic
-    fun <T : Any> of(
+    inline fun <T : Any> of(
       values: Iterable<T>,
       encode: (T) -> ByteString,
     ): TypedOptions<T> {
-      val list = values.toList() // Defensive copy.
+      val list = values.toList()
       val options = Options.of(*list.map { encode(it) }.toTypedArray<ByteString>())
       return TypedOptions(list, options)
     }

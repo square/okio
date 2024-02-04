@@ -794,7 +794,7 @@ public final class okio/Timeout$Companion {
 
 public final class okio/TypedOptions : kotlin/collections/AbstractList, java/util/RandomAccess {
 	public static final field Companion Lokio/TypedOptions$Companion;
-	public synthetic fun <init> (Ljava/util/List;Lokio/Options;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/List;Lokio/Options;)V
 	public fun get (I)Ljava/lang/Object;
 	public fun getSize ()I
 	public static final fun of (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lokio/TypedOptions;
