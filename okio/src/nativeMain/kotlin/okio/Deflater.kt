@@ -59,7 +59,8 @@ private val emptyByteArray = byteArrayOf()
  *     full (`targetPos == targetLimit`), make an adjustment and call [deflate] again.
  *
  *  5. Repeat steps 2 through 4 until the input data is completely exhausted. Set [sourceFinished]
- *     to true before the last call to [deflate].
+ *     to true before the last call to [deflate]. (It is okay to call deflate() when the source is
+ *     exhausted.)
  *
  *  6. Close the Deflater.
  *
