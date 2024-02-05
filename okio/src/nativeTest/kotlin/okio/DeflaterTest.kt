@@ -15,10 +15,9 @@
  */
 package okio
 
-import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.assertions.isTrue
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
@@ -37,13 +36,15 @@ class DeflaterTest {
       targetLimit = target.size
     }
 
-    assertThat(deflater.deflate()).isTrue()
-    assertThat(deflater.sourcePos).isEqualTo(deflater.sourceLimit)
+    assertTrue(deflater.deflate())
+    assertEquals(deflater.sourceLimit, deflater.sourcePos)
     val deflated = deflater.target.toByteString(0, deflater.targetPos)
 
     // Golden compressed output.
-    assertThat(deflated)
-      .isEqualTo("c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64())
+    assertEquals(
+      "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64(),
+      deflated,
+    )
 
     deflater.close()
   }
@@ -60,21 +61,23 @@ class DeflaterTest {
     deflater.sourcePos = 0
     deflater.sourceLimit = deflater.source.size
     deflater.sourceFinished = false
-    assertThat(deflater.deflate()).isTrue()
-    assertThat(deflater.sourcePos).isEqualTo(deflater.sourceLimit)
+    assertTrue(deflater.deflate())
+    assertEquals(deflater.sourceLimit, deflater.sourcePos)
 
     deflater.source = " of engineers.".encodeUtf8().toByteArray()
     deflater.sourcePos = 0
     deflater.sourceLimit = deflater.source.size
     deflater.sourceFinished = true
-    assertThat(deflater.deflate()).isTrue()
-    assertThat(deflater.sourcePos).isEqualTo(deflater.sourceLimit)
+    assertTrue(deflater.deflate())
+    assertEquals(deflater.sourceLimit, deflater.sourcePos)
 
     val deflated = deflater.target.toByteString(0, deflater.targetPos)
 
     // Golden compressed output.
-    assertThat(deflated)
-      .isEqualTo("c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64())
+    assertEquals(
+      "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64(),
+      deflated,
+    )
 
     deflater.close()
   }
@@ -89,12 +92,14 @@ class DeflaterTest {
       targetLimit = target.size
     }
 
-    assertThat(deflater.deflate()).isTrue()
+    assertTrue(deflater.deflate())
     val deflated = deflater.target.toByteString(0, deflater.targetPos)
 
     // Golden compressed output.
-    assertThat(deflated)
-      .isEqualTo("AwA=".decodeBase64())
+    assertEquals(
+      "AwA=".decodeBase64(),
+      deflated,
+    )
 
     deflater.close()
   }
