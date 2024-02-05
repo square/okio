@@ -40,7 +40,7 @@ class Options private constructor(
       // indexes to the caller's indexes.
       val list = byteStrings.toMutableList()
       list.sort()
-      val indexes = mutableListOf(*byteStrings.map { -1 }.toTypedArray())
+      val indexes = MutableList(list.size) { -1 }
       byteStrings.forEachIndexed { callerIndex, byteString ->
         val sortedIndex = list.binarySearch(byteString)
         indexes[sortedIndex] = callerIndex
