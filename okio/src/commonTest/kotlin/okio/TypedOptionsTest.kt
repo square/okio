@@ -39,7 +39,7 @@ class TypedOptionsTest {
     val colors = listOf("Red", "Green", "Blue")
     val colorOptions = TypedOptions(
       colors,
-      Options.of("red".encodeUtf8(), "green".encodeUtf8(), "blue".encodeUtf8())
+      Options.of("red".encodeUtf8(), "green".encodeUtf8(), "blue".encodeUtf8()),
     )
     val buffer = Buffer().writeUtf8("bluegreenyellow")
     assertEquals("Blue", buffer.select(colorOptions))
@@ -56,7 +56,7 @@ class TypedOptionsTest {
     assertFailsWith<IllegalArgumentException> {
       TypedOptions(
         colors,
-        Options.of("red".encodeUtf8(), "green".encodeUtf8())
+        Options.of("red".encodeUtf8(), "green".encodeUtf8()),
       )
     }
   }
