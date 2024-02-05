@@ -44,7 +44,7 @@ class TypedOptions<T : Any>(
       encode: (T) -> ByteString,
     ): TypedOptions<T> {
       val list = values.toList()
-      val options = Options.of(*list.map { encode(it) }.toTypedArray<ByteString>())
+      val options = Options.of(*Array(list.size) { encode(list[it]) })
       return TypedOptions(list, options)
     }
   }
