@@ -50,6 +50,8 @@ actual sealed interface BufferedSource : Source {
 
   actual fun select(options: Options): Int
 
+  actual fun <T : Any> select(options: TypedOptions<T>): T?
+
   actual fun readByteArray(): ByteArray
 
   actual fun readByteArray(byteCount: Long): ByteArray

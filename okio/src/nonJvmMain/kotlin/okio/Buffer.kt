@@ -145,6 +145,8 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   override fun select(options: Options): Int = commonSelect(options)
 
+  override fun <T : Any> select(options: TypedOptions<T>): T? = commonSelect(options)
+
   override fun readByteArray(): ByteArray = commonReadByteArray()
 
   override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)

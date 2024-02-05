@@ -242,8 +242,8 @@ expect sealed interface BufferedSource : Source {
   fun readByteString(byteCount: Long): ByteString
 
   /**
-   * Finds the first string in `options` that is a prefix of this buffer, consumes it from this
-   * buffer, and returns its index. If no byte string in `options` is a prefix of this buffer this
+   * Finds the first byte string in `options` that is a prefix of this buffer, consumes it from this
+   * source, and returns its index. If no byte string in `options` is a prefix of this buffer this
    * returns -1 and no bytes are consumed.
    *
    * This can be used as an alternative to [readByteString] or even [readUtf8] if the set of
@@ -267,6 +267,37 @@ expect sealed interface BufferedSource : Source {
    * ```
    */
   fun select(options: Options): Int
+
+  /**
+   * Finds the first item in [options] whose encoding is a prefix of this buffer, consumes it from
+   * this buffer, and returns it. If no item in [options] is a prefix of this source, this function
+   * returns null and no bytes are consumed.
+   *
+   * This can be used as an alternative to [readByteString] or even [readUtf8] if the set of
+   * expected values is known in advance.
+   *
+   * ```
+   * TypedOptions<Direction> options = TypedOptions.of(
+   *     Arrays.asList(Direction.values()),
+   *     (direction) -> ByteString.encodeUtf8(direction.name().toLowerCase(Locale.ROOT))
+   * );
+   *
+   * Buffer buffer = new Buffer()
+   *     .writeUtf8("north:100\n")
+   *     .writeUtf8("east:50\n");
+   *
+   * assertEquals(Direction.NORTH, buffer.select(options));
+   * assertEquals(':', buffer.readByte());
+   * assertEquals(100L, buffer.readDecimalLong());
+   * assertEquals('\n', buffer.readByte());
+   *
+   * assertEquals(Direction.EAST, buffer.select(options));
+   * assertEquals(':', buffer.readByte());
+   * assertEquals(50L, buffer.readDecimalLong());
+   * assertEquals('\n', buffer.readByte());
+   * ```
+   */
+  fun <T : Any> select(options: TypedOptions<T>): T?
 
   /** Removes all bytes from this and returns them as a byte array. */
   fun readByteArray(): ByteArray

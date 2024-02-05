@@ -288,6 +288,8 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   override fun select(options: Options): Int = commonSelect(options)
 
+  override fun <T : Any> select(options: TypedOptions<T>): T? = commonSelect(options)
+
   @Throws(EOFException::class)
   override fun readFully(sink: Buffer, byteCount: Long): Unit = commonReadFully(sink, byteCount)
 
