@@ -93,7 +93,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-11, ubuntu-latest, windows-latest ]
+        os: [ macos-14, ubuntu-latest, windows-latest ]
 
     steps:
       - name: Checkout
@@ -126,7 +126,7 @@ jobs:
           path: '**/build/reports'
 
   publish:
-    runs-on: macos-13
+    runs-on: macos-14
     if: github.repository == 'square/okio' && github.ref == 'refs/heads/master'
     needs: [jvm, all-platforms, emulator]
 
