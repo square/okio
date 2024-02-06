@@ -16,12 +16,12 @@
 package okio
 
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.CValue
 import kotlinx.cinterop.UByteVar
 import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.cValue
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.free
+import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.ptr
-import kotlinx.cinterop.useContents
 import kotlinx.cinterop.usePinned
 import platform.zlib.Z_BEST_COMPRESSION
 import platform.zlib.Z_DEFAULT_STRATEGY
@@ -67,7 +67,7 @@ private val emptyByteArray = byteArrayOf()
  * See also, the [zlib manual](https://www.zlib.net/manual.html).
  */
 internal class Deflater : Closeable {
-  private val zStream: CValue<z_stream_s> = cValue<z_stream_s> {
+  private val zStream: z_stream_s = nativeHeap.alloc<z_stream_s> {
     zalloc = null
     zfree = null
     opaque = null
@@ -105,39 +105,37 @@ internal class Deflater : Closeable {
 
     source.usePinned { pinnedSource ->
       target.usePinned { pinnedTarget ->
-        zStream.useContents {
-          val sourceByteCount = sourceLimit - sourcePos
-          next_in = when {
-            sourceByteCount > 0 -> pinnedSource.addressOf(sourcePos) as CPointer<UByteVar>
-            else -> null
-          }
-          avail_in = sourceByteCount.toUInt()
+        val sourceByteCount = sourceLimit - sourcePos
+        zStream.next_in = when {
+          sourceByteCount > 0 -> pinnedSource.addressOf(sourcePos) as CPointer<UByteVar>
+          else -> null
+        }
+        zStream.avail_in = sourceByteCount.toUInt()
 
-          val targetByteCount = targetLimit - targetPos
-          next_out = when {
-            targetByteCount > 0 -> pinnedTarget.addressOf(targetPos) as CPointer<UByteVar>
-            else -> null
-          }
-          avail_out = targetByteCount.toUInt()
+        val targetByteCount = targetLimit - targetPos
+        zStream.next_out = when {
+          targetByteCount > 0 -> pinnedTarget.addressOf(targetPos) as CPointer<UByteVar>
+          else -> null
+        }
+        zStream.avail_out = targetByteCount.toUInt()
 
-          val deflateFlush = when {
-            sourceFinished -> Z_FINISH
-            flush -> Z_SYNC_FLUSH
-            else -> Z_NO_FLUSH
-          }
+        val deflateFlush = when {
+          sourceFinished -> Z_FINISH
+          flush -> Z_SYNC_FLUSH
+          else -> Z_NO_FLUSH
+        }
 
-          // One of Z_OK, Z_STREAM_END, Z_STREAM_ERROR, or Z_BUF_ERROR.
-          val deflateResult = deflate(ptr, deflateFlush)
-          check(deflateResult != Z_STREAM_ERROR)
+        // One of Z_OK, Z_STREAM_END, Z_STREAM_ERROR, or Z_BUF_ERROR.
+        val deflateResult = deflate(zStream.ptr, deflateFlush)
+        check(deflateResult != Z_STREAM_ERROR)
 
-          sourcePos += sourceByteCount - avail_in.toInt()
-          targetPos += targetByteCount - avail_out.toInt()
+        sourcePos += sourceByteCount - zStream.avail_in.toInt()
+        targetPos += targetByteCount - zStream.avail_out.toInt()
 
-          return when {
-            sourceFinished -> deflateResult == Z_STREAM_END
-            flush -> targetPos < targetLimit
-            else -> true
-          }
+        return when {
+          sourceFinished -> deflateResult == Z_STREAM_END
+          flush -> targetPos < targetLimit
+          else -> true
         }
       }
     }
@@ -147,8 +145,8 @@ internal class Deflater : Closeable {
     if (closed) return
     closed = true
 
-    zStream.useContents {
-      check(deflateEnd(ptr) == Z_OK)
-    }
+    val deflateEndResult = deflateEnd(zStream.ptr)
+    check(deflateEndResult == Z_OK)
+    nativeHeap.free(zStream)
   }
 }
