@@ -17,6 +17,7 @@ package okio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import okio.ByteString.Companion.decodeBase64
@@ -172,6 +173,23 @@ class DeflaterTest {
       deflated,
     )
 
+    deflater.close()
+  }
+
+  @Test
+  fun cannotDeflateAfterClose() {
+    val deflater = Deflater()
+    deflater.close()
+
+    assertFailsWith<IllegalStateException> {
+      deflater.deflate()
+    }
+  }
+
+  @Test
+  fun closeIsIdemptent() {
+    val deflater = Deflater()
+    deflater.close()
     deflater.close()
   }
 }

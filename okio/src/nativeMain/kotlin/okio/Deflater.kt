@@ -37,7 +37,7 @@ import platform.zlib.deflateEnd
 import platform.zlib.deflateInit2
 import platform.zlib.z_stream_s
 
-private val emptyByteArray = byteArrayOf()
+internal val emptyByteArray = byteArrayOf()
 
 /**
  * Deflate using Kotlin/Native's built-in zlib bindings. This uses the raw deflate format and omits
