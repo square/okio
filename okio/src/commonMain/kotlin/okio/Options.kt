@@ -71,10 +71,8 @@ class Options private constructor(
       val trieBytes = Buffer()
       buildTrieRecursive(node = trieBytes, byteStrings = list, indexes = indexes)
 
-      val trie = IntArray(trieBytes.intCount.toInt())
-      var i = 0
-      while (!trieBytes.exhausted()) {
-        trie[i++] = trieBytes.readInt()
+      val trie = IntArray(trieBytes.intCount.toInt()) {
+        trieBytes.readInt()
       }
 
       return Options(byteStrings.copyOf() /* Defensive copy. */, trie)
