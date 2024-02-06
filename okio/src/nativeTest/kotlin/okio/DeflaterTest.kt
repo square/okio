@@ -17,6 +17,7 @@ package okio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.encodeUtf8
@@ -77,6 +78,76 @@ class DeflaterTest {
     assertEquals(
       "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64(),
       deflated,
+    )
+
+    deflater.close()
+  }
+
+  @Test
+  fun deflateInsufficientSpaceInTargetWithoutSourceFinished() {
+    val targetBuffer = Buffer()
+
+    val deflater = Deflater().apply {
+      source = "God help us, we're in the hands of engineers.".encodeUtf8().toByteArray()
+      sourcePos = 0
+      sourceLimit = source.size
+    }
+
+    deflater.target = ByteArray(10)
+    deflater.targetPos = 0
+    deflater.targetLimit = deflater.target.size
+    assertFalse(deflater.deflate(flush = true))
+    assertEquals(deflater.targetLimit, deflater.targetPos)
+    targetBuffer.write(deflater.target)
+
+    deflater.target = ByteArray(256)
+    deflater.targetPos = 0
+    deflater.targetLimit = deflater.target.size
+    assertTrue(deflater.deflate())
+    assertEquals(deflater.sourcePos, deflater.sourceLimit)
+    targetBuffer.write(deflater.target, 0, deflater.targetPos)
+
+    deflater.sourceFinished = true
+    assertTrue(deflater.deflate())
+
+    // Golden compressed output.
+    assertEquals(
+      "cs9PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAw==".decodeBase64(),
+      targetBuffer.readByteString(),
+    )
+
+    deflater.close()
+  }
+
+  @Test
+  fun deflateInsufficientSpaceInTargetWithSourceFinished() {
+    val targetBuffer = Buffer()
+
+    val deflater = Deflater().apply {
+      source = "God help us, we're in the hands of engineers.".encodeUtf8().toByteArray()
+      sourcePos = 0
+      sourceLimit = source.size
+      sourceFinished = true
+    }
+
+    deflater.target = ByteArray(10)
+    deflater.targetPos = 0
+    deflater.targetLimit = deflater.target.size
+    assertFalse(deflater.deflate())
+    assertEquals(deflater.targetLimit, deflater.targetPos)
+    targetBuffer.write(deflater.target)
+
+    deflater.target = ByteArray(256)
+    deflater.targetPos = 0
+    deflater.targetLimit = deflater.target.size
+    assertTrue(deflater.deflate())
+    assertEquals(deflater.sourcePos, deflater.sourceLimit)
+    targetBuffer.write(deflater.target, 0, deflater.targetPos)
+
+    // Golden compressed output.
+    assertEquals(
+      "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64(),
+      targetBuffer.readByteString(),
     )
 
     deflater.close()
