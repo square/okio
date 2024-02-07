@@ -23,62 +23,29 @@ import kotlinx.cinterop.free
 import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
-import platform.zlib.Z_BEST_COMPRESSION
-import platform.zlib.Z_DEFAULT_STRATEGY
-import platform.zlib.Z_DEFLATED
-import platform.zlib.Z_FINISH
+import platform.zlib.Z_BUF_ERROR
+import platform.zlib.Z_DATA_ERROR
 import platform.zlib.Z_NO_FLUSH
 import platform.zlib.Z_OK
 import platform.zlib.Z_STREAM_END
-import platform.zlib.Z_STREAM_ERROR
-import platform.zlib.Z_SYNC_FLUSH
-import platform.zlib.deflate
-import platform.zlib.deflateEnd
-import platform.zlib.deflateInit2
+import platform.zlib.inflateEnd
+import platform.zlib.inflateInit2
 import platform.zlib.z_stream_s
 
-internal val emptyByteArray = byteArrayOf()
-
 /**
- * Deflate using Kotlin/Native's built-in zlib bindings. This uses the raw deflate format and omits
- * the zlib header and trailer, and does not compute a check value.
+ * Inflate using Kotlin/Native's built-in zlib bindings.
  *
- * To use:
- *
- *  1. Create an instance.
- *
- *  2. Populate [source] with uncompressed data. Set [sourcePos] and [sourceLimit] to a readable
- *     slice of this array.
- *
- *  3. Populate [target] with a destination for compressed data. Set [targetPos] and [targetLimit] to
- *     a writable slice of this array.
- *
- *  4. Call [deflate] to read input data from [source] and write compressed output to [target]. This
- *     function advances [sourcePos] if input data was read and [targetPos] if compressed output was
- *     written. If the input array is exhausted (`sourcePos == sourceLimit`) or the output array is
- *     full (`targetPos == targetLimit`), make an adjustment and call [deflate] again.
- *
- *  5. Repeat steps 2 through 4 until the input data is completely exhausted. Set [sourceFinished]
- *     to true before the last call to [deflate]. (It is okay to call deflate() when the source is
- *     exhausted.)
- *
- *  6. Close the Deflater.
- *
- * See also, the [zlib manual](https://www.zlib.net/manual.html).
+ * The API is symmetric with [Deflater].
  */
-internal class Deflater : Closeable {
+internal class Inflater : Closeable {
   private val zStream: z_stream_s = nativeHeap.alloc<z_stream_s> {
     zalloc = null
     zfree = null
     opaque = null
     check(
-      deflateInit2(
+      inflateInit2(
         strm = ptr,
-        level = Z_BEST_COMPRESSION,
-        method = Z_DEFLATED,
         windowBits = -15, // Default value for raw deflate.
-        memLevel = 8, // Default value.
-        strategy = Z_DEFAULT_STRATEGY,
       ) == Z_OK,
     )
   }
@@ -86,7 +53,6 @@ internal class Deflater : Closeable {
   var source: ByteArray = emptyByteArray
   var sourcePos: Int = 0
   var sourceLimit: Int = 0
-  var sourceFinished = false
 
   var target: ByteArray = emptyByteArray
   var targetPos: Int = 0
@@ -95,10 +61,11 @@ internal class Deflater : Closeable {
   private var closed = false
 
   /**
-   * Returns true if no further calls to [deflate] are required to complete the operation.
-   * Otherwise, make space available in [target] and call [deflate] again with the same arguments.
+   * Returns true if no further calls to [inflate] are required because the source stream is
+   * finished. Otherwise, ensure there's input data in [source] and output space in [target] and
+   * call this again.
    */
-  fun deflate(flush: Boolean = false): Boolean {
+  fun inflate(): Boolean {
     check(!closed) { "closed" }
     require(0 <= sourcePos && sourcePos <= sourceLimit && sourceLimit <= source.size)
     require(0 <= targetPos && targetPos <= targetLimit && targetLimit <= target.size)
@@ -119,23 +86,19 @@ internal class Deflater : Closeable {
         }
         zStream.avail_out = targetByteCount.toUInt()
 
-        val deflateFlush = when {
-          sourceFinished -> Z_FINISH
-          flush -> Z_SYNC_FLUSH
-          else -> Z_NO_FLUSH
-        }
-
-        // One of Z_OK, Z_STREAM_END, Z_STREAM_ERROR, or Z_BUF_ERROR.
-        val deflateResult = deflate(zStream.ptr, deflateFlush)
-        check(deflateResult != Z_STREAM_ERROR)
+        val inflateResult = platform.zlib.inflate(zStream.ptr, Z_NO_FLUSH)
 
         sourcePos += sourceByteCount - zStream.avail_in.toInt()
         targetPos += targetByteCount - zStream.avail_out.toInt()
 
-        return when {
-          sourceFinished -> deflateResult == Z_STREAM_END
-          flush -> targetPos < targetLimit
-          else -> true
+        return when (inflateResult) {
+          Z_OK -> false
+          Z_BUF_ERROR -> false // Non-fatal but the caller needs to update source and/or target.
+          Z_STREAM_END -> true
+          Z_DATA_ERROR -> throw ProtocolException("Z_DATA_ERROR")
+
+          // One of Z_NEED_DICT, Z_STREAM_ERROR, Z_MEM_ERROR.
+          else -> throw ProtocolException("unexpected inflate result: $inflateResult")
         }
       }
     }
@@ -145,7 +108,7 @@ internal class Deflater : Closeable {
     if (closed) return
     closed = true
 
-    deflateEnd(zStream.ptr)
+    inflateEnd(zStream.ptr)
     nativeHeap.free(zStream)
   }
 }
