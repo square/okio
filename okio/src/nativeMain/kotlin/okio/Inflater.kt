@@ -34,10 +34,8 @@ import platform.zlib.z_stream_s
 
 /**
  * Inflate using Kotlin/Native's built-in zlib bindings.
- *
- * The API is symmetric with [Deflater].
  */
-internal class Inflater : Closeable {
+internal class Inflater : DataProcessor() {
   private val zStream: z_stream_s = nativeHeap.alloc<z_stream_s> {
     zalloc = null
     zfree = null
@@ -50,22 +48,11 @@ internal class Inflater : Closeable {
     )
   }
 
-  var source: ByteArray = emptyByteArray
-  var sourcePos: Int = 0
-  var sourceLimit: Int = 0
+  var sourceFinished: Boolean = false
+    private set
 
-  var target: ByteArray = emptyByteArray
-  var targetPos: Int = 0
-  var targetLimit: Int = 0
-
-  private var closed = false
-
-  /**
-   * Returns true if no further calls to [inflate] are required because the source stream is
-   * finished. Otherwise, ensure there's input data in [source] and output space in [target] and
-   * call this again.
-   */
-  fun inflate(): Boolean {
+  @Throws(ProtocolException::class)
+  override fun process(): Boolean {
     check(!closed) { "closed" }
     require(0 <= sourcePos && sourcePos <= sourceLimit && sourceLimit <= source.size)
     require(0 <= targetPos && targetPos <= targetLimit && targetLimit <= target.size)
@@ -91,10 +78,16 @@ internal class Inflater : Closeable {
         sourcePos += sourceByteCount - zStream.avail_in.toInt()
         targetPos += targetByteCount - zStream.avail_out.toInt()
 
-        return when (inflateResult) {
-          Z_OK -> false
-          Z_BUF_ERROR -> false // Non-fatal but the caller needs to update source and/or target.
-          Z_STREAM_END -> true
+        when (inflateResult) {
+          Z_OK, Z_BUF_ERROR -> {
+            return targetPos < targetLimit
+          }
+
+          Z_STREAM_END -> {
+            sourceFinished = true
+            return true
+          }
+
           Z_DATA_ERROR -> throw ProtocolException("Z_DATA_ERROR")
 
           // One of Z_NEED_DICT, Z_STREAM_ERROR, Z_MEM_ERROR.
