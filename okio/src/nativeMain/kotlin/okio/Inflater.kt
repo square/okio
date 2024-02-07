@@ -108,8 +108,7 @@ internal class Inflater : Closeable {
     if (closed) return
     closed = true
 
-    val inflateEndResult = inflateEnd(zStream.ptr)
-    check(inflateEndResult == Z_OK)
+    inflateEnd(zStream.ptr)
     nativeHeap.free(zStream)
   }
 }

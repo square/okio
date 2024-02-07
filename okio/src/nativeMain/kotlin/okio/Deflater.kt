@@ -145,8 +145,7 @@ internal class Deflater : Closeable {
     if (closed) return
     closed = true
 
-    val deflateEndResult = deflateEnd(zStream.ptr)
-    check(deflateEndResult == Z_OK)
+    deflateEnd(zStream.ptr)
     nativeHeap.free(zStream)
   }
 }
