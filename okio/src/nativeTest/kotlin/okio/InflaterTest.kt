@@ -38,7 +38,8 @@ class InflaterTest {
       targetLimit = target.size
     }
 
-    assertTrue(inflater.inflate())
+    assertTrue(inflater.process())
+    assertTrue(inflater.sourceFinished)
     assertEquals(inflater.sourceLimit, inflater.sourcePos)
 
     val inflated = inflater.target.toByteString(0, inflater.targetPos)
@@ -61,13 +62,15 @@ class InflaterTest {
     inflater.source = "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJ".decodeBase64()!!.toByteArray()
     inflater.sourcePos = 0
     inflater.sourceLimit = inflater.source.size
-    assertFalse(inflater.inflate())
+    assertTrue(inflater.process())
+    assertFalse(inflater.sourceFinished)
     assertEquals(inflater.sourceLimit, inflater.sourcePos)
 
     inflater.source = "SFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64()!!.toByteArray()
     inflater.sourcePos = 0
     inflater.sourceLimit = inflater.source.size
-    assertTrue(inflater.inflate())
+    assertTrue(inflater.process())
+    assertTrue(inflater.sourceFinished)
     assertEquals(inflater.sourceLimit, inflater.sourcePos)
 
     val inflated = inflater.target.toByteString(0, inflater.targetPos)
@@ -93,14 +96,16 @@ class InflaterTest {
     inflater.target = ByteArray(31)
     inflater.targetPos = 0
     inflater.targetLimit = inflater.target.size
-    assertFalse(inflater.inflate())
+    assertFalse(inflater.process())
+    assertFalse(inflater.sourceFinished)
     assertEquals(inflater.targetLimit, inflater.targetPos)
     targetBuffer.write(inflater.target)
 
     inflater.target = ByteArray(256)
     inflater.targetPos = 0
     inflater.targetLimit = inflater.target.size
-    assertTrue(inflater.inflate())
+    assertTrue(inflater.process())
+    assertTrue(inflater.sourceFinished)
     assertEquals(inflater.sourcePos, inflater.sourceLimit)
     targetBuffer.write(inflater.target, 0, inflater.targetPos)
 
@@ -124,7 +129,8 @@ class InflaterTest {
       targetLimit = target.size
     }
 
-    assertTrue(inflater.inflate())
+    assertTrue(inflater.process())
+    assertTrue(inflater.sourceFinished)
 
     val inflated = inflater.target.toByteString(0, inflater.targetPos)
     assertEquals(
@@ -146,13 +152,15 @@ class InflaterTest {
     inflater.source = ByteArray(256)
     inflater.sourcePos = 0
     inflater.sourceLimit = 0
-    assertFalse(inflater.inflate())
+    assertTrue(inflater.process())
+    assertFalse(inflater.sourceFinished)
 
     inflater.source = "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA="
       .decodeBase64()!!.toByteArray()
     inflater.sourcePos = 0
     inflater.sourceLimit = inflater.source.size
-    assertTrue(inflater.inflate())
+    assertTrue(inflater.process())
+    assertTrue(inflater.sourceFinished)
 
     val inflated = inflater.target.toByteString(0, inflater.targetPos)
     assertEquals(
@@ -175,8 +183,9 @@ class InflaterTest {
     inflater.sourcePos = 0
     inflater.sourceLimit = inflater.source.size
     val exception = assertFailsWith<ProtocolException> {
-      inflater.inflate()
+      inflater.process()
     }
+    assertFalse(inflater.sourceFinished)
     assertEquals("Z_DATA_ERROR", exception.message)
 
     inflater.close()
@@ -188,7 +197,7 @@ class InflaterTest {
     inflater.close()
 
     assertFailsWith<IllegalStateException> {
-      inflater.inflate()
+      inflater.process()
     }
   }
 

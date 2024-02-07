@@ -23,6 +23,9 @@ import kotlin.test.assertTrue
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
+import platform.zlib.Z_FINISH
+import platform.zlib.Z_NO_FLUSH
+import platform.zlib.Z_SYNC_FLUSH
 
 class DeflaterTest {
   @Test
@@ -31,14 +34,14 @@ class DeflaterTest {
       source = "God help us, we're in the hands of engineers.".encodeUtf8().toByteArray()
       sourcePos = 0
       sourceLimit = source.size
-      sourceFinished = true
+      flush = Z_FINISH
 
       target = ByteArray(256)
       targetPos = 0
       targetLimit = target.size
     }
 
-    assertTrue(deflater.deflate())
+    assertTrue(deflater.process())
     assertEquals(deflater.sourceLimit, deflater.sourcePos)
     val deflated = deflater.target.toByteString(0, deflater.targetPos)
 
@@ -62,15 +65,14 @@ class DeflaterTest {
     deflater.source = "God help us, we're in the hands".encodeUtf8().toByteArray()
     deflater.sourcePos = 0
     deflater.sourceLimit = deflater.source.size
-    deflater.sourceFinished = false
-    assertTrue(deflater.deflate())
+    assertTrue(deflater.process())
     assertEquals(deflater.sourceLimit, deflater.sourcePos)
 
     deflater.source = " of engineers.".encodeUtf8().toByteArray()
     deflater.sourcePos = 0
     deflater.sourceLimit = deflater.source.size
-    deflater.sourceFinished = true
-    assertTrue(deflater.deflate())
+    deflater.flush = Z_FINISH
+    assertTrue(deflater.process())
     assertEquals(deflater.sourceLimit, deflater.sourcePos)
 
     val deflated = deflater.target.toByteString(0, deflater.targetPos)
@@ -97,19 +99,21 @@ class DeflaterTest {
     deflater.target = ByteArray(10)
     deflater.targetPos = 0
     deflater.targetLimit = deflater.target.size
-    assertFalse(deflater.deflate(flush = true))
+    deflater.flush = Z_SYNC_FLUSH
+    assertFalse(deflater.process())
     assertEquals(deflater.targetLimit, deflater.targetPos)
     targetBuffer.write(deflater.target)
 
     deflater.target = ByteArray(256)
     deflater.targetPos = 0
     deflater.targetLimit = deflater.target.size
-    assertTrue(deflater.deflate())
+    deflater.flush = Z_NO_FLUSH
+    assertTrue(deflater.process())
     assertEquals(deflater.sourcePos, deflater.sourceLimit)
     targetBuffer.write(deflater.target, 0, deflater.targetPos)
 
-    deflater.sourceFinished = true
-    assertTrue(deflater.deflate())
+    deflater.flush = Z_FINISH
+    assertTrue(deflater.process())
 
     // Golden compressed output.
     assertEquals(
@@ -128,20 +132,20 @@ class DeflaterTest {
       source = "God help us, we're in the hands of engineers.".encodeUtf8().toByteArray()
       sourcePos = 0
       sourceLimit = source.size
-      sourceFinished = true
+      flush = Z_FINISH
     }
 
     deflater.target = ByteArray(10)
     deflater.targetPos = 0
     deflater.targetLimit = deflater.target.size
-    assertFalse(deflater.deflate())
+    assertFalse(deflater.process())
     assertEquals(deflater.targetLimit, deflater.targetPos)
     targetBuffer.write(deflater.target)
 
     deflater.target = ByteArray(256)
     deflater.targetPos = 0
     deflater.targetLimit = deflater.target.size
-    assertTrue(deflater.deflate())
+    assertTrue(deflater.process())
     assertEquals(deflater.sourcePos, deflater.sourceLimit)
     targetBuffer.write(deflater.target, 0, deflater.targetPos)
 
@@ -157,14 +161,14 @@ class DeflaterTest {
   @Test
   fun deflateEmptySource() {
     val deflater = Deflater().apply {
-      sourceFinished = true
+      flush = Z_FINISH
 
       target = ByteArray(256)
       targetPos = 0
       targetLimit = target.size
     }
 
-    assertTrue(deflater.deflate())
+    assertTrue(deflater.process())
     val deflated = deflater.target.toByteString(0, deflater.targetPos)
 
     // Golden compressed output.
@@ -182,7 +186,7 @@ class DeflaterTest {
     deflater.close()
 
     assertFailsWith<IllegalStateException> {
-      deflater.deflate()
+      deflater.process()
     }
   }
 

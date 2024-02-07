@@ -37,36 +37,16 @@ import platform.zlib.deflateEnd
 import platform.zlib.deflateInit2
 import platform.zlib.z_stream_s
 
-internal val emptyByteArray = byteArrayOf()
-
 /**
  * Deflate using Kotlin/Native's built-in zlib bindings. This uses the raw deflate format and omits
  * the zlib header and trailer, and does not compute a check value.
  *
- * To use:
- *
- *  1. Create an instance.
- *
- *  2. Populate [source] with uncompressed data. Set [sourcePos] and [sourceLimit] to a readable
- *     slice of this array.
- *
- *  3. Populate [target] with a destination for compressed data. Set [targetPos] and [targetLimit] to
- *     a writable slice of this array.
- *
- *  4. Call [deflate] to read input data from [source] and write compressed output to [target]. This
- *     function advances [sourcePos] if input data was read and [targetPos] if compressed output was
- *     written. If the input array is exhausted (`sourcePos == sourceLimit`) or the output array is
- *     full (`targetPos == targetLimit`), make an adjustment and call [deflate] again.
- *
- *  5. Repeat steps 2 through 4 until the input data is completely exhausted. Set [sourceFinished]
- *     to true before the last call to [deflate]. (It is okay to call deflate() when the source is
- *     exhausted.)
- *
- *  6. Close the Deflater.
+ * Note that you must set [flush] to [Z_FINISH] before the last call to [process]. (It is okay to
+ * call process() when the source is exhausted.)
  *
  * See also, the [zlib manual](https://www.zlib.net/manual.html).
  */
-internal class Deflater : Closeable {
+internal class Deflater : DataProcessor() {
   private val zStream: z_stream_s = nativeHeap.alloc<z_stream_s> {
     zalloc = null
     zfree = null
@@ -83,22 +63,10 @@ internal class Deflater : Closeable {
     )
   }
 
-  var source: ByteArray = emptyByteArray
-  var sourcePos: Int = 0
-  var sourceLimit: Int = 0
-  var sourceFinished = false
+  /** Probably [Z_NO_FLUSH], [Z_FINISH], or [Z_SYNC_FLUSH]. */
+  var flush: Int = Z_NO_FLUSH
 
-  var target: ByteArray = emptyByteArray
-  var targetPos: Int = 0
-  var targetLimit: Int = 0
-
-  private var closed = false
-
-  /**
-   * Returns true if no further calls to [deflate] are required to complete the operation.
-   * Otherwise, make space available in [target] and call [deflate] again with the same arguments.
-   */
-  fun deflate(flush: Boolean = false): Boolean {
+  override fun process(): Boolean {
     check(!closed) { "closed" }
     require(0 <= sourcePos && sourcePos <= sourceLimit && sourceLimit <= source.size)
     require(0 <= targetPos && targetPos <= targetLimit && targetLimit <= target.size)
@@ -119,23 +87,16 @@ internal class Deflater : Closeable {
         }
         zStream.avail_out = targetByteCount.toUInt()
 
-        val deflateFlush = when {
-          sourceFinished -> Z_FINISH
-          flush -> Z_SYNC_FLUSH
-          else -> Z_NO_FLUSH
-        }
-
         // One of Z_OK, Z_STREAM_END, Z_STREAM_ERROR, or Z_BUF_ERROR.
-        val deflateResult = deflate(zStream.ptr, deflateFlush)
+        val deflateResult = deflate(zStream.ptr, flush)
         check(deflateResult != Z_STREAM_ERROR)
 
         sourcePos += sourceByteCount - zStream.avail_in.toInt()
         targetPos += targetByteCount - zStream.avail_out.toInt()
 
-        return when {
-          sourceFinished -> deflateResult == Z_STREAM_END
-          flush -> targetPos < targetLimit
-          else -> true
+        return when (deflateResult) {
+          Z_STREAM_END -> true
+          else -> targetPos < targetLimit
         }
       }
     }
