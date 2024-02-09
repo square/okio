@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+## Version 3.8.0
+
+_2024-02-09_
+
+ * New: `TypedOptions` works like `Options`, but it returns a `T` rather than an index.
+ * Fix: Don't leave sinks open when there's a race in `Pipe.fold()`.
+
+
 ## Version 3.7.0
 
 _2023-12-16_
