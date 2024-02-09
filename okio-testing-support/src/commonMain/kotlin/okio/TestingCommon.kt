@@ -28,8 +28,8 @@ fun assertArrayEquals(a: ByteArray, b: ByteArray) {
   assertEquals(a.contentToString(), b.contentToString())
 }
 
-fun randomBytes(length: Int): ByteString {
-  val random = Random(0)
+fun randomBytes(length: Int, seed: Int = 0): ByteString {
+  val random = Random(seed)
   val randomBytes = ByteArray(length)
   random.nextBytes(randomBytes)
   return ByteString.of(*randomBytes)
