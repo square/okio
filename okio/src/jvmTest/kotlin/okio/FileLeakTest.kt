@@ -149,7 +149,7 @@ private inline fun <R> ZipOutputStream.putEntry(name: String, action: BufferedSi
 // This is a Linux only test for open file descriptors on the current process
 @OptIn(ExperimentalPathApi::class)
 private fun Path.assetFileNotOpen() {
-  val fds = Path("/proc/${ProcessHandle.current().pid()}/fd")
+  val fds = Path("/proc/self/fd")
   if (fds.isDirectory()) {
     // Linux: verify that path is not open
     assertTrue("Resource remained opened: $this") {
