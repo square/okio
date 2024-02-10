@@ -22,7 +22,7 @@ import platform.zlib.Z_SYNC_FLUSH
 class DeflaterSink(
   delegate: Sink,
 ) : Sink {
-  private val deflater = Deflater()
+  internal val deflater = Deflater()
   private val target: BufferedSink = delegate.buffer()
 
   @Throws(IOException::class)

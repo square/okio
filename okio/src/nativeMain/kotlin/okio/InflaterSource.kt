@@ -18,7 +18,7 @@ package okio
 class InflaterSource(
   delegate: Source,
 ) : Source {
-  private val inflater = Inflater()
+  internal val inflater = Inflater()
   private val source: BufferedSource = delegate.buffer()
 
   @Throws(IOException::class)
