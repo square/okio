@@ -17,6 +17,7 @@ package okio.internal
 
 import java.io.File
 import java.io.IOException
+import java.net.JarURLConnection
 import java.net.URI
 import java.net.URL
 import okio.FileHandle
@@ -126,8 +127,12 @@ internal class ResourceFileSystem internal constructor(
     if (!keepPath(file)) throw FileNotFoundException("file not found: $file")
     // Make sure we have a path that doesn't start with '/'.
     val relativePath = ROOT.resolve(file).relativeTo(ROOT)
-    return classLoader.getResourceAsStream(relativePath.toString())?.source()
-      ?: throw FileNotFoundException("file not found: $file")
+    val resource = classLoader.getResource(relativePath.toString()) ?: throw FileNotFoundException("file not found: $file")
+    val urlConnection = resource.openConnection()
+    if (urlConnection is JarURLConnection) {
+      urlConnection.useCaches = false
+    }
+    return urlConnection.getInputStream().source()
   }
 
   override fun sink(file: Path, mustCreate: Boolean): Sink {
