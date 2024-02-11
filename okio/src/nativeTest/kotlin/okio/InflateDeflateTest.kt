@@ -54,6 +54,14 @@ class InflateDeflateTest {
     )
   }
 
+  @Test
+  fun deflateInflateEmpty() {
+    deflateInflate(
+      contentList = arrayOf(),
+      goldenCompressedSize = 2,
+    )
+  }
+
   private fun deflateInflate(
     contentList: Array<ByteString>,
     goldenCompressedSize: Long,

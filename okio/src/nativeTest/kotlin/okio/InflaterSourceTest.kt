@@ -41,6 +41,8 @@ class InflaterSourceTest {
     // demonstrates that no segments are unaccounted for after an exception
     assertEquals(content, inflaterSource.buffer().readByteString())
     inflaterSource.close()
+    assertNoEmptySegments(throwingSource.data)
+    assertNoEmptySegments(sink)
   }
 
   @Test
@@ -51,7 +53,8 @@ class InflaterSourceTest {
     deflate(throwingSource.data, content)
 
     val inflaterSource = InflaterSource(throwingSource)
-    assertEquals(content, inflaterSource.buffer().readByteString())
+    val bufferedInflaterSource = inflaterSource.buffer()
+    assertEquals(content, bufferedInflaterSource.readByteString())
 
     throwingSource.nextException = IOException("boom")
     assertFailsWith<IOException> {
@@ -60,6 +63,95 @@ class InflaterSourceTest {
 
     assertTrue(throwingSource.closed)
     assertTrue(inflaterSource.inflater.closed)
+    assertNoEmptySegments(throwingSource.data)
+    assertNoEmptySegments(bufferedInflaterSource.buffer)
+  }
+
+  @Test
+  fun inflateInvalidThrows() {
+    // Half valid deflated data + and half 0xff.
+    val invalidData = Buffer()
+      .apply {
+        val deflatedData = Buffer()
+        deflate(deflatedData, randomBytes(1024 * 32))
+        write(deflatedData, deflatedData.size / 2)
+
+        write(ByteArray(deflatedData.size.toInt() / 2) { -128 })
+      }
+
+    val inflaterSource = InflaterSource(invalidData)
+    val bufferedInflaterSource = inflaterSource.buffer()
+    assertFailsWith<IOException> {
+      bufferedInflaterSource.readByteString()
+    }
+
+    bufferedInflaterSource.close()
+    assertTrue(inflaterSource.inflater.closed)
+    assertNoEmptySegments(invalidData.buffer)
+    assertNoEmptySegments(bufferedInflaterSource.buffer)
+  }
+
+  /**
+   * Confirm that [InflaterSource.read] doesn't read from its source stream until it's necessary
+   * to do so. (When it does read from the source, it reads a full segment.)
+   */
+  @Test
+  fun readsFromSourceDoNotOccurUntilNecessary() {
+    val deflatedData = Buffer()
+    deflate(deflatedData, randomBytes(1024 * 32, seed = 0))
+
+    val inflaterSource = InflaterSource(deflatedData)
+
+    // These index values discovered experimentally.
+    val sink = Buffer()
+    inflaterSource.read(sink, 8186)
+    assertEquals(24 * 1024 + 10, deflatedData.size)
+
+    inflaterSource.read(sink, 1)
+    assertEquals(24 * 1024 + 10, deflatedData.size)
+
+    inflaterSource.read(sink, 1)
+    assertEquals(16 * 1024 + 10, deflatedData.size)
+
+    inflaterSource.read(sink, 1)
+    assertEquals(16 * 1024 + 10, deflatedData.size)
+  }
+
+  @Test
+  fun readsFromSourceDoNotOccurAfterExhausted() {
+    val content = randomBytes(1024 * 32, seed = 0)
+
+    val throwingSource = ThrowingSource()
+    deflate(throwingSource.data, content)
+
+    val inflaterSource = InflaterSource(throwingSource)
+    val bufferedInflaterSource = inflaterSource.buffer()
+
+    assertEquals(content, bufferedInflaterSource.readByteString())
+
+    throwingSource.nextException = IOException("boom")
+    assertTrue(bufferedInflaterSource.exhausted()) // Doesn't throw!
+    throwingSource.nextException = null
+
+    inflaterSource.close()
+  }
+
+  @Test
+  fun trailingDataIgnored() {
+    val content = randomBytes(1024 * 32)
+
+    val deflatedData = Buffer()
+    deflate(deflatedData, content)
+    deflatedData.write(ByteArray(1024 * 32))
+
+    val inflaterSource = InflaterSource(deflatedData)
+    val bufferedInflaterSource = inflaterSource.buffer()
+
+    assertEquals(content, bufferedInflaterSource.readByteString())
+    assertTrue(bufferedInflaterSource.exhausted())
+    assertEquals(24_586, deflatedData.size) // One trailing segment is consumed.
+
+    inflaterSource.close()
   }
 
   class ThrowingSource : Source {

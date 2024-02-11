@@ -48,9 +48,6 @@ internal class Inflater : DataProcessor() {
     )
   }
 
-  var sourceFinished: Boolean = false
-    private set
-
   @Throws(ProtocolException::class)
   override fun process(): Boolean {
     check(!closed) { "closed" }
@@ -84,7 +81,7 @@ internal class Inflater : DataProcessor() {
           }
 
           Z_STREAM_END -> {
-            sourceFinished = true
+            finished = true
             return true
           }
 

@@ -55,6 +55,10 @@ internal abstract class DataProcessor : Closeable {
   var closed: Boolean = false
     protected set
 
+  /** True if the content is self-terminating and has reached the end of the stream. */
+  var finished: Boolean = false
+    internal set
+
   /**
    * Returns true if no further calls to [process] are required to complete the operation.
    * Otherwise, make space available in [target] and call this again.
@@ -120,7 +124,7 @@ internal abstract class DataProcessor : Closeable {
     while (true) {
       // Make sure we have input to process. This blocks reading the source.
       val sourceExhausted = when {
-        !callProcess && byteCount == 0L -> source.exhausted()
+        !callProcess && byteCount == 0L -> finished || source.exhausted()
         else -> false
       }
 
