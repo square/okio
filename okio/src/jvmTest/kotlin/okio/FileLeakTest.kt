@@ -21,6 +21,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
+import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.readSymbolicLink
@@ -32,8 +33,11 @@ import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import okio.internal.ResourceFileSystem
 import org.junit.After
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
+
+private const val PROC_SELF_FD = "/proc/self/fd"
 
 class FileLeakTest {
 
@@ -99,6 +103,7 @@ class FileLeakTest {
 
   @Test
   fun fileLeakInResourceFileSystemTest() {
+    assumeTrue("File descriptor symbolic link available only on Linux", Path(PROC_SELF_FD).exists())
     // Create a test file that will be opened and cached by the classloader
     val zipPath = ZipBuilder(FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16))
       .addEntry("test.txt", "I'm part of a test!")
@@ -149,7 +154,7 @@ private inline fun <R> ZipOutputStream.putEntry(name: String, action: BufferedSi
 // This is a Linux only test for open file descriptors on the current process
 @OptIn(ExperimentalPathApi::class)
 private fun Path.assetFileNotOpen() {
-  val fds = Path("/proc/self/fd")
+  val fds = Path(PROC_SELF_FD)
   if (fds.isDirectory()) {
     // Linux: verify that path is not open
     assertTrue("Resource remained opened: $this") {
