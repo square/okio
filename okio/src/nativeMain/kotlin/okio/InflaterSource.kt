@@ -16,10 +16,10 @@
 package okio
 
 class InflaterSource(
-  delegate: Source,
+  source: Source,
 ) : Source {
   internal val inflater = Inflater()
-  private val source: BufferedSource = delegate.buffer()
+  private val source: BufferedSource = source.buffer()
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {

@@ -23,7 +23,7 @@ class DeflaterSink(
   delegate: Sink,
 ) : Sink {
   internal val deflater = Deflater()
-  private val target: BufferedSink = delegate.buffer()
+  private val sink: BufferedSink = delegate.buffer()
 
   @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) {
@@ -33,7 +33,7 @@ class DeflaterSink(
     deflater.writeBytesFromSource(
       source = source,
       sourceExactByteCount = byteCount,
-      target = target,
+      target = sink,
     )
   }
 
@@ -43,14 +43,14 @@ class DeflaterSink(
     deflater.writeBytesFromSource(
       source = null,
       sourceExactByteCount = 0L,
-      target = target,
+      target = sink,
     )
 
-    target.flush()
+    sink.flush()
   }
 
   override fun timeout(): Timeout {
-    return target.timeout()
+    return sink.timeout()
   }
 
   @Throws(IOException::class)
@@ -66,7 +66,7 @@ class DeflaterSink(
       deflater.writeBytesFromSource(
         source = null,
         sourceExactByteCount = 0L,
-        target = target,
+        target = sink,
       )
     } catch (e: Throwable) {
       thrown = e
@@ -75,7 +75,7 @@ class DeflaterSink(
     deflater.close()
 
     try {
-      target.close()
+      sink.close()
     } catch (e: Throwable) {
       if (thrown == null) thrown = e
     }
