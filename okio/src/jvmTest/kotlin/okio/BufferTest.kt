@@ -25,7 +25,6 @@ import kotlin.text.Charsets.UTF_8
 import okio.ByteString.Companion.decodeHex
 import okio.TestUtil.SEGMENT_POOL_MAX_SIZE
 import okio.TestUtil.SEGMENT_SIZE
-import okio.TestUtil.assertNoEmptySegments
 import okio.TestUtil.bufferWithRandomSegmentLayout
 import okio.TestUtil.segmentPoolByteCount
 import okio.TestUtil.segmentSizes

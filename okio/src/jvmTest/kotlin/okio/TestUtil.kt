@@ -39,11 +39,6 @@ object TestUtil {
   fun segmentSizes(buffer: Buffer): List<Int> = okio.segmentSizes(buffer)
 
   @JvmStatic
-  fun assertNoEmptySegments(buffer: Buffer) {
-    assertTrue(segmentSizes(buffer).all { it != 0 }, "Expected all segments to be non-empty")
-  }
-
-  @JvmStatic
   fun assertByteArraysEquals(a: ByteArray, b: ByteArray) {
     assertEquals(a.contentToString(), b.contentToString())
   }
