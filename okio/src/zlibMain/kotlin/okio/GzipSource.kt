@@ -19,10 +19,8 @@
 
 package okio
 
-import java.io.EOFException
-import java.io.IOException
-import java.util.zip.CRC32
-import java.util.zip.Inflater
+import kotlin.jvm.JvmName
+import okio.internal.CRC32
 
 /**
  * A source that uses [GZIP](http://www.ietf.org/rfc/rfc1952.txt) to
@@ -150,7 +148,7 @@ class GzipSource(source: Source) : Source {
     // | CRC16 |
     // +---+---+
     if (fhcrc) {
-      checkEqual("FHCRC", source.readShortLe().toInt(), crc.value.toShort().toInt())
+      checkEqual("FHCRC", source.readShortLe().toInt(), crc.getValue().toShort().toInt())
       crc.reset()
     }
   }
@@ -161,8 +159,8 @@ class GzipSource(source: Source) : Source {
     // +---+---+---+---+---+---+---+---+
     // |     CRC32     |     ISIZE     |
     // +---+---+---+---+---+---+---+---+
-    checkEqual("CRC", source.readIntLe(), crc.value.toInt())
-    checkEqual("ISIZE", source.readIntLe(), inflater.bytesWritten.toInt())
+    checkEqual("CRC", source.readIntLe(), crc.getValue().toInt())
+    checkEqual("ISIZE", source.readIntLe(), inflater.getBytesWritten().toInt())
   }
 
   override fun timeout(): Timeout = source.timeout()
@@ -194,7 +192,11 @@ class GzipSource(source: Source) : Source {
 
   private fun checkEqual(name: String, expected: Int, actual: Int) {
     if (actual != expected) {
-      throw IOException("%s: actual 0x%08x != expected 0x%08x".format(name, actual, expected))
+      throw IOException(
+        "$name: " +
+        "actual 0x${actual.toHexString().padStart(8, '0')} != " +
+        "expected 0x${expected.toHexString().padStart(8, '0')}"
+      )
     }
   }
 }

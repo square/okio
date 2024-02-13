@@ -27,7 +27,7 @@ import java.util.zip.Inflater
  * A source that uses [DEFLATE](http://tools.ietf.org/html/rfc1951) to decompress data read from
  * another source.
  */
-class InflaterSource
+actual class InflaterSource
 /**
  * This internal constructor shares a buffer with its trusted caller. In general we can't share a
  * `BufferedSource` because the inflater holds input bytes until they are inflated.
@@ -41,7 +41,7 @@ internal constructor(private val source: BufferedSource, private val inflater: I
   private var bufferBytesHeldByInflater = 0
   private var closed = false
 
-  constructor(source: Source, inflater: Inflater) : this(source.buffer(), inflater)
+  actual constructor(source: Source, inflater: Inflater) : this(source.buffer(), inflater)
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {

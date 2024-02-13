@@ -36,14 +36,14 @@ import java.util.zip.Deflater
  * This class does not offer any partial flush mechanism. For best performance,
  * only call [flush] when application behavior requires it.
  */
-class DeflaterSink
+actual class DeflaterSink
 /**
  * This internal constructor shares a buffer with its trusted caller.
  * In general we can't share a BufferedSource because the deflater holds input
  * bytes until they are inflated.
  */
 internal constructor(private val sink: BufferedSink, private val deflater: Deflater) : Sink {
-  constructor(sink: Sink, deflater: Deflater) : this(sink.buffer(), deflater)
+  actual constructor(sink: Sink, deflater: Deflater) : this(sink.buffer(), deflater)
 
   private var closed = false
 
@@ -113,7 +113,7 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
     sink.flush()
   }
 
-  internal fun finishDeflate() {
+  internal actual fun finishDeflate() {
     deflater.finish()
     deflate(false)
   }

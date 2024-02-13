@@ -15,6 +15,7 @@
  */
 package okio
 
+import platform.zlib.Z_BEST_COMPRESSION
 import platform.zlib.Z_FINISH
 import platform.zlib.Z_NO_FLUSH
 import platform.zlib.Z_SYNC_FLUSH
@@ -22,7 +23,7 @@ import platform.zlib.Z_SYNC_FLUSH
 class DeflaterSink(
   delegate: Sink,
 ) : Sink {
-  internal val deflater = Deflater()
+  internal val deflater = Deflater(Z_BEST_COMPRESSION, true)
   private val sink: BufferedSink = delegate.buffer()
 
   @Throws(IOException::class)
@@ -30,7 +31,7 @@ class DeflaterSink(
     checkOffsetAndCount(source.size, 0, byteCount)
 
     deflater.flush = Z_NO_FLUSH
-    deflater.writeBytesFromSource(
+    deflater.dataProcessor.writeBytesFromSource(
       source = source,
       sourceExactByteCount = byteCount,
       target = sink,
@@ -40,7 +41,7 @@ class DeflaterSink(
   @Throws(IOException::class)
   override fun flush() {
     deflater.flush = Z_SYNC_FLUSH
-    deflater.writeBytesFromSource(
+    deflater.dataProcessor.writeBytesFromSource(
       source = null,
       sourceExactByteCount = 0L,
       target = sink,
@@ -55,7 +56,7 @@ class DeflaterSink(
 
   @Throws(IOException::class)
   override fun close() {
-    if (deflater.closed) return
+    if (deflater.dataProcessor.closed) return
 
     // We must close the deflater and the target, even if flushing fails. Otherwise, we'll leak
     // resources! (And we re-throw whichever exception we catch first.)
@@ -63,7 +64,7 @@ class DeflaterSink(
 
     try {
       deflater.flush = Z_FINISH
-      deflater.writeBytesFromSource(
+      deflater.dataProcessor.writeBytesFromSource(
         source = null,
         sourceExactByteCount = 0L,
         target = sink,
@@ -72,7 +73,7 @@ class DeflaterSink(
       thrown = e
     }
 
-    deflater.close()
+    deflater.dataProcessor.close()
 
     try {
       sink.close()
