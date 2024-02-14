@@ -91,11 +91,21 @@ kotlin {
       dependsOn(commonTest)
     }
 
+    val zlibMain by creating {
+      dependsOn(commonMain)
+    }
+
+    val zlibTest by creating {
+      dependsOn(commonTest)
+    }
+
     val jvmMain by getting {
+      dependsOn(zlibMain)
     }
     val jvmTest by getting {
       kotlin.srcDir("src/jvmTest/hashFunctions")
       dependsOn(nonWasmTest)
+      dependsOn(zlibTest)
       dependencies {
         implementation(libs.test.junit)
         implementation(libs.test.assertj)
@@ -117,6 +127,7 @@ kotlin {
     if (kmpNativeEnabled) {
       createSourceSet("nativeMain", parent = nonJvmMain)
         .also { nativeMain ->
+          nativeMain.dependsOn(zlibMain)
           createSourceSet("mingwMain", parent = nativeMain, children = mingwTargets).also { mingwMain ->
             mingwMain.dependsOn(nonAppleMain)
           }
@@ -133,6 +144,7 @@ kotlin {
         .also { nativeTest ->
           nativeTest.dependsOn(nonJvmTest)
           nativeTest.dependsOn(nonWasmTest)
+          nativeTest.dependsOn(zlibTest)
           createSourceSet("appleTest", parent = nativeTest, children = appleTargets)
         }
     }
