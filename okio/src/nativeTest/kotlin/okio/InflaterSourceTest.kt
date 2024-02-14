@@ -19,6 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import platform.zlib.Z_BEST_COMPRESSION
 
 class InflaterSourceTest {
   @Test
@@ -28,7 +29,10 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(throwingSource)
+    val inflaterSource = InflaterSource(
+      source = throwingSource,
+      inflater = Inflater(nowrap = true)
+    )
 
     val sink = Buffer()
     throwingSource.nextException = IOException("boom")
@@ -52,7 +56,10 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(throwingSource)
+    val inflaterSource = InflaterSource(
+      source = throwingSource,
+      inflater = Inflater(nowrap = true)
+    )
     val bufferedInflaterSource = inflaterSource.buffer()
     assertEquals(content, bufferedInflaterSource.readByteString())
 
@@ -62,7 +69,7 @@ class InflaterSourceTest {
     }
 
     assertTrue(throwingSource.closed)
-    assertTrue(inflaterSource.inflater.closed)
+    assertTrue(inflaterSource.inflater.dataProcessor.closed)
     assertNoEmptySegments(throwingSource.data)
     assertNoEmptySegments(bufferedInflaterSource.buffer)
   }
@@ -79,14 +86,17 @@ class InflaterSourceTest {
         write(ByteArray(deflatedData.size.toInt() / 2) { -128 })
       }
 
-    val inflaterSource = InflaterSource(invalidData)
+    val inflaterSource = InflaterSource(
+      source = invalidData,
+      inflater = Inflater(nowrap = true)
+    )
     val bufferedInflaterSource = inflaterSource.buffer()
     assertFailsWith<IOException> {
       bufferedInflaterSource.readByteString()
     }
 
     bufferedInflaterSource.close()
-    assertTrue(inflaterSource.inflater.closed)
+    assertTrue(inflaterSource.inflater.dataProcessor.closed)
     assertNoEmptySegments(invalidData.buffer)
     assertNoEmptySegments(bufferedInflaterSource.buffer)
   }
@@ -100,7 +110,10 @@ class InflaterSourceTest {
     val deflatedData = Buffer()
     deflate(deflatedData, randomBytes(1024 * 32, seed = 0))
 
-    val inflaterSource = InflaterSource(deflatedData)
+    val inflaterSource = InflaterSource(
+      source = deflatedData,
+      inflater = Inflater(nowrap = true)
+    )
 
     // These index values discovered experimentally.
     val sink = Buffer()
@@ -124,7 +137,10 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(throwingSource)
+    val inflaterSource = InflaterSource(
+      source = throwingSource,
+      inflater = Inflater(nowrap = true),
+    )
     val bufferedInflaterSource = inflaterSource.buffer()
 
     assertEquals(content, bufferedInflaterSource.readByteString())
@@ -144,7 +160,10 @@ class InflaterSourceTest {
     deflate(deflatedData, content)
     deflatedData.write(ByteArray(1024 * 32))
 
-    val inflaterSource = InflaterSource(deflatedData)
+    val inflaterSource = InflaterSource(
+      source = deflatedData,
+      inflater = Inflater(nowrap = true)
+    )
     val bufferedInflaterSource = inflaterSource.buffer()
 
     assertEquals(content, bufferedInflaterSource.readByteString())
@@ -173,7 +192,13 @@ class InflaterSourceTest {
   }
 
   private fun deflate(sink: BufferedSink, content: ByteString) {
-    DeflaterSink(sink).buffer().use { deflaterSink ->
+    DeflaterSink(
+      sink,
+      Deflater(
+        level = Z_BEST_COMPRESSION,
+        nowrap = true,
+      )
+    ).buffer().use { deflaterSink ->
       deflaterSink.write(content)
     }
   }

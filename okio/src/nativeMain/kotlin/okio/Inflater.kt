@@ -117,4 +117,8 @@ actual class Inflater actual constructor(
   actual fun getBytesWritten(): Long {
     return zStream.total_out.toLong() // TODO: test.
   }
+
+  actual fun end() {
+    dataProcessor.close()
+  }
 }

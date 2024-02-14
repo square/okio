@@ -19,4 +19,6 @@ expect class Inflater(
   nowrap: Boolean,
 ) {
   fun getBytesWritten(): Long
+
+  fun end()
 }

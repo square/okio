@@ -19,6 +19,9 @@ actual class CRC32 {
   actual fun update(content: ByteArray, offset: Int, byteCount: Int) {
   }
 
+  actual fun update(content: ByteArray) {
+  }
+
   actual fun getValue(): Long {
     return -1L
   }

@@ -15,16 +15,15 @@
  */
 package okio
 
-import platform.zlib.Z_BEST_COMPRESSION
 import platform.zlib.Z_FINISH
 import platform.zlib.Z_NO_FLUSH
 import platform.zlib.Z_SYNC_FLUSH
 
-class DeflaterSink(
-  delegate: Sink,
+actual class DeflaterSink internal actual constructor(
+  sink: Sink,
+  internal val deflater: Deflater,
 ) : Sink {
-  internal val deflater = Deflater(Z_BEST_COMPRESSION, true)
-  private val sink: BufferedSink = delegate.buffer()
+  private val sink: BufferedSink = sink.buffer()
 
   @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) {
@@ -55,6 +54,16 @@ class DeflaterSink(
   }
 
   @Throws(IOException::class)
+  internal actual fun finishDeflate() {
+    deflater.flush = Z_FINISH
+    deflater.dataProcessor.writeBytesFromSource(
+      source = null,
+      sourceExactByteCount = 0L,
+      target = sink,
+    )
+  }
+
+  @Throws(IOException::class)
   override fun close() {
     if (deflater.dataProcessor.closed) return
 
@@ -63,12 +72,7 @@ class DeflaterSink(
     var thrown: Throwable? = null
 
     try {
-      deflater.flush = Z_FINISH
-      deflater.dataProcessor.writeBytesFromSource(
-        source = null,
-        sourceExactByteCount = 0L,
-        target = sink,
-      )
+      finishDeflate()
     } catch (e: Throwable) {
       thrown = e
     }
