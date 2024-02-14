@@ -24,7 +24,7 @@ import platform.zlib.uBytefVar
 
 @OptIn(UnsafeNumber::class)
 actual class CRC32 {
-  var crc = crc32(0u, null, 0u)
+  private var crc = crc32(0u, null, 0u)
 
   actual fun update(content: ByteArray, offset: Int, byteCount: Int) {
     content.usePinned {
