@@ -39,7 +39,7 @@ class GzipSource(source: Source) : Source {
   private val source = RealBufferedSource(source)
 
   /** The inflater used to decompress the deflated body. */
-  private val inflater = Inflater(nowrap = true)
+  private val inflater = Inflater(true)
 
   /**
    * The inflater source takes care of moving data between compressed source and

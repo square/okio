@@ -15,17 +15,32 @@
  */
 package okio.internal
 
+import kotlinx.cinterop.CValuesRef
+import kotlinx.cinterop.UnsafeNumber
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.usePinned
+import platform.zlib.crc32
+import platform.zlib.uBytefVar
+
+@OptIn(UnsafeNumber::class)
 actual class CRC32 {
+  var crc = crc32(0u, null, 0u)
+
   actual fun update(content: ByteArray, offset: Int, byteCount: Int) {
+    content.usePinned {
+      crc = crc32(crc, it.addressOf(offset) as CValuesRef<uBytefVar>, byteCount.toUInt())
+    }
   }
 
   actual fun update(content: ByteArray) {
+    update(content, 0, content.size)
   }
 
   actual fun getValue(): Long {
-    return -1L
+    return crc.toLong()
   }
 
   actual fun reset() {
+    crc = crc32(0u, null, 0u)
   }
 }
