@@ -20,10 +20,13 @@ import platform.zlib.Z_NO_FLUSH
 import platform.zlib.Z_SYNC_FLUSH
 
 actual class DeflaterSink internal actual constructor(
-  sink: Sink,
+  private val sink: BufferedSink,
   internal val deflater: Deflater,
 ) : Sink {
-  private val sink: BufferedSink = sink.buffer()
+  actual constructor(
+    sink: Sink,
+    deflater: Deflater,
+  ) : this(sink.buffer(), deflater)
 
   @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) {

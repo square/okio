@@ -15,11 +15,14 @@
  */
 package okio
 
-actual class InflaterSource actual constructor(
-  source: Source,
+actual class InflaterSource internal actual constructor(
+  internal val source: BufferedSource,
   internal val inflater: Inflater,
 ) : Source {
-  private val source: BufferedSource = source.buffer()
+  actual constructor(
+    source: Source,
+    inflater: Inflater,
+  ) : this(source.buffer(), inflater)
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {

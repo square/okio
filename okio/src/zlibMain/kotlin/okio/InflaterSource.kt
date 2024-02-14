@@ -15,7 +15,9 @@
  */
 package okio
 
-expect class InflaterSource(
-  source: Source,
+expect class InflaterSource internal constructor(
+  source: BufferedSource,
   inflater: Inflater,
-) : Source
+) : Source {
+  constructor(source: Source, inflater: Inflater)
+}

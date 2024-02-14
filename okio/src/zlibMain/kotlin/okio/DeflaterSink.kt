@@ -16,8 +16,10 @@
 package okio
 
 expect class DeflaterSink internal constructor(
-  sink: Sink,
+  sink: BufferedSink,
   deflater: Deflater,
 ) : Sink {
+  constructor(sink: Sink, deflater: Deflater)
+
   internal fun finishDeflate()
 }
