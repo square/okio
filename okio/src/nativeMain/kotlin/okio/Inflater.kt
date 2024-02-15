@@ -51,7 +51,7 @@ actual class Inflater actual constructor(
     )
   }
 
-  internal val dataProcessor: DataProcessor = object  : DataProcessor() {
+  internal val dataProcessor: DataProcessor = object : DataProcessor() {
     @Throws(ProtocolException::class)
     override fun process(): Boolean {
       check(!closed) { "closed" }

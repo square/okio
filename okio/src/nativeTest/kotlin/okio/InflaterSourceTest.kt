@@ -19,7 +19,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import platform.zlib.Z_BEST_COMPRESSION
 
 class InflaterSourceTest {
   @Test
