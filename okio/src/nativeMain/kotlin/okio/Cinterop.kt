@@ -16,11 +16,19 @@
 package okio
 
 import kotlinx.cinterop.ByteVarOf
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
+import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.set
+import okio.ByteString.Companion.EMPTY
 import platform.posix.ENOENT
 import platform.posix.strerror
+
+/** Copy [count] bytes from the memory at this pointer into a [ByteString]. */
+fun COpaquePointer.readByteString(count: Int): ByteString {
+  return if (count == 0) EMPTY else ByteString(readBytes(count))
+}
 
 internal fun Buffer.writeNullTerminated(bytes: CPointer<ByteVarOf<Byte>>): Buffer = apply {
   var pos = 0
