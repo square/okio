@@ -46,7 +46,7 @@ actual class Inflater actual constructor(
     check(
       inflateInit2(
         strm = ptr,
-        windowBits = -15, // Default value for raw deflate.
+        windowBits = if (nowrap) -15 else 15, // Negative for raw deflate.
       ) == Z_OK,
     )
   }
@@ -109,16 +109,10 @@ actual class Inflater actual constructor(
 
   actual constructor() : this(false)
 
-  init {
-    // TODO.
-    require(nowrap) {
-      "nowrap = $nowrap not implemented yet"
-    }
-  }
-
   @OptIn(UnsafeNumber::class)
   actual fun getBytesWritten(): Long {
-    return zStream.total_out.toLong() // TODO: test.
+    check(!dataProcessor.closed) { "closed" }
+    return zStream.total_out.toLong()
   }
 
   actual fun end() {

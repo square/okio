@@ -60,7 +60,7 @@ actual class Deflater actual constructor(
         strm = ptr,
         level = level,
         method = Z_DEFLATED,
-        windowBits = -15, // Default value for raw deflate.
+        windowBits = if (nowrap) -15 else 15, // Negative for raw deflate.
         memLevel = 8, // Default value.
         strategy = Z_DEFAULT_STRATEGY,
       ) == Z_OK,
@@ -71,12 +71,6 @@ actual class Deflater actual constructor(
   var flush: Int = Z_NO_FLUSH
 
   actual constructor() : this(Z_DEFAULT_COMPRESSION, false)
-
-  init {
-    require(nowrap) {
-      "nowrap = $nowrap not implemented yet"
-    }
-  }
 
   internal val dataProcessor: DataProcessor = object : DataProcessor() {
     override fun process(): Boolean {
@@ -126,7 +120,8 @@ actual class Deflater actual constructor(
 
   @OptIn(UnsafeNumber::class)
   actual fun getBytesRead(): Long {
-    return zStream.total_in.toLong() // TODO: test
+    check(!dataProcessor.closed) { "closed" }
+    return zStream.total_in.toLong()
   }
 
   actual fun end() {

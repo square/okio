@@ -27,6 +27,36 @@ import okio.ByteString.Companion.toByteString
 class InflaterTest {
   @Test
   fun happyPath() {
+    val expected = "God help us, we're in the hands of engineers."
+    val inflater = Inflater()
+    inflater.dataProcessor.apply {
+      source = "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s="
+        .decodeBase64()!!.toByteArray()
+      sourcePos = 0
+      sourceLimit = source.size
+
+      target = ByteArray(256)
+      targetPos = 0
+      targetLimit = target.size
+
+      assertTrue(process())
+      assertTrue(finished)
+      assertEquals(sourceLimit, sourcePos)
+      assertEquals(expected.length.toLong(), inflater.getBytesWritten())
+
+      val inflated = target.toByteString(0, targetPos)
+      assertEquals(
+        expected,
+        inflated.utf8(),
+      )
+
+      inflater.end()
+    }
+  }
+
+  @Test
+  fun happyPathNoWrap() {
+    val content = "God help us, we're in the hands of engineers."
     val inflater = Inflater(nowrap = true)
     inflater.dataProcessor.apply {
       source = "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA="
@@ -41,10 +71,11 @@ class InflaterTest {
       assertTrue(process())
       assertTrue(finished)
       assertEquals(sourceLimit, sourcePos)
+      assertEquals(content.length.toLong(), inflater.getBytesWritten())
 
       val inflated = target.toByteString(0, targetPos)
       assertEquals(
-        "God help us, we're in the hands of engineers.",
+        content,
         inflated.utf8(),
       )
 
@@ -54,29 +85,32 @@ class InflaterTest {
 
   @Test
   fun inflateInParts() {
-    val inflater = Inflater(nowrap = true)
+    val content = "God help us, we're in the hands of engineers."
+    val inflater = Inflater()
     inflater.dataProcessor.apply {
       target = ByteArray(256)
       targetPos = 0
       targetLimit = target.size
 
-      source = "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJ".decodeBase64()!!.toByteArray()
+      source = "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxT".decodeBase64()!!.toByteArray()
       sourcePos = 0
       sourceLimit = source.size
       assertTrue(process())
       assertFalse(finished)
       assertEquals(sourceLimit, sourcePos)
+      assertEquals(21, inflater.getBytesWritten())
 
-      source = "SFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64()!!.toByteArray()
+      source = "KMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=".decodeBase64()!!.toByteArray()
       sourcePos = 0
       sourceLimit = source.size
       assertTrue(process())
       assertTrue(finished)
       assertEquals(sourceLimit, sourcePos)
+      assertEquals(content.length.toLong(), inflater.getBytesWritten())
 
       val inflated = target.toByteString(0, targetPos)
       assertEquals(
-        "God help us, we're in the hands of engineers.",
+        content,
         inflated.utf8(),
       )
 
@@ -88,9 +122,10 @@ class InflaterTest {
   fun inflateInsufficientSpaceInTarget() {
     val targetBuffer = Buffer()
 
-    val inflater = Inflater(nowrap = true)
+    val content = "God help us, we're in the hands of engineers."
+    val inflater = Inflater()
     inflater.dataProcessor.apply {
-      source = "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA="
+      source = "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s="
         .decodeBase64()!!.toByteArray()
       sourcePos = 0
       sourceLimit = source.size
@@ -102,6 +137,7 @@ class InflaterTest {
       assertFalse(finished)
       assertEquals(targetLimit, targetPos)
       targetBuffer.write(target)
+      assertEquals(31, inflater.getBytesWritten())
 
       target = ByteArray(256)
       targetPos = 0
@@ -110,9 +146,10 @@ class InflaterTest {
       assertTrue(finished)
       assertEquals(sourcePos, sourceLimit)
       targetBuffer.write(target, 0, targetPos)
+      assertEquals(content.length.toLong(), inflater.getBytesWritten())
 
       assertEquals(
-        "God help us, we're in the hands of engineers.",
+        content,
         targetBuffer.readUtf8(),
       )
 
@@ -122,9 +159,9 @@ class InflaterTest {
 
   @Test
   fun inflateEmptyContent() {
-    val inflater = Inflater(nowrap = true)
+    val inflater = Inflater()
     inflater.dataProcessor.apply {
-      source = "AwA=".decodeBase64()!!.toByteArray()
+      source = "eJwDAAAAAAE=".decodeBase64()!!.toByteArray()
       sourcePos = 0
       sourceLimit = source.size
 
@@ -134,6 +171,7 @@ class InflaterTest {
 
       assertTrue(process())
       assertTrue(finished)
+      assertEquals(0L, inflater.getBytesWritten())
 
       val inflated = target.toByteString(0, targetPos)
       assertEquals(
@@ -147,7 +185,8 @@ class InflaterTest {
 
   @Test
   fun inflateInPartsStartingWithEmptySource() {
-    val inflater = Inflater(nowrap = true)
+    val content = "God help us, we're in the hands of engineers."
+    val inflater = Inflater()
     val dataProcessor = inflater.dataProcessor
     dataProcessor.apply {
       target = ByteArray(256)
@@ -159,17 +198,19 @@ class InflaterTest {
       sourceLimit = 0
       assertTrue(process())
       assertFalse(finished)
+      assertEquals(0, inflater.getBytesWritten())
 
-      source = "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA="
+      source = "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s="
         .decodeBase64()!!.toByteArray()
       sourcePos = 0
       sourceLimit = source.size
       assertTrue(process())
       assertTrue(finished)
+      assertEquals(content.length.toLong(), inflater.getBytesWritten())
 
       val inflated = target.toByteString(0, targetPos)
       assertEquals(
-        "God help us, we're in the hands of engineers.",
+        content,
         inflated.utf8(),
       )
 
@@ -179,7 +220,7 @@ class InflaterTest {
 
   @Test
   fun inflateInvalidData() {
-    val inflater = Inflater(nowrap = true)
+    val inflater = Inflater()
     val dataProcessor = inflater.dataProcessor
     dataProcessor.apply {
       target = ByteArray(256)
@@ -194,6 +235,7 @@ class InflaterTest {
       }
       assertFalse(finished)
       assertEquals("Z_DATA_ERROR", exception.message)
+      assertEquals(0L, inflater.getBytesWritten())
 
       inflater.end()
     }
@@ -201,7 +243,7 @@ class InflaterTest {
 
   @Test
   fun cannotInflateAfterEnd() {
-    val inflater = Inflater(nowrap = true)
+    val inflater = Inflater()
     inflater.end()
 
     assertFailsWith<IllegalStateException> {
@@ -210,8 +252,18 @@ class InflaterTest {
   }
 
   @Test
+  fun cannotGetBytesWrittenAfterEnd() {
+    val inflater = Inflater()
+    inflater.end()
+
+    assertFailsWith<IllegalStateException> {
+      inflater.getBytesWritten()
+    }
+  }
+
+  @Test
   fun endIsIdemptent() {
-    val inflater = Inflater(nowrap = true)
+    val inflater = Inflater()
     inflater.end()
     inflater.end()
   }
