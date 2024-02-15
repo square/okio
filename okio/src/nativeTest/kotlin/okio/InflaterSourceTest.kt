@@ -29,10 +29,7 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(
-      source = throwingSource,
-      inflater = Inflater(nowrap = true)
-    )
+    val inflaterSource = throwingSource.inflate()
 
     val sink = Buffer()
     throwingSource.nextException = IOException("boom")
@@ -56,10 +53,7 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(
-      source = throwingSource,
-      inflater = Inflater(nowrap = true)
-    )
+    val inflaterSource = throwingSource.inflate()
     val bufferedInflaterSource = inflaterSource.buffer()
     assertEquals(content, bufferedInflaterSource.readByteString())
 
@@ -86,10 +80,7 @@ class InflaterSourceTest {
         write(ByteArray(deflatedData.size.toInt() / 2) { -128 })
       }
 
-    val inflaterSource = InflaterSource(
-      source = invalidData,
-      inflater = Inflater(nowrap = true)
-    )
+    val inflaterSource = invalidData.inflate()
     val bufferedInflaterSource = inflaterSource.buffer()
     assertFailsWith<IOException> {
       bufferedInflaterSource.readByteString()
@@ -110,10 +101,7 @@ class InflaterSourceTest {
     val deflatedData = Buffer()
     deflate(deflatedData, randomBytes(1024 * 32, seed = 0))
 
-    val inflaterSource = InflaterSource(
-      source = deflatedData as Source,
-      inflater = Inflater(nowrap = true)
-    )
+    val inflaterSource = deflatedData.inflate()
 
     // These index values discovered experimentally.
     val sink = Buffer()
@@ -137,10 +125,7 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(
-      source = throwingSource,
-      inflater = Inflater(nowrap = true),
-    )
+    val inflaterSource = throwingSource.inflate()
     val bufferedInflaterSource = inflaterSource.buffer()
 
     assertEquals(content, bufferedInflaterSource.readByteString())
@@ -160,10 +145,7 @@ class InflaterSourceTest {
     deflate(deflatedData, content)
     deflatedData.write(ByteArray(1024 * 32))
 
-    val inflaterSource = InflaterSource(
-      source = deflatedData as Source,
-      inflater = Inflater(nowrap = true)
-    )
+    val inflaterSource = deflatedData.inflate()
     val bufferedInflaterSource = inflaterSource.buffer()
 
     assertEquals(content, bufferedInflaterSource.readByteString())
@@ -192,13 +174,7 @@ class InflaterSourceTest {
   }
 
   private fun deflate(sink: BufferedSink, content: ByteString) {
-    DeflaterSink(
-      sink,
-      Deflater(
-        level = Z_BEST_COMPRESSION,
-        nowrap = true,
-      )
-    ).buffer().use { deflaterSink ->
+    sink.deflate().buffer().use { deflaterSink ->
       deflaterSink.write(content)
     }
   }

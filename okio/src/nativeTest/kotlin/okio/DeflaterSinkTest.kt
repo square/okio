@@ -19,7 +19,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import platform.zlib.Z_BEST_COMPRESSION
 
 class DeflaterSinkTest {
   @Test
@@ -29,10 +28,7 @@ class DeflaterSinkTest {
     val content = randomBytes(1024 * 32)
     val source = Buffer().write(content)
 
-    val deflaterSink = DeflaterSink(
-      sink = throwingSink,
-      deflater = Deflater(nowrap = true),
-    )
+    val deflaterSink = throwingSink.deflate()
 
     throwingSink.nextException = IOException("boom")
     assertFailsWith<IOException> {
@@ -54,10 +50,7 @@ class DeflaterSinkTest {
     val content = randomBytes(1024 * 32)
     val source = Buffer().write(content)
 
-    val deflaterSink = DeflaterSink(
-      sink = throwingSink,
-      deflater = Deflater(nowrap = true),
-    )
+    val deflaterSink = throwingSink.deflate()
     deflaterSink.write(source, source.size)
 
     throwingSink.nextException = IOException("boom")
@@ -77,10 +70,7 @@ class DeflaterSinkTest {
     val content = randomBytes(1024 * 32)
     val source = Buffer().write(content)
 
-    val deflaterSink = DeflaterSink(
-      sink = throwingSink,
-      deflater = Deflater(nowrap = true),
-    )
+    val deflaterSink = throwingSink.deflate()
     deflaterSink.write(source, source.size)
 
     throwingSink.nextException = IOException("boom")
@@ -91,8 +81,6 @@ class DeflaterSinkTest {
     assertTrue(deflaterSink.deflater.dataProcessor.closed)
     assertTrue(throwingSink.closed)
   }
-
-  private fun Deflater(nowrap: Boolean) = Deflater(Z_BEST_COMPRESSION, nowrap)
 
   class ThrowingSink : Sink {
     val data = Buffer()
@@ -118,10 +106,7 @@ class DeflaterSinkTest {
   }
 
   private fun inflate(deflated: Buffer): ByteString {
-    return InflaterSource(
-      source = deflated,
-      inflater = Inflater(nowrap = true),
-    ).buffer().use { inflaterSource ->
+    return deflated.inflate().buffer().use { inflaterSource ->
       inflaterSource.readByteString()
     }
   }
