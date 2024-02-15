@@ -17,13 +17,14 @@ package okio
 
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.UByteVar
+import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.free
 import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
-import platform.zlib.Z_BEST_COMPRESSION
+import platform.zlib.Z_DEFAULT_COMPRESSION
 import platform.zlib.Z_DEFAULT_STRATEGY
 import platform.zlib.Z_DEFLATED
 import platform.zlib.Z_FINISH
@@ -46,7 +47,10 @@ import platform.zlib.z_stream_s
  *
  * See also, the [zlib manual](https://www.zlib.net/manual.html).
  */
-internal class Deflater : DataProcessor() {
+actual class Deflater actual constructor(
+  level: Int,
+  nowrap: Boolean,
+) {
   private val zStream: z_stream_s = nativeHeap.alloc<z_stream_s> {
     zalloc = null
     zfree = null
@@ -54,7 +58,7 @@ internal class Deflater : DataProcessor() {
     check(
       deflateInit2(
         strm = ptr,
-        level = Z_BEST_COMPRESSION,
+        level = level,
         method = Z_DEFLATED,
         windowBits = -15, // Default value for raw deflate.
         memLevel = 8, // Default value.
@@ -66,47 +70,66 @@ internal class Deflater : DataProcessor() {
   /** Probably [Z_NO_FLUSH], [Z_FINISH], or [Z_SYNC_FLUSH]. */
   var flush: Int = Z_NO_FLUSH
 
-  override fun process(): Boolean {
-    check(!closed) { "closed" }
-    require(0 <= sourcePos && sourcePos <= sourceLimit && sourceLimit <= source.size)
-    require(0 <= targetPos && targetPos <= targetLimit && targetLimit <= target.size)
+  actual constructor() : this(Z_DEFAULT_COMPRESSION, false)
 
-    source.usePinned { pinnedSource ->
-      target.usePinned { pinnedTarget ->
-        val sourceByteCount = sourceLimit - sourcePos
-        zStream.next_in = when {
-          sourceByteCount > 0 -> pinnedSource.addressOf(sourcePos) as CPointer<UByteVar>
-          else -> null
-        }
-        zStream.avail_in = sourceByteCount.toUInt()
-
-        val targetByteCount = targetLimit - targetPos
-        zStream.next_out = when {
-          targetByteCount > 0 -> pinnedTarget.addressOf(targetPos) as CPointer<UByteVar>
-          else -> null
-        }
-        zStream.avail_out = targetByteCount.toUInt()
-
-        // One of Z_OK, Z_STREAM_END, Z_STREAM_ERROR, or Z_BUF_ERROR.
-        val deflateResult = deflate(zStream.ptr, flush)
-        check(deflateResult != Z_STREAM_ERROR)
-
-        sourcePos += sourceByteCount - zStream.avail_in.toInt()
-        targetPos += targetByteCount - zStream.avail_out.toInt()
-
-        return when (deflateResult) {
-          Z_STREAM_END -> true
-          else -> targetPos < targetLimit
-        }
-      }
+  init {
+    require(nowrap) {
+      "nowrap = $nowrap not implemented yet"
     }
   }
 
-  override fun close() {
-    if (closed) return
-    closed = true
+  internal val dataProcessor: DataProcessor = object : DataProcessor() {
+    override fun process(): Boolean {
+      check(!closed) { "closed" }
+      require(0 <= sourcePos && sourcePos <= sourceLimit && sourceLimit <= source.size)
+      require(0 <= targetPos && targetPos <= targetLimit && targetLimit <= target.size)
 
-    deflateEnd(zStream.ptr)
-    nativeHeap.free(zStream)
+      source.usePinned { pinnedSource ->
+        target.usePinned { pinnedTarget ->
+          val sourceByteCount = sourceLimit - sourcePos
+          zStream.next_in = when {
+            sourceByteCount > 0 -> pinnedSource.addressOf(sourcePos) as CPointer<UByteVar>
+            else -> null
+          }
+          zStream.avail_in = sourceByteCount.toUInt()
+
+          val targetByteCount = targetLimit - targetPos
+          zStream.next_out = when {
+            targetByteCount > 0 -> pinnedTarget.addressOf(targetPos) as CPointer<UByteVar>
+            else -> null
+          }
+          zStream.avail_out = targetByteCount.toUInt()
+
+          // One of Z_OK, Z_STREAM_END, Z_STREAM_ERROR, or Z_BUF_ERROR.
+          val deflateResult = deflate(zStream.ptr, flush)
+          check(deflateResult != Z_STREAM_ERROR)
+
+          sourcePos += sourceByteCount - zStream.avail_in.toInt()
+          targetPos += targetByteCount - zStream.avail_out.toInt()
+
+          return when (deflateResult) {
+            Z_STREAM_END -> true
+            else -> targetPos < targetLimit
+          }
+        }
+      }
+    }
+
+    override fun close() {
+      if (closed) return
+      closed = true
+
+      deflateEnd(zStream.ptr)
+      nativeHeap.free(zStream)
+    }
+  }
+
+  @OptIn(UnsafeNumber::class)
+  actual fun getBytesRead(): Long {
+    return zStream.total_in.toLong() // TODO: test
+  }
+
+  actual fun end() {
+    dataProcessor.close()
   }
 }

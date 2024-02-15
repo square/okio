@@ -19,18 +19,21 @@ import platform.zlib.Z_FINISH
 import platform.zlib.Z_NO_FLUSH
 import platform.zlib.Z_SYNC_FLUSH
 
-class DeflaterSink(
-  delegate: Sink,
+actual class DeflaterSink internal actual constructor(
+  private val sink: BufferedSink,
+  internal val deflater: Deflater,
 ) : Sink {
-  internal val deflater = Deflater()
-  private val sink: BufferedSink = delegate.buffer()
+  actual constructor(
+    sink: Sink,
+    deflater: Deflater,
+  ) : this(sink.buffer(), deflater)
 
   @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
 
     deflater.flush = Z_NO_FLUSH
-    deflater.writeBytesFromSource(
+    deflater.dataProcessor.writeBytesFromSource(
       source = source,
       sourceExactByteCount = byteCount,
       target = sink,
@@ -40,7 +43,7 @@ class DeflaterSink(
   @Throws(IOException::class)
   override fun flush() {
     deflater.flush = Z_SYNC_FLUSH
-    deflater.writeBytesFromSource(
+    deflater.dataProcessor.writeBytesFromSource(
       source = null,
       sourceExactByteCount = 0L,
       target = sink,
@@ -54,25 +57,30 @@ class DeflaterSink(
   }
 
   @Throws(IOException::class)
+  internal actual fun finishDeflate() {
+    deflater.flush = Z_FINISH
+    deflater.dataProcessor.writeBytesFromSource(
+      source = null,
+      sourceExactByteCount = 0L,
+      target = sink,
+    )
+  }
+
+  @Throws(IOException::class)
   override fun close() {
-    if (deflater.closed) return
+    if (deflater.dataProcessor.closed) return
 
     // We must close the deflater and the target, even if flushing fails. Otherwise, we'll leak
     // resources! (And we re-throw whichever exception we catch first.)
     var thrown: Throwable? = null
 
     try {
-      deflater.flush = Z_FINISH
-      deflater.writeBytesFromSource(
-        source = null,
-        sourceExactByteCount = 0L,
-        target = sink,
-      )
+      finishDeflate()
     } catch (e: Throwable) {
       thrown = e
     }
 
-    deflater.close()
+    deflater.dataProcessor.close()
 
     try {
       sink.close()

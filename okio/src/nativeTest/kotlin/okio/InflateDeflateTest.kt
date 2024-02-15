@@ -19,6 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import okio.ByteString.Companion.toByteString
+import platform.zlib.Z_BEST_COMPRESSION
 
 class InflateDeflateTest {
   /** The compressed data is 0.1% of the size of the original. */
@@ -68,7 +69,10 @@ class InflateDeflateTest {
   ) {
     val data = Buffer()
 
-    val deflaterSink = DeflaterSink(data)
+    val deflaterSink = DeflaterSink(
+      sink = data,
+      deflater = Deflater(level = Z_BEST_COMPRESSION, nowrap = true),
+    )
     deflaterSink.buffer().use {
       for (c in contentList) {
         it.write(c)
@@ -78,7 +82,10 @@ class InflateDeflateTest {
 
     assertEquals(goldenCompressedSize, data.size)
 
-    val inflaterSource = InflaterSource(data)
+    val inflaterSource = InflaterSource(
+      source = data,
+      inflater = Inflater(nowrap = true),
+    )
     inflaterSource.buffer().use {
       for (content in contentList) {
         assertEquals(content, it.readByteString(content.size.toLong()))
