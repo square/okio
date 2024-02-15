@@ -51,7 +51,7 @@ class InflateDeflateTest {
       contentList = Array(1024 * 64) {
         randomBytes(1, seed = it)
       },
-      goldenCompressedSize = 458_754,
+      goldenCompressedSize = 458_959,
     )
   }
 

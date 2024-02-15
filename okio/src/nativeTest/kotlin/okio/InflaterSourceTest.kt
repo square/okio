@@ -111,7 +111,7 @@ class InflaterSourceTest {
     deflate(deflatedData, randomBytes(1024 * 32, seed = 0))
 
     val inflaterSource = InflaterSource(
-      source = deflatedData,
+      source = deflatedData as Source,
       inflater = Inflater(nowrap = true)
     )
 
@@ -161,7 +161,7 @@ class InflaterSourceTest {
     deflatedData.write(ByteArray(1024 * 32))
 
     val inflaterSource = InflaterSource(
-      source = deflatedData,
+      source = deflatedData as Source,
       inflater = Inflater(nowrap = true)
     )
     val bufferedInflaterSource = inflaterSource.buffer()
