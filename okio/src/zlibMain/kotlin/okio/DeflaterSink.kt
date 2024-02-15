@@ -19,7 +19,27 @@ package okio
 
 import kotlin.jvm.JvmName
 
-expect class DeflaterSink internal constructor(
+/**
+ * A sink that uses [DEFLATE](http://tools.ietf.org/html/rfc1951) to
+ * compress data written to another source.
+ *
+ * ### Sync flush
+ *
+ * Aggressive flushing of this stream may result in reduced compression. Each
+ * call to [flush] immediately compresses all currently-buffered data;
+ * this early compression may be less effective than compression performed
+ * without flushing.
+ *
+ * This is equivalent to using [Deflater] with the sync flush option.
+ * This class does not offer any partial flush mechanism. For best performance,
+ * only call [flush] when application behavior requires it.
+ */
+expect class DeflaterSink
+/**
+ * This internal constructor shares a buffer with its trusted caller. In general, we can't share a
+ * BufferedSource because the deflater holds input bytes until they are inflated.
+ */
+internal constructor(
   sink: BufferedSink,
   deflater: Deflater,
 ) : Sink {
