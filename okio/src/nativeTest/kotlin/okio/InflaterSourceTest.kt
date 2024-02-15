@@ -104,17 +104,17 @@ class InflaterSourceTest {
 
     // These index values discovered experimentally.
     val sink = Buffer()
-    inflaterSource.read(sink, 8186)
-    assertEquals(24 * 1024 + 10, deflatedData.size)
+    inflaterSource.read(sink, 8184)
+    assertEquals(24 * 1024 + 16, deflatedData.size)
 
     inflaterSource.read(sink, 1)
-    assertEquals(24 * 1024 + 10, deflatedData.size)
+    assertEquals(24 * 1024 + 16, deflatedData.size)
 
     inflaterSource.read(sink, 1)
-    assertEquals(16 * 1024 + 10, deflatedData.size)
+    assertEquals(16 * 1024 + 16, deflatedData.size)
 
     inflaterSource.read(sink, 1)
-    assertEquals(16 * 1024 + 10, deflatedData.size)
+    assertEquals(16 * 1024 + 16, deflatedData.size)
   }
 
   @Test
@@ -149,7 +149,7 @@ class InflaterSourceTest {
 
     assertEquals(content, bufferedInflaterSource.readByteString())
     assertTrue(bufferedInflaterSource.exhausted())
-    assertEquals(24_586, deflatedData.size) // One trailing segment is consumed.
+    assertEquals(24_592, deflatedData.size) // One trailing segment is consumed.
 
     inflaterSource.close()
   }
