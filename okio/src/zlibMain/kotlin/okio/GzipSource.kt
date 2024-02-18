@@ -194,8 +194,8 @@ class GzipSource(source: Source) : Source {
     if (actual != expected) {
       throw IOException(
         "$name: " +
-        "actual 0x${actual.toHexString().padStart(8, '0')} != " +
-        "expected 0x${expected.toHexString().padStart(8, '0')}"
+          "actual 0x${actual.toHexString().padStart(8, '0')} != " +
+          "expected 0x${expected.toHexString().padStart(8, '0')}",
       )
     }
   }
