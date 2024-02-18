@@ -1,4 +1,3 @@
-// ktlint-disable filename
 /*
  * Copyright (C) 2024 Square, Inc.
  *
@@ -16,6 +15,4 @@
  */
 package okio.internal
 
-internal actual val DEFAULT_COMPRESSION = java.util.zip.Deflater.DEFAULT_COMPRESSION
-
-internal actual typealias CRC32 = java.util.zip.CRC32
+internal actual val DEFAULT_COMPRESSION: Int = platform.zlib.Z_DEFAULT_COMPRESSION

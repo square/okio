@@ -19,10 +19,9 @@
 
 package okio
 
-import java.io.IOException
-import java.util.zip.CRC32
-import java.util.zip.Deflater
-import java.util.zip.Deflater.DEFAULT_COMPRESSION
+import kotlin.jvm.JvmName
+import okio.internal.CRC32
+import okio.internal.DEFAULT_COMPRESSION
 
 /**
  * A sink that uses [GZIP](http://www.ietf.org/rfc/rfc1952.txt) to
@@ -119,8 +118,8 @@ class GzipSink(sink: Sink) : Sink {
   }
 
   private fun writeFooter() {
-    sink.writeIntLe(crc.value.toInt()) // CRC of original data.
-    sink.writeIntLe(deflater.bytesRead.toInt()) // Length of original data.
+    sink.writeIntLe(crc.getValue().toInt()) // CRC of original data.
+    sink.writeIntLe(deflater.getBytesRead().toInt()) // Length of original data.
   }
 
   /** Updates the CRC with the given bytes. */

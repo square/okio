@@ -15,11 +15,9 @@
  */
 package okio
 
-import java.io.IOException
-import okio.TestUtil.SEGMENT_SIZE
-import org.junit.Assert.assertEquals
-import org.junit.Assert.fail
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class GzipSinkTest {
   @Test
@@ -41,7 +39,7 @@ class GzipSinkTest {
     mockSink.scheduleThrow(0, IOException("first"))
     mockSink.scheduleThrow(1, IOException("second"))
     val gzipSink = GzipSink(mockSink)
-    gzipSink.write(Buffer().writeUtf8("a".repeat(SEGMENT_SIZE)), SEGMENT_SIZE.toLong())
+    gzipSink.write(Buffer().writeUtf8("a".repeat(Segment.SIZE)), Segment.SIZE.toLong())
     try {
       gzipSink.close()
       fail()
