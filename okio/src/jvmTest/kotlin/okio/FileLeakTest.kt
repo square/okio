@@ -15,16 +15,29 @@
  */
 package okio
 
+import java.net.URLClassLoader
+import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isSymbolicLink
+import kotlin.io.path.readSymbolicLink
+import kotlin.io.path.walk
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import okio.internal.ResourceFileSystem
 import org.junit.After
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
+
+private const val PROC_SELF_FD = "/proc/self/fd"
 
 class FileLeakTest {
 
@@ -87,6 +100,34 @@ class FileLeakTest {
     zipFileSystem.listRecursively("/".toPath()).toList()
     fakeFileSystem.delete(fakeZip)
   }
+
+  @Test
+  fun fileLeakInResourceFileSystemTest() {
+    assumeTrue("File descriptor symbolic link available only on Linux", Path(PROC_SELF_FD).exists())
+    // Create a test file that will be opened and cached by the classloader
+    val zipPath = ZipBuilder(FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16))
+      .addEntry("test.txt", "I'm part of a test!")
+      .addEntry("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+      .build()
+
+    // Create a custom class loader
+    val urlClassLoader = URLClassLoader.newInstance(arrayOf(zipPath.toFile().toURI().toURL()))
+
+    // Create a resource file system using the given a custom class loader
+    val resourceFileSystem = ResourceFileSystem(
+      classLoader = urlClassLoader,
+      indexEagerly = false,
+    )
+
+    // Trigger the read of the classloader
+    resourceFileSystem.source("test.txt".toPath()).use { it.buffer().readUtf8() }
+
+    // Classloader needs to be closed in order to close the file descriptor to the JAR file
+    urlClassLoader.close()
+
+    // Ensure the underlying URLConnection to the JAR file was not cached
+    zipPath.toNioPath().assetFileNotOpen()
+  }
 }
 
 /**
@@ -107,5 +148,20 @@ private inline fun <R> ZipOutputStream.putEntry(name: String, action: BufferedSi
   } finally {
     sink.flush()
     closeEntry()
+  }
+}
+
+// This is a Linux only test for open file descriptors on the current process
+@OptIn(ExperimentalPathApi::class)
+private fun Path.assetFileNotOpen() {
+  val fds = Path(PROC_SELF_FD)
+  if (fds.isDirectory()) {
+    // Linux: verify that path is not open
+    assertTrue("Resource remained opened: $this") {
+      fds.walk()
+        .filter { it.isSymbolicLink() }
+        .map { it.readSymbolicLink() }
+        .none { it == this }
+    }
   }
 }
