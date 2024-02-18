@@ -28,7 +28,7 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(throwingSource)
+    val inflaterSource = throwingSource.inflate()
 
     val sink = Buffer()
     throwingSource.nextException = IOException("boom")
@@ -52,7 +52,7 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(throwingSource)
+    val inflaterSource = throwingSource.inflate()
     val bufferedInflaterSource = inflaterSource.buffer()
     assertEquals(content, bufferedInflaterSource.readByteString())
 
@@ -62,7 +62,7 @@ class InflaterSourceTest {
     }
 
     assertTrue(throwingSource.closed)
-    assertTrue(inflaterSource.inflater.closed)
+    assertTrue(inflaterSource.inflater.dataProcessor.closed)
     assertNoEmptySegments(throwingSource.data)
     assertNoEmptySegments(bufferedInflaterSource.buffer)
   }
@@ -79,14 +79,14 @@ class InflaterSourceTest {
         write(ByteArray(deflatedData.size.toInt() / 2) { -128 })
       }
 
-    val inflaterSource = InflaterSource(invalidData)
+    val inflaterSource = invalidData.inflate()
     val bufferedInflaterSource = inflaterSource.buffer()
     assertFailsWith<IOException> {
       bufferedInflaterSource.readByteString()
     }
 
     bufferedInflaterSource.close()
-    assertTrue(inflaterSource.inflater.closed)
+    assertTrue(inflaterSource.inflater.dataProcessor.closed)
     assertNoEmptySegments(invalidData.buffer)
     assertNoEmptySegments(bufferedInflaterSource.buffer)
   }
@@ -100,21 +100,21 @@ class InflaterSourceTest {
     val deflatedData = Buffer()
     deflate(deflatedData, randomBytes(1024 * 32, seed = 0))
 
-    val inflaterSource = InflaterSource(deflatedData)
+    val inflaterSource = deflatedData.inflate()
 
     // These index values discovered experimentally.
     val sink = Buffer()
-    inflaterSource.read(sink, 8186)
-    assertEquals(24 * 1024 + 10, deflatedData.size)
+    inflaterSource.read(sink, 8184)
+    assertEquals(24 * 1024 + 16, deflatedData.size)
 
     inflaterSource.read(sink, 1)
-    assertEquals(24 * 1024 + 10, deflatedData.size)
+    assertEquals(24 * 1024 + 16, deflatedData.size)
 
     inflaterSource.read(sink, 1)
-    assertEquals(16 * 1024 + 10, deflatedData.size)
+    assertEquals(16 * 1024 + 16, deflatedData.size)
 
     inflaterSource.read(sink, 1)
-    assertEquals(16 * 1024 + 10, deflatedData.size)
+    assertEquals(16 * 1024 + 16, deflatedData.size)
   }
 
   @Test
@@ -124,7 +124,7 @@ class InflaterSourceTest {
     val throwingSource = ThrowingSource()
     deflate(throwingSource.data, content)
 
-    val inflaterSource = InflaterSource(throwingSource)
+    val inflaterSource = throwingSource.inflate()
     val bufferedInflaterSource = inflaterSource.buffer()
 
     assertEquals(content, bufferedInflaterSource.readByteString())
@@ -144,12 +144,12 @@ class InflaterSourceTest {
     deflate(deflatedData, content)
     deflatedData.write(ByteArray(1024 * 32))
 
-    val inflaterSource = InflaterSource(deflatedData)
+    val inflaterSource = deflatedData.inflate()
     val bufferedInflaterSource = inflaterSource.buffer()
 
     assertEquals(content, bufferedInflaterSource.readByteString())
     assertTrue(bufferedInflaterSource.exhausted())
-    assertEquals(24_586, deflatedData.size) // One trailing segment is consumed.
+    assertEquals(24_592, deflatedData.size) // One trailing segment is consumed.
 
     inflaterSource.close()
   }
@@ -173,7 +173,7 @@ class InflaterSourceTest {
   }
 
   private fun deflate(sink: BufferedSink, content: ByteString) {
-    DeflaterSink(sink).buffer().use { deflaterSink ->
+    sink.deflate().buffer().use { deflaterSink ->
       deflaterSink.write(content)
     }
   }

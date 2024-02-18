@@ -23,6 +23,7 @@ import kotlin.test.assertTrue
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
+import platform.zlib.Z_BEST_COMPRESSION
 import platform.zlib.Z_FINISH
 import platform.zlib.Z_NO_FLUSH
 import platform.zlib.Z_SYNC_FLUSH
@@ -30,170 +31,229 @@ import platform.zlib.Z_SYNC_FLUSH
 class DeflaterTest {
   @Test
   fun happyPath() {
-    val deflater = Deflater().apply {
-      source = "God help us, we're in the hands of engineers.".encodeUtf8().toByteArray()
+    val content = "God help us, we're in the hands of engineers."
+    val deflater = Deflater()
+    deflater.dataProcessor.apply {
+      source = content.encodeUtf8().toByteArray()
       sourcePos = 0
       sourceLimit = source.size
-      flush = Z_FINISH
+      deflater.flush = Z_FINISH
 
       target = ByteArray(256)
       targetPos = 0
       targetLimit = target.size
+
+      assertTrue(process())
+      assertEquals(sourceLimit, sourcePos)
+      assertEquals(content.length.toLong(), deflater.getBytesRead())
+      val deflated = target.toByteString(0, targetPos)
+
+      // Golden compressed output.
+      assertEquals(
+        "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=".decodeBase64(),
+        deflated,
+      )
+
+      deflater.end()
     }
+  }
 
-    assertTrue(deflater.process())
-    assertEquals(deflater.sourceLimit, deflater.sourcePos)
-    val deflated = deflater.target.toByteString(0, deflater.targetPos)
+  @Test
+  fun happyPathNoWrap() {
+    val content = "God help us, we're in the hands of engineers."
+    val deflater = Deflater(nowrap = true)
+    deflater.dataProcessor.apply {
+      source = content.encodeUtf8().toByteArray()
+      sourcePos = 0
+      sourceLimit = source.size
+      deflater.flush = Z_FINISH
 
-    // Golden compressed output.
-    assertEquals(
-      "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64(),
-      deflated,
-    )
+      target = ByteArray(256)
+      targetPos = 0
+      targetLimit = target.size
 
-    deflater.close()
+      assertTrue(process())
+      assertEquals(sourceLimit, sourcePos)
+      assertEquals(content.length.toLong(), deflater.getBytesRead())
+      val deflated = target.toByteString(0, targetPos)
+
+      // Golden compressed output.
+      assertEquals(
+        "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64(),
+        deflated,
+      )
+
+      deflater.end()
+    }
   }
 
   @Test
   fun deflateInParts() {
-    val deflater = Deflater().apply {
+    val contentA = "God help us, we're in the hands"
+    val contentB = " of engineers."
+    val deflater = Deflater()
+    deflater.dataProcessor.apply {
       target = ByteArray(256)
       targetPos = 0
       targetLimit = target.size
+
+      source = contentA.encodeUtf8().toByteArray()
+      sourcePos = 0
+      sourceLimit = source.size
+      assertTrue(process())
+      assertEquals(sourceLimit, sourcePos)
+      assertEquals(contentA.length.toLong(), deflater.getBytesRead())
+
+      source = contentB.encodeUtf8().toByteArray()
+      sourcePos = 0
+      sourceLimit = source.size
+      deflater.flush = Z_FINISH
+      assertTrue(process())
+      assertEquals(sourceLimit, sourcePos)
+      assertEquals((contentA + contentB).length.toLong(), deflater.getBytesRead())
+
+      val deflated = target.toByteString(0, targetPos)
+
+      // Golden compressed output.
+      assertEquals(
+        "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=".decodeBase64(),
+        deflated,
+      )
+
+      deflater.end()
     }
-
-    deflater.source = "God help us, we're in the hands".encodeUtf8().toByteArray()
-    deflater.sourcePos = 0
-    deflater.sourceLimit = deflater.source.size
-    assertTrue(deflater.process())
-    assertEquals(deflater.sourceLimit, deflater.sourcePos)
-
-    deflater.source = " of engineers.".encodeUtf8().toByteArray()
-    deflater.sourcePos = 0
-    deflater.sourceLimit = deflater.source.size
-    deflater.flush = Z_FINISH
-    assertTrue(deflater.process())
-    assertEquals(deflater.sourceLimit, deflater.sourcePos)
-
-    val deflated = deflater.target.toByteString(0, deflater.targetPos)
-
-    // Golden compressed output.
-    assertEquals(
-      "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64(),
-      deflated,
-    )
-
-    deflater.close()
   }
 
   @Test
   fun deflateInsufficientSpaceInTargetWithoutSourceFinished() {
     val targetBuffer = Buffer()
 
-    val deflater = Deflater().apply {
-      source = "God help us, we're in the hands of engineers.".encodeUtf8().toByteArray()
+    val content = "God help us, we're in the hands of engineers."
+    val deflater = Deflater()
+    deflater.dataProcessor.apply {
+      source = content.encodeUtf8().toByteArray()
       sourcePos = 0
       sourceLimit = source.size
+
+      target = ByteArray(10)
+      targetPos = 0
+      targetLimit = target.size
+      deflater.flush = Z_SYNC_FLUSH
+      assertFalse(process())
+      assertEquals(targetLimit, targetPos)
+      assertEquals(content.length.toLong(), deflater.getBytesRead())
+      targetBuffer.write(target)
+
+      target = ByteArray(256)
+      targetPos = 0
+      targetLimit = target.size
+      deflater.flush = Z_NO_FLUSH
+      assertTrue(process())
+      assertEquals(sourcePos, sourceLimit)
+      assertEquals(content.length.toLong(), deflater.getBytesRead())
+      targetBuffer.write(target, 0, targetPos)
+
+      deflater.flush = Z_FINISH
+      assertTrue(process())
+
+      // Golden compressed output.
+      assertEquals(
+        "eJxyz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYD".decodeBase64(),
+        targetBuffer.readByteString(),
+      )
+
+      deflater.end()
     }
-
-    deflater.target = ByteArray(10)
-    deflater.targetPos = 0
-    deflater.targetLimit = deflater.target.size
-    deflater.flush = Z_SYNC_FLUSH
-    assertFalse(deflater.process())
-    assertEquals(deflater.targetLimit, deflater.targetPos)
-    targetBuffer.write(deflater.target)
-
-    deflater.target = ByteArray(256)
-    deflater.targetPos = 0
-    deflater.targetLimit = deflater.target.size
-    deflater.flush = Z_NO_FLUSH
-    assertTrue(deflater.process())
-    assertEquals(deflater.sourcePos, deflater.sourceLimit)
-    targetBuffer.write(deflater.target, 0, deflater.targetPos)
-
-    deflater.flush = Z_FINISH
-    assertTrue(deflater.process())
-
-    // Golden compressed output.
-    assertEquals(
-      "cs9PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAw==".decodeBase64(),
-      targetBuffer.readByteString(),
-    )
-
-    deflater.close()
   }
 
   @Test
   fun deflateInsufficientSpaceInTargetWithSourceFinished() {
     val targetBuffer = Buffer()
 
-    val deflater = Deflater().apply {
-      source = "God help us, we're in the hands of engineers.".encodeUtf8().toByteArray()
+    val content = "God help us, we're in the hands of engineers."
+    val deflater = Deflater()
+    deflater.dataProcessor.apply {
+      source = content.encodeUtf8().toByteArray()
       sourcePos = 0
       sourceLimit = source.size
-      flush = Z_FINISH
-    }
+      deflater.flush = Z_FINISH
 
-    deflater.target = ByteArray(10)
-    deflater.targetPos = 0
-    deflater.targetLimit = deflater.target.size
-    assertFalse(deflater.process())
-    assertEquals(deflater.targetLimit, deflater.targetPos)
-    targetBuffer.write(deflater.target)
-
-    deflater.target = ByteArray(256)
-    deflater.targetPos = 0
-    deflater.targetLimit = deflater.target.size
-    assertTrue(deflater.process())
-    assertEquals(deflater.sourcePos, deflater.sourceLimit)
-    targetBuffer.write(deflater.target, 0, deflater.targetPos)
-
-    // Golden compressed output.
-    assertEquals(
-      "c89PUchIzSlQKC3WUShPVS9KVcjMUyjJSFXISMxLKVbIT1NIzUvPzEtNLSrWAwA=".decodeBase64(),
-      targetBuffer.readByteString(),
-    )
-
-    deflater.close()
-  }
-
-  @Test
-  fun deflateEmptySource() {
-    val deflater = Deflater().apply {
-      flush = Z_FINISH
+      target = ByteArray(10)
+      targetPos = 0
+      targetLimit = target.size
+      assertFalse(process())
+      assertEquals(targetLimit, targetPos)
+      assertEquals(content.length.toLong(), deflater.getBytesRead())
+      targetBuffer.write(target)
 
       target = ByteArray(256)
       targetPos = 0
       targetLimit = target.size
+      assertTrue(process())
+      assertEquals(sourcePos, sourceLimit)
+      assertEquals(content.length.toLong(), deflater.getBytesRead())
+      targetBuffer.write(target, 0, targetPos)
+
+      // Golden compressed output.
+      assertEquals(
+        "eJxzz09RyEjNKVAoLdZRKE9VL0pVyMxTKMlIVchIzEspVshPU0jNS8/MS00tKtYDAF6CD5s=".decodeBase64(),
+        targetBuffer.readByteString(),
+      )
+
+      deflater.end()
     }
-
-    assertTrue(deflater.process())
-    val deflated = deflater.target.toByteString(0, deflater.targetPos)
-
-    // Golden compressed output.
-    assertEquals(
-      "AwA=".decodeBase64(),
-      deflated,
-    )
-
-    deflater.close()
   }
 
   @Test
-  fun cannotDeflateAfterClose() {
+  fun deflateEmptySource() {
     val deflater = Deflater()
-    deflater.close()
+    deflater.dataProcessor.apply {
+      deflater.flush = Z_FINISH
+
+      target = ByteArray(256)
+      targetPos = 0
+      targetLimit = target.size
+
+      assertTrue(process())
+      assertEquals(0L, deflater.getBytesRead())
+      val deflated = target.toByteString(0, targetPos)
+
+      // Golden compressed output.
+      assertEquals(
+        "eJwDAAAAAAE=".decodeBase64(),
+        deflated,
+      )
+
+      deflater.end()
+    }
+  }
+
+  @Test
+  fun cannotDeflateAfterEnd() {
+    val deflater = Deflater()
+    deflater.end()
 
     assertFailsWith<IllegalStateException> {
-      deflater.process()
+      deflater.dataProcessor.process()
     }
   }
 
   @Test
-  fun closeIsIdemptent() {
+  fun cannotGetBytesReadAfterEnd() {
     val deflater = Deflater()
-    deflater.close()
-    deflater.close()
+    deflater.end()
+
+    assertFailsWith<IllegalStateException> {
+      deflater.getBytesRead()
+    }
   }
+
+  @Test
+  fun endIsIdemptent() {
+    val deflater = Deflater()
+    deflater.end()
+    deflater.end()
+  }
+
+  private fun Deflater(nowrap: Boolean) = Deflater(Z_BEST_COMPRESSION, nowrap)
 }

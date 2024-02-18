@@ -13,37 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-@file:JvmName("-DeflaterSinkExtensions")
 @file:Suppress("NOTHING_TO_INLINE") // Aliases to public API.
 
 package okio
 
 import java.util.zip.Deflater
 
-/**
- * A sink that uses [DEFLATE](http://tools.ietf.org/html/rfc1951) to
- * compress data written to another source.
- *
- * ### Sync flush
- *
- * Aggressive flushing of this stream may result in reduced compression. Each
- * call to [flush] immediately compresses all currently-buffered data;
- * this early compression may be less effective than compression performed
- * without flushing.
- *
- * This is equivalent to using [Deflater] with the sync flush option.
- * This class does not offer any partial flush mechanism. For best performance,
- * only call [flush] when application behavior requires it.
- */
-class DeflaterSink
-/**
- * This internal constructor shares a buffer with its trusted caller.
- * In general we can't share a BufferedSource because the deflater holds input
- * bytes until they are inflated.
- */
-internal constructor(private val sink: BufferedSink, private val deflater: Deflater) : Sink {
-  constructor(sink: Sink, deflater: Deflater) : this(sink.buffer(), deflater)
+actual class DeflaterSink internal actual constructor(
+  private val sink: BufferedSink,
+  private val deflater: Deflater,
+) : Sink {
+  actual constructor(sink: Sink, deflater: Deflater) : this(sink.buffer(), deflater)
 
   private var closed = false
 
@@ -113,7 +93,7 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
     sink.flush()
   }
 
-  internal fun finishDeflate() {
+  internal actual fun finishDeflate() {
     deflater.finish()
     deflate(false)
   }
@@ -152,11 +132,3 @@ internal constructor(private val sink: BufferedSink, private val deflater: Defla
 
   override fun toString() = "DeflaterSink($sink)"
 }
-
-/**
- * Returns an [DeflaterSink] that DEFLATE-compresses data to this [Sink] while writing.
- *
- * @see DeflaterSink
- */
-inline fun Sink.deflate(deflater: Deflater = Deflater()): DeflaterSink =
-  DeflaterSink(this, deflater)

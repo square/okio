@@ -15,17 +15,20 @@
  */
 package okio
 
-class InflaterSource(
-  source: Source,
+actual class InflaterSource internal actual constructor(
+  internal val source: BufferedSource,
+  internal val inflater: Inflater,
 ) : Source {
-  internal val inflater = Inflater()
-  private val source: BufferedSource = source.buffer()
+  actual constructor(
+    source: Source,
+    inflater: Inflater,
+  ) : this(source.buffer(), inflater)
 
   @Throws(IOException::class)
   override fun read(sink: Buffer, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
 
-    return inflater.readBytesToTarget(
+    return inflater.dataProcessor.readBytesToTarget(
       source = source,
       targetMaxByteCount = byteCount,
       target = sink,
@@ -37,9 +40,9 @@ class InflaterSource(
   }
 
   override fun close() {
-    if (inflater.closed) return
+    if (inflater.dataProcessor.closed) return
 
-    inflater.close()
+    inflater.dataProcessor.close()
 
     source.close()
   }

@@ -28,7 +28,7 @@ class DeflaterSinkTest {
     val content = randomBytes(1024 * 32)
     val source = Buffer().write(content)
 
-    val deflaterSink = DeflaterSink(throwingSink)
+    val deflaterSink = throwingSink.deflate()
 
     throwingSink.nextException = IOException("boom")
     assertFailsWith<IOException> {
@@ -50,7 +50,7 @@ class DeflaterSinkTest {
     val content = randomBytes(1024 * 32)
     val source = Buffer().write(content)
 
-    val deflaterSink = DeflaterSink(throwingSink)
+    val deflaterSink = throwingSink.deflate()
     deflaterSink.write(source, source.size)
 
     throwingSink.nextException = IOException("boom")
@@ -70,7 +70,7 @@ class DeflaterSinkTest {
     val content = randomBytes(1024 * 32)
     val source = Buffer().write(content)
 
-    val deflaterSink = DeflaterSink(throwingSink)
+    val deflaterSink = throwingSink.deflate()
     deflaterSink.write(source, source.size)
 
     throwingSink.nextException = IOException("boom")
@@ -78,7 +78,7 @@ class DeflaterSinkTest {
       deflaterSink.close()
     }
 
-    assertTrue(deflaterSink.deflater.closed)
+    assertTrue(deflaterSink.deflater.dataProcessor.closed)
     assertTrue(throwingSink.closed)
   }
 
@@ -106,7 +106,7 @@ class DeflaterSinkTest {
   }
 
   private fun inflate(deflated: Buffer): ByteString {
-    return InflaterSource(deflated).buffer().use { inflaterSource ->
+    return deflated.inflate().buffer().use { inflaterSource ->
       inflaterSource.readByteString()
     }
   }
