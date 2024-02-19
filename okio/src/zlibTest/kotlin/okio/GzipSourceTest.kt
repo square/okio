@@ -15,17 +15,15 @@
  */
 package okio
 
-import java.io.IOException
-import java.util.zip.CRC32
-import kotlin.text.Charsets.UTF_8
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.test.fail
 import okio.ByteString.Companion.decodeHex
+import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.of
-import okio.TestUtil.reverseBytes
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
-import org.junit.Test
+import okio.internal.CRC32
 
 class GzipSourceTest {
   @Test
@@ -44,7 +42,7 @@ class GzipSourceTest {
     hcrc.update(gzipHeader.toByteArray())
     val gzipped = Buffer()
     gzipped.write(gzipHeader)
-    gzipped.writeShort(hcrc.value.toShort().reverseBytes().toInt()) // little endian
+    gzipped.writeShort(hcrc.getValue().toShort().reverseBytes().toInt()) // little endian
     gzipped.write(deflated)
     gzipped.write(gzipTrailer)
     assertGzipped(gzipped)
@@ -55,7 +53,7 @@ class GzipSourceTest {
     val gzipped = Buffer()
     gzipped.write(gzipHeaderWithFlags(0x04.toByte()))
     gzipped.writeShort(7.toShort().reverseBytes().toInt()) // little endian extra length
-    gzipped.write("blubber".toByteArray(UTF_8), 0, 7)
+    gzipped.write("blubber".encodeUtf8().toByteArray(), 0, 7)
     gzipped.write(deflated)
     gzipped.write(gzipTrailer)
     assertGzipped(gzipped)
@@ -65,7 +63,7 @@ class GzipSourceTest {
   fun gunzip_withName() {
     val gzipped = Buffer()
     gzipped.write(gzipHeaderWithFlags(0x08.toByte()))
-    gzipped.write("foo.txt".toByteArray(UTF_8), 0, 7)
+    gzipped.write("foo.txt".encodeUtf8().toByteArray(), 0, 7)
     gzipped.writeByte(0) // zero-terminated
     gzipped.write(deflated)
     gzipped.write(gzipTrailer)
@@ -76,7 +74,7 @@ class GzipSourceTest {
   fun gunzip_withComment() {
     val gzipped = Buffer()
     gzipped.write(gzipHeaderWithFlags(0x10.toByte()))
-    gzipped.write("rubbish".toByteArray(UTF_8), 0, 7)
+    gzipped.write("rubbish".encodeUtf8().toByteArray(), 0, 7)
     gzipped.writeByte(0) // zero-terminated
     gzipped.write(deflated)
     gzipped.write(gzipTrailer)
@@ -92,10 +90,10 @@ class GzipSourceTest {
     val gzipped = Buffer()
     gzipped.write(gzipHeaderWithFlags(0x1c.toByte()))
     gzipped.writeShort(7.toShort().reverseBytes().toInt()) // little endian extra length
-    gzipped.write("blubber".toByteArray(UTF_8), 0, 7)
-    gzipped.write("foo.txt".toByteArray(UTF_8), 0, 7)
+    gzipped.write("blubber".encodeUtf8().toByteArray(), 0, 7)
+    gzipped.write("foo.txt".encodeUtf8().toByteArray(), 0, 7)
     gzipped.writeByte(0) // zero-terminated
-    gzipped.write("rubbish".toByteArray(UTF_8), 0, 7)
+    gzipped.write("rubbish".encodeUtf8().toByteArray(), 0, 7)
     gzipped.writeByte(0) // zero-terminated
     gzipped.write(deflated)
     gzipped.write(gzipTrailer)
