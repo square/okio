@@ -26,7 +26,7 @@ import org.junit.Test
 
 class ZipFileSystemTest {
   private val fileSystem = FileSystem.SYSTEM
-  private var base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)
+  private var base = "../okio-testing-support/src/commonMain/resources/okio/zipfilesystem".toPath()
 
   @Before
   fun setUp() {
@@ -58,12 +58,22 @@ class ZipFileSystemTest {
     assertThat(zipFileSystem.list("/".toPath())).isEmpty()
   }
 
+  /**
+   * ```
+   * echo "Hello World" > hello.txt
+   *
+   * mkdir -p directory/subdirectory
+   * echo "Another file!" > directory/subdirectory/child.txt
+   *
+   * zip \
+   *   zipWithFiles.zip \
+   *   hello.txt \
+   *   directory/subdirectory/child.txt
+   * ```
+   */
   @Test
   fun zipWithFiles() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("hello.txt", "Hello World")
-      .addEntry("directory/subdirectory/child.txt", "Another file!")
-      .build()
+    val zipPath = base / "zipWithFiles.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("hello.txt".toPath()) { readUtf8() })
@@ -83,15 +93,25 @@ class ZipFileSystemTest {
   /**
    * Note that the zip tool does not compress files that don't benefit from it. Examples above like
    * 'Hello World' are stored, not deflated.
+   *
+   * ```
+   * echo "Android
+   * Android
+   * ... <1000 times>
+   * Android
+   * " > a.txt
+   *
+   * zip \
+   *   --compression-method \
+   *   deflate \
+   *   zipWithDeflate.zip \
+   *   a.txt
+   * ```
    */
   @Test
   fun zipWithDeflate() {
     val content = "Android\n".repeat(1000)
-    val zipPath = ZipBuilder(base)
-      .addEntry("a.txt", content)
-      .addOption("--compression-method")
-      .addOption("deflate")
-      .build()
+    val zipPath = base / "zipWithDeflate.zip"
     assertThat(fileSystem.metadata(zipPath).size).isLessThan(content.length.toLong())
     val zipFileSystem = fileSystem.openZip(zipPath)
 
@@ -99,14 +119,25 @@ class ZipFileSystemTest {
       .isEqualTo(content)
   }
 
+  /**
+   * ```
+   * echo "Android
+   * Android
+   * ... <1000 times>
+   * Android
+   * " > a.txt
+   *
+   * zip \
+   *   --compression-method \
+   *   store \
+   *   zipWithStore.zip \
+   *   a.txt
+   * ```
+   */
   @Test
   fun zipWithStore() {
     val content = "Android\n".repeat(1000)
-    val zipPath = ZipBuilder(base)
-      .addEntry("a.txt", content)
-      .addOption("--compression-method")
-      .addOption("store")
-      .build()
+    val zipPath = base / "zipWithStore.zip"
     assertThat(fileSystem.metadata(zipPath).size).isGreaterThan(content.length.toLong())
     val zipFileSystem = fileSystem.openZip(zipPath)
 
@@ -117,13 +148,22 @@ class ZipFileSystemTest {
   /**
    * Confirm we can read zip files that have file comments, even if these comments are not exposed
    * in the public API.
+   *
+   * ```
+   * echo "Android" > a.txt
+   *
+   * echo "Banana" > b.txt
+   *
+   * zip \
+   *   --entry-comments \
+   *   zipWithFileComments.zip \
+   *   a.txt \
+   *   b.txt
+   * ```
    */
   @Test
   fun zipWithFileComments() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("a.txt", "Android", comment = "A is for Android")
-      .addEntry("b.txt", "Banana", comment = "B or not to Be")
-      .build()
+    val zipPath = base / "zipWithFileComments.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("a.txt".toPath()) { readUtf8() })
@@ -133,22 +173,25 @@ class ZipFileSystemTest {
       .isEqualTo("Banana")
   }
 
+  /**
+   * ```
+   * echo "Android" > a.txt
+   * touch -m -t 200102030405.06 a.txt
+   * touch -a -t 200102030405.07 a.txt
+   *
+   * echo "Banana" > b.txt
+   * touch -m -t 200908070605.04 b.txt
+   * touch -a -t 200908070605.03 b.txt
+   *
+   * zip \
+   *   zipWithFileModifiedDate.zip \
+   *   a.txt \
+   *   b.txt
+   * ```
+   */
   @Test
   fun zipWithFileModifiedDate() {
-    val zipPath = ZipBuilder(base)
-      .addEntry(
-        path = "a.txt",
-        content = "Android",
-        modifiedAt = "200102030405.06",
-        accessedAt = "200102030405.07",
-      )
-      .addEntry(
-        path = "b.txt",
-        content = "Banana",
-        modifiedAt = "200908070605.04",
-        accessedAt = "200908070605.03",
-      )
-      .build()
+    val zipPath = base / "zipWithFileModifiedDate.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a.txt".toPath())
@@ -172,23 +215,27 @@ class ZipFileSystemTest {
       }
   }
 
-  /** Confirm we suffer UNIX limitations on our date format. */
+  /**
+   * Confirm we suffer UNIX limitations on our date format.
+   *
+   * ```
+   * echo "Android" > a.txt
+   * touch -m -t 196912310000.00 a.txt
+   * touch -a -t 196912300000.00 a.txt
+   *
+   * echo "Banana" > b.txt
+   * touch -m -t 203801190314.07 b.txt
+   * touch -a -t 203801190314.08 b.txt
+   *
+   * zip \
+   *   zipWithFileOutOfBoundsModifiedDate.zip \
+   *   a.txt \
+   *   b.txt
+   * ```
+   */
   @Test
   fun zipWithFileOutOfBoundsModifiedDate() {
-    val zipPath = ZipBuilder(base)
-      .addEntry(
-        path = "a.txt",
-        content = "Android",
-        modifiedAt = "196912310000.00",
-        accessedAt = "196912300000.00",
-      )
-      .addEntry(
-        path = "b.txt",
-        content = "Banana",
-        modifiedAt = "203801190314.07", // Last UNIX date representable in 31 bits.
-        accessedAt = "203801190314.08", // Overflows!
-      )
-      .build()
+    val zipPath = base / "zipWithFileOutOfBoundsModifiedDate.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     println(Instant.fromEpochMilliseconds(-2147483648000L))
@@ -219,25 +266,29 @@ class ZipFileSystemTest {
    * Directories are optional in the zip file. But if we want metadata on them they must be stored.
    * Note that this test adds the directories last; otherwise adding child files to them will cause
    * their modified at times to change.
+   *
+   * ```
+   * mkdir -p a
+   * echo "Android" > a/a.txt
+   * touch -m -t 200102030405.06 a
+   * touch -a -t 200102030405.07 a
+   *
+   * mkdir -p b
+   * echo "Android" > b/b.txt
+   * touch -m -t 200908070605.04 b
+   * touch -a -t 200908070605.03 b
+   *
+   * zip \
+   *   zipWithDirectoryModifiedDate.zip \
+   *   a/a.txt \
+   *   a \
+   *   b/b.txt \
+   *   b
+   * ```
    */
   @Test
   fun zipWithDirectoryModifiedDate() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("a/a.txt", "Android")
-      .addEntry(
-        path = "a",
-        directory = true,
-        modifiedAt = "200102030405.06",
-        accessedAt = "200102030405.07",
-      )
-      .addEntry("b/b.txt", "Android")
-      .addEntry(
-        path = "b",
-        directory = true,
-        modifiedAt = "200908070605.04",
-        accessedAt = "200908070605.03",
-      )
-      .build()
+    val zipPath = base / "zipWithDirectoryModifiedDate.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a".toPath())
@@ -263,16 +314,21 @@ class ZipFileSystemTest {
     assertThat(zipFileSystem.list("b".toPath())).containsExactly("/b/b.txt".toPath())
   }
 
+  /**
+   * ```
+   * mkdir -p a
+   * echo "Android" > a/a.txt
+   * touch -m -t 197001010001.00 a/a.txt
+   * touch -a -t 197001010002.00 a/a.txt
+   *
+   * zip \
+   *   zipWithModifiedDate.zip \
+   *   a/a.txt
+   * ```
+   */
   @Test
   fun zipWithModifiedDate() {
-    val zipPath = ZipBuilder(base)
-      .addEntry(
-        "a/a.txt",
-        modifiedAt = "197001010001.00",
-        accessedAt = "197001010002.00",
-        content = "Android",
-      )
-      .build()
+    val zipPath = base / "zipWithModifiedDate.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a/a.txt".toPath())
@@ -283,17 +339,22 @@ class ZipFileSystemTest {
       }
   }
 
-  /** Build a very small zip file with just a single empty directory. */
+  /**
+   * Build a very small zip file with just a single empty directory.
+   *
+   * ```
+   * mkdir -p a
+   * touch -m -t 200102030405.06 a
+   * touch -a -t 200102030405.07 a
+   *
+   * zip \
+   *   zipWithEmptyDirectory.zip \
+   *   a
+   * ```
+   */
   @Test
   fun zipWithEmptyDirectory() {
-    val zipPath = ZipBuilder(base)
-      .addEntry(
-        path = "a",
-        directory = true,
-        modifiedAt = "200102030405.06",
-        accessedAt = "200102030405.07",
-      )
-      .build()
+    val zipPath = base / "zipWithEmptyDirectory.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a".toPath())
@@ -311,16 +372,26 @@ class ZipFileSystemTest {
   /**
    * The `--no-dir-entries` option causes the zip file to omit the directories from the encoded
    * file. Our implementation synthesizes these missing directories automatically.
+   *
+   * ```
+   * mkdir -p a
+   * echo "Android" > a/a.txt
+   *
+   * mkdir -p b
+   * echo "Android" > b/b.txt
+   *
+   * zip \
+   *   --no-dir-entries \
+   *   zipWithSyntheticDirectory.zip \
+   *   a/a.txt \
+   *   a \
+   *   b/b.txt \
+   *   b
+   * ```
    */
   @Test
   fun zipWithSyntheticDirectory() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("a/a.txt", "Android")
-      .addEntry("a", directory = true)
-      .addEntry("b/b.txt", "Android")
-      .addEntry("b", directory = true)
-      .addOption("--no-dir-entries")
-      .build()
+    val zipPath = base / "zipWithSyntheticDirectory.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     zipFileSystem.metadata("a".toPath())
@@ -349,12 +420,16 @@ class ZipFileSystemTest {
   /**
    * Force a file to be encoded with zip64 metadata. We use a pipe to force the zip command to
    * create a zip64 archive; otherwise we'd need to add a very large file to get this format.
+   *
+   * ```
+   * zip \
+   *   zip64.zip \
+   *   -
+   * ```
    */
   @Test
   fun zip64() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("-", "Android", zip64 = true)
-      .build()
+    val zipPath = base / "zip64.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("-".toPath()) { readUtf8() })
@@ -364,50 +439,76 @@ class ZipFileSystemTest {
   /**
    * Confirm we can read zip files with a full-archive comment, even if this comment is not surfaced
    * in our API.
+   *
+   * ```
+   * echo "Android" > a.txt
+   *
+   * zip \
+   *   --archive-comment \
+   *   zipWithArchiveComment.zip \
+   *   a.txt
+   * ```
    */
   @Test
   fun zipWithArchiveComment() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("a.txt", "Android")
-      .archiveComment("this comment applies to the entire archive")
-      .build()
+    val zipPath = base / "zipWithArchiveComment.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("a.txt".toPath()) { readUtf8() })
       .isEqualTo("Android")
   }
 
+  /**
+   * ```
+   * echo "(...128 KiB...)" > large_file.txt
+   *
+   * zip \
+   *   --split-size \
+   *   64k \
+   *   cannotReadZipWithSpanning.zip \
+   *   large_file.txt
+   * ```
+   */
   @Test
   fun cannotReadZipWithSpanning() {
     // Spanned archives must be at least 64 KiB.
-    val largeFile = randomToken(length = 128 * 1024)
-    val zipPath = ZipBuilder(base)
-      .addEntry("large_file.txt", largeFile)
-      .addOption("--split-size")
-      .addOption("64k")
-      .build()
+    val zipPath = base / "cannotReadZipWithSpanning.zip"
     assertFailsWith<IOException> {
       fileSystem.openZip(zipPath)
     }
   }
 
+  /**
+   * ```
+   * echo "Android" > a.txt
+   *
+   * zip \
+   *   --password \
+   *   secret \
+   *   cannotReadZipWithEncryption.zip \
+   *   a.txt
+   * ```
+   */
   @Test
   fun cannotReadZipWithEncryption() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("a.txt", "Android")
-      .addOption("--password")
-      .addOption("secret")
-      .build()
+    val zipPath = base / "cannotReadZipWithEncryption.zip"
     assertFailsWith<IOException> {
       fileSystem.openZip(zipPath)
     }
   }
 
+  /**
+   * ```
+   * echo "Android" > a.txt
+   *
+   * zip \
+   *   zipTooShort.zip \
+   *   a.txt
+   * ```
+   */
   @Test
   fun zipTooShort() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("a.txt", "Android")
-      .build()
+    val zipPath = base / "zipTooShort.zip"
 
     val prefix = fileSystem.read(zipPath) { readByteString(20) }
     fileSystem.write(zipPath) { write(prefix) }
@@ -425,13 +526,21 @@ class ZipFileSystemTest {
    * We used to crash on duplicates, but they are common in practice so now we prefer the last
    * entry. This behavior is consistent with both [java.util.zip.ZipFile] and
    * [java.nio.file.FileSystem].
+   *
+   * ```
+   * echo "This is the first hello.txt" > hello.txt
+   *
+   * echo "This is the second hello.txt" > xxxxx.xxx
+   *
+   * zip \
+   *   filesOverlap.zip \
+   *   hello.txt \
+   *   xxxxx.xxx
+   * ```
    */
   @Test
   fun filesOverlap() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("hello.txt", "This is the first hello.txt")
-      .addEntry("xxxxx.xxx", "This is the second hello.txt")
-      .build()
+    val zipPath = base / "filesOverlap.zip"
     val original = fileSystem.read(zipPath) { readByteString() }
     val rewritten = original.replaceAll("xxxxx.xxx".encodeUtf8(), "hello.txt".encodeUtf8())
     fileSystem.write(zipPath) { write(rewritten) }
@@ -443,12 +552,22 @@ class ZipFileSystemTest {
       .containsExactly("/hello.txt".toPath())
   }
 
+  /**
+   * ```
+   * echo "Hello World" > hello.txt
+   *
+   * mkdir -p directory
+   * echo "Another file!" > directory/child.txt
+   *
+   * zip \
+   *   canonicalizationValid.zip \
+   *   hello.txt \
+   *   directory/child.txt
+   * ```
+   */
   @Test
   fun canonicalizationValid() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("hello.txt", "Hello World")
-      .addEntry("directory/child.txt", "Another file!")
-      .build()
+    val zipPath = base / "canonicalizationValid.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.canonicalize("/".toPath())).isEqualTo("/".toPath())
@@ -462,12 +581,22 @@ class ZipFileSystemTest {
     assertThat(zipFileSystem.canonicalize("directory/whevs/../child.txt".toPath())).isEqualTo("/directory/child.txt".toPath())
   }
 
+  /**
+   * ```
+   * echo "Hello World" > hello.txt
+   *
+   * mkdir -p directory
+   * echo "Another file!" > directory/child.txt
+   *
+   * zip \
+   *   canonicalizationInvalidThrows.zip \
+   *   hello.txt \
+   *   directory/child.txt
+   * ```
+   */
   @Test
   fun canonicalizationInvalidThrows() {
-    val zipPath = ZipBuilder(base)
-      .addEntry("hello.txt", "Hello World")
-      .addEntry("directory/child.txt", "Another file!")
-      .build()
+    val zipPath = base / "canonicalizationInvalidThrows.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertFailsWith<FileNotFoundException> {
