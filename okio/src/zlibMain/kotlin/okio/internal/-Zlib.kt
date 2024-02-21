@@ -17,3 +17,22 @@
 package okio.internal
 
 internal expect val DEFAULT_COMPRESSION: Int
+
+/**
+ * Note that this inherits the local time zone.
+ *
+ * @param year such as 1970 or 2024
+ * @param month a value in the range 1 (January) through 12 (December).
+ * @param day a value in the range 1 through 31.
+ * @param hour a value in the range 0 through 23.
+ * @param minute a value in the range 0 through 59.
+ * @param second a value in the range 0 through 59.
+ */
+internal expect fun datePartsToEpochMillis(
+  year: Int,
+  month: Int,
+  day: Int,
+  hour: Int,
+  minute: Int,
+  second: Int,
+): Long

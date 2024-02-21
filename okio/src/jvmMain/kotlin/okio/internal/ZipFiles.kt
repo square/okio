@@ -16,8 +16,6 @@
  */
 package okio.internal
 
-import java.util.Calendar
-import java.util.GregorianCalendar
 import okio.BufferedSource
 import okio.FileMetadata
 import okio.FileSystem
@@ -435,17 +433,14 @@ private fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
     return null
   }
 
-  // Note that this inherits the local time zone.
-  val cal = GregorianCalendar()
-  cal.set(Calendar.MILLISECOND, 0)
-  val year = 1980 + (date shr 9 and 0x7f)
-  val month = date shr 5 and 0xf
-  val day = date and 0x1f
-  val hour = time shr 11 and 0x1f
-  val minute = time shr 5 and 0x3f
-  val second = time and 0x1f shl 1
-  cal.set(year, month - 1, day, hour, minute, second)
-  return cal.time.time
+  return datePartsToEpochMillis(
+    year = 1980 + (date shr 9 and 0x7f),
+    month = date shr 5 and 0xf,
+    day = date and 0x1f,
+    hour = time shr 11 and 0x1f,
+    minute = time shr 5 and 0x3f,
+    second = time and 0x1f shl 1,
+  )
 }
 
 private class EocdRecord(

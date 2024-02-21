@@ -15,6 +15,7 @@
  */
 package okio
 
+import java.util.TimeZone
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import okio.Path.Companion.toOkioPath
@@ -51,4 +52,14 @@ actual fun assertRelativeToFails(
   }
   // Return okio.
   return assertFailsWith { b.relativeTo(a) }
+}
+
+actual fun <T> withUtc(block: () -> T): T {
+  val original = TimeZone.getDefault()
+  TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+  try {
+    return block()
+  } finally {
+    TimeZone.setDefault(original)
+  }
 }
