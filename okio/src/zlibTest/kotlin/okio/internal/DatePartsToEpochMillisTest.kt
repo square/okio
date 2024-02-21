@@ -199,32 +199,31 @@ class DatePartsToEpochMillisTest {
       day++
       epochMillis += 24L * 60 * 60 * 1000
 
-      while (true) {
-        val monthSize = when (month) {
-          1 -> 31
-          2 -> {
-            when {
-              year % 400 == 0 -> 29
-              year % 100 == 0 -> 28
-              year % 4 == 0 -> 29
-              else -> 28
-            }
+      val monthSize = when (month) {
+        1 -> 31
+        2 -> {
+          when {
+            year % 400 == 0 -> 29
+            year % 100 == 0 -> 28
+            year % 4 == 0 -> 29
+            else -> 28
           }
-          3 -> 31
-          4 -> 30
-          5 -> 31
-          6 -> 30
-          7 -> 31
-          8 -> 31
-          9 -> 30
-          10 -> 31
-          11 -> 30
-          12 -> 31
-          else -> error("unexpected month $month")
         }
 
-        if (day <= monthSize) return
+        3 -> 31
+        4 -> 30
+        5 -> 31
+        6 -> 30
+        7 -> 31
+        8 -> 31
+        9 -> 30
+        10 -> 31
+        11 -> 30
+        12 -> 31
+        else -> error("unexpected month $month")
+      }
 
+      if (day > monthSize) {
         day -= monthSize
         month++
         if (month > 12) {
