@@ -102,3 +102,5 @@ expect fun assertRelativeToFails(
   b: Path,
   sameAsNio: Boolean = true,
 ): IllegalArgumentException
+
+expect fun <T> withUtc(block: () -> T): T

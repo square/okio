@@ -16,6 +16,23 @@
  */
 package okio.internal
 
+import java.util.Calendar
+import java.util.GregorianCalendar
+
 internal actual val DEFAULT_COMPRESSION = java.util.zip.Deflater.DEFAULT_COMPRESSION
 
 internal actual typealias CRC32 = java.util.zip.CRC32
+
+internal actual fun datePartsToEpochMillis(
+  year: Int,
+  month: Int,
+  day: Int,
+  hour: Int,
+  minute: Int,
+  second: Int,
+): Long {
+  val calendar = GregorianCalendar()
+  calendar.set(Calendar.MILLISECOND, 0)
+  calendar.set(year, month - 1, day, hour, minute, second)
+  return calendar.time.time
+}

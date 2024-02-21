@@ -36,3 +36,7 @@ actual fun assertRelativeToFails(
 ): IllegalArgumentException {
   return assertFailsWith { b.relativeTo(a) }
 }
+
+actual fun <T> withUtc(block: () -> T): T {
+  return block()
+}
