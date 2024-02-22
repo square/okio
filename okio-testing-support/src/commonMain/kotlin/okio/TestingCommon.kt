@@ -94,4 +94,6 @@ expect var FileSystem.workingDirectory: Path
 
 expect fun getEnv(name: String): String?
 
-val okioRoot = getEnv("OKIO_ROOT")!!.toPath()
+val okioRoot: Path by lazy {
+  getEnv("OKIO_ROOT")!!.toPath()
+}
