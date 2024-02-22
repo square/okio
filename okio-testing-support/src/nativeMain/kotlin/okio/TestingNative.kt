@@ -15,6 +15,15 @@
  */
 package okio
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.toKString
+import platform.posix.getenv
+
+actual val SYSTEM_FILE_SYSTEM = FileSystem.SYSTEM
+
 actual fun isBrowser() = false
 
 actual fun isWasm() = false
+
+@OptIn(ExperimentalForeignApi::class)
+actual fun getEnv(name: String): String? = getenv(name)?.toKString()

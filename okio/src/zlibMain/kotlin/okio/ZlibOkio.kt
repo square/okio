@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Square, Inc.
+ * Copyright (C) 2014 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+@file:JvmMultifileClass
+@file:JvmName("Okio")
+
 package okio
 
-actual val SYSTEM_FILE_SYSTEM = FileSystem.SYSTEM
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
-actual fun isBrowser() = false
-
-actual fun isWasm() = false
-
-actual fun getEnv(name: String): String? = System.getenv(name)
+@Throws(IOException::class)
+fun FileSystem.openZip(zipPath: Path): FileSystem = okio.internal.openZip(zipPath, this)

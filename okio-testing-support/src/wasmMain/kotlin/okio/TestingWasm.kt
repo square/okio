@@ -59,3 +59,5 @@ actual val FileSystem.allowReadsWhileWriting: Boolean
 actual var FileSystem.workingDirectory: Path
   get() = error("unexpected call")
   set(_) = error("unexpected call")
+
+actual fun getEnv(name: String): String? = error("unexpected call")
