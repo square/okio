@@ -15,6 +15,9 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
+import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -244,5 +247,24 @@ plugins.withType<NodeJsRootPlugin> {
   //   error typescript@5.0.4: The engine "node" is incompatible with this module.
   tasks.withType<KotlinNpmInstallTask>().all {
     args += "--ignore-engines"
+  }
+}
+
+/**
+ * Set the `OKIO_ROOT` environment variable for tests to access it.
+ * https://publicobject.com/2023/04/16/read-a-project-file-in-a-kotlin-multiplatform-test/
+ */
+allprojects {
+  tasks.withType<KotlinJvmTest>().configureEach {
+    environment("OKIO_ROOT", rootDir)
+  }
+
+  tasks.withType<KotlinNativeTest>().configureEach {
+    environment("SIMCTL_CHILD_OKIO_ROOT", rootDir)
+    environment("OKIO_ROOT", rootDir)
+  }
+
+  tasks.withType<KotlinJsTest>().configureEach {
+    environment("OKIO_ROOT", rootDir.toString())
   }
 }

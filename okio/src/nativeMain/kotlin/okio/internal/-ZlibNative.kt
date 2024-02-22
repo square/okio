@@ -20,7 +20,7 @@ internal actual val DEFAULT_COMPRESSION: Int = platform.zlib.Z_DEFAULT_COMPRESSI
 
 /**
  * Roll our own date math because Kotlin doesn't include a built-in date math API, and the
- * kotlinx.datetime library doesn't offer a stable at this time.
+ * kotlinx.datetime library doesn't offer a stable release at this time.
  *
  * Also, we don't necessarily want to take on that dependency for Okio.
  *

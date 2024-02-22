@@ -16,8 +16,6 @@
  */
 package okio
 
-import java.io.FileNotFoundException
-import java.util.zip.Inflater
 import okio.Path.Companion.toPath
 import okio.internal.COMPRESSION_METHOD_STORED
 import okio.internal.FixedLengthSource

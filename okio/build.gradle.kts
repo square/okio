@@ -97,6 +97,9 @@ kotlin {
 
     val zlibTest by creating {
       dependsOn(commonTest)
+      dependencies {
+        implementation(libs.test.assertk)
+      }
     }
 
     val jvmMain by getting {

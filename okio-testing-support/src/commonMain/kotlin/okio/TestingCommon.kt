@@ -19,6 +19,7 @@ import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.time.Duration
 import okio.ByteString.Companion.toByteString
+import okio.Path.Companion.toPath
 
 fun Char.repeat(count: Int): String {
   return toString().repeat(count)
@@ -90,3 +91,9 @@ expect val FileSystem.allowSymlinks: Boolean
 expect val FileSystem.allowReadsWhileWriting: Boolean
 
 expect var FileSystem.workingDirectory: Path
+
+expect fun getEnv(name: String): String?
+
+val okioRoot: Path by lazy {
+  getEnv("OKIO_ROOT")!!.toPath()
+}

@@ -15,20 +15,30 @@
  */
 package okio
 
+import assertk.assertThat
+import assertk.assertions.containsExactly
+import assertk.assertions.containsExactlyInAnyOrder
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isGreaterThan
+import assertk.assertions.isLessThan
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlinx.datetime.Instant
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
 
 class ZipFileSystemTest {
-  private val fileSystem = FileSystem.SYSTEM
-  private var base = "../okio-testing-support/src/commonMain/resources/okio/zipfilesystem".toPath()
+  private val fileSystem = SYSTEM_FILE_SYSTEM
+  private var base = okioRoot / "okio-testing-support/src/commonMain/resources/okio/zipfilesystem"
 
-  @Before
+  @BeforeTest
   fun setUp() {
     fileSystem.createDirectory(base)
   }
@@ -83,7 +93,7 @@ class ZipFileSystemTest {
       .isEqualTo("Another file!")
 
     assertThat(zipFileSystem.list("/".toPath()))
-      .hasSameElementsAs(listOf("/hello.txt".toPath(), "/directory".toPath()))
+      .containsExactlyInAnyOrder("/hello.txt".toPath(), "/directory".toPath())
     assertThat(zipFileSystem.list("/directory".toPath()))
       .containsExactly("/directory/subdirectory".toPath())
     assertThat(zipFileSystem.list("/directory/subdirectory".toPath()))
@@ -112,7 +122,7 @@ class ZipFileSystemTest {
   fun zipWithDeflate() {
     val content = "Android\n".repeat(1000)
     val zipPath = base / "zipWithDeflate.zip"
-    assertThat(fileSystem.metadata(zipPath).size).isLessThan(content.length.toLong())
+    assertThat(fileSystem.metadata(zipPath).size).isNotNull().isLessThan(content.length.toLong())
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("a.txt".toPath()) { readUtf8() })
@@ -138,7 +148,7 @@ class ZipFileSystemTest {
   fun zipWithStore() {
     val content = "Android\n".repeat(1000)
     val zipPath = base / "zipWithStore.zip"
-    assertThat(fileSystem.metadata(zipPath).size).isGreaterThan(content.length.toLong())
+    assertThat(fileSystem.metadata(zipPath).size).isNotNull().isGreaterThan(content.length.toLong())
     val zipFileSystem = fileSystem.openZip(zipPath)
 
     assertThat(zipFileSystem.read("a.txt".toPath()) { readUtf8() })
@@ -524,8 +534,8 @@ class ZipFileSystemTest {
    * `META-INF/kotlin-gradle-statistics.kotlin_module`.
    *
    * We used to crash on duplicates, but they are common in practice so now we prefer the last
-   * entry. This behavior is consistent with both [java.util.zip.ZipFile] and
-   * [java.nio.file.FileSystem].
+   * entry. This behavior is consistent with both `java.util.zip.ZipFile` and
+   * `java.nio.file.FileSystem`.
    *
    * ```
    * echo "This is the first hello.txt" > hello.txt

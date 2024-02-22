@@ -24,6 +24,7 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.ZipFileSystem
 import okio.buffer
+import okio.use
 
 private const val LOCAL_FILE_HEADER_SIGNATURE = 0x4034b50
 private const val CENTRAL_FILE_HEADER_SIGNATURE = 0x2014b50
