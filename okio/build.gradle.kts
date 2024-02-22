@@ -63,7 +63,6 @@ kotlin {
     val commonTest by getting {
       dependencies {
         implementation(libs.kotlin.test)
-        implementation(libs.test.assertk)
         implementation(projects.okioTestingSupport)
       }
     }
@@ -98,6 +97,9 @@ kotlin {
 
     val zlibTest by creating {
       dependsOn(commonTest)
+      dependencies {
+        implementation(libs.test.assertk)
+      }
     }
 
     val jvmMain by getting {
