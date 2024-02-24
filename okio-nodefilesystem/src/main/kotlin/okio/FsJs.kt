@@ -50,7 +50,7 @@
  * To declare new external APIs, run Dukat to generate a full set of Node stubs. The easiest way to
  * do this is to add an NPM dependency on `@types/node` in `jsMain`, like this:
  *
- * ```
+ * ```kotlin
  * jsMain {
  *   ...
  *   dependencies {
@@ -62,7 +62,7 @@
  *
  * This will create a file with a full set of APIs to copy-paste from.
  *
- * ```
+ * ```kotlin
  * okio/build/externals/okio-parent-okio/src/fs.fs.module_node.kt
  * ```
  *

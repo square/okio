@@ -23,7 +23,8 @@ package okio
  *
  * In this example we use `HashingSource` with a [BufferedSource] to make reading
  * from the source easier.
- * ```
+ *
+ * ```java
  * HashingSource hashingSource = HashingSource.sha256(rawSource);
  * BufferedSource bufferedSource = Okio.buffer(hashingSource);
  *
