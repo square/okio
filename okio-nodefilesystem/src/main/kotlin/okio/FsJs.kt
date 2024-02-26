@@ -62,7 +62,7 @@
  *
  * This will create a file with a full set of APIs to copy-paste from.
  *
- * ```kotlin
+ * ```
  * okio/build/externals/okio-parent-okio/src/fs.fs.module_node.kt
  * ```
  *
