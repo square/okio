@@ -47,7 +47,8 @@ expect sealed interface BufferedSource : Source {
 
   /**
    * Removes two bytes from this source and returns a big-endian short.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeByte(0x7f)
    *     .writeByte(0xff)
@@ -66,7 +67,8 @@ expect sealed interface BufferedSource : Source {
 
   /**
    * Removes two bytes from this source and returns a little-endian short.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeByte(0xff)
    *     .writeByte(0x7f)
@@ -85,7 +87,8 @@ expect sealed interface BufferedSource : Source {
 
   /**
    * Removes four bytes from this source and returns a big-endian int.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeByte(0x7f)
    *     .writeByte(0xff)
@@ -108,7 +111,8 @@ expect sealed interface BufferedSource : Source {
 
   /**
    * Removes four bytes from this source and returns a little-endian int.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeByte(0xff)
    *     .writeByte(0xff)
@@ -131,7 +135,8 @@ expect sealed interface BufferedSource : Source {
 
   /**
    * Removes eight bytes from this source and returns a big-endian long.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeByte(0x7f)
    *     .writeByte(0xff)
@@ -162,7 +167,8 @@ expect sealed interface BufferedSource : Source {
 
   /**
    * Removes eight bytes from this source and returns a little-endian long.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeByte(0xff)
    *     .writeByte(0xff)
@@ -194,7 +200,8 @@ expect sealed interface BufferedSource : Source {
   /**
    * Reads a long from this source in signed decimal form (i.e., as a string in base 10 with
    * optional leading '-'). This will iterate until a non-digit character is found.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeUtf8("8675309 -123 00001");
    *
@@ -213,7 +220,8 @@ expect sealed interface BufferedSource : Source {
   /**
    * Reads a long form this source in hexadecimal form (i.e., as a string in base 16). This will
    * iterate until a non-hexadecimal character is found.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeUtf8("ffff CAFEBABE 10");
    *
@@ -248,7 +256,8 @@ expect sealed interface BufferedSource : Source {
    *
    * This can be used as an alternative to [readByteString] or even [readUtf8] if the set of
    * expected values is known in advance.
-   * ```
+   *
+   * ```java
    * Options FIELDS = Options.of(
    *     ByteString.encodeUtf8("depth="),
    *     ByteString.encodeUtf8("height="),
@@ -276,7 +285,7 @@ expect sealed interface BufferedSource : Source {
    * This can be used as an alternative to [readByteString] or even [readUtf8] if the set of
    * expected values is known in advance.
    *
-   * ```
+   * ```java
    * TypedOptions<Direction> options = TypedOptions.of(
    *     Arrays.asList(Direction.values()),
    *     (direction) -> ByteString.encodeUtf8(direction.name().toLowerCase(Locale.ROOT))
@@ -338,7 +347,8 @@ expect sealed interface BufferedSource : Source {
   /**
    * Removes all bytes from this, decodes them as UTF-8, and returns the string. Returns the empty
    * string if this source is empty.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeUtf8("Uh uh uh!")
    *     .writeByte(' ')
@@ -355,7 +365,8 @@ expect sealed interface BufferedSource : Source {
 
   /**
    * Removes `byteCount` bytes from this, decodes them as UTF-8, and returns the string.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeUtf8("Uh uh uh!")
    *     .writeByte(' ')
@@ -377,7 +388,8 @@ expect sealed interface BufferedSource : Source {
   /**
    * Removes and returns characters up to but not including the next line break. A line break is
    * either `"\n"` or `"\r\n"`; these characters are not included in the result.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer()
    *     .writeUtf8("I'm a hacker!\n")
    *     .writeUtf8("That's what I said: you're a nerd.\n")
@@ -425,7 +437,8 @@ expect sealed interface BufferedSource : Source {
    *
    * This method is safe. No bytes are discarded if the match fails, and the caller is free to try
    * another match:
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeUtf8("12345\r\n");
    *
@@ -459,7 +472,8 @@ expect sealed interface BufferedSource : Source {
    * Returns the index of the first `b` in the buffer at or after `fromIndex`. This expands the
    * buffer as necessary until `b` is found. This reads an unbounded number of bytes into the
    * buffer. Returns -1 if the stream is exhausted before the requested byte is found.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeUtf8("Don't move! He can't see us if we don't move.");
    *
@@ -487,7 +501,8 @@ expect sealed interface BufferedSource : Source {
    * expands the buffer as necessary until `bytes` is found. This reads an unbounded number of
    * bytes into the buffer. Returns -1 if the stream is exhausted before the requested bytes are
    * found.
-   * ```
+   *
+   * ```java
    * ByteString MOVE = ByteString.encodeUtf8("move");
    *
    * Buffer buffer = new Buffer();
@@ -507,7 +522,8 @@ expect sealed interface BufferedSource : Source {
    * the bytes in `targetBytes`. This expands the buffer as necessary until a target byte is found.
    * This reads an unbounded number of bytes into the buffer. Returns -1 if the stream is exhausted
    * before the requested byte is found.
-   * ```
+   *
+   * ```java
    * ByteString ANY_VOWEL = ByteString.encodeUtf8("AEOIUaeoiu");
    *
    * Buffer buffer = new Buffer();
@@ -523,7 +539,8 @@ expect sealed interface BufferedSource : Source {
    * Returns true if the bytes at `offset` in this source equal `bytes`. This expands the buffer as
    * necessary until a byte does not match, all bytes are matched, or if the stream is exhausted
    * before enough bytes could determine a match.
-   * ```
+   *
+   * ```java
    * ByteString simonSays = ByteString.encodeUtf8("Simon says:");
    *
    * Buffer standOnOneLeg = new Buffer().writeUtf8("Simon says: Stand on one leg.");
@@ -548,7 +565,7 @@ expect sealed interface BufferedSource : Source {
    *
    * For example, we can use `peek()` to lookahead and read the same data multiple times.
    *
-   * ```
+   * ```kotlin
    * val buffer = Buffer()
    * buffer.writeUtf8("abcdefghi")
    *

@@ -177,7 +177,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    *
    * New buffers are empty and have no segments:
    *
-   * ```
+   * ```kotlin
    *   val buffer = Buffer()
    * ```
    *
@@ -185,7 +185,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * segment and writes its new data there. The lone segment has an 8 KiB byte array but only 7
    * bytes of data:
    *
-   * ```
+   * ```kotlin
    * buffer.writeUtf8("sealion")
    *
    * // [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
@@ -197,7 +197,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * to us. As bytes are read the data is consumed. The segment tracks this by adjusting its
    * internal indices.
    *
-   * ```
+   * ```kotlin
    * buffer.readUtf8(4) // "seal"
    *
    * // [ 's', 'e', 'a', 'l', 'i', 'o', 'n', '?', '?', '?', ...]
@@ -210,7 +210,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * segments. Each segment has its own start and end indexes tracking where the user's data begins
    * and ends.
    *
-   * ```
+   * ```kotlin
    * val xoxo = new Buffer()
    * xoxo.writeUtf8("xo".repeat(5_000))
    *
@@ -234,7 +234,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * you may see its effects. In this example, one of the "xoxo" segments above is reused in an
    * unrelated buffer:
    *
-   * ```
+   * ```kotlin
    * val abc = new Buffer()
    * abc.writeUtf8("abc")
    *
@@ -247,7 +247,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * share the same underlying byte array. Clones can't write to the shared byte array; instead they
    * allocate a new (private) segment early.
    *
-   * ```
+   * ```kotlin
    * val nana = new Buffer()
    * nana.writeUtf8("na".repeat(2_500))
    * nana.readUtf8(2) // "na"
@@ -291,7 +291,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * [use] extension function. In this example we read all of the bytes in a buffer into a byte
    * array:
    *
-   * ```
+   * ```kotlin
    * val bufferBytes = ByteArray(buffer.size.toInt())
    *
    * buffer.readUnsafe().use { cursor ->

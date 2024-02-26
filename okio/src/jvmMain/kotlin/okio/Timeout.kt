@@ -135,7 +135,8 @@ actual open class Timeout {
    *
    * Here's a sample class that uses `awaitSignal()` to await a specific state. Note that the
    * call is made within a loop to avoid unnecessary waiting and to mitigate spurious notifications.
-   * ```
+   *
+   * ```java
    * class Dice {
    *   Random random = new Random();
    *   int latestTotal;
@@ -219,7 +220,8 @@ actual open class Timeout {
    *
    * Here's a sample class that uses `waitUntilNotified()` to await a specific state. Note that the
    * call is made within a loop to avoid unnecessary waiting and to mitigate spurious notifications.
-   * ```
+   *
+   * ```java
    * class Dice {
    *   Random random = new Random();
    *   int latestTotal;
