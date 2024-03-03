@@ -43,9 +43,42 @@ internal class ZipEntry(
   /** Either [COMPRESSION_METHOD_DEFLATED] or [COMPRESSION_METHOD_STORED]. */
   val compressionMethod: Int = -1,
 
-  val lastModifiedAtMillis: Long? = null,
+  val dosLastModifiedAtDate: Int = -1,
+  val dosLastModifiedAtTime: Int = -1,
+
+  val unixLastModifiedAtSeconds: Int? = null,
+  val unixLastAccessedAtSeconds: Int? = null,
+  val unixCreatedAtSeconds: Int? = null,
+
+  val ntfsModificationFiletime: Long? = null,
+  val ntfsLastAccessFiletime: Long? = null,
+  val ntfsCreationFiletime: Long? = null,
 
   val offset: Long = -1L,
 ) {
   val children = mutableListOf<Path>()
+
+  internal val lastAccessedAtMillis: Long?
+    get() = when {
+      ntfsLastAccessFiletime != null -> filetimeToEpochMillis(ntfsLastAccessFiletime)
+      unixLastAccessedAtSeconds != null -> unixLastAccessedAtSeconds * 1000L
+      else -> null
+    }
+
+  internal val lastModifiedAtMillis: Long?
+    get() = when {
+      ntfsModificationFiletime != null -> filetimeToEpochMillis(ntfsModificationFiletime)
+      unixLastModifiedAtSeconds != null -> unixLastModifiedAtSeconds * 1000L
+      dosLastModifiedAtTime != -1 -> {
+        dosDateTimeToEpochMillis(dosLastModifiedAtDate, dosLastModifiedAtTime)
+      }
+      else -> null
+    }
+
+  internal val createdAtMillis: Long?
+    get() = when {
+      ntfsCreationFiletime != null -> filetimeToEpochMillis(ntfsCreationFiletime)
+      unixCreatedAtSeconds != null -> unixCreatedAtSeconds * 1000L
+      else -> null
+    }
 }

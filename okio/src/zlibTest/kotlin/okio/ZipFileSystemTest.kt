@@ -613,6 +613,15 @@ class ZipFileSystemTest {
       zipFileSystem.canonicalize("not/a/path".toPath())
     }
   }
+
+  @Test
+  fun ntfs() {
+    val zipPath =
+      "/Users/jwilson/.rvm/gems/ruby-2.7.4/gems/rubyzip-1.3.0/test/data/ntfs.zip".toPath()
+    val zipFileSystem = fileSystem.openZip(zipPath)
+
+    println(zipFileSystem.list("/".toPath()))
+  }
 }
 
 private fun ByteString.replaceAll(a: ByteString, b: ByteString): ByteString {

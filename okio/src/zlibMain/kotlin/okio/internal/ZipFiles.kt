@@ -17,7 +17,6 @@
 package okio.internal
 
 import okio.BufferedSource
-import okio.FileMetadata
 import okio.FileSystem
 import okio.IOException
 import okio.Path
@@ -48,6 +47,7 @@ private const val BIT_FLAG_UNSUPPORTED_MASK = BIT_FLAG_ENCRYPTED
 private const val MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE = 0xffffffffL
 
 private const val HEADER_ID_ZIP64_EXTENDED_INFO = 0x1
+private const val HEADER_ID_NTFS_EXTRA = 0x000a
 private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
 
 /**
@@ -201,10 +201,8 @@ internal fun BufferedSource.readEntry(): ZipEntry {
   }
 
   val compressionMethod = readShortLe().toInt() and 0xffff
-  val time = readShortLe().toInt() and 0xffff
-  val date = readShortLe().toInt() and 0xffff
-  // TODO(jwilson): decode NTFS and UNIX extra metadata to return better timestamps.
-  val lastModifiedAtMillis = dosDateTimeToEpochMillis(date, time)
+  val dosLastModifiedTime = readShortLe().toInt() and 0xffff
+  val dosLastModifiedDate = readShortLe().toInt() and 0xffff
 
   // These are 32-bit values in the file, but 64-bit fields in this object.
   val crc = readIntLe().toLong() and 0xffffffffL
@@ -227,6 +225,14 @@ internal fun BufferedSource.readEntry(): ZipEntry {
     return@run result
   }
 
+  var unixLastModifiedAtSeconds: Int? = null
+  var unixLastAccessedAtSeconds: Int? = null
+  var unixCreatedAtSeconds: Int? = null
+
+  var ntfsModificationFiletime: Long? = null
+  var ntfsLastAccessFiletime: Long? = null
+  var ntfsCreationFiletime: Long? = null
+
   var hasZip64Extra = false
   readExtra(extraSize) { headerId, dataSize ->
     when (headerId) {
@@ -244,6 +250,58 @@ internal fun BufferedSource.readEntry(): ZipEntry {
         size = if (size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else size
         compressedSize = if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else 0L
         offset = if (offset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else 0L
+      }
+
+      HEADER_ID_NTFS_EXTRA -> {
+        if (dataSize < 4L) {
+          throw IOException("bad zip: NTFS extra too short")
+        }
+        skip(4L)
+
+        // Reads the NTFS extra metadata. This metadata recursively does a tag and length scheme
+        // inside of ZIP extras' own tag and length scheme. So we do readExtra() again.
+        readExtra((dataSize - 4L).toInt()) { attributeId, attributeSize ->
+          when (attributeId) {
+            0x1 -> {
+              if (ntfsModificationFiletime != null) {
+                throw IOException("bad zip: NTFS extra attribute tag 0x0001 repeated")
+              }
+
+              if (attributeSize != 24L) {
+                throw IOException("bad zip: NTFS extra attribute tag 0x0001 size != 24")
+              }
+
+              ntfsModificationFiletime = readLongLe()
+              ntfsLastAccessFiletime = readLongLe()
+              ntfsCreationFiletime = readLongLe()
+            }
+          }
+        }
+      }
+
+      HEADER_ID_EXTENDED_TIMESTAMP -> {
+        if (dataSize < 1) {
+          throw IOException("bad zip: extended timestamp extra too short")
+        }
+        val flags = readByte().toInt() and 0xff
+
+        val hasLastModifiedAtMillis = (flags and 0x1) == 0x1
+        val hasLastAccessedAtMillis = (flags and 0x2) == 0x2
+        val hasCreatedAtMillis = (flags and 0x4) == 0x4
+        val requiredSize = run {
+          var result = 1L
+          if (hasLastModifiedAtMillis) result += 4L
+          if (hasLastAccessedAtMillis) result += 4L
+          if (hasCreatedAtMillis) result += 4L
+          return@run result
+        }
+        if (dataSize < requiredSize) {
+          throw IOException("bad zip: extended timestamp extra too short")
+        }
+
+        if (hasLastModifiedAtMillis) unixLastModifiedAtSeconds = readIntLe()
+        if (hasLastAccessedAtMillis) unixLastAccessedAtSeconds = readIntLe()
+        if (hasCreatedAtMillis) unixCreatedAtSeconds = readIntLe()
       }
     }
   }
@@ -264,7 +322,14 @@ internal fun BufferedSource.readEntry(): ZipEntry {
     compressedSize = compressedSize,
     size = size,
     compressionMethod = compressionMethod,
-    lastModifiedAtMillis = lastModifiedAtMillis,
+    dosLastModifiedAtDate = dosLastModifiedDate,
+    dosLastModifiedAtTime = dosLastModifiedTime,
+    unixLastModifiedAtSeconds = unixLastModifiedAtSeconds,
+    unixLastAccessedAtSeconds = unixLastAccessedAtSeconds,
+    unixCreatedAtSeconds = unixCreatedAtSeconds,
+    ntfsModificationFiletime = ntfsModificationFiletime,
+    ntfsLastAccessFiletime = ntfsLastAccessFiletime,
+    ntfsCreationFiletime = ntfsCreationFiletime,
     offset = offset,
   )
 }
@@ -348,22 +413,6 @@ private fun BufferedSource.readExtra(extraSize: Int, block: (Int, Long) -> Unit)
 }
 
 internal fun BufferedSource.skipLocalHeader() {
-  readOrSkipLocalHeader(null)
-}
-
-internal fun BufferedSource.readLocalHeader(basicMetadata: FileMetadata): FileMetadata {
-  return readOrSkipLocalHeader(basicMetadata)!!
-}
-
-/**
- * If [basicMetadata] is null this will return null. Otherwise it will return a new header which
- * updates [basicMetadata] with information from the local header.
- */
-private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): FileMetadata? {
-  var lastModifiedAtMillis = basicMetadata?.lastModifiedAtMillis
-  var lastAccessedAtMillis: Long? = null
-  var createdAtMillis: Long? = null
-
   val signature = readIntLe()
   if (signature != LOCAL_FILE_HEADER_SIGNATURE) {
     throw IOException(
@@ -379,57 +428,26 @@ private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): 
   val fileNameLength = readShortLe().toLong() and 0xffff
   val extraSize = readShortLe().toInt() and 0xffff
   skip(fileNameLength)
+  skip(extraSize.toLong())
+}
 
-  if (basicMetadata == null) {
-    skip(extraSize.toLong())
-    return null
-  }
-
-  readExtra(extraSize) { headerId, dataSize ->
-    when (headerId) {
-      HEADER_ID_EXTENDED_TIMESTAMP -> {
-        if (dataSize < 1) {
-          throw IOException("bad zip: extended timestamp extra too short")
-        }
-        val flags = readByte().toInt() and 0xff
-
-        val hasLastModifiedAtMillis = (flags and 0x1) == 0x1
-        val hasLastAccessedAtMillis = (flags and 0x2) == 0x2
-        val hasCreatedAtMillis = (flags and 0x4) == 0x4
-        val requiredSize = run {
-          var result = 1L
-          if (hasLastModifiedAtMillis) result += 4L
-          if (hasLastAccessedAtMillis) result += 4L
-          if (hasCreatedAtMillis) result += 4L
-          return@run result
-        }
-        if (dataSize < requiredSize) {
-          throw IOException("bad zip: extended timestamp extra too short")
-        }
-
-        if (hasLastModifiedAtMillis) lastModifiedAtMillis = readIntLe() * 1000L
-        if (hasLastAccessedAtMillis) lastAccessedAtMillis = readIntLe() * 1000L
-        if (hasCreatedAtMillis) createdAtMillis = readIntLe() * 1000L
-      }
-    }
-  }
-
-  return FileMetadata(
-    isRegularFile = basicMetadata.isRegularFile,
-    isDirectory = basicMetadata.isDirectory,
-    symlinkTarget = null,
-    size = basicMetadata.size,
-    createdAtMillis = createdAtMillis,
-    lastModifiedAtMillis = lastModifiedAtMillis,
-    lastAccessedAtMillis = lastAccessedAtMillis,
-  )
+/**
+ * Converts from the Microsoft [filetime] format to the Java epoch millis format.
+ *
+ *  * Filetime's unit is 100 nanoseconds, and 0 is 1601-01-01T00:00:00Z.
+ *  * Java epoch millis' unit is 1 millisecond, and 0 is 1970-01-01T00:00:00Z.
+ *
+ * See also https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+ */
+internal fun filetimeToEpochMillis(filetime: Long): Long {
+  return filetime
 }
 
 /**
  * Converts a 32-bit DOS date+time to milliseconds since epoch. Note that this function interprets
  * a value with no time zone as a value with the local time zone.
  */
-private fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
+internal fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
   if (time == -1) {
     return null
   }

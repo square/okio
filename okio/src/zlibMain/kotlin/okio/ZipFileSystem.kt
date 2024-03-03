@@ -20,7 +20,6 @@ import okio.Path.Companion.toPath
 import okio.internal.COMPRESSION_METHOD_STORED
 import okio.internal.FixedLengthSource
 import okio.internal.ZipEntry
-import okio.internal.readLocalHeader
 import okio.internal.skipLocalHeader
 
 /**
@@ -55,7 +54,7 @@ import okio.internal.skipLocalHeader
  *  * Extended timestamps (0x5455) are stored as signed 32-bit timestamps with 1-second precision.
  *    These cannot express dates beyond 2038-01-19.
  *
- * This class currently supports base timestamps and extended timestamps.
+ * This class prefers NTFS timestamps, then extended timestamps, then the base zip timestamps.
  *
  * [zip_format]: https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE_6.2.0.txt
  * [extra_fields]: https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld
@@ -83,25 +82,15 @@ internal class ZipFileSystem internal constructor(
     val canonicalPath = canonicalizeInternal(path)
     val entry = entries[canonicalPath] ?: return null
 
-    val basicMetadata = FileMetadata(
+    return FileMetadata(
       isRegularFile = !entry.isDirectory,
       isDirectory = entry.isDirectory,
       symlinkTarget = null,
       size = if (entry.isDirectory) null else entry.size,
-      createdAtMillis = null,
+      createdAtMillis = entry.createdAtMillis,
       lastModifiedAtMillis = entry.lastModifiedAtMillis,
-      lastAccessedAtMillis = null,
+      lastAccessedAtMillis = entry.lastAccessedAtMillis,
     )
-
-    if (entry.offset == -1L) {
-      return basicMetadata
-    }
-
-    return fileSystem.openReadOnly(zipPath).use { fileHandle ->
-      return@use fileHandle.source(entry.offset).buffer().use { source ->
-        source.readLocalHeader(basicMetadata)
-      }
-    }
   }
 
   override fun openReadOnly(file: Path): FileHandle {
