@@ -16,8 +16,12 @@
  */
 package okio.internal
 
+import okio.FileMetadata
 import okio.Path
 
+/**
+ * This class prefers NTFS timestamps, then extended timestamps, then the base ZIP timestamps.
+ */
 internal class ZipEntry(
   /**
    * Absolute path of this entry. If the raw name on disk contains relative paths like `..`, they
@@ -43,9 +47,91 @@ internal class ZipEntry(
   /** Either [COMPRESSION_METHOD_DEFLATED] or [COMPRESSION_METHOD_STORED]. */
   val compressionMethod: Int = -1,
 
-  val lastModifiedAtMillis: Long? = null,
-
   val offset: Long = -1L,
+
+  /**
+   * The base ZIP format tracks the [last modified timestamp][FileMetadata.lastModifiedAtMillis]. It
+   * does not track [created timestamps][FileMetadata.createdAtMillis] or [last accessed
+   * timestamps][FileMetadata.lastAccessedAtMillis].
+   *
+   * This format has severe limitations:
+   *
+   *  * Timestamps are 16-bit values stored with 2-second precision. Some zip encoders (WinZip,
+   *    PKZIP) round up to the nearest 2 seconds; other encoders (Java) round down.
+   *
+   *  * Timestamps before 1980-01-01 cannot be represented. They cannot represent dates after
+   *    2107-12-31.
+   *
+   *  * Timestamps are stored in local time with no time zone offset. If the time zone offset
+   *    changes – due to daylight savings time or the zip file being sent to another time zone –
+   *    file times will be incorrect. The file time will be shifted by the difference in time zone
+   *    offsets between the encoder and decoder.
+   */
+  val dosLastModifiedAtDate: Int = -1,
+  val dosLastModifiedAtTime: Int = -1,
+
+  /**
+   * NTFS timestamps (0x000a) support creation time, last access time, and last modified time.
+   * These timestamps are stored with 100-millisecond precision using UTC.
+   */
+  val ntfsLastModifiedAtFiletime: Long? = null,
+  val ntfsLastAccessedAtFiletime: Long? = null,
+  val ntfsCreatedAtFiletime: Long? = null,
+
+  /**
+   * Extended timestamps (0x5455) are stored as signed 32-bit timestamps with 1-second precision.
+   * These cannot express dates beyond 2038-01-19.
+   */
+  val extendedLastModifiedAtSeconds: Int? = null,
+  val extendedLastAccessedAtSeconds: Int? = null,
+  val extendedCreatedAtSeconds: Int? = null,
 ) {
   val children = mutableListOf<Path>()
+
+  internal fun copy(
+    extendedLastModifiedAtSeconds: Int?,
+    extendedLastAccessedAtSeconds: Int?,
+    extendedCreatedAtSeconds: Int?,
+  ) = ZipEntry(
+    canonicalPath = canonicalPath,
+    isDirectory = isDirectory,
+    comment = comment,
+    crc = crc,
+    compressedSize = compressedSize,
+    size = size,
+    compressionMethod = compressionMethod,
+    offset = offset,
+    dosLastModifiedAtDate = dosLastModifiedAtDate,
+    dosLastModifiedAtTime = dosLastModifiedAtTime,
+    ntfsLastModifiedAtFiletime = ntfsLastModifiedAtFiletime,
+    ntfsLastAccessedAtFiletime = ntfsLastAccessedAtFiletime,
+    ntfsCreatedAtFiletime = ntfsCreatedAtFiletime,
+    extendedLastModifiedAtSeconds = extendedLastModifiedAtSeconds,
+    extendedLastAccessedAtSeconds = extendedLastAccessedAtSeconds,
+    extendedCreatedAtSeconds = extendedCreatedAtSeconds,
+  )
+
+  internal val lastAccessedAtMillis: Long?
+    get() = when {
+      ntfsLastAccessedAtFiletime != null -> filetimeToEpochMillis(ntfsLastAccessedAtFiletime)
+      extendedLastAccessedAtSeconds != null -> extendedLastAccessedAtSeconds * 1000L
+      else -> null
+    }
+
+  internal val lastModifiedAtMillis: Long?
+    get() = when {
+      ntfsLastModifiedAtFiletime != null -> filetimeToEpochMillis(ntfsLastModifiedAtFiletime)
+      extendedLastModifiedAtSeconds != null -> extendedLastModifiedAtSeconds * 1000L
+      dosLastModifiedAtTime != -1 -> {
+        dosDateTimeToEpochMillis(dosLastModifiedAtDate, dosLastModifiedAtTime)
+      }
+      else -> null
+    }
+
+  internal val createdAtMillis: Long?
+    get() = when {
+      ntfsCreatedAtFiletime != null -> filetimeToEpochMillis(ntfsCreatedAtFiletime)
+      extendedCreatedAtSeconds != null -> extendedCreatedAtSeconds * 1000L
+      else -> null
+    }
 }

@@ -26,11 +26,9 @@ import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlinx.datetime.Instant
-import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 
@@ -38,33 +36,15 @@ class ZipFileSystemTest {
   private val fileSystem = SYSTEM_FILE_SYSTEM
   private var base = okioRoot / "okio-testing-support/src/commonMain/resources/okio/zipfilesystem"
 
-  @BeforeTest
-  fun setUp() {
-    fileSystem.createDirectory(base)
-  }
-
   @Test
   fun emptyZip() {
-    // ZipBuilder cannot write empty zips.
-    val zipPath = base / "empty.zip"
-    fileSystem.write(zipPath) {
-      write("504b0506000000000000000000000000000000000000".decodeHex())
-    }
-
-    val zipFileSystem = fileSystem.openZip(zipPath)
+    val zipFileSystem = fileSystem.openZip(base / "emptyZip.zip")
     assertThat(zipFileSystem.list("/".toPath())).isEmpty()
   }
 
   @Test
   fun emptyZipWithPrependedData() {
-    // ZipBuilder cannot write empty zips.
-    val zipPath = base / "empty.zip"
-    fileSystem.write(zipPath) {
-      writeUtf8("Hello I'm junk data prepended to the ZIP!")
-      write("504b0506000000000000000000000000000000000000".decodeHex())
-    }
-
-    val zipFileSystem = fileSystem.openZip(zipPath)
+    val zipFileSystem = fileSystem.openZip(base / "emptyZipWithPrependedData.zip")
     assertThat(zipFileSystem.list("/".toPath())).isEmpty()
   }
 

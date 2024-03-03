@@ -17,7 +17,6 @@
 package okio.internal
 
 import okio.BufferedSource
-import okio.FileMetadata
 import okio.FileSystem
 import okio.IOException
 import okio.Path
@@ -48,6 +47,7 @@ private const val BIT_FLAG_UNSUPPORTED_MASK = BIT_FLAG_ENCRYPTED
 private const val MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE = 0xffffffffL
 
 private const val HEADER_ID_ZIP64_EXTENDED_INFO = 0x1
+private const val HEADER_ID_NTFS_EXTRA = 0x000a
 private const val HEADER_ID_EXTENDED_TIMESTAMP = 0x5455
 
 /**
@@ -124,7 +124,7 @@ internal fun openZip(
     val entries = mutableListOf<ZipEntry>()
     fileHandle.source(record.centralDirectoryOffset).buffer().use { source ->
       for (i in 0 until record.entryCount) {
-        val entry = source.readEntry()
+        val entry = source.readCentralDirectoryZipEntry()
         if (entry.offset >= record.centralDirectoryOffset) {
           throw IOException("bad zip: local file header offset >= central directory offset")
         }
@@ -186,7 +186,7 @@ private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
 
 /** When this returns, [this] will be positioned at the start of the next entry. */
 @Throws(IOException::class)
-internal fun BufferedSource.readEntry(): ZipEntry {
+internal fun BufferedSource.readCentralDirectoryZipEntry(): ZipEntry {
   val signature = readIntLe()
   if (signature != CENTRAL_FILE_HEADER_SIGNATURE) {
     throw IOException(
@@ -201,10 +201,8 @@ internal fun BufferedSource.readEntry(): ZipEntry {
   }
 
   val compressionMethod = readShortLe().toInt() and 0xffff
-  val time = readShortLe().toInt() and 0xffff
-  val date = readShortLe().toInt() and 0xffff
-  // TODO(jwilson): decode NTFS and UNIX extra metadata to return better timestamps.
-  val lastModifiedAtMillis = dosDateTimeToEpochMillis(date, time)
+  val dosLastModifiedTime = readShortLe().toInt() and 0xffff
+  val dosLastModifiedDate = readShortLe().toInt() and 0xffff
 
   // These are 32-bit values in the file, but 64-bit fields in this object.
   val crc = readIntLe().toLong() and 0xffffffffL
@@ -227,6 +225,10 @@ internal fun BufferedSource.readEntry(): ZipEntry {
     return@run result
   }
 
+  var ntfsLastModifiedAtFiletime: Long? = null
+  var ntfsLastAccessedAtFiletime: Long? = null
+  var ntfsCreatedAtFiletime: Long? = null
+
   var hasZip64Extra = false
   readExtra(extraSize) { headerId, dataSize ->
     when (headerId) {
@@ -244,6 +246,33 @@ internal fun BufferedSource.readEntry(): ZipEntry {
         size = if (size == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else size
         compressedSize = if (compressedSize == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else 0L
         offset = if (offset == MAX_ZIP_ENTRY_AND_ARCHIVE_SIZE) readLongLe() else 0L
+      }
+
+      HEADER_ID_NTFS_EXTRA -> {
+        if (dataSize < 4L) {
+          throw IOException("bad zip: NTFS extra too short")
+        }
+        skip(4L)
+
+        // Reads the NTFS extra metadata. This metadata recursively does a tag and length scheme
+        // inside of ZIP extras' own tag and length scheme. So we do readExtra() again.
+        readExtra((dataSize - 4L).toInt()) { attributeId, attributeSize ->
+          when (attributeId) {
+            0x1 -> {
+              if (ntfsLastModifiedAtFiletime != null) {
+                throw IOException("bad zip: NTFS extra attribute tag 0x0001 repeated")
+              }
+
+              if (attributeSize != 24L) {
+                throw IOException("bad zip: NTFS extra attribute tag 0x0001 size != 24")
+              }
+
+              ntfsLastModifiedAtFiletime = readLongLe()
+              ntfsLastAccessedAtFiletime = readLongLe()
+              ntfsCreatedAtFiletime = readLongLe()
+            }
+          }
+        }
       }
     }
   }
@@ -264,8 +293,12 @@ internal fun BufferedSource.readEntry(): ZipEntry {
     compressedSize = compressedSize,
     size = size,
     compressionMethod = compressionMethod,
-    lastModifiedAtMillis = lastModifiedAtMillis,
     offset = offset,
+    dosLastModifiedAtDate = dosLastModifiedDate,
+    dosLastModifiedAtTime = dosLastModifiedTime,
+    ntfsLastModifiedAtFiletime = ntfsLastModifiedAtFiletime,
+    ntfsLastAccessedAtFiletime = ntfsLastAccessedAtFiletime,
+    ntfsCreatedAtFiletime = ntfsCreatedAtFiletime,
   )
 }
 
@@ -351,19 +384,17 @@ internal fun BufferedSource.skipLocalHeader() {
   readOrSkipLocalHeader(null)
 }
 
-internal fun BufferedSource.readLocalHeader(basicMetadata: FileMetadata): FileMetadata {
-  return readOrSkipLocalHeader(basicMetadata)!!
+internal fun BufferedSource.readLocalHeader(centralDirectoryZipEntry: ZipEntry): ZipEntry {
+  return readOrSkipLocalHeader(centralDirectoryZipEntry)!!
 }
 
 /**
- * If [basicMetadata] is null this will return null. Otherwise it will return a new header which
- * updates [basicMetadata] with information from the local header.
+ * If [centralDirectoryZipEntry] is null this will return null. Otherwise, it will return a new
+ * entry which unions [centralDirectoryZipEntry] with information from the local header.
  */
-private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): FileMetadata? {
-  var lastModifiedAtMillis = basicMetadata?.lastModifiedAtMillis
-  var lastAccessedAtMillis: Long? = null
-  var createdAtMillis: Long? = null
-
+private fun BufferedSource.readOrSkipLocalHeader(
+  centralDirectoryZipEntry: ZipEntry?,
+): ZipEntry? {
   val signature = readIntLe()
   if (signature != LOCAL_FILE_HEADER_SIGNATURE) {
     throw IOException(
@@ -380,10 +411,14 @@ private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): 
   val extraSize = readShortLe().toInt() and 0xffff
   skip(fileNameLength)
 
-  if (basicMetadata == null) {
+  if (centralDirectoryZipEntry == null) {
     skip(extraSize.toLong())
     return null
   }
+
+  var extendedLastModifiedAtSeconds: Int? = null
+  var extendedLastAccessedAtSeconds: Int? = null
+  var extendedCreatedAtSeconds: Int? = null
 
   readExtra(extraSize) { headerId, dataSize ->
     when (headerId) {
@@ -407,29 +442,42 @@ private fun BufferedSource.readOrSkipLocalHeader(basicMetadata: FileMetadata?): 
           throw IOException("bad zip: extended timestamp extra too short")
         }
 
-        if (hasLastModifiedAtMillis) lastModifiedAtMillis = readIntLe() * 1000L
-        if (hasLastAccessedAtMillis) lastAccessedAtMillis = readIntLe() * 1000L
-        if (hasCreatedAtMillis) createdAtMillis = readIntLe() * 1000L
+        if (hasLastModifiedAtMillis) extendedLastModifiedAtSeconds = readIntLe()
+        if (hasLastAccessedAtMillis) extendedLastAccessedAtSeconds = readIntLe()
+        if (hasCreatedAtMillis) extendedCreatedAtSeconds = readIntLe()
       }
     }
   }
 
-  return FileMetadata(
-    isRegularFile = basicMetadata.isRegularFile,
-    isDirectory = basicMetadata.isDirectory,
-    symlinkTarget = null,
-    size = basicMetadata.size,
-    createdAtMillis = createdAtMillis,
-    lastModifiedAtMillis = lastModifiedAtMillis,
-    lastAccessedAtMillis = lastAccessedAtMillis,
+  return centralDirectoryZipEntry.copy(
+    extendedLastModifiedAtSeconds = extendedLastModifiedAtSeconds,
+    extendedLastAccessedAtSeconds = extendedLastAccessedAtSeconds,
+    extendedCreatedAtSeconds = extendedCreatedAtSeconds,
   )
+}
+
+/**
+ * Converts from the Microsoft [filetime] format to the Java epoch millis format.
+ *
+ *  * Filetime's unit is 100 nanoseconds, and 0 is 1601-01-01T00:00:00Z.
+ *  * Java epoch millis' unit is 1 millisecond, and 0 is 1970-01-01T00:00:00Z.
+ *
+ * See also https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+ */
+internal fun filetimeToEpochMillis(filetime: Long): Long {
+  // There's 11,644,473,600,000 milliseconds between 1601-01-01T00:00:00Z and 1970-01-01T00:00:00Z.
+  //   val years = 1_970 − 1_601
+  //   val leapYears = floor(years / 4) − floor(years / 100)
+  //   val days = (years * 365) + leapYears
+  //   val millis = days * 24 * 60 * 60 * 1_000
+  return filetime / 10_000 - 11_644_473_600_000L
 }
 
 /**
  * Converts a 32-bit DOS date+time to milliseconds since epoch. Note that this function interprets
  * a value with no time zone as a value with the local time zone.
  */
-private fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
+internal fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
   if (time == -1) {
     return null
   }
