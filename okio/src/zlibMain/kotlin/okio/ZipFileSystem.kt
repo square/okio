@@ -26,37 +26,6 @@ import okio.internal.skipLocalHeader
 /**
  * Read only access to a [zip file][zip_format] and common [extra fields][extra_fields].
  *
- * Zip Timestamps
- * --------------
- *
- * The base zip format tracks the [last modified timestamp][FileMetadata.lastModifiedAtMillis]. It
- * does not track [created timestamps][FileMetadata.createdAtMillis] or [last accessed
- * timestamps][FileMetadata.lastAccessedAtMillis]. This format has limitations:
- *
- *  * Timestamps are 16-bit values stored with 2-second precision. Some zip encoders (WinZip, PKZIP)
- *    round up to the nearest 2 seconds; other encoders (Java) round down.
- *
- *  * Timestamps before 1980-01-01 cannot be represented. They cannot represent dates after
- *    2107-12-31.
- *
- *  * Timestamps are stored in local time with no time zone offset. If the time zone offset changes
- *    – due to daylight savings time or the zip file being sent to another time zone – file times
- *    will be incorrect. The file time will be shifted by the difference in time zone offsets
- *    between the encoder and decoder.
- *
- * The zip format has optional extensions for timestamps.
- *
- *  * UNIX timestamps (0x000d) support both last-access time and last modification time. These
- *    timestamps are stored with 1-second precision using UTC.
- *
- *  * NTFS timestamps (0x000a) support creation time, last access time, and last modified time.
- *    These timestamps are stored with 100-millisecond precision using UTC.
- *
- *  * Extended timestamps (0x5455) are stored as signed 32-bit timestamps with 1-second precision.
- *    These cannot express dates beyond 2038-01-19.
- *
- * This class currently supports base timestamps and extended timestamps.
- *
  * [zip_format]: https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE_6.2.0.txt
  * [extra_fields]: https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld
  */
@@ -81,27 +50,29 @@ internal class ZipFileSystem internal constructor(
 
   override fun metadataOrNull(path: Path): FileMetadata? {
     val canonicalPath = canonicalizeInternal(path)
-    val entry = entries[canonicalPath] ?: return null
+    val centralDirectoryEntry = entries[canonicalPath] ?: return null
 
-    val basicMetadata = FileMetadata(
-      isRegularFile = !entry.isDirectory,
-      isDirectory = entry.isDirectory,
-      symlinkTarget = null,
-      size = if (entry.isDirectory) null else entry.size,
-      createdAtMillis = null,
-      lastModifiedAtMillis = entry.lastModifiedAtMillis,
-      lastAccessedAtMillis = null,
-    )
-
-    if (entry.offset == -1L) {
-      return basicMetadata
-    }
-
-    return fileSystem.openReadOnly(zipPath).use { fileHandle ->
-      return@use fileHandle.source(entry.offset).buffer().use { source ->
-        source.readLocalHeader(basicMetadata)
+    val fullEntry = when {
+      centralDirectoryEntry.offset != -1L -> {
+        fileSystem.openReadOnly(zipPath).use { fileHandle ->
+          return@use fileHandle.source(centralDirectoryEntry.offset).buffer().use { source ->
+            source.readLocalHeader(centralDirectoryEntry)
+          }
+        }
       }
+
+      else -> centralDirectoryEntry
     }
+
+    return FileMetadata(
+      isRegularFile = !fullEntry.isDirectory,
+      isDirectory = fullEntry.isDirectory,
+      symlinkTarget = null,
+      size = if (fullEntry.isDirectory) null else fullEntry.size,
+      createdAtMillis = fullEntry.createdAtMillis,
+      lastModifiedAtMillis = fullEntry.lastModifiedAtMillis,
+      lastAccessedAtMillis = fullEntry.lastAccessedAtMillis,
+    )
   }
 
   override fun openReadOnly(file: Path): FileHandle {
