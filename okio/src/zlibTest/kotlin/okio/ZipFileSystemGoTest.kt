@@ -17,6 +17,7 @@ package okio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.datetime.Instant
 import okio.Path.Companion.toPath
 
 /**
