@@ -1,6 +1,7 @@
 package okio
 
 import kotlin.test.Test
+import kotlin.test.assertNull
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 
@@ -28,8 +29,10 @@ class UseTest {
 
   @Test
   fun acceptsNullReturn() {
-    object : Closeable {
+    val result = object : Closeable {
       override fun close() {}
     }.use { null }
+
+    assertNull(result)
   }
 }
