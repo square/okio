@@ -25,4 +25,11 @@ class UseTest {
 
     fakeFileSystem.checkNoOpenFiles()
   }
+
+  @Test
+  fun acceptsNullReturn() {
+    object : Closeable {
+      override fun close() {}
+    }.use { null }
+  }
 }
