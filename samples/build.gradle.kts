@@ -12,10 +12,12 @@ kotlin {
     withJava()
   }
 
-  linuxX64()
-  linuxArm64()
-  macosArm64()
-  macosX64()
+  if (kmpNativeEnabled) {
+    linuxX64()
+    linuxArm64()
+    macosArm64()
+    macosX64()
+  }
 
   sourceSets {
     commonMain {
