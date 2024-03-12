@@ -11,23 +11,10 @@ kotlin {
   jvm {
     withJava()
   }
-
-  if (kmpNativeEnabled) {
-    linuxX64()
-    linuxArm64()
-    macosArm64()
-    macosX64()
-  }
-
   sourceSets {
     commonMain {
       dependencies {
         implementation(projects.okio)
-      }
-    }
-    commonTest {
-      dependencies {
-        implementation(libs.kotlin.test)
       }
     }
     val jvmTest by getting {
