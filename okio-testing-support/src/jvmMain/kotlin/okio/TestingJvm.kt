@@ -15,8 +15,6 @@
  */
 package okio
 
-actual val SYSTEM_FILE_SYSTEM = FileSystem.SYSTEM
-
 actual fun isBrowser() = false
 
 actual fun isWasm() = false

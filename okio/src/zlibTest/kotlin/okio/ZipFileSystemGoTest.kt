@@ -26,7 +26,7 @@ import okio.Path.Companion.toPath
  * https://github.com/golang/go/blob/6f5d77454e31be8af11a7e2bcda36d200fda07c5/src/archive/zip/reader_test.go
  */
 class ZipFileSystemGoTest {
-  private val fileSystem = SYSTEM_FILE_SYSTEM
+  private val fileSystem = FileSystem.SYSTEM
   private var base = okioRoot / "okio-testing-support" /
     "src/commonMain/resources/go/src/archive/zip/testdata"
 

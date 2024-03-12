@@ -47,6 +47,8 @@ plugins {
  *
  * The `hashFunctions` source set builds on all platforms. It ships as a main source set on non-JVM
  * platforms and as a test source set on the JVM platform.
+ *
+ * The `systemFileSystem` source set is used on jvm and native targets, and provides the FileSystem.SYSTEM property.
  */
 kotlin {
   configureOrCreateOkioPlatforms()
@@ -87,6 +89,10 @@ kotlin {
       dependsOn(commonMain)
     }
 
+    val systemFileSystemMain by creating {
+      dependsOn(commonMain)
+    }
+
     val nonJvmTest by creating {
       dependsOn(commonTest)
     }
@@ -104,6 +110,7 @@ kotlin {
 
     val jvmMain by getting {
       dependsOn(zlibMain)
+      dependsOn(systemFileSystemMain)
     }
     val jvmTest by getting {
       kotlin.srcDir("src/jvmTest/hashFunctions")
@@ -131,6 +138,7 @@ kotlin {
       createSourceSet("nativeMain", parent = nonJvmMain)
         .also { nativeMain ->
           nativeMain.dependsOn(zlibMain)
+          nativeMain.dependsOn(systemFileSystemMain)
           createSourceSet("mingwMain", parent = nativeMain, children = mingwTargets).also { mingwMain ->
             mingwMain.dependsOn(nonAppleMain)
           }

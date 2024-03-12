@@ -755,6 +755,10 @@ public abstract interface class okio/Source : java/io/Closeable {
 	public abstract fun timeout ()Lokio/Timeout;
 }
 
+public final class okio/SystemFileSystem {
+	public static final synthetic fun getSYSTEM (Lokio/FileSystem$Companion;)Lokio/FileSystem;
+}
+
 public final class okio/Throttler {
 	public fun <init> ()V
 	public final fun bytesPerSecond (J)V

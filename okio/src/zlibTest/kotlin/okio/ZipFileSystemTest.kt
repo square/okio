@@ -33,7 +33,7 @@ import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 
 class ZipFileSystemTest {
-  private val fileSystem = SYSTEM_FILE_SYSTEM
+  private val fileSystem = FileSystem.SYSTEM
   private var base = okioRoot / "okio-testing-support/src/commonMain/resources/okio/zipfilesystem"
 
   @Test
