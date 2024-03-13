@@ -1,6 +1,23 @@
 Change Log
 ==========
 
+## Version 3.9.0
+
+_2024-03-12_
+
+ * New: `FileSystem.SYSTEM` can be used in source sets that target both Kotlin/Native and
+   Kotlin/JVM. Previously, we had this symbol in each source set but it wasn't available to
+   common source sets.
+ * New: `COpaquePointer.readByteString(...)` creates a ByteString from a memory address.
+ * New: Support `InflaterSource`, `DeflaterSink`, `GzipSink`, and `GzipSource` in Kotlin/Native.
+ * New: Support openZip() on Kotlin/Native. One known bug in this implementation is that
+   `FileMetadata.lastModifiedAtMillis()` is interpreted as UTC and not the host machine's time zone.
+ * New: Prefer NTFS timestamps in ZIP file systems' metadata. This avoids the time zone problems
+   of ZIP's built-in DOS timestamps, and the 2038 time bombs of ZIP's extended timestamps.
+ * Fix: Don't leak file handles to opened JAR files open in `FileSystem.RESOURCES`.
+ * Fix: Don't throw a `NullPointerException` if `Closeable.use { ... }` returns null.
+
+
 ## Version 3.8.0
 
 _2024-02-09_
