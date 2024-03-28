@@ -24,10 +24,8 @@ import okio.internal.readLocalHeader
 import okio.internal.skipLocalHeader
 
 /**
- * Read only access to a [zip file](zip_format) and common [extra fields](extra_fields).
- *
- * [zip_format]: https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE_6.2.0.txt
- * [extra_fields]: https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld
+ * Read only access to a [zip file](https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE_6.2.0.txt)
+ * and common [extra fields](https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld).
  */
 internal class ZipFileSystem internal constructor(
   private val zipPath: Path,
