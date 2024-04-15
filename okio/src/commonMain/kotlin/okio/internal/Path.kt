@@ -250,6 +250,11 @@ internal inline fun Path.commonRelativeTo(other: Path): Path {
     "Impossible relative path to resolve: $this and $other"
   }
 
+  if (other.bytes == DOT) {
+    // Anything relative to "." is itself!
+    return this
+  }
+
   val buffer = Buffer()
   val slash = other.slash ?: slash ?: Path.DIRECTORY_SEPARATOR.toSlash()
   for (i in firstNewSegmentIndex until otherSegments.size) {

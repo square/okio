@@ -551,6 +551,24 @@ class PathTest {
     assertRelativeTo(f, e, ".".toPath())
   }
 
+  @Test
+  fun relativeUnixDot() {
+    val a = "Users/jesse/hello.txt".toPath()
+    val b = ".".toPath()
+    assertRelativeTo(a, b, "../../..".toPath(), sameAsNio = false)
+    assertRelativeTo(b, a, "Users/jesse/hello.txt".toPath(), sameAsNio = false)
+
+    val c = "Users/./jesse/hello.txt".toPath()
+    val d = "Admin/Secret".toPath()
+    assertRelativeTo(c, d, "../../../Admin/Secret".toPath())
+    assertRelativeTo(d, c, "../../Users/jesse/hello.txt".toPath())
+
+    val e = "Users/".toPath()
+    val f = "Users/.".toPath()
+    assertRelativeTo(e, f, ".".toPath())
+    assertRelativeTo(f, e, ".".toPath())
+  }
+
   // Note that we handle the normalized version of the paths when computing relative paths.
   @Test
   fun relativeToUnnormalizedPath() {
