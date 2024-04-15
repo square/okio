@@ -15,6 +15,8 @@
  */
 package okio
 
+import kotlin.reflect.KClass
+
 /**
  * Read and write access to a hierarchical collection of files, addressed by [paths][Path]. This
  * is a natural interface to the current computer's local file system.
@@ -375,6 +377,10 @@ expect abstract class FileSystem() {
    */
   @Throws(IOException::class)
   abstract fun createSymlink(source: Path, target: Path)
+
+  open fun <E : FileSystemExtension> extend(extensionType: KClass<E>, extension: E): FileSystem
+
+  open fun <E : FileSystemExtension> extension(type: KClass<E>): E?
 
   companion object {
     /**

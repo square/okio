@@ -16,6 +16,8 @@
 package okio
 
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
 /**
  * A [FileSystem] that forwards calls to another, intended for subclassing.
@@ -101,11 +103,15 @@ import kotlin.jvm.JvmName
  * other functions of this class. If desired, subclasses may override non-abstract functions to
  * forward them.
  */
-abstract class ForwardingFileSystem(
+open class ForwardingFileSystem internal constructor(
   /** [FileSystem] to which this instance is delegating. */
   @get:JvmName("delegate")
   val delegate: FileSystem,
+  extensions: Map<KClass<*>, Any>,
 ) : FileSystem() {
+  internal val extensions = extensions.toMap()
+
+  constructor(delegate: FileSystem) : this(delegate, emptyMap())
 
   /**
    * Invoked each time a path is passed as a parameter to this file system. This returns the path to
@@ -141,6 +147,8 @@ abstract class ForwardingFileSystem(
    * @return the path to return to the caller.
    */
   open fun onPathResult(path: Path, functionName: String): Path = path
+
+  open fun <T : Any> onExtension(type: KClass<T>, extension: T): T = extension
 
   @Throws(IOException::class)
   override fun canonicalize(path: Path): Path {
@@ -236,6 +244,14 @@ abstract class ForwardingFileSystem(
     val source = onPathParameter(source, "createSymlink", "source")
     val target = onPathParameter(target, "createSymlink", "target")
     delegate.createSymlink(source, target)
+  }
+
+  override fun <E : FileSystemExtension> extension(type: KClass<E>): E? {
+    val result = extensions[type]?.let { type.cast(it) }
+      ?: delegate.extension(type)
+      ?: return null
+
+    return onExtension(type, result)
   }
 
   override fun toString() = "${this::class.simpleName}($delegate)"

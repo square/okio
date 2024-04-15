@@ -18,9 +18,11 @@
 package okio.internal
 
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 import okio.FileMetadata
 import okio.FileNotFoundException
 import okio.FileSystem
+import okio.ForwardingFileSystem
 import okio.IOException
 import okio.Path
 import okio.buffer
@@ -67,6 +69,23 @@ internal fun FileSystem.commonCopy(source: Path, target: Path) {
       bytesOut.writeAll(bytesIn)
     }
   }
+}
+
+fun <T : Any> FileSystem.commonExtend(extensionType: KClass<T>, extension: T): FileSystem {
+  // If this file system is already an extension wrapper, replace it rather than wrapping again.
+  // Note that this optimization doesn't apply to ForwardingFileSystem subclasses, only to the
+  // ForwardingFileSystem base class.
+  if (this::class === ForwardingFileSystem::class) {
+    this as ForwardingFileSystem
+    val newExtensions = extensions.toMutableMap()
+    newExtensions[extensionType] = extension
+    return ForwardingFileSystem(delegate, newExtensions)
+  }
+
+  return ForwardingFileSystem(
+    delegate = this,
+    extensions = mapOf(extensionType to extension)
+  )
 }
 
 @Throws(IOException::class)

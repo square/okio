@@ -15,10 +15,12 @@
  */
 package okio
 
+import kotlin.reflect.KClass
 import okio.internal.commonCopy
 import okio.internal.commonCreateDirectories
 import okio.internal.commonDeleteRecursively
 import okio.internal.commonExists
+import okio.internal.commonExtend
 import okio.internal.commonListRecursively
 import okio.internal.commonMetadata
 
@@ -101,6 +103,13 @@ actual abstract class FileSystem {
 
   @Throws(IOException::class)
   actual abstract fun createSymlink(source: Path, target: Path)
+
+  actual open fun <E : FileSystemExtension> extend(
+    extensionType: KClass<E>,
+    extension: E,
+  ): FileSystem = commonExtend(extensionType, extension)
+
+  actual open fun <E : FileSystemExtension> extension(type: KClass<E>): E? = null
 
   actual companion object {
     /**

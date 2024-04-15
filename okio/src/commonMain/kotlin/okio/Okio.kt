@@ -72,3 +72,11 @@ inline fun <T : Closeable?, R> T.use(block: (T) -> R): R {
   @Suppress("UNCHECKED_CAST")
   return result as R
 }
+
+inline fun <reified E : FileSystemExtension> FileSystem.extend(extension: E): FileSystem {
+  return extend(E::class, extension)
+}
+
+inline fun <reified E : FileSystemExtension> FileSystem.extension(): E? {
+  return extension(E::class)
+}
