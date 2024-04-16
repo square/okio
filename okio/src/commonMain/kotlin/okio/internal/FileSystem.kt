@@ -84,7 +84,7 @@ fun <T : Any> FileSystem.commonExtend(extensionType: KClass<T>, extension: T): F
 
   return ForwardingFileSystem(
     delegate = this,
-    extensions = mapOf(extensionType to extension)
+    extensions = mapOf(extensionType to extension),
   )
 }
 

@@ -477,6 +477,8 @@ public abstract class okio/FileSystem {
 	public fun deleteRecursively (Lokio/Path;Z)V
 	public static synthetic fun deleteRecursively$default (Lokio/FileSystem;Lokio/Path;ZILjava/lang/Object;)V
 	public final fun exists (Lokio/Path;)Z
+	public fun extend (Lkotlin/reflect/KClass;Lokio/FileSystemExtension;)Lokio/FileSystem;
+	public fun extension (Lkotlin/reflect/KClass;)Lokio/FileSystemExtension;
 	public static final fun get (Ljava/nio/file/FileSystem;)Lokio/FileSystem;
 	public abstract fun list (Lokio/Path;)Ljava/util/List;
 	public abstract fun listOrNull (Lokio/Path;)Ljava/util/List;
@@ -499,7 +501,10 @@ public final class okio/FileSystem$Companion {
 	public final fun get (Ljava/nio/file/FileSystem;)Lokio/FileSystem;
 }
 
-public abstract class okio/ForwardingFileSystem : okio/FileSystem {
+public abstract interface class okio/FileSystemExtension {
+}
+
+public class okio/ForwardingFileSystem : okio/FileSystem {
 	public fun <init> (Lokio/FileSystem;)V
 	public fun appendingSink (Lokio/Path;Z)Lokio/Sink;
 	public fun atomicMove (Lokio/Path;Lokio/Path;)V
@@ -508,10 +513,12 @@ public abstract class okio/ForwardingFileSystem : okio/FileSystem {
 	public fun createSymlink (Lokio/Path;Lokio/Path;)V
 	public final fun delegate ()Lokio/FileSystem;
 	public fun delete (Lokio/Path;Z)V
+	public fun extension (Lkotlin/reflect/KClass;)Lokio/FileSystemExtension;
 	public fun list (Lokio/Path;)Ljava/util/List;
 	public fun listOrNull (Lokio/Path;)Ljava/util/List;
 	public fun listRecursively (Lokio/Path;Z)Lkotlin/sequences/Sequence;
 	public fun metadataOrNull (Lokio/Path;)Lokio/FileMetadata;
+	public fun onExtension (Lkotlin/reflect/KClass;Ljava/lang/Object;)Ljava/lang/Object;
 	public fun onPathParameter (Lokio/Path;Ljava/lang/String;Ljava/lang/String;)Lokio/Path;
 	public fun onPathResult (Lokio/Path;Ljava/lang/String;)Lokio/Path;
 	public fun openReadOnly (Lokio/Path;)Lokio/FileHandle;
@@ -817,6 +824,10 @@ public final class okio/Utf8 {
 
 public final class okio/_JvmPlatformKt {
 	public static final fun withLock (Ljava/util/concurrent/locks/ReentrantLock;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+}
+
+public final class okio/internal/-FileSystem {
+	public static final fun commonExtend (Lokio/FileSystem;Lkotlin/reflect/KClass;Ljava/lang/Object;)Lokio/FileSystem;
 }
 
 public final class okio/internal/_Utf8Kt {
