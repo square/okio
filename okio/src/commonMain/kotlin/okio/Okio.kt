@@ -73,10 +73,15 @@ inline fun <T : Closeable?, R> T.use(block: (T) -> R): R {
   return result as R
 }
 
-inline fun <reified E : FileSystemExtension> FileSystem.extend(extension: E): FileSystem {
-  return extend(E::class, extension)
-}
+/**
+ * Returns a new file system that forwards all calls to this, and that also returns [extension]
+ * when it is requested.
+ *
+ * When [E] is requested on the returned file system, it will return [extension], regardless of what
+ * is returned by this file system.
+ */
+inline fun <reified E : FileSystemExtension> FileSystem.extend(extension: E): FileSystem =
+  extend(E::class, extension)
 
-inline fun <reified E : FileSystemExtension> FileSystem.extension(): E? {
-  return extension(E::class)
-}
+/** Returns the extension for [E] if it exists, and null otherwise. */
+inline fun <reified E : FileSystemExtension> FileSystem.extension(): E? = extension(E::class)

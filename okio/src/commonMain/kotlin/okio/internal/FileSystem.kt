@@ -75,7 +75,7 @@ fun <T : Any> FileSystem.commonExtend(extensionType: KClass<T>, extension: T): F
   // If this file system is already an extension wrapper, replace it rather than wrapping again.
   // Note that this optimization doesn't apply to ForwardingFileSystem subclasses, only to the
   // ForwardingFileSystem base class.
-  if (this::class === ForwardingFileSystem::class) {
+  if (this::class == ForwardingFileSystem::class) {
     this as ForwardingFileSystem
     val newExtensions = extensions.toMutableMap()
     newExtensions[extensionType] = extension

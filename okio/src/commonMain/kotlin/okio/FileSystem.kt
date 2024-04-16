@@ -378,8 +378,16 @@ expect abstract class FileSystem() {
   @Throws(IOException::class)
   abstract fun createSymlink(source: Path, target: Path)
 
+  /**
+   * Returns a new file system that forwards all calls to this, and that also returns [extension]
+   * when it is requested.
+   *
+   * When [extensionType] is requested on the returned file system, it will return [extension],
+   * regardless of what is returned by this file system.
+   */
   open fun <E : FileSystemExtension> extend(extensionType: KClass<E>, extension: E): FileSystem
 
+  /** Returns the extension for [type] if it exists, and null otherwise. */
   open fun <E : FileSystemExtension> extension(type: KClass<E>): E?
 
   companion object {

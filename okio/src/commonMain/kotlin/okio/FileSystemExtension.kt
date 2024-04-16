@@ -16,6 +16,7 @@
 package okio
 
 /**
- *
+ * Marks an object that can be attached to a [FileSystem], and that supplements the file system's
+ * capabilities.
  */
 interface FileSystemExtension
