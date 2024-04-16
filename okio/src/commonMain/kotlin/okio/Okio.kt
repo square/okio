@@ -85,3 +85,30 @@ inline fun <reified E : FileSystemExtension> FileSystem.extend(extension: E): Fi
 
 /** Returns the extension for [E] if it exists, and null otherwise. */
 inline fun <reified E : FileSystemExtension> FileSystem.extension(): E? = extension(E::class)
+
+
+fun chain(outer: PathMapper, inner: PathMapper): PathMapper {
+  return object : PathMapper {
+    override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
+      return inner.onPathParameter(
+        outer.onPathParameter(
+          path,
+          functionName,
+          parameterName,
+        ),
+        functionName,
+        parameterName,
+      )
+    }
+
+    override fun onPathResult(path: Path, functionName: String): Path {
+      return outer.onPathResult(
+        inner.onPathResult(
+          path,
+          functionName,
+        ),
+        functionName,
+      )
+    }
+  }
+}

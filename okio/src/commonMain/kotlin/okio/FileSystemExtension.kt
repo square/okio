@@ -18,5 +18,35 @@ package okio
 /**
  * Marks an object that can be attached to a [FileSystem], and that supplements the file system's
  * capabilities.
+ *
+ * Implementations must support transforms to input and output paths with [PathMapper]. To simplify
+ * implementation, use [PathMapper.NONE] by default and use [chain] to combine mappers.
+ *
+ * ```kotlin
+ * class DiskUsageExtension private constructor(
+ *   private val pathMapper: PathMapper,
+ * ) : FileSystemExtension {
+ *   constructor() : this(PathMapper.NONE)
+ *
+ *   override fun map(pathMapper: PathMapper): FileSystemExtension {
+ *     return DiskUsageExtension(chain(pathMapper, this.pathMapper))
+ *   }
+ *
+ *   fun sizeOnDisk(path: Path): Long {
+ *     val mappedPath = pathMapper.onPathParameter(path, "sizeOnDisk", "path")
+ *     return lookUpSizeOnDisk(mappedPath)
+ *   }
+ *
+ *   fun largestFiles(): Sequence<Path> {
+ *     val largestFiles: Sequence<Path> = lookUpLargestFiles()
+ *     return largestFiles.map {
+ *       pathMapper.onPathResult(it, "largestFiles")
+ *     }
+ *   }
+ * }
+ * ```
  */
-interface FileSystemExtension
+interface FileSystemExtension {
+  /** Returns a file system of the same type, that applies [pathMapper] to all paths. */
+  fun map(pathMapper: PathMapper) : FileSystemExtension
+}
