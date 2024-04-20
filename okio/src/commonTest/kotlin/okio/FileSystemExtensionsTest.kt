@@ -19,6 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
+import okio.FileSystemExtension.Mapping
 import okio.fakefilesystem.FakeFileSystem
 
 class FileSystemExtensionsTest {
@@ -88,9 +89,13 @@ class FileSystemExtensionsTest {
 
   class FooExtension(
     val target: FileSystem,
-  ) : FileSystemExtension
+  ) : FileSystemExtension {
+    override fun map(outer: Mapping) = this
+  }
 
   class BarExtension(
     val target: FileSystem,
-  ) : FileSystemExtension
+  ) : FileSystemExtension {
+    override fun map(outer: Mapping) = this
+  }
 }

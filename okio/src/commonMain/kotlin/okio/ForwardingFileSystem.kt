@@ -109,7 +109,17 @@ open class ForwardingFileSystem internal constructor(
   val delegate: FileSystem,
   extensions: Map<KClass<*>, Any>,
 ) : FileSystem() {
+  /** Extensions added at this layer. Additional extensions may exist in [delegate]. */
   internal val extensions = extensions.toMap()
+
+  /** Maps paths with [onPathParameter] and [onPathResult]. */
+  val extensionMapping: FileSystemExtension.Mapping = object : FileSystemExtension.Mapping() {
+    override fun mapParameter(path: Path, functionName: String, parameterName: String) =
+      onPathParameter(path, functionName, parameterName)
+
+    override fun mapResult(path: Path, functionName: String) =
+      onPathResult(path, functionName)
+  }
 
   constructor(delegate: FileSystem) : this(delegate, emptyMap())
 
@@ -148,7 +158,15 @@ open class ForwardingFileSystem internal constructor(
    */
   open fun onPathResult(path: Path, functionName: String): Path = path
 
-  open fun <T : Any> onExtension(type: KClass<T>, extension: T): T = extension
+  /**
+   * Invoked each time an extension is returned from [ForwardingFileSystem.extension].
+   *
+   * Overrides of this function must call [FileSystemExtension.map] with [extensionMapping],
+   * otherwise path mapping will not be applied. Or call `super.onExtension()` to do this.
+   */
+  open fun <T : FileSystemExtension> onExtension(type: KClass<T>, extension: T): T {
+    return type.cast(extension.map(extensionMapping))
+  }
 
   @Throws(IOException::class)
   override fun canonicalize(path: Path): Path {

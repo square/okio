@@ -77,38 +77,11 @@ inline fun <T : Closeable?, R> T.use(block: (T) -> R): R {
  * Returns a new file system that forwards all calls to this, and that also returns [extension]
  * when it is requested.
  *
- * When [E] is requested on the returned file system, it will return [extension], regardless of what
- * is returned by this file system.
+ * When [E] is requested on the returned file system, it will return [extension]. If this file
+ * system already has an extension of this type, [extension] takes precedence.
  */
 inline fun <reified E : FileSystemExtension> FileSystem.extend(extension: E): FileSystem =
   extend(E::class, extension)
 
 /** Returns the extension for [E] if it exists, and null otherwise. */
 inline fun <reified E : FileSystemExtension> FileSystem.extension(): E? = extension(E::class)
-
-
-fun chain(outer: PathMapper, inner: PathMapper): PathMapper {
-  return object : PathMapper {
-    override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
-      return inner.onPathParameter(
-        outer.onPathParameter(
-          path,
-          functionName,
-          parameterName,
-        ),
-        functionName,
-        parameterName,
-      )
-    }
-
-    override fun onPathResult(path: Path, functionName: String): Path {
-      return outer.onPathResult(
-        inner.onPathResult(
-          path,
-          functionName,
-        ),
-        functionName,
-      )
-    }
-  }
-}

@@ -15,38 +15,79 @@
  */
 package okio
 
+import okio.FileSystemExtension.Mapping
+
 /**
  * Marks an object that can be attached to a [FileSystem], and that supplements the file system's
  * capabilities.
  *
- * Implementations must support transforms to input and output paths with [PathMapper]. To simplify
- * implementation, use [PathMapper.NONE] by default and use [chain] to combine mappers.
+ * Implementations must support transforms to input and output paths with [Mapping]. To simplify
+ * implementation, use [Mapping.NONE] by default and use [Mapping.chain] to combine mappings.
  *
  * ```kotlin
  * class DiskUsageExtension private constructor(
- *   private val pathMapper: PathMapper,
+ *   private val mapping: Mapping,
  * ) : FileSystemExtension {
- *   constructor() : this(PathMapper.NONE)
+ *   constructor() : this(Mapping.NONE)
  *
- *   override fun map(pathMapper: PathMapper): FileSystemExtension {
- *     return DiskUsageExtension(chain(pathMapper, this.pathMapper))
+ *   override fun map(outer: Mapping): FileSystemExtension {
+ *     return DiskUsageExtension(mapping.chain(outer))
  *   }
  *
  *   fun sizeOnDisk(path: Path): Long {
- *     val mappedPath = pathMapper.onPathParameter(path, "sizeOnDisk", "path")
+ *     val mappedPath = mapping.mapParameter(path, "sizeOnDisk", "path")
  *     return lookUpSizeOnDisk(mappedPath)
  *   }
  *
  *   fun largestFiles(): Sequence<Path> {
  *     val largestFiles: Sequence<Path> = lookUpLargestFiles()
  *     return largestFiles.map {
- *       pathMapper.onPathResult(it, "largestFiles")
+ *       mapping.mapResult(it, "largestFiles")
  *     }
  *   }
  * }
  * ```
  */
 interface FileSystemExtension {
-  /** Returns a file system of the same type, that applies [pathMapper] to all paths. */
-  fun map(pathMapper: PathMapper) : FileSystemExtension
+  /** Returns a file system of the same type, that applies [outer] to all paths. */
+  fun map(outer: Mapping): FileSystemExtension
+
+  abstract class Mapping {
+    abstract fun mapParameter(path: Path, functionName: String, parameterName: String): Path
+    abstract fun mapResult(path: Path, functionName: String): Path
+
+    fun chain(outer: Mapping): Mapping {
+      val inner = this
+      return object : Mapping() {
+        override fun mapParameter(path: Path, functionName: String, parameterName: String): Path {
+          return inner.mapParameter(
+            outer.mapParameter(
+              path,
+              functionName,
+              parameterName,
+            ),
+            functionName,
+            parameterName,
+          )
+        }
+
+        override fun mapResult(path: Path, functionName: String): Path {
+          return outer.mapResult(
+            inner.mapResult(
+              path,
+              functionName,
+            ),
+            functionName,
+          )
+        }
+      }
+    }
+
+    companion object {
+      val NONE = object : Mapping() {
+        override fun mapParameter(path: Path, functionName: String, parameterName: String) = path
+        override fun mapResult(path: Path, functionName: String) = path
+      }
+    }
+  }
 }
