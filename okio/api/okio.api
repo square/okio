@@ -502,6 +502,19 @@ public final class okio/FileSystem$Companion {
 }
 
 public abstract interface class okio/FileSystemExtension {
+	public abstract fun map (Lokio/FileSystemExtension$Mapping;)Lokio/FileSystemExtension;
+}
+
+public abstract class okio/FileSystemExtension$Mapping {
+	public static final field Companion Lokio/FileSystemExtension$Mapping$Companion;
+	public fun <init> ()V
+	public final fun chain (Lokio/FileSystemExtension$Mapping;)Lokio/FileSystemExtension$Mapping;
+	public abstract fun mapParameter (Lokio/Path;Ljava/lang/String;Ljava/lang/String;)Lokio/Path;
+	public abstract fun mapResult (Lokio/Path;Ljava/lang/String;)Lokio/Path;
+}
+
+public final class okio/FileSystemExtension$Mapping$Companion {
+	public final fun getNONE ()Lokio/FileSystemExtension$Mapping;
 }
 
 public class okio/ForwardingFileSystem : okio/FileSystem {
@@ -514,11 +527,12 @@ public class okio/ForwardingFileSystem : okio/FileSystem {
 	public final fun delegate ()Lokio/FileSystem;
 	public fun delete (Lokio/Path;Z)V
 	public fun extension (Lkotlin/reflect/KClass;)Lokio/FileSystemExtension;
+	public final fun getExtensionMapping ()Lokio/FileSystemExtension$Mapping;
 	public fun list (Lokio/Path;)Ljava/util/List;
 	public fun listOrNull (Lokio/Path;)Ljava/util/List;
 	public fun listRecursively (Lokio/Path;Z)Lkotlin/sequences/Sequence;
 	public fun metadataOrNull (Lokio/Path;)Lokio/FileMetadata;
-	public fun onExtension (Lkotlin/reflect/KClass;Ljava/lang/Object;)Ljava/lang/Object;
+	public fun onExtension (Lkotlin/reflect/KClass;Lokio/FileSystemExtension;)Lokio/FileSystemExtension;
 	public fun onPathParameter (Lokio/Path;Ljava/lang/String;Ljava/lang/String;)Lokio/Path;
 	public fun onPathResult (Lokio/Path;Ljava/lang/String;)Lokio/Path;
 	public fun openReadOnly (Lokio/Path;)Lokio/FileHandle;
