@@ -9,6 +9,7 @@ include(":okio-fakefilesystem")
 if (System.getProperty("kjs", "true").toBoolean()) {
   include(":okio-nodefilesystem")
 }
+include(":okio-sqlite")
 include(":okio-testing-support")
 include(":okio:jvm:jmh")
 if (System.getProperty("kwasm", "true").toBoolean()) {
