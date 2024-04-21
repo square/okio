@@ -16,23 +16,21 @@
 package okio.sqlite
 
 import java.sql.Connection
-import kotlin.test.Ignore
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import okio.FileSystem
 import okio.ForwardingFileSystem
 import okio.Path
 import okio.Path.Companion.toPath
-import okio.extend
 import okio.fakefilesystem.FakeFileSystem
 import okio.randomToken
 import org.junit.Test
 
-class SqliteExtensionTest {
+class SqliteTest {
   @Test
   fun inMemory() {
     val rawFileSystem = FakeFileSystem()
-    val fileSystem = rawFileSystem.extend(SqliteExtension(inMemory = true))
+    val fileSystem = rawFileSystem.withSqlite(inMemory = true)
     val databasePath = "/pizza.db".toPath()
 
     fileSystem.openSqlite(databasePath).use { connection ->
@@ -46,7 +44,7 @@ class SqliteExtensionTest {
   fun onDisk() {
     val rawFileSystem = FileSystem.SYSTEM
     val temp = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)
-    val fileSystem = rawFileSystem.extend(SqliteExtension(inMemory = false))
+    val fileSystem = rawFileSystem.withSqlite(inMemory = false)
     fileSystem.createDirectory(temp)
 
     val databasePath = temp / "pizza.db"
@@ -68,7 +66,7 @@ class SqliteExtensionTest {
   @Test
   fun multipleConnectionsSharingInMemoryDatabase() {
     val rawFileSystem = FakeFileSystem()
-    val fileSystem = rawFileSystem.extend(SqliteExtension(inMemory = true))
+    val fileSystem = rawFileSystem.withSqlite(inMemory = true)
     val databasePath = "/pizza.db".toPath()
 
     fileSystem.openSqlite(databasePath).use { connection1 ->
@@ -82,10 +80,9 @@ class SqliteExtensionTest {
   }
 
   @Test
-  @Ignore("in-memory DBs disappear on close")
   fun inMemoryDataPersistedAcrossConnections() {
     val rawFileSystem = FakeFileSystem()
-    val fileSystem = rawFileSystem.extend(SqliteExtension(inMemory = true))
+    val fileSystem = rawFileSystem.withSqlite(inMemory = true)
     val databasePath = "/pizza.db".toPath()
 
     fileSystem.openSqlite(databasePath).use { connection ->
@@ -99,13 +96,16 @@ class SqliteExtensionTest {
       connection.assertToppingsPresent()
     }
 
-    // TODO: delete the file & confirm schema disappears too
+    fileSystem.delete("/pizza.db".toPath())
+    fileSystem.openSqlite(databasePath).use { connection ->
+      connection.assertSchemaAbsent()
+    }
   }
 
   @Test
   fun inMemoryWithMappedPath() {
     val rawFileSystem = FakeFileSystem()
-    val mondayFs = rawFileSystem.extend(SqliteExtension(inMemory = true))
+    val mondayFs = rawFileSystem.withSqlite(inMemory = true)
     val tuesdayFs = MappedFileSystem(mondayFs, "/monday".toPath(), "/tuesday".toPath())
     mondayFs.createDirectory("/monday".toPath())
 
@@ -123,7 +123,7 @@ class SqliteExtensionTest {
   fun onDiskWithMappedPath() {
     val rawFileSystem = FileSystem.SYSTEM
     val temp = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)
-    val mondayFs = rawFileSystem.extend(SqliteExtension(inMemory = false))
+    val mondayFs = rawFileSystem.withSqlite(inMemory = false)
     val mondayDir = temp / "monday"
     mondayFs.createDirectories(mondayDir)
 
@@ -161,6 +161,20 @@ class SqliteExtensionTest {
     }
 
     assertEquals(listOf("pineapple", "olives"), items)
+  }
+
+  private fun Connection.assertSchemaAbsent() {
+    val resultSet = prepareStatement(
+      "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+    ).executeQuery()
+
+    val items = buildList<String> {
+      while (resultSet.next()) {
+        add(resultSet.getString("name"))
+      }
+    }
+
+    assertEquals(listOf(), items)
   }
 
   class MappedFileSystem(
