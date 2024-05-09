@@ -153,4 +153,31 @@ class CommonRealBufferedSourceTest {
       "write($write3, ${write3.size})",
     )
   }
+
+  @Test fun readZeroBytesIntoBufferDoesNotRefillBuffer() {
+    val source = Buffer()
+    source.writeUtf8("abc")
+
+    val sink = Buffer()
+
+    val bufferedSource = (source as Source).buffer()
+    assertEquals(0L, bufferedSource.read(sink, 0L))
+
+    assertEquals(0, sink.size)
+    assertEquals(0, bufferedSource.buffer.size)
+    assertEquals(3, source.size)
+  }
+
+  @Test fun readZeroBytesIntoByteArrayDoesNotRefillBuffer() {
+    val source = Buffer()
+    source.writeUtf8("abc")
+
+    val sink = ByteArray(1024)
+
+    val bufferedSource = (source as Source).buffer()
+    assertEquals(0, bufferedSource.read(sink, 0, 0))
+
+    assertEquals(0, bufferedSource.buffer.size)
+    assertEquals(3, source.size)
+  }
 }

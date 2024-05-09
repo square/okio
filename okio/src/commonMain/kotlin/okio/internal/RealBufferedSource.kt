@@ -39,6 +39,7 @@ internal inline fun RealBufferedSource.commonRead(sink: Buffer, byteCount: Long)
   check(!closed) { "closed" }
 
   if (buffer.size == 0L) {
+    if (byteCount == 0L) return 0L
     val read = source.read(buffer, Segment.SIZE.toLong())
     if (read == -1L) return -1L
   }
@@ -134,6 +135,7 @@ internal inline fun RealBufferedSource.commonRead(sink: ByteArray, offset: Int, 
   checkOffsetAndCount(sink.size.toLong(), offset.toLong(), byteCount.toLong())
 
   if (buffer.size == 0L) {
+    if (byteCount == 0) return 0
     val read = source.read(buffer, Segment.SIZE.toLong())
     if (read == -1L) return -1
   }
