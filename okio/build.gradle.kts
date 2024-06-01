@@ -187,26 +187,23 @@ kotlin {
       }
     }
   }
+
+  jvm {
+    withJava()
+  }
 }
 
 tasks {
-  val compileModuleInfo by registering(JavaCompile::class) {
-    classpath = objects.fileCollection()
-      .from(configurations.named("jvmCompileClasspath"))
+  named<JavaCompile>("compileJava") {
     val compileKotlinJvm = named<KotlinCompile>("compileKotlinJvm")
     dependsOn(compileKotlinJvm)
     options.compilerArgumentProviders.plusAssign(CommandLineArgumentProvider {
       listOf("--patch-module", "okio=${compileKotlinJvm.get().destinationDirectory.get().asFile.absolutePath}")
     })
-    destinationDirectory = layout.buildDirectory.dir("classes/java/moduleInfo")
-    options.release = 11
-    source(layout.projectDirectory.dir("src/jvmMain/java"))
+    options.release.set(11)
   }
 
   val jvmJar by getting(Jar::class) {
-    // BundleTaskConvention() crashes unless there's a 'main' source set.
-    sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
-    from(compileModuleInfo)
     val bndConvention = BundleTaskConvention(this)
     bndConvention.setBnd(
       """
