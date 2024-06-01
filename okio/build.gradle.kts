@@ -6,6 +6,7 @@ import kotlinx.validation.ApiValidationExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   kotlin("multiplatform")
@@ -189,14 +190,27 @@ kotlin {
 }
 
 tasks {
+  val compileModuleInfo by registering(JavaCompile::class) {
+    classpath = objects.fileCollection()
+      .from(configurations.named("jvmCompileClasspath"))
+    val compileKotlinJvm = named<KotlinCompile>("compileKotlinJvm")
+    dependsOn(compileKotlinJvm)
+    options.compilerArgumentProviders.plusAssign(CommandLineArgumentProvider {
+      listOf("--patch-module", "okio=${compileKotlinJvm.get().destinationDirectory.get().asFile.absolutePath}")
+    })
+    destinationDirectory = layout.buildDirectory.dir("classes/java/moduleInfo")
+    options.release = 11
+    source(layout.projectDirectory.dir("src/jvmMain/java"))
+  }
+
   val jvmJar by getting(Jar::class) {
     // BundleTaskConvention() crashes unless there's a 'main' source set.
     sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
+    from(compileModuleInfo)
     val bndConvention = BundleTaskConvention(this)
     bndConvention.setBnd(
       """
       Export-Package: okio
-      Automatic-Module-Name: okio
       Bundle-SymbolicName: com.squareup.okio
       """,
     )
