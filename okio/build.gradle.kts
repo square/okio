@@ -189,10 +189,14 @@ kotlin {
   }
 }
 
+val java9 by sourceSets.creating {
+  java.srcDir("src/jvmMain/java9")
+  compileClasspath = objects.fileCollection()
+    .from(configurations.named("jvmCompileClasspath"))
+}
+
 tasks {
-  val compileModuleInfo by registering(JavaCompile::class) {
-    classpath = objects.fileCollection()
-      .from(configurations.named("jvmCompileClasspath"))
+  val compileJava9Java by getting(JavaCompile::class) {
     val compileKotlinJvm = named<KotlinCompile>("compileKotlinJvm")
     dependsOn(compileKotlinJvm)
     options.compilerArgumentProviders.plusAssign(
@@ -200,15 +204,13 @@ tasks {
         listOf("--patch-module", "okio=${compileKotlinJvm.get().destinationDirectory.get().asFile.absolutePath}")
       },
     )
-    destinationDirectory = layout.buildDirectory.dir("classes/java/moduleInfo")
     options.release = 9
-    source(layout.projectDirectory.dir("src/jvmMain/java"))
   }
 
   val jvmJar by getting(Jar::class) {
     // BundleTaskConvention() crashes unless there's a 'main' source set.
     sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
-    from(compileModuleInfo) {
+    from(compileJava9Java) {
       into("META-INF/versions/9")
     }
     val bndConvention = BundleTaskConvention(this)
