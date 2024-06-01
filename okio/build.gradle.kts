@@ -198,10 +198,11 @@ val java9 by sourceSets.creating {
 tasks {
   val compileJava9Java by getting(JavaCompile::class) {
     val compileKotlinJvm = named<KotlinCompile>("compileKotlinJvm")
+      .flatMap { it.destinationDirectory }.map { it.asFile.absolutePath }
     dependsOn(compileKotlinJvm)
     options.compilerArgumentProviders.plusAssign(
       CommandLineArgumentProvider {
-        listOf("--patch-module", "okio=${compileKotlinJvm.get().destinationDirectory.get().asFile.absolutePath}")
+        listOf("--patch-module", "okio=${compileKotlinJvm.get()}")
       },
     )
     options.release = 9
