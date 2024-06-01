@@ -187,28 +187,37 @@ kotlin {
       }
     }
   }
-
-  jvm {
-    withJava()
-  }
 }
 
 tasks {
-  named<JavaCompile>("compileJava") {
+  val compileModuleInfo by registering(JavaCompile::class) {
+    classpath = objects.fileCollection()
+      .from(configurations.named("jvmCompileClasspath"))
     val compileKotlinJvm = named<KotlinCompile>("compileKotlinJvm")
     dependsOn(compileKotlinJvm)
-    options.compilerArgumentProviders.plusAssign(CommandLineArgumentProvider {
-      listOf("--patch-module", "okio=${compileKotlinJvm.get().destinationDirectory.get().asFile.absolutePath}")
-    })
-    options.release.set(11)
+    options.compilerArgumentProviders.plusAssign(
+      CommandLineArgumentProvider {
+        listOf("--patch-module", "okio=${compileKotlinJvm.get().destinationDirectory.get().asFile.absolutePath}")
+      },
+    )
+    destinationDirectory = layout.buildDirectory.dir("classes/java/moduleInfo")
+    options.release = 9
+    source(layout.projectDirectory.dir("src/jvmMain/java"))
   }
 
   val jvmJar by getting(Jar::class) {
+    // BundleTaskConvention() crashes unless there's a 'main' source set.
+    sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
+    from(compileModuleInfo) {
+      into("META-INF/versions/9")
+    }
     val bndConvention = BundleTaskConvention(this)
     bndConvention.setBnd(
       """
       Export-Package: okio
+      Multi-Release: true
       Bundle-SymbolicName: com.squareup.okio
+      -fixupmessages: ^Classes found in the wrong directory: \\{META-INF/versions/9/module-info.class=module-info}${'$'}
       """,
     )
     // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
