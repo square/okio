@@ -1,4 +1,4 @@
-import aQute.bnd.gradle.BundleTaskConvention
+import aQute.bnd.gradle.BundleTaskExtension
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
@@ -190,19 +190,20 @@ kotlin {
 
 tasks {
   val jvmJar by getting(Jar::class) {
-    // BundleTaskConvention() crashes unless there's a 'main' source set.
+    // BundleTaskExtension() crashes unless there's a 'main' source set.
     sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
-    val bndConvention = BundleTaskConvention(this)
-    bndConvention.setBnd(
+    val bndExtension = BundleTaskExtension(this)
+    bndExtension.setBnd(
       """
       Export-Package: okio
       Automatic-Module-Name: okio
       Bundle-SymbolicName: com.squareup.okio
       """,
     )
-    // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
+    // Call the extension when the task has finished to modify the jar to contain OSGi metadata.
     doLast {
-      bndConvention.buildBundle()
+      bndExtension.buildAction()
+        .execute(this)
     }
   }
 }
