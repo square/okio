@@ -199,7 +199,7 @@ tasks {
   val compileJava9Java by getting(JavaCompile::class) {
     val compileKotlinJvm = named<KotlinCompile>("compileKotlinJvm")
       .flatMap { it.destinationDirectory }.map { it.asFile.absolutePath }
-    dependsOn(compileKotlinJvm)
+    inputs.dir(compileKotlinJvm)
     options.compilerArgumentProviders.plusAssign(
       CommandLineArgumentProvider {
         listOf("--patch-module", "okio=${compileKotlinJvm.get()}")
