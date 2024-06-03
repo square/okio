@@ -221,7 +221,7 @@ testing {
 }
 
 tasks {
-  val compileJava9Java by getting(JavaCompile::class) {
+  val compileJava9Java = named<JavaCompile>("compileJava9Java") {
     dependsOn("compileKotlinJvm")
     // https://kotlinlang.org/docs/gradle-configure-project.html#configure-with-java-modules-jpms-enabled
     options.compilerArgumentProviders.add(CommandLineArgumentProvider {
@@ -230,7 +230,7 @@ tasks {
     options.release = 9
   }
 
-  val jvmJar by getting(Jar::class) {
+  named<Jar>("jvmJar") {
     from(compileJava9Java) {
       into("META-INF/versions/9")
     }
@@ -249,7 +249,7 @@ tasks {
     }
   }
 
-  val compileIntegrationTestJava by getting(JavaCompile::class) {
+  named<JavaCompile>("compileIntegrationTestJava") {
     options.release = 9
   }
 
