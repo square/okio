@@ -256,7 +256,7 @@ tasks {
   }
 
   check {
-    dependsOn(dependsOn(testing.suites.named("integrationTest")))
+    dependsOn(testing.suites.named("integrationTest"))
   }
 }
 
