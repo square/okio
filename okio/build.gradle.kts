@@ -196,8 +196,10 @@ kotlin {
 
 val java9 by sourceSets.creating {
   java.srcDir("src/jvmMain/java9")
-  compileClasspath = objects.fileCollection()
-    .from(configurations.named("jvmCompileClasspath"))
+}
+
+configurations.named("java9CompileClasspath") {
+  extendsFrom(configurations["jvmCompileClasspath"])
 }
 
 testing {
@@ -220,14 +222,11 @@ testing {
 
 tasks {
   val compileJava9Java by getting(JavaCompile::class) {
-    val compileKotlinJvm = named<KotlinCompile>("compileKotlinJvm")
-      .flatMap { it.destinationDirectory }.map { it.asFile.absolutePath }
-    inputs.dir(compileKotlinJvm)
-    options.compilerArgumentProviders.plusAssign(
-      CommandLineArgumentProvider {
-        listOf("--patch-module", "okio=${compileKotlinJvm.get()}")
-      },
-    )
+    dependsOn("compileKotlinJvm")
+    // https://kotlinlang.org/docs/gradle-configure-project.html#configure-with-java-modules-jpms-enabled
+    options.compilerArgumentProviders.add(CommandLineArgumentProvider {
+      listOf("--patch-module", "okio=${sourceSets["main"].output.asPath}")
+    })
     options.release = 9
   }
 
