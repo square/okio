@@ -16,7 +16,7 @@ jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.20" }
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.25.0" }
-bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "6.4.0" }
+bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "7.0.0" }
 vanniktech-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.27.0" }
 test-junit = { module = "junit:junit", version = "4.13.2" }
 test-assertj = { module = "org.assertj:assertj-core", version = "3.25.3" }
