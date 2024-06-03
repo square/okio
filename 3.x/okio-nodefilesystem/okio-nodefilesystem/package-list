@@ -1,0 +1,20 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:okio////PointingToDeclaration/okio-nodefilesystem/okio/index.html
+$dokka.location:okio/NodeJsFileSystem///PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/index.html
+$dokka.location:okio/NodeJsFileSystem/appendingSink/#okio.Path#kotlin.Boolean/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/appending-sink.html
+$dokka.location:okio/NodeJsFileSystem/atomicMove/#okio.Path#okio.Path/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/atomic-move.html
+$dokka.location:okio/NodeJsFileSystem/canonicalize/#okio.Path/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/canonicalize.html
+$dokka.location:okio/NodeJsFileSystem/createDirectory/#okio.Path#kotlin.Boolean/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/create-directory.html
+$dokka.location:okio/NodeJsFileSystem/createSymlink/#okio.Path#okio.Path/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/create-symlink.html
+$dokka.location:okio/NodeJsFileSystem/delete/#okio.Path#kotlin.Boolean/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/delete.html
+$dokka.location:okio/NodeJsFileSystem/list/#okio.Path/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/list.html
+$dokka.location:okio/NodeJsFileSystem/listOrNull/#okio.Path/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/list-or-null.html
+$dokka.location:okio/NodeJsFileSystem/metadataOrNull/#okio.Path/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/metadata-or-null.html
+$dokka.location:okio/NodeJsFileSystem/openReadOnly/#okio.Path/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/open-read-only.html
+$dokka.location:okio/NodeJsFileSystem/openReadWrite/#okio.Path#kotlin.Boolean#kotlin.Boolean/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/open-read-write.html
+$dokka.location:okio/NodeJsFileSystem/sink/#okio.Path#kotlin.Boolean/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/sink.html
+$dokka.location:okio/NodeJsFileSystem/source/#okio.Path/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/source.html
+$dokka.location:okio/NodeJsFileSystem/toString/#/PointingToDeclaration/okio-nodefilesystem/okio/-node-js-file-system/to-string.html
+okio
+

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>NodeJsFileSystem</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<link href="../../../images/icon-square.png">
+<link href="../../../styles/dokka-logo.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                            okio-nodefilesystem
+                    </a>
+            </div>
+            <div class="library-version">
+3.10.0-SNAPSHOT            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector js-like" data-active="" data-filter=":okio-nodefilesystem:dokkaHtml/main">js</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="okio-nodefilesystem::okio/NodeJsFileSystem///PointingToDeclaration//1785983011">
+  <div class="breadcrumbs"><a href="../../../index.html">okio-nodefilesystem</a><span class="delimiter">/</span><a href="../index.html">okio</a><span class="delimiter">/</span><span class="current">NodeJsFileSystem</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Node</span><wbr></wbr><span>Js</span><wbr></wbr><span>File</span><wbr></wbr><span><span>System</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">NodeJsFileSystem</a> : <span data-unresolved-link="okio/FileSystem///PointingToDeclaration/">FileSystem</span></div><p class="paragraph">Use <a href="https://nodejs.org/dist/latest-v14.x/docs/api/fs.html">Node.js APIs</a> to implement the Okio file system interface.</p><p class="paragraph">This class needs to make calls to some fs APIs that have multiple competing overloads. To unambiguously select an overload this passes <code class="lang-kotlin">undefined</code> as the target type to some functions.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1746768385%2FFunctions%2F1785983011" anchor-label="appendingSink" id="1746768385%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="appending-sink.html"><span>appending</span><wbr></wbr><span><span>Sink</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1746768385%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="appending-sink.html"><span class="token function">appendingSink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">mustExist<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="okio/Sink///PointingToDeclaration/">Sink</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1175999954%2FFunctions%2F1785983011" anchor-label="atomicMove" id="-1175999954%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="atomic-move.html"><span>atomic</span><wbr></wbr><span><span>Move</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1175999954%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="atomic-move.html"><span class="token function">atomicMove</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">target<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1211635936%2FFunctions%2F1785983011" anchor-label="canonicalize" id="1211635936%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="canonicalize.html"><span><span>canonicalize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1211635936%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="canonicalize.html"><span class="token function">canonicalize</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="419090610%2FFunctions%2F1785983011" anchor-label="copy" id="419090610%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#419090610%2FFunctions%2F1785983011"><span><span>copy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="419090610%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#419090610%2FFunctions%2F1785983011"><span class="token function">copy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">target<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1133903352%2FFunctions%2F1785983011" anchor-label="createDirectories" id="1133903352%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1133903352%2FFunctions%2F1785983011"><span>create</span><wbr></wbr><span><span>Directories</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1133903352%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#1133903352%2FFunctions%2F1785983011"><span class="token function">createDirectories</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-426160597%2FFunctions%2F1785983011" anchor-label="createDirectory" id="-426160597%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-directory.html"><span>create</span><wbr></wbr><span><span>Directory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-426160597%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-directory.html"><span class="token function">createDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-188961441%2FFunctions%2F1785983011" anchor-label="createSymlink" id="-188961441%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-symlink.html"><span>create</span><wbr></wbr><span><span>Symlink</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-188961441%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-symlink.html"><span class="token function">createSymlink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">target<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="888312633%2FFunctions%2F1785983011" anchor-label="delete" id="888312633%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete.html"><span><span>delete</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="888312633%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="delete.html"><span class="token function">delete</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">mustExist<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">We don't know if <a href="delete.html">path</a> is a file or a directory, but we don't (yet) have an API to delete either type. Just try each in sequence.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1932614451%2FFunctions%2F1785983011" anchor-label="deleteRecursively" id="1932614451%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1932614451%2FFunctions%2F1785983011"><span>delete</span><wbr></wbr><span><span>Recursively</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1932614451%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1932614451%2FFunctions%2F1785983011"><span class="token function">deleteRecursively</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileOrDirectory<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">mustExist<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1094583673%2FFunctions%2F1785983011" anchor-label="exists" id="-1094583673%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1094583673%2FFunctions%2F1785983011"><span><span>exists</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1094583673%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#-1094583673%2FFunctions%2F1785983011"><span class="token function">exists</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1208719842%2FFunctions%2F1785983011" anchor-label="list" id="-1208719842%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list.html"><span><span>list</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1208719842%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="list.html"><span class="token function">list</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1606699448%2FFunctions%2F1785983011" anchor-label="listOrNull" id="-1606699448%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-or-null.html"><span>list</span><wbr></wbr><span>Or</span><wbr></wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1606699448%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="list-or-null.html"><span class="token function">listOrNull</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1381599590%2FFunctions%2F1785983011" anchor-label="listRecursively" id="1381599590%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1381599590%2FFunctions%2F1785983011"><span>list</span><wbr></wbr><span><span>Recursively</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1381599590%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1381599590%2FFunctions%2F1785983011"><span class="token function">listRecursively</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">followSymlinks<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.sequences/-sequence/index.html">Sequence</a><span class="token operator">&lt;</span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-218291494%2FFunctions%2F1785983011" anchor-label="metadata" id="-218291494%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-218291494%2FFunctions%2F1785983011"><span><span>metadata</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-218291494%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#-218291494%2FFunctions%2F1785983011"><span class="token function">metadata</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="okio/FileMetadata///PointingToDeclaration/">FileMetadata</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="896075225%2FFunctions%2F1785983011" anchor-label="metadataOrNull" id="896075225%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="metadata-or-null.html"><span>metadata</span><wbr></wbr><span>Or</span><wbr></wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="896075225%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="metadata-or-null.html"><span class="token function">metadataOrNull</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="okio/FileMetadata///PointingToDeclaration/">FileMetadata</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-28913460%2FFunctions%2F1785983011" anchor-label="openReadOnly" id="-28913460%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="open-read-only.html"><span>open</span><wbr></wbr><span>Read</span><wbr></wbr><span><span>Only</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-28913460%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="open-read-only.html"><span class="token function">openReadOnly</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="okio/FileHandle///PointingToDeclaration/">FileHandle</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1614249703%2FFunctions%2F1785983011" anchor-label="openReadWrite" id="1614249703%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="open-read-write.html"><span>open</span><wbr></wbr><span>Read</span><wbr></wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1614249703%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="open-read-write.html"><span class="token function">openReadWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">mustExist<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="okio/FileHandle///PointingToDeclaration/">FileHandle</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1037056394%2FFunctions%2F1785983011" anchor-label="read" id="-1037056394%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1037056394%2FFunctions%2F1785983011"><span><span>read</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1037056394%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#-1037056394%2FFunctions%2F1785983011">T</a><span class="token operator">&gt; </span><a href="index.html#-1037056394%2FFunctions%2F1785983011"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">readerAction<span class="token operator">: </span><span data-unresolved-link="okio/BufferedSource///PointingToDeclaration/">BufferedSource</span><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="index.html#-1037056394%2FFunctions%2F1785983011">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#-1037056394%2FFunctions%2F1785983011">T</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1548999761%2FFunctions%2F1785983011" anchor-label="sink" id="1548999761%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="sink.html"><span><span>sink</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1548999761%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="sink.html"><span class="token function">sink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="okio/Sink///PointingToDeclaration/">Sink</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="253260635%2FFunctions%2F1785983011" anchor-label="source" id="253260635%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="source.html"><span><span>source</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="253260635%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="source.html"><span class="token function">source</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="okio/Source///PointingToDeclaration/">Source</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="983657061%2FFunctions%2F1785983011" anchor-label="toString" id="983657061%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-string.html"><span>to</span><wbr></wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="983657061%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1005639157%2FFunctions%2F1785983011" anchor-label="write" id="1005639157%2FFunctions%2F1785983011" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":okio-nodefilesystem:dokkaHtml/main" data-filterable-set=":okio-nodefilesystem:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1005639157%2FFunctions%2F1785983011"><span><span>write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1005639157%2FFunctions%2F1785983011"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio-nodefilesystem:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#1005639157%2FFunctions%2F1785983011">T</a><span class="token operator">&gt; </span><a href="index.html#1005639157%2FFunctions%2F1785983011"><span class="token function">write</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">writerAction<span class="token operator">: </span><span data-unresolved-link="okio/BufferedSink///PointingToDeclaration/">BufferedSink</span><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="index.html#1005639157%2FFunctions%2F1785983011">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#1005639157%2FFunctions%2F1785983011">T</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

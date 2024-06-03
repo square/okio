@@ -1,0 +1,35 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:okio.fakefilesystem////PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/index.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem///PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/index.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/FakeFileSystem/#kotlinx.datetime.Clock/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/-fake-file-system.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/allPaths/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/all-paths.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/allowClobberingEmptyDirectories/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/allow-clobbering-empty-directories.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/allowDeletingOpenFiles/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/allow-deleting-open-files.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/allowMovingOpenFiles/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/allow-moving-open-files.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/allowReadsWhileWriting/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/allow-reads-while-writing.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/allowSymlinks/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/allow-symlinks.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/allowWritesWhileWriting/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/allow-writes-while-writing.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/appendingSink/#okio.Path#kotlin.Boolean/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/appending-sink.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/atomicMove/#okio.Path#okio.Path/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/atomic-move.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/canonicalize/#okio.Path/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/canonicalize.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/checkNoOpenFiles/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/check-no-open-files.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/clock/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/clock.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/createDirectory/#okio.Path#kotlin.Boolean/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/create-directory.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/createSymlink/#okio.Path#okio.Path/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/create-symlink.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/delete/#okio.Path#kotlin.Boolean/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/delete.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/emulateUnix/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/emulate-unix.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/emulateWindows/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/emulate-windows.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/list/#okio.Path/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/list.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/listOrNull/#okio.Path/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/list-or-null.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/metadataOrNull/#okio.Path/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/metadata-or-null.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/openPaths/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/open-paths.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/openReadOnly/#okio.Path/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/open-read-only.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/openReadWrite/#okio.Path#kotlin.Boolean#kotlin.Boolean/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/open-read-write.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/setExtra/#okio.Path#kotlin.reflect.KClass[TypeParam(bounds=[kotlin.Any])]#TypeParam(bounds=[kotlin.Any])?/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/set-extra.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/sink/#okio.Path#kotlin.Boolean/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/sink.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/source/#okio.Path/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/source.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/toString/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/to-string.html
+$dokka.location:okio.fakefilesystem/FakeFileSystem/workingDirectory/#/PointingToDeclaration/okio-fakefilesystem/okio.fakefilesystem/-fake-file-system/working-directory.html
+okio.fakefilesystem
+
