@@ -1,4 +1,4 @@
-import aQute.bnd.gradle.BundleTaskConvention
+import aQute.bnd.gradle.BundleTaskExtension
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
@@ -235,8 +235,8 @@ tasks {
     from(compileJava9Java) {
       into("META-INF/versions/9")
     }
-    val bndConvention = BundleTaskConvention(this)
-    bndConvention.setBnd(
+    val bndExtension = BundleTaskExtension(this)
+    bndExtension.setBnd(
       """
       Export-Package: okio
       Multi-Release: true
@@ -244,9 +244,10 @@ tasks {
       -fixupmessages: ^Classes found in the wrong directory: \\{META-INF/versions/9/module-info.class=module-info}${'$'}
       """,
     )
-    // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
+    // Call the extension when the task has finished to modify the jar to contain OSGi metadata.
     doLast {
-      bndConvention.buildBundle()
+      bndExtension.buildAction()
+        .execute(this)
     }
   }
 
