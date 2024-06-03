@@ -188,6 +188,10 @@ kotlin {
       }
     }
   }
+
+  jvm {
+    withJava()
+  }
 }
 
 val java9 by sourceSets.creating {
@@ -228,8 +232,6 @@ tasks {
   }
 
   val jvmJar by getting(Jar::class) {
-    // BundleTaskConvention() crashes unless there's a 'main' source set.
-    sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
     from(compileJava9Java) {
       into("META-INF/versions/9")
     }
