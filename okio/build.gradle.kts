@@ -241,7 +241,6 @@ tasks {
       Export-Package: okio
       Multi-Release: true
       Bundle-SymbolicName: com.squareup.okio
-      -fixupmessages: ^Classes found in the wrong directory: \\{META-INF/versions/9/module-info.class=module-info}${'$'}
       """,
     )
     // Call the extension when the task has finished to modify the jar to contain OSGi metadata.
