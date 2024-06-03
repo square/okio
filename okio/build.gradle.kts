@@ -14,6 +14,7 @@ plugins {
   id("com.vanniktech.maven.publish.base")
   id("build-support")
   id("binary-compatibility-validator")
+  `jvm-test-suite`
 }
 
 /*
@@ -195,6 +196,24 @@ val java9 by sourceSets.creating {
     .from(configurations.named("jvmCompileClasspath"))
 }
 
+testing {
+  suites {
+    register<JvmTestSuite>("integrationTest") {
+      useJUnit(libs.versions.junit)
+      dependencies {
+        implementation(project())
+      }
+      targets.configureEach {
+        testTask.configure {
+          onlyIf {
+            !javaLauncher.get().metadata.javaRuntimeVersion.startsWith("1.8")
+          }
+        }
+      }
+    }
+  }
+}
+
 tasks {
   val compileJava9Java by getting(JavaCompile::class) {
     val compileKotlinJvm = named<KotlinCompile>("compileKotlinJvm")
@@ -227,6 +246,14 @@ tasks {
     doLast {
       bndConvention.buildBundle()
     }
+  }
+
+  val compileIntegrationTestJava by getting(JavaCompile::class) {
+    options.release = 9
+  }
+
+  check {
+    dependsOn(dependsOn(testing.suites.named("integrationTest")))
   }
 }
 
