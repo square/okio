@@ -251,8 +251,14 @@ tasks {
     options.release = 9
   }
 
+  val integrationTest = named<Test>("integrationTest") {
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+      listOf("--patch-module", "okio.test.integration=${sourceSets["integrationTest"].output.asPath}")
+    })
+  }
+
   check {
-    dependsOn(testing.suites.named("integrationTest"))
+    dependsOn(integrationTest)
   }
 }
 
