@@ -34,8 +34,8 @@ import java.nio.file.Path as NioPath
 import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.Mac
-import okio.internal.ResourceFileSystem
 import okio.internal.Logger
+import okio.internal.ResourceFileSystem
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -138,7 +138,7 @@ fun Socket.source(): Source {
   return timeout.source(source)
 }
 
-private val logger = Logger.getLogger("okio.Okio")
+private val logger = Logger("okio.Okio")
 
 private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
   override fun newTimeoutException(cause: IOException?): IOException {
