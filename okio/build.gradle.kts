@@ -229,7 +229,7 @@ tasks {
   }
 
   named<Jar>("jvmJar") {
-    from(compileJava9Java) {
+    from(compileJava9Java.flatMap { it.destinationDirectory }) {
       into("META-INF/versions/9")
     }
     val bndExtension = BundleTaskExtension(this)
