@@ -194,9 +194,7 @@ kotlin {
   }
 }
 
-val java9 by sourceSets.creating {
-  java.srcDir("src/jvmMain/java9")
-}
+val java9 by sourceSets.creating
 
 configurations.named("java9CompileClasspath") {
   extendsFrom(configurations["jvmCompileClasspath"])
