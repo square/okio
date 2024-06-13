@@ -15,8 +15,6 @@
  */
 package okio
 
-import kotlin.jvm.JvmField
-
 /**
  * A collection of bytes in memory.
  *
@@ -341,19 +339,19 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * [Buffer.readAndWriteUnsafe] that take a cursor and close it after use.
    */
   class UnsafeCursor constructor() : Closeable {
-    @JvmField var buffer: Buffer?
+    var buffer: Buffer?
 
-    @JvmField var readWrite: Boolean
+    var readWrite: Boolean
 
     internal var segment: Segment?
 
-    @JvmField var offset: Long
+    var offset: Long
 
-    @JvmField var data: ByteArray?
+    var data: ByteArray?
 
-    @JvmField var start: Int
+    var start: Int
 
-    @JvmField var end: Int
+    var end: Int
 
     /**
      * Seeks to the next range of bytes, advancing the offset by `end - start`. Returns the size of
