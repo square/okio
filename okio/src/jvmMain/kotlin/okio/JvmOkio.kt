@@ -32,10 +32,9 @@ import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.Path as NioPath
 import java.security.MessageDigest
-import java.util.logging.Level
-import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
+import okio.internal.Logger
 import okio.internal.ResourceFileSystem
 
 /** Returns a sink that writes to `out`. */
@@ -139,7 +138,7 @@ fun Socket.source(): Source {
   return timeout.source(source)
 }
 
-private val logger = Logger.getLogger("okio.Okio")
+private val logger = Logger("okio.Okio")
 
 private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
   override fun newTimeoutException(cause: IOException?): IOException {
@@ -154,12 +153,12 @@ private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
     try {
       socket.close()
     } catch (e: Exception) {
-      logger.log(Level.WARNING, "Failed to close timed out socket $socket", e)
+      logger.warn("Failed to close timed out socket $socket", e)
     } catch (e: AssertionError) {
       if (e.isAndroidGetsocknameError) {
         // Catch this exception due to a Firmware issue up to android 4.2.2
         // https://code.google.com/p/android/issues/detail?id=54072
-        logger.log(Level.WARNING, "Failed to close timed out socket $socket", e)
+        logger.warn("Failed to close timed out socket $socket", e)
       } else {
         throw e
       }
