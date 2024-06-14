@@ -79,6 +79,7 @@ kotlin {
 
     val nonWasmTest by creating {
       dependencies {
+        implementation(libs.kotlin.test)
         implementation(libs.kotlin.time)
         implementation(projects.okioFakefilesystem)
       }

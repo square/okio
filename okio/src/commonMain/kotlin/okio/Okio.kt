@@ -72,3 +72,16 @@ inline fun <T : Closeable?, R> T.use(block: (T) -> R): R {
   @Suppress("UNCHECKED_CAST")
   return result as R
 }
+
+/**
+ * Returns a new file system that forwards all calls to this, and that also returns [extension]
+ * when it is requested.
+ *
+ * When [E] is requested on the returned file system, it will return [extension]. If this file
+ * system already has an extension of this type, [extension] takes precedence.
+ */
+inline fun <reified E : FileSystemExtension> FileSystem.extend(extension: E): FileSystem =
+  extend(E::class, extension)
+
+/** Returns the extension for [E] if it exists, and null otherwise. */
+inline fun <reified E : FileSystemExtension> FileSystem.extension(): E? = extension(E::class)
