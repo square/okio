@@ -7,7 +7,7 @@ android-gradle-plugin = { module = "com.android.tools.build:gradle", version = "
 android-desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version = "2.0.4" }
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version = "1.2.1" }
 androidx-test-runner = { module = "androidx.test:runner", version = "1.5.2" }
-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.16.2" }
+binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.16.3" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit" }
 kotlin-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.6.0" }
