@@ -16,6 +16,8 @@
 package okio
 
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
 /**
  * A [FileSystem] that forwards calls to another, intended for subclassing.
@@ -101,11 +103,25 @@ import kotlin.jvm.JvmName
  * other functions of this class. If desired, subclasses may override non-abstract functions to
  * forward them.
  */
-abstract class ForwardingFileSystem(
+open class ForwardingFileSystem internal constructor(
   /** [FileSystem] to which this instance is delegating. */
   @get:JvmName("delegate")
   val delegate: FileSystem,
+  extensions: Map<KClass<*>, Any>,
 ) : FileSystem() {
+  /** Extensions added at this layer. Additional extensions may exist in [delegate]. */
+  internal val extensions = extensions.toMap()
+
+  /** Maps paths with [onPathParameter] and [onPathResult]. */
+  val extensionMapping: FileSystemExtension.Mapping = object : FileSystemExtension.Mapping() {
+    override fun mapParameter(path: Path, functionName: String, parameterName: String) =
+      onPathParameter(path, functionName, parameterName)
+
+    override fun mapResult(path: Path, functionName: String) =
+      onPathResult(path, functionName)
+  }
+
+  constructor(delegate: FileSystem) : this(delegate, emptyMap())
 
   /**
    * Invoked each time a path is passed as a parameter to this file system. This returns the path to
@@ -141,6 +157,16 @@ abstract class ForwardingFileSystem(
    * @return the path to return to the caller.
    */
   open fun onPathResult(path: Path, functionName: String): Path = path
+
+  /**
+   * Invoked each time an extension is returned from [ForwardingFileSystem.extension].
+   *
+   * Overrides of this function must call [FileSystemExtension.map] with [extensionMapping],
+   * otherwise path mapping will not be applied. Or call `super.onExtension()` to do this.
+   */
+  open fun <T : FileSystemExtension> onExtension(type: KClass<T>, extension: T): T {
+    return type.cast(extension.map(extensionMapping))
+  }
 
   @Throws(IOException::class)
   override fun canonicalize(path: Path): Path {
@@ -236,6 +262,14 @@ abstract class ForwardingFileSystem(
     val source = onPathParameter(source, "createSymlink", "source")
     val target = onPathParameter(target, "createSymlink", "target")
     delegate.createSymlink(source, target)
+  }
+
+  override fun <E : FileSystemExtension> extension(type: KClass<E>): E? {
+    val result = extensions[type]?.let { type.cast(it) }
+      ?: delegate.extension(type)
+      ?: return null
+
+    return onExtension(type, result)
   }
 
   override fun toString() = "${this::class.simpleName}($delegate)"
