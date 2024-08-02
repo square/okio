@@ -113,7 +113,7 @@ kotlin {
       dependsOn(systemFileSystemMain)
     }
     val jvmTest by getting {
-      kotlin.srcDir("src/jvmTest/hashFunctions")
+      kotlin.srcDir("src/hashFunctions")
       dependsOn(nonWasmTest)
       dependsOn(zlibTest)
       dependencies {
