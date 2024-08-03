@@ -22,5 +22,14 @@ package okio
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
+/**
+ * Returns a new read-only file system.
+ *
+ * This function processes the ZIP file's central directory and builds an index of its files and
+ * their offsets within the ZIP. If the ZIP file is changed after this function returns, this
+ * file system will be broken and may return inconsistent data or crash when it is accessed.
+ *
+ * Closing the returned file system is not necessary and does nothing.
+ */
 @Throws(IOException::class)
 fun FileSystem.openZip(zipPath: Path): FileSystem = okio.internal.openZip(zipPath, this)

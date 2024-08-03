@@ -238,5 +238,10 @@ abstract class ForwardingFileSystem(
     delegate.createSymlink(source, target)
   }
 
+  @Throws(IOException::class)
+  override fun close() {
+    delegate.close()
+  }
+
   override fun toString() = "${this::class.simpleName}($delegate)"
 }

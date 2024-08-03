@@ -59,6 +59,12 @@ import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
  * Programs that do not attempt any of the above operations should work fine on both UNIX and
  * Windows systems. Relax these constraints individually or call [emulateWindows] or [emulateUnix];
  * to apply the constraints of a particular operating system.
+ *
+ * Closeable
+ * ---------
+ *
+ * This file system cannot be used after it is closed. Closing it does not close any of its open
+ * streams; those must be closed directly.
  */
 class FakeFileSystem(
   @JvmField
@@ -762,6 +768,10 @@ class FakeFileSystem(
     }
 
     override fun toString() = "FileHandler(${openFile.canonicalPath})"
+  }
+
+  override fun close() {
+    // TODO.
   }
 
   override fun toString() = "FakeFileSystem"
