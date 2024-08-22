@@ -86,11 +86,11 @@ class HashingTest {
   }
 
   @Test fun hmacSha256EmptyBuffer() {
-    assertEquals(HMAC_SHA256_empty, Buffer().sha256())
+    assertEquals(HMAC_SHA256_empty, Buffer().hmacSha256(HMAC_KEY))
   }
 
   @Test fun hmacSha512EmptyBuffer() {
-    assertEquals(HMAC_SHA512_empty, Buffer().sha512())
+    assertEquals(HMAC_SHA512_empty, Buffer().hmacSha512(HMAC_KEY))
   }
 
   @Test fun bufferHashIsNotDestructive() {
@@ -131,11 +131,11 @@ class HashingTest {
     val SHA512_empty =
       "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e".decodeHex()
     val HMAC_SHA256_empty =
-      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".decodeHex()
+      "9eeecd4a51b7e5cbfcd63bfa89130944d314c20b5c79979b124143fea006452a".decodeHex()
     val HMAC_SHA256_abc =
       "446d1715583cf1c30dfffbec0df4ff1f9d39d493211ab4c97ed6f3f0eb579b47".decodeHex()
     val HMAC_SHA512_empty =
-      "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e".decodeHex()
+      "c0bd671885fa6f2eade99e9b81bbc74b8c6aa9ee9e58d7e5c356022d2f0c1cd7a0c75124b88a1a021e4323ce781846d246a379df78c3b955461d1688cc873335".decodeHex()
     val HMAC_SHA512_abc =
       "24391790e7131050b05b606f2079a8983313894a1642a5ed97d094e7cabd00cfaa857d92c1f320ca3b6aaabb84c7155d6f1b10940dc133ded1b40baee8900be6".decodeHex()
     val r32k = randomBytes(32768)
