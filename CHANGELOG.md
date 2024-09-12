@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+## Version 3.9.1
+
+_2024-09-12_
+
+ * Fix: Support paths containing a single dot (".") in `Path.relativeTo`.
+ * Fix: Do not read from the upstream source when a 0-byte read is requested.
+ * Fix: Update kotlinx.datetime to 0.6.0 to correct a Gradle module metadata problem with 0.5.0.
+   Note: this artifact is only used in 'okio-fakefilesystem' and 'okio-nodefilesystem' and not in the Okio core.
+
+
 ## Version 3.9.0
 
 _2024-03-12_

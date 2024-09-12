@@ -77,7 +77,7 @@ works and how Okio does it.
 [Ok Multiplatform!][ok_multiplatform_talk] ([slides][ok_multiplatform_slides]): How we changed
 Okio’s implementation language from Java to Kotlin.
 
-[Nerding Out On Okio][apis_talk]: The story of the Okio APIs, their design and tradeoffs, as well 
+[Nerding Out On Okio][apis_talk]: The story of the Okio APIs, their design and tradeoffs, as well
 as implementation notes with animated marbles diagrams.
 
 
@@ -98,7 +98,7 @@ Releases
 Our [change log][changelog] has release history.
 
 ```kotlin
-implementation("com.squareup.okio:okio:3.9.0")
+implementation("com.squareup.okio:okio:3.9.1")
 ```
 
 <details>
@@ -110,7 +110,7 @@ repositories {
 }
 
 dependencies {
-   implementation("com.squareup.okio:okio:3.9.0")
+   implementation("com.squareup.okio:okio:3.9.1")
 }
 ```
 
