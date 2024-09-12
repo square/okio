@@ -105,11 +105,11 @@ internal class ZipFileSystem internal constructor(
 
     return when (entry.compressionMethod) {
       COMPRESSION_METHOD_STORED -> {
-        FixedLengthSource(source, entry.size, truncate = true)
+        source.limit(entry.size)
       }
       else -> {
         val inflaterSource = InflaterSource(
-          FixedLengthSource(source, entry.compressedSize, truncate = true),
+          source.limit(entry.compressedSize),
           Inflater(true),
         )
         FixedLengthSource(inflaterSource, entry.size, truncate = false)
