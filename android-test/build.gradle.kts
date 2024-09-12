@@ -16,6 +16,8 @@ val isIDE = properties.containsKey("android.injected.invoked.from.ide") ||
   System.getenv("IDEA_INITIAL_DIRECTORY") != null
 
 android {
+  namespace = "com.squareup.okio"
+
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
