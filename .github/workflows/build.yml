@@ -143,7 +143,7 @@ jobs:
 
       - name: Upload Artifacts
         run: |
-          ./gradlew clean publish --stacktrace
+          ./gradlew publish --stacktrace
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
