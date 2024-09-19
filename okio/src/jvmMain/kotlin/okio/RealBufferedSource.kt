@@ -184,10 +184,9 @@ internal actual class RealBufferedSource actual constructor(
             val read = source.read(buffer, Segment.SIZE.toLong())
             if (read == -1L) break
           }
-          count = try {
-            Math.addExact(count, buffer.size)
-          } catch (ignored: ArithmeticException) {
-            Long.MAX_VALUE
+          count += buffer.size
+          if (count < 0) {
+            count = Long.MAX_VALUE
           }
           buffer.writeTo(out)
         }
