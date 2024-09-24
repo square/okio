@@ -15,11 +15,11 @@
  */
 package okio
 
-import java.nio.file.FileSystem as NioFileSystem
-import java.nio.file.Path as NioPath
 import java.io.InterruptedIOException
 import java.nio.channels.FileChannel
+import java.nio.file.FileSystem as NioFileSystem
 import java.nio.file.NoSuchFileException
+import java.nio.file.Path as NioPath
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.createDirectory
