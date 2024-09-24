@@ -448,7 +448,7 @@ public final class okio/FileMetadata {
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class okio/FileSystem {
+public abstract class okio/FileSystem : java/io/Closeable {
 	public static final field Companion Lokio/FileSystem$Companion;
 	public static final field RESOURCES Lokio/FileSystem;
 	public static final field SYSTEM Lokio/FileSystem;
@@ -462,6 +462,7 @@ public abstract class okio/FileSystem {
 	public static synthetic fun appendingSink$default (Lokio/FileSystem;Lokio/Path;ZILjava/lang/Object;)Lokio/Sink;
 	public abstract fun atomicMove (Lokio/Path;Lokio/Path;)V
 	public abstract fun canonicalize (Lokio/Path;)Lokio/Path;
+	public fun close ()V
 	public fun copy (Lokio/Path;Lokio/Path;)V
 	public final fun createDirectories (Lokio/Path;)V
 	public final fun createDirectories (Lokio/Path;Z)V
@@ -504,6 +505,7 @@ public abstract class okio/ForwardingFileSystem : okio/FileSystem {
 	public fun appendingSink (Lokio/Path;Z)Lokio/Sink;
 	public fun atomicMove (Lokio/Path;Lokio/Path;)V
 	public fun canonicalize (Lokio/Path;)Lokio/Path;
+	public fun close ()V
 	public fun createDirectory (Lokio/Path;Z)V
 	public fun createSymlink (Lokio/Path;Lokio/Path;)V
 	public final fun delegate ()Lokio/FileSystem;
