@@ -30,6 +30,7 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
   allowClobberingEmptyDirectories = false,
   allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = "/".toPath(),
+  closeBehavior = CloseBehavior.Closes,
 ) {
   @Test
   fun pathBlocking() {

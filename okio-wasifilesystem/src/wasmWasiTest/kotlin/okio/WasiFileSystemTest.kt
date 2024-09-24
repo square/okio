@@ -24,4 +24,5 @@ class WasiFileSystemTest : AbstractFileSystemTest(
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
   allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = "/tmp".toPath(),
+  closeBehavior = CloseBehavior.DoesNothing,
 )

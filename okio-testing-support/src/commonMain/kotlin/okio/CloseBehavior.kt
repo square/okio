@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Square, Inc.
+ * Copyright (C) 2024 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,8 @@
  */
 package okio
 
-import kotlinx.datetime.Clock
-
-class NodeJsFileSystemTest : AbstractFileSystemTest(
-  clock = Clock.System,
-  fileSystem = NodeJsFileSystem,
-  windowsLimitations = Path.DIRECTORY_SEPARATOR == "\\",
-  allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
-  allowAtomicMoveFromFileToDirectory = false,
-  temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
-  closeBehavior = CloseBehavior.DoesNothing,
-)
+enum class CloseBehavior {
+  Closes,
+  DoesNothing,
+  Unsupported,
+}

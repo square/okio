@@ -51,6 +51,7 @@ abstract class FakeFileSystemTest internal constructor(
   allowClobberingEmptyDirectories = fakeFileSystem.allowClobberingEmptyDirectories,
   allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = temporaryDirectory,
+  closeBehavior = CloseBehavior.Closes,
 ) {
   private val fakeClock: FakeClock = fakeFileSystem.clock as FakeClock
 
@@ -486,60 +487,6 @@ abstract class FakeFileSystemTest internal constructor(
     )
     assertFailsWith<ClassCastException> {
       metadata.extra(ContentTypeExtra::class)
-    }
-  }
-
-  @Test
-  fun readAfterFileSystemClose() {
-    val path = base / "file"
-
-    path.writeUtf8("hello, world!")
-
-    fileSystem.close()
-
-    assertFailsWith<IllegalStateException> {
-      fileSystem.canonicalize(path)
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.exists(path)
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.metadata(path)
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.openReadOnly(path)
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.source(path)
-    }
-  }
-
-  @Test
-  fun writeAfterFileSystemClose() {
-    val path = base / "file"
-
-    fileSystem.close()
-
-    assertFailsWith<IllegalStateException> {
-      fileSystem.appendingSink(path)
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.atomicMove(path, base / "file2")
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.createDirectory(base / "directory")
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.createSymlink(base / "symlink", base)
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.delete(path)
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.openReadWrite(path)
-    }
-    assertFailsWith<IllegalStateException> {
-      fileSystem.sink(path)
     }
   }
 
