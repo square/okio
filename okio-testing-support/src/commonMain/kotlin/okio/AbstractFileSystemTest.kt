@@ -40,6 +40,7 @@ abstract class AbstractFileSystemTest(
   val allowClobberingEmptyDirectories: Boolean,
   val allowAtomicMoveFromFileToDirectory: Boolean,
   val allowRenameWhenTargetIsOpen: Boolean = !windowsLimitations,
+  val closeBehavior: CloseBehavior,
   temporaryDirectory: Path,
 ) {
   val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
@@ -2550,6 +2551,110 @@ abstract class AbstractFileSystemTest(
     }
     assertFailsWith<IOException> {
       pathB.readUtf8()
+    }
+  }
+
+  @Test
+  fun readAfterFileSystemClose() {
+    val path = base / "file"
+
+    path.writeUtf8("hello, world!")
+
+    when (closeBehavior) {
+      CloseBehavior.Closes -> {
+        fileSystem.close()
+
+        assertFailsWith<IllegalStateException> {
+          fileSystem.canonicalize(path)
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.exists(path)
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.metadata(path)
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.openReadOnly(path)
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.source(path)
+        }
+      }
+
+      CloseBehavior.DoesNothing -> {
+        fileSystem.close()
+        fileSystem.canonicalize(path)
+        fileSystem.exists(path)
+        fileSystem.metadata(path)
+        fileSystem.openReadOnly(path).use {
+        }
+        fileSystem.source(path).use {
+        }
+      }
+
+      CloseBehavior.Unsupported -> {
+        assertFailsWith<UnsupportedOperationException> {
+          fileSystem.close()
+        }
+      }
+    }
+  }
+
+  @Test
+  fun writeAfterFileSystemClose() {
+    val path = base / "file"
+
+    when (closeBehavior) {
+      CloseBehavior.Closes -> {
+        fileSystem.close()
+
+        assertFailsWith<IllegalStateException> {
+          fileSystem.appendingSink(path)
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.atomicMove(path, base / "file2")
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.createDirectory(base / "directory")
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.delete(path)
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.openReadWrite(path)
+        }
+        assertFailsWith<IllegalStateException> {
+          fileSystem.sink(path)
+        }
+        if (supportsSymlink()) {
+          assertFailsWith<IllegalStateException> {
+            fileSystem.createSymlink(base / "symlink", base)
+          }
+        }
+      }
+
+      CloseBehavior.DoesNothing -> {
+        fileSystem.close()
+
+        fileSystem.appendingSink(path).use {
+        }
+        fileSystem.atomicMove(path, base / "file2")
+        fileSystem.createDirectory(base / "directory")
+        fileSystem.delete(path)
+        fileSystem.sink(path).use {
+        }
+        fileSystem.openReadWrite(path).use {
+        }
+        if (supportsSymlink()) {
+          fileSystem.createSymlink(base / "symlink", base)
+        }
+      }
+
+      CloseBehavior.Unsupported -> {
+        assertFailsWith<UnsupportedOperationException> {
+          fileSystem.close()
+        }
+      }
     }
   }
 

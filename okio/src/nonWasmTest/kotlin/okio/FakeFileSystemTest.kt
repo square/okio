@@ -51,6 +51,7 @@ abstract class FakeFileSystemTest internal constructor(
   allowClobberingEmptyDirectories = fakeFileSystem.allowClobberingEmptyDirectories,
   allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = temporaryDirectory,
+  closeBehavior = CloseBehavior.Closes,
 ) {
   private val fakeClock: FakeClock = fakeFileSystem.clock as FakeClock
 
