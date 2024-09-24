@@ -2636,7 +2636,8 @@ abstract class AbstractFileSystemTest(
       CloseBehavior.DoesNothing -> {
         fileSystem.close()
 
-        fileSystem.appendingSink(path)
+        fileSystem.appendingSink(path).use {
+        }
         fileSystem.atomicMove(path, base / "file2")
         fileSystem.createDirectory(base / "directory")
         fileSystem.delete(path)
