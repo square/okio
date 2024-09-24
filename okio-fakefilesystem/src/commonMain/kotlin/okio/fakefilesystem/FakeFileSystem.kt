@@ -59,6 +59,12 @@ import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
  * Programs that do not attempt any of the above operations should work fine on both UNIX and
  * Windows systems. Relax these constraints individually or call [emulateWindows] or [emulateUnix];
  * to apply the constraints of a particular operating system.
+ *
+ * Closeable
+ * ---------
+ *
+ * This file system cannot be used after it is closed. Closing it does not close any of its open
+ * streams; those must be closed directly.
  */
 class FakeFileSystem(
   @JvmField
@@ -70,6 +76,9 @@ class FakeFileSystem(
 
   /** Files that are currently open and need to be closed to avoid resource leaks. */
   private val openFiles = mutableListOf<OpenFile>()
+
+  /** Forbid all access after [close]. */
+  private var closed = false
 
   /**
    * An absolute path with this file system's current working directory. Relative paths will be
@@ -218,6 +227,7 @@ class FakeFileSystem(
 
   /** Don't throw [FileNotFoundException] if the path doesn't identify a file. */
   private fun canonicalizeInternal(path: Path): Path {
+    check(!closed) { "closed" }
     return workingDirectory.resolve(path, normalize = true)
   }
 
@@ -762,6 +772,10 @@ class FakeFileSystem(
     }
 
     override fun toString() = "FileHandler(${openFile.canonicalPath})"
+  }
+
+  override fun close() {
+    closed = true
   }
 
   override fun toString() = "FakeFileSystem"

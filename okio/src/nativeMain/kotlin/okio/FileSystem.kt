@@ -22,7 +22,7 @@ import okio.internal.commonExists
 import okio.internal.commonListRecursively
 import okio.internal.commonMetadata
 
-actual abstract class FileSystem {
+actual abstract class FileSystem : Closeable {
   @Throws(IOException::class)
   actual abstract fun canonicalize(path: Path): Path
 
@@ -101,6 +101,10 @@ actual abstract class FileSystem {
 
   @Throws(IOException::class)
   actual abstract fun createSymlink(source: Path, target: Path)
+
+  @Throws(IOException::class)
+  actual override fun close() {
+  }
 
   actual companion object {
     /**

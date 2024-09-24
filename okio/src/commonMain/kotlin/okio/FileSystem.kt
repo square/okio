@@ -79,8 +79,20 @@ package okio
  * because the `Paths.get()` function automatically uses the default (ie. system) file system.
  * In Okio's API paths are just identifiers; you must use a specific `FileSystem` object to do
  * I/O with.
+ *
+ * Closeable
+ * ---------
+ *
+ * Implementations of this interface may need to be closed to release resources.
+ *
+ * It is the file system implementor's responsibility to document whether a file system instance
+ * must be closed, and what happens to its open streams when the file system is closed. For example,
+ * the Java NIO FileSystem closes all of its open streams when the file system is closed.
+ *
+ * The built-in `FileSystem.SYSTEM` implementation does not need to be closed and closing it has no
+ * effect.
  */
-expect abstract class FileSystem() {
+expect abstract class FileSystem() : Closeable {
 
   /**
    * Resolves [path] against the current working directory and symlinks in this file system. The
@@ -375,6 +387,9 @@ expect abstract class FileSystem() {
    */
   @Throws(IOException::class)
   abstract fun createSymlink(source: Path, target: Path)
+
+  @Throws(IOException::class)
+  override fun close()
 
   companion object {
     /**

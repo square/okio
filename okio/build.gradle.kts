@@ -78,6 +78,7 @@ kotlin {
     }
 
     val nonWasmTest by creating {
+      dependsOn(commonTest)
       dependencies {
         implementation(libs.kotlin.time)
         implementation(projects.okioFakefilesystem)
