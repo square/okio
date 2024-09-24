@@ -100,6 +100,10 @@ import kotlin.jvm.JvmName
  * **This class forwards only the abstract functions;** non-abstract functions delegate to the
  * other functions of this class. If desired, subclasses may override non-abstract functions to
  * forward them.
+ *
+ * ### Closeable
+ *
+ * Closing this file system closes the delegate file system.
  */
 abstract class ForwardingFileSystem(
   /** [FileSystem] to which this instance is delegating. */

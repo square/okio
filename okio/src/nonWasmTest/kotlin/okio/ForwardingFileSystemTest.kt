@@ -169,4 +169,19 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
 
     assertEquals(listOf("metadataOrNull(path=$source)", "metadataOrNull($target)"), log)
   }
+
+  /** Closing the ForwardingFileSystem closes the delegate. */
+  @Test
+  fun closeForwards() {
+    val delegate = FakeFileSystem()
+
+    val forwardingFileSystem = object : ForwardingFileSystem(delegate) {
+    }
+
+    forwardingFileSystem.close()
+
+    assertFailsWith<IllegalStateException> {
+      delegate.list(base)
+    }
+  }
 }
