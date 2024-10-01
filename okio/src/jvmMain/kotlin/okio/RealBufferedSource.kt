@@ -185,9 +185,6 @@ internal actual class RealBufferedSource actual constructor(
             if (read == -1L) break
           }
           count += buffer.size
-          if (count < 0) {
-            count = Long.MAX_VALUE
-          }
           buffer.writeTo(out)
         }
         return count

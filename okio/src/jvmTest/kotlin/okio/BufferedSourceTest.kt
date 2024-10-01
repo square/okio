@@ -15,6 +15,11 @@
  */
 package okio
 
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isTrue
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.EOFException
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
@@ -989,6 +994,24 @@ class BufferedSourceTest(
       fail()
     } catch (expected: java.lang.ArrayIndexOutOfBoundsException) {
     }
+  }
+
+  @Test
+  fun inputStreamTransferTo() {
+    try {
+      ByteArrayInputStream(byteArrayOf(1)).transferTo(ByteArrayOutputStream())
+    } catch (e: NoSuchMethodError) {
+      return // This JDK doesn't have transferTo(). Skip this test.
+    }
+
+    val data = "a".repeat(SEGMENT_SIZE * 3 + 1)
+    sink.writeUtf8(data)
+    sink.emit()
+    val inputStream = source.inputStream()
+    val outputStream = ByteArrayOutputStream()
+    inputStream.transferTo(outputStream)
+    assertThat(source.exhausted()).isTrue()
+    assertThat(outputStream.toByteArray().toUtf8String()).isEqualTo(data)
   }
 
   @Test
