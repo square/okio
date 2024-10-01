@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.withType
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun KotlinMultiplatformExtension.configureOrCreateOkioPlatforms() {
   jvm {
@@ -41,11 +47,12 @@ fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
   tvosSimulatorArm64()
   watchosArm32()
   watchosArm64()
-  watchosX86()
+  watchosDeviceArm64()
   watchosX64()
   watchosSimulatorArm64()
   // Required to generate tests tasks: https://youtrack.jetbrains.com/issue/KT-26547
   linuxX64()
+  linuxArm64()
   macosX64()
   macosArm64()
   mingwX64()
@@ -62,20 +69,26 @@ val appleTargets = listOf(
   "tvosSimulatorArm64",
   "watchosArm32",
   "watchosArm64",
-  "watchosX86",
+  "watchosDeviceArm64",
   "watchosX64",
-  "watchosSimulatorArm64"
+  "watchosSimulatorArm64",
 )
 
 val mingwTargets = listOf(
-  "mingwX64"
+  "mingwX64",
 )
 
 val linuxTargets = listOf(
-  "linuxX64"
+  "linuxX64",
+  "linuxArm64",
 )
 
 val nativeTargets = appleTargets + linuxTargets + mingwTargets
+
+val wasmTargets = listOf(
+  "wasmJs",
+  "wasmWasi",
+)
 
 /**
  * Creates a source set for a directory that isn't already a built-in platform. Use this to create
@@ -127,9 +140,18 @@ fun KotlinMultiplatformExtension.configureOrCreateJsPlatforms() {
   }
 }
 
-fun KotlinMultiplatformExtension.configureOrCreateWasmPlatform() {
-  wasm {
-    nodejs()
+fun KotlinMultiplatformExtension.configureOrCreateWasmPlatform(
+  js: Boolean = true,
+  wasi: Boolean = true,
+) {
+  if (js) {
+    wasmJs {
+      nodejs()
+    }
+  }
+  if (wasi) {
+    wasmWasi {
+      nodejs()
+    }
   }
 }
-

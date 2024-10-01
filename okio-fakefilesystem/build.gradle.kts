@@ -37,11 +37,18 @@ kotlin {
     configureOrCreateNativePlatforms()
   }
   sourceSets {
-    commonMain {
+    val commonMain by getting {
       dependencies {
         api(libs.kotlin.time)
         api(projects.okio)
       }
+    }
+    val commonTest by getting
+    if (kmpWasmEnabled) {
+      // Add support for wasmWasi when https://github.com/Kotlin/kotlinx-datetime/issues/324 is resolved.
+      configureOrCreateWasmPlatform(wasi = false)
+      createSourceSet("wasmMain", parent = commonMain, children = listOf("wasmJs"))
+      createSourceSet("wasmTest", parent = commonTest, children = listOf("wasmJs"))
     }
   }
 }
@@ -50,8 +57,8 @@ tasks {
   val jvmJar by getting(Jar::class) {
     // BundleTaskConvention() crashes unless there's a 'main' source set.
     sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
-    val bndConvention = aQute.bnd.gradle.BundleTaskConvention(this)
-    bndConvention.setBnd(
+    val bndExtension = aQute.bnd.gradle.BundleTaskExtension(this)
+    bndExtension.setBnd(
       """
       Export-Package: okio.fakefilesystem
       Automatic-Module-Name: okio.fakefilesystem
@@ -60,7 +67,8 @@ tasks {
     )
     // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
     doLast {
-      bndConvention.buildBundle()
+      bndExtension.buildAction()
+        .execute(this)
     }
   }
 }

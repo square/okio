@@ -33,6 +33,7 @@ class FileHandleFileSystemTest : AbstractFileSystemTest(
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
   allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+  closeBehavior = CloseBehavior.DoesNothing,
 ) {
   /**
    * A testing-only file system that implements all reading and writing operations with
@@ -75,6 +76,7 @@ class FileHandleNioJimFileSystemWrapperFileSystemTest : AbstractFileSystemTest(
   allowClobberingEmptyDirectories = true,
   allowAtomicMoveFromFileToDirectory = true,
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+  closeBehavior = CloseBehavior.Closes,
 )
 
 class FileHandleNioDefaultFileSystemWrapperFileSystemTest : AbstractFileSystemTest(
@@ -87,4 +89,5 @@ class FileHandleNioDefaultFileSystemWrapperFileSystemTest : AbstractFileSystemTe
   allowAtomicMoveFromFileToDirectory = false,
   allowRenameWhenTargetIsOpen = Path.DIRECTORY_SEPARATOR != "\\",
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+  closeBehavior = CloseBehavior.Unsupported,
 )

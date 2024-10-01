@@ -37,6 +37,7 @@ class NioSystemFileSystemTest : AbstractFileSystemTest(
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
   allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+  closeBehavior = CloseBehavior.DoesNothing,
 )
 
 class JvmSystemFileSystemTest : AbstractFileSystemTest(
@@ -46,6 +47,7 @@ class JvmSystemFileSystemTest : AbstractFileSystemTest(
   allowClobberingEmptyDirectories = Path.DIRECTORY_SEPARATOR == "\\",
   allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+  closeBehavior = CloseBehavior.DoesNothing,
 ) {
 
   @Test fun checkInterruptedBeforeDeleting() {
@@ -73,6 +75,7 @@ class NioJimFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
   allowClobberingEmptyDirectories = true,
   allowAtomicMoveFromFileToDirectory = true,
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+  closeBehavior = CloseBehavior.Closes,
 )
 
 class NioDefaultFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
@@ -83,4 +86,5 @@ class NioDefaultFileSystemWrappingFileSystemTest : AbstractFileSystemTest(
   allowAtomicMoveFromFileToDirectory = false,
   allowRenameWhenTargetIsOpen = Path.DIRECTORY_SEPARATOR != "\\",
   temporaryDirectory = FileSystem.SYSTEM_TEMPORARY_DIRECTORY,
+  closeBehavior = CloseBehavior.Unsupported,
 )

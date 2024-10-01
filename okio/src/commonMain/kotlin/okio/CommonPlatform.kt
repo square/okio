@@ -33,14 +33,17 @@ expect inline fun <T> Lock.withLock(action: () -> T): T
 internal expect fun newLock(): Lock
 
 expect open class IOException(message: String?, cause: Throwable?) : Exception {
-  constructor(message: String? = null)
+  constructor(message: String?)
+  constructor()
 }
 
 expect class ProtocolException(message: String) : IOException
 
-expect open class EOFException(message: String? = null) : IOException
+expect open class EOFException(message: String?) : IOException {
+  constructor()
+}
 
-expect class FileNotFoundException(message: String? = null) : IOException
+expect class FileNotFoundException(message: String?) : IOException
 
 expect interface Closeable {
   /**

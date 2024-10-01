@@ -1,6 +1,74 @@
 Change Log
 ==========
 
+## Version 3.9.1
+
+_2024-09-12_
+
+ * Fix: Support paths containing a single dot (".") in `Path.relativeTo`.
+ * Fix: Do not read from the upstream source when a 0-byte read is requested.
+ * Fix: Update kotlinx.datetime to 0.6.0 to correct a Gradle module metadata problem with 0.5.0.
+   Note: this artifact is only used in 'okio-fakefilesystem' and 'okio-nodefilesystem' and not in the Okio core.
+
+
+## Version 3.9.0
+
+_2024-03-12_
+
+ * New: `FileSystem.SYSTEM` can be used in source sets that target both Kotlin/Native and
+   Kotlin/JVM. Previously, we had this symbol in each source set but it wasn't available to
+   common source sets.
+ * New: `COpaquePointer.readByteString(...)` creates a ByteString from a memory address.
+ * New: Support `InflaterSource`, `DeflaterSink`, `GzipSink`, and `GzipSource` in Kotlin/Native.
+ * New: Support openZip() on Kotlin/Native. One known bug in this implementation is that
+   `FileMetadata.lastModifiedAtMillis()` is interpreted as UTC and not the host machine's time zone.
+ * New: Prefer NTFS timestamps in ZIP file systems' metadata. This avoids the time zone problems
+   of ZIP's built-in DOS timestamps, and the 2038 time bombs of ZIP's extended timestamps.
+ * Fix: Don't leak file handles to opened JAR files open in `FileSystem.RESOURCES`.
+ * Fix: Don't throw a `NullPointerException` if `Closeable.use { ... }` returns null.
+
+
+## Version 3.8.0
+
+_2024-02-09_
+
+ * New: `TypedOptions` works like `Options`, but it returns a `T` rather than an index.
+ * Fix: Don't leave sinks open when there's a race in `Pipe.fold()`.
+
+
+## Version 3.7.0
+
+_2023-12-16_
+
+ * New: `Timeout.cancel()` prevents a timeout from firing.
+ * Breaking: Drop the `watchosX86` Kotlin/Native target. From [the Kotlin blog][watchosX86],
+   _‘This is an obsolete simulator for Intel Macs. Use the watchosX64 target instead.’_
+ * New: Add the `watchosDeviceArm64` Kotlin/Native target.
+ * New: `Timeout` APIs that accept `kotlin.time.Duration`.
+ * Upgrade: [Kotlin 1.9.21][kotlin_1_9_21].
+
+
+## Version 3.6.0
+
+_2023-10-01_
+
+ * Fix: Don't leak file handles when using `metadata` functions on `ZipFileSystem`. We had a bug
+   where we were closing the `.zip` file, but not a stream inside of it. We would have prevented
+   this bug if only we’d used `FakeFileSystem.checkNoOpenFiles()` in our tests!
+ * Fix: Don't build an index of a class loader's resources in `ResourceFileSystem.read()`. This
+   operation doesn't need this index, and building it is potentially expensive.
+ * New: Experimentally support Linux on ARM64 for Kotlin/Native targets (`linuxArm64`). Note that
+   we haven't yet added CI test coverage for this platform.
+ * Upgrade: [Kotlin 1.9.10][kotlin_1_9_10].
+
+
+## Version 1.17.6
+
+_2023-10-01_
+
+ * Fix: Don't crash decoding GZIP files when the optional extra data (`XLEN`) is 32 KiB or larger.
+
+
 ## Version 3.5.0
 
 _2023-08-02_
@@ -353,20 +421,20 @@ _2019-12-11_
    in a crash when subsequent reads encountered an unexpected empty segment.
 
 
-### Version 2.4.1
+## Version 2.4.1
 
 _2019-10-04_
 
  * Fix: Don't cache hash code and UTF-8 string in `ByteString` on Kotlin/Native which prevented freezing.
 
-### Version 2.4.0
+## Version 2.4.0
 
 _2019-08-26_
 
  * New: Upgrade to Kotlin 1.3.50.
 
 
-### Version 2.3.0
+## Version 2.3.0
 
 _2019-07-29_
 
@@ -858,7 +926,10 @@ _2014-04-08_
 [kotlin_1_6_20]: https://blog.jetbrains.com/kotlin/2022/04/kotlin-1-6-20-released/
 [kotlin_1_8_0]: https://kotlinlang.org/docs/whatsnew18.html
 [kotlin_1_9_0]: https://kotlinlang.org/docs/whatsnew19.html
+[kotlin_1_9_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.10
+[kotlin_1_9_21]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.21
 [loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
 [preview1]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md
+[watchosX86]: https://blog.jetbrains.com/kotlin/2023/02/update-regarding-kotlin-native-targets/
 [xor_utf8]: https://github.com/square/okio/blob/bbb29c459e5ccf0f286e0b17ccdcacd7ac4bc2a9/okio/src/main/kotlin/okio/Utf8.kt#L302

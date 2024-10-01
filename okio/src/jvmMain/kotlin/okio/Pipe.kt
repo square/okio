@@ -172,6 +172,7 @@ class Pipe(internal val maxBufferSize: Long) {
       // Either the buffer is empty and we can swap and return. Or the buffer is non-empty and we
       // must copy it to sink without holding any locks, then try it all again.
       var closed = false
+      var done = false
       lateinit var sinkBuffer: Buffer
       lock.withLock {
         check(foldedSink == null) { "sink already folded" }
@@ -181,26 +182,30 @@ class Pipe(internal val maxBufferSize: Long) {
           throw IOException("canceled")
         }
 
+        closed = sinkClosed
         if (buffer.exhausted()) {
           sourceClosed = true
           foldedSink = sink
-          return@fold
+          done = true
+          return@withLock
         }
 
-        closed = sinkClosed
         sinkBuffer = Buffer()
         sinkBuffer.write(buffer, buffer.size)
         condition.signalAll() // Notify the sink that it can resume writing.
       }
 
+      if (done) {
+        if (closed) {
+          sink.close()
+        }
+        return
+      }
+
       var success = false
       try {
         sink.write(sinkBuffer, sinkBuffer.size)
-        if (closed) {
-          sink.close()
-        } else {
-          sink.flush()
-        }
+        sink.flush()
         success = true
       } finally {
         if (!success) {

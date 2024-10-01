@@ -21,10 +21,19 @@ import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
 import okio.TestUtil.assumeNotWindows
 import org.junit.After
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
-class AwaitSignalTest {
+@RunWith(Parameterized::class)
+class AwaitSignalTest(
+  factory: TimeoutFactory,
+) {
+  private val timeout = factory.newTimeout()
   val executorService = TestingExecutors.newScheduledExecutorService(0)
 
   val lock: ReentrantLock = ReentrantLock()
@@ -37,7 +46,6 @@ class AwaitSignalTest {
 
   @Test
   fun signaled() = lock.withLock {
-    val timeout = Timeout()
     timeout.timeout(5000, TimeUnit.MILLISECONDS)
     val start = now()
     executorService.schedule(
@@ -52,14 +60,13 @@ class AwaitSignalTest {
   @Test
   fun timeout() = lock.withLock {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.timeout(1000, TimeUnit.MILLISECONDS)
     val start = now()
     try {
       timeout.awaitSignal(condition)
-      Assert.fail()
+      fail()
     } catch (expected: InterruptedIOException) {
-      Assert.assertEquals("timeout", expected.message)
+      assertEquals("timeout", expected.message)
     }
     assertElapsed(1000.0, start)
   }
@@ -67,14 +74,13 @@ class AwaitSignalTest {
   @Test
   fun deadline() = lock.withLock {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.deadline(1000, TimeUnit.MILLISECONDS)
     val start = now()
     try {
       timeout.awaitSignal(condition)
-      Assert.fail()
+      fail()
     } catch (expected: InterruptedIOException) {
-      Assert.assertEquals("timeout", expected.message)
+      assertEquals("timeout", expected.message)
     }
     assertElapsed(1000.0, start)
   }
@@ -82,15 +88,14 @@ class AwaitSignalTest {
   @Test
   fun deadlineBeforeTimeout() = lock.withLock {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.timeout(5000, TimeUnit.MILLISECONDS)
     timeout.deadline(1000, TimeUnit.MILLISECONDS)
     val start = now()
     try {
       timeout.awaitSignal(condition)
-      Assert.fail()
+      fail()
     } catch (expected: InterruptedIOException) {
-      Assert.assertEquals("timeout", expected.message)
+      assertEquals("timeout", expected.message)
     }
     assertElapsed(1000.0, start)
   }
@@ -98,15 +103,14 @@ class AwaitSignalTest {
   @Test
   fun timeoutBeforeDeadline() = lock.withLock {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.timeout(1000, TimeUnit.MILLISECONDS)
     timeout.deadline(5000, TimeUnit.MILLISECONDS)
     val start = now()
     try {
       timeout.awaitSignal(condition)
-      Assert.fail()
+      fail()
     } catch (expected: InterruptedIOException) {
-      Assert.assertEquals("timeout", expected.message)
+      assertEquals("timeout", expected.message)
     }
     assertElapsed(1000.0, start)
   }
@@ -114,14 +118,13 @@ class AwaitSignalTest {
   @Test
   fun deadlineAlreadyReached() = lock.withLock {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.deadlineNanoTime(System.nanoTime())
     val start = now()
     try {
       timeout.awaitSignal(condition)
-      Assert.fail()
+      fail()
     } catch (expected: InterruptedIOException) {
-      Assert.assertEquals("timeout", expected.message)
+      assertEquals("timeout", expected.message)
     }
     assertElapsed(0.0, start)
   }
@@ -129,15 +132,14 @@ class AwaitSignalTest {
   @Test
   fun threadInterrupted() = lock.withLock {
     assumeNotWindows()
-    val timeout = Timeout()
     val start = now()
     Thread.currentThread().interrupt()
     try {
       timeout.awaitSignal(condition)
-      Assert.fail()
+      fail()
     } catch (expected: InterruptedIOException) {
-      Assert.assertEquals("interrupted", expected.message)
-      Assert.assertTrue(Thread.interrupted())
+      assertEquals("interrupted", expected.message)
+      assertTrue(Thread.interrupted())
     }
     assertElapsed(0.0, start)
   }
@@ -145,15 +147,52 @@ class AwaitSignalTest {
   @Test
   fun threadInterruptedOnThrowIfReached() = lock.withLock {
     assumeNotWindows()
-    val timeout = Timeout()
     Thread.currentThread().interrupt()
     try {
       timeout.throwIfReached()
-      Assert.fail()
+      fail()
     } catch (expected: InterruptedIOException) {
-      Assert.assertEquals("interrupted", expected.message)
-      Assert.assertTrue(Thread.interrupted())
+      assertEquals("interrupted", expected.message)
+      assertTrue(Thread.interrupted())
     }
+  }
+
+  @Test
+  fun cancelBeforeWaitDoesNothing() = lock.withLock {
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancel()
+    val start = now()
+    try {
+      timeout.awaitSignal(condition)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("timeout", expected.message)
+    }
+    assertElapsed(1000.0, start)
+  }
+
+  @Test
+  fun canceledTimeoutDoesNotThrowWhenNotNotifiedOnTime() = lock.withLock {
+    assumeNotWindows()
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancelLater(500)
+
+    val start = now()
+    timeout.awaitSignal(condition) // Returns early but doesn't throw.
+    assertElapsed(1000.0, start)
+  }
+
+  @Test
+  @Synchronized
+  fun multipleCancelsAreIdempotent() = lock.withLock {
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancelLater(250)
+    timeout.cancelLater(500)
+    timeout.cancelLater(750)
+
+    val start = now()
+    timeout.awaitSignal(condition) // Returns early but doesn't throw.
+    assertElapsed(1000.0, start)
   }
 
   /** Returns the nanotime in milliseconds as a double for measuring timeouts.  */
@@ -166,6 +205,20 @@ class AwaitSignalTest {
    * -50..+450 milliseconds.
    */
   private fun assertElapsed(duration: Double, start: Double) {
-    Assert.assertEquals(duration, now() - start - 200.0, 250.0)
+    assertEquals(duration, now() - start - 200.0, 250.0)
+  }
+
+  private fun Timeout.cancelLater(delay: Long) {
+    executorService.schedule(
+      { cancel() },
+      delay,
+      TimeUnit.MILLISECONDS,
+    )
+  }
+
+  companion object {
+    @Parameters(name = "{0}")
+    @JvmStatic
+    fun parameters(): List<Array<out Any?>> = TimeoutFactory.entries.map { arrayOf(it) }
   }
 }

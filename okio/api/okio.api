@@ -44,9 +44,9 @@ public final class okio/-InflaterSourceExtensions {
 }
 
 public class okio/AsyncTimeout : okio/Timeout {
-	public static final field Companion Lokio/AsyncTimeout$Companion;
 	public fun <init> ()V
 	public final fun access$newTimeoutException (Ljava/io/IOException;)Ljava/io/IOException;
+	public fun cancel ()V
 	public final fun enter ()V
 	public final fun exit ()Z
 	protected fun newTimeoutException (Ljava/io/IOException;)Ljava/io/IOException;
@@ -54,11 +54,6 @@ public class okio/AsyncTimeout : okio/Timeout {
 	public final fun source (Lokio/Source;)Lokio/Source;
 	protected fun timedOut ()V
 	public final fun withTimeout (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
-}
-
-public final class okio/AsyncTimeout$Companion {
-	public final fun getCondition ()Ljava/util/concurrent/locks/Condition;
-	public final fun getLock ()Ljava/util/concurrent/locks/ReentrantLock;
 }
 
 public final class okio/Buffer : java/lang/Cloneable, java/nio/channels/ByteChannel, okio/BufferedSink, okio/BufferedSource {
@@ -146,6 +141,7 @@ public final class okio/Buffer : java/lang/Cloneable, java/nio/channels/ByteChan
 	public fun request (J)Z
 	public fun require (J)V
 	public fun select (Lokio/Options;)I
+	public fun select (Lokio/TypedOptions;)Ljava/lang/Object;
 	public final fun sha1 ()Lokio/ByteString;
 	public final fun sha256 ()Lokio/ByteString;
 	public final fun sha512 ()Lokio/ByteString;
@@ -289,6 +285,7 @@ public abstract interface class okio/BufferedSource : java/nio/channels/Readable
 	public abstract fun request (J)Z
 	public abstract fun require (J)V
 	public abstract fun select (Lokio/Options;)I
+	public abstract fun select (Lokio/TypedOptions;)Ljava/lang/Object;
 	public abstract fun skip (J)V
 }
 
@@ -451,7 +448,7 @@ public final class okio/FileMetadata {
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class okio/FileSystem {
+public abstract class okio/FileSystem : java/io/Closeable {
 	public static final field Companion Lokio/FileSystem$Companion;
 	public static final field RESOURCES Lokio/FileSystem;
 	public static final field SYSTEM Lokio/FileSystem;
@@ -465,6 +462,7 @@ public abstract class okio/FileSystem {
 	public static synthetic fun appendingSink$default (Lokio/FileSystem;Lokio/Path;ZILjava/lang/Object;)Lokio/Sink;
 	public abstract fun atomicMove (Lokio/Path;Lokio/Path;)V
 	public abstract fun canonicalize (Lokio/Path;)Lokio/Path;
+	public fun close ()V
 	public fun copy (Lokio/Path;Lokio/Path;)V
 	public final fun createDirectories (Lokio/Path;)V
 	public final fun createDirectories (Lokio/Path;Z)V
@@ -507,6 +505,7 @@ public abstract class okio/ForwardingFileSystem : okio/FileSystem {
 	public fun appendingSink (Lokio/Path;Z)Lokio/Sink;
 	public fun atomicMove (Lokio/Path;Lokio/Path;)V
 	public fun canonicalize (Lokio/Path;)Lokio/Path;
+	public fun close ()V
 	public fun createDirectory (Lokio/Path;Z)V
 	public fun createSymlink (Lokio/Path;Lokio/Path;)V
 	public final fun delegate ()Lokio/FileSystem;
@@ -547,6 +546,8 @@ public abstract class okio/ForwardingSource : okio/Source {
 
 public class okio/ForwardingTimeout : okio/Timeout {
 	public fun <init> (Lokio/Timeout;)V
+	public fun awaitSignal (Ljava/util/concurrent/locks/Condition;)V
+	public fun cancel ()V
 	public fun clearDeadline ()Lokio/Timeout;
 	public fun clearTimeout ()Lokio/Timeout;
 	public fun deadlineNanoTime ()J
@@ -558,6 +559,7 @@ public class okio/ForwardingTimeout : okio/Timeout {
 	public fun throwIfReached ()V
 	public fun timeout (JLjava/util/concurrent/TimeUnit;)Lokio/Timeout;
 	public fun timeoutNanos ()J
+	public fun waitUntilNotified (Ljava/lang/Object;)V
 }
 
 public final class okio/GzipSink : okio/Sink {
@@ -755,6 +757,10 @@ public abstract interface class okio/Source : java/io/Closeable {
 	public abstract fun timeout ()Lokio/Timeout;
 }
 
+public final class okio/SystemFileSystem {
+	public static final synthetic fun getSYSTEM (Lokio/FileSystem$Companion;)Lokio/FileSystem;
+}
+
 public final class okio/Throttler {
 	public fun <init> ()V
 	public final fun bytesPerSecond (J)V
@@ -771,7 +777,8 @@ public class okio/Timeout {
 	public static final field Companion Lokio/Timeout$Companion;
 	public static final field NONE Lokio/Timeout;
 	public fun <init> ()V
-	public final fun awaitSignal (Ljava/util/concurrent/locks/Condition;)V
+	public fun awaitSignal (Ljava/util/concurrent/locks/Condition;)V
+	public fun cancel ()V
 	public fun clearDeadline ()Lokio/Timeout;
 	public fun clearTimeout ()Lokio/Timeout;
 	public final fun deadline (JLjava/util/concurrent/TimeUnit;)Lokio/Timeout;
@@ -782,11 +789,25 @@ public class okio/Timeout {
 	public fun throwIfReached ()V
 	public fun timeout (JLjava/util/concurrent/TimeUnit;)Lokio/Timeout;
 	public fun timeoutNanos ()J
-	public final fun waitUntilNotified (Ljava/lang/Object;)V
+	public fun waitUntilNotified (Ljava/lang/Object;)V
 }
 
 public final class okio/Timeout$Companion {
 	public final fun minTimeout (JJ)J
+	public final fun timeout (Lokio/Timeout;JLkotlin/time/DurationUnit;)Lokio/Timeout;
+	public final fun timeout-HG0u8IE (Lokio/Timeout;J)Lokio/Timeout;
+}
+
+public final class okio/TypedOptions : kotlin/collections/AbstractList, java/util/RandomAccess {
+	public static final field Companion Lokio/TypedOptions$Companion;
+	public fun <init> (Ljava/util/List;Lokio/Options;)V
+	public fun get (I)Ljava/lang/Object;
+	public fun getSize ()I
+	public static final fun of (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lokio/TypedOptions;
+}
+
+public final class okio/TypedOptions$Companion {
+	public final fun of (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lokio/TypedOptions;
 }
 
 public final class okio/Utf8 {

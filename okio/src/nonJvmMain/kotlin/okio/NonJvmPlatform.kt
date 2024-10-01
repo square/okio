@@ -44,11 +44,14 @@ actual open class IOException actual constructor(
   cause: Throwable?,
 ) : Exception(message, cause) {
   actual constructor(message: String?) : this(message, null)
+  actual constructor() : this(null, null)
 }
 
 actual class ProtocolException actual constructor(message: String) : IOException(message)
 
-actual open class EOFException actual constructor(message: String?) : IOException(message)
+actual open class EOFException actual constructor(message: String?) : IOException(message) {
+  actual constructor() : this(null)
+}
 
 actual open class FileNotFoundException actual constructor(message: String?) : IOException(message)
 

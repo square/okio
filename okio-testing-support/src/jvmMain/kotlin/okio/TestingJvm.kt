@@ -18,3 +18,5 @@ package okio
 actual fun isBrowser() = false
 
 actual fun isWasm() = false
+
+actual fun getEnv(name: String): String? = System.getenv(name)

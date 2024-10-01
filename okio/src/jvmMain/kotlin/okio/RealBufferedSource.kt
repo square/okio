@@ -17,6 +17,7 @@ package okio
 
 import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import okio.internal.commonClose
@@ -71,6 +72,7 @@ internal actual class RealBufferedSource actual constructor(
   override fun readByteString(): ByteString = commonReadByteString()
   override fun readByteString(byteCount: Long): ByteString = commonReadByteString(byteCount)
   override fun select(options: Options): Int = commonSelect(options)
+  override fun <T : Any> select(options: TypedOptions<T>): T? = commonSelect(options)
   override fun readByteArray(): ByteArray = commonReadByteArray()
   override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
   override fun read(sink: ByteArray): Int = read(sink, 0, sink.size)
@@ -164,6 +166,20 @@ internal actual class RealBufferedSource actual constructor(
       override fun close() = this@RealBufferedSource.close()
 
       override fun toString() = "${this@RealBufferedSource}.inputStream()"
+
+      override fun transferTo(out: OutputStream): Long {
+        if (closed) throw IOException("closed")
+        var count = 0L
+        while (true) {
+          if (buffer.size == 0L) {
+            val read = source.read(buffer, Segment.SIZE.toLong())
+            if (read == -1L) break
+          }
+          count += buffer.size
+          buffer.writeTo(out)
+        }
+        return count
+      }
     }
   }
 

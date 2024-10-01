@@ -19,6 +19,7 @@ import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.time.Duration
 import okio.ByteString.Companion.toByteString
+import okio.Path.Companion.toPath
 
 fun Char.repeat(count: Int): String {
   return toString().repeat(count)
@@ -28,8 +29,8 @@ fun assertArrayEquals(a: ByteArray, b: ByteArray) {
   assertEquals(a.contentToString(), b.contentToString())
 }
 
-fun randomBytes(length: Int): ByteString {
-  val random = Random(0)
+fun randomBytes(length: Int, seed: Int = 0): ByteString {
+  val random = Random(seed)
   val randomBytes = ByteArray(length)
   random.nextBytes(randomBytes)
   return ByteString.of(*randomBytes)
@@ -90,3 +91,9 @@ expect val FileSystem.allowSymlinks: Boolean
 expect val FileSystem.allowReadsWhileWriting: Boolean
 
 expect var FileSystem.workingDirectory: Path
+
+expect fun getEnv(name: String): String?
+
+val okioRoot: Path by lazy {
+  getEnv("OKIO_ROOT")!!.toPath()
+}

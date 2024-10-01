@@ -22,7 +22,7 @@ import okio.internal.commonExists
 import okio.internal.commonListRecursively
 import okio.internal.commonMetadata
 
-actual abstract class FileSystem {
+actual abstract class FileSystem : Closeable {
   @Throws(IOException::class)
   actual abstract fun canonicalize(path: Path): Path
 
@@ -102,6 +102,10 @@ actual abstract class FileSystem {
   @Throws(IOException::class)
   actual abstract fun createSymlink(source: Path, target: Path)
 
+  @Throws(IOException::class)
+  actual override fun close() {
+  }
+
   actual companion object {
     /**
      * The current process's host file system. Use this instance directly, or dependency inject a
@@ -112,3 +116,12 @@ actual abstract class FileSystem {
     actual val SYSTEM_TEMPORARY_DIRECTORY: Path = PLATFORM_TEMPORARY_DIRECTORY
   }
 }
+
+/*
+ * JVM and native platforms do offer a [SYSTEM] [FileSystem], however we cannot refine an 'expect' companion object.
+ * Therefore an extension property is provided, which on respective platforms (here JVM) will be shadowed by the
+ * original implementation.
+ */
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+actual inline val FileSystem.Companion.SYSTEM: FileSystem
+  get() = SYSTEM

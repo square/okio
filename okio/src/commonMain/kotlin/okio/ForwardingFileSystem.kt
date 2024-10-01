@@ -26,7 +26,7 @@ import kotlin.jvm.JvmName
  * confirm that your program behaves correctly even if its file system operations fail. For example,
  * this subclass fails every access of files named `unlucky.txt`:
  *
- * ```
+ * ```kotlin
  * val faultyFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {
  *   override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {
  *     if (path.name == "unlucky.txt") throw IOException("synthetic failure!")
@@ -37,7 +37,7 @@ import kotlin.jvm.JvmName
  *
  * You can fail specific operations by overriding them directly:
  *
- * ```
+ * ```kotlin
  * val faultyFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {
  *   override fun delete(path: Path) {
  *     throw IOException("synthetic failure!")
@@ -50,7 +50,7 @@ import kotlin.jvm.JvmName
  * You can extend this to verify which files your program accesses. This is a testing file system
  * that records accesses as they happen:
  *
- * ```
+ * ```kotlin
  * class LoggingFileSystem : ForwardingFileSystem(FileSystem.SYSTEM) {
  *   val log = mutableListOf<String>()
  *
@@ -63,7 +63,7 @@ import kotlin.jvm.JvmName
  *
  * This makes it easy for tests to assert exactly which files were accessed.
  *
- * ```
+ * ```kotlin
  * @Test
  * fun testMergeJsonReports() {
  *   createSampleJsonReports()
@@ -100,6 +100,10 @@ import kotlin.jvm.JvmName
  * **This class forwards only the abstract functions;** non-abstract functions delegate to the
  * other functions of this class. If desired, subclasses may override non-abstract functions to
  * forward them.
+ *
+ * ### Closeable
+ *
+ * Closing this file system closes the delegate file system.
  */
 abstract class ForwardingFileSystem(
   /** [FileSystem] to which this instance is delegating. */
@@ -236,6 +240,11 @@ abstract class ForwardingFileSystem(
     val source = onPathParameter(source, "createSymlink", "source")
     val target = onPathParameter(target, "createSymlink", "target")
     delegate.createSymlink(source, target)
+  }
+
+  @Throws(IOException::class)
+  override fun close() {
+    delegate.close()
   }
 
   override fun toString() = "${this::class.simpleName}($delegate)"

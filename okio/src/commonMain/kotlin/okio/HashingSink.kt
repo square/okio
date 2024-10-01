@@ -22,7 +22,8 @@ package okio
  *
  * In this example we use `HashingSink` with a [BufferedSink] to make writing to the
  * sink easier.
- * ```
+ *
+ * ```java
  * HashingSink hashingSink = HashingSink.sha256(s);
  * BufferedSink bufferedSink = Okio.buffer(hashingSink);
  *

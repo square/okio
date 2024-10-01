@@ -1,4 +1,4 @@
-import aQute.bnd.gradle.BundleTaskConvention
+import aQute.bnd.gradle.BundleTaskExtension
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
@@ -35,16 +35,20 @@ plugins {
  *   |       |   |-- tvosX64
  *   |       |   |-- watchosArm32
  *   |       |   |-- watchosArm64
- *   |       |   '-- watchosX86
  *   |       '-- linux
- *   |           '-- linuxX64
+ *   |           |-- linuxX64
+ *   |           '-- linuxArm64
  *   '-- wasm
+ *       '-- wasmJs
+ *       '-- wasmWasi
  * ```
  *
  * The `nonJvm` source set excludes that platform.
  *
  * The `hashFunctions` source set builds on all platforms. It ships as a main source set on non-JVM
  * platforms and as a test source set on the JVM platform.
+ *
+ * The `systemFileSystem` source set is used on jvm and native targets, and provides the FileSystem.SYSTEM property.
  */
 kotlin {
   configureOrCreateOkioPlatforms()
@@ -74,6 +78,7 @@ kotlin {
     }
 
     val nonWasmTest by creating {
+      dependsOn(commonTest)
       dependencies {
         implementation(libs.kotlin.time)
         implementation(projects.okioFakefilesystem)
@@ -85,15 +90,33 @@ kotlin {
       dependsOn(commonMain)
     }
 
+    val systemFileSystemMain by creating {
+      dependsOn(commonMain)
+    }
+
     val nonJvmTest by creating {
       dependsOn(commonTest)
     }
 
+    val zlibMain by creating {
+      dependsOn(commonMain)
+    }
+
+    val zlibTest by creating {
+      dependsOn(commonTest)
+      dependencies {
+        implementation(libs.test.assertk)
+      }
+    }
+
     val jvmMain by getting {
+      dependsOn(zlibMain)
+      dependsOn(systemFileSystemMain)
     }
     val jvmTest by getting {
-      kotlin.srcDir("src/jvmTest/hashFunctions")
+      kotlin.srcDir("src/hashFunctions")
       dependsOn(nonWasmTest)
+      dependsOn(zlibTest)
       dependencies {
         implementation(libs.test.junit)
         implementation(libs.test.assertj)
@@ -115,6 +138,8 @@ kotlin {
     if (kmpNativeEnabled) {
       createSourceSet("nativeMain", parent = nonJvmMain)
         .also { nativeMain ->
+          nativeMain.dependsOn(zlibMain)
+          nativeMain.dependsOn(systemFileSystemMain)
           createSourceSet("mingwMain", parent = nativeMain, children = mingwTargets).also { mingwMain ->
             mingwMain.dependsOn(nonAppleMain)
           }
@@ -131,6 +156,7 @@ kotlin {
         .also { nativeTest ->
           nativeTest.dependsOn(nonJvmTest)
           nativeTest.dependsOn(nonWasmTest)
+          nativeTest.dependsOn(zlibTest)
           createSourceSet("appleTest", parent = nativeTest, children = appleTargets)
             .apply {
               dependencies {
@@ -141,13 +167,15 @@ kotlin {
     }
 
     if (kmpWasmEnabled) {
-      val wasmMain by getting {
-        dependsOn(nonJvmMain)
-        dependsOn(nonAppleMain)
-      }
-      val wasmTest by getting {
-        dependsOn(nonJvmTest)
-      }
+      createSourceSet("wasmMain", parent = commonMain, children = wasmTargets)
+        .also { wasmMain ->
+          wasmMain.dependsOn(nonJvmMain)
+          wasmMain.dependsOn(nonAppleMain)
+        }
+      createSourceSet("wasmTest", parent = commonTest, children = wasmTargets)
+        .also { wasmTest ->
+          wasmTest.dependsOn(nonJvmTest)
+        }
     }
   }
 
@@ -168,19 +196,20 @@ kotlin {
 
 tasks {
   val jvmJar by getting(Jar::class) {
-    // BundleTaskConvention() crashes unless there's a 'main' source set.
+    // BundleTaskExtension() crashes unless there's a 'main' source set.
     sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
-    val bndConvention = BundleTaskConvention(this)
-    bndConvention.setBnd(
+    val bndExtension = BundleTaskExtension(this)
+    bndExtension.setBnd(
       """
       Export-Package: okio
       Automatic-Module-Name: okio
       Bundle-SymbolicName: com.squareup.okio
       """,
     )
-    // Call the convention when the task has finished to modify the jar to contain OSGi metadata.
+    // Call the extension when the task has finished to modify the jar to contain OSGi metadata.
     doLast {
-      bndConvention.buildBundle()
+      bndExtension.buildAction()
+        .execute(this)
     }
   }
 }

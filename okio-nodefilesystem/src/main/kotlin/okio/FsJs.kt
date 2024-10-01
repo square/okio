@@ -50,7 +50,7 @@
  * To declare new external APIs, run Dukat to generate a full set of Node stubs. The easiest way to
  * do this is to add an NPM dependency on `@types/node` in `jsMain`, like this:
  *
- * ```
+ * ```kotlin
  * jsMain {
  *   ...
  *   dependencies {

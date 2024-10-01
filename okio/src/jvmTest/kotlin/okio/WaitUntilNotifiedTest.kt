@@ -24,8 +24,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
 
-class WaitUntilNotifiedTest {
+@RunWith(Parameterized::class)
+class WaitUntilNotifiedTest(
+  factory: TimeoutFactory,
+) {
+  private val timeout = factory.newTimeout()
   private val executorService = newScheduledExecutorService(0)
 
   @After
@@ -36,7 +43,6 @@ class WaitUntilNotifiedTest {
   @Test
   @Synchronized
   fun notified() {
-    val timeout = Timeout()
     timeout.timeout(5000, TimeUnit.MILLISECONDS)
     val start = now()
     executorService.schedule(
@@ -56,7 +62,6 @@ class WaitUntilNotifiedTest {
   @Synchronized
   fun timeout() {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.timeout(1000, TimeUnit.MILLISECONDS)
     val start = now()
     try {
@@ -72,7 +77,6 @@ class WaitUntilNotifiedTest {
   @Synchronized
   fun deadline() {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.deadline(1000, TimeUnit.MILLISECONDS)
     val start = now()
     try {
@@ -88,7 +92,6 @@ class WaitUntilNotifiedTest {
   @Synchronized
   fun deadlineBeforeTimeout() {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.timeout(5000, TimeUnit.MILLISECONDS)
     timeout.deadline(1000, TimeUnit.MILLISECONDS)
     val start = now()
@@ -105,7 +108,6 @@ class WaitUntilNotifiedTest {
   @Synchronized
   fun timeoutBeforeDeadline() {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.timeout(1000, TimeUnit.MILLISECONDS)
     timeout.deadline(5000, TimeUnit.MILLISECONDS)
     val start = now()
@@ -122,7 +124,6 @@ class WaitUntilNotifiedTest {
   @Synchronized
   fun deadlineAlreadyReached() {
     assumeNotWindows()
-    val timeout = Timeout()
     timeout.deadlineNanoTime(System.nanoTime())
     val start = now()
     try {
@@ -138,7 +139,6 @@ class WaitUntilNotifiedTest {
   @Synchronized
   fun threadInterrupted() {
     assumeNotWindows()
-    val timeout = Timeout()
     val start = now()
     Thread.currentThread().interrupt()
     try {
@@ -155,7 +155,6 @@ class WaitUntilNotifiedTest {
   @Synchronized
   fun threadInterruptedOnThrowIfReached() {
     assumeNotWindows()
-    val timeout = Timeout()
     Thread.currentThread().interrupt()
     try {
       timeout.throwIfReached()
@@ -164,6 +163,46 @@ class WaitUntilNotifiedTest {
       assertEquals("interrupted", expected.message)
       assertTrue(Thread.interrupted())
     }
+  }
+
+  @Test
+  @Synchronized
+  fun cancelBeforeWaitDoesNothing() {
+    assumeNotWindows()
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancel()
+    val start = now()
+    try {
+      timeout.waitUntilNotified(this)
+      fail()
+    } catch (expected: InterruptedIOException) {
+      assertEquals("timeout", expected.message)
+    }
+    assertElapsed(1000.0, start)
+  }
+
+  @Test
+  @Synchronized
+  fun canceledTimeoutDoesNotThrowWhenNotNotifiedOnTime() {
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancelLater(500)
+
+    val start = now()
+    timeout.waitUntilNotified(this) // Returns early but doesn't throw.
+    assertElapsed(1000.0, start)
+  }
+
+  @Test
+  @Synchronized
+  fun multipleCancelsAreIdempotent() {
+    timeout.timeout(1000, TimeUnit.MILLISECONDS)
+    timeout.cancelLater(250)
+    timeout.cancelLater(500)
+    timeout.cancelLater(750)
+
+    val start = now()
+    timeout.waitUntilNotified(this) // Returns early but doesn't throw.
+    assertElapsed(1000.0, start)
   }
 
   /** Returns the nanotime in milliseconds as a double for measuring timeouts.  */
@@ -177,5 +216,21 @@ class WaitUntilNotifiedTest {
    */
   private fun assertElapsed(duration: Double, start: Double) {
     assertEquals(duration, now() - start - 200.0, 250.0)
+  }
+
+  private fun Timeout.cancelLater(delay: Long) {
+    executorService.schedule(
+      {
+        cancel()
+      },
+      delay,
+      TimeUnit.MILLISECONDS,
+    )
+  }
+
+  companion object {
+    @Parameters(name = "{0}")
+    @JvmStatic
+    fun parameters(): List<Array<out Any?>> = TimeoutFactory.entries.map { arrayOf(it) }
   }
 }

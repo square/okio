@@ -20,3 +20,6 @@ actual fun isBrowser(): Boolean {
 }
 
 actual fun isWasm() = false
+
+actual fun getEnv(name: String): String? =
+  js("globalThis.process.env[name]") as String?

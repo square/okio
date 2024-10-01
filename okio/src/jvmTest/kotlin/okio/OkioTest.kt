@@ -20,7 +20,6 @@ import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import kotlin.text.Charsets.UTF_8
 import okio.TestUtil.SEGMENT_SIZE
-import okio.TestUtil.assertNoEmptySegments
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail

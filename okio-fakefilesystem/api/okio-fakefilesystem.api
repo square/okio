@@ -8,6 +8,7 @@ public final class okio/fakefilesystem/FakeFileSystem : okio/FileSystem {
 	public fun atomicMove (Lokio/Path;Lokio/Path;)V
 	public fun canonicalize (Lokio/Path;)Lokio/Path;
 	public final fun checkNoOpenFiles ()V
+	public fun close ()V
 	public fun createDirectory (Lokio/Path;Z)V
 	public fun createSymlink (Lokio/Path;Lokio/Path;)V
 	public fun delete (Lokio/Path;Z)V

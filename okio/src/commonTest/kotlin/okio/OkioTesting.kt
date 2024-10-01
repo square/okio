@@ -16,6 +16,11 @@
 package okio
 
 import kotlin.random.Random
+import kotlin.test.assertTrue
+
+fun assertNoEmptySegments(buffer: Buffer) {
+  assertTrue(segmentSizes(buffer).all { it != 0 }, "Expected all segments to be non-empty")
+}
 
 fun segmentSizes(buffer: Buffer): List<Int> {
   var segment = buffer.head ?: return emptyList()
@@ -97,3 +102,5 @@ expect fun assertRelativeToFails(
   b: Path,
   sameAsNio: Boolean = true,
 ): IllegalArgumentException
+
+expect fun <T> withUtc(block: () -> T): T

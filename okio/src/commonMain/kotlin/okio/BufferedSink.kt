@@ -44,7 +44,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Encodes `string` in UTF-8 and writes it to this sink.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeUtf8("Uh uh uh!");
    * buffer.writeByte(' ');
@@ -58,7 +59,8 @@ expect sealed interface BufferedSink : Sink {
   /**
    * Encodes the characters at `beginIndex` up to `endIndex` from `string` in UTF-8 and writes it to
    * this sink.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeUtf8("I'm a hacker!\n", 6, 12);
    * buffer.writeByte(' ');
@@ -79,7 +81,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Writes a big-endian short to this sink using two bytes.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeShort(32767);
    * buffer.writeShort(15);
@@ -96,7 +99,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Writes a little-endian short to this sink using two bytes.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeShortLe(32767);
    * buffer.writeShortLe(15);
@@ -113,7 +117,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Writes a big-endian int to this sink using four bytes.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeInt(2147483647);
    * buffer.writeInt(15);
@@ -134,7 +139,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Writes a little-endian int to this sink using four bytes.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeIntLe(2147483647);
    * buffer.writeIntLe(15);
@@ -155,7 +161,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Writes a big-endian long to this sink using eight bytes.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeLong(9223372036854775807L);
    * buffer.writeLong(15);
@@ -184,7 +191,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Writes a little-endian long to this sink using eight bytes.
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeLongLe(9223372036854775807L);
    * buffer.writeLongLe(15);
@@ -213,7 +221,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Writes a long to this sink in signed decimal form (i.e., as a string in base 10).
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeDecimalLong(8675309L);
    * buffer.writeByte(' ');
@@ -228,7 +237,8 @@ expect sealed interface BufferedSink : Sink {
 
   /**
    * Writes a long to this sink in hexadecimal form (i.e., as a string in base 16).
-   * ```
+   *
+   * ```java
    * Buffer buffer = new Buffer();
    * buffer.writeHexadecimalUnsignedLong(65535L);
    * buffer.writeByte(' ');
@@ -245,7 +255,8 @@ expect sealed interface BufferedSink : Sink {
    * Writes all buffered data to the underlying sink, if one exists. Then that sink is recursively
    * flushed which pushes data as far as possible towards its ultimate destination. Typically that
    * destination is a network socket or file.
-   * ```
+   *
+   * ```java
    * BufferedSink b0 = new Buffer();
    * BufferedSink b1 = Okio.buffer(b0);
    * BufferedSink b2 = Okio.buffer(b1);
@@ -266,7 +277,8 @@ expect sealed interface BufferedSink : Sink {
   /**
    * Writes all buffered data to the underlying sink, if one exists. Like [flush], but weaker. Call
    * this before this buffered sink goes out of scope so that its data can reach its destination.
-   * ```
+   *
+   * ```java
    * BufferedSink b0 = new Buffer();
    * BufferedSink b1 = Okio.buffer(b0);
    * BufferedSink b2 = Okio.buffer(b1);
@@ -294,7 +306,8 @@ expect sealed interface BufferedSink : Sink {
    * this to limit the memory held in the buffer to a single segment. Typically application code
    * will not need to call this: it is only necessary when application code writes directly to this
    * [sink's buffer][buffer].
-   * ```
+   *
+   * ```java
    * BufferedSink b0 = new Buffer();
    * BufferedSink b1 = Okio.buffer(b0);
    * BufferedSink b2 = Okio.buffer(b1);

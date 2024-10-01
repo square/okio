@@ -28,6 +28,10 @@ kotlin {
       }
     }
 
+    val zlibMain by creating {
+      dependsOn(commonMain)
+    }
+
     if (kmpJsEnabled) {
       val jsMain by getting {
         dependsOn(nonWasmMain)
@@ -36,6 +40,7 @@ kotlin {
 
     val jvmMain by getting {
       dependsOn(nonWasmMain)
+      dependsOn(zlibMain)
       dependencies {
         // On the JVM the kotlin-test library resolves to one of three implementations based on
         // which testing framework is in use. JUnit is used downstream, but Gradle can't know that
@@ -48,6 +53,14 @@ kotlin {
       createSourceSet("nativeMain", children = nativeTargets)
         .also { nativeMain ->
           nativeMain.dependsOn(nonWasmMain)
+          nativeMain.dependsOn(zlibMain)
+        }
+    }
+
+    if (kmpWasmEnabled) {
+      createSourceSet("wasmMain", children = wasmTargets)
+        .also { wasmMain ->
+          wasmMain.dependsOn(commonMain)
         }
     }
   }

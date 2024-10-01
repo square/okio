@@ -372,9 +372,124 @@ class AsyncTimeoutTest {
     assertEquals(of(*data), target.readByteString())
   }
 
+  @Test
+  fun enterCancelSleepExit() {
+    val timeout = RecordingAsyncTimeout()
+    timeout.timeout(250, TimeUnit.MILLISECONDS)
+    timeout.enter()
+    timeout.cancel()
+    Thread.sleep(500)
+
+    // Call didn't time out because the timeout was canceled.
+    assertFalse(timeout.exit())
+    assertTimedOut()
+  }
+
+  @Test
+  fun enterCancelCancelSleepExit() {
+    val timeout = RecordingAsyncTimeout()
+    timeout.timeout(250, TimeUnit.MILLISECONDS)
+    timeout.enter()
+    timeout.cancel()
+    timeout.cancel()
+    Thread.sleep(500)
+
+    // Call didn't time out because the timeout was canceled.
+    assertFalse(timeout.exit())
+    assertTimedOut()
+  }
+
+  @Test
+  fun enterSleepCancelExit() {
+    val timeout = RecordingAsyncTimeout()
+    timeout.timeout(250, TimeUnit.MILLISECONDS)
+    timeout.enter()
+    Thread.sleep(500)
+    timeout.cancel()
+
+    // Call timed out because the cancel was too late.
+    assertTrue(timeout.exit())
+    assertTimedOut(timeout)
+  }
+
+  @Test
+  fun enterSleepCancelCancelExit() {
+    val timeout = RecordingAsyncTimeout()
+    timeout.timeout(250, TimeUnit.MILLISECONDS)
+    timeout.enter()
+    Thread.sleep(500)
+    timeout.cancel()
+    timeout.cancel()
+
+    // Call timed out because both cancels were too late.
+    assertTrue(timeout.exit())
+    assertTimedOut(timeout)
+  }
+
+  @Test
+  fun enterCancelSleepCancelExit() {
+    val timeout = RecordingAsyncTimeout()
+    timeout.timeout(250, TimeUnit.MILLISECONDS)
+    timeout.enter()
+    timeout.cancel()
+    Thread.sleep(500)
+    timeout.cancel()
+
+    // Call didn't time out because the timeout was canceled.
+    assertFalse(timeout.exit())
+    assertTimedOut()
+  }
+
+  @Test
+  fun cancelEnterSleepExit() {
+    val timeout = RecordingAsyncTimeout()
+    timeout.timeout(250, TimeUnit.MILLISECONDS)
+    timeout.cancel()
+    timeout.enter()
+    Thread.sleep(500)
+
+    // Call timed out because the cancel was too early.
+    assertTrue(timeout.exit())
+    assertTimedOut(timeout)
+  }
+
+  @Test
+  fun cancelEnterCancelSleepExit() {
+    val timeout = RecordingAsyncTimeout()
+    timeout.timeout(250, TimeUnit.MILLISECONDS)
+    timeout.cancel()
+    timeout.enter()
+    timeout.cancel()
+    Thread.sleep(500)
+
+    // Call didn't time out because the timeout was canceled.
+    assertFalse(timeout.exit())
+    assertTimedOut()
+  }
+
+  @Test
+  fun enterCancelSleepExitEnterSleepExit() {
+    val timeout = RecordingAsyncTimeout()
+    timeout.timeout(250, TimeUnit.MILLISECONDS)
+
+    // First call doesn't time out because we cancel it.
+    timeout.enter()
+    timeout.cancel()
+    Thread.sleep(500)
+    assertFalse(timeout.exit())
+    assertTimedOut()
+
+    // Second call does time out because it isn't canceled a second time.
+    timeout.enter()
+    Thread.sleep(500)
+    assertTrue(timeout.exit())
+    assertTimedOut(timeout)
+  }
+
   /** Asserts which timeouts fired, and in which order.  */
   private fun assertTimedOut(vararg expected: Timeout) {
     assertEquals(expected.toList(), timedOut.toList())
+    timedOut.clear()
   }
 
   internal inner class RecordingAsyncTimeout : AsyncTimeout() {

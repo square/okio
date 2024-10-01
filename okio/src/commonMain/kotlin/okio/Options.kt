@@ -17,7 +17,11 @@ package okio
 
 import kotlin.jvm.JvmStatic
 
-/** An indexed set of values that may be read with [BufferedSource.select].  */
+/**
+ * An indexed set of values that may be read with [BufferedSource.select].
+ *
+ * Also consider [TypedOptions] to select a typed value _T_.
+ */
 class Options private constructor(
   internal val byteStrings: Array<out ByteString>,
   internal val trie: IntArray,
@@ -40,7 +44,7 @@ class Options private constructor(
       // indexes to the caller's indexes.
       val list = byteStrings.toMutableList()
       list.sort()
-      val indexes = mutableListOf(*byteStrings.map { -1 }.toTypedArray())
+      val indexes = MutableList(list.size) { -1 }
       byteStrings.forEachIndexed { callerIndex, byteString ->
         val sortedIndex = list.binarySearch(byteString)
         indexes[sortedIndex] = callerIndex
@@ -71,10 +75,8 @@ class Options private constructor(
       val trieBytes = Buffer()
       buildTrieRecursive(node = trieBytes, byteStrings = list, indexes = indexes)
 
-      val trie = IntArray(trieBytes.intCount.toInt())
-      var i = 0
-      while (!trieBytes.exhausted()) {
-        trie[i++] = trieBytes.readInt()
+      val trie = IntArray(trieBytes.intCount.toInt()) {
+        trieBytes.readInt()
       }
 
       return Options(byteStrings.copyOf() /* Defensive copy. */, trie)

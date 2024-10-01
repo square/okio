@@ -224,9 +224,6 @@ fun Sink.hashingSink(digest: MessageDigest): HashingSink = HashingSink(this, dig
  */
 fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
 
-@Throws(IOException::class)
-fun FileSystem.openZip(zipPath: Path): FileSystem = okio.internal.openZip(zipPath, this)
-
 fun ClassLoader.asResourceFileSystem(): FileSystem = ResourceFileSystem(this, indexEagerly = true)
 
 /**
