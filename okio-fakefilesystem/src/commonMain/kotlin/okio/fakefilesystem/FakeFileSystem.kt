@@ -732,9 +732,7 @@ class FakeFileSystem(
       val fileOffsetInt = fileOffset.toInt()
       val toCopy = minOf(file.data.size - fileOffsetInt, byteCount)
       if (toCopy <= 0) return -1
-      for (i in 0 until toCopy) {
-        array[i + arrayOffset] = file.data[i + fileOffsetInt]
-      }
+      System.arraycopy(file.data, fileOffsetInt, array, arrayOffset, toCopy)
       return toCopy
     }
 
