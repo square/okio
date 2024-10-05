@@ -461,66 +461,26 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
     negative = true
   }
 
-  // Binary search for character width which favors matching lower numbers.
-  var width =
-    if (v < 100000000L) {
-      if (v < 10000L) {
-        if (v < 100L) {
-          if (v < 10L) {
-            1
-          } else {
-            2
-          }
-        } else if (v < 1000L) {
-          3
-        } else {
-          4
-        }
-      } else if (v < 1000000L) {
-        if (v < 100000L) {
-          5
-        } else {
-          6
-        }
-      } else if (v < 10000000L) {
-        7
-      } else {
-        8
-      }
-    } else if (v < 1000000000000L) {
-      if (v < 10000000000L) {
-        if (v < 1000000000L) {
-          9
-        } else {
-          10
-        }
-      } else if (v < 100000000000L) {
-        11
-      } else {
-        12
-      }
-    } else if (v < 1000000000000000L) {
-      if (v < 10000000000000L) {
-        13
-      } else if (v < 100000000000000L) {
-        14
-      } else {
-        15
-      }
-    } else if (v < 100000000000000000L) {
-      if (v < 10000000000000000L) {
-        16
-      } else {
-        17
-      }
-    } else if (v < 1000000000000000000L) {
-      18
-    } else {
-      19
-    }
-  if (negative) {
-    ++width
-  }
+  val width = when {
+    v < 10 -> 1
+    v < 100 -> 2
+    v < 1_000 -> 3
+    v < 10_000 -> 4
+    v < 100_000 -> 5
+    v < 1_000_000 -> 6
+    v < 10_000_000 -> 7
+    v < 100_000_000 -> 8
+    v < 1_000_000_000 -> 9
+    v < 10_000_000_000 -> 10
+    v < 100_000_000_000 -> 11
+    v < 1_000_000_000_000 -> 12
+    v < 10_000_000_000_000 -> 13
+    v < 100_000_000_000_000 -> 14
+    v < 1_000_000_000_000_000 -> 15
+    v < 10_000_000_000_000_000 -> 16
+    v < 100_000_000_000_000_000 -> 17
+    else -> 19
+  } + if (negative) 1 else 0
 
   val tail = writableSegment(width)
   val data = tail.data
