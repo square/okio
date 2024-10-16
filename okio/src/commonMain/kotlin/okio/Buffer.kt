@@ -91,7 +91,6 @@ expect class Buffer() : BufferedSource, BufferedSink {
   /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
   fun hmacSha512(key: ByteString): ByteString
 
-
   /**
    * Returns a deep copy of this buffer. The returned [Buffer] initially shares the underlying
    * [ByteArray]s. See [UnsafeCursor] for more details.
