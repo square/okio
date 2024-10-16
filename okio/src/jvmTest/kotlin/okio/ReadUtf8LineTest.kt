@@ -15,35 +15,44 @@
  */
 package okio
 
+import app.cash.burst.Burst
 import java.io.EOFException
 import okio.TestUtil.SEGMENT_SIZE
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameter
-import org.junit.runners.Parameterized.Parameters
 
-@RunWith(Parameterized::class)
-class ReadUtf8LineTest {
-  interface Factory {
-    fun create(data: Buffer): BufferedSource
+@Burst
+class ReadUtf8LineTest(
+  factory: Factory,
+) {
+  enum class Factory {
+    BasicBuffer {
+      override fun create(data: Buffer) = data
+    },
+    Buffered {
+      override fun create(data: Buffer): BufferedSource = RealBufferedSource(data)
+    },
+    SlowBuffered {
+      override fun create(data: Buffer): BufferedSource {
+        return RealBufferedSource(
+          object : ForwardingSource(data) {
+            override fun read(sink: Buffer, byteCount: Long): Long {
+              return super.read(sink, 1L.coerceAtMost(byteCount))
+            }
+          },
+        )
+      }
+    },
+    ;
+
+    abstract fun create(data: Buffer): BufferedSource
   }
 
-  @Parameter
-  lateinit var factory: Factory
-  private lateinit var data: Buffer
-  private lateinit var source: BufferedSource
-
-  @Before
-  fun setUp() {
-    data = Buffer()
-    source = factory.create(data)
-  }
+  private val data: Buffer = Buffer()
+  private val source: BufferedSource = factory.create(data)
 
   @Test
   fun readLines() {
@@ -177,41 +186,5 @@ class ReadUtf8LineTest {
     assertEquals("abc", source.readUtf8Line())
     assertEquals("def", source.readUtf8Line())
     assertNull(source.readUtf8Line())
-  }
-
-  companion object {
-    @JvmStatic
-    @Parameters(name = "{0}")
-    fun parameters(): List<Array<Any>> {
-      return listOf(
-        arrayOf(
-          object : Factory {
-            override fun create(data: Buffer) = data
-            override fun toString() = "Buffer"
-          },
-        ),
-        arrayOf(
-          object : Factory {
-            override fun create(data: Buffer) = RealBufferedSource(data)
-            override fun toString() = "RealBufferedSource"
-          },
-        ),
-        arrayOf(
-          object : Factory {
-            override fun create(data: Buffer): BufferedSource {
-              return RealBufferedSource(
-                object : ForwardingSource(data) {
-                  override fun read(sink: Buffer, byteCount: Long): Long {
-                    return super.read(sink, 1L.coerceAtMost(byteCount))
-                  }
-                },
-              )
-            }
-
-            override fun toString() = "Slow RealBufferedSource"
-          },
-        ),
-      )
-    }
   }
 }
