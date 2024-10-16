@@ -42,6 +42,11 @@ expect class HashingSink : Sink {
    */
   val hash: ByteString
 
+  override fun close()
+  override fun flush()
+  override fun timeout(): Timeout
+  override fun write(source: Buffer, byteCount: Long)
+
   companion object {
     /**
      * Returns a sink that uses the obsolete MD5 hash algorithm to produce 128-bit hashes.
