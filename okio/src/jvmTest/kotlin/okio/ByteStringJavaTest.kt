@@ -41,7 +41,7 @@ class ByteStringJavaTest(
   private val factory: Factory,
 ) {
   enum class Factory {
-    BYTE_STRING {
+    BaseByteString {
       override fun decodeHex(hex: String): ByteString {
         return hex.decodeHex()
       }
@@ -50,7 +50,7 @@ class ByteStringJavaTest(
         return s.encodeUtf8()
       }
     },
-    SEGMENTED_BYTE_STRING {
+    SegmentedByteString {
       override fun decodeHex(hex: String): ByteString {
         val buffer = Buffer()
         buffer.write(hex.decodeHex())
@@ -63,7 +63,7 @@ class ByteStringJavaTest(
         return buffer.snapshot()
       }
     },
-    ONE_BYTE_PER_SEGMENT {
+    OneBytePerSegment {
       override fun decodeHex(hex: String): ByteString {
         return makeSegments(hex.decodeHex())
       }

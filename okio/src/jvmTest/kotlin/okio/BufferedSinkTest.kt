@@ -34,13 +34,11 @@ class BufferedSinkTest(
   factory: Factory,
 ) {
   enum class Factory {
-    BUFFER {
+    NewBuffer {
       override fun create(data: Buffer) = data
-      override fun toString() = "Buffer"
     },
-    REAL_BUFFERED_SINK {
+    SinkBuffer {
       override fun create(data: Buffer) = (data as Sink).buffer()
-      override fun toString() = "RealBufferedSink"
     },
     ;
 

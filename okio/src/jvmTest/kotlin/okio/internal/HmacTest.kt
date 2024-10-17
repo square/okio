@@ -69,9 +69,9 @@ enum class Algorithm(
   val algorithmName: String,
   internal val HmacFactory: (key: ByteString) -> Hmac,
 ) {
-  SHA_1("HmacSha1", Hmac.Companion::sha1),
-  SHA_256("HmacSha256", Hmac.Companion::sha256),
-  SHA_512("HmacSha512", Hmac.Companion::sha512),
+  Sha1("HmacSha1", Hmac.Companion::sha1),
+  Sha256("HmacSha256", Hmac.Companion::sha256),
+  Sha512("HmacSha512", Hmac.Companion::sha512),
 }
 
 private fun hmac(algorithm: String, key: ByteArray, bytes: ByteArray) =
