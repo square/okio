@@ -1,0 +1,6 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:okio.assetfilesystem////PointingToDeclaration/okio-assetfilesystem/okio.assetfilesystem/index.html
+$dokka.location:okio.assetfilesystem//asFileSystem/android.content.res.AssetManager#/PointingToDeclaration/okio-assetfilesystem/okio.assetfilesystem/as-file-system.html
+okio.assetfilesystem
+
