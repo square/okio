@@ -17,7 +17,7 @@
 package okio
 
 enum class BufferedSourceFactory {
-  BUFFER {
+  NewBuffer {
     override val isOneByteAtATime: Boolean
       get() = false
 
@@ -30,7 +30,7 @@ enum class BufferedSourceFactory {
     }
   },
 
-  REAL_BUFFERED_SOURCE {
+  SourceBuffer {
     override val isOneByteAtATime: Boolean
       get() = false
 
@@ -47,7 +47,7 @@ enum class BufferedSourceFactory {
    * A factory deliberately written to create buffers whose internal segments are always 1 byte
    * long. We like testing with these segments because are likely to trigger bugs!
    */
-  ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE {
+  OneByteAtATimeSource {
     override val isOneByteAtATime: Boolean
       get() = true
 
@@ -69,7 +69,7 @@ enum class BufferedSourceFactory {
     }
   },
 
-  ONE_BYTE_AT_A_TIME_BUFFER {
+  OneByteAtATimeSink {
     override val isOneByteAtATime: Boolean
       get() = true
 
@@ -92,7 +92,7 @@ enum class BufferedSourceFactory {
     }
   },
 
-  PEEK_BUFFER {
+  PeekBuffer {
     override val isOneByteAtATime: Boolean
       get() = false
 
@@ -105,7 +105,7 @@ enum class BufferedSourceFactory {
     }
   },
 
-  PEEK_BUFFERED_SOURCE {
+  PeekBufferedSource {
     override val isOneByteAtATime: Boolean
       get() = false
 

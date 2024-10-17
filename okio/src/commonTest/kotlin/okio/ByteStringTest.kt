@@ -16,6 +16,7 @@
 
 package okio
 
+import app.cash.burst.Burst
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,12 +32,8 @@ import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
 import okio.internal.commonAsUtf8ToByteArray
 
-class ByteStringTest : AbstractByteStringTest(ByteStringFactory.BYTE_STRING)
-class SegmentedByteStringTest : AbstractByteStringTest(ByteStringFactory.SEGMENTED_BYTE_STRING)
-class ByteStringOneBytePerSegmentTest : AbstractByteStringTest(ByteStringFactory.ONE_BYTE_PER_SEGMENT)
-class OkioEncoderTest : AbstractByteStringTest(ByteStringFactory.OKIO_ENCODER)
-
-abstract class AbstractByteStringTest internal constructor(
+@Burst
+class ByteStringTest(
   private val factory: ByteStringFactory,
 ) {
   @Test fun get() {
@@ -229,7 +226,7 @@ abstract class AbstractByteStringTest internal constructor(
   @Test fun toAsciiLowerCaseNoUppercase() {
     val s = factory.encodeUtf8("a1_+")
     assertEquals(s, s.toAsciiLowercase())
-    if (factory === ByteStringFactory.BYTE_STRING) {
+    if (factory === ByteStringFactory.BasicByteString) {
       assertSame(s, s.toAsciiLowercase())
     }
   }

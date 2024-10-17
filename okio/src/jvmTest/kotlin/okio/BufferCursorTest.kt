@@ -139,7 +139,7 @@ class BufferCursorTest(
 
   @Test
   fun seekWithinSegment() {
-    assumeTrue(bufferFactory === BufferFactory.SMALL_SEGMENTED_BUFFER)
+    assumeTrue(bufferFactory === BufferFactory.SmallSegmentedBuffer)
     val buffer = bufferFactory.newBuffer()
     assertEquals("abcdefghijkl", buffer.clone().readUtf8())
     buffer.readUnsafe().use { cursor ->

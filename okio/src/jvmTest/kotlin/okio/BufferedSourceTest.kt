@@ -47,18 +47,16 @@ class BufferedSourceTest(
   private val factory: Factory,
 ) {
   enum class Factory {
-    BUFFER {
+    NewBuffer {
       override fun pipe(): Pipe {
         val buffer = Buffer()
         return Pipe(buffer, buffer)
       }
 
       override val isOneByteAtATime: Boolean get() = false
-
-      override fun toString() = "Buffer"
     },
 
-    REAL_BUFFERED_SOURCE {
+    SourceBuffer {
       override fun pipe(): Pipe {
         val buffer = Buffer()
         return Pipe(
@@ -68,15 +66,13 @@ class BufferedSourceTest(
       }
 
       override val isOneByteAtATime: Boolean get() = false
-
-      override fun toString() = "RealBufferedSource"
     },
 
     /**
      * A factory deliberately written to create buffers whose internal segments are always 1 byte
      * long. We like testing with these segments because are likely to trigger bugs!
      */
-    ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE {
+    OneByteAtATimeSource {
       override fun pipe(): Pipe {
         val buffer = Buffer()
         return Pipe(
@@ -95,11 +91,9 @@ class BufferedSourceTest(
       }
 
       override val isOneByteAtATime: Boolean get() = true
-
-      override fun toString() = "OneByteAtATimeBufferedSource"
     },
 
-    ONE_BYTE_AT_A_TIME_BUFFER {
+    OneByteAtATimeSink {
       override fun pipe(): Pipe {
         val buffer = Buffer()
         val sink = object : ForwardingSink(buffer) {
@@ -120,11 +114,9 @@ class BufferedSourceTest(
       }
 
       override val isOneByteAtATime: Boolean get() = true
-
-      override fun toString() = "OneByteAtATimeBuffer"
     },
 
-    PEEK_BUFFER {
+    PeekSource {
       override fun pipe(): Pipe {
         val buffer = Buffer()
         return Pipe(
@@ -134,11 +126,9 @@ class BufferedSourceTest(
       }
 
       override val isOneByteAtATime: Boolean get() = false
-
-      override fun toString() = "PeekBuffer"
     },
 
-    PEEK_BUFFERED_SOURCE {
+    PeekBufferedSource {
       override fun pipe(): Pipe {
         val buffer = Buffer()
         return Pipe(
@@ -148,8 +138,6 @@ class BufferedSourceTest(
       }
 
       override val isOneByteAtATime: Boolean get() = false
-
-      override fun toString() = "PeekBufferedSource"
     },
     ;
 
@@ -826,7 +814,7 @@ class BufferedSourceTest(
   }
 
   /**
-   * With [Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE], this code was extremely slow.
+   * With [Factory.OneByteAtATimeSource], this code was extremely slow.
    * https://github.com/square/okio/issues/171
    */
   @Test
@@ -1438,7 +1426,7 @@ class BufferedSourceTest(
 
   @Test
   fun rangeEqualsOnlyReadsUntilMismatch() {
-    Assume.assumeTrue(factory === Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE) // Other sources read in chunks anyway.
+    Assume.assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
     sink.writeUtf8("A man, a plan, a canal. Panama.")
     sink.emit()
     assertFalse(source.rangeEquals(0, "A man.".encodeUtf8()))
