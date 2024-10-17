@@ -1,3 +1,6 @@
+import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
+import com.android.build.gradle.internal.lint.AndroidLintTask
+
 plugins {
   id("com.android.library")
   id("org.jetbrains.kotlin.android")
@@ -58,6 +61,11 @@ android {
       }
     }
   }
+}
+
+// https://issuetracker.google.com/issues/325146674
+tasks.withType<AndroidLintAnalysisTask> {
+  onlyIf { false }
 }
 
 dependencies {
