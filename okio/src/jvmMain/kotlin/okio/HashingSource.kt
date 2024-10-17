@@ -67,7 +67,7 @@ actual class HashingSource : ForwardingSource, Source { // Need to explicitly de
   )
 
   @Throws(IOException::class)
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  actual override fun read(sink: Buffer, byteCount: Long): Long {
     val result = super.read(sink, byteCount)
 
     if (result != -1L) {
