@@ -1,5 +1,6 @@
 .classpath
 .gradle
+.kotlin
 .project
 .settings
 eclipsebin

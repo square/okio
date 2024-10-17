@@ -29,7 +29,7 @@ actual class DeflaterSink internal actual constructor(
   ) : this(sink.buffer(), deflater)
 
   @Throws(IOException::class)
-  override fun write(source: Buffer, byteCount: Long) {
+  actual override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
 
     deflater.flush = Z_NO_FLUSH
@@ -41,7 +41,7 @@ actual class DeflaterSink internal actual constructor(
   }
 
   @Throws(IOException::class)
-  override fun flush() {
+  actual override fun flush() {
     deflater.flush = Z_SYNC_FLUSH
     deflater.dataProcessor.writeBytesFromSource(
       source = null,
@@ -52,7 +52,7 @@ actual class DeflaterSink internal actual constructor(
     sink.flush()
   }
 
-  override fun timeout(): Timeout {
+  actual override fun timeout(): Timeout {
     return sink.timeout()
   }
 
@@ -67,7 +67,7 @@ actual class DeflaterSink internal actual constructor(
   }
 
   @Throws(IOException::class)
-  override fun close() {
+  actual override fun close() {
     if (deflater.dataProcessor.closed) return
 
     // We must close the deflater and the target, even if flushing fails. Otherwise, we'll leak

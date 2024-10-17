@@ -47,6 +47,11 @@ internal constructor(
   constructor(sink: Sink, deflater: Deflater)
 
   internal fun finishDeflate()
+
+  override fun write(source: Buffer, byteCount: Long)
+  override fun flush()
+  override fun timeout(): Timeout
+  override fun close()
 }
 
 /**

@@ -21,4 +21,49 @@ internal expect class RealBufferedSource(
 ) : BufferedSource {
   val source: Source
   var closed: Boolean
+
+  override val buffer: Buffer
+  override fun close()
+  override fun exhausted(): Boolean
+  override fun indexOf(b: Byte): Long
+  override fun indexOf(b: Byte, fromIndex: Long): Long
+  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
+  override fun indexOf(bytes: ByteString): Long
+  override fun indexOf(bytes: ByteString, fromIndex: Long): Long
+  override fun indexOfElement(targetBytes: ByteString): Long
+  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
+  override fun peek(): BufferedSource
+  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean
+  override fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
+  override fun read(sink: Buffer, byteCount: Long): Long
+  override fun read(sink: ByteArray): Int
+  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
+  override fun readAll(sink: Sink): Long
+  override fun readByte(): Byte
+  override fun readByteArray(): ByteArray
+  override fun readByteArray(byteCount: Long): ByteArray
+  override fun readByteString(): ByteString
+  override fun readByteString(byteCount: Long): ByteString
+  override fun readDecimalLong(): Long
+  override fun readFully(sink: Buffer, byteCount: Long)
+  override fun readFully(sink: ByteArray)
+  override fun readHexadecimalUnsignedLong(): Long
+  override fun readInt(): Int
+  override fun readIntLe(): Int
+  override fun readLong(): Long
+  override fun readLongLe(): Long
+  override fun readShort(): Short
+  override fun readShortLe(): Short
+  override fun readUtf8(): String
+  override fun readUtf8(byteCount: Long): String
+  override fun readUtf8CodePoint(): Int
+  override fun readUtf8Line(): String?
+  override fun readUtf8LineStrict(): String
+  override fun readUtf8LineStrict(limit: Long): String
+  override fun request(byteCount: Long): Boolean
+  override fun require(byteCount: Long)
+  override fun select(options: Options): Int
+  override fun <T : Any> select(options: TypedOptions<T>): T?
+  override fun skip(byteCount: Long)
+  override fun timeout(): Timeout
 }

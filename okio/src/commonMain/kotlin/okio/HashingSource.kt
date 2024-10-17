@@ -43,6 +43,10 @@ expect class HashingSource : Source {
    */
   val hash: ByteString
 
+  override fun close()
+  override fun read(sink: Buffer, byteCount: Long): Long
+  override fun timeout(): Timeout
+
   companion object {
     /**
      * Returns a source that uses the obsolete MD5 hash algorithm to produce 128-bit hashes.

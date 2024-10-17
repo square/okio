@@ -28,7 +28,7 @@ actual class DeflaterSink internal actual constructor(
   private var closed = false
 
   @Throws(IOException::class)
-  override fun write(source: Buffer, byteCount: Long) {
+  actual override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
 
     var remaining = byteCount
@@ -88,7 +88,7 @@ actual class DeflaterSink internal actual constructor(
   }
 
   @Throws(IOException::class)
-  override fun flush() {
+  actual override fun flush() {
     deflate(true)
     sink.flush()
   }
@@ -99,7 +99,7 @@ actual class DeflaterSink internal actual constructor(
   }
 
   @Throws(IOException::class)
-  override fun close() {
+  actual override fun close() {
     if (closed) return
 
     // Emit deflated data to the underlying sink. If this fails, we still need
@@ -128,7 +128,7 @@ actual class DeflaterSink internal actual constructor(
     if (thrown != null) throw thrown
   }
 
-  override fun timeout(): Timeout = sink.timeout()
+  actual override fun timeout(): Timeout = sink.timeout()
 
   override fun toString() = "DeflaterSink($sink)"
 }
