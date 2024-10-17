@@ -18,7 +18,7 @@ include(":samples")
 
 // The Android test module doesn't work in IntelliJ. Use Android Studio or the command line.
 if (System.getProperties().containsKey("android.injected.invoked.from.ide") ||
-  System.getenv("ANDROID_SDK_ROOT") != null) {
+  System.getenv("ANDROID_HOME") != null) {
   include(":android-test")
 }
 
