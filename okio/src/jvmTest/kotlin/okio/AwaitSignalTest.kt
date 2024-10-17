@@ -15,6 +15,7 @@
  */
 package okio
 
+import app.cash.burst.Burst
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
@@ -25,11 +26,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
 
-@RunWith(Parameterized::class)
+@Burst
 class AwaitSignalTest(
   factory: TimeoutFactory,
 ) {
@@ -214,11 +212,5 @@ class AwaitSignalTest(
       delay,
       TimeUnit.MILLISECONDS,
     )
-  }
-
-  companion object {
-    @Parameters(name = "{0}")
-    @JvmStatic
-    fun parameters(): List<Array<out Any?>> = TimeoutFactory.entries.map { arrayOf(it) }
   }
 }
