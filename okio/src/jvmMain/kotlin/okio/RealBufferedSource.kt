@@ -81,10 +81,7 @@ internal actual class RealBufferedSource actual constructor(
     commonRead(sink, offset, byteCount)
 
   override fun read(sink: ByteBuffer): Int {
-    if (buffer.size == 0L) {
-      val read = source.read(buffer, Segment.SIZE.toLong())
-      if (read == -1L) return -1
-    }
+    if (exhausted()) return -1
 
     return buffer.read(sink)
   }
@@ -152,10 +149,7 @@ internal actual class RealBufferedSource actual constructor(
     return object : InputStream() {
       override fun read(): Int {
         if (closed) throw IOException("closed")
-        if (buffer.size == 0L) {
-          val count = source.read(buffer, Segment.SIZE.toLong())
-          if (count == -1L) return -1
-        }
+        if (exhausted()) return -1
         return buffer.readByte() and 0xff
       }
 
@@ -163,10 +157,7 @@ internal actual class RealBufferedSource actual constructor(
         if (closed) throw IOException("closed")
         checkOffsetAndCount(data.size.toLong(), offset.toLong(), byteCount.toLong())
 
-        if (buffer.size == 0L) {
-          val count = source.read(buffer, Segment.SIZE.toLong())
-          if (count == -1L) return -1
-        }
+        if (exhausted()) return -1
 
         return buffer.read(data, offset, byteCount)
       }
