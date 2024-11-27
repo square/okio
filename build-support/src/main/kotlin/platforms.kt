@@ -125,7 +125,6 @@ fun KotlinMultiplatformExtension.configureOrCreateJsPlatforms() {
       kotlinOptions {
         moduleKind = "umd"
         sourceMap = true
-        metaInfo = true
       }
     }
     nodejs {
