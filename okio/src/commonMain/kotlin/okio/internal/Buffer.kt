@@ -21,7 +21,6 @@
 package okio.internal
 
 import kotlin.jvm.JvmName
-import kotlin.native.concurrent.SharedImmutable
 import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.Buffer.UnsafeCursor
@@ -41,7 +40,6 @@ import okio.minOf
 import okio.resolveDefaultParameter
 import okio.toHexString
 
-@SharedImmutable
 internal val HEX_DIGIT_BYTES = "0123456789abcdef".asUtf8ToByteArray()
 
 // Threshold determined empirically via ReadByteStringBenchmark
