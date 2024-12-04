@@ -16,7 +16,6 @@ kotlin {
         kotlinOptions {
           moduleKind = "umd"
           sourceMap = true
-          metaInfo = true
         }
       }
     }

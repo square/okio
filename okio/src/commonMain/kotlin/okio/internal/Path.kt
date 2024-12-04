@@ -18,26 +18,20 @@
 package okio.internal
 
 import kotlin.jvm.JvmName
-import kotlin.native.concurrent.SharedImmutable
 import okio.Buffer
 import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path
 import okio.Path.Companion.toPath
 
-@SharedImmutable
 private val SLASH = "/".encodeUtf8()
 
-@SharedImmutable
 private val BACKSLASH = "\\".encodeUtf8()
 
-@SharedImmutable
 private val ANY_SLASH = "/\\".encodeUtf8()
 
-@SharedImmutable
 private val DOT = ".".encodeUtf8()
 
-@SharedImmutable
 private val DOT_DOT = "..".encodeUtf8()
 
 @Suppress("NOTHING_TO_INLINE")

@@ -18,7 +18,6 @@
 package okio
 
 import kotlin.jvm.JvmName
-import kotlin.native.concurrent.SharedImmutable
 import okio.internal.HEX_DIGIT_CHARS
 
 internal fun checkOffsetAndCount(size: Long, offset: Long, byteCount: Long) {
@@ -167,7 +166,6 @@ internal fun Long.toHexString(): String {
 // for them in the receiving function, then swap in the true default value.
 // https://youtrack.jetbrains.com/issue/KT-45542
 
-@SharedImmutable
 internal val DEFAULT__new_UnsafeCursor = Buffer.UnsafeCursor()
 internal fun resolveDefaultParameter(unsafeCursor: Buffer.UnsafeCursor): Buffer.UnsafeCursor {
   if (unsafeCursor === DEFAULT__new_UnsafeCursor) return Buffer.UnsafeCursor()
