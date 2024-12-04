@@ -10,7 +10,7 @@ androidx-test-ext-junit = { module = "androidx.test.ext:junit", version = "1.2.1
 androidx-test-runner = { module = "androidx.test:runner", version = "1.5.2" }
 binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.16.3" }
 bnd = { module = "biz.aQute.bnd:biz.aQute.bnd.gradle", version = "7.1.0" }
-burst-gradle-plugin = { module = "app.cash.burst:burst-gradle-plugin", version = "2.1.0" }
+burst-gradle-plugin = { module = "app.cash.burst:burst-gradle-plugin", version = "2.2.0" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.20" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
