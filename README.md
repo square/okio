@@ -1,7 +1,4 @@
-Okio
-====
 
-See the [project website][okio] for documentation and APIs.
 
 Okio is a library that complements `java.io` and `java.nio` to make it much
 easier to access, store, and process your data. It started as a component of
