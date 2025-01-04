@@ -76,6 +76,8 @@ expect class Instant : Comparable<Instant> {
   operator fun plus(duration: Duration): Instant
 
   operator fun minus(duration: Duration): Instant
+
+  override operator fun compareTo(other: Instant): Int
 }
 
 expect fun fromEpochSeconds(

@@ -37,7 +37,7 @@ actual class InflaterSource internal actual constructor(
   actual constructor(source: Source, inflater: Inflater) : this(source.buffer(), inflater)
 
   @Throws(IOException::class)
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  actual override fun read(sink: Buffer, byteCount: Long): Long {
     while (true) {
       val bytesInflated = readOrInflate(sink, byteCount)
       if (bytesInflated > 0) return bytesInflated
@@ -119,10 +119,10 @@ actual class InflaterSource internal actual constructor(
     source.skip(toRelease.toLong())
   }
 
-  override fun timeout(): Timeout = source.timeout()
+  actual override fun timeout(): Timeout = source.timeout()
 
   @Throws(IOException::class)
-  override fun close() {
+  actual override fun close() {
     if (closed) return
     inflater.end()
     closed = true

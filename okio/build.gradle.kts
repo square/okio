@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 
 plugins {
   kotlin("multiplatform")
+  id("app.cash.burst")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")

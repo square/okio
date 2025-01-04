@@ -21,7 +21,6 @@
 package okio.internal
 
 import kotlin.jvm.JvmName
-import kotlin.native.concurrent.SharedImmutable
 import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.Buffer.UnsafeCursor
@@ -41,7 +40,6 @@ import okio.minOf
 import okio.resolveDefaultParameter
 import okio.toHexString
 
-@SharedImmutable
 internal val HEX_DIGIT_BYTES = "0123456789abcdef".asUtf8ToByteArray()
 
 // Threshold determined empirically via ReadByteStringBenchmark
@@ -461,63 +459,7 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
     negative = true
   }
 
-  // Binary search for character width which favors matching lower numbers.
-  var width =
-    if (v < 100000000L) {
-      if (v < 10000L) {
-        if (v < 100L) {
-          if (v < 10L) {
-            1
-          } else {
-            2
-          }
-        } else if (v < 1000L) {
-          3
-        } else {
-          4
-        }
-      } else if (v < 1000000L) {
-        if (v < 100000L) {
-          5
-        } else {
-          6
-        }
-      } else if (v < 10000000L) {
-        7
-      } else {
-        8
-      }
-    } else if (v < 1000000000000L) {
-      if (v < 10000000000L) {
-        if (v < 1000000000L) {
-          9
-        } else {
-          10
-        }
-      } else if (v < 100000000000L) {
-        11
-      } else {
-        12
-      }
-    } else if (v < 1000000000000000L) {
-      if (v < 10000000000000L) {
-        13
-      } else if (v < 100000000000000L) {
-        14
-      } else {
-        15
-      }
-    } else if (v < 100000000000000000L) {
-      if (v < 10000000000000000L) {
-        16
-      } else {
-        17
-      }
-    } else if (v < 1000000000000000000L) {
-      18
-    } else {
-      19
-    }
+  var width = countDigitsIn(v)
   if (negative) {
     ++width
   }
@@ -538,6 +480,34 @@ internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
   this.size += width.toLong()
   return this
 }
+
+private fun countDigitsIn(v: Long): Int {
+  val guess = ((64 - v.countLeadingZeroBits()) * 10) ushr 5
+  return guess + (if (v > DigitCountToLargestValue[guess]) 1 else 0)
+}
+
+private val DigitCountToLargestValue = longArrayOf(
+  -1, // Every value has more than 0 digits.
+  9L, // For 1 digit (index 1), the largest value is 9.
+  99L,
+  999L,
+  9999L,
+  99999L,
+  999999L,
+  9999999L,
+  99999999L,
+  999999999L,
+  9999999999L,
+  99999999999L,
+  999999999999L,
+  9999999999999L,
+  99999999999999L,
+  999999999999999L,
+  9999999999999999L,
+  99999999999999999L,
+  999999999999999999L, // For 18 digits (index 18), the largest value is 999999999999999999.
+  Long.MAX_VALUE, // For 19 digits (index 19), the largest value is MAX_VALUE.
+)
 
 internal inline fun Buffer.commonWriteHexadecimalUnsignedLong(v: Long): Buffer {
   var v = v

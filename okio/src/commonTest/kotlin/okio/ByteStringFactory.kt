@@ -20,34 +20,32 @@ import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 import okio.internal.commonAsUtf8ToByteArray
 
-internal interface ByteStringFactory {
-  fun decodeHex(hex: String): ByteString
+enum class ByteStringFactory {
+  BasicByteString {
+    override fun decodeHex(hex: String) = hex.decodeHex()
+    override fun encodeUtf8(s: String) = s.encodeUtf8()
+  },
 
-  fun encodeUtf8(s: String): ByteString
+  SegmentedByteString {
+    override fun decodeHex(hex: String) = Buffer().apply { write(hex.decodeHex()) }.snapshot()
+    override fun encodeUtf8(s: String) = Buffer().apply { writeUtf8(s) }.snapshot()
+  },
 
-  companion object {
-    val BYTE_STRING: ByteStringFactory = object : ByteStringFactory {
-      override fun decodeHex(hex: String) = hex.decodeHex()
-      override fun encodeUtf8(s: String) = s.encodeUtf8()
-    }
+  OneBytePerSegment {
+    override fun decodeHex(hex: String) = makeSegments(hex.decodeHex())
+    override fun encodeUtf8(s: String) = makeSegments(s.encodeUtf8())
+  },
 
-    val SEGMENTED_BYTE_STRING: ByteStringFactory = object : ByteStringFactory {
-      override fun decodeHex(hex: String) = Buffer().apply { write(hex.decodeHex()) }.snapshot()
-      override fun encodeUtf8(s: String) = Buffer().apply { writeUtf8(s) }.snapshot()
-    }
+  // For Kotlin/JVM, the native Java UTF-8 encoder is used. This forces
+  // testing of the Okio encoder used for Kotlin/JS and Kotlin/Native to be
+  // tested on JVM as well.
+  OkioUtf8Encoder {
+    override fun decodeHex(hex: String) = hex.decodeHex()
+    override fun encodeUtf8(s: String) = ByteString.of(*s.commonAsUtf8ToByteArray())
+  },
+  ;
 
-    val ONE_BYTE_PER_SEGMENT: ByteStringFactory = object : ByteStringFactory {
-      override fun decodeHex(hex: String) = makeSegments(hex.decodeHex())
-      override fun encodeUtf8(s: String) = makeSegments(s.encodeUtf8())
-    }
+  abstract fun decodeHex(hex: String): ByteString
 
-    // For Kotlin/JVM, the native Java UTF-8 encoder is used. This forces
-    // testing of the Okio encoder used for Kotlin/JS and Kotlin/Native to be
-    // tested on JVM as well.
-    val OKIO_ENCODER: ByteStringFactory = object : ByteStringFactory {
-      override fun decodeHex(hex: String) = hex.decodeHex()
-      override fun encodeUtf8(s: String) =
-        ByteString.of(*s.commonAsUtf8ToByteArray())
-    }
-  }
+  abstract fun encodeUtf8(s: String): ByteString
 }

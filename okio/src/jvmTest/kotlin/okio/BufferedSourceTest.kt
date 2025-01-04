@@ -15,6 +15,7 @@
  */
 package okio
 
+import app.cash.burst.Burst
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
@@ -40,124 +41,108 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Assume
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
 
-@RunWith(Parameterized::class)
+@Burst
 class BufferedSourceTest(
   private val factory: Factory,
 ) {
-  interface Factory {
-    fun pipe(): Pipe
-    val isOneByteAtATime: Boolean
-
-    companion object {
-      val BUFFER: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(buffer, buffer)
-        }
-
-        override val isOneByteAtATime: Boolean get() = false
-
-        override fun toString() = "Buffer"
+  enum class Factory {
+    NewBuffer {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(buffer, buffer)
       }
 
-      val REAL_BUFFERED_SOURCE: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(
-            sink = buffer,
-            source = (buffer as Source).buffer(),
-          )
-        }
+      override val isOneByteAtATime: Boolean get() = false
+    },
 
-        override val isOneByteAtATime: Boolean get() = false
-
-        override fun toString() = "RealBufferedSource"
+    SourceBuffer {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(
+          sink = buffer,
+          source = (buffer as Source).buffer(),
+        )
       }
 
-      /**
-       * A factory deliberately written to create buffers whose internal segments are always 1 byte
-       * long. We like testing with these segments because are likely to trigger bugs!
-       */
-      val ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(
-            sink = buffer,
-            source = object : ForwardingSource(buffer) {
-              override fun read(sink: Buffer, byteCount: Long): Long {
-                // Read one byte into a new buffer, then clone it so that the segment is shared.
-                // Shared segments cannot be compacted so we'll get a long chain of short segments.
-                val box = Buffer()
-                val result = super.read(box, Math.min(byteCount, 1L))
-                if (result > 0L) sink.write(box.clone(), result)
-                return result
-              }
-            }.buffer(),
-          )
-        }
+      override val isOneByteAtATime: Boolean get() = false
+    },
 
-        override val isOneByteAtATime: Boolean get() = true
-
-        override fun toString() = "OneByteAtATimeBufferedSource"
-      }
-
-      val ONE_BYTE_AT_A_TIME_BUFFER: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          val sink = object : ForwardingSink(buffer) {
-            override fun write(source: Buffer, byteCount: Long) {
-              // Write each byte into a new buffer, then clone it so that the segments are shared.
+    /**
+     * A factory deliberately written to create buffers whose internal segments are always 1 byte
+     * long. We like testing with these segments because are likely to trigger bugs!
+     */
+    OneByteAtATimeSource {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(
+          sink = buffer,
+          source = object : ForwardingSource(buffer) {
+            override fun read(sink: Buffer, byteCount: Long): Long {
+              // Read one byte into a new buffer, then clone it so that the segment is shared.
               // Shared segments cannot be compacted so we'll get a long chain of short segments.
-              for (i in 0 until byteCount) {
-                val box = Buffer()
-                box.write(source, 1)
-                super.write(box.clone(), 1)
-              }
+              val box = Buffer()
+              val result = super.read(box, Math.min(byteCount, 1L))
+              if (result > 0L) sink.write(box.clone(), result)
+              return result
             }
-          }.buffer()
-          return Pipe(
-            sink = sink,
-            source = buffer,
-          )
-        }
-
-        override val isOneByteAtATime: Boolean get() = true
-
-        override fun toString() = "OneByteAtATimeBuffer"
+          }.buffer(),
+        )
       }
 
-      val PEEK_BUFFER: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(
-            sink = buffer,
-            source = buffer.peek(),
-          )
-        }
+      override val isOneByteAtATime: Boolean get() = true
+    },
 
-        override val isOneByteAtATime: Boolean get() = false
-
-        override fun toString() = "PeekBuffer"
+    OneByteAtATimeSink {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        val sink = object : ForwardingSink(buffer) {
+          override fun write(source: Buffer, byteCount: Long) {
+            // Write each byte into a new buffer, then clone it so that the segments are shared.
+            // Shared segments cannot be compacted so we'll get a long chain of short segments.
+            for (i in 0 until byteCount) {
+              val box = Buffer()
+              box.write(source, 1)
+              super.write(box.clone(), 1)
+            }
+          }
+        }.buffer()
+        return Pipe(
+          sink = sink,
+          source = buffer,
+        )
       }
 
-      val PEEK_BUFFERED_SOURCE: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(
-            sink = buffer,
-            source = (buffer as Source).buffer().peek(),
-          )
-        }
+      override val isOneByteAtATime: Boolean get() = true
+    },
 
-        override val isOneByteAtATime: Boolean get() = false
-
-        override fun toString() = "PeekBufferedSource"
+    PeekSource {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(
+          sink = buffer,
+          source = buffer.peek(),
+        )
       }
-    }
+
+      override val isOneByteAtATime: Boolean get() = false
+    },
+
+    PeekBufferedSource {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(
+          sink = buffer,
+          source = (buffer as Source).buffer().peek(),
+        )
+      }
+
+      override val isOneByteAtATime: Boolean get() = false
+    },
+    ;
+
+    abstract fun pipe(): Pipe
+    abstract val isOneByteAtATime: Boolean
   }
 
   class Pipe(
@@ -829,7 +814,7 @@ class BufferedSourceTest(
   }
 
   /**
-   * With [Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE], this code was extremely slow.
+   * With [Factory.OneByteAtATimeSource], this code was extremely slow.
    * https://github.com/square/okio/issues/171
    */
   @Test
@@ -1441,7 +1426,7 @@ class BufferedSourceTest(
 
   @Test
   fun rangeEqualsOnlyReadsUntilMismatch() {
-    Assume.assumeTrue(factory === Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE) // Other sources read in chunks anyway.
+    Assume.assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
     sink.writeUtf8("A man, a plan, a canal. Panama.")
     sink.emit()
     assertFalse(source.rangeEquals(0, "A man.".encodeUtf8()))
@@ -1506,21 +1491,6 @@ class BufferedSourceTest(
       assertEquals(mutableListOf(1, 1, 1), segmentSizes(source.buffer))
     } else {
       assertEquals(listOf(3), segmentSizes(source.buffer))
-    }
-  }
-
-  companion object {
-    @JvmStatic
-    @Parameters(name = "{0}")
-    fun parameters(): List<Array<Any>> {
-      return listOf(
-        arrayOf(Factory.BUFFER),
-        arrayOf(Factory.REAL_BUFFERED_SOURCE),
-        arrayOf(Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE),
-        arrayOf(Factory.ONE_BYTE_AT_A_TIME_BUFFER),
-        arrayOf(Factory.PEEK_BUFFER),
-        arrayOf(Factory.PEEK_BUFFERED_SOURCE),
-      )
     }
   }
 }

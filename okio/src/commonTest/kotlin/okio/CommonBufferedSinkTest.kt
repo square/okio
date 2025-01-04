@@ -16,16 +16,15 @@
 
 package okio
 
+import app.cash.burst.Burst
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 
-class BufferSinkTest : AbstractBufferedSinkTest(BufferedSinkFactory.BUFFER)
-class RealBufferedSinkTest : AbstractBufferedSinkTest(BufferedSinkFactory.REAL_BUFFERED_SINK)
-
-abstract class AbstractBufferedSinkTest internal constructor(
+@Burst
+class CommonBufferedSinkTest(
   factory: BufferedSinkFactory,
 ) {
   private val data: Buffer = Buffer()
@@ -265,6 +264,42 @@ abstract class AbstractBufferedSinkTest internal constructor(
     assertLongDecimalString("10000000000000000", 10000000000000000L)
     assertLongDecimalString("100000000000000000", 100000000000000000L)
     assertLongDecimalString("1000000000000000000", 1000000000000000000L)
+    assertLongDecimalString("-9", -9L)
+    assertLongDecimalString("-99", -99L)
+    assertLongDecimalString("-999", -999L)
+    assertLongDecimalString("-9999", -9999L)
+    assertLongDecimalString("-99999", -99999L)
+    assertLongDecimalString("-999999", -999999L)
+    assertLongDecimalString("-9999999", -9999999L)
+    assertLongDecimalString("-99999999", -99999999L)
+    assertLongDecimalString("-999999999", -999999999L)
+    assertLongDecimalString("-9999999999", -9999999999L)
+    assertLongDecimalString("-99999999999", -99999999999L)
+    assertLongDecimalString("-999999999999", -999999999999L)
+    assertLongDecimalString("-9999999999999", -9999999999999L)
+    assertLongDecimalString("-99999999999999", -99999999999999L)
+    assertLongDecimalString("-999999999999999", -999999999999999L)
+    assertLongDecimalString("-9999999999999999", -9999999999999999L)
+    assertLongDecimalString("-99999999999999999", -99999999999999999L)
+    assertLongDecimalString("-999999999999999999", -999999999999999999L)
+    assertLongDecimalString("-10", -10L)
+    assertLongDecimalString("-100", -100L)
+    assertLongDecimalString("-1000", -1000L)
+    assertLongDecimalString("-10000", -10000L)
+    assertLongDecimalString("-100000", -100000L)
+    assertLongDecimalString("-1000000", -1000000L)
+    assertLongDecimalString("-10000000", -10000000L)
+    assertLongDecimalString("-100000000", -100000000L)
+    assertLongDecimalString("-1000000000", -1000000000L)
+    assertLongDecimalString("-10000000000", -10000000000L)
+    assertLongDecimalString("-100000000000", -100000000000L)
+    assertLongDecimalString("-1000000000000", -1000000000000L)
+    assertLongDecimalString("-10000000000000", -10000000000000L)
+    assertLongDecimalString("-100000000000000", -100000000000000L)
+    assertLongDecimalString("-1000000000000000", -1000000000000000L)
+    assertLongDecimalString("-10000000000000000", -10000000000000000L)
+    assertLongDecimalString("-100000000000000000", -100000000000000000L)
+    assertLongDecimalString("-1000000000000000000", -1000000000000000000L)
   }
 
   private fun assertLongDecimalString(string: String, value: Long) {

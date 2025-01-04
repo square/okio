@@ -19,12 +19,26 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random
 
-data class CipherAlgorithm(
+enum class CipherAlgorithm(
   val transformation: String,
   val padding: Boolean,
   val keyLength: Int,
   val ivLength: Int? = null,
 ) {
+  AesCbcNopadding("AES/CBC/NoPadding", false, 16, 16),
+  AesCbcPkcs5padding("AES/CBC/PKCS5Padding", true, 16, 16),
+  AesEcbNopadding("AES/ECB/NoPadding", false, 16),
+  AesEcbPkcs5padding("AES/ECB/PKCS5Padding", true, 16),
+  DesCbcNopadding("DES/CBC/NoPadding", false, 8, 8),
+  DesCbcPkcs5padding("DES/CBC/PKCS5Padding", true, 8, 8),
+  DesEcbNopadding("DES/ECB/NoPadding", false, 8),
+  DesEcbPkcs5padding("DES/ECB/PKCS5Padding", true, 8),
+  DesedeCbcNopadding("DESede/CBC/NoPadding", false, 24, 8),
+  DesedeCbcPkcs5padding("DESede/CBC/PKCS5Padding", true, 24, 8),
+  DesedeEcbNopadding("DESede/ECB/NoPadding", false, 24),
+  DesedeEcbPkcs5padding("DESede/ECB/PKCS5Padding", true, 24),
+  ;
+
   fun createCipherFactory(random: Random): CipherFactory {
     val key = random.nextBytes(keyLength)
     val secretKeySpec = SecretKeySpec(key, transformation.substringBefore('/'))
@@ -39,25 +53,5 @@ data class CipherAlgorithm(
         init(mode, secretKeySpec, ivParameterSpec)
       }
     }
-  }
-
-  override fun toString() = transformation
-
-  companion object {
-    val BLOCK_CIPHER_ALGORITHMS
-      get() = listOf(
-        CipherAlgorithm("AES/CBC/NoPadding", false, 16, 16),
-        CipherAlgorithm("AES/CBC/PKCS5Padding", true, 16, 16),
-        CipherAlgorithm("AES/ECB/NoPadding", false, 16),
-        CipherAlgorithm("AES/ECB/PKCS5Padding", true, 16),
-        CipherAlgorithm("DES/CBC/NoPadding", false, 8, 8),
-        CipherAlgorithm("DES/CBC/PKCS5Padding", true, 8, 8),
-        CipherAlgorithm("DES/ECB/NoPadding", false, 8),
-        CipherAlgorithm("DES/ECB/PKCS5Padding", true, 8),
-        CipherAlgorithm("DESede/CBC/NoPadding", false, 24, 8),
-        CipherAlgorithm("DESede/CBC/PKCS5Padding", true, 24, 8),
-        CipherAlgorithm("DESede/ECB/NoPadding", false, 24),
-        CipherAlgorithm("DESede/ECB/PKCS5Padding", true, 24),
-      )
   }
 }

@@ -37,7 +37,7 @@ actual class Instant(
   actual operator fun minus(duration: Duration) =
     Instant(epochMilliseconds - duration.inWholeMilliseconds)
 
-  override fun compareTo(other: Instant) =
+  actual override fun compareTo(other: Instant) =
     epochMilliseconds.compareTo(other.epochMilliseconds)
 }
 
