@@ -3,6 +3,15 @@ Change Log
 
 ## Version 3.9.1
 
+_2025-01-06_
+
+ * New: `FileSystem.close()` may prevent future access and/or clean up associated resources depending on the backing implementation. `FakeFileSystem` will prevent future operations once closed.
+ * `InputStream`s created from `BufferedSource.inputStream()` now have a more efficient version of `InputStream.transferTo()` which reduces memory copies.
+ * `okio-nodefilesystem` is no longer publised as a JS project, but a Kotlin multiplatform project with only a JS target. This change should not affect consumers in any way, and is motivated by the Kotlin Gradle plugin deprecating the JS-only plugin.
+
+
+## Version 3.9.1
+
 _2024-09-12_
 
  * Fix: Support paths containing a single dot (".") in `Path.relativeTo`.
