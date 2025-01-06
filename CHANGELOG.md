@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-## Version 3.9.1
+## Version 3.10.0
 
 _2025-01-06_
 
