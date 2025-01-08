@@ -98,7 +98,7 @@ Releases
 Our [change log][changelog] has release history.
 
 ```kotlin
-implementation("com.squareup.okio:okio:3.10.1")
+implementation("com.squareup.okio:okio:3.10.2")
 ```
 
 <details>

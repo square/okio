@@ -1,13 +1,20 @@
 Change Log
 ==========
 
+## Version 3.10.2
+
+_2025-01-08_
+
+ * Fix: `okio-nodefilesystem` artifact is no longer empty.
+
+
 ## Version 3.10.1
 
 _2025-01-07_
 
  * New: `FileSystem.close()` may prevent future access and/or clean up associated resources depending on the backing implementation. `FakeFileSystem` will prevent future operations once closed.
  * `InputStream`s created from `BufferedSource.inputStream()` now have a more efficient version of `InputStream.transferTo()` which reduces memory copies.
- * `okio-nodefilesystem` is no longer publised as a JS project, but a Kotlin multiplatform project with only a JS target. This change should not affect consumers in any way, and is motivated by the Kotlin Gradle plugin deprecating the JS-only plugin.
+ * `okio-nodefilesystem` is no longer publised as a JS project, but a Kotlin multiplatform project with only a JS target. ~This change should not affect consumers in any way, and is motivated by the Kotlin Gradle plugin deprecating the JS-only plugin.~ Please use 3.10.2 to ensure this change actually does not affect your builds.
 
 
 ## Version 3.10.0
