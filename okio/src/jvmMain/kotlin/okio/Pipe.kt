@@ -140,6 +140,7 @@ class Pipe(internal val maxBufferSize: Long) {
           if (sinkClosed) return -1L
           timeout.awaitSignal(condition) // Wait until the sink fills the buffer.
           if (canceled) throw IOException("canceled")
+          if (sourceClosed) throw IOException("closed")
         }
 
         val result = buffer.read(sink, byteCount)
