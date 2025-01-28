@@ -15,6 +15,9 @@
  */
 package okio
 
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import okio.Path.Companion.toPath
 import okio.internal.commonCopy
 import okio.internal.commonCreateDirectories
@@ -23,6 +26,7 @@ import okio.internal.commonExists
 import okio.internal.commonListRecursively
 import okio.internal.commonMetadata
 
+@OptIn(ExperimentalContracts::class)
 actual abstract class FileSystem : Closeable {
   actual abstract fun canonicalize(path: Path): Path
 
@@ -50,6 +54,10 @@ actual abstract class FileSystem : Closeable {
   actual abstract fun source(file: Path): Source
 
   actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
+    contract {
+      callsInPlace(readerAction, InvocationKind.EXACTLY_ONCE)
+    }
+
     return source(file).buffer().use {
       it.readerAction()
     }
@@ -62,6 +70,10 @@ actual abstract class FileSystem : Closeable {
     mustCreate: Boolean,
     writerAction: BufferedSink.() -> T,
   ): T {
+    contract {
+      callsInPlace(writerAction, InvocationKind.EXACTLY_ONCE)
+    }
+
     return sink(file, mustCreate).buffer().use {
       it.writerAction()
     }

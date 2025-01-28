@@ -20,6 +20,8 @@
 
 package okio
 
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -49,6 +51,10 @@ private class BlackholeSink : Sink {
 
 /** Execute [block] then close this. This will be closed even if [block] throws. */
 inline fun <T : Closeable?, R> T.use(block: (T) -> R): R {
+  contract {
+    callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+  }
+
   var thrown: Throwable? = null
 
   val result = try {
