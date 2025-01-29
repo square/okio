@@ -16,6 +16,8 @@
 package okio
 
 import java.nio.file.FileSystem as JavaNioFileSystem
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import okio.Path.Companion.toPath
 import okio.internal.ResourceFileSystem
 import okio.internal.commonCopy
@@ -64,6 +66,10 @@ actual abstract class FileSystem : Closeable {
   @Throws(IOException::class)
   @JvmName("-read")
   actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
+    contract {
+      callsInPlace(readerAction, InvocationKind.EXACTLY_ONCE)
+    }
+
     return source(file).buffer().use {
       it.readerAction()
     }
@@ -77,7 +83,15 @@ actual abstract class FileSystem : Closeable {
 
   @Throws(IOException::class)
   @JvmName("-write")
-  actual inline fun <T> write(file: Path, mustCreate: Boolean, writerAction: BufferedSink.() -> T): T {
+  actual inline fun <T> write(
+    file: Path,
+    mustCreate: Boolean,
+    writerAction: BufferedSink.() -> T,
+  ): T {
+    contract {
+      callsInPlace(writerAction, InvocationKind.EXACTLY_ONCE)
+    }
+
     return sink(file, mustCreate = mustCreate).buffer().use {
       it.writerAction()
     }

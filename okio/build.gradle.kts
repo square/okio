@@ -59,6 +59,8 @@ kotlin {
       languageSettings.apply {
         // Required for CPointer etc. since Kotlin 1.9.
         optIn("kotlinx.cinterop.ExperimentalForeignApi")
+        // Required for Contract API. since Kotlin 1.3.
+        optIn("kotlin.contracts.ExperimentalContracts")
       }
     }
 
@@ -141,12 +143,20 @@ kotlin {
         .also { nativeMain ->
           nativeMain.dependsOn(zlibMain)
           nativeMain.dependsOn(systemFileSystemMain)
-          createSourceSet("mingwMain", parent = nativeMain, children = mingwTargets).also { mingwMain ->
+          createSourceSet(
+              "mingwMain",
+              parent = nativeMain,
+              children = mingwTargets,
+          ).also { mingwMain ->
             mingwMain.dependsOn(nonAppleMain)
           }
           createSourceSet("unixMain", parent = nativeMain)
             .also { unixMain ->
-              createSourceSet("linuxMain", parent = unixMain, children = linuxTargets).also { linuxMain ->
+              createSourceSet(
+                  "linuxMain",
+                  parent = unixMain,
+                  children = linuxTargets,
+              ).also { linuxMain ->
                 linuxMain.dependsOn(nonAppleMain)
               }
               createSourceSet("appleMain", parent = unixMain, children = appleTargets)
