@@ -14,7 +14,7 @@ burst-gradle-plugin = { module = "app.cash.burst:burst-gradle-plugin", version =
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "2.0.0" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
-jmh-gradle-plugin = { module = "me.champeau.jmh:jmh-gradle-plugin", version = "0.7.2" }
+jmh-gradle-plugin = { module = "me.champeau.jmh:jmh-gradle-plugin", version = "0.7.3" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit" }
