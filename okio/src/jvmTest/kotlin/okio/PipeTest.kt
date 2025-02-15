@@ -18,6 +18,7 @@ package okio
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.Random
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import okio.ByteString.Companion.decodeHex
 import okio.HashingSink.Companion.sha1
@@ -278,6 +279,24 @@ class PipeTest {
     val pipe = Pipe(100L)
     pipe.source.close()
     pipe.source.close()
+  }
+
+  @Test
+  fun sourceCloseWhileReadingThrows() {
+    val pipe = Pipe(100L)
+    val latch = CountDownLatch(1)
+    executorService.execute {
+      try {
+        pipe.source.read(Buffer(), 1)
+        fail()
+      } catch (expected: IOException) {
+        assertEquals("closed", expected.message)
+        latch.countDown()
+      }
+    }
+    Thread.sleep(1000)
+    pipe.source.close()
+    latch.await()
   }
 
   @Test
