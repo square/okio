@@ -192,12 +192,14 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8.toString()
   }
 
-  val testJavaVersion = System.getProperty("test.java.version", "19").toInt()
+  val testJavaVersion = System.getProperty("test.java.version", "").toIntOrNull()
   tasks.withType<Test> {
     val javaToolchains = project.extensions.getByType<JavaToolchainService>()
-    javaLauncher.set(javaToolchains.launcherFor {
-      languageVersion.set(JavaLanguageVersion.of(testJavaVersion))
-    })
+    if (testJavaVersion != null) {
+      javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(testJavaVersion))
+      })
+    }
 
     testLogging {
       events(STARTED, PASSED, SKIPPED, FAILED)
