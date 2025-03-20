@@ -1,15 +1,14 @@
 plugins {
   kotlin("multiplatform")
-  application
-}
-
-application {
-  mainClass.set(System.getProperty("mainClass"))
 }
 
 kotlin {
   jvm {
-    withJava()
+    binaries {
+      executable {
+        mainClass.set(System.getProperty("mainClass"))
+      }
+    }
   }
   sourceSets {
     commonMain {
