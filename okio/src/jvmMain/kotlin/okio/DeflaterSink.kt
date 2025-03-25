@@ -46,7 +46,6 @@ actual class DeflaterSink internal actual constructor(
       head.pos += toDeflate
       if (head.pos == head.limit) {
         source.head = head.pop()
-        SegmentPool.recycle(head)
       }
 
       remaining -= toDeflate
