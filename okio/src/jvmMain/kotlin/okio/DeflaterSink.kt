@@ -44,9 +44,8 @@ actual class DeflaterSink internal actual constructor(
       // Mark those bytes as read.
       source.size -= toDeflate
       head.pos += toDeflate
-      if (head.pos == head.limit && closed) {
+      if (head.pos == head.limit) {
         source.head = head.pop()
-        SegmentPool.recycle(head)
       }
 
       remaining -= toDeflate
