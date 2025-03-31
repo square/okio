@@ -18,6 +18,7 @@
 package okio
 
 import java.util.zip.Deflater
+import okio.internal.EMPTY_BYTE_ARRAY
 
 actual class DeflaterSink internal actual constructor(
   private val sink: BufferedSink,
@@ -51,6 +52,10 @@ actual class DeflaterSink internal actual constructor(
 
       remaining -= toDeflate
     }
+
+    // Deflater still holds a reference to the most recent segment's byte array. That can cause
+    // problems in JNI, so clear it now. https://github.com/square/okio/issues/1608
+    deflater.setInput(EMPTY_BYTE_ARRAY, 0, 0)
   }
 
   private fun deflate(syncFlush: Boolean) {
