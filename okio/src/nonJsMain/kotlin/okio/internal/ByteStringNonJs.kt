@@ -41,4 +41,3 @@ private fun decodeHexDigit(c: Char): Int {
     else -> throw IllegalArgumentException("Unexpected hex digit: $c")
   }
 }
-
