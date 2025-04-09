@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+## Version 3.11.0
+
+_2025-04-09_
+
+ * Fix: Clear the deflater's byte array reference
+ * New: Faster implementation of `String.decodeHex()` on Kotlin/JS.
+ * New: Declare `EXACTLY_ONCE` execution for blocks like `Closeable.use {}` and `FileSystem.read {}`.
+ * Upgrade: [Kotlin 2.1.20][kotlin_2_1_20].
+
+
 ## Version 3.10.2
 
 _2025-01-08_
@@ -951,6 +961,7 @@ _2014-04-08_
 [kotlin_1_9_0]: https://kotlinlang.org/docs/whatsnew19.html
 [kotlin_1_9_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.10
 [kotlin_1_9_21]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.21
+[kotlin_2_1_20]: https://github.com/JetBrains/kotlin/releases/tag/v2.1.20
 [loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
 [preview1]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md
