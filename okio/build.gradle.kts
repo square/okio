@@ -158,13 +158,13 @@ kotlin {
           }
           createSourceSet("unixMain", parent = nativeMain)
             .also { unixMain ->
+              unixMain.dependsOn(nonJsMain)
               createSourceSet(
                   "linuxMain",
                   parent = unixMain,
                   children = linuxTargets,
               ).also { linuxMain ->
                 linuxMain.dependsOn(nonAppleMain)
-                linuxMain.dependsOn(nonJsMain)
               }
               createSourceSet("appleMain", parent = unixMain, children = appleTargets)
             }
