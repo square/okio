@@ -44,7 +44,7 @@ plugins {
  *       '-- wasmWasi
  * ```
  *
- * The `nonJvm` source set excludes that platform.
+ * The `nonJvm`, `nonJs`, `nonApple`, etc. source sets exclude the corresponding platforms.
  *
  * The `hashFunctions` source set builds on all platforms. It ships as a main source set on non-JVM
  * platforms and as a test source set on the JVM platform.
@@ -93,6 +93,10 @@ kotlin {
       dependsOn(commonMain)
     }
 
+    val nonJsMain by creating {
+      dependsOn(commonMain)
+    }
+
     val systemFileSystemMain by creating {
       dependsOn(commonMain)
     }
@@ -115,6 +119,7 @@ kotlin {
     val jvmMain by getting {
       dependsOn(zlibMain)
       dependsOn(systemFileSystemMain)
+      dependsOn(nonJsMain)
     }
     val jvmTest by getting {
       kotlin.srcDir("src/hashFunctions")
@@ -149,9 +154,11 @@ kotlin {
               children = mingwTargets,
           ).also { mingwMain ->
             mingwMain.dependsOn(nonAppleMain)
+            mingwMain.dependsOn(nonJsMain)
           }
           createSourceSet("unixMain", parent = nativeMain)
             .also { unixMain ->
+              unixMain.dependsOn(nonJsMain)
               createSourceSet(
                   "linuxMain",
                   parent = unixMain,
@@ -175,6 +182,7 @@ kotlin {
     if (kmpWasmEnabled) {
       createSourceSet("wasmMain", parent = commonMain, children = wasmTargets)
         .also { wasmMain ->
+          wasmMain.dependsOn(nonJsMain)
           wasmMain.dependsOn(nonJvmMain)
           wasmMain.dependsOn(nonAppleMain)
         }
