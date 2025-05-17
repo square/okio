@@ -61,7 +61,7 @@ private fun Project.dependencyConstraint(target: KotlinTarget): String {
   val artifactId = when (target) {
     is KotlinMetadataTarget -> name
     is KotlinJsTarget -> "$name-js"
-    else -> "$name-${target.targetName.toLowerCase(Locale.ROOT)}"
+    else -> "$name-${target.targetName.lowercase(Locale.ROOT)}"
   }
   return "$group:$artifactId:$version"
 }
