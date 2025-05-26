@@ -118,6 +118,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
   override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
   override fun indexOf(bytes: ByteString): Long
   override fun indexOf(bytes: ByteString, fromIndex: Long): Long
+  override fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
   override fun indexOfElement(targetBytes: ByteString): Long
   override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
   override fun peek(): BufferedSource

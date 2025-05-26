@@ -222,6 +222,9 @@ actual class Buffer : BufferedSource, BufferedSink {
 
   actual override fun indexOf(bytes: ByteString, fromIndex: Long): Long = commonIndexOf(bytes, fromIndex)
 
+  actual override fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long =
+    commonIndexOf(bytes, fromIndex, toIndex)
+
   actual override fun indexOfElement(targetBytes: ByteString): Long = indexOfElement(targetBytes, 0L)
 
   actual override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long =

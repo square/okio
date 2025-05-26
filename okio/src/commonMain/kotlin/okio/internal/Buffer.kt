@@ -1285,10 +1285,19 @@ internal inline fun Buffer.commonIndexOf(b: Byte, fromIndex: Long, toIndex: Long
   }
 }
 
-internal inline fun Buffer.commonIndexOf(bytes: ByteString, fromIndex: Long): Long {
-  var fromIndex = fromIndex
+internal inline fun Buffer.commonIndexOf(
+  bytes: ByteString,
+  fromIndex: Long,
+  toIndex: Long = Long.MAX_VALUE,
+): Long {
   require(bytes.size > 0) { "bytes is empty" }
-  require(fromIndex >= 0L) { "fromIndex < 0: $fromIndex" }
+  require(fromIndex >= 0) { "fromIndex < 0: $fromIndex" }
+  require(fromIndex <= toIndex) { "fromIndex > toIndex: $fromIndex > $toIndex" }
+
+  var fromIndex = fromIndex
+  var toIndex = toIndex
+  if (toIndex > size) toIndex = size
+  if (fromIndex == toIndex) return -1L
 
   seek(fromIndex) { s, offset ->
     var s = s ?: return -1L
@@ -1299,11 +1308,11 @@ internal inline fun Buffer.commonIndexOf(bytes: ByteString, fromIndex: Long): Lo
     val targetByteArray = bytes.internalArray()
     val b0 = targetByteArray[0]
     val bytesSize = bytes.size
-    val resultLimit = size - bytesSize + 1L
+    val resultLimit = minOf(toIndex, size - bytesSize + 1L)
     while (offset < resultLimit) {
       // Scan through the current segment.
       val data = s.data
-      val segmentLimit = okio.minOf(s.limit, s.pos + resultLimit - offset).toInt()
+      val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
       for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
         if (data[pos] == b0 && rangeEquals(s, pos + 1, targetByteArray, 1, bytesSize)) {
           return pos - s.pos + offset
@@ -1624,7 +1633,7 @@ internal inline fun UnsafeCursor.commonResizeBuffer(newSize: Long): Long {
       val tailSize = tail!!.limit - tail.pos
       if (tailSize <= bytesToSubtract) {
         buffer.head = tail.pop()
-        okio.SegmentPool.recycle(tail)
+        SegmentPool.recycle(tail)
         bytesToSubtract -= tailSize.toLong()
       } else {
         tail.limit -= bytesToSubtract.toInt()
