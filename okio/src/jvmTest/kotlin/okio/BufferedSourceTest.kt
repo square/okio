@@ -39,7 +39,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
-import org.junit.Assume
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 
 @Burst
@@ -877,6 +877,176 @@ class BufferedSourceTest(
   }
 
   @Test
+  fun indexOfByteStringWithFromIndexAndToIndex() {
+    sink.writeUtf8("Don't move! He can't see us if we don't move.")
+    sink.emit()
+    val move = "move".encodeUtf8()
+
+    assertEquals(-1L, source.indexOf(move, 0L, 6L))
+    assertEquals(6L, source.indexOf(move, 0L, 7L))
+    assertEquals(6L, source.indexOf(move, 6L, 7L))
+    assertEquals(-1L, source.indexOf(move, 7L, 40L))
+    assertEquals(40L, source.indexOf(move, 7L, 41L))
+    assertEquals(40L, source.indexOf(move, 40L, 41L))
+    assertEquals(-1L, source.indexOf(move, 41L, 42L))
+  }
+
+  /** In this example we must load 6 bytes to determine the string is not found. */
+  @Test
+  fun indexOfByteStringDocumentationLoadingCase() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("shellxyz")
+    sink.emit()
+    assertEquals(-1, source.indexOf("hello".encodeUtf8(), 0, 4))
+    assertEquals("shellx", source.buffer.readUtf8())
+  }
+
+  /** In this example we must load only 4 bytes to determine the string is not found. */
+  @Test
+  fun indexOfByteStringDocumentationNoLoadingCase() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("lookxyz")
+    sink.emit()
+    assertEquals(-1, source.indexOf("hello".encodeUtf8(), 0, 4))
+    assertEquals("look", source.buffer.readUtf8())
+  }
+
+  /** This demonstrates that `indexOf()` doesn't load ranges beyond the maximum required. */
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenNotFoundSingleByte() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(-1, source.indexOf("X man,".encodeUtf8(), 0, 1))
+    assertEquals("A", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenNotFoundMultipleBytes() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(-1, source.indexOf("A Xan,".encodeUtf8(), 0, 1))
+    assertEquals("A m", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenFoundMultipleBytes() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(0, source.indexOf("A man,".encodeUtf8(), 0, 1))
+    assertEquals("A man,", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenNotFoundWithFromIndex() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(-1, source.indexOf("A man,".encodeUtf8(), 1, 2))
+    assertEquals("A ", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenFound() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(9L, source.indexOf("plan".encodeUtf8(), 0L, 10L))
+    assertEquals("A man, a plan", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringFindsResultEdgeCases() {
+    for (i in 1..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(0L, source.indexOf("a".repeat(i).encodeUtf8(), 0L, 1L))
+      source.skip(5L)
+    }
+
+    for (i in 1..4) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(1L, source.indexOf("a".repeat(i).encodeUtf8(), 1L, 5L))
+      source.skip(5L)
+    }
+
+    for (i in 1..3) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(2L, source.indexOf("a".repeat(i).encodeUtf8(), 2L, 5L))
+      source.skip(5L)
+    }
+
+    for (i in 1..2) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(3L, source.indexOf("a".repeat(i).encodeUtf8(), 3L, 5L))
+      source.skip(5L)
+    }
+
+    for (i in 1..1) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(4L, source.indexOf("a".repeat(i).encodeUtf8(), 4L, 5L))
+      source.skip(5L)
+    }
+  }
+
+  @Test
+  fun indexOfByteStringEmptySearchRange() {
+    for (i in 1..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 0L, 0L))
+      source.skip(5L)
+    }
+  }
+
+  @Test
+  fun indexOfByteStringTooLongAtOffset() {
+    for (i in 5..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 1L, 5L))
+      source.skip(5L)
+    }
+    for (i in 4..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 2L, 5L))
+      source.skip(5L)
+    }
+    for (i in 3..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 3L, 5L))
+      source.skip(5L)
+    }
+    for (i in 2..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 4L, 5L))
+      source.skip(5L)
+    }
+    for (i in 1..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 5L, 5L))
+      source.skip(5L)
+    }
+  }
+
+  @Test
   fun indexOfElementWithFromIndex() {
     sink.writeUtf8("aaa")
     sink.emit()
@@ -1426,11 +1596,20 @@ class BufferedSourceTest(
 
   @Test
   fun rangeEqualsOnlyReadsUntilMismatch() {
-    Assume.assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
     sink.writeUtf8("A man, a plan, a canal. Panama.")
     sink.emit()
     assertFalse(source.rangeEquals(0, "A man.".encodeUtf8()))
     assertEquals("A man,", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun rangeEqualsBreaksAfterFirstMismatch() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertFalse(source.rangeEquals(0, "X man,".encodeUtf8()))
+    assertEquals("A", source.buffer.readUtf8())
   }
 
   @Test

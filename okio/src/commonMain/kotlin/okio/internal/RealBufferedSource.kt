@@ -33,6 +33,7 @@ import okio.Segment
 import okio.Sink
 import okio.buffer
 import okio.checkOffsetAndCount
+import okio.minOf
 
 internal inline fun RealBufferedSource.commonRead(sink: Buffer, byteCount: Long): Long {
   require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
@@ -332,20 +333,64 @@ internal inline fun RealBufferedSource.commonIndexOf(b: Byte, fromIndex: Long, t
   return -1L
 }
 
-internal inline fun RealBufferedSource.commonIndexOf(bytes: ByteString, fromIndex: Long): Long {
+internal inline fun RealBufferedSource.commonIndexOf(
+  bytes: ByteString,
+  fromIndex: Long,
+  toIndex: Long = Long.MAX_VALUE,
+): Long {
   var fromIndex = fromIndex
   check(!closed) { "closed" }
 
   while (true) {
-    val result = buffer.indexOf(bytes, fromIndex)
+    val result = buffer.indexOf(bytes, fromIndex, toIndex)
     if (result != -1L) return result
 
     val lastBufferSize = buffer.size
+    val nextFromIndex = lastBufferSize - bytes.size + 1
+    if (nextFromIndex >= toIndex) return -1L
+
+    if (!matchPossibleByExpandingBuffer(buffer, bytes, fromIndex, toIndex)) return -1L
     if (source.read(buffer, Segment.SIZE.toLong()) == -1L) return -1L
 
     // Keep searching, picking up from where we left off.
-    fromIndex = maxOf(fromIndex, lastBufferSize - bytes.size + 1)
+    fromIndex = maxOf(fromIndex, nextFromIndex)
   }
+}
+
+/**
+ * Returns true if loading more data could result in an `indexOf` match.
+ *
+ * This function's utility is avoiding potentially-slow `read` calls that cannot impact the result
+ * of an `indexOf` call. For example, consider this situation:
+ *
+ * ```
+ * val source = ...
+ * source.indexOf("hello", fromIndex = 0, toIndex = 4)
+ * ```
+ *
+ * If the source's loaded content is the string "shell", it is necessary to load more data because
+ * if the next loaded byte is 'o' then the result will be 1. But if the source's loaded content is
+ * 'look', we know the result is -1 without loading more data.
+ */
+private fun matchPossibleByExpandingBuffer(
+  buffer: Buffer,
+  bytes: ByteString,
+  fromIndex: Long,
+  toIndex: Long,
+): Boolean {
+  // Load new data if the match could come entirely in that new data.
+  if (buffer.size < toIndex) return true
+
+  // Load new data if a prefix of 'bytes' matches a suffix of 'buffer'.
+  val limit = minOf(bytes.size, buffer.size - fromIndex + 1).toInt()
+  for (i in limit - 1 downTo 1) {
+    if (buffer.rangeEquals(buffer.size - i, bytes, 0, i)) {
+      return true
+    }
+  }
+
+  // No matter what we load, we won't find a match.
+  return false
 }
 
 internal inline fun RealBufferedSource.commonIndexOfElement(targetBytes: ByteString, fromIndex: Long): Long {

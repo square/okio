@@ -88,6 +88,8 @@ actual sealed interface BufferedSource : Source {
 
   actual fun indexOf(bytes: ByteString, fromIndex: Long): Long
 
+  actual fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
+
   actual fun indexOfElement(targetBytes: ByteString): Long
 
   actual fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
