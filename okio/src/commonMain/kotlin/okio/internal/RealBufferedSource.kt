@@ -333,23 +333,42 @@ internal inline fun RealBufferedSource.commonIndexOf(b: Byte, fromIndex: Long, t
   return -1L
 }
 
-internal inline fun RealBufferedSource.commonIndexOf(
+internal fun RealBufferedSource.commonIndexOf(
   bytes: ByteString,
+  bytesOffset: Int = 0,
+  byteCount: Int = bytes.size,
   fromIndex: Long,
   toIndex: Long = Long.MAX_VALUE,
 ): Long {
+  checkOffsetAndCount(bytes.size.toLong(), bytesOffset.toLong(), byteCount.toLong())
+
   var fromIndex = fromIndex
   check(!closed) { "closed" }
 
   while (true) {
-    val result = buffer.indexOf(bytes, fromIndex, toIndex)
+    val result = buffer.commonIndexOf(
+      bytes = bytes,
+      bytesOffset = bytesOffset,
+      byteCount = byteCount,
+      fromIndex = fromIndex,
+      toIndex = toIndex,
+    )
     if (result != -1L) return result
 
     val lastBufferSize = buffer.size
-    val nextFromIndex = lastBufferSize - bytes.size + 1
+    val nextFromIndex = lastBufferSize - byteCount + 1
     if (nextFromIndex >= toIndex) return -1L
-
-    if (!matchPossibleByExpandingBuffer(buffer, bytes, fromIndex, toIndex)) return -1L
+    if (
+      !buffer.isMatchPossibleByExpandingBuffer(
+        bytes = bytes,
+        bytesOffset = bytesOffset,
+        byteCount = byteCount,
+        fromIndex = fromIndex,
+        toIndex = toIndex,
+      )
+    ) {
+      return -1L
+    }
     if (source.read(buffer, Segment.SIZE.toLong()) == -1L) return -1L
 
     // Keep searching, picking up from where we left off.
@@ -372,20 +391,21 @@ internal inline fun RealBufferedSource.commonIndexOf(
  * if the next loaded byte is 'o' then the result will be 1. But if the source's loaded content is
  * 'look', we know the result is -1 without loading more data.
  */
-private fun matchPossibleByExpandingBuffer(
-  buffer: Buffer,
+private fun Buffer.isMatchPossibleByExpandingBuffer(
   bytes: ByteString,
+  bytesOffset: Int,
+  byteCount: Int,
   fromIndex: Long,
   toIndex: Long,
 ): Boolean {
   // Load new data if the match could come entirely in that new data.
-  if (buffer.size < toIndex) return true
+  if (size < toIndex) return true
 
   // Load new data if a prefix of 'bytes' matches a suffix of 'buffer'.
-  val begin = maxOf(1, buffer.size - toIndex + 1).toInt()
-  val limit = minOf(bytes.size, buffer.size - fromIndex + 1).toInt()
+  val begin = maxOf(1, size - toIndex + 1).toInt()
+  val limit = minOf(byteCount, size - fromIndex + 1).toInt()
   for (i in limit - 1 downTo begin) {
-    if (buffer.rangeEquals(buffer.size - i, bytes, 0, i)) {
+    if (rangeEquals(size - i, bytes, bytesOffset, i)) {
       return true
     }
   }
@@ -394,7 +414,10 @@ private fun matchPossibleByExpandingBuffer(
   return false
 }
 
-internal inline fun RealBufferedSource.commonIndexOfElement(targetBytes: ByteString, fromIndex: Long): Long {
+internal inline fun RealBufferedSource.commonIndexOfElement(
+  targetBytes: ByteString,
+  fromIndex: Long,
+): Long {
   var fromIndex = fromIndex
   check(!closed) { "closed" }
 
@@ -418,19 +441,18 @@ internal inline fun RealBufferedSource.commonRangeEquals(
 ): Boolean {
   check(!closed) { "closed" }
 
-  if (offset < 0L ||
-    bytesOffset < 0 ||
-    byteCount < 0 ||
-    bytes.size - bytesOffset < byteCount
-  ) {
-    return false
-  }
-  for (i in 0 until byteCount) {
-    val bufferOffset = offset + i
-    if (!request(bufferOffset + 1)) return false
-    if (buffer[bufferOffset] != bytes[bytesOffset + i]) return false
-  }
-  return true
+  if (byteCount < 0) return false
+  if (offset < 0) return false
+  if (bytesOffset < 0 || bytesOffset + byteCount > bytes.size) return false
+  if (byteCount == 0) return true
+
+  return commonIndexOf(
+    bytes = bytes,
+    bytesOffset = bytesOffset,
+    byteCount = byteCount,
+    fromIndex = offset,
+    toIndex = offset + 1,
+  ) != -1L
 }
 
 internal inline fun RealBufferedSource.commonPeek(): BufferedSource {

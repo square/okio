@@ -1285,12 +1285,15 @@ internal inline fun Buffer.commonIndexOf(b: Byte, fromIndex: Long, toIndex: Long
   }
 }
 
-internal inline fun Buffer.commonIndexOf(
+internal fun Buffer.commonIndexOf(
   bytes: ByteString,
   fromIndex: Long,
   toIndex: Long = Long.MAX_VALUE,
+  bytesOffset: Int = 0,
+  byteCount: Int = bytes.size,
 ): Long {
-  require(bytes.size > 0) { "bytes is empty" }
+  checkOffsetAndCount(bytes.size.toLong(), bytesOffset.toLong(), byteCount.toLong())
+  require(byteCount > 0) { "byteCount == 0" }
   require(fromIndex >= 0) { "fromIndex < 0: $fromIndex" }
   require(fromIndex <= toIndex) { "fromIndex > toIndex: $fromIndex > $toIndex" }
 
@@ -1306,15 +1309,17 @@ internal inline fun Buffer.commonIndexOf(
     // Scan through the segments, searching for the lead byte. Each time that is found, delegate
     // to rangeEquals() to check for a complete match.
     val targetByteArray = bytes.internalArray()
-    val b0 = targetByteArray[0]
-    val bytesSize = bytes.size
-    val resultLimit = minOf(toIndex, size - bytesSize + 1L)
+    val b0 = targetByteArray[bytesOffset]
+    val resultLimit = minOf(toIndex, size - byteCount + 1L)
     while (offset < resultLimit) {
       // Scan through the current segment.
       val data = s.data
       val segmentLimit = minOf(s.limit, s.pos + resultLimit - offset).toInt()
       for (pos in (s.pos + fromIndex - offset).toInt() until segmentLimit) {
-        if (data[pos] == b0 && rangeEquals(s, pos + 1, targetByteArray, 1, bytesSize)) {
+        if (
+          data[pos] == b0 &&
+          rangeEquals(s, pos + 1, targetByteArray, bytesOffset + 1, byteCount)
+        ) {
           return pos - s.pos + offset
         }
       }
@@ -1393,20 +1398,18 @@ internal inline fun Buffer.commonRangeEquals(
   bytesOffset: Int,
   byteCount: Int,
 ): Boolean {
-  if (offset < 0L ||
-    bytesOffset < 0 ||
-    byteCount < 0 ||
-    size - offset < byteCount ||
-    bytes.size - bytesOffset < byteCount
-  ) {
-    return false
-  }
-  for (i in 0 until byteCount) {
-    if (this[offset + i] != bytes[bytesOffset + i]) {
-      return false
-    }
-  }
-  return true
+  if (byteCount < 0) return false
+  if (offset < 0 || offset + byteCount > size) return false
+  if (bytesOffset < 0 || bytesOffset + byteCount > bytes.size) return false
+  if (byteCount == 0) return true
+
+  return commonIndexOf(
+    bytes = bytes,
+    bytesOffset = bytesOffset,
+    byteCount = byteCount,
+    fromIndex = offset,
+    toIndex = offset + 1,
+  ) != -1L
 }
 
 internal inline fun Buffer.commonEquals(other: Any?): Boolean {

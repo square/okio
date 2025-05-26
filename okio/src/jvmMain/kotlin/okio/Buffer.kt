@@ -477,17 +477,18 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   actual override fun indexOf(b: Byte, fromIndex: Long) = indexOf(b, fromIndex, Long.MAX_VALUE)
 
   actual override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long =
-    commonIndexOf(b, fromIndex, toIndex)
+    commonIndexOf(b, fromIndex = fromIndex, toIndex = toIndex)
 
   @Throws(IOException::class)
   actual override fun indexOf(bytes: ByteString): Long = indexOf(bytes, 0)
 
   @Throws(IOException::class)
-  actual override fun indexOf(bytes: ByteString, fromIndex: Long): Long = commonIndexOf(bytes, fromIndex)
+  actual override fun indexOf(bytes: ByteString, fromIndex: Long): Long =
+    indexOf(bytes, fromIndex, Long.MAX_VALUE)
 
   @Throws(IOException::class)
   actual override fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long =
-    commonIndexOf(bytes, fromIndex, toIndex)
+    commonIndexOf(bytes, fromIndex = fromIndex, toIndex = toIndex)
 
   actual override fun indexOfElement(targetBytes: ByteString) = indexOfElement(targetBytes, 0L)
 
