@@ -382,8 +382,9 @@ private fun matchPossibleByExpandingBuffer(
   if (buffer.size < toIndex) return true
 
   // Load new data if a prefix of 'bytes' matches a suffix of 'buffer'.
+  val begin = maxOf(1, buffer.size - toIndex + 1).toInt()
   val limit = minOf(bytes.size, buffer.size - fromIndex + 1).toInt()
-  for (i in limit - 1 downTo 1) {
+  for (i in limit - 1 downTo begin) {
     if (buffer.rangeEquals(buffer.size - i, bytes, 0, i)) {
       return true
     }

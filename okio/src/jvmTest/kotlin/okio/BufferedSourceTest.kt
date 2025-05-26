@@ -1047,6 +1047,38 @@ class BufferedSourceTest(
   }
 
   @Test
+  fun indexOfHonorsToIndexWhenAvoidingLoadsAndDoesNotLoad() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    source.require(2) // Source buffer contains 'A '
+    assertEquals(-1L, source.indexOf(" man".encodeUtf8(), 0L, 1L))
+    assertEquals("A ", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfHonorsFromIndexWhenAvoidingLoads() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(-1, source.indexOf("Panama.".encodeUtf8(), 25L, 27L))
+    assertEquals("A man, a plan, a canal. Pan", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfHonorsToIndexWhenAvoidingLoadsAndLoads() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    source.require(2) // Source buffer contains 'A '
+    assertEquals(0L, source.indexOf("A ma".encodeUtf8(), 0L, 1L))
+    assertEquals("A ma", source.buffer.readUtf8())
+  }
+
+  @Test
   fun indexOfElementWithFromIndex() {
     sink.writeUtf8("aaa")
     sink.emit()
