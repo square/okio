@@ -106,11 +106,11 @@ implementation("com.squareup.okio:okio:3.11.0")
 
 ```kotlin
 repositories {
-  maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+  maven("https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 dependencies {
-  implementation("com.squareup.okio:okio:3.11.0")
+  implementation("com.squareup.okio:okio:3.12.0-SNAPSHOT")
 }
 ```
 
