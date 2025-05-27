@@ -803,7 +803,7 @@ class BufferedSourceTest(
       source.indexOf(ByteString.of())
       fail()
     } catch (e: IllegalArgumentException) {
-      assertEquals("bytes is empty", e.message)
+      assertEquals("byteCount == 0", e.message)
     }
     try {
       source.indexOf("hi".encodeUtf8(), -1)
