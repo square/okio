@@ -21,11 +21,11 @@ package okio
  * Send data to the peer by writing to [sink], and read data from the peer by reading from [source].
  *
  * This can be implemented by a plain TCP socket. It can also be layered to add features like
- * security (as in a TLS channel) or connectivity (as in a proxy channel).
+ * security (as in a TLS socket) or connectivity (as in a proxy socket).
  *
  * Closing the [source] does not impact the [sink], and vice versa.
  */
-interface Channel {
+interface Socket {
   val source: Source
   val sink: Sink
 
@@ -35,7 +35,7 @@ interface Channel {
    *  * Any attempt to write or flush [sink] will fail immediately with an [IOException].
    *  * Any attempt to read [source] will fail immediately with an [IOException].
    *
-   * Closing the source and the sink will complete normally even after a channel has been canceled.
+   * Closing the source and the sink will complete normally even after a socket has been canceled.
    *
    * This operation may be called by any thread at any time. It is safe to call concurrently while
    * operating on the source or the sink.

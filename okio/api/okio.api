@@ -374,12 +374,6 @@ public final class okio/ByteString$Companion {
 	public final fun read (Ljava/io/InputStream;I)Lokio/ByteString;
 }
 
-public abstract interface class okio/Channel {
-	public abstract fun cancel ()V
-	public abstract fun getSink ()Lokio/Sink;
-	public abstract fun getSource ()Lokio/Source;
-}
-
 public final class okio/CipherSink : okio/Sink {
 	public fun <init> (Lokio/BufferedSink;Ljavax/crypto/Cipher;)V
 	public fun close ()V
@@ -757,6 +751,12 @@ public abstract interface class okio/Sink : java/io/Closeable, java/io/Flushable
 	public abstract fun flush ()V
 	public abstract fun timeout ()Lokio/Timeout;
 	public abstract fun write (Lokio/Buffer;J)V
+}
+
+public abstract interface class okio/Socket {
+	public abstract fun cancel ()V
+	public abstract fun getSink ()Lokio/Sink;
+	public abstract fun getSource ()Lokio/Source;
 }
 
 public abstract interface class okio/Source : java/io/Closeable {
