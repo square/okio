@@ -753,6 +753,12 @@ public abstract interface class okio/Sink : java/io/Closeable, java/io/Flushable
 	public abstract fun write (Lokio/Buffer;J)V
 }
 
+public abstract interface class okio/Socket {
+	public abstract fun cancel ()V
+	public abstract fun getSink ()Lokio/Sink;
+	public abstract fun getSource ()Lokio/Source;
+}
+
 public abstract interface class okio/Source : java/io/Closeable {
 	public abstract fun close ()V
 	public abstract fun read (Lokio/Buffer;J)J
