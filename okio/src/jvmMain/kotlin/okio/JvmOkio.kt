@@ -26,17 +26,17 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.Socket
-import java.net.SocketTimeoutException
+import java.net.Socket as JavaNetSocket
 import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.Path as NioPath
 import java.security.MessageDigest
-import java.util.logging.Level
-import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
 import okio.internal.ResourceFileSystem
+import okio.internal.SocketAsyncTimeout
+import okio.internal.read
+import okio.internal.write
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -47,23 +47,7 @@ private class OutputStreamSink(
 ) : Sink {
 
   override fun write(source: Buffer, byteCount: Long) {
-    checkOffsetAndCount(source.size, 0, byteCount)
-    var remaining = byteCount
-    while (remaining > 0) {
-      timeout.throwIfReached()
-      val head = source.head!!
-      val toCopy = minOf(remaining, head.limit - head.pos).toInt()
-      out.write(head.data, head.pos, toCopy)
-
-      head.pos += toCopy
-      remaining -= toCopy
-      source.size -= toCopy
-
-      if (head.pos == head.limit) {
-        source.head = head.pop()
-        SegmentPool.recycle(head)
-      }
-    }
+    return out.write(source, byteCount, timeout)
   }
 
   override fun flush() = out.flush()
@@ -84,28 +68,7 @@ private open class InputStreamSource(
 ) : Source {
 
   override fun read(sink: Buffer, byteCount: Long): Long {
-    if (byteCount == 0L) return 0L
-    require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
-    try {
-      timeout.throwIfReached()
-      val tail = sink.writableSegment(1)
-      val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
-      val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
-      if (bytesRead == -1) {
-        if (tail.pos == tail.limit) {
-          // We allocated a tail segment, but didn't end up needing it. Recycle!
-          sink.head = tail.pop()
-          SegmentPool.recycle(tail)
-        }
-        return -1
-      }
-      tail.limit += bytesRead
-      sink.size += bytesRead
-      return bytesRead.toLong()
-    } catch (e: AssertionError) {
-      if (e.isAndroidGetsocknameError) throw IOException(e)
-      throw e
-    }
+    return input.read(sink, byteCount, timeout)
   }
 
   override fun close() = input.close()
@@ -121,7 +84,7 @@ private open class InputStreamSource(
  * write times out, the socket is asynchronously closed by a watchdog thread.
  */
 @Throws(IOException::class)
-fun Socket.sink(): Sink {
+fun JavaNetSocket.sink(): Sink {
   val timeout = SocketAsyncTimeout(this)
   val sink = OutputStreamSink(getOutputStream(), timeout)
   return timeout.sink(sink)
@@ -133,39 +96,14 @@ fun Socket.sink(): Sink {
  * read times out, the socket is asynchronously closed by a watchdog thread.
  */
 @Throws(IOException::class)
-fun Socket.source(): Source {
+fun JavaNetSocket.source(): Source {
   val timeout = SocketAsyncTimeout(this)
   val source = InputStreamSource(getInputStream(), timeout)
   return timeout.source(source)
 }
 
-private val logger = Logger.getLogger("okio.Okio")
-
-private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
-  override fun newTimeoutException(cause: IOException?): IOException {
-    val ioe = SocketTimeoutException("timeout")
-    if (cause != null) {
-      ioe.initCause(cause)
-    }
-    return ioe
-  }
-
-  override fun timedOut() {
-    try {
-      socket.close()
-    } catch (e: Exception) {
-      logger.log(Level.WARNING, "Failed to close timed out socket $socket", e)
-    } catch (e: AssertionError) {
-      if (e.isAndroidGetsocknameError) {
-        // Catch this exception due to a Firmware issue up to android 4.2.2
-        // https://code.google.com/p/android/issues/detail?id=54072
-        logger.log(Level.WARNING, "Failed to close timed out socket $socket", e)
-      } else {
-        throw e
-      }
-    }
-  }
-}
+@JvmName("socket")
+fun JavaNetSocket.asOkioSocket(): Socket = DefaultSocket(this)
 
 /** Returns a sink that writes to `file`. */
 @JvmOverloads
@@ -225,11 +163,3 @@ fun Sink.hashingSink(digest: MessageDigest): HashingSink = HashingSink(this, dig
 fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
 
 fun ClassLoader.asResourceFileSystem(): FileSystem = ResourceFileSystem(this, indexEagerly = true)
-
-/**
- * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.
- * https://code.google.com/p/android/issues/detail?id=54072
- */
-internal val AssertionError.isAndroidGetsocknameError: Boolean get() {
-  return cause != null && message?.contains("getsockname failed") ?: false
-}

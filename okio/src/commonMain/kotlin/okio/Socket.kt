@@ -24,8 +24,10 @@ package okio
  * security (as in a TLS socket) or connectivity (as in a proxy socket).
  *
  * Closing the [source] does not impact the [sink], and vice versa.
+ *
+ * Closing the socket closes the sink and source.
  */
-interface Socket {
+interface Socket : Closeable {
   val source: Source
   val sink: Sink
 
