@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 // If false - JS targets will not be configured in multiplatform projects.
-val kmpJsEnabled = System.getProperty("kjs", "true").toBoolean()
+val kmpJsEnabled = System.getProperty("kjs", "false").toBoolean()
 
 // If false - Native targets will not be configured in multiplatform projects.
-val kmpNativeEnabled = System.getProperty("knative", "true").toBoolean()
+val kmpNativeEnabled = System.getProperty("knative", "false").toBoolean()
 
 // If false - WASM targets will not be configured in multiplatform projects.
-val kmpWasmEnabled = System.getProperty("kwasm", "true").toBoolean()
+val kmpWasmEnabled = System.getProperty("kwasm", "false").toBoolean()

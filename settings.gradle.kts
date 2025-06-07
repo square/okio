@@ -2,16 +2,17 @@ rootProject.name = "okio-parent"
 
 includeBuild("build-support")
 
+include(":moshi-cursed")
 include(":okio")
 include(":okio-assetfilesystem")
 include(":okio-bom")
 include(":okio-fakefilesystem")
-if (System.getProperty("kjs", "true").toBoolean()) {
+if (System.getProperty("kjs", "false").toBoolean()) {
   include(":okio-nodefilesystem")
 }
 include(":okio-testing-support")
 include(":okio:jvm:jmh")
-if (System.getProperty("kwasm", "true").toBoolean()) {
+if (System.getProperty("kwasm", "false").toBoolean()) {
   include(":okio-wasifilesystem")
 }
 include(":samples")
