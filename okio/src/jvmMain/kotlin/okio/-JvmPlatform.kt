@@ -49,7 +49,3 @@ actual typealias EOFException = java.io.EOFException
 actual typealias FileNotFoundException = java.io.FileNotFoundException
 
 actual typealias Closeable = java.io.Closeable
-
-actual typealias Deflater = java.util.zip.Deflater
-
-actual typealias Inflater = java.util.zip.Inflater

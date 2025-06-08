@@ -16,10 +16,6 @@
 
 package okio
 
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmStatic
-
 /**
  * An immutable sequence of bytes.
  *
@@ -55,35 +51,6 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
 
   /** Returns this byte string encoded in hexadecimal. */
   fun hex(): String
-
-  /**
-   * Returns the 128-bit MD5 hash of this byte string.
-   *
-   * MD5 has been vulnerable to collisions since 2004. It should not be used in new code.
-   */
-  fun md5(): ByteString
-
-  /**
-   * Returns the 160-bit SHA-1 hash of this byte string.
-   *
-   * SHA-1 has been vulnerable to collisions since 2017. It should not be used in new code.
-   */
-  fun sha1(): ByteString
-
-  /** Returns the 256-bit SHA-256 hash of this byte string. */
-  fun sha256(): ByteString
-
-  /** Returns the 512-bit SHA-512 hash of this byte string. */
-  fun sha512(): ByteString
-
-  /** Returns the 160-bit SHA-1 HMAC of this byte string. */
-  fun hmacSha1(key: ByteString): ByteString
-
-  /** Returns the 256-bit SHA-256 HMAC of this byte string. */
-  fun hmacSha256(key: ByteString): ByteString
-
-  /** Returns the 512-bit SHA-512 HMAC of this byte string. */
-  fun hmacSha512(key: ByteString): ByteString
 
   /**
    * Returns a byte string equal to this byte string, but with the bytes 'A' through 'Z' replaced

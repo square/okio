@@ -36,7 +36,6 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
-import okio.internal.ResourceFileSystem
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -190,41 +189,6 @@ fun NioPath.sink(vararg options: OpenOption): Sink =
 fun NioPath.source(vararg options: OpenOption): Source =
   Files.newInputStream(this, *options).source()
 
-/**
- * Returns a sink that uses [cipher] to encrypt or decrypt [this].
- *
- * @throws IllegalArgumentException if [cipher] isn't a block cipher.
- */
-fun Sink.cipherSink(cipher: Cipher): CipherSink = CipherSink(this.buffer(), cipher)
-
-/**
- * Returns a source that uses [cipher] to encrypt or decrypt [this].
- *
- * @throws IllegalArgumentException if [cipher] isn't a block cipher.
- */
-fun Source.cipherSource(cipher: Cipher): CipherSource = CipherSource(this.buffer(), cipher)
-
-/**
- * Returns a sink that uses [mac] to hash [this].
- */
-fun Sink.hashingSink(mac: Mac): HashingSink = HashingSink(this, mac)
-
-/**
- * Returns a source that uses [mac] to hash [this].
- */
-fun Source.hashingSource(mac: Mac): HashingSource = HashingSource(this, mac)
-
-/**
- * Returns a sink that uses [digest] to hash [this].
- */
-fun Sink.hashingSink(digest: MessageDigest): HashingSink = HashingSink(this, digest)
-
-/**
- * Returns a source that uses [digest] to hash [this].
- */
-fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
-
-fun ClassLoader.asResourceFileSystem(): FileSystem = ResourceFileSystem(this, indexEagerly = true)
 
 /**
  * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.

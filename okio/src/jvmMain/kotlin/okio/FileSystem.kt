@@ -19,7 +19,6 @@ import java.nio.file.FileSystem as JavaNioFileSystem
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import okio.Path.Companion.toPath
-import okio.internal.ResourceFileSystem
 import okio.internal.commonCopy
 import okio.internal.commonCreateDirectories
 import okio.internal.commonDeleteRecursively
@@ -160,22 +159,6 @@ actual abstract class FileSystem : Closeable {
 
     @JvmField
     actual val SYSTEM_TEMPORARY_DIRECTORY: Path = System.getProperty("java.io.tmpdir").toPath()
-
-    /**
-     * A read-only file system holding the classpath resources of the current process. If a resource
-     * is available with [ClassLoader.getResource], it is also available via this file system.
-     *
-     * In applications that compose multiple class loaders, this holds only the resources of
-     * whichever class loader includes Okio classes. Use [ClassLoader.asResourceFileSystem] for the
-     * resources of a specific class loader.
-     *
-     * This file system does not need to be closed. Calling its close function does nothing.
-     */
-    @JvmField
-    val RESOURCES: FileSystem = ResourceFileSystem(
-      classLoader = ResourceFileSystem::class.java.classLoader,
-      indexEagerly = false,
-    )
 
     /**
      * Closing the returned file system will close the underlying [java.nio.file.FileSystem].

@@ -16,12 +16,6 @@
 
 package okio
 
-import okio.internal.HashFunction
-import okio.internal.Hmac
-import okio.internal.Md5
-import okio.internal.Sha1
-import okio.internal.Sha256
-import okio.internal.Sha512
 import okio.internal.commonBase64
 import okio.internal.commonBase64Url
 import okio.internal.commonCompareTo
@@ -73,29 +67,6 @@ internal actual constructor(
   actual open fun base64Url(): String = commonBase64Url()
 
   actual open fun hex(): String = commonHex()
-
-  actual fun md5() = digest(Md5())
-
-  actual fun sha1() = digest(Sha1())
-
-  actual fun sha256() = digest(Sha256())
-
-  actual fun sha512() = digest(Sha512())
-
-  /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
-  actual fun hmacSha1(key: ByteString) = digest(Hmac.sha1(key))
-
-  /** Returns the 256-bit SHA-256 HMAC of this byte string.  */
-  actual fun hmacSha256(key: ByteString) = digest(Hmac.sha256(key))
-
-  /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
-  actual fun hmacSha512(key: ByteString) = digest(Hmac.sha512(key))
-
-  internal open fun digest(hashFunction: HashFunction): ByteString {
-    hashFunction.update(data, 0, size)
-    val digestBytes = hashFunction.digest()
-    return ByteString(digestBytes)
-  }
 
   actual open fun toAsciiLowercase(): ByteString = commonToAsciiLowercase()
 

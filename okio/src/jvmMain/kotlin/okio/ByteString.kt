@@ -70,14 +70,6 @@ internal actual constructor(
 
   actual open fun base64() = commonBase64()
 
-  actual fun md5() = digest("MD5")
-
-  actual fun sha1() = digest("SHA-1")
-
-  actual fun sha256() = digest("SHA-256")
-
-  actual fun sha512() = digest("SHA-512")
-
   internal open fun digest(algorithm: String): ByteString {
     val digestBytes = MessageDigest.getInstance(algorithm).run {
       update(data, 0, size)
@@ -85,15 +77,6 @@ internal actual constructor(
     }
     return ByteString(digestBytes)
   }
-
-  /** Returns the 160-bit SHA-1 HMAC of this byte string.  */
-  actual open fun hmacSha1(key: ByteString) = hmac("HmacSHA1", key)
-
-  /** Returns the 256-bit SHA-256 HMAC of this byte string.  */
-  actual open fun hmacSha256(key: ByteString) = hmac("HmacSHA256", key)
-
-  /** Returns the 512-bit SHA-512 HMAC of this byte string.  */
-  actual open fun hmacSha512(key: ByteString) = hmac("HmacSHA512", key)
 
   internal open fun hmac(algorithm: String, key: ByteString): ByteString {
     try {
