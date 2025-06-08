@@ -69,7 +69,7 @@ open class ReadJsonBenchmark {
   fun regular() {
     runBlocking {
       val jsonReader = RegularJsonReader.of(regularJson.clone())
-      jsonReader.skipValue()
+      jsonReader.readJsonValue()
     }
   }
 
@@ -78,7 +78,7 @@ open class ReadJsonBenchmark {
   fun cursed() {
     runBlocking {
       val jsonReader = CursedJsonReader.of(cursedJson.clone())
-      jsonReader.skipValue()
+      jsonReader.readJsonValue()
     }
   }
 
