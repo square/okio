@@ -10,5 +10,6 @@ jmh {
 dependencies {
   api(projects.okio)
   api(libs.jmh.core)
-  api(project(":moshi-cursed"))
+  api(libs.kotlinx.coroutines.core)
+  api(project(":cursedmoshi"))
 }

@@ -2,7 +2,7 @@ rootProject.name = "okio-parent"
 
 includeBuild("build-support")
 
-include(":moshi-cursed")
+include(":cursedmoshi")
 include(":okio")
 include(":okio-assetfilesystem")
 include(":okio-bom")
