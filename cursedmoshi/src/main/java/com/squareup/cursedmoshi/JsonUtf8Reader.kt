@@ -16,13 +16,13 @@
 package com.squareup.cursedmoshi
 
 import com.squareup.cursedmoshi.internal.knownNotNull
-import okio.Buffer
-import okio.BufferedSource
-import okio.ByteString
-import okio.ByteString.Companion.encodeUtf8
-import okio.EOFException
-import okio.IOException
-import okio.buffer
+import cursedokio.Buffer
+import cursedokio.BufferedSource
+import cursedokio.ByteString
+import cursedokio.ByteString.Companion.encodeUtf8
+import cursedokio.EOFException
+import cursedokio.IOException
+import cursedokio.buffer
 import java.math.BigDecimal
 
 internal class JsonUtf8Reader : JsonReader {

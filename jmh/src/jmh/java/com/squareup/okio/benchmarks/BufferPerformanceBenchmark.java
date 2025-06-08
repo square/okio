@@ -40,11 +40,11 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
-import okio.Buffer;
-import okio.BufferedSource;
-import okio.Okio;
-import okio.Sink;
-import okio.Timeout;
+import cursedokio.Buffer;
+import cursedokio.BufferedSource;
+import cursedokio.Okio;
+import cursedokio.Sink;
+import cursedokio.Timeout;
 
 import static java.util.Objects.requireNonNull;
 

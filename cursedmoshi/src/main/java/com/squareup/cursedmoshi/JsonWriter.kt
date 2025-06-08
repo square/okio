@@ -19,10 +19,10 @@ import com.squareup.cursedmoshi.JsonScope.EMPTY_ARRAY
 import com.squareup.cursedmoshi.JsonScope.EMPTY_OBJECT
 import com.squareup.cursedmoshi.JsonScope.NONEMPTY_ARRAY
 import com.squareup.cursedmoshi.JsonScope.NONEMPTY_OBJECT
-import okio.BufferedSink
-import okio.BufferedSource
-import okio.Closeable
-import okio.IOException
+import cursedokio.BufferedSink
+import cursedokio.BufferedSource
+import cursedokio.Closeable
+import cursedokio.IOException
 import java.io.Flushable
 import javax.annotation.CheckReturnValue
 import kotlin.Throws

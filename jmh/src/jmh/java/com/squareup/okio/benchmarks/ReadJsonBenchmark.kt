@@ -19,9 +19,9 @@ import com.squareup.cursedmoshi.JsonReader.Companion.of
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
-import okio.Buffer
-import okio.FileSystem
-import okio.Path.Companion.toPath
+import cursedokio.Buffer
+import cursedokio.FileSystem
+import cursedokio.Path.Companion.toPath
 import org.openjdk.jmh.Main
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode

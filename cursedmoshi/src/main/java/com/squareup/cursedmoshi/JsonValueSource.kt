@@ -15,13 +15,13 @@
  */
 package com.squareup.cursedmoshi
 
-import okio.Buffer
-import okio.BufferedSource
-import okio.ByteString
-import okio.ByteString.Companion.EMPTY
-import okio.ByteString.Companion.encodeUtf8
-import okio.EOFException
-import okio.Source
+import cursedokio.Buffer
+import cursedokio.BufferedSource
+import cursedokio.ByteString
+import cursedokio.ByteString.Companion.EMPTY
+import cursedokio.ByteString.Companion.encodeUtf8
+import cursedokio.EOFException
+import cursedokio.Source
 import kotlin.jvm.JvmOverloads
 import kotlin.math.min
 

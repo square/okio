@@ -15,8 +15,8 @@
  */
 package com.squareup.okio.benchmarks
 
-import okio.internal.commonAsUtf8ToByteArray
-import okio.internal.commonToUtf8String
+import cursedokio.internal.commonAsUtf8ToByteArray
+import cursedokio.internal.commonToUtf8String
 
 // Necessary to make an invisible functions visible to Java.
 object BenchmarkUtils {

@@ -17,8 +17,8 @@ package com.squareup.cursedmoshi
 
 import com.squareup.cursedmoshi.JsonValueReader.JsonIterator
 import com.squareup.cursedmoshi.internal.knownNotNull
-import okio.Buffer
-import okio.BufferedSource
+import cursedokio.Buffer
+import cursedokio.BufferedSource
 import java.math.BigDecimal
 
 /** Sentinel object pushed on [JsonValueReader.stack] when the reader is closed. */

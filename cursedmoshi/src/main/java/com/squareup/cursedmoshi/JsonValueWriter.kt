@@ -21,11 +21,11 @@ import com.squareup.cursedmoshi.JsonScope.EMPTY_OBJECT
 import com.squareup.cursedmoshi.JsonScope.NONEMPTY_DOCUMENT
 import com.squareup.cursedmoshi.JsonScope.STREAMING_VALUE
 import com.squareup.cursedmoshi.internal.knownNotNull
-import okio.Buffer
-import okio.BufferedSink
-import okio.ForwardingSink
-import okio.IOException
-import okio.buffer
+import cursedokio.Buffer
+import cursedokio.BufferedSink
+import cursedokio.ForwardingSink
+import cursedokio.IOException
+import cursedokio.buffer
 import java.math.BigDecimal
 
 /** Writes JSON by building a Java object comprising maps, lists, and JSON primitives. */

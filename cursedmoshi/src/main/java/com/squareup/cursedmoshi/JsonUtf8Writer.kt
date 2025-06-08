@@ -15,11 +15,11 @@
  */
 package com.squareup.cursedmoshi
 
-import okio.Buffer
-import okio.BufferedSink
-import okio.Sink
-import okio.Timeout
-import okio.buffer
+import cursedokio.Buffer
+import cursedokio.BufferedSink
+import cursedokio.Sink
+import cursedokio.Timeout
+import cursedokio.buffer
 import java.io.IOException
 import kotlin.Array
 import kotlin.AssertionError

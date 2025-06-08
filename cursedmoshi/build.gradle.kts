@@ -44,7 +44,7 @@ tasks
 
 dependencies {
   compileOnly(libs.jsr305)
-  api(project(":okio"))
+  api(project(":cursedokio"))
 
   testCompileOnly(libs.jsr305)
 }

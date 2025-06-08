@@ -17,12 +17,12 @@ package com.squareup.cursedmoshi
 
 import com.squareup.cursedmoshi.JsonScope.getPath
 import com.squareup.cursedmoshi.JsonUtf8Writer.Companion.string
-import okio.Buffer
-import okio.BufferedSource
-import okio.Closeable
-import okio.IOException
+import cursedokio.Buffer
+import cursedokio.BufferedSource
+import cursedokio.Closeable
+import cursedokio.IOException
 import javax.annotation.CheckReturnValue
-import okio.Options as OkioOptions
+import cursedokio.Options as OkioOptions
 
 /**
  * Reads a JSON ([RFC 7159](http://www.ietf.org/rfc/rfc7159.txt)) encoded value as a

@@ -17,10 +17,10 @@ package com.squareup.cursedmoshi
 
 import com.squareup.cursedmoshi.internal.NonNullJsonAdapter
 import com.squareup.cursedmoshi.internal.NullSafeJsonAdapter
-import okio.Buffer
-import okio.BufferedSink
-import okio.BufferedSource
-import okio.IOException
+import cursedokio.Buffer
+import cursedokio.BufferedSink
+import cursedokio.BufferedSource
+import cursedokio.IOException
 import org.intellij.lang.annotations.Language
 import java.lang.reflect.Type
 import javax.annotation.CheckReturnValue

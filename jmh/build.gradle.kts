@@ -8,8 +8,8 @@ jmh {
 }
 
 dependencies {
-  api(projects.okio)
   api(libs.jmh.core)
   api(libs.kotlinx.coroutines.core)
+  api(project(":cursedokio"))
   api(project(":cursedmoshi"))
 }
