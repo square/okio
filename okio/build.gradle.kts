@@ -68,7 +68,6 @@ kotlin {
     val commonTest by getting {
       dependencies {
         implementation(libs.kotlin.test)
-        implementation(projects.okioTestingSupport)
       }
     }
 
@@ -231,10 +230,4 @@ configure<MavenPublishBaseExtension> {
   configure(
     KotlinMultiplatform(javadocJar = Dokka("dokkaGfm")),
   )
-}
-
-plugins.withId("binary-compatibility-validator") {
-  configure<ApiValidationExtension> {
-    ignoredProjects += "jmh"
-  }
 }
