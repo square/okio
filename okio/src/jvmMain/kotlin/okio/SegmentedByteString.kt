@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.io.IOException
 import java.io.OutputStream
@@ -23,16 +23,16 @@ import java.security.InvalidKeyException
 import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import cursedokio.internal.commonCopyInto
-import cursedokio.internal.commonEquals
-import cursedokio.internal.commonGetSize
-import cursedokio.internal.commonHashCode
-import cursedokio.internal.commonInternalGet
-import cursedokio.internal.commonRangeEquals
-import cursedokio.internal.commonSubstring
-import cursedokio.internal.commonToByteArray
-import cursedokio.internal.commonWrite
-import cursedokio.internal.forEachSegment
+import okio.internal.commonCopyInto
+import okio.internal.commonEquals
+import okio.internal.commonGetSize
+import okio.internal.commonHashCode
+import okio.internal.commonInternalGet
+import okio.internal.commonRangeEquals
+import okio.internal.commonSubstring
+import okio.internal.commonToByteArray
+import okio.internal.commonWrite
+import okio.internal.forEachSegment
 
 internal actual class SegmentedByteString internal actual constructor(
   @Transient internal actual val segments: Array<ByteArray>,

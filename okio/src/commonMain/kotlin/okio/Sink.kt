@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 /**
  * Receives a stream of bytes. Use this interface to write data wherever it's needed: to the

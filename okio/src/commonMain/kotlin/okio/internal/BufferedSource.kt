@@ -16,11 +16,11 @@
 
 @file:JvmName("-BufferedSource") // A leading '-' hides this class from Java.
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.BufferedSource
-import cursedokio.TypedOptions
+import okio.BufferedSource
+import okio.TypedOptions
 
 internal inline fun <T : Any> BufferedSource.commonSelect(options: TypedOptions<T>): T? {
   return when (val index = select(options.options)) {

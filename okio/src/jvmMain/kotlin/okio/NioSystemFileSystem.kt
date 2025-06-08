@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.nio.file.FileSystemException
 import java.nio.file.Files
@@ -24,7 +24,7 @@ import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
-import cursedokio.Path.Companion.toOkioPath
+import okio.Path.Companion.toOkioPath
 
 /**
  * Extends [JvmSystemFileSystem] for platforms that support `java.nio.file` first introduced in

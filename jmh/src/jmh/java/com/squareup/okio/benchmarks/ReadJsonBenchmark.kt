@@ -15,13 +15,17 @@
  */
 package com.squareup.okio.benchmarks
 
-import com.squareup.cursedmoshi.JsonReader.Companion.of
+import com.squareup.cursedmoshi.JsonReader as CursedJsonReader
+import com.squareup.moshi.JsonReader as RegularJsonReader
+import cursedokio.Buffer as CursedBufffer
+import cursedokio.FileSystem as CursedFileSystem
+import cursedokio.Path.Companion.toPath as toCursedPath
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
-import cursedokio.Buffer
-import cursedokio.FileSystem
-import cursedokio.Path.Companion.toPath
+import okio.Buffer as RegularBufffer
+import okio.FileSystem as RegularFileSystem
+import okio.Path.Companion.toPath as toRegularPath
 import org.openjdk.jmh.Main
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
@@ -42,22 +46,38 @@ import org.openjdk.jmh.runner.RunnerException
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 open class ReadJsonBenchmark {
-  private val jsonFile = "/Volumes/Development/json-serialization-benchmarking/models/src/main/resources/largesample_minified.json".toPath()
-  private var json: Buffer = Buffer()
+  private val regularJsonFile =
+    "/Volumes/Development/json-serialization-benchmarking/models/src/main/resources/largesample_minified.json".toRegularPath()
+  private val cursedJsonFile =
+    "/Volumes/Development/json-serialization-benchmarking/models/src/main/resources/largesample_minified.json".toCursedPath()
+  private var regularJson: RegularBufffer = RegularBufffer()
+  private var cursedJson: CursedBufffer = CursedBufffer()
 
   @Setup
   @Throws(IOException::class)
   fun setup() {
-    FileSystem.SYSTEM.read(jsonFile) {
-      json.writeAll(this)
+    RegularFileSystem.SYSTEM.read(regularJsonFile) {
+      regularJson.writeAll(this)
+    }
+    CursedFileSystem.SYSTEM.read(cursedJsonFile) {
+      cursedJson.writeAll(this)
     }
   }
 
   @Benchmark
   @Throws(IOException::class)
-  fun skipAll() {
+  fun regular() {
     runBlocking {
-      val jsonReader = of(json.clone())
+      val jsonReader = RegularJsonReader.of(regularJson.clone())
+      jsonReader.skipValue()
+    }
+  }
+
+  @Benchmark
+  @Throws(IOException::class)
+  fun cursed() {
+    runBlocking {
+      val jsonReader = CursedJsonReader.of(cursedJson.clone())
       jsonReader.skipValue()
     }
   }

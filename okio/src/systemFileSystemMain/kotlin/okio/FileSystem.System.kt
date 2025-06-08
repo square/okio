@@ -1,4 +1,4 @@
-package cursedokio
+package okio
 
 /*
  * The current process's host file system. Use this instance directly, or dependency inject a

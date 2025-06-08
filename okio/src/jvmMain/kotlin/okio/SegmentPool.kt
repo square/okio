@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.util.concurrent.atomic.AtomicReference
-import cursedokio.SegmentPool.LOCK
-import cursedokio.SegmentPool.recycle
-import cursedokio.SegmentPool.take
+import okio.SegmentPool.LOCK
+import okio.SegmentPool.recycle
+import okio.SegmentPool.take
 
 /**
  * This class pools segments in a lock-free singly-linked stack. Though this code is lock-free it

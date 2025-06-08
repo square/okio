@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 /**
  * A sink that keeps a buffer internally so that callers can do small writes without a performance

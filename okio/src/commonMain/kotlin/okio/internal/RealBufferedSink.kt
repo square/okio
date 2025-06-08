@@ -19,16 +19,16 @@
 
 @file:JvmName("-RealBufferedSink") // A leading '-' hides this class from Java.
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.Buffer
-import cursedokio.BufferedSink
-import cursedokio.ByteString
-import cursedokio.EOFException
-import cursedokio.RealBufferedSink
-import cursedokio.Segment
-import cursedokio.Source
+import okio.Buffer
+import okio.BufferedSink
+import okio.ByteString
+import okio.EOFException
+import okio.RealBufferedSink
+import okio.Segment
+import okio.Source
 
 internal inline fun RealBufferedSink.commonWrite(source: Buffer, byteCount: Long) {
   check(!closed) { "closed" }

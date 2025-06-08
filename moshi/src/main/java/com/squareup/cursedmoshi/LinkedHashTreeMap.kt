@@ -1,7 +1,7 @@
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.LinkedHashTreeMap.Node
-import com.squareup.cursedmoshi.internal.knownNotNull
+import com.squareup.moshi.LinkedHashTreeMap.Node
+import com.squareup.moshi.internal.knownNotNull
 import java.io.Serializable
 import kotlin.math.max
 

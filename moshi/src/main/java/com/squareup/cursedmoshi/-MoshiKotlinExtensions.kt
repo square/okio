@@ -15,10 +15,10 @@
  */
 @file:Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.internal.NonNullJsonAdapter
-import com.squareup.cursedmoshi.internal.NullSafeJsonAdapter
+import com.squareup.moshi.internal.NonNullJsonAdapter
+import com.squareup.moshi.internal.NullSafeJsonAdapter
 import kotlin.reflect.KType
 import kotlin.reflect.javaType
 import kotlin.reflect.typeOf

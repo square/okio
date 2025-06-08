@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio.internal
+package okio.internal
 
-import cursedokio.ArrayIndexOutOfBoundsException
-import cursedokio.processUtf16Chars
-import cursedokio.processUtf8Bytes
+import okio.ArrayIndexOutOfBoundsException
+import okio.processUtf16Chars
+import okio.processUtf8Bytes
 
 // TODO For benchmarking, these methods need to be available but preferably invisible
 // to everything else. Putting them in this file, `-Utf8.kt`, makes them invisible to

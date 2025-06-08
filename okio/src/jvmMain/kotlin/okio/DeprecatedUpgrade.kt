@@ -15,7 +15,7 @@
  */
 @file:JvmName("-DeprecatedUpgrade")
 
-package cursedokio
+package okio
 
 val Okio = `-DeprecatedOkio`
 val Utf8 = `-DeprecatedUtf8`

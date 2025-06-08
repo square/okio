@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.Types.createJsonQualifierImplementation
-import com.squareup.cursedmoshi.internal.NO_ANNOTATIONS
-import com.squareup.cursedmoshi.internal.NonNullJsonAdapter
-import com.squareup.cursedmoshi.internal.NullSafeJsonAdapter
-import com.squareup.cursedmoshi.internal.canonicalize
-import com.squareup.cursedmoshi.internal.isAnnotationPresent
-import com.squareup.cursedmoshi.internal.removeSubtypeWildcard
-import com.squareup.cursedmoshi.internal.toStringWithAnnotations
-import com.squareup.cursedmoshi.internal.typesMatch
+import com.squareup.moshi.Types.createJsonQualifierImplementation
+import com.squareup.moshi.internal.NO_ANNOTATIONS
+import com.squareup.moshi.internal.NonNullJsonAdapter
+import com.squareup.moshi.internal.NullSafeJsonAdapter
+import com.squareup.moshi.internal.canonicalize
+import com.squareup.moshi.internal.isAnnotationPresent
+import com.squareup.moshi.internal.removeSubtypeWildcard
+import com.squareup.moshi.internal.toStringWithAnnotations
+import com.squareup.moshi.internal.typesMatch
 import java.lang.reflect.Type
 import javax.annotation.CheckReturnValue
 import kotlin.reflect.KType

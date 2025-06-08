@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.JsonScope.getPath
-import com.squareup.cursedmoshi.JsonUtf8Writer.Companion.string
+import com.squareup.moshi.JsonScope.getPath
+import com.squareup.moshi.JsonUtf8Writer.Companion.string
 import okio.Buffer
 import okio.BufferedSource
 import okio.Closeable

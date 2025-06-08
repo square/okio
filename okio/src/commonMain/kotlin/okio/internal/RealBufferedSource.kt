@@ -19,21 +19,21 @@
 
 @file:JvmName("-RealBufferedSource") // A leading '-' hides this class from Java.
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.Buffer
-import cursedokio.BufferedSource
-import cursedokio.ByteString
-import cursedokio.EOFException
-import cursedokio.Options
-import cursedokio.PeekSource
-import cursedokio.RealBufferedSource
-import cursedokio.Segment
-import cursedokio.Sink
-import cursedokio.buffer
-import cursedokio.checkOffsetAndCount
-import cursedokio.minOf
+import okio.Buffer
+import okio.BufferedSource
+import okio.ByteString
+import okio.EOFException
+import okio.Options
+import okio.PeekSource
+import okio.RealBufferedSource
+import okio.Segment
+import okio.Sink
+import okio.buffer
+import okio.checkOffsetAndCount
+import okio.minOf
 
 internal inline fun RealBufferedSource.commonRead(sink: Buffer, byteCount: Long): Long {
   require(byteCount >= 0L) { "byteCount < 0: $byteCount" }

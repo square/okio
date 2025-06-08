@@ -16,18 +16,18 @@
 @file:JvmName("Util")
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
-package com.squareup.cursedmoshi.internal
+package com.squareup.moshi.internal
 
-import com.squareup.cursedmoshi.Json
-import com.squareup.cursedmoshi.JsonAdapter
-import com.squareup.cursedmoshi.JsonClass
-import com.squareup.cursedmoshi.JsonDataException
-import com.squareup.cursedmoshi.JsonQualifier
-import com.squareup.cursedmoshi.JsonReader
-import com.squareup.cursedmoshi.Moshi
-import com.squareup.cursedmoshi.Types
-import com.squareup.cursedmoshi.asArrayType
-import com.squareup.cursedmoshi.rawType
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonQualifier
+import com.squareup.moshi.JsonReader
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.asArrayType
+import com.squareup.moshi.rawType
 import java.lang.ClassNotFoundException
 import java.lang.Error
 import java.lang.IllegalAccessException

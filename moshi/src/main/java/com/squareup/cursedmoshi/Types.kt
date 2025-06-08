@@ -15,14 +15,14 @@
  */
 @file:Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.internal.EMPTY_TYPE_ARRAY
-import com.squareup.cursedmoshi.internal.GenericArrayTypeImpl
-import com.squareup.cursedmoshi.internal.ParameterizedTypeImpl
-import com.squareup.cursedmoshi.internal.WildcardTypeImpl
-import com.squareup.cursedmoshi.internal.getGenericSupertype
-import com.squareup.cursedmoshi.internal.resolve
+import com.squareup.moshi.internal.EMPTY_TYPE_ARRAY
+import com.squareup.moshi.internal.GenericArrayTypeImpl
+import com.squareup.moshi.internal.ParameterizedTypeImpl
+import com.squareup.moshi.internal.WildcardTypeImpl
+import com.squareup.moshi.internal.getGenericSupertype
+import com.squareup.moshi.internal.resolve
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Proxy

@@ -19,16 +19,16 @@
 
 @file:JvmName("-SegmentedByteString") // A leading '-' hides this class from Java.
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.Buffer
-import cursedokio.ByteString
-import cursedokio.Segment
-import cursedokio.SegmentedByteString
-import cursedokio.arrayRangeEquals
-import cursedokio.checkOffsetAndCount
-import cursedokio.resolveDefaultParameter
+import okio.Buffer
+import okio.ByteString
+import okio.Segment
+import okio.SegmentedByteString
+import okio.arrayRangeEquals
+import okio.checkOffsetAndCount
+import okio.resolveDefaultParameter
 
 internal fun IntArray.binarySearch(value: Int, fromIndex: Int, toIndex: Int): Int {
   var left = fromIndex

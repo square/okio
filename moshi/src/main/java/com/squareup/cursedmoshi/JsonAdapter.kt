@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.internal.NonNullJsonAdapter
-import com.squareup.cursedmoshi.internal.NullSafeJsonAdapter
+import com.squareup.moshi.internal.NonNullJsonAdapter
+import com.squareup.moshi.internal.NullSafeJsonAdapter
 import okio.Buffer
 import okio.BufferedSink
 import okio.BufferedSource

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.internal.knownNotNull
+import com.squareup.moshi.internal.knownNotNull
 import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString

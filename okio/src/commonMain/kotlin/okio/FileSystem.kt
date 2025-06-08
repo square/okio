@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 /**
  * Read and write access to a hierarchical collection of files, addressed by [paths][Path]. This

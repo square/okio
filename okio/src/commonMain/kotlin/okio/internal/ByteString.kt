@@ -15,24 +15,24 @@
  */
 @file:JvmName("-ByteString") // A leading '-' hides this class from Java.
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.BASE64_URL_SAFE
-import cursedokio.Buffer
-import cursedokio.ByteString
-import cursedokio.REPLACEMENT_CODE_POINT
-import cursedokio.and
-import cursedokio.arrayRangeEquals
-import cursedokio.asUtf8ToByteArray
-import cursedokio.checkOffsetAndCount
-import cursedokio.decodeBase64ToArray
-import cursedokio.encodeBase64
-import cursedokio.isIsoControl
-import cursedokio.processUtf8CodePoints
-import cursedokio.resolveDefaultParameter
-import cursedokio.shr
-import cursedokio.toUtf8String
+import okio.BASE64_URL_SAFE
+import okio.Buffer
+import okio.ByteString
+import okio.REPLACEMENT_CODE_POINT
+import okio.and
+import okio.arrayRangeEquals
+import okio.asUtf8ToByteArray
+import okio.checkOffsetAndCount
+import okio.decodeBase64ToArray
+import okio.encodeBase64
+import okio.isIsoControl
+import okio.processUtf8CodePoints
+import okio.resolveDefaultParameter
+import okio.shr
+import okio.toUtf8String
 
 // TODO Kotlin's expect classes can't have default implementations, so platform implementations
 // have to call these functions. Remove all this nonsense when expect class allow actual code.

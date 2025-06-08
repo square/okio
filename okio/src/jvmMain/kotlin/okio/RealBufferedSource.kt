@@ -13,43 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
-import cursedokio.internal.commonClose
-import cursedokio.internal.commonExhausted
-import cursedokio.internal.commonIndexOf
-import cursedokio.internal.commonIndexOfElement
-import cursedokio.internal.commonPeek
-import cursedokio.internal.commonRangeEquals
-import cursedokio.internal.commonRead
-import cursedokio.internal.commonReadAll
-import cursedokio.internal.commonReadByte
-import cursedokio.internal.commonReadByteArray
-import cursedokio.internal.commonReadByteString
-import cursedokio.internal.commonReadDecimalLong
-import cursedokio.internal.commonReadFully
-import cursedokio.internal.commonReadHexadecimalUnsignedLong
-import cursedokio.internal.commonReadInt
-import cursedokio.internal.commonReadIntLe
-import cursedokio.internal.commonReadLong
-import cursedokio.internal.commonReadLongLe
-import cursedokio.internal.commonReadShort
-import cursedokio.internal.commonReadShortLe
-import cursedokio.internal.commonReadUtf8
-import cursedokio.internal.commonReadUtf8CodePoint
-import cursedokio.internal.commonReadUtf8Line
-import cursedokio.internal.commonReadUtf8LineStrict
-import cursedokio.internal.commonRequest
-import cursedokio.internal.commonRequire
-import cursedokio.internal.commonSelect
-import cursedokio.internal.commonSkip
-import cursedokio.internal.commonTimeout
-import cursedokio.internal.commonToString
+import okio.internal.commonClose
+import okio.internal.commonExhausted
+import okio.internal.commonIndexOf
+import okio.internal.commonIndexOfElement
+import okio.internal.commonPeek
+import okio.internal.commonRangeEquals
+import okio.internal.commonRead
+import okio.internal.commonReadAll
+import okio.internal.commonReadByte
+import okio.internal.commonReadByteArray
+import okio.internal.commonReadByteString
+import okio.internal.commonReadDecimalLong
+import okio.internal.commonReadFully
+import okio.internal.commonReadHexadecimalUnsignedLong
+import okio.internal.commonReadInt
+import okio.internal.commonReadIntLe
+import okio.internal.commonReadLong
+import okio.internal.commonReadLongLe
+import okio.internal.commonReadShort
+import okio.internal.commonReadShortLe
+import okio.internal.commonReadUtf8
+import okio.internal.commonReadUtf8CodePoint
+import okio.internal.commonReadUtf8Line
+import okio.internal.commonReadUtf8LineStrict
+import okio.internal.commonRequest
+import okio.internal.commonRequire
+import okio.internal.commonSelect
+import okio.internal.commonSkip
+import okio.internal.commonTimeout
+import okio.internal.commonToString
 
 internal actual class RealBufferedSource actual constructor(
   @JvmField actual val source: Source,

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.internal.NO_ANNOTATIONS
-import com.squareup.cursedmoshi.internal.generatedAdapter
-import com.squareup.cursedmoshi.internal.jsonName
-import com.squareup.cursedmoshi.internal.knownNotNull
+import com.squareup.moshi.internal.NO_ANNOTATIONS
+import com.squareup.moshi.internal.generatedAdapter
+import com.squareup.moshi.internal.jsonName
+import com.squareup.moshi.internal.knownNotNull
 import java.lang.reflect.Type
 
 internal object StandardJsonAdapters : JsonAdapter.Factory {

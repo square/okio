@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi.internal
+package com.squareup.moshi.internal
 
-import com.squareup.cursedmoshi.JsonAdapter
-import com.squareup.cursedmoshi.JsonDataException
-import com.squareup.cursedmoshi.JsonReader
-import com.squareup.cursedmoshi.JsonWriter
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonWriter
 
 public class NonNullJsonAdapter<T>(public val delegate: JsonAdapter<T>) : JsonAdapter<T>() {
   override fun fromJson(reader: JsonReader): T {

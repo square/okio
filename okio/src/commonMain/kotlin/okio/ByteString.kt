@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cursedokio
+package okio
 
 /**
  * An immutable sequence of bytes.

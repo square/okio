@@ -13,29 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.io.File
 import java.nio.file.Path as NioPath
 import java.nio.file.Paths
-import cursedokio.internal.commonCompareTo
-import cursedokio.internal.commonEquals
-import cursedokio.internal.commonHashCode
-import cursedokio.internal.commonIsAbsolute
-import cursedokio.internal.commonIsRelative
-import cursedokio.internal.commonIsRoot
-import cursedokio.internal.commonName
-import cursedokio.internal.commonNameBytes
-import cursedokio.internal.commonNormalized
-import cursedokio.internal.commonParent
-import cursedokio.internal.commonRelativeTo
-import cursedokio.internal.commonResolve
-import cursedokio.internal.commonRoot
-import cursedokio.internal.commonSegments
-import cursedokio.internal.commonSegmentsBytes
-import cursedokio.internal.commonToPath
-import cursedokio.internal.commonToString
-import cursedokio.internal.commonVolumeLetter
+import okio.internal.commonCompareTo
+import okio.internal.commonEquals
+import okio.internal.commonHashCode
+import okio.internal.commonIsAbsolute
+import okio.internal.commonIsRelative
+import okio.internal.commonIsRoot
+import okio.internal.commonName
+import okio.internal.commonNameBytes
+import okio.internal.commonNormalized
+import okio.internal.commonParent
+import okio.internal.commonRelativeTo
+import okio.internal.commonResolve
+import okio.internal.commonRoot
+import okio.internal.commonSegments
+import okio.internal.commonSegmentsBytes
+import okio.internal.commonToPath
+import okio.internal.commonToString
+import okio.internal.commonVolumeLetter
 
 actual class Path internal actual constructor(
   internal actual val bytes: ByteString,

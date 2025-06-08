@@ -15,14 +15,14 @@
  */
 @file:JvmName("-Path") // A leading '-' hides this class from Java.
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.Buffer
-import cursedokio.ByteString
-import cursedokio.ByteString.Companion.encodeUtf8
-import cursedokio.Path
-import cursedokio.Path.Companion.toPath
+import okio.Buffer
+import okio.ByteString
+import okio.ByteString.Companion.encodeUtf8
+import okio.Path
+import okio.Path.Companion.toPath
 
 private val SLASH = "/".encodeUtf8()
 

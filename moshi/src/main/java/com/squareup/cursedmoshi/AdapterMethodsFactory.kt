@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.internal.canonicalize
-import com.squareup.cursedmoshi.internal.checkNull
-import com.squareup.cursedmoshi.internal.hasNullable
-import com.squareup.cursedmoshi.internal.jsonAnnotations
-import com.squareup.cursedmoshi.internal.knownNotNull
-import com.squareup.cursedmoshi.internal.toStringWithAnnotations
+import com.squareup.moshi.internal.canonicalize
+import com.squareup.moshi.internal.checkNull
+import com.squareup.moshi.internal.hasNullable
+import com.squareup.moshi.internal.jsonAnnotations
+import com.squareup.moshi.internal.knownNotNull
+import com.squareup.moshi.internal.toStringWithAnnotations
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method

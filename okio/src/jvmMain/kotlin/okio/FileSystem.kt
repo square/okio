@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.nio.file.FileSystem as JavaNioFileSystem
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import cursedokio.Path.Companion.toPath
-import cursedokio.internal.commonCopy
-import cursedokio.internal.commonCreateDirectories
-import cursedokio.internal.commonDeleteRecursively
-import cursedokio.internal.commonExists
-import cursedokio.internal.commonListRecursively
-import cursedokio.internal.commonMetadata
+import okio.Path.Companion.toPath
+import okio.internal.commonCopy
+import okio.internal.commonCreateDirectories
+import okio.internal.commonDeleteRecursively
+import okio.internal.commonExists
+import okio.internal.commonListRecursively
+import okio.internal.commonMetadata
 
 actual abstract class FileSystem : Closeable {
   @Throws(IOException::class)

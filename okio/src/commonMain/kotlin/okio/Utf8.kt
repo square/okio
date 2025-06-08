@@ -63,7 +63,7 @@
  */
 @file:JvmName("Utf8")
 
-package cursedokio
+package okio
 
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads

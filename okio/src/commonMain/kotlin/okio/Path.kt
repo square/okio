@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
-import cursedokio.Path.Companion.toPath
+import okio.Path.Companion.toPath
 
 /**
  * A hierarchical address on a file system. A path is an identifier only; a [FileSystem] is required

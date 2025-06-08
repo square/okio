@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 @Deprecated(message = "changed in Okio 2.x")
 object `-DeprecatedUtf8` {

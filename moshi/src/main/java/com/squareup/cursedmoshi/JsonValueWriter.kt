@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.JsonScope.EMPTY_ARRAY
-import com.squareup.cursedmoshi.JsonScope.EMPTY_DOCUMENT
-import com.squareup.cursedmoshi.JsonScope.EMPTY_OBJECT
-import com.squareup.cursedmoshi.JsonScope.NONEMPTY_DOCUMENT
-import com.squareup.cursedmoshi.JsonScope.STREAMING_VALUE
-import com.squareup.cursedmoshi.internal.knownNotNull
+import com.squareup.moshi.JsonScope.EMPTY_ARRAY
+import com.squareup.moshi.JsonScope.EMPTY_DOCUMENT
+import com.squareup.moshi.JsonScope.EMPTY_OBJECT
+import com.squareup.moshi.JsonScope.NONEMPTY_DOCUMENT
+import com.squareup.moshi.JsonScope.STREAMING_VALUE
+import com.squareup.moshi.internal.knownNotNull
 import okio.Buffer
 import okio.BufferedSink
 import okio.ForwardingSink

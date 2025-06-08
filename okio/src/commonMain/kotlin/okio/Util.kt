@@ -15,10 +15,10 @@
  */
 @file:JvmName("-SegmentedByteString") // A leading '-' hides this class from Java.
 
-package cursedokio
+package okio
 
 import kotlin.jvm.JvmName
-import cursedokio.internal.HEX_DIGIT_CHARS
+import okio.internal.HEX_DIGIT_CHARS
 
 internal fun checkOffsetAndCount(size: Long, offset: Long, byteCount: Long) {
   if (offset or byteCount < 0 || offset > size || size - offset < byteCount) {

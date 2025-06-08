@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
-import com.squareup.cursedmoshi.internal.checkNull
-import com.squareup.cursedmoshi.internal.isKotlin
-import com.squareup.cursedmoshi.internal.isPlatformType
-import com.squareup.cursedmoshi.internal.jsonAnnotations
-import com.squareup.cursedmoshi.internal.jsonName
-import com.squareup.cursedmoshi.internal.resolve
-import com.squareup.cursedmoshi.internal.rethrowCause
+import com.squareup.moshi.internal.checkNull
+import com.squareup.moshi.internal.isKotlin
+import com.squareup.moshi.internal.isPlatformType
+import com.squareup.moshi.internal.jsonAnnotations
+import com.squareup.moshi.internal.jsonName
+import com.squareup.moshi.internal.resolve
+import com.squareup.moshi.internal.rethrowCause
 import java.lang.reflect.Field
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Modifier.isAbstract

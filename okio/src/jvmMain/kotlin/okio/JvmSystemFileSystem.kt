@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.io.InterruptedIOException
 import java.io.RandomAccessFile
-import cursedokio.Path.Companion.toOkioPath
+import okio.Path.Companion.toOkioPath
 
 /**
  * A file system that adapts `java.io`.

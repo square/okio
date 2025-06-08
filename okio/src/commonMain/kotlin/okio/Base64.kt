@@ -16,10 +16,10 @@
  */
 @file:JvmName("-Base64") // A leading '-' hides this class from Java.
 
-package cursedokio
+package okio
 
 import kotlin.jvm.JvmName
-import cursedokio.ByteString.Companion.encodeUtf8
+import okio.ByteString.Companion.encodeUtf8
 
 /** @author Alexander Y. Kleymenov */
 

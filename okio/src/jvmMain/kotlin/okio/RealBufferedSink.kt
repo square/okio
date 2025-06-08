@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.io.IOException
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
-import cursedokio.internal.commonClose
-import cursedokio.internal.commonEmit
-import cursedokio.internal.commonEmitCompleteSegments
-import cursedokio.internal.commonFlush
-import cursedokio.internal.commonTimeout
-import cursedokio.internal.commonToString
-import cursedokio.internal.commonWrite
-import cursedokio.internal.commonWriteAll
-import cursedokio.internal.commonWriteByte
-import cursedokio.internal.commonWriteDecimalLong
-import cursedokio.internal.commonWriteHexadecimalUnsignedLong
-import cursedokio.internal.commonWriteInt
-import cursedokio.internal.commonWriteIntLe
-import cursedokio.internal.commonWriteLong
-import cursedokio.internal.commonWriteLongLe
-import cursedokio.internal.commonWriteShort
-import cursedokio.internal.commonWriteShortLe
-import cursedokio.internal.commonWriteUtf8
-import cursedokio.internal.commonWriteUtf8CodePoint
+import okio.internal.commonClose
+import okio.internal.commonEmit
+import okio.internal.commonEmitCompleteSegments
+import okio.internal.commonFlush
+import okio.internal.commonTimeout
+import okio.internal.commonToString
+import okio.internal.commonWrite
+import okio.internal.commonWriteAll
+import okio.internal.commonWriteByte
+import okio.internal.commonWriteDecimalLong
+import okio.internal.commonWriteHexadecimalUnsignedLong
+import okio.internal.commonWriteInt
+import okio.internal.commonWriteIntLe
+import okio.internal.commonWriteLong
+import okio.internal.commonWriteLongLe
+import okio.internal.commonWriteShort
+import okio.internal.commonWriteShortLe
+import okio.internal.commonWriteUtf8
+import okio.internal.commonWriteUtf8CodePoint
 
 internal actual class RealBufferedSink actual constructor(
   @JvmField actual val sink: Sink,

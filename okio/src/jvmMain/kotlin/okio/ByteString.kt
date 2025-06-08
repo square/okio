@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 import java.io.EOFException
 import java.io.IOException
@@ -28,33 +28,33 @@ import java.security.InvalidKeyException
 import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import cursedokio.internal.commonBase64
-import cursedokio.internal.commonBase64Url
-import cursedokio.internal.commonCompareTo
-import cursedokio.internal.commonCopyInto
-import cursedokio.internal.commonDecodeBase64
-import cursedokio.internal.commonDecodeHex
-import cursedokio.internal.commonEncodeUtf8
-import cursedokio.internal.commonEndsWith
-import cursedokio.internal.commonEquals
-import cursedokio.internal.commonGetByte
-import cursedokio.internal.commonGetSize
-import cursedokio.internal.commonHashCode
-import cursedokio.internal.commonHex
-import cursedokio.internal.commonIndexOf
-import cursedokio.internal.commonInternalArray
-import cursedokio.internal.commonLastIndexOf
-import cursedokio.internal.commonOf
-import cursedokio.internal.commonRangeEquals
-import cursedokio.internal.commonStartsWith
-import cursedokio.internal.commonSubstring
-import cursedokio.internal.commonToAsciiLowercase
-import cursedokio.internal.commonToAsciiUppercase
-import cursedokio.internal.commonToByteArray
-import cursedokio.internal.commonToByteString
-import cursedokio.internal.commonToString
-import cursedokio.internal.commonUtf8
-import cursedokio.internal.commonWrite
+import okio.internal.commonBase64
+import okio.internal.commonBase64Url
+import okio.internal.commonCompareTo
+import okio.internal.commonCopyInto
+import okio.internal.commonDecodeBase64
+import okio.internal.commonDecodeHex
+import okio.internal.commonEncodeUtf8
+import okio.internal.commonEndsWith
+import okio.internal.commonEquals
+import okio.internal.commonGetByte
+import okio.internal.commonGetSize
+import okio.internal.commonHashCode
+import okio.internal.commonHex
+import okio.internal.commonIndexOf
+import okio.internal.commonInternalArray
+import okio.internal.commonLastIndexOf
+import okio.internal.commonOf
+import okio.internal.commonRangeEquals
+import okio.internal.commonStartsWith
+import okio.internal.commonSubstring
+import okio.internal.commonToAsciiLowercase
+import okio.internal.commonToAsciiUppercase
+import okio.internal.commonToByteArray
+import okio.internal.commonToByteString
+import okio.internal.commonToString
+import okio.internal.commonUtf8
+import okio.internal.commonWrite
 
 actual open class ByteString
 internal actual constructor(

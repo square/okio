@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
 /**
  * Thrown when the data in a JSON document doesn't match the data expected by the caller. For

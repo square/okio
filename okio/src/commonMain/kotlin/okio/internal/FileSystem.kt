@@ -15,16 +15,16 @@
  */
 @file:JvmName("-FileSystem") // A leading '-' hides this class from Java.
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.FileMetadata
-import cursedokio.FileNotFoundException
-import cursedokio.FileSystem
-import cursedokio.IOException
-import cursedokio.Path
-import cursedokio.buffer
-import cursedokio.use
+import okio.FileMetadata
+import okio.FileNotFoundException
+import okio.FileSystem
+import okio.IOException
+import okio.Path
+import okio.buffer
+import okio.use
 
 /**
  * Returns metadata of the file, directory, or object identified by [path].

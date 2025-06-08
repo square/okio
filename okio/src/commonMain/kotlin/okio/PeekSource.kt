@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cursedokio
+package okio
 
 /**
  * A [Source] which peeks into an upstream [BufferedSource] and allows reading and expanding of the

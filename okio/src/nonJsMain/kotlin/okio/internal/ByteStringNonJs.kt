@@ -15,10 +15,10 @@
  */
 @file:JvmName("-ByteStringNonJs") // A leading '-' hides this class from Java.
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.ByteString
+import okio.ByteString
 
 @Suppress("NOTHING_TO_INLINE")
 internal actual inline fun String.commonDecodeHex(): ByteString {

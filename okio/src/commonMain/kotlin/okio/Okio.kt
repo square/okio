@@ -18,7 +18,7 @@
 @file:JvmMultifileClass
 @file:JvmName("Okio")
 
-package cursedokio
+package okio
 
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

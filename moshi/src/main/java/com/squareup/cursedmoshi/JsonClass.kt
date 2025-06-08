@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.cursedmoshi
+package com.squareup.moshi
 
 import java.lang.reflect.Type
 import kotlin.annotation.AnnotationRetention.RUNTIME

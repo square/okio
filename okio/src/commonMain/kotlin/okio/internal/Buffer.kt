@@ -18,27 +18,27 @@
 // TODO move to Buffer class: https://youtrack.jetbrains.com/issue/KT-20427
 @file:Suppress("NOTHING_TO_INLINE")
 
-package cursedokio.internal
+package okio.internal
 
 import kotlin.jvm.JvmName
-import cursedokio.ArrayIndexOutOfBoundsException
-import cursedokio.Buffer
-import cursedokio.Buffer.UnsafeCursor
-import cursedokio.ByteString
-import cursedokio.EOFException
-import cursedokio.Options
-import cursedokio.REPLACEMENT_CODE_POINT
-import cursedokio.Segment
-import cursedokio.SegmentPool
-import cursedokio.SegmentedByteString
-import cursedokio.Sink
-import cursedokio.Source
-import cursedokio.and
-import cursedokio.asUtf8ToByteArray
-import cursedokio.checkOffsetAndCount
-import cursedokio.minOf
-import cursedokio.resolveDefaultParameter
-import cursedokio.toHexString
+import okio.ArrayIndexOutOfBoundsException
+import okio.Buffer
+import okio.Buffer.UnsafeCursor
+import okio.ByteString
+import okio.EOFException
+import okio.Options
+import okio.REPLACEMENT_CODE_POINT
+import okio.Segment
+import okio.SegmentPool
+import okio.SegmentedByteString
+import okio.Sink
+import okio.Source
+import okio.and
+import okio.asUtf8ToByteArray
+import okio.checkOffsetAndCount
+import okio.minOf
+import okio.resolveDefaultParameter
+import okio.toHexString
 
 internal val HEX_DIGIT_BYTES = "0123456789abcdef".asUtf8ToByteArray()
 

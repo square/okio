@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cursedokio
+package okio
 
 /**
  * A policy on how much time to spend on a task before giving up. When a task times out, it is left
