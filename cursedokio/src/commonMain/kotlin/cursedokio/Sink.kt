@@ -45,11 +45,11 @@ package cursedokio
 expect interface Sink : Closeable {
   /** Removes `byteCount` bytes from `source` and appends them to this.  */
   @Throws(IOException::class)
-  fun write(source: Buffer, byteCount: Long)
+  suspend fun write(source: Buffer, byteCount: Long)
 
   /** Pushes all buffered bytes to their final destination.  */
   @Throws(IOException::class)
-  fun flush()
+  suspend fun flush()
 
   /** Returns the timeout for this sink.  */
   fun timeout(): Timeout
@@ -59,5 +59,5 @@ expect interface Sink : Closeable {
    * sink. It is an error to write a closed sink. It is safe to close a sink more than once.
    */
   @Throws(IOException::class)
-  override fun close()
+  override suspend fun close()
 }

@@ -28,22 +28,22 @@ expect sealed interface BufferedSource : Source {
    * Returns true if there are no more bytes in this source. This will block until there are bytes
    * to read or the source is definitely exhausted.
    */
-  fun exhausted(): Boolean
+  suspend fun exhausted(): Boolean
 
   /**
    * Returns when the buffer contains at least `byteCount` bytes. Throws an
    * [java.io.EOFException] if the source is exhausted before the required bytes can be read.
    */
-  fun require(byteCount: Long)
+  suspend fun require(byteCount: Long)
 
   /**
    * Returns true when the buffer contains at least `byteCount` bytes, expanding it as
    * necessary. Returns false if the source is exhausted before the requested bytes can be read.
    */
-  fun request(byteCount: Long): Boolean
+  suspend fun request(byteCount: Long): Boolean
 
   /** Removes a byte from this source and returns it. */
-  fun readByte(): Byte
+  suspend fun readByte(): Byte
 
   /**
    * Removes two bytes from this source and returns a big-endian short.
@@ -63,7 +63,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun readShort(): Short
+  suspend fun readShort(): Short
 
   /**
    * Removes two bytes from this source and returns a little-endian short.
@@ -83,7 +83,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun readShortLe(): Short
+  suspend fun readShortLe(): Short
 
   /**
    * Removes four bytes from this source and returns a big-endian int.
@@ -107,7 +107,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun readInt(): Int
+  suspend fun readInt(): Int
 
   /**
    * Removes four bytes from this source and returns a little-endian int.
@@ -131,7 +131,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun readIntLe(): Int
+  suspend fun readIntLe(): Int
 
   /**
    * Removes eight bytes from this source and returns a big-endian long.
@@ -163,7 +163,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun readLong(): Long
+  suspend fun readLong(): Long
 
   /**
    * Removes eight bytes from this source and returns a little-endian long.
@@ -195,7 +195,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun readLongLe(): Long
+  suspend fun readLongLe(): Long
 
   /**
    * Reads a long from this source in signed decimal form (i.e., as a string in base 10 with
@@ -215,7 +215,7 @@ expect sealed interface BufferedSource : Source {
    * @throws NumberFormatException if the found digits do not fit into a `long` or a decimal
    * number was not present.
    */
-  fun readDecimalLong(): Long
+  suspend fun readDecimalLong(): Long
 
   /**
    * Reads a long form this source in hexadecimal form (i.e., as a string in base 16). This will
@@ -235,19 +235,19 @@ expect sealed interface BufferedSource : Source {
    * @throws NumberFormatException if the found hexadecimal does not fit into a `long` or
    * hexadecimal was not found.
    */
-  fun readHexadecimalUnsignedLong(): Long
+  suspend fun readHexadecimalUnsignedLong(): Long
 
   /**
    * Reads and discards `byteCount` bytes from this source. Throws an [java.io.EOFException] if the
    * source is exhausted before the requested bytes can be skipped.
    */
-  fun skip(byteCount: Long)
+  suspend fun skip(byteCount: Long)
 
   /** Removes all bytes from this and returns them as a byte string. */
-  fun readByteString(): ByteString
+  suspend fun readByteString(): ByteString
 
   /** Removes `byteCount` bytes from this and returns them as a byte string. */
-  fun readByteString(byteCount: Long): ByteString
+  suspend fun readByteString(byteCount: Long): ByteString
 
   /**
    * Finds the first byte string in `options` that is a prefix of this buffer, consumes it from this
@@ -275,7 +275,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals('\n', buffer.readByte());
    * ```
    */
-  fun select(options: Options): Int
+  suspend fun select(options: Options): Int
 
   /**
    * Finds the first item in [options] whose encoding is a prefix of this buffer, consumes it from
@@ -306,43 +306,43 @@ expect sealed interface BufferedSource : Source {
    * assertEquals('\n', buffer.readByte());
    * ```
    */
-  fun <T : Any> select(options: TypedOptions<T>): T?
+  suspend fun <T : Any> select(options: TypedOptions<T>): T?
 
   /** Removes all bytes from this and returns them as a byte array. */
-  fun readByteArray(): ByteArray
+  suspend fun readByteArray(): ByteArray
 
   /** Removes `byteCount` bytes from this and returns them as a byte array. */
-  fun readByteArray(byteCount: Long): ByteArray
+  suspend fun readByteArray(byteCount: Long): ByteArray
 
   /**
    * Removes up to `sink.length` bytes from this and copies them into `sink`. Returns the number of
    * bytes read, or -1 if this source is exhausted.
    */
-  fun read(sink: ByteArray): Int
+  suspend fun read(sink: ByteArray): Int
 
   /**
    * Removes exactly `sink.length` bytes from this and copies them into `sink`. Throws an
    * [java.io.EOFException] if the requested number of bytes cannot be read.
    */
-  fun readFully(sink: ByteArray)
+  suspend fun readFully(sink: ByteArray)
 
   /**
    * Removes up to `byteCount` bytes from this and copies them into `sink` at `offset`. Returns the
    * number of bytes read, or -1 if this source is exhausted.
    */
-  fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
+  suspend fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
 
   /**
    * Removes exactly `byteCount` bytes from this and appends them to `sink`. Throws an
    * [java.io.EOFException] if the requested number of bytes cannot be read.
    */
-  fun readFully(sink: Buffer, byteCount: Long)
+  suspend fun readFully(sink: Buffer, byteCount: Long)
 
   /**
    * Removes all bytes from this and appends them to `sink`. Returns the total number of bytes
    * written to `sink` which will be 0 if this is exhausted.
    */
-  fun readAll(sink: Sink): Long
+  suspend fun readAll(sink: Sink): Long
 
   /**
    * Removes all bytes from this, decodes them as UTF-8, and returns the string. Returns the empty
@@ -361,7 +361,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun readUtf8(): String
+  suspend fun readUtf8(): String
 
   /**
    * Removes `byteCount` bytes from this, decodes them as UTF-8, and returns the string.
@@ -383,7 +383,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun readUtf8(byteCount: Long): String
+  suspend fun readUtf8(byteCount: Long): String
 
   /**
    * Removes and returns characters up to but not including the next line break. A line break is
@@ -414,7 +414,7 @@ expect sealed interface BufferedSource : Source {
    * returned once the source is exhausted. Use this for human-generated data, where a trailing
    * line break is optional.
    */
-  fun readUtf8Line(): String?
+  suspend fun readUtf8Line(): String?
 
   /**
    * Removes and returns characters up to but not including the next line break. A line break is
@@ -425,7 +425,7 @@ expect sealed interface BufferedSource : Source {
    * is thrown. Use this for machine-generated data where a missing line break implies truncated
    * input.
    */
-  fun readUtf8LineStrict(): String
+  suspend fun readUtf8LineStrict(): String
 
   /**
    * Like [readUtf8LineStrict], except this allows the caller to specify the longest allowed match.
@@ -449,7 +449,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals("12345", buffer.readUtf8LineStrict(5));
    * ```
    */
-  fun readUtf8LineStrict(limit: Long): String
+  suspend fun readUtf8LineStrict(limit: Long): String
 
   /**
    * Removes and returns a single UTF-8 code point, reading between 1 and 4 bytes as necessary.
@@ -463,10 +463,10 @@ expect sealed interface BufferedSource : Source {
    * 0x10ffff limit of Unicode), code points for UTF-16 surrogates (U+d800..U+dfff) and overlong
    * encodings (such as `0xc080` for the NUL character in modified UTF-8).
    */
-  fun readUtf8CodePoint(): Int
+  suspend fun readUtf8CodePoint(): Int
 
   /** Equivalent to [indexOf(b, 0)][indexOf]. */
-  fun indexOf(b: Byte): Long
+  suspend fun indexOf(b: Byte): Long
 
   /**
    * Returns the index of the first `b` in the buffer at or after `fromIndex`. This expands the
@@ -482,7 +482,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(40, buffer.indexOf(m, 12));
    * ```
    */
-  fun indexOf(b: Byte, fromIndex: Long): Long
+  suspend fun indexOf(b: Byte, fromIndex: Long): Long
 
   /**
    * Returns the index of `b` if it is found in the range of `fromIndex` inclusive to `toIndex`
@@ -491,10 +491,10 @@ expect sealed interface BufferedSource : Source {
    * The scan terminates at either `toIndex` or the end of the buffer, whichever comes first. The
    * maximum number of bytes scanned is `toIndex-fromIndex`.
    */
-  fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
+  suspend fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
 
   /** Equivalent to [indexOf(bytes, 0)][indexOf]. */
-  fun indexOf(bytes: ByteString): Long
+  suspend fun indexOf(bytes: ByteString): Long
 
   /**
    * Returns the index of the first match for `bytes` in the buffer at or after `fromIndex`. This
@@ -512,7 +512,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(40, buffer.indexOf(MOVE, 12));
    * ```
    */
-  fun indexOf(bytes: ByteString, fromIndex: Long): Long
+  suspend fun indexOf(bytes: ByteString, fromIndex: Long): Long
 
   /**
    * Returns the index of the first match for `bytes` in the buffer that is at or after `fromIndex`,
@@ -534,10 +534,10 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(40, buffer.indexOf(MOVE, 7, 100));
    * ```
    */
-  fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
+  suspend fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
 
   /** Equivalent to [indexOfElement(targetBytes, 0)][indexOfElement]. */
-  fun indexOfElement(targetBytes: ByteString): Long
+  suspend fun indexOfElement(targetBytes: ByteString): Long
 
   /**
    * Returns the first index in this buffer that is at or after `fromIndex` and that contains any of
@@ -555,7 +555,7 @@ expect sealed interface BufferedSource : Source {
    * assertEquals(11, buffer.indexOfElement(ANY_VOWEL, 9)); // 'a' in 'Grant'.
    * ```
    */
-  fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
+  suspend fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
 
   /**
    * Returns true if the bytes at `offset` in this source equal `bytes`. This expands the buffer as
@@ -572,14 +572,14 @@ expect sealed interface BufferedSource : Source {
    * assertFalse(payMeMoney.rangeEquals(0, simonSays));
    * ```
    */
-  fun rangeEquals(offset: Long, bytes: ByteString): Boolean
+  suspend fun rangeEquals(offset: Long, bytes: ByteString): Boolean
 
   /**
    * Returns true if `byteCount` bytes at `offset` in this source equal `bytes` at `bytesOffset`.
    * This expands the buffer as necessary until a byte does not match, all bytes are matched, or if
    * the stream is exhausted before enough bytes could determine a match.
    */
-  fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
+  suspend fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
 
   /**
    * Returns a new `BufferedSource` that can read data from this `BufferedSource` without consuming

@@ -18,14 +18,11 @@ package com.squareup.okio.benchmarks
 import com.squareup.cursedmoshi.JsonReader as CursedJsonReader
 import com.squareup.moshi.JsonReader as RegularJsonReader
 import cursedokio.Buffer as CursedBufffer
-import cursedokio.FileSystem as CursedFileSystem
-import cursedokio.Path.Companion.toPath as toCursedPath
+import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import okio.Buffer as RegularBufffer
-import okio.FileSystem as RegularFileSystem
-import okio.Path.Companion.toPath as toRegularPath
 import org.openjdk.jmh.Main
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
@@ -46,21 +43,17 @@ import org.openjdk.jmh.runner.RunnerException
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 open class ReadJsonBenchmark {
-  private val regularJsonFile =
-    "/Volumes/Development/json-serialization-benchmarking/models/src/main/resources/largesample_minified.json".toRegularPath()
-  private val cursedJsonFile =
-    "/Volumes/Development/json-serialization-benchmarking/models/src/main/resources/largesample_minified.json".toCursedPath()
+  private val regularJsonFile = File("/Volumes/Development/json-serialization-benchmarking/models/src/main/resources/largesample_minified.json")
   private var regularJson: RegularBufffer = RegularBufffer()
   private var cursedJson: CursedBufffer = CursedBufffer()
 
   @Setup
   @Throws(IOException::class)
   fun setup() {
-    RegularFileSystem.SYSTEM.read(regularJsonFile) {
-      regularJson.writeAll(this)
-    }
-    CursedFileSystem.SYSTEM.read(cursedJsonFile) {
-      cursedJson.writeAll(this)
+    runBlocking {
+      val bytes = regularJsonFile.readBytes()
+      regularJson.write(bytes)
+      cursedJson.write(bytes)
     }
   }
 

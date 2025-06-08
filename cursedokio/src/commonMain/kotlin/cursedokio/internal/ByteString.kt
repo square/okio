@@ -289,10 +289,10 @@ internal inline fun String.commonDecodeBase64(): ByteString? {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal expect inline fun String.commonDecodeHex(): ByteString
+internal expect suspend inline fun String.commonDecodeHex(): ByteString
 
 /** Writes the contents of this byte string to `buffer`.  */
-internal fun ByteString.commonWrite(buffer: Buffer, offset: Int, byteCount: Int) {
+internal suspend fun ByteString.commonWrite(buffer: Buffer, offset: Int, byteCount: Int) {
   buffer.write(data, offset, byteCount)
 }
 

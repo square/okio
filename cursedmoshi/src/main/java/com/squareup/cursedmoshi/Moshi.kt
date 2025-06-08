@@ -350,9 +350,9 @@ public class Moshi internal constructor(builder: Builder) {
   internal class Lookup<T>(val type: Type, val fieldName: String?, val cacheKey: Any) : JsonAdapter<T>() {
     var adapter: JsonAdapter<T>? = null
 
-    override fun fromJson(reader: JsonReader) = withAdapter { fromJson(reader) }
+    override suspend fun fromJson(reader: JsonReader) = withAdapter { fromJson(reader) }
 
-    override fun toJson(writer: JsonWriter, value: T?) = withAdapter { toJson(writer, value) }
+    override suspend fun toJson(writer: JsonWriter, value: T?) = withAdapter { toJson(writer, value) }
 
     private inline fun <R> withAdapter(body: JsonAdapter<T>.() -> R): R =
       checkNotNull(adapter) { "JsonAdapter isn't ready" }.body()

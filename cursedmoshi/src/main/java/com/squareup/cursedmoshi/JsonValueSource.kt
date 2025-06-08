@@ -64,7 +64,7 @@ internal class JsonValueSource @JvmOverloads constructor(
    *
    * @throws EOFException if the stream is exhausted before the JSON object completes.
    */
-  private fun advanceLimit(byteCount: Long) {
+  private suspend fun advanceLimit(byteCount: Long) {
     while (limit < byteCount) {
       // If we've finished the JSON object, we're done.
       if (state === STATE_END_OF_JSON) {
@@ -169,7 +169,7 @@ internal class JsonValueSource @JvmOverloads constructor(
    * Discards any remaining JSON data in this source that was left behind after it was closed. It is
    * an error to call [read] after calling this method.
    */
-  fun discard() {
+  suspend fun discard() {
     closed = true
     while (state !== STATE_END_OF_JSON) {
       advanceLimit(8192)
@@ -177,7 +177,7 @@ internal class JsonValueSource @JvmOverloads constructor(
     }
   }
 
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  override suspend fun read(sink: Buffer, byteCount: Long): Long {
     var mutableByteCount = byteCount
     check(!closed) { "closed" }
     if (mutableByteCount == 0L) return 0L
@@ -203,7 +203,7 @@ internal class JsonValueSource @JvmOverloads constructor(
 
   override fun timeout() = source.timeout()
 
-  override fun close() {
+  override suspend fun close() {
     // Note that this does not close the underlying source; that's the creator's responsibility.
     closed = true
   }

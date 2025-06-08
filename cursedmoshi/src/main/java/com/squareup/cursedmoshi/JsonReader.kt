@@ -285,38 +285,38 @@ public sealed class JsonReader : Closeable {
    * array.
    */
   @Throws(IOException::class)
-  public abstract fun beginArray()
+  public abstract suspend fun beginArray()
 
   /**
    * Consumes the next token from the JSON stream and asserts that it is the end of the current
    * array.
    */
   @Throws(IOException::class)
-  public abstract fun endArray()
+  public abstract suspend fun endArray()
 
   /**
    * Consumes the next token from the JSON stream and asserts that it is the beginning of a new
    * object.
    */
   @Throws(IOException::class)
-  public abstract fun beginObject()
+  public abstract suspend fun beginObject()
 
   /**
    * Consumes the next token from the JSON stream and asserts that it is the end of the current
    * object.
    */
   @Throws(IOException::class)
-  public abstract fun endObject()
+  public abstract suspend fun endObject()
 
   /** Returns true if the current array or object has another element. */
   @CheckReturnValue
   @Throws(IOException::class)
-  public abstract operator fun hasNext(): Boolean
+  public abstract operator suspend fun hasNext(): Boolean
 
   /** Returns the type of the next token without consuming it. */
   @CheckReturnValue
   @Throws(IOException::class)
-  public abstract fun peek(): Token
+  public abstract suspend fun peek(): Token
 
   /**
    * Returns the next token, a [property name][Token.NAME], and consumes it.
@@ -325,7 +325,7 @@ public sealed class JsonReader : Closeable {
    */
   @CheckReturnValue
   @Throws(IOException::class)
-  public abstract fun nextName(): String
+  public abstract suspend fun nextName(): String
 
   /**
    * If the next token is a [property name][Token.NAME] that's in [options], this
@@ -333,7 +333,7 @@ public sealed class JsonReader : Closeable {
    */
   @CheckReturnValue
   @Throws(IOException::class)
-  public abstract fun selectName(options: Options): Int
+  public abstract suspend fun selectName(options: Options): Int
 
   /**
    * Skips the next token, consuming it. This method is intended for use when the JSON token stream
@@ -342,7 +342,7 @@ public sealed class JsonReader : Closeable {
    * This throws a [JsonDataException] if this parser has been configured to [failOnUnknown] names.
    */
   @Throws(IOException::class)
-  public abstract fun skipName()
+  public abstract suspend fun skipName()
 
   /**
    * Returns the [string][Token.STRING] value of the next token, consuming it. If the next
@@ -351,7 +351,7 @@ public sealed class JsonReader : Closeable {
    * @throws JsonDataException if the next token is not a string or if this reader is closed.
    */
   @Throws(IOException::class)
-  public abstract fun nextString(): String
+  public abstract suspend fun nextString(): String
 
   /**
    * If the next token is a [string][Token.STRING] that's in [options], this
@@ -359,7 +359,7 @@ public sealed class JsonReader : Closeable {
    */
   @CheckReturnValue
   @Throws(IOException::class)
-  public abstract fun selectString(options: Options): Int
+  public abstract suspend fun selectString(options: Options): Int
 
   /**
    * Returns the [boolean][Token.BOOLEAN] value of the next token, consuming it.
@@ -367,7 +367,7 @@ public sealed class JsonReader : Closeable {
    * @throws JsonDataException if the next token is not a boolean or if this reader is closed.
    */
   @Throws(IOException::class)
-  public abstract fun nextBoolean(): Boolean
+  public abstract suspend fun nextBoolean(): Boolean
 
   /**
    * Consumes the next token from the JSON stream and asserts that it is a literal null. Returns
@@ -376,7 +376,7 @@ public sealed class JsonReader : Closeable {
    * @throws JsonDataException if the next token is not null or if this reader is closed.
    */
   @Throws(IOException::class)
-  public abstract fun <T> nextNull(): T?
+  public abstract suspend fun <T> nextNull(): T?
 
   /**
    * Returns the [double][Token.NUMBER] value of the next token, consuming it. If the next
@@ -386,7 +386,7 @@ public sealed class JsonReader : Closeable {
    * value cannot be parsed as a double, or is non-finite.
    */
   @Throws(IOException::class)
-  public abstract fun nextDouble(): Double
+  public abstract suspend fun nextDouble(): Double
 
   /**
    * Returns the [long][Token.NUMBER] value of the next token, consuming it. If the next
@@ -397,7 +397,7 @@ public sealed class JsonReader : Closeable {
    * cannot be parsed as a number, or exactly represented as a long.
    */
   @Throws(IOException::class)
-  public abstract fun nextLong(): Long
+  public abstract suspend fun nextLong(): Long
 
   /**
    * Returns the [int][Token.NUMBER] value of the next token, consuming it. If the next
@@ -408,7 +408,7 @@ public sealed class JsonReader : Closeable {
    * cannot be parsed as a number, or exactly represented as an int.
    */
   @Throws(IOException::class)
-  public abstract fun nextInt(): Int
+  public abstract suspend fun nextInt(): Int
 
   /**
    * Returns the next value as a stream of UTF-8 bytes and consumes it.
@@ -451,7 +451,7 @@ public sealed class JsonReader : Closeable {
    * Closing the returned source **does not** close this reader.
    */
   @Throws(IOException::class)
-  public abstract fun nextSource(): BufferedSource
+  public abstract suspend fun nextSource(): BufferedSource
 
   /**
    * Skips the next value recursively. If it is an object or array, all nested elements are skipped.
@@ -461,7 +461,7 @@ public sealed class JsonReader : Closeable {
    * This throws a [JsonDataException] if this parser has been configured to [failOnUnknown] values.
    */
   @Throws(IOException::class)
-  public abstract fun skipValue()
+  public abstract suspend fun skipValue()
 
   /**
    * Returns the value of the next token, consuming it. The result may be a string, number, boolean,
@@ -472,7 +472,7 @@ public sealed class JsonReader : Closeable {
    * @see JsonWriter.jsonValue
    */
   @Throws(IOException::class)
-  public fun readJsonValue(): Any? {
+  public suspend fun readJsonValue(): Any? {
     return when (peek()) {
       Token.BEGIN_ARRAY -> {
         return buildList {
@@ -575,7 +575,7 @@ public sealed class JsonReader : Closeable {
    * ```
    */
   @Throws(IOException::class)
-  public abstract fun promoteNameToValue()
+  public abstract suspend fun promoteNameToValue()
 
   /**
    * A set of strings to be chosen with [selectName] or [selectString]. This prepares
@@ -597,7 +597,7 @@ public sealed class JsonReader : Closeable {
     public companion object {
       @CheckReturnValue
       @JvmStatic
-      public fun of(vararg strings: String): Options {
+      public suspend fun of(vararg strings: String): Options {
         return try {
           val buffer = Buffer()
           val result = Array(strings.size) { i ->

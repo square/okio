@@ -82,7 +82,7 @@ internal fun rangeEquals(
   return true
 }
 
-internal fun Buffer.readUtf8Line(newline: Long): String {
+internal suspend fun Buffer.readUtf8Line(newline: Long): String {
   return when {
     newline > 0 && this[newline - 1] == '\r'.code.toByte() -> {
       // Read everything until '\r\n', then skip the '\r\n'.
@@ -307,7 +307,7 @@ internal inline fun Buffer.commonReadByte(): Byte {
   return b
 }
 
-internal inline fun Buffer.commonReadShort(): Short {
+internal suspend inline fun Buffer.commonReadShort(): Short {
   if (size < 2L) throw EOFException()
 
   val segment = head!!
@@ -334,7 +334,7 @@ internal inline fun Buffer.commonReadShort(): Short {
   return s.toShort()
 }
 
-internal inline fun Buffer.commonReadInt(): Int {
+internal suspend inline fun Buffer.commonReadInt(): Int {
   if (size < 4L) throw EOFException()
 
   val segment = head!!
@@ -370,7 +370,7 @@ internal inline fun Buffer.commonReadInt(): Int {
   return i
 }
 
-internal inline fun Buffer.commonReadLong(): Long {
+internal inline suspend fun Buffer.commonReadLong(): Long {
   if (size < 8L) throw EOFException()
 
   val segment = head!!
@@ -415,7 +415,7 @@ internal inline fun Buffer.commonGet(pos: Long): Byte {
   }
 }
 
-internal inline fun Buffer.commonClear() = skip(size)
+internal suspend inline fun Buffer.commonClear() = skip(size)
 
 internal inline fun Buffer.commonSkip(byteCount: Long) {
   var byteCount = byteCount
@@ -434,7 +434,7 @@ internal inline fun Buffer.commonSkip(byteCount: Long) {
   }
 }
 
-internal inline fun Buffer.commonWrite(
+internal suspend inline fun Buffer.commonWrite(
   byteString: ByteString,
   offset: Int = 0,
   byteCount: Int = byteString.size,
@@ -443,7 +443,7 @@ internal inline fun Buffer.commonWrite(
   return this
 }
 
-internal inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
+internal suspend inline fun Buffer.commonWriteDecimalLong(v: Long): Buffer {
   var v = v
   if (v == 0L) {
     // Both a shortcut and required since the following code can't handle zero.
@@ -509,7 +509,7 @@ private val DigitCountToLargestValue = longArrayOf(
   Long.MAX_VALUE, // For 19 digits (index 19), the largest value is MAX_VALUE.
 )
 
-internal inline fun Buffer.commonWriteHexadecimalUnsignedLong(v: Long): Buffer {
+internal suspend inline fun Buffer.commonWriteHexadecimalUnsignedLong(v: Long): Buffer {
   var v = v
   if (v == 0L) {
     // Both a shortcut and required since the following code can't handle zero.
@@ -570,7 +570,7 @@ internal inline fun Buffer.commonWritableSegment(minimumCapacity: Int): Segment 
   return tail
 }
 
-internal inline fun Buffer.commonWrite(source: ByteArray) = write(source, 0, source.size)
+internal suspend inline fun Buffer.commonWrite(source: ByteArray) = write(source, 0, source.size)
 
 internal inline fun Buffer.commonWrite(
   source: ByteArray,
@@ -600,9 +600,9 @@ internal inline fun Buffer.commonWrite(
   return this
 }
 
-internal inline fun Buffer.commonReadByteArray() = readByteArray(size)
+internal suspend inline fun Buffer.commonReadByteArray() = readByteArray(size)
 
-internal inline fun Buffer.commonReadByteArray(byteCount: Long): ByteArray {
+internal suspend inline fun Buffer.commonReadByteArray(byteCount: Long): ByteArray {
   require(byteCount >= 0 && byteCount <= Int.MAX_VALUE) { "byteCount: $byteCount" }
   if (size < byteCount) throw EOFException()
 
@@ -611,9 +611,9 @@ internal inline fun Buffer.commonReadByteArray(byteCount: Long): ByteArray {
   return result
 }
 
-internal inline fun Buffer.commonRead(sink: ByteArray) = read(sink, 0, sink.size)
+internal suspend inline fun Buffer.commonRead(sink: ByteArray) = read(sink, 0, sink.size)
 
-internal inline fun Buffer.commonReadFully(sink: ByteArray) {
+internal suspend inline fun Buffer.commonReadFully(sink: ByteArray) {
   var offset = 0
   while (offset < sink.size) {
     val read = read(sink, offset, sink.size - offset)
@@ -648,7 +648,7 @@ internal inline fun Buffer.commonRead(sink: ByteArray, offset: Int, byteCount: I
 internal const val OVERFLOW_ZONE = Long.MIN_VALUE / 10L
 internal const val OVERFLOW_DIGIT_START = Long.MIN_VALUE % 10L + 1
 
-internal inline fun Buffer.commonReadDecimalLong(): Long {
+internal suspend inline fun Buffer.commonReadDecimalLong(): Long {
   if (size == 0L) throw EOFException()
 
   // This value is always built negatively in order to accommodate Long.MIN_VALUE.
@@ -711,7 +711,7 @@ internal inline fun Buffer.commonReadDecimalLong(): Long {
   return if (negative) value else -value
 }
 
-internal inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
+internal suspend inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
   if (size == 0L) throw EOFException()
 
   var value = 0L
@@ -770,9 +770,9 @@ internal inline fun Buffer.commonReadHexadecimalUnsignedLong(): Long {
   return value
 }
 
-internal inline fun Buffer.commonReadByteString(): ByteString = readByteString(size)
+internal suspend inline fun Buffer.commonReadByteString(): ByteString = readByteString(size)
 
-internal inline fun Buffer.commonReadByteString(byteCount: Long): ByteString {
+internal suspend inline fun Buffer.commonReadByteString(byteCount: Long): ByteString {
   require(byteCount >= 0 && byteCount <= Int.MAX_VALUE) { "byteCount: $byteCount" }
   if (size < byteCount) throw EOFException()
 
@@ -783,7 +783,7 @@ internal inline fun Buffer.commonReadByteString(byteCount: Long): ByteString {
   }
 }
 
-internal inline fun Buffer.commonSelect(options: Options): Int {
+internal suspend inline fun Buffer.commonSelect(options: Options): Int {
   val index = selectPrefix(options)
   if (index == -1) return -1
 
@@ -793,7 +793,7 @@ internal inline fun Buffer.commonSelect(options: Options): Int {
   return index
 }
 
-internal inline fun Buffer.commonReadFully(sink: Buffer, byteCount: Long) {
+internal suspend inline fun Buffer.commonReadFully(sink: Buffer, byteCount: Long) {
   if (size < byteCount) {
     sink.write(this, size) // Exhaust ourselves.
     throw EOFException()
@@ -801,7 +801,7 @@ internal inline fun Buffer.commonReadFully(sink: Buffer, byteCount: Long) {
   sink.write(this, byteCount)
 }
 
-internal inline fun Buffer.commonReadAll(sink: Sink): Long {
+internal suspend inline fun Buffer.commonReadAll(sink: Sink): Long {
   val byteCount = size
   if (byteCount > 0L) {
     sink.write(this, byteCount)
@@ -809,7 +809,7 @@ internal inline fun Buffer.commonReadAll(sink: Sink): Long {
   return byteCount
 }
 
-internal inline fun Buffer.commonReadUtf8(byteCount: Long): String {
+internal suspend inline fun Buffer.commonReadUtf8(byteCount: Long): String {
   require(byteCount >= 0 && byteCount <= Int.MAX_VALUE) { "byteCount: $byteCount" }
   if (size < byteCount) throw EOFException()
   if (byteCount == 0L) return ""
@@ -833,7 +833,7 @@ internal inline fun Buffer.commonReadUtf8(byteCount: Long): String {
   return result
 }
 
-internal inline fun Buffer.commonReadUtf8Line(): String? {
+internal suspend inline fun Buffer.commonReadUtf8Line(): String? {
   val newline = indexOf('\n'.code.toByte())
 
   return when {
@@ -843,7 +843,7 @@ internal inline fun Buffer.commonReadUtf8Line(): String? {
   }
 }
 
-internal inline fun Buffer.commonReadUtf8LineStrict(limit: Long): String {
+internal suspend inline fun Buffer.commonReadUtf8LineStrict(limit: Long): String {
   require(limit >= 0L) { "limit < 0: $limit" }
   val scanLength = if (limit == Long.MAX_VALUE) Long.MAX_VALUE else limit + 1L
   val newline = indexOf('\n'.code.toByte(), 0L, scanLength)
@@ -864,7 +864,7 @@ internal inline fun Buffer.commonReadUtf8LineStrict(limit: Long): String {
   )
 }
 
-internal inline fun Buffer.commonReadUtf8CodePoint(): Int {
+internal suspend inline fun Buffer.commonReadUtf8CodePoint(): Int {
   if (size == 0L) throw EOFException()
 
   val b0 = this[0]
@@ -939,7 +939,7 @@ internal inline fun Buffer.commonReadUtf8CodePoint(): Int {
   }
 }
 
-internal inline fun Buffer.commonWriteUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer {
+internal suspend inline fun Buffer.commonWriteUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer {
   require(beginIndex >= 0) { "beginIndex < 0: $beginIndex" }
   require(endIndex >= beginIndex) { "endIndex < beginIndex: $endIndex < $beginIndex" }
   require(endIndex <= string.length) { "endIndex > string.length: $endIndex > ${string.length}" }
@@ -1030,7 +1030,7 @@ internal inline fun Buffer.commonWriteUtf8(string: String, beginIndex: Int, endI
   return this
 }
 
-internal inline fun Buffer.commonWriteUtf8CodePoint(codePoint: Int): Buffer {
+internal suspend inline fun Buffer.commonWriteUtf8CodePoint(codePoint: Int): Buffer {
   when {
     codePoint < 0x80 -> {
       // Emit a 7-bit code point with 1 byte.
@@ -1081,7 +1081,7 @@ internal inline fun Buffer.commonWriteUtf8CodePoint(codePoint: Int): Buffer {
   return this
 }
 
-internal inline fun Buffer.commonWriteAll(source: Source): Long {
+internal suspend inline fun Buffer.commonWriteAll(source: Source): Long {
   var totalBytesRead = 0L
   while (true) {
     val readCount = source.read(this, Segment.SIZE.toLong())
@@ -1091,7 +1091,7 @@ internal inline fun Buffer.commonWriteAll(source: Source): Long {
   return totalBytesRead
 }
 
-internal inline fun Buffer.commonWrite(source: Source, byteCount: Long): Buffer {
+internal suspend inline fun Buffer.commonWrite(source: Source, byteCount: Long): Buffer {
   var byteCount = byteCount
   while (byteCount > 0L) {
     val read = source.read(this, byteCount)
@@ -1242,7 +1242,7 @@ internal inline fun Buffer.commonWrite(source: Buffer, byteCount: Long) {
   }
 }
 
-internal inline fun Buffer.commonRead(sink: Buffer, byteCount: Long): Long {
+internal suspend inline fun Buffer.commonRead(sink: Buffer, byteCount: Long): Long {
   var byteCount = byteCount
   require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   if (size == 0L) return -1L

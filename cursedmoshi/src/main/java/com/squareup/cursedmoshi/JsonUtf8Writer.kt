@@ -55,27 +55,27 @@ internal class JsonUtf8Writer(
     pushScope(JsonScope.EMPTY_DOCUMENT)
   }
 
-  override fun beginArray(): JsonWriter {
+  override suspend fun beginArray(): JsonWriter {
     check(!promoteValueToName) { "Array cannot be used as a map key in JSON at path $path" }
     writeDeferredName()
     return open(JsonScope.EMPTY_ARRAY, JsonScope.NONEMPTY_ARRAY, '[')
   }
 
-  override fun endArray() = close(JsonScope.EMPTY_ARRAY, JsonScope.NONEMPTY_ARRAY, ']')
+  override suspend fun endArray() = close(JsonScope.EMPTY_ARRAY, JsonScope.NONEMPTY_ARRAY, ']')
 
-  override fun beginObject(): JsonWriter {
+  override suspend  fun beginObject(): JsonWriter {
     check(!promoteValueToName) { "Object cannot be used as a map key in JSON at path $path" }
     writeDeferredName()
     return open(JsonScope.EMPTY_OBJECT, JsonScope.NONEMPTY_OBJECT, '{')
   }
 
-  override fun endObject(): JsonWriter {
+  override suspend fun endObject(): JsonWriter {
     promoteValueToName = false
     return close(JsonScope.EMPTY_OBJECT, JsonScope.NONEMPTY_OBJECT, '}')
   }
 
   /** Enters a new scope by appending any necessary whitespace and the given bracket. */
-  private fun open(empty: Int, nonempty: Int, openBracket: Char): JsonWriter {
+  private suspend fun open(empty: Int, nonempty: Int, openBracket: Char): JsonWriter {
     val shouldCancelOpen = stackSize == flattenStackSize &&
       (scopes[stackSize - 1] == empty || scopes[stackSize - 1] == nonempty)
     if (shouldCancelOpen) {
@@ -92,7 +92,7 @@ internal class JsonUtf8Writer(
   }
 
   /** Closes the current scope by appending any necessary whitespace and the given bracket. */
-  private fun close(empty: Int, nonempty: Int, closeBracket: Char): JsonWriter {
+  private suspend fun close(empty: Int, nonempty: Int, closeBracket: Char): JsonWriter {
     val context = peekScope()
     check(context == nonempty || context == empty) { "Nesting problem." }
     check(deferredName == null) { "Dangling name: $deferredName" }
@@ -111,7 +111,7 @@ internal class JsonUtf8Writer(
     return this
   }
 
-  override fun name(name: String): JsonWriter {
+  override suspend fun name(name: String): JsonWriter {
     check(stackSize != 0) { "JsonWriter is closed." }
     val context = peekScope()
     val isWritingObject = !(
@@ -126,7 +126,7 @@ internal class JsonUtf8Writer(
     return this
   }
 
-  private fun writeDeferredName() {
+  private suspend fun writeDeferredName() {
     deferredName?.let { deferredName ->
       beforeName()
       sink.string(deferredName)
@@ -134,7 +134,7 @@ internal class JsonUtf8Writer(
     }
   }
 
-  override fun value(value: String?): JsonWriter = apply {
+  override suspend fun value(value: String?): JsonWriter = apply {
     if (value == null) {
       return nullValue()
     }
@@ -148,7 +148,7 @@ internal class JsonUtf8Writer(
     pathIndices[stackSize - 1]++
   }
 
-  override fun nullValue(): JsonWriter = apply {
+  override suspend fun nullValue(): JsonWriter = apply {
     check(!promoteValueToName) { "null cannot be used as a map key in JSON at path $path" }
     if (deferredName != null) {
       if (serializeNulls) {
@@ -163,7 +163,7 @@ internal class JsonUtf8Writer(
     pathIndices[stackSize - 1]++
   }
 
-  override fun value(value: Boolean): JsonWriter = apply {
+  override suspend fun value(value: Boolean): JsonWriter = apply {
     check(!promoteValueToName) { "Boolean cannot be used as a map key in JSON at path $path" }
     writeDeferredName()
     beforeValue()
@@ -171,11 +171,15 @@ internal class JsonUtf8Writer(
     pathIndices[stackSize - 1]++
   }
 
-  override fun value(value: Boolean?): JsonWriter {
-    return value?.let(::value) ?: nullValue()
+  override suspend fun value(value: Boolean?): JsonWriter {
+    return if (value != null) {
+      value(value)
+    } else {
+      nullValue()
+    }
   }
 
-  override fun value(value: Double): JsonWriter = apply {
+  override suspend fun value(value: Double): JsonWriter = apply {
     require(isLenient || !value.isNaN() && !value.isInfinite()) {
       "Numeric values must be finite, but was $value"
     }
@@ -189,7 +193,7 @@ internal class JsonUtf8Writer(
     pathIndices[stackSize - 1]++
   }
 
-  override fun value(value: Long): JsonWriter = apply {
+  override suspend fun value(value: Long): JsonWriter = apply {
     if (promoteValueToName) {
       promoteValueToName = false
       return name(value.toString())
@@ -200,7 +204,7 @@ internal class JsonUtf8Writer(
     pathIndices[stackSize - 1]++
   }
 
-  override fun value(value: Number?): JsonWriter = apply {
+  override suspend fun value(value: Number?): JsonWriter = apply {
     if (value == null) {
       return nullValue()
     }
@@ -217,17 +221,17 @@ internal class JsonUtf8Writer(
     pathIndices[stackSize - 1]++
   }
 
-  override fun valueSink(): BufferedSink {
+  override suspend fun valueSink(): BufferedSink {
     check(!promoteValueToName) { "BufferedSink cannot be used as a map key in JSON at path $path" }
     writeDeferredName()
     beforeValue()
     pushScope(JsonScope.STREAMING_VALUE)
     return object : Sink {
-      override fun write(source: Buffer, byteCount: Long) {
+      override suspend fun write(source: Buffer, byteCount: Long) {
         sink.write(source, byteCount)
       }
 
-      override fun close() {
+      override suspend fun close() {
         if (peekScope() != JsonScope.STREAMING_VALUE) {
           throw AssertionError()
         }
@@ -235,14 +239,14 @@ internal class JsonUtf8Writer(
         pathIndices[stackSize - 1]++
       }
 
-      override fun flush() = sink.flush()
+      override suspend fun flush() = sink.flush()
 
       override fun timeout() = Timeout.NONE
     }.buffer()
   }
 
   /** Ensures all buffered data is written to the underlying [Sink] and flushes that writer. */
-  override fun flush() {
+  suspend fun flush() {
     check(stackSize != 0) { "JsonWriter is closed." }
     sink.flush()
   }
@@ -252,7 +256,7 @@ internal class JsonUtf8Writer(
    *
    * @throws JsonDataException if the JSON document is incomplete.
    */
-  override fun close() {
+  override suspend fun close() {
     sink.close()
     val size = stackSize
     if (size > 1 || size == 1 && scopes[0] != JsonScope.NONEMPTY_DOCUMENT) {
@@ -261,7 +265,7 @@ internal class JsonUtf8Writer(
     stackSize = 0
   }
 
-  private fun newline() {
+  private suspend fun newline() {
     if (_indent == null) {
       return
     }
@@ -278,7 +282,7 @@ internal class JsonUtf8Writer(
    * Inserts any necessary separators and whitespace before a name. Also adjusts the stack to expect
    * the name's value.
    */
-  private fun beforeName() {
+  private suspend fun beforeName() {
     val context = peekScope()
     if (context == JsonScope.NONEMPTY_OBJECT) { // first in object
       sink.writeByte(','.code)
@@ -296,7 +300,7 @@ internal class JsonUtf8Writer(
    * Inserts any necessary separators and whitespace before a literal value, inline array, or inline
    * object. Also adjusts the stack to expect either a closing bracket or another element.
    */
-  private fun beforeValue() {
+  private suspend fun beforeValue() {
     val nextTop: Int
     when (peekScope()) {
       JsonScope.NONEMPTY_DOCUMENT -> {
@@ -363,7 +367,7 @@ internal class JsonUtf8Writer(
      * and escapes those characters that require it.
      */
     @JvmStatic
-    fun BufferedSink.string(value: String) {
+    suspend fun BufferedSink.string(value: String) {
       val replacements = REPLACEMENT_CHARS
       writeByte('"'.code)
       var last = 0

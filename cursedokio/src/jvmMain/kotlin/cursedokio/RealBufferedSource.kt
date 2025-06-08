@@ -64,84 +64,75 @@ internal actual class RealBufferedSource actual constructor(
 
   override fun buffer() = bufferField
 
-  actual override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
-  actual override fun exhausted(): Boolean = commonExhausted()
-  actual override fun require(byteCount: Long): Unit = commonRequire(byteCount)
-  actual override fun request(byteCount: Long): Boolean = commonRequest(byteCount)
-  actual override fun readByte(): Byte = commonReadByte()
-  actual override fun readByteString(): ByteString = commonReadByteString()
-  actual override fun readByteString(byteCount: Long): ByteString = commonReadByteString(byteCount)
-  actual override fun select(options: Options): Int = commonSelect(options)
-  actual override fun <T : Any> select(options: TypedOptions<T>): T? = commonSelect(options)
-  actual override fun readByteArray(): ByteArray = commonReadByteArray()
-  actual override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
-  actual override fun read(sink: ByteArray): Int = read(sink, 0, sink.size)
-  actual override fun readFully(sink: ByteArray): Unit = commonReadFully(sink)
-  actual override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int =
+  actual override suspend fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
+  actual override suspend fun exhausted(): Boolean = commonExhausted()
+  actual override suspend fun require(byteCount: Long): Unit = commonRequire(byteCount)
+  actual override suspend fun request(byteCount: Long): Boolean = commonRequest(byteCount)
+  actual override suspend fun readByte(): Byte = commonReadByte()
+  actual override suspend fun readByteString(): ByteString = commonReadByteString()
+  actual override suspend fun readByteString(byteCount: Long): ByteString = commonReadByteString(byteCount)
+  actual override suspend fun select(options: Options): Int = commonSelect(options)
+  actual override suspend fun <T : Any> select(options: TypedOptions<T>): T? = commonSelect(options)
+  actual override suspend fun readByteArray(): ByteArray = commonReadByteArray()
+  actual override suspend fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
+  actual override suspend fun read(sink: ByteArray): Int = read(sink, 0, sink.size)
+  actual override suspend fun readFully(sink: ByteArray): Unit = commonReadFully(sink)
+  actual override suspend fun read(sink: ByteArray, offset: Int, byteCount: Int): Int =
     commonRead(sink, offset, byteCount)
 
-  override fun read(sink: ByteBuffer): Int {
-    if (buffer.size == 0L) {
-      val read = source.read(buffer, Segment.SIZE.toLong())
-      if (read == -1L) return -1
-    }
-
-    return buffer.read(sink)
-  }
-
-  actual override fun readFully(sink: Buffer, byteCount: Long): Unit =
+  actual override suspend fun readFully(sink: Buffer, byteCount: Long): Unit =
     commonReadFully(sink, byteCount)
-  actual override fun readAll(sink: Sink): Long = commonReadAll(sink)
-  actual override fun readUtf8(): String = commonReadUtf8()
-  actual override fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
+  actual override suspend fun readAll(sink: Sink): Long = commonReadAll(sink)
+  actual override suspend fun readUtf8(): String = commonReadUtf8()
+  actual override suspend fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
 
-  override fun readString(charset: Charset): String {
+  override suspend fun readString(charset: Charset): String {
     buffer.writeAll(source)
     return buffer.readString(charset)
   }
 
-  override fun readString(byteCount: Long, charset: Charset): String {
+  override suspend fun readString(byteCount: Long, charset: Charset): String {
     require(byteCount)
     return buffer.readString(byteCount, charset)
   }
 
-  actual override fun readUtf8Line(): String? = commonReadUtf8Line()
-  actual override fun readUtf8LineStrict() = readUtf8LineStrict(Long.MAX_VALUE)
-  actual override fun readUtf8LineStrict(limit: Long): String = commonReadUtf8LineStrict(limit)
-  actual override fun readUtf8CodePoint(): Int = commonReadUtf8CodePoint()
-  actual override fun readShort(): Short = commonReadShort()
-  actual override fun readShortLe(): Short = commonReadShortLe()
-  actual override fun readInt(): Int = commonReadInt()
-  actual override fun readIntLe(): Int = commonReadIntLe()
-  actual override fun readLong(): Long = commonReadLong()
-  actual override fun readLongLe(): Long = commonReadLongLe()
-  actual override fun readDecimalLong(): Long = commonReadDecimalLong()
-  actual override fun readHexadecimalUnsignedLong(): Long = commonReadHexadecimalUnsignedLong()
-  actual override fun skip(byteCount: Long): Unit = commonSkip(byteCount)
-  actual override fun indexOf(b: Byte): Long = indexOf(b, 0L, Long.MAX_VALUE)
-  actual override fun indexOf(b: Byte, fromIndex: Long): Long =
+  actual override suspend fun readUtf8Line(): String? = commonReadUtf8Line()
+  actual override suspend fun readUtf8LineStrict() = readUtf8LineStrict(Long.MAX_VALUE)
+  actual override suspend fun readUtf8LineStrict(limit: Long): String = commonReadUtf8LineStrict(limit)
+  actual override suspend fun readUtf8CodePoint(): Int = commonReadUtf8CodePoint()
+  actual override suspend fun readShort(): Short = commonReadShort()
+  actual override suspend fun readShortLe(): Short = commonReadShortLe()
+  actual override suspend fun readInt(): Int = commonReadInt()
+  actual override suspend fun readIntLe(): Int = commonReadIntLe()
+  actual override suspend fun readLong(): Long = commonReadLong()
+  actual override suspend fun readLongLe(): Long = commonReadLongLe()
+  actual override suspend fun readDecimalLong(): Long = commonReadDecimalLong()
+  actual override suspend fun readHexadecimalUnsignedLong(): Long = commonReadHexadecimalUnsignedLong()
+  actual override suspend fun skip(byteCount: Long): Unit = commonSkip(byteCount)
+  actual override suspend fun indexOf(b: Byte): Long = indexOf(b, 0L, Long.MAX_VALUE)
+  actual override suspend fun indexOf(b: Byte, fromIndex: Long): Long =
     indexOf(b, fromIndex, Long.MAX_VALUE)
-  actual override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long =
+  actual override suspend fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long =
     commonIndexOf(b, fromIndex = fromIndex, toIndex = toIndex)
 
-  actual override fun indexOf(bytes: ByteString): Long = indexOf(bytes, 0L)
-  actual override fun indexOf(bytes: ByteString, fromIndex: Long): Long =
+  actual override suspend fun indexOf(bytes: ByteString): Long = indexOf(bytes, 0L)
+  actual override suspend fun indexOf(bytes: ByteString, fromIndex: Long): Long =
     indexOf(bytes, fromIndex, Long.MAX_VALUE)
-  actual override fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long =
+  actual override suspend fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long =
     commonIndexOf(bytes, fromIndex = fromIndex, toIndex = toIndex)
-  actual override fun indexOfElement(targetBytes: ByteString): Long =
+  actual override suspend fun indexOfElement(targetBytes: ByteString): Long =
     indexOfElement(targetBytes, 0L)
-  actual override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long =
+  actual override suspend fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long =
     commonIndexOfElement(targetBytes, fromIndex)
 
-  actual override fun rangeEquals(offset: Long, bytes: ByteString) = rangeEquals(
+  actual override suspend fun rangeEquals(offset: Long, bytes: ByteString) = rangeEquals(
     offset,
     bytes,
     0,
     bytes.size,
   )
 
-  actual override fun rangeEquals(
+  actual override suspend fun rangeEquals(
     offset: Long,
     bytes: ByteString,
     bytesOffset: Int,
@@ -150,57 +141,7 @@ internal actual class RealBufferedSource actual constructor(
 
   actual override fun peek(): BufferedSource = commonPeek()
 
-  override fun inputStream(): InputStream {
-    return object : InputStream() {
-      override fun read(): Int {
-        if (closed) throw IOException("closed")
-        if (buffer.size == 0L) {
-          val count = source.read(buffer, Segment.SIZE.toLong())
-          if (count == -1L) return -1
-        }
-        return buffer.readByte() and 0xff
-      }
-
-      override fun read(data: ByteArray, offset: Int, byteCount: Int): Int {
-        if (closed) throw IOException("closed")
-        checkOffsetAndCount(data.size.toLong(), offset.toLong(), byteCount.toLong())
-
-        if (buffer.size == 0L) {
-          val count = source.read(buffer, Segment.SIZE.toLong())
-          if (count == -1L) return -1
-        }
-
-        return buffer.read(data, offset, byteCount)
-      }
-
-      override fun available(): Int {
-        if (closed) throw IOException("closed")
-        return minOf(buffer.size, Integer.MAX_VALUE).toInt()
-      }
-
-      override fun close() = this@RealBufferedSource.close()
-
-      override fun toString() = "${this@RealBufferedSource}.inputStream()"
-
-      override fun transferTo(out: OutputStream): Long {
-        if (closed) throw IOException("closed")
-        var count = 0L
-        while (true) {
-          if (buffer.size == 0L) {
-            val read = source.read(buffer, Segment.SIZE.toLong())
-            if (read == -1L) break
-          }
-          count += buffer.size
-          buffer.writeTo(out)
-        }
-        return count
-      }
-    }
-  }
-
-  override fun isOpen() = !closed
-
-  actual override fun close(): Unit = commonClose()
+  actual override suspend fun close(): Unit = commonClose()
   actual override fun timeout(): Timeout = commonTimeout()
   override fun toString(): String = commonToString()
 }

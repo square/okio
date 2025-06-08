@@ -52,23 +52,23 @@ internal actual class RealBufferedSink actual constructor(
 
   override fun buffer() = bufferField
 
-  actual override fun write(source: Buffer, byteCount: Long) = commonWrite(source, byteCount)
-  actual override fun write(byteString: ByteString) = commonWrite(byteString)
-  actual override fun write(byteString: ByteString, offset: Int, byteCount: Int) =
+  actual override suspend fun write(source: Buffer, byteCount: Long) = commonWrite(source, byteCount)
+  actual override suspend fun write(byteString: ByteString) = commonWrite(byteString)
+  actual override suspend fun write(byteString: ByteString, offset: Int, byteCount: Int) =
     commonWrite(byteString, offset, byteCount)
-  actual override fun writeUtf8(string: String) = commonWriteUtf8(string)
-  actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int) =
+  actual override suspend fun writeUtf8(string: String) = commonWriteUtf8(string)
+  actual override suspend fun writeUtf8(string: String, beginIndex: Int, endIndex: Int) =
     commonWriteUtf8(string, beginIndex, endIndex)
 
-  actual override fun writeUtf8CodePoint(codePoint: Int) = commonWriteUtf8CodePoint(codePoint)
+  actual override suspend fun writeUtf8CodePoint(codePoint: Int) = commonWriteUtf8CodePoint(codePoint)
 
-  override fun writeString(string: String, charset: Charset): BufferedSink {
+  override suspend fun writeString(string: String, charset: Charset): BufferedSink {
     check(!closed) { "closed" }
     buffer.writeString(string, charset)
     return emitCompleteSegments()
   }
 
-  override fun writeString(
+  override suspend fun writeString(
     string: String,
     beginIndex: Int,
     endIndex: Int,
@@ -79,63 +79,27 @@ internal actual class RealBufferedSink actual constructor(
     return emitCompleteSegments()
   }
 
-  actual override fun write(source: ByteArray) = commonWrite(source)
-  actual override fun write(source: ByteArray, offset: Int, byteCount: Int) =
+  actual override suspend fun write(source: ByteArray) = commonWrite(source)
+  actual override suspend fun write(source: ByteArray, offset: Int, byteCount: Int) =
     commonWrite(source, offset, byteCount)
 
-  override fun write(source: ByteBuffer): Int {
-    check(!closed) { "closed" }
-    val result = buffer.write(source)
-    emitCompleteSegments()
-    return result
-  }
+  actual override suspend fun writeAll(source: Source) = commonWriteAll(source)
+  actual override suspend fun write(source: Source, byteCount: Long): BufferedSink = commonWrite(source, byteCount)
+  actual override suspend fun writeByte(b: Int) = commonWriteByte(b)
+  actual override suspend fun writeShort(s: Int) = commonWriteShort(s)
+  actual override suspend fun writeShortLe(s: Int) = commonWriteShortLe(s)
+  actual override suspend fun writeInt(i: Int) = commonWriteInt(i)
+  actual override suspend fun writeIntLe(i: Int) = commonWriteIntLe(i)
+  actual override suspend fun writeLong(v: Long) = commonWriteLong(v)
+  actual override suspend fun writeLongLe(v: Long) = commonWriteLongLe(v)
+  actual override suspend fun writeDecimalLong(v: Long) = commonWriteDecimalLong(v)
+  actual override suspend fun writeHexadecimalUnsignedLong(v: Long) = commonWriteHexadecimalUnsignedLong(v)
+  actual override suspend fun emitCompleteSegments() = commonEmitCompleteSegments()
+  actual override suspend fun emit() = commonEmit()
 
-  actual override fun writeAll(source: Source) = commonWriteAll(source)
-  actual override fun write(source: Source, byteCount: Long): BufferedSink = commonWrite(source, byteCount)
-  actual override fun writeByte(b: Int) = commonWriteByte(b)
-  actual override fun writeShort(s: Int) = commonWriteShort(s)
-  actual override fun writeShortLe(s: Int) = commonWriteShortLe(s)
-  actual override fun writeInt(i: Int) = commonWriteInt(i)
-  actual override fun writeIntLe(i: Int) = commonWriteIntLe(i)
-  actual override fun writeLong(v: Long) = commonWriteLong(v)
-  actual override fun writeLongLe(v: Long) = commonWriteLongLe(v)
-  actual override fun writeDecimalLong(v: Long) = commonWriteDecimalLong(v)
-  actual override fun writeHexadecimalUnsignedLong(v: Long) = commonWriteHexadecimalUnsignedLong(v)
-  actual override fun emitCompleteSegments() = commonEmitCompleteSegments()
-  actual override fun emit() = commonEmit()
+  actual override suspend fun flush() = commonFlush()
 
-  override fun outputStream(): OutputStream {
-    return object : OutputStream() {
-      override fun write(b: Int) {
-        if (closed) throw IOException("closed")
-        buffer.writeByte(b.toByte().toInt())
-        emitCompleteSegments()
-      }
-
-      override fun write(data: ByteArray, offset: Int, byteCount: Int) {
-        if (closed) throw IOException("closed")
-        buffer.write(data, offset, byteCount)
-        emitCompleteSegments()
-      }
-
-      override fun flush() {
-        // For backwards compatibility, a flush() on a closed stream is a no-op.
-        if (!closed) {
-          this@RealBufferedSink.flush()
-        }
-      }
-
-      override fun close() = this@RealBufferedSink.close()
-
-      override fun toString() = "${this@RealBufferedSink}.outputStream()"
-    }
-  }
-
-  actual override fun flush() = commonFlush()
-
-  override fun isOpen() = !closed
-
-  actual override fun close() = commonClose()
+  actual override suspend fun close() = commonClose()
   actual override fun timeout() = commonTimeout()
   override fun toString() = commonToString()
 }

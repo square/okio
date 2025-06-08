@@ -26,12 +26,12 @@ expect abstract class ForwardingSource constructor(
   // TODO 'Source by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
   @Throws(IOException::class)
-  override fun read(sink: Buffer, byteCount: Long): Long
+  override suspend fun read(sink: Buffer, byteCount: Long): Long
 
   override fun timeout(): Timeout
 
   @Throws(IOException::class)
-  override fun close()
+  override suspend fun close()
 
   override fun toString(): String
 }

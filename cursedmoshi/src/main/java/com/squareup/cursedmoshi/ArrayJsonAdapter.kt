@@ -26,7 +26,7 @@ internal class ArrayJsonAdapter(
   private val elementClass: Class<*>,
   private val elementAdapter: JsonAdapter<Any>,
 ) : JsonAdapter<Any?>() {
-  override fun fromJson(reader: JsonReader): Any {
+  override suspend fun fromJson(reader: JsonReader): Any {
     val list = buildList<Any?> {
       reader.beginArray()
       while (reader.hasNext()) {
@@ -41,7 +41,7 @@ internal class ArrayJsonAdapter(
     return array
   }
 
-  override fun toJson(writer: JsonWriter, value: Any?) {
+  override suspend fun toJson(writer: JsonWriter, value: Any?) {
     writer.beginArray()
     when (value) {
       is BooleanArray -> {

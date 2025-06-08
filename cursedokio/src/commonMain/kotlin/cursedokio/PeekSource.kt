@@ -35,7 +35,7 @@ internal class PeekSource(
   private var closed = false
   private var pos = 0L
 
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  override suspend fun read(sink: Buffer, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
     // Source becomes invalid if there is an expected Segment and it and the expected position
@@ -67,7 +67,7 @@ internal class PeekSource(
     return upstream.timeout()
   }
 
-  override fun close() {
+  override suspend fun close() {
     closed = true
   }
 }

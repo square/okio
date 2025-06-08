@@ -22,7 +22,7 @@ import kotlin.jvm.JvmName
 import cursedokio.BufferedSource
 import cursedokio.TypedOptions
 
-internal inline fun <T : Any> BufferedSource.commonSelect(options: TypedOptions<T>): T? {
+internal suspend inline fun <T : Any> BufferedSource.commonSelect(options: TypedOptions<T>): T? {
   return when (val index = select(options.options)) {
     -1 -> null
     else -> options[index]

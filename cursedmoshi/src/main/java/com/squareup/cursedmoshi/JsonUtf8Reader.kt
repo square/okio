@@ -23,7 +23,9 @@ import cursedokio.ByteString.Companion.encodeUtf8
 import cursedokio.EOFException
 import cursedokio.IOException
 import cursedokio.buffer
+import cursedokio.use
 import java.math.BigDecimal
+import kotlinx.coroutines.runBlocking
 
 internal class JsonUtf8Reader : JsonReader {
   /** The input JSON. */
@@ -72,13 +74,15 @@ internal class JsonUtf8Reader : JsonReader {
     // Make sure our buffer has as many bytes as the source's buffer. This is necessary because
     // JsonUtf8Reader assumes any data it has peeked (like the peekedNumberLength) are buffered.
     try {
-      sourcePeek.require(copyFrom.buffer.size)
+      runBlocking {
+        sourcePeek.require(copyFrom.buffer.size)
+      }
     } catch (e: IOException) {
       throw AssertionError()
     }
   }
 
-  override fun beginArray() {
+  override suspend fun beginArray() {
     val p = peekIfNone()
     if (p == PEEKED_BEGIN_ARRAY) {
       pushScope(JsonScope.EMPTY_ARRAY)
@@ -89,7 +93,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun endArray() {
+  override suspend fun endArray() {
     val p = peekIfNone()
     if (p == PEEKED_END_ARRAY) {
       stackSize--
@@ -100,7 +104,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun beginObject() {
+  override suspend fun beginObject() {
     val p = peekIfNone()
     if (p == PEEKED_BEGIN_OBJECT) {
       pushScope(JsonScope.EMPTY_OBJECT)
@@ -110,7 +114,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun endObject() {
+  override suspend fun endObject() {
     val p = peekIfNone()
     if (p == PEEKED_END_OBJECT) {
       stackSize--
@@ -122,12 +126,12 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun hasNext(): Boolean {
+  override suspend  fun hasNext(): Boolean {
     val p = peekIfNone()
     return p != PEEKED_END_OBJECT && p != PEEKED_END_ARRAY && p != PEEKED_EOF
   }
 
-  override fun peek(): Token {
+  override suspend fun peek(): Token {
     return when (peekIfNone()) {
       PEEKED_BEGIN_OBJECT -> Token.BEGIN_OBJECT
       PEEKED_END_OBJECT -> Token.END_OBJECT
@@ -143,7 +147,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  private fun doPeek(): Int {
+  private suspend fun doPeek(): Int {
     val peekStack = scopes[stackSize - 1]
     when (peekStack) {
       JsonScope.EMPTY_ARRAY -> scopes[stackSize - 1] = JsonScope.NONEMPTY_ARRAY
@@ -323,7 +327,7 @@ internal class JsonUtf8Reader : JsonReader {
     return setPeeked(PEEKED_UNQUOTED)
   }
 
-  private fun peekKeyword(): Int {
+  private suspend fun peekKeyword(): Int {
     // Figure out which keyword we're matching against by its first character.
     var c = buffer[0].asChar()
     val keyword: String
@@ -372,7 +376,7 @@ internal class JsonUtf8Reader : JsonReader {
     return setPeeked(peeking)
   }
 
-  private fun peekNumber(): Int {
+  private suspend fun peekNumber(): Int {
     var value = 0L // Negative to accommodate Long.MIN_VALUE more easily.
     var negative = false
     var fitsInLong = true
@@ -500,7 +504,7 @@ internal class JsonUtf8Reader : JsonReader {
   }
 
   @Throws(IOException::class)
-  override fun nextName(): String {
+  override suspend fun nextName(): String {
     val result = when (peekIfNone()) {
       PEEKED_UNQUOTED_NAME -> nextUnquotedValue()
 
@@ -522,7 +526,7 @@ internal class JsonUtf8Reader : JsonReader {
   }
 
   @Throws(IOException::class)
-  override fun selectName(options: Options): Int {
+  override suspend fun selectName(options: Options): Int {
     val p = peekIfNone()
     if (p < PEEKED_SINGLE_QUOTED_NAME || p > PEEKED_BUFFERED_NAME) {
       return -1
@@ -552,7 +556,7 @@ internal class JsonUtf8Reader : JsonReader {
   }
 
   @Throws(IOException::class)
-  override fun skipName() {
+  override suspend fun skipName() {
     if (failOnUnknown) {
       // Capture the peeked value before nextName() since it will reset its value.
       val peeked = peek()
@@ -585,7 +589,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun nextString(): String {
+  override suspend fun nextString(): String {
     val result = when (peekIfNone()) {
       PEEKED_UNQUOTED -> nextUnquotedValue()
 
@@ -610,7 +614,7 @@ internal class JsonUtf8Reader : JsonReader {
     return result
   }
 
-  override fun selectString(options: Options): Int {
+  override suspend fun selectString(options: Options): Int {
     val p = peekIfNone()
     if (p < PEEKED_SINGLE_QUOTED || p > PEEKED_BUFFERED) {
       return -1
@@ -649,7 +653,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun nextBoolean(): Boolean {
+  override suspend fun nextBoolean(): Boolean {
     return when (peekIfNone()) {
       PEEKED_TRUE -> {
         peeked = PEEKED_NONE
@@ -667,7 +671,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun <T> nextNull(): T? {
+  override suspend fun <T> nextNull(): T? {
     val p = peekIfNone()
     return if (p == PEEKED_NULL) {
       peeked = PEEKED_NONE
@@ -678,7 +682,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun nextDouble(): Double {
+  override suspend  fun nextDouble(): Double {
     val p = peekIfNone()
     if (p == PEEKED_LONG) {
       peeked = PEEKED_NONE
@@ -716,7 +720,7 @@ internal class JsonUtf8Reader : JsonReader {
     return result
   }
 
-  override fun nextLong(): Long {
+  override suspend  fun nextLong(): Long {
     val p = peekIfNone()
     if (p == PEEKED_LONG) {
       peeked = PEEKED_NONE
@@ -764,7 +768,7 @@ internal class JsonUtf8Reader : JsonReader {
    *
    * @throws IOException if any unicode escape sequences are malformed.
    */
-  private fun nextQuotedValue(runTerminator: ByteString): String {
+  private suspend  fun nextQuotedValue(runTerminator: ByteString): String {
     var builder: StringBuilder? = null
     while (true) {
       val index = source.indexOfElement(runTerminator)
@@ -793,12 +797,12 @@ internal class JsonUtf8Reader : JsonReader {
   }
 
   /** Returns an unquoted value as a string.  */
-  private fun nextUnquotedValue(): String {
+  private suspend fun nextUnquotedValue(): String {
     val i = source.indexOfElement(UNQUOTED_STRING_TERMINALS)
     return if (i != -1L) buffer.readUtf8(i) else buffer.readUtf8()
   }
 
-  private fun skipQuotedValue(runTerminator: ByteString) {
+  private suspend fun skipQuotedValue(runTerminator: ByteString) {
     while (true) {
       val index = source.indexOfElement(runTerminator)
       if (index == -1L) throw syntaxError("Unterminated string")
@@ -812,12 +816,12 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  private fun skipUnquotedValue() {
+  private suspend fun skipUnquotedValue() {
     val i = source.indexOfElement(UNQUOTED_STRING_TERMINALS)
     buffer.skip(if (i != -1L) i else buffer.size)
   }
 
-  override fun nextInt(): Int {
+  override suspend fun nextInt(): Int {
     val p = peekIfNone()
     if (p == PEEKED_LONG) {
       val result = peekedLong.toInt()
@@ -874,7 +878,7 @@ internal class JsonUtf8Reader : JsonReader {
     return result
   }
 
-  override fun close() {
+  override suspend fun close() {
     peeked = PEEKED_NONE
     scopes[0] = JsonScope.CLOSED
     stackSize = 1
@@ -882,7 +886,7 @@ internal class JsonUtf8Reader : JsonReader {
     source.close()
   }
 
-  override fun skipValue() {
+  override suspend fun skipValue() {
     if (failOnUnknown) {
       throw JsonDataException("Cannot skip unexpected ${peek()} at $path")
     }
@@ -931,7 +935,7 @@ internal class JsonUtf8Reader : JsonReader {
     pathNames[stackSize - 1] = "null"
   }
 
-  override fun nextSource(): BufferedSource {
+  override suspend fun nextSource(): BufferedSource {
     val p = peekIfNone()
     var valueSourceStackSize = 0
     val prefix = Buffer()
@@ -992,7 +996,7 @@ internal class JsonUtf8Reader : JsonReader {
    * Returns the next character in the stream that is neither whitespace nor a part of a comment.
    * When this returns, the returned character is always at `buffer.getByte(0)`.
    */
-  private fun nextNonWhitespace(throwOnEof: Boolean): Int {
+  private suspend fun nextNonWhitespace(throwOnEof: Boolean): Int {
     /*
      * This code uses ugly local variable 'p' to represent the 'pos' field.
      * Using locals rather than fields saves a few field reads for each
@@ -1067,13 +1071,13 @@ internal class JsonUtf8Reader : JsonReader {
    * Advances the position until after the next newline character. If the line is terminated by
    * "\r\n", the '\n' must be consumed as whitespace by the caller.
    */
-  private fun skipToEndOfLine() {
+  private suspend fun skipToEndOfLine() {
     val index = source.indexOfElement(LINEFEED_OR_CARRIAGE_RETURN)
     buffer.skip(if (index != -1L) index + 1 else buffer.size)
   }
 
   /** Skips through the next closing block comment. */
-  private fun skipToEndOfBlockComment(): Boolean {
+  private suspend fun skipToEndOfBlockComment(): Boolean {
     val index = source.indexOf(CLOSING_BLOCK_COMMENT)
     val found = index != -1L
     buffer.skip(if (found) index + CLOSING_BLOCK_COMMENT.size else buffer.size)
@@ -1091,7 +1095,7 @@ internal class JsonUtf8Reader : JsonReader {
    *
    * @throws IOException if any unicode escape sequences are malformed.
    */
-  private fun readEscapeCharacter(): Char {
+  private suspend fun readEscapeCharacter(): Char {
     if (!source.request(1)) {
       throw syntaxError("Unterminated escape sequence")
     }
@@ -1135,7 +1139,7 @@ internal class JsonUtf8Reader : JsonReader {
     }
   }
 
-  override fun promoteNameToValue() {
+  override suspend fun promoteNameToValue() {
     if (hasNext()) {
       peekedString = nextName()
       peeked = PEEKED_BUFFERED
@@ -1143,7 +1147,7 @@ internal class JsonUtf8Reader : JsonReader {
   }
 
   @Suppress("NOTHING_TO_INLINE")
-  private inline fun peekIfNone(): Int {
+  private suspend inline fun peekIfNone(): Int {
     val p = peeked
     return if (p == PEEKED_NONE) doPeek() else p
   }

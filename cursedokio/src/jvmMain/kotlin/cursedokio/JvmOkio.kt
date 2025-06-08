@@ -24,18 +24,14 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
 import java.net.SocketTimeoutException
 import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.Path as NioPath
-import java.security.MessageDigest
 import java.util.logging.Level
 import java.util.logging.Logger
-import javax.crypto.Cipher
-import javax.crypto.Mac
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -45,7 +41,7 @@ private class OutputStreamSink(
   private val timeout: Timeout,
 ) : Sink {
 
-  override fun write(source: Buffer, byteCount: Long) {
+  override suspend fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
     var remaining = byteCount
     while (remaining > 0) {
@@ -65,77 +61,13 @@ private class OutputStreamSink(
     }
   }
 
-  override fun flush() = out.flush()
+  override suspend fun flush() = out.flush()
 
-  override fun close() = out.close()
+  override suspend fun close() = out.close()
 
   override fun timeout() = timeout
 
   override fun toString() = "sink($out)"
-}
-
-/** Returns a source that reads from `in`. */
-fun InputStream.source(): Source = InputStreamSource(this, Timeout())
-
-private open class InputStreamSource(
-  private val input: InputStream,
-  private val timeout: Timeout,
-) : Source {
-
-  override fun read(sink: Buffer, byteCount: Long): Long {
-    if (byteCount == 0L) return 0L
-    require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
-    try {
-      timeout.throwIfReached()
-      val tail = sink.writableSegment(1)
-      val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
-      val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
-      if (bytesRead == -1) {
-        if (tail.pos == tail.limit) {
-          // We allocated a tail segment, but didn't end up needing it. Recycle!
-          sink.head = tail.pop()
-          SegmentPool.recycle(tail)
-        }
-        return -1
-      }
-      tail.limit += bytesRead
-      sink.size += bytesRead
-      return bytesRead.toLong()
-    } catch (e: AssertionError) {
-      if (e.isAndroidGetsocknameError) throw IOException(e)
-      throw e
-    }
-  }
-
-  override fun close() = input.close()
-
-  override fun timeout() = timeout
-
-  override fun toString() = "source($input)"
-}
-
-/**
- * Returns a sink that writes to `socket`. Prefer this over [sink]
- * because this method honors timeouts. When the socket
- * write times out, the socket is asynchronously closed by a watchdog thread.
- */
-@Throws(IOException::class)
-fun Socket.sink(): Sink {
-  val timeout = SocketAsyncTimeout(this)
-  val sink = OutputStreamSink(getOutputStream(), timeout)
-  return timeout.sink(sink)
-}
-
-/**
- * Returns a source that reads from `socket`. Prefer this over [source]
- * because this method honors timeouts. When the socket
- * read times out, the socket is asynchronously closed by a watchdog thread.
- */
-@Throws(IOException::class)
-fun Socket.source(): Source {
-  val timeout = SocketAsyncTimeout(this)
-  val source = InputStreamSource(getInputStream(), timeout)
-  return timeout.source(source)
 }
 
 private val logger = Logger.getLogger("okio.Okio")
@@ -175,20 +107,10 @@ fun File.sink(append: Boolean = false): Sink = FileOutputStream(this, append).si
 @Throws(FileNotFoundException::class)
 fun File.appendingSink(): Sink = FileOutputStream(this, true).sink()
 
-/** Returns a source that reads from `file`. */
-@Throws(FileNotFoundException::class)
-fun File.source(): Source = InputStreamSource(inputStream(), Timeout.NONE)
-
 /** Returns a sink that writes to `path`. */
 @Throws(IOException::class)
 fun NioPath.sink(vararg options: OpenOption): Sink =
   Files.newOutputStream(this, *options).sink()
-
-/** Returns a source that reads from `path`. */
-@Throws(IOException::class)
-fun NioPath.source(vararg options: OpenOption): Source =
-  Files.newInputStream(this, *options).source()
-
 
 /**
  * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.

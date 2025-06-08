@@ -27,7 +27,7 @@ internal class MapJsonAdapter<K, V>(moshi: Moshi, keyType: Type, valueType: Type
   private val keyAdapter: JsonAdapter<K> = moshi.adapter(keyType)
   private val valueAdapter: JsonAdapter<V> = moshi.adapter(valueType)
 
-  override fun toJson(writer: JsonWriter, value: Map<K, V?>?) {
+  override suspend fun toJson(writer: JsonWriter, value: Map<K, V?>?) {
     writer.beginObject()
     // Never null because we wrap in nullSafe()
     for ((k, v) in knownNotNull(value)) {
@@ -41,7 +41,7 @@ internal class MapJsonAdapter<K, V>(moshi: Moshi, keyType: Type, valueType: Type
     writer.endObject()
   }
 
-  override fun fromJson(reader: JsonReader): Map<K, V?> {
+  override suspend fun fromJson(reader: JsonReader): Map<K, V?> {
     val result = LinkedHashTreeMap<K, V?>()
     reader.beginObject()
     while (reader.hasNext()) {

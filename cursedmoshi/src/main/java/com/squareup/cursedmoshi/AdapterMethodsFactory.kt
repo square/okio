@@ -58,7 +58,7 @@ internal class AdapterMethodsFactory(
     fromAdapter?.bind(moshi, this)
 
     return object : JsonAdapter<Any>() {
-      override fun toJson(writer: JsonWriter, value: Any?) {
+      override suspend fun toJson(writer: JsonWriter, value: Any?) {
         when {
           toAdapter == null -> knownNotNull(delegate).toJson(writer, value)
 
@@ -76,7 +76,7 @@ internal class AdapterMethodsFactory(
         }
       }
 
-      override fun fromJson(reader: JsonReader): Any? {
+      override suspend fun fromJson(reader: JsonReader): Any? {
         return when {
           fromAdapter == null -> knownNotNull(delegate).fromJson(reader)
 
@@ -160,7 +160,7 @@ internal class AdapterMethodsFactory(
             method = method,
             nullable = true,
           ) {
-            override fun toJson(moshi: Moshi, writer: JsonWriter, value: Any?) {
+            override suspend fun toJson(moshi: Moshi, writer: JsonWriter, value: Any?) {
               invokeMethod(writer, value)
             }
           }
@@ -194,7 +194,7 @@ internal class AdapterMethodsFactory(
               }
             }
 
-            override fun toJson(moshi: Moshi, writer: JsonWriter, value: Any?) {
+            override suspend fun toJson(moshi: Moshi, writer: JsonWriter, value: Any?) {
               delegate.toJson(writer, invokeMethod(value))
             }
           }
@@ -252,7 +252,7 @@ internal class AdapterMethodsFactory(
             method = method,
             nullable = true,
           ) {
-            override fun fromJson(moshi: Moshi, reader: JsonReader) = invokeMethod(reader)
+            override suspend fun fromJson(moshi: Moshi, reader: JsonReader) = invokeMethod(reader)
           }
         }
 
@@ -280,7 +280,7 @@ internal class AdapterMethodsFactory(
               }
             }
 
-            override fun fromJson(moshi: Moshi, reader: JsonReader): Any? {
+            override suspend fun fromJson(moshi: Moshi, reader: JsonReader): Any? {
               val intermediate = delegate.fromJson(reader)
               return invokeMethod(intermediate)
             }
@@ -346,9 +346,9 @@ internal class AdapterMethodsFactory(
       }
     }
 
-    open fun toJson(moshi: Moshi, writer: JsonWriter, value: Any?): Unit = throw AssertionError()
+    open suspend fun toJson(moshi: Moshi, writer: JsonWriter, value: Any?): Unit = throw AssertionError()
 
-    open fun fromJson(moshi: Moshi, reader: JsonReader): Any? = throw AssertionError()
+    open suspend fun fromJson(moshi: Moshi, reader: JsonReader): Any? = throw AssertionError()
 
     /** Invoke the method with one fixed argument, plus any number of JSON adapter arguments. */
     protected fun invokeMethod(arg: Any?): Any? {

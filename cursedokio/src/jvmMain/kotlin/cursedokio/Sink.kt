@@ -15,19 +15,17 @@
  */
 package cursedokio
 
-import java.io.Closeable
-import java.io.Flushable
 import java.io.IOException
 
-actual interface Sink : Closeable, Flushable {
+actual interface Sink : cursedokio.Closeable {
   @Throws(IOException::class)
-  actual fun write(source: Buffer, byteCount: Long)
+  actual suspend fun write(source: Buffer, byteCount: Long)
 
   @Throws(IOException::class)
-  actual override fun flush()
+  actual suspend fun flush()
 
   actual fun timeout(): Timeout
 
   @Throws(IOException::class)
-  actual override fun close()
+  actual override suspend fun close()
 }

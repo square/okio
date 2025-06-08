@@ -31,6 +31,7 @@ import java.lang.reflect.Modifier.isStatic
 import java.lang.reflect.Modifier.isTransient
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import kotlinx.coroutines.runBlocking
 
 /**
  * Emits a regular class as a JSON object by mapping Java fields to JSON object properties.
@@ -52,9 +53,9 @@ internal class ClassJsonAdapter<T>(
   fieldsMap: Map<String, FieldBinding<*>>,
 ) : JsonAdapter<T>() {
   private val fieldsArray = fieldsMap.values.toTypedArray()
-  private val options = JsonReader.Options.of(*fieldsMap.keys.toTypedArray())
+  private val options = runBlocking { JsonReader.Options.of(*fieldsMap.keys.toTypedArray()) }
 
-  override fun fromJson(reader: JsonReader): T {
+  override suspend fun fromJson(reader: JsonReader): T {
     val result: T = try {
       classFactory.newInstance()
     } catch (e: InstantiationException) {
@@ -83,7 +84,7 @@ internal class ClassJsonAdapter<T>(
     }
   }
 
-  override fun toJson(writer: JsonWriter, value: T?) {
+  override suspend fun toJson(writer: JsonWriter, value: T?) {
     try {
       writer.beginObject()
       for (fieldBinding in fieldsArray) {
@@ -99,13 +100,13 @@ internal class ClassJsonAdapter<T>(
   override fun toString() = "JsonAdapter($classFactory)"
 
   internal class FieldBinding<T>(val name: String, val field: Field, val adapter: JsonAdapter<T>) {
-    fun read(reader: JsonReader, value: Any?) {
+    suspend fun read(reader: JsonReader, value: Any?) {
       val fieldValue = adapter.fromJson(reader)
       field.set(value, fieldValue)
     }
 
     @Suppress("UNCHECKED_CAST") // We require that field's values are of type T.
-    fun write(writer: JsonWriter, value: Any?) {
+    suspend fun write(writer: JsonWriter, value: Any?) {
       val fieldValue = field.get(value) as T
       adapter.toJson(writer, fieldValue)
     }

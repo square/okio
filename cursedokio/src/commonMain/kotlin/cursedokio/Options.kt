@@ -34,7 +34,7 @@ class Options private constructor(
 
   companion object {
     @JvmStatic
-    fun of(vararg byteStrings: ByteString): Options {
+    suspend fun of(vararg byteStrings: ByteString): Options {
       if (byteStrings.isEmpty()) {
         // With no choices we must always return -1. Create a trie that selects from an empty set.
         return Options(arrayOf(), intArrayOf(0, -1))
@@ -106,7 +106,7 @@ class Options private constructor(
      * This structure is used to improve locality and performance when selecting from a list of
      * options.
      */
-    private fun buildTrieRecursive(
+    private suspend fun buildTrieRecursive(
       nodeOffset: Long = 0L,
       node: Buffer,
       byteStringOffset: Int = 0,

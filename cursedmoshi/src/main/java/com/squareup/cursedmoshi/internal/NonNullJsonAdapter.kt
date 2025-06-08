@@ -21,7 +21,7 @@ import com.squareup.cursedmoshi.JsonReader
 import com.squareup.cursedmoshi.JsonWriter
 
 public class NonNullJsonAdapter<T>(public val delegate: JsonAdapter<T>) : JsonAdapter<T>() {
-  override fun fromJson(reader: JsonReader): T {
+  override suspend fun fromJson(reader: JsonReader): T {
     return if (reader.peek() == JsonReader.Token.NULL) {
       throw JsonDataException("Unexpected null at " + reader.path)
     } else {
@@ -29,7 +29,7 @@ public class NonNullJsonAdapter<T>(public val delegate: JsonAdapter<T>) : JsonAd
     }
   }
 
-  override fun toJson(writer: JsonWriter, value: T?) {
+  override suspend fun toJson(writer: JsonWriter, value: T?) {
     if (value == null) {
       throw JsonDataException("Unexpected null at " + writer.path)
     } else {

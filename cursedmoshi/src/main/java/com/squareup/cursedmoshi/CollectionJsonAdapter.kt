@@ -25,7 +25,7 @@ internal abstract class CollectionJsonAdapter<C : MutableCollection<T?>, T> priv
 
   abstract fun newCollection(): C
 
-  override fun fromJson(reader: JsonReader): C {
+  override suspend fun fromJson(reader: JsonReader): C {
     val result = newCollection()
     reader.beginArray()
     while (reader.hasNext()) {
@@ -35,7 +35,7 @@ internal abstract class CollectionJsonAdapter<C : MutableCollection<T?>, T> priv
     return result
   }
 
-  override fun toJson(writer: JsonWriter, value: C?) {
+  override suspend fun toJson(writer: JsonWriter, value: C?) {
     markNotNull(value) // Always wrapped in nullSafe()
     writer.beginArray()
     for (element in value) {

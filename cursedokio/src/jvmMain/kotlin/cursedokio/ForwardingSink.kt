@@ -26,15 +26,15 @@ abstract class ForwardingSink(
   // TODO 'Sink by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
   @Throws(IOException::class)
-  override fun write(source: Buffer, byteCount: Long) = delegate.write(source, byteCount)
+  override suspend fun write(source: Buffer, byteCount: Long) = delegate.write(source, byteCount)
 
   @Throws(IOException::class)
-  override fun flush() = delegate.flush()
+  override suspend fun flush() = delegate.flush()
 
   override fun timeout() = delegate.timeout()
 
   @Throws(IOException::class)
-  override fun close() = delegate.close()
+  override suspend fun close() = delegate.close()
 
   override fun toString() = "${javaClass.simpleName}($delegate)"
 

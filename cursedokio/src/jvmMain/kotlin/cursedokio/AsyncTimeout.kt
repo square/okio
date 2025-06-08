@@ -105,7 +105,7 @@ open class AsyncTimeout : Timeout() {
    */
   fun sink(sink: Sink): Sink {
     return object : Sink {
-      override fun write(source: Buffer, byteCount: Long) {
+      override suspend fun write(source: Buffer, byteCount: Long) {
         checkOffsetAndCount(source.size, 0, byteCount)
 
         var remaining = byteCount
@@ -129,11 +129,11 @@ open class AsyncTimeout : Timeout() {
         }
       }
 
-      override fun flush() {
+      override suspend fun flush() {
         withTimeout { sink.flush() }
       }
 
-      override fun close() {
+      override suspend fun close() {
         withTimeout { sink.close() }
       }
 
@@ -149,11 +149,11 @@ open class AsyncTimeout : Timeout() {
    */
   fun source(source: Source): Source {
     return object : Source {
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override suspend fun read(sink: Buffer, byteCount: Long): Long {
         return withTimeout { source.read(sink, byteCount) }
       }
 
-      override fun close() {
+      override suspend fun close() {
         withTimeout { source.close() }
       }
 

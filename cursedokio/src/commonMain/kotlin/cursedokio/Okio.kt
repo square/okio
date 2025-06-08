@@ -43,14 +43,14 @@ fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
 fun blackholeSink(): Sink = BlackholeSink()
 
 private class BlackholeSink : Sink {
-  override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
-  override fun flush() {}
+  override suspend fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
+  override suspend fun flush() {}
   override fun timeout() = Timeout.NONE
-  override fun close() {}
+  override suspend fun close() {}
 }
 
 /** Execute [block] then close this. This will be closed even if [block] throws. */
-inline fun <T : Closeable?, R> T.use(block: (T) -> R): R {
+suspend inline fun <T : Closeable?, R> T.use(block: suspend (T) -> R): R {
   contract {
     callsInPlace(block, InvocationKind.EXACTLY_ONCE)
   }

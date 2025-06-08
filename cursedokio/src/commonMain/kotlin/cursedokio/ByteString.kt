@@ -92,7 +92,7 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   fun toByteArray(): ByteArray
 
   /** Writes the contents of this byte string to `buffer`. */
-  internal fun write(buffer: Buffer, offset: Int, byteCount: Int)
+  internal suspend fun write(buffer: Buffer, offset: Int, byteCount: Int)
 
   /** Returns the bytes of this string without a defensive copy. Do not mutate!  */
   internal fun internalArray(): ByteArray
@@ -175,6 +175,6 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
 
     /** Decodes the hex-encoded bytes and returns their value a byte string. */
     @JvmStatic
-    fun String.decodeHex(): ByteString
+    suspend fun String.decodeHex(): ByteString
   }
 }

@@ -124,7 +124,7 @@ internal actual constructor(
     out.write(data)
   }
 
-  internal actual open fun write(buffer: Buffer, offset: Int, byteCount: Int) =
+  internal actual open suspend fun write(buffer: Buffer, offset: Int, byteCount: Int) =
     commonWrite(buffer, offset, byteCount)
 
   actual open fun rangeEquals(
@@ -242,7 +242,7 @@ internal actual constructor(
     actual fun String.decodeBase64() = commonDecodeBase64()
 
     @JvmStatic
-    actual fun String.decodeHex() = commonDecodeHex()
+    actual suspend fun String.decodeHex() = commonDecodeHex()
 
     /**
      * Reads `count` bytes from this [InputStream] and returns the result.
@@ -286,7 +286,7 @@ internal actual constructor(
       ),
       level = DeprecationLevel.ERROR,
     )
-    fun decodeHex(string: String) = string.decodeHex()
+    suspend fun decodeHex(string: String) = string.decodeHex()
 
     @JvmName("-deprecated_encodeString")
     @Deprecated(

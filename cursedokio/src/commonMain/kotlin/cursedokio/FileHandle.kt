@@ -184,7 +184,7 @@ abstract class FileHandle(
    * If the parameter is a [BufferedSource], it will skip or clear buffered bytes.
    */
   @Throws(IOException::class)
-  fun reposition(source: Source, position: Long) {
+  suspend fun reposition(source: Source, position: Long) {
     if (source is RealBufferedSource) {
       val fileHandleSource = source.source
       require(fileHandleSource is FileHandleSource && fileHandleSource.fileHandle === this) {
@@ -263,7 +263,7 @@ abstract class FileHandle(
    * parameter is a [BufferedSink], it emits for buffered bytes.
    */
   @Throws(IOException::class)
-  fun reposition(sink: Sink, position: Long) {
+  suspend fun reposition(sink: Sink, position: Long) {
     if (sink is RealBufferedSink) {
       val fileHandleSink = sink.sink
       require(fileHandleSink is FileHandleSink && fileHandleSink.fileHandle === this) {
@@ -283,7 +283,7 @@ abstract class FileHandle(
   }
 
   @Throws(IOException::class)
-  final override fun close() {
+  final override suspend fun close() {
     lock.withLock {
       if (closed) return
       closed = true
@@ -391,20 +391,20 @@ abstract class FileHandle(
   ) : Sink {
     var closed = false
 
-    override fun write(source: Buffer, byteCount: Long) {
+    override suspend fun write(source: Buffer, byteCount: Long) {
       check(!closed) { "closed" }
       fileHandle.writeNoCloseCheck(position, source, byteCount)
       position += byteCount
     }
 
-    override fun flush() {
+    override suspend fun flush() {
       check(!closed) { "closed" }
       fileHandle.protectedFlush()
     }
 
     override fun timeout() = Timeout.NONE
 
-    override fun close() {
+    override suspend fun close() {
       if (closed) return
       closed = true
       fileHandle.lock.withLock {
@@ -421,7 +421,7 @@ abstract class FileHandle(
   ) : Source {
     var closed = false
 
-    override fun read(sink: Buffer, byteCount: Long): Long {
+    override suspend fun read(sink: Buffer, byteCount: Long): Long {
       check(!closed) { "closed" }
       val result = fileHandle.readNoCloseCheck(position, sink, byteCount)
       if (result != -1L) position += result
@@ -430,7 +430,7 @@ abstract class FileHandle(
 
     override fun timeout() = Timeout.NONE
 
-    override fun close() {
+    override suspend fun close() {
       if (closed) return
       closed = true
       fileHandle.lock.withLock {

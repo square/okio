@@ -44,6 +44,7 @@ tasks
 
 dependencies {
   compileOnly(libs.jsr305)
+  compileOnly(libs.kotlinx.coroutines.core)
   api(project(":cursedokio"))
 
   testCompileOnly(libs.jsr305)

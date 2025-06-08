@@ -17,9 +17,7 @@
 package cursedokio
 
 import java.io.File
-import java.io.InputStream
 import java.io.OutputStream
-import java.net.Socket
 import java.nio.file.OpenOption
 import java.nio.file.Path as NioPath
 
@@ -84,56 +82,6 @@ object `-DeprecatedOkio` {
     level = DeprecationLevel.ERROR,
   )
   fun sink(path: NioPath, vararg options: OpenOption) = path.sink(*options)
-
-  @Deprecated(
-    message = "moved to extension function",
-    replaceWith = ReplaceWith(
-      expression = "socket.sink()",
-      imports = ["okio.sink"],
-    ),
-    level = DeprecationLevel.ERROR,
-  )
-  fun sink(socket: Socket) = socket.sink()
-
-  @Deprecated(
-    message = "moved to extension function",
-    replaceWith = ReplaceWith(
-      expression = "file.source()",
-      imports = ["okio.source"],
-    ),
-    level = DeprecationLevel.ERROR,
-  )
-  fun source(file: File) = file.source()
-
-  @Deprecated(
-    message = "moved to extension function",
-    replaceWith = ReplaceWith(
-      expression = "inputStream.source()",
-      imports = ["okio.source"],
-    ),
-    level = DeprecationLevel.ERROR,
-  )
-  fun source(inputStream: InputStream) = inputStream.source()
-
-  @Deprecated(
-    message = "moved to extension function",
-    replaceWith = ReplaceWith(
-      expression = "path.source(*options)",
-      imports = ["okio.source"],
-    ),
-    level = DeprecationLevel.ERROR,
-  )
-  fun source(path: NioPath, vararg options: OpenOption) = path.source(*options)
-
-  @Deprecated(
-    message = "moved to extension function",
-    replaceWith = ReplaceWith(
-      expression = "socket.source()",
-      imports = ["okio.source"],
-    ),
-    level = DeprecationLevel.ERROR,
-  )
-  fun source(socket: Socket) = socket.source()
 
   @Deprecated(
     message = "moved to extension function",

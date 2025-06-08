@@ -39,7 +39,7 @@ class TypedOptions<T : Any>(
 
   companion object {
     @JvmStatic
-    inline fun <T : Any> of(
+    suspend inline fun <T : Any> of(
       values: Iterable<T>,
       encode: (T) -> ByteString,
     ): TypedOptions<T> {

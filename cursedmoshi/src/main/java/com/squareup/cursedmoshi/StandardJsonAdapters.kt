@@ -20,6 +20,7 @@ import com.squareup.cursedmoshi.internal.generatedAdapter
 import com.squareup.cursedmoshi.internal.jsonName
 import com.squareup.cursedmoshi.internal.knownNotNull
 import java.lang.reflect.Type
+import kotlinx.coroutines.runBlocking
 
 internal object StandardJsonAdapters : JsonAdapter.Factory {
 
@@ -58,7 +59,7 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
     }
   }
 
-  fun rangeCheckNextInt(reader: JsonReader, typeMessage: String?, min: Int, max: Int): Int {
+  suspend fun rangeCheckNextInt(reader: JsonReader, typeMessage: String?, min: Int, max: Int): Int {
     val value = reader.nextInt()
     if (value !in min..max) {
       throw JsonDataException(ERROR_FORMAT.format(typeMessage, value, reader.path))
@@ -67,9 +68,9 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   val BOOLEAN_JSON_ADAPTER: JsonAdapter<Boolean> = object : JsonAdapter<Boolean>() {
-    override fun fromJson(reader: JsonReader) = reader.nextBoolean()
+    override suspend fun fromJson(reader: JsonReader) = reader.nextBoolean()
 
-    override fun toJson(writer: JsonWriter, value: Boolean?) {
+    override suspend fun toJson(writer: JsonWriter, value: Boolean?) {
       writer.value(knownNotNull(value))
     }
 
@@ -77,11 +78,11 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   private val BYTE_JSON_ADAPTER: JsonAdapter<Byte> = object : JsonAdapter<Byte>() {
-    override fun fromJson(reader: JsonReader): Byte {
+    override suspend fun fromJson(reader: JsonReader): Byte {
       return rangeCheckNextInt(reader, "a byte", Byte.MIN_VALUE.toInt(), 0xff).toByte()
     }
 
-    override fun toJson(writer: JsonWriter, value: Byte?) {
+    override suspend fun toJson(writer: JsonWriter, value: Byte?) {
       writer.value((knownNotNull(value).toInt() and 0xff).toLong())
     }
 
@@ -89,7 +90,7 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   private val CHARACTER_JSON_ADAPTER: JsonAdapter<Char> = object : JsonAdapter<Char>() {
-    override fun fromJson(reader: JsonReader): Char {
+    override suspend fun fromJson(reader: JsonReader): Char {
       val value = reader.nextString()
       if (value.length > 1) {
         throw JsonDataException(ERROR_FORMAT.format("a char", "\"$value\"", reader.path))
@@ -97,7 +98,7 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
       return value[0]
     }
 
-    override fun toJson(writer: JsonWriter, value: Char?) {
+    override suspend fun toJson(writer: JsonWriter, value: Char?) {
       writer.value(knownNotNull(value).toString())
     }
 
@@ -105,11 +106,11 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   private val DOUBLE_JSON_ADAPTER: JsonAdapter<Double> = object : JsonAdapter<Double>() {
-    override fun fromJson(reader: JsonReader): Double {
+    override suspend fun fromJson(reader: JsonReader): Double {
       return reader.nextDouble()
     }
 
-    override fun toJson(writer: JsonWriter, value: Double?) {
+    override suspend fun toJson(writer: JsonWriter, value: Double?) {
       writer.value(knownNotNull(value).toDouble())
     }
 
@@ -117,7 +118,7 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   private val FLOAT_JSON_ADAPTER: JsonAdapter<Float> = object : JsonAdapter<Float>() {
-    override fun fromJson(reader: JsonReader): Float {
+    override suspend fun fromJson(reader: JsonReader): Float {
       val value = reader.nextDouble().toFloat()
       // Double check for infinity after float conversion; many doubles > Float.MAX
       if (!reader.lenient && value.isInfinite()) {
@@ -128,7 +129,7 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
       return value
     }
 
-    override fun toJson(writer: JsonWriter, value: Float?) {
+    override suspend fun toJson(writer: JsonWriter, value: Float?) {
       // Manual null pointer check for the float.class adapter.
       if (value == null) {
         throw NullPointerException()
@@ -141,11 +142,11 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   private val INTEGER_JSON_ADAPTER: JsonAdapter<Int> = object : JsonAdapter<Int>() {
-    override fun fromJson(reader: JsonReader): Int {
+    override suspend fun fromJson(reader: JsonReader): Int {
       return reader.nextInt()
     }
 
-    override fun toJson(writer: JsonWriter, value: Int?) {
+    override suspend fun toJson(writer: JsonWriter, value: Int?) {
       writer.value(knownNotNull(value).toInt().toLong())
     }
 
@@ -153,11 +154,11 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   private val LONG_JSON_ADAPTER: JsonAdapter<Long> = object : JsonAdapter<Long>() {
-    override fun fromJson(reader: JsonReader): Long {
+    override suspend fun fromJson(reader: JsonReader): Long {
       return reader.nextLong()
     }
 
-    override fun toJson(writer: JsonWriter, value: Long?) {
+    override suspend fun toJson(writer: JsonWriter, value: Long?) {
       writer.value(knownNotNull(value).toLong())
     }
 
@@ -165,11 +166,11 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   private val SHORT_JSON_ADAPTER: JsonAdapter<Short> = object : JsonAdapter<Short>() {
-    override fun fromJson(reader: JsonReader): Short {
+    override suspend fun fromJson(reader: JsonReader): Short {
       return rangeCheckNextInt(reader, "a short", Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
     }
 
-    override fun toJson(writer: JsonWriter, value: Short?) {
+    override suspend fun toJson(writer: JsonWriter, value: Short?) {
       writer.value(knownNotNull(value).toInt().toLong())
     }
 
@@ -177,11 +178,11 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
   }
 
   private val STRING_JSON_ADAPTER: JsonAdapter<String> = object : JsonAdapter<String>() {
-    override fun fromJson(reader: JsonReader): String? {
+    override suspend fun fromJson(reader: JsonReader): String? {
       return reader.nextString()
     }
 
-    override fun toJson(writer: JsonWriter, value: String?) {
+    override suspend fun toJson(writer: JsonWriter, value: String?) {
       writer.value(value)
     }
 
@@ -199,9 +200,9 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
         throw AssertionError("Missing field in ${enumType.name}", e)
       }
     }
-    private var options: JsonReader.Options = JsonReader.Options.of(*nameStrings)
+    private var options: JsonReader.Options = runBlocking {  JsonReader.Options.of(*nameStrings) }
 
-    override fun fromJson(reader: JsonReader): T {
+    override suspend fun fromJson(reader: JsonReader): T {
       val index = reader.selectString(options)
       if (index != -1) return constants[index]
 
@@ -213,7 +214,7 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
       )
     }
 
-    override fun toJson(writer: JsonWriter, value: T?) {
+    override suspend fun toJson(writer: JsonWriter, value: T?) {
       writer.value(nameStrings[knownNotNull(value).ordinal])
     }
 
@@ -235,7 +236,7 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
     private val doubleAdapter: JsonAdapter<Double> = moshi.adapter(Double::class.java)
     private val booleanAdapter: JsonAdapter<Boolean> = moshi.adapter(Boolean::class.java)
 
-    override fun fromJson(reader: JsonReader): Any? {
+    override suspend fun fromJson(reader: JsonReader): Any? {
       return when (reader.peek()) {
         JsonReader.Token.BEGIN_ARRAY -> listJsonAdapter.fromJson(reader)
 
@@ -255,7 +256,7 @@ internal object StandardJsonAdapters : JsonAdapter.Factory {
       }
     }
 
-    override fun toJson(writer: JsonWriter, value: Any?) {
+    override suspend fun toJson(writer: JsonWriter, value: Any?) {
       val valueClass: Class<*> = knownNotNull(value).javaClass
       if (valueClass == Any::class.java) {
         // Don't recurse infinitely when the runtime type is also Object.class.

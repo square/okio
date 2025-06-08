@@ -43,7 +43,7 @@ internal class JsonValueWriter : JsonWriter() {
     return stack[0]
   }
 
-  override fun beginArray(): JsonWriter {
+  override suspend fun beginArray(): JsonWriter {
     check(!promoteValueToName) { "Array cannot be used as a map key in JSON at path $path" }
     if (stackSize == flattenStackSize && scopes[stackSize - 1] == EMPTY_ARRAY) {
       // Cancel this open. Invert the flatten stack size until this is closed.
@@ -59,7 +59,7 @@ internal class JsonValueWriter : JsonWriter() {
     return this
   }
 
-  override fun endArray(): JsonWriter {
+  override suspend fun endArray(): JsonWriter {
     check(peekScope() == EMPTY_ARRAY) { "Nesting problem." }
     if (stackSize == flattenStackSize.inv()) {
       // Cancel this close. Restore the flattenStackSize so we're ready to flatten again!
@@ -72,7 +72,7 @@ internal class JsonValueWriter : JsonWriter() {
     return this
   }
 
-  override fun beginObject(): JsonWriter {
+  override suspend fun beginObject(): JsonWriter {
     check(!promoteValueToName) { "Object cannot be used as a map key in JSON at path $path" }
     if (stackSize == flattenStackSize && scopes[stackSize - 1] == EMPTY_OBJECT) {
       // Cancel this open. Invert the flatten stack size until this is closed.
@@ -87,7 +87,7 @@ internal class JsonValueWriter : JsonWriter() {
     return this
   }
 
-  override fun endObject(): JsonWriter {
+  override suspend fun endObject(): JsonWriter {
     check(peekScope() == EMPTY_OBJECT) { "Nesting problem." }
     check(deferredName == null) { "Dangling name: $deferredName" }
     if (stackSize == flattenStackSize.inv()) {
@@ -103,7 +103,7 @@ internal class JsonValueWriter : JsonWriter() {
     return this
   }
 
-  override fun name(name: String): JsonWriter {
+  override suspend fun name(name: String): JsonWriter {
     check(stackSize != 0) { "JsonWriter is closed." }
     check(peekScope() == EMPTY_OBJECT && deferredName == null && !promoteValueToName) { "Nesting problem." }
     deferredName = name
@@ -111,7 +111,7 @@ internal class JsonValueWriter : JsonWriter() {
     return this
   }
 
-  override fun value(value: String?): JsonWriter {
+  override suspend fun value(value: String?): JsonWriter {
     if (promoteValueToName) {
       promoteValueToName = false
       return name(value!!)
@@ -121,28 +121,28 @@ internal class JsonValueWriter : JsonWriter() {
     return this
   }
 
-  override fun nullValue(): JsonWriter {
+  override suspend fun nullValue(): JsonWriter {
     check(!promoteValueToName) { "null cannot be used as a map key in JSON at path $path" }
     add(null)
     pathIndices[stackSize - 1]++
     return this
   }
 
-  override fun value(value: Boolean): JsonWriter {
+  override suspend fun value(value: Boolean): JsonWriter {
     check(!promoteValueToName) { "Boolean cannot be used as a map key in JSON at path $path" }
     add(value)
     pathIndices[stackSize - 1]++
     return this
   }
 
-  override fun value(value: Boolean?): JsonWriter {
+  override suspend fun value(value: Boolean?): JsonWriter {
     check(!promoteValueToName) { "Boolean cannot be used as a map key in JSON at path $path" }
     add(value)
     pathIndices[stackSize - 1]++
     return this
   }
 
-  override fun value(value: Double): JsonWriter {
+  override suspend fun value(value: Double): JsonWriter {
     require(isLenient || !value.isNaN() && value != Double.NEGATIVE_INFINITY && value != Double.POSITIVE_INFINITY) {
       "Numeric values must be finite, but was $value"
     }
@@ -155,7 +155,7 @@ internal class JsonValueWriter : JsonWriter() {
     return this
   }
 
-  override fun value(value: Long): JsonWriter {
+  override suspend fun value(value: Long): JsonWriter {
     if (promoteValueToName) {
       promoteValueToName = false
       return name(value.toString())
@@ -165,7 +165,7 @@ internal class JsonValueWriter : JsonWriter() {
     return this
   }
 
-  override fun value(value: Number?): JsonWriter = apply {
+  override suspend fun value(value: Number?): JsonWriter = apply {
     when (value) {
       null -> nullValue()
 
@@ -188,13 +188,13 @@ internal class JsonValueWriter : JsonWriter() {
     }
   }
 
-  override fun valueSink(): BufferedSink {
+  override suspend fun valueSink(): BufferedSink {
     check(!promoteValueToName) { "BufferedSink cannot be used as a map key in JSON at path $path" }
     check(peekScope() != STREAMING_VALUE) { "Sink from valueSink() was not closed" }
     pushScope(STREAMING_VALUE)
     val buffer = Buffer()
     return object : ForwardingSink(buffer) {
-      override fun close() {
+      override suspend fun close() {
         if (peekScope() != STREAMING_VALUE || stack[stackSize] != null) {
           throw AssertionError()
         }
@@ -212,7 +212,7 @@ internal class JsonValueWriter : JsonWriter() {
     }.buffer()
   }
 
-  override fun close() {
+  override suspend fun close() {
     val size = stackSize
     if (size > 1 || size == 1 && scopes[0] != NONEMPTY_DOCUMENT) {
       throw IOException("Incomplete document")
@@ -220,7 +220,7 @@ internal class JsonValueWriter : JsonWriter() {
     stackSize = 0
   }
 
-  override fun flush() {
+  fun flush() {
     check(stackSize != 0) { "JsonWriter is closed." }
   }
 

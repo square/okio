@@ -23,48 +23,48 @@ internal expect class RealBufferedSource(
   var closed: Boolean
 
   override val buffer: Buffer
-  override fun close()
-  override fun exhausted(): Boolean
-  override fun indexOf(b: Byte): Long
-  override fun indexOf(b: Byte, fromIndex: Long): Long
-  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
-  override fun indexOf(bytes: ByteString): Long
-  override fun indexOf(bytes: ByteString, fromIndex: Long): Long
-  override fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
-  override fun indexOfElement(targetBytes: ByteString): Long
-  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
+  override suspend fun close()
+  override suspend fun exhausted(): Boolean
+  override suspend fun indexOf(b: Byte): Long
+  override suspend fun indexOf(b: Byte, fromIndex: Long): Long
+  override suspend fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
+  override suspend fun indexOf(bytes: ByteString): Long
+  override suspend fun indexOf(bytes: ByteString, fromIndex: Long): Long
+  override suspend fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
+  override suspend fun indexOfElement(targetBytes: ByteString): Long
+  override suspend fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
   override fun peek(): BufferedSource
-  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean
-  override fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
-  override fun read(sink: Buffer, byteCount: Long): Long
-  override fun read(sink: ByteArray): Int
-  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
-  override fun readAll(sink: Sink): Long
-  override fun readByte(): Byte
-  override fun readByteArray(): ByteArray
-  override fun readByteArray(byteCount: Long): ByteArray
-  override fun readByteString(): ByteString
-  override fun readByteString(byteCount: Long): ByteString
-  override fun readDecimalLong(): Long
-  override fun readFully(sink: Buffer, byteCount: Long)
-  override fun readFully(sink: ByteArray)
-  override fun readHexadecimalUnsignedLong(): Long
-  override fun readInt(): Int
-  override fun readIntLe(): Int
-  override fun readLong(): Long
-  override fun readLongLe(): Long
-  override fun readShort(): Short
-  override fun readShortLe(): Short
-  override fun readUtf8(): String
-  override fun readUtf8(byteCount: Long): String
-  override fun readUtf8CodePoint(): Int
-  override fun readUtf8Line(): String?
-  override fun readUtf8LineStrict(): String
-  override fun readUtf8LineStrict(limit: Long): String
-  override fun request(byteCount: Long): Boolean
-  override fun require(byteCount: Long)
-  override fun select(options: Options): Int
-  override fun <T : Any> select(options: TypedOptions<T>): T?
-  override fun skip(byteCount: Long)
+  override suspend fun rangeEquals(offset: Long, bytes: ByteString): Boolean
+  override suspend fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
+  override suspend fun read(sink: Buffer, byteCount: Long): Long
+  override suspend fun read(sink: ByteArray): Int
+  override suspend fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
+  override suspend fun readAll(sink: Sink): Long
+  override suspend fun readByte(): Byte
+  override suspend fun readByteArray(): ByteArray
+  override suspend fun readByteArray(byteCount: Long): ByteArray
+  override suspend fun readByteString(): ByteString
+  override suspend fun readByteString(byteCount: Long): ByteString
+  override suspend fun readDecimalLong(): Long
+  override suspend fun readFully(sink: Buffer, byteCount: Long)
+  override suspend fun readFully(sink: ByteArray)
+  override suspend fun readHexadecimalUnsignedLong(): Long
+  override suspend fun readInt(): Int
+  override suspend fun readIntLe(): Int
+  override suspend fun readLong(): Long
+  override suspend fun readLongLe(): Long
+  override suspend fun readShort(): Short
+  override suspend fun readShortLe(): Short
+  override suspend fun readUtf8(): String
+  override suspend fun readUtf8(byteCount: Long): String
+  override suspend fun readUtf8CodePoint(): Int
+  override suspend fun readUtf8Line(): String?
+  override suspend fun readUtf8LineStrict(): String
+  override suspend fun readUtf8LineStrict(limit: Long): String
+  override suspend fun request(byteCount: Long): Boolean
+  override suspend fun require(byteCount: Long)
+  override suspend fun select(options: Options): Int
+  override suspend fun <T : Any> select(options: TypedOptions<T>): T?
+  override suspend fun skip(byteCount: Long)
   override fun timeout(): Timeout
 }

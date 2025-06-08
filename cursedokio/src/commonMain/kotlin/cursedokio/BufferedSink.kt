@@ -23,24 +23,24 @@ expect sealed interface BufferedSink : Sink {
   /** This sink's internal buffer. */
   val buffer: Buffer
 
-  fun write(byteString: ByteString): BufferedSink
+  suspend fun write(byteString: ByteString): BufferedSink
 
-  fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink
+  suspend fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink
 
   /** Like [OutputStream.write], this writes a complete byte array to this sink. */
-  fun write(source: ByteArray): BufferedSink
+  suspend fun write(source: ByteArray): BufferedSink
 
   /** Like [OutputStream.write], this writes `byteCount` bytes of `source`, starting at `offset`. */
-  fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
+  suspend fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
 
   /**
    * Removes all bytes from `source` and appends them to this sink. Returns the number of bytes read
    * which will be 0 if `source` is exhausted.
    */
-  fun writeAll(source: Source): Long
+  suspend fun writeAll(source: Source): Long
 
   /** Removes `byteCount` bytes from `source` and appends them to this sink. */
-  fun write(source: Source, byteCount: Long): BufferedSink
+  suspend fun write(source: Source, byteCount: Long): BufferedSink
 
   /**
    * Encodes `string` in UTF-8 and writes it to this sink.
@@ -54,7 +54,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals("Uh uh uh! You didn't say the magic word!", buffer.readUtf8());
    * ```
    */
-  fun writeUtf8(string: String): BufferedSink
+  suspend fun writeUtf8(string: String): BufferedSink
 
   /**
    * Encodes the characters at `beginIndex` up to `endIndex` from `string` in UTF-8 and writes it to
@@ -71,13 +71,13 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals("hacker nerd hacker!", buffer.readUtf8());
    * ```
    */
-  fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink
+  suspend fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink
 
   /** Encodes `codePoint` in UTF-8 and writes it to this sink. */
-  fun writeUtf8CodePoint(codePoint: Int): BufferedSink
+  suspend fun writeUtf8CodePoint(codePoint: Int): BufferedSink
 
   /** Writes a byte to this sink. */
-  fun writeByte(b: Int): BufferedSink
+  suspend fun writeByte(b: Int): BufferedSink
 
   /**
    * Writes a big-endian short to this sink using two bytes.
@@ -95,7 +95,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun writeShort(s: Int): BufferedSink
+  suspend fun writeShort(s: Int): BufferedSink
 
   /**
    * Writes a little-endian short to this sink using two bytes.
@@ -113,7 +113,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun writeShortLe(s: Int): BufferedSink
+  suspend fun writeShortLe(s: Int): BufferedSink
 
   /**
    * Writes a big-endian int to this sink using four bytes.
@@ -135,7 +135,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun writeInt(i: Int): BufferedSink
+  suspend fun writeInt(i: Int): BufferedSink
 
   /**
    * Writes a little-endian int to this sink using four bytes.
@@ -157,7 +157,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun writeIntLe(i: Int): BufferedSink
+  suspend fun writeIntLe(i: Int): BufferedSink
 
   /**
    * Writes a big-endian long to this sink using eight bytes.
@@ -187,7 +187,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun writeLong(v: Long): BufferedSink
+  suspend fun writeLong(v: Long): BufferedSink
 
   /**
    * Writes a little-endian long to this sink using eight bytes.
@@ -217,7 +217,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
-  fun writeLongLe(v: Long): BufferedSink
+  suspend fun writeLongLe(v: Long): BufferedSink
 
   /**
    * Writes a long to this sink in signed decimal form (i.e., as a string in base 10).
@@ -233,7 +233,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals("8675309 -123 1", buffer.readUtf8());
    * ```
    */
-  fun writeDecimalLong(v: Long): BufferedSink
+  suspend fun writeDecimalLong(v: Long): BufferedSink
 
   /**
    * Writes a long to this sink in hexadecimal form (i.e., as a string in base 16).
@@ -249,7 +249,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals("ffff cafebabe 10", buffer.readUtf8());
    * ```
    */
-  fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
+  suspend fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
 
   /**
    * Writes all buffered data to the underlying sink, if one exists. Then that sink is recursively
@@ -272,7 +272,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(5, b0.buffer().size());
    * ```
    */
-  override fun flush()
+  override suspend fun flush()
 
   /**
    * Writes all buffered data to the underlying sink, if one exists. Like [flush], but weaker. Call
@@ -299,7 +299,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(5, b0.buffer().size());
    * ```
    */
-  fun emit(): BufferedSink
+  suspend fun emit(): BufferedSink
 
   /**
    * Writes complete segments to the underlying sink, if one exists. Like [flush], but weaker. Use
@@ -323,5 +323,5 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(16_384, b0.buffer().size()); // This example assumes 8192 byte segments.
    * ```
    */
-  fun emitCompleteSegments(): BufferedSink
+  suspend fun emitCompleteSegments(): BufferedSink
 }

@@ -21,7 +21,7 @@ import kotlin.jvm.JvmName
 import cursedokio.ByteString
 
 @Suppress("NOTHING_TO_INLINE")
-internal actual inline fun String.commonDecodeHex(): ByteString {
+internal actual suspend inline fun String.commonDecodeHex(): ByteString {
   require(length % 2 == 0) { "Unexpected hex string: $this" }
 
   val result = ByteArray(length / 2)

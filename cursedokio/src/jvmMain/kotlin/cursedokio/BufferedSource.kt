@@ -20,7 +20,7 @@ import java.io.InputStream
 import java.nio.channels.ReadableByteChannel
 import java.nio.charset.Charset
 
-actual sealed interface BufferedSource : Source, ReadableByteChannel {
+actual sealed interface BufferedSource : Source {
   /** Returns this source's internal buffer. */
   @Deprecated(
     message = "moved to val: use getBuffer() instead",
@@ -32,138 +32,135 @@ actual sealed interface BufferedSource : Source, ReadableByteChannel {
   actual val buffer: Buffer
 
   @Throws(IOException::class)
-  actual fun exhausted(): Boolean
+  actual suspend fun exhausted(): Boolean
 
   @Throws(IOException::class)
-  actual fun require(byteCount: Long)
+  actual suspend fun require(byteCount: Long)
 
   @Throws(IOException::class)
-  actual fun request(byteCount: Long): Boolean
+  actual suspend fun request(byteCount: Long): Boolean
 
   @Throws(IOException::class)
-  actual fun readByte(): Byte
+  actual suspend fun readByte(): Byte
 
   @Throws(IOException::class)
-  actual fun readShort(): Short
+  actual suspend fun readShort(): Short
 
   @Throws(IOException::class)
-  actual fun readShortLe(): Short
+  actual suspend fun readShortLe(): Short
 
   @Throws(IOException::class)
-  actual fun readInt(): Int
+  actual suspend fun readInt(): Int
 
   @Throws(IOException::class)
-  actual fun readIntLe(): Int
+  actual suspend fun readIntLe(): Int
 
   @Throws(IOException::class)
-  actual fun readLong(): Long
+  actual suspend fun readLong(): Long
 
   @Throws(IOException::class)
-  actual fun readLongLe(): Long
+  actual suspend fun readLongLe(): Long
 
   @Throws(IOException::class)
-  actual fun readDecimalLong(): Long
+  actual suspend fun readDecimalLong(): Long
 
   @Throws(IOException::class)
-  actual fun readHexadecimalUnsignedLong(): Long
+  actual suspend fun readHexadecimalUnsignedLong(): Long
 
   @Throws(IOException::class)
-  actual fun skip(byteCount: Long)
+  actual suspend fun skip(byteCount: Long)
 
   @Throws(IOException::class)
-  actual fun readByteString(): ByteString
+  actual suspend fun readByteString(): ByteString
 
   @Throws(IOException::class)
-  actual fun readByteString(byteCount: Long): ByteString
+  actual suspend fun readByteString(byteCount: Long): ByteString
 
   @Throws(IOException::class)
-  actual fun select(options: Options): Int
+  actual suspend fun select(options: Options): Int
 
   @Throws(IOException::class)
-  actual fun <T : Any> select(options: TypedOptions<T>): T?
+  actual suspend fun <T : Any> select(options: TypedOptions<T>): T?
 
   @Throws(IOException::class)
-  actual fun readByteArray(): ByteArray
+  actual suspend fun readByteArray(): ByteArray
 
   @Throws(IOException::class)
-  actual fun readByteArray(byteCount: Long): ByteArray
+  actual suspend fun readByteArray(byteCount: Long): ByteArray
 
   @Throws(IOException::class)
-  actual fun read(sink: ByteArray): Int
+  actual suspend fun read(sink: ByteArray): Int
 
   @Throws(IOException::class)
-  actual fun readFully(sink: ByteArray)
+  actual suspend fun readFully(sink: ByteArray)
 
   @Throws(IOException::class)
-  actual fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
+  actual suspend fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
 
   @Throws(IOException::class)
-  actual fun readFully(sink: Buffer, byteCount: Long)
+  actual suspend fun readFully(sink: Buffer, byteCount: Long)
 
   @Throws(IOException::class)
-  actual fun readAll(sink: Sink): Long
+  actual suspend fun readAll(sink: Sink): Long
 
   @Throws(IOException::class)
-  actual fun readUtf8(): String
+  actual suspend fun readUtf8(): String
 
   @Throws(IOException::class)
-  actual fun readUtf8(byteCount: Long): String
+  actual suspend fun readUtf8(byteCount: Long): String
 
   @Throws(IOException::class)
-  actual fun readUtf8Line(): String?
+  actual suspend fun readUtf8Line(): String?
 
   @Throws(IOException::class)
-  actual fun readUtf8LineStrict(): String
+  actual suspend fun readUtf8LineStrict(): String
 
   @Throws(IOException::class)
-  actual fun readUtf8LineStrict(limit: Long): String
+  actual suspend fun readUtf8LineStrict(limit: Long): String
 
   @Throws(IOException::class)
-  actual fun readUtf8CodePoint(): Int
+  actual suspend fun readUtf8CodePoint(): Int
 
   /** Removes all bytes from this, decodes them as `charset`, and returns the string. */
   @Throws(IOException::class)
-  fun readString(charset: Charset): String
+  suspend fun readString(charset: Charset): String
 
   /**
    * Removes `byteCount` bytes from this, decodes them as `charset`, and returns the
    * string.
    */
   @Throws(IOException::class)
-  fun readString(byteCount: Long, charset: Charset): String
+  suspend fun readString(byteCount: Long, charset: Charset): String
 
   @Throws(IOException::class)
-  actual fun indexOf(b: Byte): Long
+  actual suspend fun indexOf(b: Byte): Long
 
   @Throws(IOException::class)
-  actual fun indexOf(b: Byte, fromIndex: Long): Long
+  actual suspend fun indexOf(b: Byte, fromIndex: Long): Long
 
   @Throws(IOException::class)
-  actual fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
+  actual suspend fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
 
   @Throws(IOException::class)
-  actual fun indexOf(bytes: ByteString): Long
+  actual suspend fun indexOf(bytes: ByteString): Long
 
   @Throws(IOException::class)
-  actual fun indexOf(bytes: ByteString, fromIndex: Long): Long
+  actual suspend fun indexOf(bytes: ByteString, fromIndex: Long): Long
 
   @Throws(IOException::class)
-  actual fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
+  actual suspend fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
 
   @Throws(IOException::class)
-  actual fun indexOfElement(targetBytes: ByteString): Long
+  actual suspend fun indexOfElement(targetBytes: ByteString): Long
 
   @Throws(IOException::class)
-  actual fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
+  actual suspend fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
 
   @Throws(IOException::class)
-  actual fun rangeEquals(offset: Long, bytes: ByteString): Boolean
+  actual suspend fun rangeEquals(offset: Long, bytes: ByteString): Boolean
 
   @Throws(IOException::class)
-  actual fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
+  actual suspend fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
 
   actual fun peek(): BufferedSource
-
-  /** Returns an input stream that reads from this source. */
-  fun inputStream(): InputStream
 }

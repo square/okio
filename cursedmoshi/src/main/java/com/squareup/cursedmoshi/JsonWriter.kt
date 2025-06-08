@@ -23,6 +23,7 @@ import cursedokio.BufferedSink
 import cursedokio.BufferedSource
 import cursedokio.Closeable
 import cursedokio.IOException
+import cursedokio.use
 import java.io.Flushable
 import javax.annotation.CheckReturnValue
 import kotlin.Throws
@@ -129,8 +130,7 @@ import kotlin.Throws
  * not thread safe. Calls that would result in a malformed JSON string will fail with an [IllegalStateException].
  */
 public sealed class JsonWriter :
-  Closeable,
-  Flushable {
+  Closeable {
   /**
    * The nesting stack. Using a manual array rather than an ArrayList saves 20%. This stack will
    * grow itself up to 256 levels of nesting including the top-level document. Deeper nesting is
@@ -256,7 +256,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun beginArray(): JsonWriter
+  public abstract suspend fun beginArray(): JsonWriter
 
   /**
    * Ends encoding the current array.
@@ -264,7 +264,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun endArray(): JsonWriter
+  public abstract suspend fun endArray(): JsonWriter
 
   /**
    * Begins encoding a new object. Each call to this method must be paired with a call to [endObject].
@@ -272,7 +272,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun beginObject(): JsonWriter
+  public abstract suspend fun beginObject(): JsonWriter
 
   /**
    * Ends encoding the current object.
@@ -280,7 +280,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun endObject(): JsonWriter
+  public abstract suspend fun endObject(): JsonWriter
 
   /**
    * Encodes the property name.
@@ -289,7 +289,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun name(name: String): JsonWriter
+  public abstract suspend fun name(name: String): JsonWriter
 
   /**
    * Encodes `value`.
@@ -298,7 +298,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun value(value: String?): JsonWriter
+  public abstract suspend fun value(value: String?): JsonWriter
 
   /**
    * Encodes `null`.
@@ -306,7 +306,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun nullValue(): JsonWriter
+  public abstract suspend fun nullValue(): JsonWriter
 
   /**
    * Encodes `value`.
@@ -314,7 +314,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun value(value: Boolean): JsonWriter
+  public abstract suspend fun value(value: Boolean): JsonWriter
 
   /**
    * Encodes `value`.
@@ -322,24 +322,7 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun value(value: Boolean?): JsonWriter
-
-  /**
-   * Encodes `value`.
-   *
-   * @param value a finite value. May not be [NaNs][Double.isNaN] or [infinities][Double.isInfinite].
-   * @return this writer.
-   */
-  @Throws(IOException::class)
-  public abstract fun value(value: Double): JsonWriter
-
-  /**
-   * Encodes `value`.
-   *
-   * @return this writer.
-   */
-  @Throws(IOException::class)
-  public abstract fun value(value: Long): JsonWriter
+  public abstract suspend fun value(value: Boolean?): JsonWriter
 
   /**
    * Encodes `value`.
@@ -348,7 +331,24 @@ public sealed class JsonWriter :
    * @return this writer.
    */
   @Throws(IOException::class)
-  public abstract fun value(value: Number?): JsonWriter
+  public abstract suspend fun value(value: Double): JsonWriter
+
+  /**
+   * Encodes `value`.
+   *
+   * @return this writer.
+   */
+  @Throws(IOException::class)
+  public abstract suspend fun value(value: Long): JsonWriter
+
+  /**
+   * Encodes `value`.
+   *
+   * @param value a finite value. May not be [NaNs][Double.isNaN] or [infinities][Double.isInfinite].
+   * @return this writer.
+   */
+  @Throws(IOException::class)
+  public abstract suspend fun value(value: Number?): JsonWriter
 
   /**
    * Writes `source` directly without encoding its contents. Equivalent to
@@ -361,7 +361,7 @@ public sealed class JsonWriter :
    * @see valueSink
    */
   @Throws(IOException::class)
-  public fun value(source: BufferedSource): JsonWriter {
+  public suspend fun value(source: BufferedSource): JsonWriter {
     check(!promoteValueToName) { "BufferedSource cannot be used as a map key in JSON at path $path" }
     valueSink().use(source::readAll)
     return this
@@ -376,7 +376,7 @@ public sealed class JsonWriter :
    */
   @CheckReturnValue
   @Throws(IOException::class)
-  public abstract fun valueSink(): BufferedSink
+  public abstract suspend fun valueSink(): BufferedSink
 
   /**
    * Encodes the value which may be a string, number, boolean, null, map, or list.
@@ -385,7 +385,7 @@ public sealed class JsonWriter :
    * @see JsonReader.readJsonValue
    */
   @Throws(IOException::class)
-  public fun jsonValue(value: Any?): JsonWriter {
+  public suspend fun jsonValue(value: Any?): JsonWriter {
     when (value) {
       is Map<*, *> -> {
         beginObject()

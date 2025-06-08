@@ -51,5 +51,5 @@ expect interface Closeable {
    * it has been closed. It is safe to close an object more than once.
    */
   @Throws(IOException::class)
-  fun close()
+  suspend fun close()
 }

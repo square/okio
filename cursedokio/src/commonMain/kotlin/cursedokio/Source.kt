@@ -56,7 +56,7 @@ interface Source : Closeable {
    * the number of bytes read, or -1 if this source is exhausted.
    */
   @Throws(IOException::class)
-  fun read(sink: Buffer, byteCount: Long): Long
+  suspend fun read(sink: Buffer, byteCount: Long): Long
 
   /** Returns the timeout for this source.  */
   fun timeout(): Timeout
@@ -66,5 +66,5 @@ interface Source : Closeable {
    * closed source. It is safe to close a source more than once.
    */
   @Throws(IOException::class)
-  override fun close()
+  override suspend fun close()
 }

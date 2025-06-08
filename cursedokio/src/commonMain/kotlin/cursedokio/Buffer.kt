@@ -63,10 +63,10 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * Discards all bytes in this buffer. Calling this method when you're done with a buffer will
    * return its segments to the pool.
    */
-  fun clear()
+  suspend fun clear()
 
   /** Discards `byteCount` bytes from the head of this buffer.  */
-  override fun skip(byteCount: Long)
+  override suspend fun skip(byteCount: Long)
 
   /**
    * Returns a tail segment that we can write at least `minimumCapacity`
@@ -108,71 +108,71 @@ expect class Buffer() : BufferedSource, BufferedSink {
   fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor = DEFAULT__new_UnsafeCursor): UnsafeCursor
 
   override val buffer: Buffer
-  override fun close()
-  override fun emit(): Buffer
-  override fun emitCompleteSegments(): Buffer
-  override fun exhausted(): Boolean
-  override fun flush()
-  override fun indexOf(b: Byte): Long
-  override fun indexOf(b: Byte, fromIndex: Long): Long
-  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
-  override fun indexOf(bytes: ByteString): Long
-  override fun indexOf(bytes: ByteString, fromIndex: Long): Long
-  override fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
-  override fun indexOfElement(targetBytes: ByteString): Long
-  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
+  override suspend fun close()
+  override suspend fun emit(): Buffer
+  override suspend fun emitCompleteSegments(): Buffer
+  override suspend fun exhausted(): Boolean
+  override suspend fun flush()
+  override suspend fun indexOf(b: Byte): Long
+  override suspend fun indexOf(b: Byte, fromIndex: Long): Long
+  override suspend fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
+  override suspend fun indexOf(bytes: ByteString): Long
+  override suspend fun indexOf(bytes: ByteString, fromIndex: Long): Long
+  override suspend fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
+  override suspend fun indexOfElement(targetBytes: ByteString): Long
+  override suspend fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
   override fun peek(): BufferedSource
-  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean
-  override fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
-  override fun read(sink: Buffer, byteCount: Long): Long
-  override fun read(sink: ByteArray): Int
-  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
-  override fun readAll(sink: Sink): Long
-  override fun readByte(): Byte
-  override fun readByteArray(): ByteArray
-  override fun readByteArray(byteCount: Long): ByteArray
-  override fun readByteString(): ByteString
-  override fun readByteString(byteCount: Long): ByteString
-  override fun readDecimalLong(): Long
-  override fun readFully(sink: Buffer, byteCount: Long)
-  override fun readFully(sink: ByteArray)
-  override fun readHexadecimalUnsignedLong(): Long
-  override fun readInt(): Int
-  override fun readIntLe(): Int
-  override fun readLong(): Long
-  override fun readLongLe(): Long
-  override fun readShort(): Short
-  override fun readShortLe(): Short
-  override fun readUtf8(): String
-  override fun readUtf8(byteCount: Long): String
-  override fun readUtf8CodePoint(): Int
-  override fun readUtf8Line(): String?
-  override fun readUtf8LineStrict(): String
-  override fun readUtf8LineStrict(limit: Long): String
-  override fun request(byteCount: Long): Boolean
-  override fun require(byteCount: Long)
-  override fun select(options: Options): Int
-  override fun <T : Any> select(options: TypedOptions<T>): T?
+  override suspend fun rangeEquals(offset: Long, bytes: ByteString): Boolean
+  override suspend fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
+  override suspend fun read(sink: Buffer, byteCount: Long): Long
+  override suspend fun read(sink: ByteArray): Int
+  override suspend fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
+  override suspend fun readAll(sink: Sink): Long
+  override suspend fun readByte(): Byte
+  override suspend fun readByteArray(): ByteArray
+  override suspend fun readByteArray(byteCount: Long): ByteArray
+  override suspend fun readByteString(): ByteString
+  override suspend fun readByteString(byteCount: Long): ByteString
+  override suspend fun readDecimalLong(): Long
+  override suspend fun readFully(sink: Buffer, byteCount: Long)
+  override suspend fun readFully(sink: ByteArray)
+  override suspend fun readHexadecimalUnsignedLong(): Long
+  override suspend fun readInt(): Int
+  override suspend fun readIntLe(): Int
+  override suspend fun readLong(): Long
+  override suspend fun readLongLe(): Long
+  override suspend fun readShort(): Short
+  override suspend fun readShortLe(): Short
+  override suspend fun readUtf8(): String
+  override suspend fun readUtf8(byteCount: Long): String
+  override suspend fun readUtf8CodePoint(): Int
+  override suspend fun readUtf8Line(): String?
+  override suspend fun readUtf8LineStrict(): String
+  override suspend fun readUtf8LineStrict(limit: Long): String
+  override suspend fun request(byteCount: Long): Boolean
+  override suspend fun require(byteCount: Long)
+  override suspend fun select(options: Options): Int
+  override suspend fun <T : Any> select(options: TypedOptions<T>): T?
   override fun timeout(): Timeout
-  override fun write(byteString: ByteString): Buffer
-  override fun write(byteString: ByteString, offset: Int, byteCount: Int): Buffer
-  override fun write(source: Buffer, byteCount: Long)
-  override fun write(source: ByteArray): Buffer
-  override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
-  override fun write(source: Source, byteCount: Long): Buffer
-  override fun writeAll(source: Source): Long
-  override fun writeByte(b: Int): Buffer
-  override fun writeDecimalLong(v: Long): Buffer
-  override fun writeHexadecimalUnsignedLong(v: Long): Buffer
-  override fun writeInt(i: Int): Buffer
-  override fun writeIntLe(i: Int): Buffer
-  override fun writeLong(v: Long): Buffer
-  override fun writeLongLe(v: Long): Buffer
-  override fun writeShort(s: Int): Buffer
-  override fun writeShortLe(s: Int): Buffer
-  override fun writeUtf8(string: String): Buffer
-  override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer
-  override fun writeUtf8CodePoint(codePoint: Int): Buffer
+  override suspend fun write(byteString: ByteString): Buffer
+  override suspend fun write(byteString: ByteString, offset: Int, byteCount: Int): Buffer
+  override suspend fun write(source: Buffer, byteCount: Long)
+  override suspend fun write(source: ByteArray): Buffer
+  override suspend fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
+  override suspend fun write(source: Source, byteCount: Long): Buffer
+  override suspend fun writeAll(source: Source): Long
+  override suspend fun writeByte(b: Int): Buffer
+  override suspend fun writeDecimalLong(v: Long): Buffer
+  override suspend fun writeHexadecimalUnsignedLong(v: Long): Buffer
+  override suspend fun writeInt(i: Int): Buffer
+  override suspend fun writeIntLe(i: Int): Buffer
+  override suspend fun writeLong(v: Long): Buffer
+  override suspend fun writeLongLe(v: Long): Buffer
+  override suspend fun writeShort(s: Int): Buffer
+  override suspend fun writeShortLe(s: Int): Buffer
+  override suspend fun writeUtf8(string: String): Buffer
+  override suspend fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer
+  override suspend fun writeUtf8CodePoint(codePoint: Int): Buffer
 
   /**
    * A handle to the underlying data in a buffer. This handle is unsafe because it does not enforce
@@ -436,6 +436,6 @@ expect class Buffer() : BufferedSource, BufferedSink {
      */
     fun expandBuffer(minByteCount: Int): Long
 
-    override fun close()
+    override suspend fun close()
   }
 }
