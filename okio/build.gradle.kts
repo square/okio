@@ -84,7 +84,6 @@ kotlin {
       dependsOn(commonTest)
       dependencies {
         implementation(libs.kotlin.time)
-        implementation(projects.okioFakefilesystem)
       }
     }
 

@@ -24,7 +24,6 @@ kotlin {
       dependsOn(commonMain)
       dependencies {
         api(libs.kotlin.time)
-        implementation(projects.okioFakefilesystem)
       }
     }
 
