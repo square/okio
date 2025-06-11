@@ -24,6 +24,17 @@ package okio
  * security (as in a TLS socket) or connectivity (as in a proxy socket).
  *
  * Closing the [source] does not impact the [sink], and vice versa.
+ *
+ * You must close the source and the sink to release the resources held by this socket. If you're using both from the
+ * same thread, you can do that with nested `use` blocks:
+ *
+ * ```kotlin
+ * socket.source.use { source ->
+ *   socket.sink.use { sink ->
+ *     readAndWrite(source, sink)
+ *   }
+ * }
+ * ```
  */
 interface Socket {
   val source: Source
