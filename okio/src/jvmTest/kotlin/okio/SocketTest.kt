@@ -21,10 +21,10 @@ import assertk.assertions.isBetween
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
+import java.io.InterruptedIOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
-import java.net.SocketTimeoutException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import javax.net.SocketFactory
@@ -55,7 +55,11 @@ class SocketTest(val factory: Factory = Factory.Default) {
   fun tearDown() {
     peer.close()
     socket.source.close()
-    socket.sink.close()
+    try {
+      socket.sink.close()
+    } catch (_: IOException) {
+      // Ignore exception if data was left in 'sink'.
+    }
   }
 
   @Test
@@ -152,7 +156,7 @@ class SocketTest(val factory: Factory = Factory.Default) {
     bufferedSource.timeout().timeout(500, TimeUnit.MILLISECONDS)
 
     val duration = measureTime {
-      assertFailsWith<SocketTimeoutException> {
+      assertFailsWith<InterruptedIOException> {
         bufferedSource.readUtf8Line()
       }
     }
@@ -167,7 +171,7 @@ class SocketTest(val factory: Factory = Factory.Default) {
     bufferedSink.timeout().timeout(500, TimeUnit.MILLISECONDS)
 
     val duration = measureTime {
-      assertFailsWith<SocketTimeoutException> {
+      assertFailsWith<InterruptedIOException> {
         bufferedSink.write(ByteArray(1024 * 1024 * 16))
       }
     }
@@ -250,6 +254,7 @@ class SocketTest(val factory: Factory = Factory.Default) {
   }
 
   enum class Factory {
+    /** Implements an okio.Socket using the `java.net.Socket` API on OS sockets. */
     Default {
       override fun createSocketPair(): Pair<Socket, Socket> {
         val localhost = InetAddress.getByName("localhost")
@@ -268,8 +273,31 @@ class SocketTest(val factory: Factory = Factory.Default) {
         val socketB = socketBFuture.get()
         return socketA.asOkioSocket() to socketB.asOkioSocket()
       }
+    },
+
+    /** Implements an okio.Socket using a pair of in-memory pipes. */
+    Pipes {
+      override fun createSocketPair(): Pair<Socket, Socket> {
+        class PipeSocket(val sourcePipe: Pipe, val sinkPipe: Pipe) : Socket {
+          override val source: Source
+            get() = sourcePipe.source
+          override val sink: Sink
+            get() = sinkPipe.sink
+
+          override fun cancel() {
+            sourcePipe.cancel()
+            sinkPipe.cancel()
+          }
+        }
+
+        val aToB = Pipe(1024)
+        val bToA = Pipe(1024)
+
+        return PipeSocket(aToB, bToA) to PipeSocket(bToA, aToB)
+      }
     };
 
+    /** Returns a pair of mutually-connected sockets. */
     abstract fun createSocketPair(): Pair<Socket, Socket>
   }
 }
