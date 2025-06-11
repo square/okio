@@ -80,7 +80,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
 
     override fun close() {
       timeout.withTimeout {
-        when (closeBits.setBitOrZero(SINK_CLOSED_BIT)) {
+        when (closeBits.setBitsOrZero(SINK_CLOSED_BIT)) {
           // If setBitOrZero() returns 0, this sink is already closed.
           0 -> return
 
@@ -134,7 +134,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
 
     override fun close() {
       timeout.withTimeout {
-        when (closeBits.setBitOrZero(SOURCE_CLOSED_BIT)) {
+        when (closeBits.setBitsOrZero(SOURCE_CLOSED_BIT)) {
           // If setBitOrZero() returns 0, this source is already closed.
           0 -> return
 

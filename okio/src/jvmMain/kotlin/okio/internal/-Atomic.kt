@@ -21,11 +21,11 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Returns the new value of the bit field if a change was made, or 0 if no change was made.
  */
-internal fun AtomicInteger.setBitOrZero(bit: Int): Int {
+internal fun AtomicInteger.setBitsOrZero(bits: Int): Int {
   while (true) {
     val current = get()
-    if (current and bit != 0) return 0 // Bit is already set.
-    val updated = current or bit
+    if (current and bits != 0) return 0 // At least one bit is already set.
+    val updated = current or bits
     if (compareAndSet(current, updated)) return updated
   }
 }
