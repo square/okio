@@ -657,6 +657,7 @@ public final class okio/Okio {
 	public static final fun sink (Ljava/net/Socket;)Lokio/Sink;
 	public static final fun sink (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)Lokio/Sink;
 	public static synthetic fun sink$default (Ljava/io/File;ZILjava/lang/Object;)Lokio/Sink;
+	public static final fun socket (Ljava/net/Socket;)Lokio/Socket;
 	public static final fun source (Ljava/io/File;)Lokio/Source;
 	public static final fun source (Ljava/io/InputStream;)Lokio/Source;
 	public static final fun source (Ljava/net/Socket;)Lokio/Source;
