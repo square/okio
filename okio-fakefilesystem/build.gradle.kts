@@ -1,6 +1,7 @@
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 
 plugins {
   kotlin("multiplatform")
@@ -15,11 +16,9 @@ kotlin {
   }
   if (kmpJsEnabled) {
     js {
-      compilations.all {
-        kotlinOptions {
-          moduleKind = "umd"
-          sourceMap = true
-        }
+      compilerOptions {
+        moduleKind = JsModuleKind.MODULE_UMD
+        sourceMap = true
       }
       nodejs {
         testTask {

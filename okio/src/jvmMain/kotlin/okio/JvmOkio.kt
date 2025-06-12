@@ -27,16 +27,16 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
-import java.net.SocketTimeoutException
 import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.Path as NioPath
 import java.security.MessageDigest
-import java.util.logging.Level
-import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
+import okio.internal.DefaultSocket
 import okio.internal.ResourceFileSystem
+import okio.internal.SocketAsyncTimeout
+import okio.internal.isAndroidGetsocknameError
 
 /** Returns a sink that writes to `out`. */
 fun OutputStream.sink(): Sink = OutputStreamSink(this, Timeout())
@@ -139,33 +139,8 @@ fun Socket.source(): Source {
   return timeout.source(source)
 }
 
-private val logger = Logger.getLogger("okio.Okio")
-
-private class SocketAsyncTimeout(private val socket: Socket) : AsyncTimeout() {
-  override fun newTimeoutException(cause: IOException?): IOException {
-    val ioe = SocketTimeoutException("timeout")
-    if (cause != null) {
-      ioe.initCause(cause)
-    }
-    return ioe
-  }
-
-  override fun timedOut() {
-    try {
-      socket.close()
-    } catch (e: Exception) {
-      logger.log(Level.WARNING, "Failed to close timed out socket $socket", e)
-    } catch (e: AssertionError) {
-      if (e.isAndroidGetsocknameError) {
-        // Catch this exception due to a Firmware issue up to android 4.2.2
-        // https://code.google.com/p/android/issues/detail?id=54072
-        logger.log(Level.WARNING, "Failed to close timed out socket $socket", e)
-      } else {
-        throw e
-      }
-    }
-  }
-}
+@JvmName("socket")
+fun Socket.asOkioSocket(): okio.Socket = DefaultSocket(this)
 
 /** Returns a sink that writes to `file`. */
 @JvmOverloads
@@ -225,11 +200,3 @@ fun Sink.hashingSink(digest: MessageDigest): HashingSink = HashingSink(this, dig
 fun Source.hashingSource(digest: MessageDigest): HashingSource = HashingSource(this, digest)
 
 fun ClassLoader.asResourceFileSystem(): FileSystem = ResourceFileSystem(this, indexEagerly = true)
-
-/**
- * Returns true if this error is due to a firmware bug fixed after Android 4.2.2.
- * https://code.google.com/p/android/issues/detail?id=54072
- */
-internal val AssertionError.isAndroidGetsocknameError: Boolean get() {
-  return cause != null && message?.contains("getsockname failed") ?: false
-}

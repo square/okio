@@ -6,6 +6,15 @@ Change Log
  * In-development snapshots are now published to the Central Portal Snapshots repository at https://central.sonatype.com/repository/maven-snapshots/.
 
 
+## Version 3.12.0
+
+_2025-05-27_
+
+ * New: Support an optional end index when searching with `BufferedSource.indexOf()`.
+ * Fix: Don't do unnecessary work in `BufferedSource.rangeEquals()`.
+ * Upgrade: [Kotlin 2.1.21][kotlin_2_1_21].
+
+
 ## Version 3.11.0
 
 _2025-04-09_
@@ -967,6 +976,7 @@ _2014-04-08_
 [kotlin_1_9_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.10
 [kotlin_1_9_21]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.21
 [kotlin_2_1_20]: https://github.com/JetBrains/kotlin/releases/tag/v2.1.20
+[kotlin_2_1_21]: https://github.com/JetBrains/kotlin/releases/tag/v2.1.21
 [loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
 [preview1]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md

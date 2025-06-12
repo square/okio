@@ -716,7 +716,7 @@ class CommonBufferedSourceTest(
     var e = assertFailsWith<IllegalArgumentException> {
       source.indexOf(ByteString.of())
     }
-    assertEquals("bytes is empty", e.message)
+    assertEquals("byteCount == 0", e.message)
 
     e = assertFailsWith<IllegalArgumentException> {
       source.indexOf("hi".encodeUtf8(), -1)

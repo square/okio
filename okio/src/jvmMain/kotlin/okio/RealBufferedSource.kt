@@ -122,11 +122,13 @@ internal actual class RealBufferedSource actual constructor(
   actual override fun indexOf(b: Byte, fromIndex: Long): Long =
     indexOf(b, fromIndex, Long.MAX_VALUE)
   actual override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long =
-    commonIndexOf(b, fromIndex, toIndex)
+    commonIndexOf(b, fromIndex = fromIndex, toIndex = toIndex)
 
   actual override fun indexOf(bytes: ByteString): Long = indexOf(bytes, 0L)
   actual override fun indexOf(bytes: ByteString, fromIndex: Long): Long =
-    commonIndexOf(bytes, fromIndex)
+    indexOf(bytes, fromIndex, Long.MAX_VALUE)
+  actual override fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long =
+    commonIndexOf(bytes, fromIndex = fromIndex, toIndex = toIndex)
   actual override fun indexOfElement(targetBytes: ByteString): Long =
     indexOfElement(targetBytes, 0L)
   actual override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long =
