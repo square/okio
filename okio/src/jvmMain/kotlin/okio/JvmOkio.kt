@@ -34,6 +34,7 @@ import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.Mac
 import okio.internal.DefaultSocket
+import okio.internal.PipeSocket
 import okio.internal.ResourceFileSystem
 import okio.internal.SocketAsyncTimeout
 import okio.internal.isAndroidGetsocknameError
@@ -141,6 +142,36 @@ fun Socket.source(): Source {
 
 @JvmName("socket")
 fun Socket.asOkioSocket(): okio.Socket = DefaultSocket(this)
+
+/**
+ * Returns an array of two symmetric sockets, _A_ (element 0) and _B_ (element 1) that are mutually
+ * connected:
+ *
+ *  * Pipe AB connects _A_’s sink to _B_’s source.
+ *  * Pipe BA connects _B_’s sink to _A_’s source.
+ *
+ * Each pipe uses a buffer to decouple source and sink. This buffer has a user-specified maximum
+ * size. When a socket writer outruns its corresponding reader, the buffer fills up and eventually
+ * writes to the sink will block until the reader has caught up. Symmetrically, if a reader outruns
+ * its writer, reads block until there is data to be read.
+ *
+ * There is a buffer for Pipe AB and another for Pipe BA. The maximum amount of memory that could be
+ * held by the two sockets together is `maxBufferSize * 2`.
+ *
+ * Limit the amount of time spent waiting for the other party by configuring [timeouts][Timeout] on
+ * the source and the sink.
+ *
+ * When the sink is closed, source reads will continue to complete normally until the buffer is
+ * exhausted. At that point reads will return -1, indicating the end of the stream. But if the
+ * source is closed first, writes to the sink will immediately fail with an [IOException].
+ *
+ * Canceling either socket immediately fails all reads and writes on both sockets.
+ */
+fun inMemorySocketPair(maxBufferSize: Long): Array<okio.Socket> {
+  val ab = Pipe(maxBufferSize)
+  val ba = Pipe(maxBufferSize)
+  return arrayOf(PipeSocket(ab, ba), PipeSocket(ba, ab))
+}
 
 /** Returns a sink that writes to `file`. */
 @JvmOverloads

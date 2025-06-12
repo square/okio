@@ -46,8 +46,8 @@ class SocketTest(val factory: Factory = Factory.Default) {
   @Before
   fun setUp() {
     val socketPair = factory.createSocketPair()
-    this.socket = socketPair.first
-    this.peerSocket = socketPair.second
+    this.socket = socketPair[0]
+    this.peerSocket = socketPair[1]
     this.peer = AsyncSocket(peerSocket)
   }
 
@@ -257,7 +257,7 @@ class SocketTest(val factory: Factory = Factory.Default) {
   enum class Factory {
     /** Implements an okio.Socket using the `java.net.Socket` API on OS sockets. */
     Default {
-      override fun createSocketPair(): Pair<Socket, Socket> {
+      override fun createSocketPair(): Array<Socket> {
         val localhost = InetAddress.getByName("localhost")
 
         val serverSocket = ServerSocket()
@@ -272,33 +272,15 @@ class SocketTest(val factory: Factory = Factory.Default) {
         socketA.connect(InetSocketAddress(localhost, serverSocket.localPort))
 
         val socketB = socketBFuture.get()
-        return socketA.asOkioSocket() to socketB.asOkioSocket()
+        return arrayOf(socketA.asOkioSocket(), socketB.asOkioSocket())
       }
     },
 
-    /** Implements an okio.Socket using a pair of in-memory pipes. */
     Pipes {
-      override fun createSocketPair(): Pair<Socket, Socket> {
-        class PipeSocket(val sourcePipe: Pipe, val sinkPipe: Pipe) : Socket {
-          override val source: Source
-            get() = sourcePipe.source
-          override val sink: Sink
-            get() = sinkPipe.sink
-
-          override fun cancel() {
-            sourcePipe.cancel()
-            sinkPipe.cancel()
-          }
-        }
-
-        val aToB = Pipe(1024)
-        val bToA = Pipe(1024)
-
-        return PipeSocket(aToB, bToA) to PipeSocket(bToA, aToB)
-      }
+      override fun createSocketPair() = inMemorySocketPair(1024)
     };
 
-    /** Returns a pair of mutually-connected sockets. */
-    abstract fun createSocketPair(): Pair<Socket, Socket>
+    /** Returns two mutually-connected sockets. */
+    abstract fun createSocketPair(): Array<Socket>
   }
 }
