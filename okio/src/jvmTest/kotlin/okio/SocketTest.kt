@@ -253,6 +253,7 @@ class SocketTest(val factory: Factory = Factory.Default) {
     assertThat(javaNetSocket.isClosed).isFalse()
   }
 
+  @Suppress("ktlint:trailing-comma-on-declaration-site")
   enum class Factory {
     /** Implements an okio.Socket using the `java.net.Socket` API on OS sockets. */
     Default {
