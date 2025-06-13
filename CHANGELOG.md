@@ -3,7 +3,19 @@ Change Log
 
 ## Unreleased
 
- * In-development snapshots are now published to the Central Portal Snapshots repository at https://central.sonatype.com/repository/maven-snapshots/.
+ * None yet.
+
+
+## Version 3.13.0
+
+_2025-06-13_
+
+ * New: `okio.Socket` interface. This is a first step towards low-level streaming networking support
+   for Kotlin/Multiplatform. This release provides two JVM-only implementations: `asOkioSocket()`
+   adapts a `java.net.Socket` to our new interface, and `inMemorySocketPair()` returns a pair of
+   mutually-connected sockets. We also anticipate that this interface will be a useful abstraction
+   for proxies and tunnels.
+ * New: In-development snapshots are now published to the [Central Portal Snapshots repository].
 
 
 ## Version 3.12.0
@@ -962,6 +974,7 @@ _2014-04-08_
  * Imported from OkHttp.
 
 
+[Central Portal Snapshots repository]: https://central.sonatype.org/publish/publish-portal-snapshots/
 [bom]: https://docs.gradle.org/6.2/userguide/platforms.html#sub:bom_import
 [datetime_0_3_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.3.0
 [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0

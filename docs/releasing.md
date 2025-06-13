@@ -17,7 +17,10 @@ Releasing
       "s/VERSION_NAME=.*/VERSION_NAME=$RELEASE_VERSION/g" \
       gradle.properties
     sed -i "" \
-      "s/\"com.squareup.okio:\([^\:]*\):[^\"]*\"/\"com.squareup.okio:\1:$RELEASE_VERSION\"/g" \
+      "s/\"com.squareup.okio:\([^\:]*\):[0-9.]*\"/\"com.squareup.okio:\1:$RELEASE_VERSION\"/g" \
+      `find . -name "index.md"`
+    sed -i "" \
+      "s/\"com.squareup.okio:\([^\:]*\):[0-9.]*-SNAPSHOT\"/\"com.squareup.okio:\1:$NEXT_VERSION\"/g" \
       `find . -name "index.md"`
 
     git commit -am "Prepare for release $RELEASE_VERSION."
