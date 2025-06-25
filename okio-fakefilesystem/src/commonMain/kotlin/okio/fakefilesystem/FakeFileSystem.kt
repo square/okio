@@ -18,8 +18,8 @@ package okio.fakefilesystem
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.ByteString

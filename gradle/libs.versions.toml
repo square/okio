@@ -18,7 +18,7 @@ jmh-gradle-plugin = { module = "me.champeau.jmh:jmh-gradle-plugin", version = "0
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit" }
-kotlin-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.6.2" }
+kotlin-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.7.0" }
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "7.0.4" }
 test-assertj = { module = "org.assertj:assertj-core", version = "3.27.3" }
 test-assertk = "com.willowtreeapps.assertk:assertk:0.28.1"

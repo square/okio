@@ -22,7 +22,7 @@ import java.nio.file.FileSystems
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.fail
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import okio.FileSystem.Companion.asOkioFileSystem
 import org.junit.Test
 
