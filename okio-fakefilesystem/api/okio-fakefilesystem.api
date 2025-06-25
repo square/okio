@@ -1,8 +1,8 @@
 public final class okio/fakefilesystem/FakeFileSystem : okio/FileSystem {
-	public final field clock Lkotlinx/datetime/Clock;
+	public final field clock Lkotlin/time/Clock;
 	public fun <init> ()V
-	public fun <init> (Lkotlinx/datetime/Clock;)V
-	public synthetic fun <init> (Lkotlinx/datetime/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlin/time/Clock;)V
+	public synthetic fun <init> (Lkotlin/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun allPaths ()Ljava/util/Set;
 	public fun appendingSink (Lokio/Path;Z)Lokio/Sink;
 	public fun atomicMove (Lokio/Path;Lokio/Path;)V

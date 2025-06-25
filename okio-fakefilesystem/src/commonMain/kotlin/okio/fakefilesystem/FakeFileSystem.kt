@@ -71,6 +71,9 @@ class FakeFileSystem(
   val clock: Clock = Clock.System,
 ) : FileSystem() {
 
+  // Avoid propagating 'ExperimentalTime' if 'clock' is not specified.
+  constructor() : this(Clock.System)
+
   /** File system roots. Each element is a Directory and is created on-demand. */
   private val roots = mutableMapOf<Path, Directory>()
 
