@@ -35,6 +35,11 @@ kotlin {
     configureOrCreateNativePlatforms()
   }
   sourceSets {
+    all {
+      languageSettings.apply {
+        optIn("kotlin.time.ExperimentalTime")
+      }
+    }
     val commonMain by getting {
       dependencies {
         api(libs.kotlin.time)

@@ -19,7 +19,7 @@ package okio.fakefilesystem
 
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import okio.FileMetadata
 import okio.Path
 

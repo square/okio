@@ -17,9 +17,9 @@ package okio
 
 import okio.fakefilesystem.FakeFileSystem
 
-actual typealias Clock = kotlinx.datetime.Clock
+actual typealias Clock = kotlin.time.Clock
 
-actual typealias Instant = kotlinx.datetime.Instant
+actual typealias Instant = kotlin.time.Instant
 
 actual fun fromEpochSeconds(
   epochSeconds: Long,

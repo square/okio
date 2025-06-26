@@ -18,7 +18,7 @@ package okio
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import java.nio.file.FileSystems
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import okio.FileHandleFileSystemTest.FileHandleTestingFileSystem
 import okio.FileSystem.Companion.asOkioFileSystem
 

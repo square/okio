@@ -18,8 +18,8 @@ package okio.fakefilesystem
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.ByteString
@@ -70,6 +70,9 @@ class FakeFileSystem(
   @JvmField
   val clock: Clock = Clock.System,
 ) : FileSystem() {
+
+  // Avoid propagating 'ExperimentalTime' if 'clock' is not specified.
+  constructor() : this(Clock.System)
 
   /** File system roots. Each element is a Directory and is created on-demand. */
   private val roots = mutableMapOf<Path, Directory>()

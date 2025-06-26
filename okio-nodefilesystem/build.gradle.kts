@@ -25,9 +25,6 @@ kotlin {
     }
   }
   sourceSets {
-    all {
-      languageSettings.optIn("kotlin.RequiresOptIn")
-    }
     matching { it.name.endsWith("Test") }.all {
       languageSettings {
         optIn("kotlin.time.ExperimentalTime")

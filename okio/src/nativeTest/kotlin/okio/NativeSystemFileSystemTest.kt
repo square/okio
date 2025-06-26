@@ -15,7 +15,7 @@
  */
 package okio
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class NativeSystemFileSystemTest : AbstractFileSystemTest(
   clock = Clock.System,
