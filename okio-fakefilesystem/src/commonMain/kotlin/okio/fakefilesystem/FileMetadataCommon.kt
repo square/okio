@@ -59,7 +59,7 @@ internal val defaultClockNowMillis: () -> Long by lazy {
   try {
     val delegate = kotlin.time.Clock.System
     return@lazy { delegate.now().toEpochMilliseconds() }
-  } catch (_: Exception) {
+  } catch (_: Throwable) {
     val delegate = Clock.System
     return@lazy { delegate.now().toEpochMilliseconds() }
   }
