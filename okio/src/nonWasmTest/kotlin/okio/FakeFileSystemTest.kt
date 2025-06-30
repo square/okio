@@ -23,7 +23,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
-import okio.FakeWindowsFileSystemTest
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 
