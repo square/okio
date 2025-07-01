@@ -19,7 +19,8 @@ package okio.fakefilesystem
 
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
-import kotlin.time.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import okio.FileMetadata
 import okio.Path
 
@@ -44,4 +45,22 @@ internal fun FileMetadata(
     lastAccessedAtMillis = lastAccessedAt?.toEpochMilliseconds(),
     extras = extras,
   )
+}
+
+/**
+ * Get the time from the best available Clock.
+ *
+ *  * If it's Kotlin 2.1.20+, this uses kotlin.time.Clock.
+ *  * Otherwise it uses kotlinx.time.Clock.
+ *
+ * We support earlier Kotlin versions because Okio in Gradle won't have 2.1.20+.
+ */
+internal val defaultClockNowMillis: () -> Long by lazy {
+  try {
+    val delegate = kotlin.time.Clock.System
+    return@lazy { delegate.now().toEpochMilliseconds() }
+  } catch (_: Throwable) {
+    val delegate = Clock.System
+    return@lazy { delegate.now().toEpochMilliseconds() }
+  }
 }
