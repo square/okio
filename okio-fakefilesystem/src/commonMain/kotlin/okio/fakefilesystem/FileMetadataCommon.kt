@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmMultifileClass
 @file:JvmName("-Time")
 
 package okio.fakefilesystem
 
+import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import okio.FileMetadata
 import okio.Path
@@ -48,19 +49,9 @@ internal fun FileMetadata(
 }
 
 /**
- * Get the time from the best available Clock.
+ * Get the time from the best available clock.
  *
- *  * If it's Kotlin 2.1.20+, this uses kotlin.time.Clock.
- *  * Otherwise it uses kotlinx.time.Clock.
- *
- * We support earlier Kotlin versions because Okio in Gradle won't have 2.1.20+.
+ * We'd prefer `kotlin.time.Clock` but it requires Kotlin 2.1.20+ and that isn't available to
+ * Gradle plugins (at least for Gradle 8.x).
  */
-internal val defaultClockNowMillis: () -> Long by lazy {
-  try {
-    val delegate = kotlin.time.Clock.System
-    return@lazy { delegate.now().toEpochMilliseconds() }
-  } catch (_: Throwable) {
-    val delegate = Clock.System
-    return@lazy { delegate.now().toEpochMilliseconds() }
-  }
-}
+internal expect val defaultClockNowMillis: () -> Long

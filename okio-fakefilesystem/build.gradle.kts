@@ -53,6 +53,21 @@ kotlin {
       createSourceSet("wasmMain", parent = commonMain, children = listOf("wasmJs"))
       createSourceSet("wasmTest", parent = commonTest, children = listOf("wasmJs"))
     }
+
+    val nonJvmMain by creating {
+      dependsOn(commonMain)
+    }
+    if (kmpJsEnabled) {
+      getByName("jsMain").dependsOn(nonJvmMain)
+    }
+    if (kmpNativeEnabled) {
+      for (childTarget in nativeTargets) {
+        get("${childTarget}Main").dependsOn(nonJvmMain)
+      }
+    }
+    if (kmpWasmEnabled) {
+      getByName("wasmMain").dependsOn(nonJvmMain)
+    }
   }
 }
 
