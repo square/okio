@@ -1001,6 +1001,7 @@ _2014-04-08_
 [bom]: https://docs.gradle.org/6.2/userguide/platforms.html#sub:bom_import
 [datetime_0_3_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.3.0
 [datetime_0_7_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.7.0
+[datetime_0_7_0_compat]: https://github.com/Kotlin/kotlinx-datetime?tab=readme-ov-file#deprecation-of-instant
 [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
 [hierarchical_projects]: https://kotlinlang.org/docs/multiplatform-hierarchy.html
 [kotlin_1_4_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.10
