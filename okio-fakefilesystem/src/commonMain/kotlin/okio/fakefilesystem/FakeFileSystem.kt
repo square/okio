@@ -75,12 +75,19 @@ class FakeFileSystem private constructor(
     clockNowMillis = { clock.now().toEpochMilliseconds() },
   )
 
+  // Avoid calling kotlinx.datetime.Clock.System.now() because it crashes at runtime if the Kotlin
+  // stdlib isn't 2.1.20+. (That'll be the case when running in Gradle 8.x.)
   @Deprecated(
     "Use the constructor that accepts a kotlin.time.Clock, or the no-args constructor",
     level = DeprecationLevel.HIDDEN,
   )
   constructor(clock: Clock = Clock.System) : this(
-    clockNowMillis = { clock.now().toEpochMilliseconds() },
+    when {
+      clock === Clock.System -> defaultClockNowMillis
+      else -> {
+        { clock.now().toEpochMilliseconds() }
+      }
+    },
   )
 
   /** Returns the clock used to timestamp files. */
