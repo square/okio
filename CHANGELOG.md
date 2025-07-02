@@ -6,6 +6,18 @@ Change Log
  * None yet.
 
 
+## Version 3.15.0
+
+_2025-07-01_
+
+ * Upgrade: [kotlinx-datetime 0.7.0-0.6.x-compat][datetime_0_7_0_compat]. The previous 3.14.0
+   release, `FakeFileSystem` broke binary-compatibility for calls to `FakeFileSystem()`. This
+   restores that compatibility.
+
+ * Breaking: Change `FakeFileSystem.clock` from a JVM field to a property. This avoids a crash
+   running Okio in a Gradle 8.x plugin. This change is not binary-compatible.
+
+
 ## Version 3.14.0
 
 _2025-06-28_
