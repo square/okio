@@ -36,7 +36,7 @@ public class AsyncTimeoutBenchmark {
   public void setup() {
     asyncTimeouts = new ArrayList<>(queueSize);
     for (int i = 0; i < queueSize; i++) {
-      AsyncTimeout timeout = new AsyncTimeout("Node" + i) {
+      AsyncTimeout timeout = new AsyncTimeout() {
         @Override protected void timedOut() {
           // No-op
         }
@@ -48,7 +48,7 @@ public class AsyncTimeoutBenchmark {
   }
 
   @TearDown
-  public void tearDown() throws InterruptedException {
+  public void tearDown() {
     for (AsyncTimeout timeout : asyncTimeouts) {
       timeout.exit();
     }
