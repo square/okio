@@ -4,6 +4,9 @@ plugins {
 }
 
 jmh {
+  this.includes.addAll(
+    "AsyncTimeoutBenchmark"
+  )
 }
 
 dependencies {

@@ -37,10 +37,10 @@ import org.junit.Test
  */
 class AsyncTimeoutTest {
   private val timedOut = LinkedBlockingDeque<AsyncTimeout>()
-  private val a = RecordingAsyncTimeout()
-  private val b = RecordingAsyncTimeout()
-  private val c = RecordingAsyncTimeout()
-  private val d = RecordingAsyncTimeout()
+  private val a = RecordingAsyncTimeout("a")
+  private val b = RecordingAsyncTimeout("b")
+  private val c = RecordingAsyncTimeout("c")
+  private val d = RecordingAsyncTimeout("d")
 
   @Before
   fun setUp() {
@@ -492,7 +492,7 @@ class AsyncTimeoutTest {
     timedOut.clear()
   }
 
-  internal inner class RecordingAsyncTimeout : AsyncTimeout() {
+  internal inner class RecordingAsyncTimeout(name: String = "head") : AsyncTimeout(name) {
     override fun timedOut() {
       timedOut.add(this)
     }
