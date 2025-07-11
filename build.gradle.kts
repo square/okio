@@ -51,6 +51,7 @@ allprojects {
   version = project.property("VERSION_NAME") as String
 
   repositories {
+    mavenLocal()
     mavenCentral()
     google()
   }
