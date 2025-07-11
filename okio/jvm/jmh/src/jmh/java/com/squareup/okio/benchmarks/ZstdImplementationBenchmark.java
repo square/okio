@@ -15,12 +15,18 @@
  */
 package com.squareup.okio.benchmarks;
 
+import com.github.luben.zstd.ZstdInputStream;
+import com.github.luben.zstd.ZstdOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import okio.Buffer;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
+import org.jetbrains.annotations.NotNull;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -33,39 +39,69 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
+/** Confirm Okio Zstd has performance consistent with Zstd-jni. */
 @Fork(1)
 @Warmup(iterations = 1, time = 2)
 @Measurement(iterations = 3, time = 2)
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class CompressBenchmark {
+public class ZstdImplementationBenchmark {
   private SampleData sampleData;
-
-  @Param({"deflate", "gzip", "zstd", "none"})
-  String algorithm;
 
   @Param({"8388608"}) // 8 MiB.
   int sampleDataSize;
 
   @Setup
   public void setup() throws IOException {
-    sampleData = SampleData.create(algorithm, sampleDataSize);
+    sampleData = SampleData.create("zstd", sampleDataSize);
   }
 
   @Benchmark
-  public void compress() throws IOException {
-    try (BufferedSink sink = Okio.buffer(sampleData.compress(algorithm, Okio.blackhole()))) {
+  public void okioCompress() throws IOException {
+    try (BufferedSink sink = Okio.buffer(sampleData.compress("zstd", Okio.blackhole()))) {
       sink.write(sampleData.uncompressedData);
     }
   }
 
   @Benchmark
-  public void decompress() throws IOException {
+  public void zstdJniCompress() throws IOException {
+    try (OutputStream out = new ZstdOutputStream(new BlackholeOutputStream())) {
+      out.write(sampleData.uncompressedData);
+    }
+  }
+
+  @Benchmark
+  public void okioDecompress() throws IOException {
     Buffer compressedBuffer = new Buffer();
     compressedBuffer.write(sampleData.compressedData);
-    try (BufferedSource source = Okio.buffer(sampleData.decompress(algorithm, compressedBuffer))) {
+    try (BufferedSource source = Okio.buffer(sampleData.decompress("zstd", compressedBuffer))) {
       source.readAll(Okio.blackhole());
+    }
+  }
+
+  @Benchmark
+  public void zstdJniDecompress() throws IOException {
+    byte[] blackhole = new byte[8192];
+    InputStream compressedInputStream = new ByteArrayInputStream(sampleData.compressedData);
+    try (InputStream in = new ZstdInputStream(compressedInputStream)) {
+      while (true) {
+        if (in.read(blackhole) == -1) break;
+      }
+    }
+  }
+
+  static class BlackholeOutputStream extends OutputStream {
+    @Override
+    public void write(@NotNull byte[] b, int off, int len) throws IOException {
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+    }
+
+    @Override
+    public void write(@NotNull byte[] b) throws IOException {
     }
   }
 }
