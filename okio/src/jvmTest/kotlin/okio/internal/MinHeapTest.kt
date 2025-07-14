@@ -23,11 +23,7 @@ class MinHeapTest {
       }
     }
 
-    heap = object : Heap() {
-      override fun signal() {
-        /* No-op */
-      }
-    }
+    heap =  Heap()
     heap.head = AsyncTimeout()
 
     val now = System.nanoTime()

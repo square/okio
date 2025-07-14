@@ -44,7 +44,7 @@ open class AsyncTimeout() : Timeout() {
 
   internal var next: AsyncTimeout? = null
 
-  /** This timeouts data for the binary heap.  */
+  /** Timeouts data for the binary heap.  */
   @JvmField
   internal var parent: AsyncTimeout? = null
 
@@ -362,15 +362,11 @@ open class AsyncTimeout() : Timeout() {
       return node
     }
 
-    val dataStructure = object : Heap() {
-      override fun signal() {
-        this@Companion.condition.signal()
-      }
-    }
+    val dataStructure = Heap()
   }
 }
 
-internal abstract class Heap : DataStructure() {
+internal class Heap : DataStructure() {
   internal var heapSize: Int = 0
 
   private fun insertAtEnd(node: AsyncTimeout) {
@@ -544,7 +540,7 @@ internal abstract class Heap : DataStructure() {
   }
 }
 
-internal abstract class LinkedList : DataStructure() {
+internal class LinkedList : DataStructure() {
 
   override fun first(): AsyncTimeout? {
     return head!!.next
