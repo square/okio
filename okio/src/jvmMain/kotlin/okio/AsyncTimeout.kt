@@ -39,7 +39,7 @@ import okio.AsyncTimeout.Companion.IDLE_TIMEOUT_NANOS
  * The return value of [exit] indicates whether a timeout was triggered. Note that the call to
  * [timedOut] is asynchronous, and may be called after [exit].
  */
-open class AsyncTimeout() : Timeout() {
+open class AsyncTimeout : Timeout() {
   private var state = STATE_IDLE
 
   internal var next: AsyncTimeout? = null

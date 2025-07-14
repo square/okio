@@ -1,12 +1,12 @@
 package okio.internal
 
 import assertk.assertThat
+import java.util.concurrent.TimeUnit
 import okio.AsyncTimeout
 import okio.Heap
 import okio.Heap.Companion.compareTo
 import org.junit.Before
 import org.junit.Test
-import java.util.concurrent.TimeUnit
 
 class MinHeapTest {
 
@@ -23,7 +23,7 @@ class MinHeapTest {
       }
     }
 
-    heap =  Heap()
+    heap = Heap()
     heap.head = AsyncTimeout()
 
     val now = System.nanoTime()
@@ -107,7 +107,7 @@ internal fun validateHeap(heap: Heap) {
     index++
   }
 
-  assertThat(index-1 == heapSize) {
-    "Heap size mismatch: expected $index, but got ${heapSize}."
+  assertThat(index - 1 == heapSize) {
+    "Heap size mismatch: expected $index, but got $heapSize."
   }
 }
