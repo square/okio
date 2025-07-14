@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+import okio.AsyncTimeout.Companion.IDLE_TIMEOUT_NANOS
 
 /**
  * This timeout uses a background thread to take action exactly when the timeout occurs. Use this to
@@ -38,11 +39,20 @@ import kotlin.concurrent.withLock
  * The return value of [exit] indicates whether a timeout was triggered. Note that the call to
  * [timedOut] is asynchronous, and may be called after [exit].
  */
-open class AsyncTimeout : Timeout() {
+open class AsyncTimeout() : Timeout() {
   private var state = STATE_IDLE
 
-  /** The next node in the linked list.  */
-  private var next: AsyncTimeout? = null
+  internal var next: AsyncTimeout? = null
+
+  /** This timeouts data for the binary heap.  */
+  @JvmField
+  internal var parent: AsyncTimeout? = null
+
+  @JvmField
+  internal var left: AsyncTimeout? = null
+
+  @JvmField
+  internal var right: AsyncTimeout? = null
 
   /** If scheduled, this is the time that the watchdog should time this out.  */
   private var timeoutAt = 0L
@@ -68,7 +78,7 @@ open class AsyncTimeout : Timeout() {
       state = STATE_IDLE
 
       if (oldState == STATE_IN_QUEUE) {
-        removeFromQueue(this)
+        dataStructure.removeFromQueue(this)
         return false
       } else {
         return oldState == STATE_TIMED_OUT
@@ -81,7 +91,7 @@ open class AsyncTimeout : Timeout() {
 
     lock.withLock {
       if (state == STATE_IN_QUEUE) {
-        removeFromQueue(this)
+        dataStructure.removeFromQueue(this)
         state = STATE_CANCELED
       }
     }
@@ -91,7 +101,7 @@ open class AsyncTimeout : Timeout() {
    * Returns the amount of time left until the time out. This will be negative if the timeout has
    * elapsed and the timeout should occur immediately.
    */
-  private fun remainingNanos(now: Long) = timeoutAt - now
+  internal fun remainingNanos(now: Long) = timeoutAt - now
 
   /**
    * Invoked by the watchdog thread when the time between calls to [enter] and [exit] has exceeded
@@ -212,8 +222,8 @@ open class AsyncTimeout : Timeout() {
 
             // The queue is completely empty. Let this thread exit and let another watchdog thread
             // get created on the next call to scheduleTimeout().
-            if (timedOut === head) {
-              head = null
+            if (timedOut === dataStructure.head) {
+              dataStructure.head = null
               return
             }
           }
@@ -286,12 +296,12 @@ open class AsyncTimeout : Timeout() {
      * node to time out, or null if the queue is empty. The head is null until the watchdog thread
      * is started and also after being idle for [AsyncTimeout.IDLE_TIMEOUT_MILLIS].
      */
-    private var head: AsyncTimeout? = null
+    // private var head: AsyncTimeout? = null
 
     private fun insertIntoQueue(node: AsyncTimeout, timeoutNanos: Long, hasDeadline: Boolean) {
       // Start the watchdog thread and create the head node when the first timeout is scheduled.
-      if (head == null) {
-        head = AsyncTimeout()
+      if (dataStructure.head == null) {
+        dataStructure.head = AsyncTimeout()
         Watchdog().start()
       }
 
@@ -309,35 +319,10 @@ open class AsyncTimeout : Timeout() {
       }
 
       // Insert the node in sorted order.
-      val remainingNanos = node.remainingNanos(now)
-      var prev = head!!
-      while (true) {
-        if (prev.next == null || remainingNanos < prev.next!!.remainingNanos(now)) {
-          node.next = prev.next
-          prev.next = node
-          if (prev === head) {
-            // Wake up the watchdog when inserting at the front.
-            condition.signal()
-          }
-          break
-        }
-        prev = prev.next!!
+      dataStructure.insertIntoQueue(now, node)
+      if (node.parent === dataStructure.head) {
+        this@Companion.condition.signal()
       }
-    }
-
-    /** Returns true if the timeout occurred. */
-    private fun removeFromQueue(node: AsyncTimeout) {
-      var prev = head
-      while (prev != null) {
-        if (prev.next === node) {
-          prev.next = node.next
-          node.next = null
-          return
-        }
-        prev = prev.next
-      }
-
-      error("node was not found in the queue")
     }
 
     /**
@@ -350,14 +335,14 @@ open class AsyncTimeout : Timeout() {
     @Throws(InterruptedException::class)
     fun awaitTimeout(): AsyncTimeout? {
       // Get the next eligible node.
-      val node = head!!.next
+      val node = dataStructure.first()
 
       // The queue is empty. Wait until either something is enqueued or the idle timeout elapses.
       if (node == null) {
         val startNanos = System.nanoTime()
         condition.await(IDLE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-        return if (head!!.next == null && System.nanoTime() - startNanos >= IDLE_TIMEOUT_NANOS) {
-          head // The idle timeout elapsed.
+        return if (dataStructure.first() == null && System.nanoTime() - startNanos >= IDLE_TIMEOUT_NANOS) {
+          dataStructure.head // The idle timeout elapsed.
         } else {
           null // The situation has changed.
         }
@@ -372,10 +357,239 @@ open class AsyncTimeout : Timeout() {
       }
 
       // The head of the queue has timed out. Remove it.
-      head!!.next = node.next
-      node.next = null
+      dataStructure.removeFirst(node)
       node.state = STATE_TIMED_OUT
       return node
     }
+
+    val dataStructure = object : Heap() {
+      override fun signal() {
+        this@Companion.condition.signal()
+      }
+    }
   }
+}
+
+internal abstract class Heap : DataStructure() {
+  internal var heapSize: Int = 0
+
+  private fun insertAtEnd(node: AsyncTimeout) {
+    var current = head?.left // The left child of the head is the first element in the heap.
+    if (current == null) {
+      // The heap is empty. Insert the node as the first element.
+      head!!.left = node
+      node.parent = head
+      heapSize = 1
+      return
+    }
+
+    val newSize = heapSize + 1
+    var index = newSize
+    while (index > 3) {
+      if (index % 2 == 0) {
+        current = current!!.left
+      } else {
+        current = current!!.right
+      }
+      index /= 2
+    }
+
+    if (index % 2 == 0) {
+      // Insert as the left child.
+      current!!.left = node
+    } else {
+      // Insert as the right child.
+      current!!.right = node
+    }
+    node.parent = current
+    heapSize = newSize
+  }
+
+  private fun findLast(): AsyncTimeout? {
+    // Find the last node in the heap. This is done by traversing the binary heap using the
+    // binary representation of the heap size.
+    if (heapSize == 0) {
+      return null
+    }
+
+    var current = head!!.left
+    var index = heapSize
+    while (index > 1) {
+      if (index % 2 == 0) {
+        current = current!!.left
+      } else {
+        current = current!!.right
+      }
+      index /= 2
+    }
+
+    return current
+  }
+
+  private fun swap(a: AsyncTimeout, b: AsyncTimeout) {
+    if (a === b) return
+
+    a.parent?.let { if (it.left === a) it.left = b else it.right = b }
+    b.parent?.let { if (it.right === b) it.right = a else it.left = a }
+
+    // Swap parent references
+    val tempParent = a.parent
+    a.parent = b.parent
+    b.parent = tempParent
+
+    // Swap children references
+    val tempLeft = a.left
+    val tempRight = a.right
+    a.left = b.left
+    a.right = b.right
+    b.left = tempLeft
+    b.right = tempRight
+
+    // Update children's parent references
+    a.left?.let { it.parent = a }
+    a.right?.let { it.parent = a }
+    b.left?.let { it.parent = b }
+    b.right?.let { it.parent = b }
+  }
+
+  private fun heapifyUp(node: AsyncTimeout, now: Long = System.nanoTime()) {
+    var current = node
+    while (current.parent !== head && compareTo(current, current.parent!!, now) < 0) {
+      // Swap current with its parent.
+      swap(current, current.parent!!)
+    }
+  }
+
+  private fun heapifyDown(node: AsyncTimeout, now: Long = System.nanoTime()) {
+    var current = node
+    while (true) {
+      var smallest = current
+
+      if (current.left != null && compareTo(current.left!!, smallest, now) < 0) {
+        smallest = current.left!!
+      }
+
+      if (current.right != null && compareTo(current.right!!, smallest, now) < 0) {
+        smallest = current.right!!
+      }
+
+      if (smallest === current) {
+        break
+      }
+      swap(current, smallest)
+    }
+  }
+
+  override fun first(): AsyncTimeout? {
+    // The first node is the left child of the head.
+    return head!!.left
+  }
+
+  override fun insertIntoQueue(now: Long, node: AsyncTimeout) {
+    insertAtEnd(node)
+    heapifyUp(node, now)
+  }
+
+  override fun removeFromQueue(node: AsyncTimeout) {
+    check(heapSize > 0) { " Cannot remove from an empty queue" }
+
+    val now = System.nanoTime()
+    val last = findLast()!!
+
+    if (node !== last) {
+      swap(node, last)
+    }
+
+    node.parent?.let { if (it.left === node) it.left = null else it.right = null }
+    node.parent = null
+    check(node.left == null && node.right == null) { "Node $node is not a leaf" }
+    heapSize--
+
+    if (last.parent != null && compareTo(last, last.parent!!, now) < 0) {
+      // The last node has a smaller value than its parent. Heapify up.
+      heapifyUp(last, now)
+    } else if (last.parent != null && compareTo(last, last.parent!!, now) > 0) {
+      // The last node has a larger value than its children. Heapify down.
+      heapifyDown(last, now)
+    }
+  }
+
+  override fun removeFirst(first: AsyncTimeout) {
+    check(heapSize > 0) { "Cannot remove from an empty queue" }
+    check(first === head!!.left) { "first node is not the head of the queue" }
+
+    val now = System.nanoTime()
+    val last = findLast()!!
+    swap(first, last)
+
+    first.parent?.let { if (it.left === first) it.left = null else it.right = null }
+    first.parent = null
+    first.left = null
+    first.right = null
+    heapSize--
+
+    heapifyDown(last, now)
+  }
+
+  companion object {
+    fun compareTo(nodeA: AsyncTimeout, nodeB: AsyncTimeout, now: Long = System.nanoTime()): Int {
+      val aRemainingNanos = nodeA.timeoutNanos() - now
+      val bRemainingNanos = nodeB.timeoutNanos() - now
+      return when {
+        aRemainingNanos < bRemainingNanos -> -1
+        aRemainingNanos > bRemainingNanos -> 1
+        else -> 0
+      }
+    }
+  }
+}
+
+internal abstract class LinkedList : DataStructure() {
+
+  override fun first(): AsyncTimeout? {
+    return head!!.next
+  }
+
+  override fun removeFirst(first: AsyncTimeout) {
+    head!!.next = first.next
+    first.next = null
+  }
+
+  override fun insertIntoQueue(now: Long, node: AsyncTimeout) {
+    val remainingNanos = node.remainingNanos(now)
+    var prev = head!!
+    while (true) {
+      if (prev.next == null || remainingNanos < prev.next!!.remainingNanos(now)) {
+        node.next = prev.next
+        prev.next = node
+        break
+      }
+      prev = prev.next!!
+    }
+  }
+
+  /** Returns true if the timeout occurred. */
+  override fun removeFromQueue(node: AsyncTimeout) {
+    var prev = head
+    while (prev != null) {
+      if (prev.next === node) {
+        prev.next = node.next
+        node.next = null
+        return
+      }
+      prev = prev.next
+    }
+
+    error("node was not found in the queue")
+  }
+}
+
+internal abstract class DataStructure {
+  @JvmField
+  var head: AsyncTimeout? = null
+
+  abstract fun first(): AsyncTimeout?
+  abstract fun insertIntoQueue(now: Long, node: AsyncTimeout)
+  abstract fun removeFromQueue(node: AsyncTimeout)
+  abstract fun removeFirst(first: AsyncTimeout)
 }
