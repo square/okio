@@ -219,7 +219,7 @@ kotlin {
   }
 }
 
-val java9 by sourceSets.creating
+val java9 by sourceSets.registering
 
 configurations.named("java9CompileClasspath") {
   extendsFrom(configurations["jvmCompileClasspath"])
@@ -253,15 +253,9 @@ tasks {
     options.release = 9
   }
 
-  val compileJava9KotlinJvm = named<KotlinCompile>("compileJava9KotlinJvm")
-
   named<Jar>("jvmJar") {
     from(compileJava9Java.flatMap { it.destinationDirectory }) {
       into("META-INF/versions/9")
-    }
-    from(compileJava9KotlinJvm.flatMap { it.destinationDirectory }) {
-      into("META-INF/versions/9")
-      exclude("META-INF")
     }
     val bndExtension = BundleTaskExtension(this)
     bndExtension.setBnd(
