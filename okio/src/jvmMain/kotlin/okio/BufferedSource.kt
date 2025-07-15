@@ -19,8 +19,11 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.channels.ReadableByteChannel
 import java.nio.charset.Charset
+import java.util.PrimitiveIterator.OfInt
+import java.util.Spliterator.ORDERED
+import java.util.Spliterators
 import java.util.stream.IntStream
-import okio.internal.commonUtf8CodePoints
+import java.util.stream.StreamSupport.intStream
 
 actual sealed interface BufferedSource : Source, ReadableByteChannel {
   /** Returns this source's internal buffer. */
@@ -126,7 +129,19 @@ actual sealed interface BufferedSource : Source, ReadableByteChannel {
   /**
    * Returns an [IntStream] of UTF-8 code point values from this source.
    */
-  fun utf8CodePoints(): IntStream = commonUtf8CodePoints()
+  fun utf8CodePoints(): IntStream {
+    val iterator = object : OfInt {
+      override fun nextInt(): Int {
+        if (exhausted()) throw NoSuchElementException()
+        return readUtf8CodePoint()
+      }
+
+      override fun remove() = throw UnsupportedOperationException()
+
+      override fun hasNext(): Boolean = !exhausted()
+    }
+    return intStream(Spliterators.spliteratorUnknownSize(iterator, ORDERED), false)
+  }
 
   /** Removes all bytes from this, decodes them as `charset`, and returns the string. */
   @Throws(IOException::class)
