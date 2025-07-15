@@ -106,6 +106,8 @@ actual sealed interface BufferedSource : Source, ReadableByteChannel {
   @Throws(IOException::class)
   actual fun readUtf8(): String
 
+  actual fun utf8LineSequence(): Sequence<String>
+
   @Throws(IOException::class)
   actual fun readUtf8(byteCount: Long): String
 

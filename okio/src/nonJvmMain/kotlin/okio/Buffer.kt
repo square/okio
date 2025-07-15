@@ -56,6 +56,7 @@ import okio.internal.commonSeek
 import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonSnapshot
+import okio.internal.commonUtf8LineSequence
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
 import okio.internal.commonWriteAll
@@ -136,6 +137,8 @@ actual class Buffer : BufferedSource, BufferedSink {
   actual override fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
 
   actual override fun readUtf8Line(): String? = commonReadUtf8Line()
+
+  actual override fun utf8LineSequence(): Sequence<String> = commonUtf8LineSequence()
 
   actual override fun readUtf8LineStrict(): String = readUtf8LineStrict(Long.MAX_VALUE)
 

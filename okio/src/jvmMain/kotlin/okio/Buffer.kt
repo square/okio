@@ -61,6 +61,7 @@ import okio.internal.commonSeek
 import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonSnapshot
+import okio.internal.commonUtf8LineSequence
 import okio.internal.commonWritableSegment
 import okio.internal.commonWrite
 import okio.internal.commonWriteAll
@@ -329,6 +330,8 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   @Throws(EOFException::class)
   actual override fun readUtf8Line(): String? = commonReadUtf8Line()
+
+  actual override fun utf8LineSequence(): Sequence<String> = commonUtf8LineSequence()
 
   @Throws(EOFException::class)
   actual override fun readUtf8LineStrict() = readUtf8LineStrict(Long.MAX_VALUE)

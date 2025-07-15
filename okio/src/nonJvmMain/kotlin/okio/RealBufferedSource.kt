@@ -45,6 +45,7 @@ import okio.internal.commonSelect
 import okio.internal.commonSkip
 import okio.internal.commonTimeout
 import okio.internal.commonToString
+import okio.internal.commonUtf8LineSequence
 
 internal actual class RealBufferedSource actual constructor(
   actual val source: Source,
@@ -74,6 +75,7 @@ internal actual class RealBufferedSource actual constructor(
   actual override fun readUtf8(): String = commonReadUtf8()
   actual override fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
   actual override fun readUtf8Line(): String? = commonReadUtf8Line()
+  actual override fun utf8LineSequence(): Sequence<String> = commonUtf8LineSequence()
   actual override fun readUtf8LineStrict() = readUtf8LineStrict(Long.MAX_VALUE)
   actual override fun readUtf8LineStrict(limit: Long): String = commonReadUtf8LineStrict(limit)
   actual override fun readUtf8CodePoint(): Int = commonReadUtf8CodePoint()

@@ -72,6 +72,8 @@ actual sealed interface BufferedSource : Source {
 
   actual fun readUtf8Line(): String?
 
+  actual fun utf8LineSequence(): Sequence<String>
+
   actual fun readUtf8LineStrict(): String
 
   actual fun readUtf8LineStrict(limit: Long): String
