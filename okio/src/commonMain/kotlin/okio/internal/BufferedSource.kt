@@ -28,3 +28,26 @@ internal inline fun <T : Any> BufferedSource.commonSelect(options: TypedOptions<
     else -> options[index]
   }
 }
+
+internal inline fun BufferedSource.commonUtf8LineIterator(): Iterator<String> {
+  return object : Iterator<String> {
+    private var line: String? = null
+
+    override fun hasNext(): Boolean {
+      return line != null || readUtf8Line().also { line = it } != null
+    }
+
+    override fun next(): String {
+      if (line != null || hasNext()) {
+        val nextLine = line!!
+        line = null
+        return nextLine
+      } else {
+        throw NoSuchElementException()
+      }
+    }
+  }
+}
+
+internal inline fun BufferedSource.commonUtf8LineSequence(): Sequence<String> =
+  commonUtf8LineIterator().asSequence()

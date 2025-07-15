@@ -147,6 +147,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
   override fun readUtf8(byteCount: Long): String
   override fun readUtf8CodePoint(): Int
   override fun readUtf8Line(): String?
+  override fun utf8LineSequence(): Sequence<String>
   override fun readUtf8LineStrict(): String
   override fun readUtf8LineStrict(limit: Long): String
   override fun request(byteCount: Long): Boolean

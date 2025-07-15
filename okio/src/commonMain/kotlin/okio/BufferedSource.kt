@@ -417,6 +417,11 @@ expect sealed interface BufferedSource : Source {
   fun readUtf8Line(): String?
 
   /**
+   * TODO: doc & test
+   */
+  fun utf8LineSequence(): Sequence<String>
+
+  /**
    * Removes and returns characters up to but not including the next line break. A line break is
    * either `"\n"` or `"\r\n"`; these characters are not included in the result.
    *
