@@ -1,5 +1,6 @@
 open module okio.test.integration {
-  requires okio;
-  requires junit;
   requires kotlin.stdlib;
+  requires kotlin.test;
+  requires okio;
+  requires org.junit.jupiter.api;
 }

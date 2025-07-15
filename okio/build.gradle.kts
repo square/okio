@@ -228,7 +228,7 @@ configurations.named("java9CompileClasspath") {
 testing {
   suites {
     register<JvmTestSuite>("integrationTest") {
-      useJUnit(libs.versions.junit)
+      useKotlinTest(libs.versions.kotlin)
       dependencies {
         implementation(project())
       }
