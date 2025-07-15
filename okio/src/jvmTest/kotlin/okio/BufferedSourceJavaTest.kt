@@ -17,6 +17,7 @@ package okio
 
 import java.io.EOFException
 import java.io.IOException
+import kotlin.test.assertContentEquals
 import kotlin.text.Charsets.UTF_8
 import okio.TestUtil.SEGMENT_SIZE
 import org.junit.Assert.assertEquals
@@ -221,5 +222,11 @@ class BufferedSourceJavaTest {
       "write(" + write2 + ", " + write2.size + ")",
       "write(" + write3 + ", " + write3.size + ")",
     )
+  }
+
+  @Test
+  fun readUtf8CodepointStream() {
+    val source = Buffer().writeUtf8("təˈranəˌsôr")
+    assertContentEquals(source.utf8CodePoints().toArray(), "təˈranəˌsôr".codePoints().toArray())
   }
 }
