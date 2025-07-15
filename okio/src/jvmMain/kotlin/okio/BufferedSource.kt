@@ -19,6 +19,11 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.channels.ReadableByteChannel
 import java.nio.charset.Charset
+import java.util.Spliterators
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
+import okio.internal.commonUtf8LineIterator
+import okio.internal.commonUtf8Lines
 
 actual sealed interface BufferedSource : Source, ReadableByteChannel {
   /** Returns this source's internal buffer. */
@@ -107,6 +112,11 @@ actual sealed interface BufferedSource : Source, ReadableByteChannel {
   actual fun readUtf8(): String
 
   actual fun utf8LineSequence(): Sequence<String>
+
+  /**
+   * Returns a [Stream] containing each UTF-8 line from the [Source].
+   */
+  fun utf8Lines(): Stream<String> = commonUtf8Lines()
 
   @Throws(IOException::class)
   actual fun readUtf8(byteCount: Long): String
