@@ -28,7 +28,7 @@ import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 

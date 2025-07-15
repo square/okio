@@ -1,6 +1,98 @@
 Change Log
 ==========
 
+## Unreleased
+
+ * None yet.
+
+
+## Version 3.15.0
+
+_2025-07-01_
+
+ * Upgrade: [kotlinx-datetime 0.7.0-0.6.x-compat][datetime_0_7_0_compat]. The previous 3.14.0
+   release, `FakeFileSystem` broke binary-compatibility for calls to `FakeFileSystem()`. This
+   restores that compatibility.
+
+ * Breaking: Change `FakeFileSystem.clock` from a JVM field to a property. This avoids a crash
+   running Okio in a Gradle 8.x plugin. This change is not binary-compatible.
+
+
+## Version 3.14.0
+
+_2025-06-28_
+
+ * Upgrade: [kotlinx-datetime 0.7.0][datetime_0_7_0]. This impacts the `okio-fakefilesystem`
+   artifact only. This is a binary-incompatible backwards-incompatible change that cannot co-exist
+   with previous releases of `okio-fakefilesystem`! If you observe a `NoSuchMethodError` calling
+   `FakeFileSystem.init`, update the calling code to this release (or newer) and recompile. We don't
+   like imposing backwards-incompatible changes like this on you and do so regretfully.
+
+
+## Version 3.13.0
+
+_2025-06-13_
+
+ * New: `okio.Socket` interface. This is a first step towards low-level streaming networking support
+   for Kotlin/Multiplatform. This release provides two JVM-only implementations: `asOkioSocket()`
+   adapts a `java.net.Socket` to our new interface, and `inMemorySocketPair()` returns a pair of
+   mutually-connected sockets. We also anticipate that this interface will be a useful abstraction
+   for proxies and tunnels.
+ * New: In-development snapshots are now published to the [Central Portal Snapshots repository].
+
+
+## Version 3.12.0
+
+_2025-05-27_
+
+ * New: Support an optional end index when searching with `BufferedSource.indexOf()`.
+ * Fix: Don't do unnecessary work in `BufferedSource.rangeEquals()`.
+ * Upgrade: [Kotlin 2.1.21][kotlin_2_1_21].
+
+
+## Version 3.11.0
+
+_2025-04-09_
+
+ * Fix: Clear the deflater's byte array reference
+ * New: Faster implementation of `String.decodeHex()` on Kotlin/JS.
+ * New: Declare `EXACTLY_ONCE` execution for blocks like `Closeable.use {}` and `FileSystem.read {}`.
+ * Upgrade: [Kotlin 2.1.20][kotlin_2_1_20].
+
+
+## Version 3.10.2
+
+_2025-01-08_
+
+ * Fix: `okio-nodefilesystem` artifact is no longer empty.
+
+
+## Version 3.10.1
+
+_2025-01-07_
+
+ * New: `FileSystem.close()` may prevent future access and/or clean up associated resources depending on the backing implementation. `FakeFileSystem` will prevent future operations once closed.
+ * `InputStream`s created from `BufferedSource.inputStream()` now have a more efficient version of `InputStream.transferTo()` which reduces memory copies.
+ * `okio-nodefilesystem` is no longer publised as a JS project, but a Kotlin multiplatform project with only a JS target. ~This change should not affect consumers in any way, and is motivated by the Kotlin Gradle plugin deprecating the JS-only plugin.~ Please use 3.10.2 to ensure this change actually does not affect your builds.
+
+
+## Version 3.10.0
+
+_2025-01-06_
+
+This version is equivalent to the subsequent 3.10.1, but it did not fully publish to Maven Central due to infrastructure problems.
+
+
+## Version 3.9.1
+
+_2024-09-12_
+
+ * Fix: Support paths containing a single dot (".") in `Path.relativeTo`.
+ * Fix: Do not read from the upstream source when a 0-byte read is requested.
+ * Fix: Update kotlinx.datetime to 0.6.0 to correct a Gradle module metadata problem with 0.5.0.
+   Note: this artifact is only used in 'okio-fakefilesystem' and 'okio-nodefilesystem' and not in the Okio core.
+
+
 ## Version 3.9.0
 
 _2024-03-12_
@@ -905,8 +997,11 @@ _2014-04-08_
  * Imported from OkHttp.
 
 
+[Central Portal Snapshots repository]: https://central.sonatype.org/publish/publish-portal-snapshots/
 [bom]: https://docs.gradle.org/6.2/userguide/platforms.html#sub:bom_import
 [datetime_0_3_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.3.0
+[datetime_0_7_0]: https://github.com/Kotlin/kotlinx-datetime/releases/tag/v0.7.0
+[datetime_0_7_0_compat]: https://github.com/Kotlin/kotlinx-datetime?tab=readme-ov-file#deprecation-of-instant
 [gradle_metadata]: https://blog.gradle.org/gradle-metadata-1.0
 [hierarchical_projects]: https://kotlinlang.org/docs/multiplatform-hierarchy.html
 [kotlin_1_4_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.4.10
@@ -918,6 +1013,8 @@ _2014-04-08_
 [kotlin_1_9_0]: https://kotlinlang.org/docs/whatsnew19.html
 [kotlin_1_9_10]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.10
 [kotlin_1_9_21]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.21
+[kotlin_2_1_20]: https://github.com/JetBrains/kotlin/releases/tag/v2.1.20
+[kotlin_2_1_21]: https://github.com/JetBrains/kotlin/releases/tag/v2.1.21
 [loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
 [preview1]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md

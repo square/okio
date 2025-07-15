@@ -15,8 +15,6 @@
  */
 package okio
 
-import kotlin.jvm.JvmField
-
 /**
  * A collection of bytes in memory.
  *
@@ -35,12 +33,6 @@ expect class Buffer() : BufferedSource, BufferedSink {
 
   var size: Long
     internal set
-
-  override val buffer: Buffer
-
-  override fun emitCompleteSegments(): Buffer
-
-  override fun emit(): Buffer
 
   /** Copy `byteCount` bytes from this, starting at `offset`, to `out`.  */
   fun copyTo(
@@ -76,18 +68,6 @@ expect class Buffer() : BufferedSource, BufferedSink {
   /** Discards `byteCount` bytes from the head of this buffer.  */
   override fun skip(byteCount: Long)
 
-  override fun write(byteString: ByteString): Buffer
-
-  override fun write(byteString: ByteString, offset: Int, byteCount: Int): Buffer
-
-  override fun writeUtf8(string: String): Buffer
-
-  override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer
-
-  override fun writeUtf8CodePoint(codePoint: Int): Buffer
-
-  override fun write(source: ByteArray): Buffer
-
   /**
    * Returns a tail segment that we can write at least `minimumCapacity`
    * bytes to, creating it if necessary.
@@ -111,28 +91,6 @@ expect class Buffer() : BufferedSource, BufferedSink {
   /** Returns the 512-bit SHA-512 HMAC of this buffer.  */
   fun hmacSha512(key: ByteString): ByteString
 
-  override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
-
-  override fun write(source: Source, byteCount: Long): Buffer
-
-  override fun writeByte(b: Int): Buffer
-
-  override fun writeShort(s: Int): Buffer
-
-  override fun writeShortLe(s: Int): Buffer
-
-  override fun writeInt(i: Int): Buffer
-
-  override fun writeIntLe(i: Int): Buffer
-
-  override fun writeLong(v: Long): Buffer
-
-  override fun writeLongLe(v: Long): Buffer
-
-  override fun writeDecimalLong(v: Long): Buffer
-
-  override fun writeHexadecimalUnsignedLong(v: Long): Buffer
-
   /**
    * Returns a deep copy of this buffer. The returned [Buffer] initially shares the underlying
    * [ByteArray]s. See [UnsafeCursor] for more details.
@@ -148,6 +106,73 @@ expect class Buffer() : BufferedSource, BufferedSink {
   fun readUnsafe(unsafeCursor: UnsafeCursor = DEFAULT__new_UnsafeCursor): UnsafeCursor
 
   fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor = DEFAULT__new_UnsafeCursor): UnsafeCursor
+
+  override val buffer: Buffer
+  override fun close()
+  override fun emit(): Buffer
+  override fun emitCompleteSegments(): Buffer
+  override fun exhausted(): Boolean
+  override fun flush()
+  override fun indexOf(b: Byte): Long
+  override fun indexOf(b: Byte, fromIndex: Long): Long
+  override fun indexOf(b: Byte, fromIndex: Long, toIndex: Long): Long
+  override fun indexOf(bytes: ByteString): Long
+  override fun indexOf(bytes: ByteString, fromIndex: Long): Long
+  override fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
+  override fun indexOfElement(targetBytes: ByteString): Long
+  override fun indexOfElement(targetBytes: ByteString, fromIndex: Long): Long
+  override fun peek(): BufferedSource
+  override fun rangeEquals(offset: Long, bytes: ByteString): Boolean
+  override fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
+  override fun read(sink: Buffer, byteCount: Long): Long
+  override fun read(sink: ByteArray): Int
+  override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
+  override fun readAll(sink: Sink): Long
+  override fun readByte(): Byte
+  override fun readByteArray(): ByteArray
+  override fun readByteArray(byteCount: Long): ByteArray
+  override fun readByteString(): ByteString
+  override fun readByteString(byteCount: Long): ByteString
+  override fun readDecimalLong(): Long
+  override fun readFully(sink: Buffer, byteCount: Long)
+  override fun readFully(sink: ByteArray)
+  override fun readHexadecimalUnsignedLong(): Long
+  override fun readInt(): Int
+  override fun readIntLe(): Int
+  override fun readLong(): Long
+  override fun readLongLe(): Long
+  override fun readShort(): Short
+  override fun readShortLe(): Short
+  override fun readUtf8(): String
+  override fun readUtf8(byteCount: Long): String
+  override fun readUtf8CodePoint(): Int
+  override fun readUtf8Line(): String?
+  override fun readUtf8LineStrict(): String
+  override fun readUtf8LineStrict(limit: Long): String
+  override fun request(byteCount: Long): Boolean
+  override fun require(byteCount: Long)
+  override fun select(options: Options): Int
+  override fun <T : Any> select(options: TypedOptions<T>): T?
+  override fun timeout(): Timeout
+  override fun write(byteString: ByteString): Buffer
+  override fun write(byteString: ByteString, offset: Int, byteCount: Int): Buffer
+  override fun write(source: Buffer, byteCount: Long)
+  override fun write(source: ByteArray): Buffer
+  override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
+  override fun write(source: Source, byteCount: Long): Buffer
+  override fun writeAll(source: Source): Long
+  override fun writeByte(b: Int): Buffer
+  override fun writeDecimalLong(v: Long): Buffer
+  override fun writeHexadecimalUnsignedLong(v: Long): Buffer
+  override fun writeInt(i: Int): Buffer
+  override fun writeIntLe(i: Int): Buffer
+  override fun writeLong(v: Long): Buffer
+  override fun writeLongLe(v: Long): Buffer
+  override fun writeShort(s: Int): Buffer
+  override fun writeShortLe(s: Int): Buffer
+  override fun writeUtf8(string: String): Buffer
+  override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer
+  override fun writeUtf8CodePoint(codePoint: Int): Buffer
 
   /**
    * A handle to the underlying data in a buffer. This handle is unsafe because it does not enforce
@@ -341,19 +366,19 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * [Buffer.readAndWriteUnsafe] that take a cursor and close it after use.
    */
   class UnsafeCursor constructor() : Closeable {
-    @JvmField var buffer: Buffer?
+    var buffer: Buffer?
 
-    @JvmField var readWrite: Boolean
+    var readWrite: Boolean
 
     internal var segment: Segment?
 
-    @JvmField var offset: Long
+    var offset: Long
 
-    @JvmField var data: ByteArray?
+    var data: ByteArray?
 
-    @JvmField var start: Int
+    var start: Int
 
-    @JvmField var end: Int
+    var end: Int
 
     /**
      * Seeks to the next range of bytes, advancing the offset by `end - start`. Returns the size of

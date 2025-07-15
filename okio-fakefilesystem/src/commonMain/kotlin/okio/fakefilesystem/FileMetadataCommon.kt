@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmMultifileClass
 @file:JvmName("-Time")
 
 package okio.fakefilesystem
 
+import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
 import kotlinx.datetime.Instant
@@ -45,3 +47,11 @@ internal fun FileMetadata(
     extras = extras,
   )
 }
+
+/**
+ * Get the time from the best available clock.
+ *
+ * We'd prefer `kotlin.time.Clock` but it requires Kotlin 2.1.20+ and that isn't available to
+ * Gradle plugins (at least for Gradle 8.x).
+ */
+internal expect val defaultClockNowMillis: () -> Long

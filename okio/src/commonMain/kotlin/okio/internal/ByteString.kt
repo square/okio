@@ -18,7 +18,6 @@
 package okio.internal
 
 import kotlin.jvm.JvmName
-import kotlin.native.concurrent.SharedImmutable
 import okio.BASE64_URL_SAFE
 import okio.Buffer
 import okio.ByteString
@@ -55,7 +54,6 @@ internal inline fun ByteString.commonBase64(): String = data.encodeBase64()
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonBase64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
 
-@SharedImmutable
 internal val HEX_DIGIT_CHARS =
   charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 
@@ -291,30 +289,11 @@ internal inline fun String.commonDecodeBase64(): ByteString? {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun String.commonDecodeHex(): ByteString {
-  require(length % 2 == 0) { "Unexpected hex string: $this" }
-
-  val result = ByteArray(length / 2)
-  for (i in result.indices) {
-    val d1 = decodeHexDigit(this[i * 2]) shl 4
-    val d2 = decodeHexDigit(this[i * 2 + 1])
-    result[i] = (d1 + d2).toByte()
-  }
-  return ByteString(result)
-}
+internal expect inline fun String.commonDecodeHex(): ByteString
 
 /** Writes the contents of this byte string to `buffer`.  */
 internal fun ByteString.commonWrite(buffer: Buffer, offset: Int, byteCount: Int) {
   buffer.write(data, offset, byteCount)
-}
-
-private fun decodeHexDigit(c: Char): Int {
-  return when (c) {
-    in '0'..'9' -> c - '0'
-    in 'a'..'f' -> c - 'a' + 10
-    in 'A'..'F' -> c - 'A' + 10
-    else -> throw IllegalArgumentException("Unexpected hex digit: $c")
-  }
 }
 
 @Suppress("NOTHING_TO_INLINE")

@@ -935,7 +935,7 @@ parameters should both be 16 bytes long.
 [HashingKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/Hashing.kt
 [Hashing]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/Hashing.java
 [ReadFileLineByLine]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/ReadFileLineByLine.java
-[ReadFileLineByLineKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/ReadFileLineByLine.kt
+[ReadFileLineByLineKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/ReadJavaIoFileLineByLine.kt
 [SocksProxyServerKt]: https://github.com/square/okio/blob/master/samples/src/jvmMain/kotlin/okio/samples/SocksProxyServer.kt
 [SocksProxyServer]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/SocksProxyServer.java
 [WriteFile]: https://github.com/square/okio/blob/master/samples/src/jvmMain/java/okio/samples/WriteFile.java

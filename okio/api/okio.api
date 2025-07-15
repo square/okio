@@ -93,6 +93,7 @@ public final class okio/Buffer : java/lang/Cloneable, java/nio/channels/ByteChan
 	public fun indexOf (BJJ)J
 	public fun indexOf (Lokio/ByteString;)J
 	public fun indexOf (Lokio/ByteString;J)J
+	public fun indexOf (Lokio/ByteString;JJ)J
 	public fun indexOfElement (Lokio/ByteString;)J
 	public fun indexOfElement (Lokio/ByteString;J)J
 	public fun inputStream ()Ljava/io/InputStream;
@@ -250,6 +251,7 @@ public abstract interface class okio/BufferedSource : java/nio/channels/Readable
 	public abstract fun indexOf (BJJ)J
 	public abstract fun indexOf (Lokio/ByteString;)J
 	public abstract fun indexOf (Lokio/ByteString;J)J
+	public abstract fun indexOf (Lokio/ByteString;JJ)J
 	public abstract fun indexOfElement (Lokio/ByteString;)J
 	public abstract fun indexOfElement (Lokio/ByteString;J)J
 	public abstract fun inputStream ()Ljava/io/InputStream;
@@ -448,7 +450,7 @@ public final class okio/FileMetadata {
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class okio/FileSystem {
+public abstract class okio/FileSystem : java/io/Closeable {
 	public static final field Companion Lokio/FileSystem$Companion;
 	public static final field RESOURCES Lokio/FileSystem;
 	public static final field SYSTEM Lokio/FileSystem;
@@ -462,6 +464,7 @@ public abstract class okio/FileSystem {
 	public static synthetic fun appendingSink$default (Lokio/FileSystem;Lokio/Path;ZILjava/lang/Object;)Lokio/Sink;
 	public abstract fun atomicMove (Lokio/Path;Lokio/Path;)V
 	public abstract fun canonicalize (Lokio/Path;)Lokio/Path;
+	public fun close ()V
 	public fun copy (Lokio/Path;Lokio/Path;)V
 	public final fun createDirectories (Lokio/Path;)V
 	public final fun createDirectories (Lokio/Path;Z)V
@@ -504,6 +507,7 @@ public abstract class okio/ForwardingFileSystem : okio/FileSystem {
 	public fun appendingSink (Lokio/Path;Z)Lokio/Sink;
 	public fun atomicMove (Lokio/Path;Lokio/Path;)V
 	public fun canonicalize (Lokio/Path;)Lokio/Path;
+	public fun close ()V
 	public fun createDirectory (Lokio/Path;Z)V
 	public fun createSymlink (Lokio/Path;Lokio/Path;)V
 	public final fun delegate ()Lokio/FileSystem;
@@ -646,6 +650,7 @@ public final class okio/Okio {
 	public static final fun hashingSink (Lokio/Sink;Ljavax/crypto/Mac;)Lokio/HashingSink;
 	public static final fun hashingSource (Lokio/Source;Ljava/security/MessageDigest;)Lokio/HashingSource;
 	public static final fun hashingSource (Lokio/Source;Ljavax/crypto/Mac;)Lokio/HashingSource;
+	public static final fun inMemorySocketPair (J)[Lokio/Socket;
 	public static final fun openZip (Lokio/FileSystem;Lokio/Path;)Lokio/FileSystem;
 	public static final fun sink (Ljava/io/File;)Lokio/Sink;
 	public static final fun sink (Ljava/io/File;Z)Lokio/Sink;
@@ -653,6 +658,7 @@ public final class okio/Okio {
 	public static final fun sink (Ljava/net/Socket;)Lokio/Sink;
 	public static final fun sink (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)Lokio/Sink;
 	public static synthetic fun sink$default (Ljava/io/File;ZILjava/lang/Object;)Lokio/Sink;
+	public static final fun socket (Ljava/net/Socket;)Lokio/Socket;
 	public static final fun source (Ljava/io/File;)Lokio/Source;
 	public static final fun source (Ljava/io/InputStream;)Lokio/Source;
 	public static final fun source (Ljava/net/Socket;)Lokio/Source;
@@ -747,6 +753,12 @@ public abstract interface class okio/Sink : java/io/Closeable, java/io/Flushable
 	public abstract fun flush ()V
 	public abstract fun timeout ()Lokio/Timeout;
 	public abstract fun write (Lokio/Buffer;J)V
+}
+
+public abstract interface class okio/Socket {
+	public abstract fun cancel ()V
+	public abstract fun getSink ()Lokio/Sink;
+	public abstract fun getSource ()Lokio/Source;
 }
 
 public abstract interface class okio/Source : java/io/Closeable {

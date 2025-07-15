@@ -148,6 +148,9 @@ actual sealed interface BufferedSource : Source, ReadableByteChannel {
   actual fun indexOf(bytes: ByteString, fromIndex: Long): Long
 
   @Throws(IOException::class)
+  actual fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
+
+  @Throws(IOException::class)
   actual fun indexOfElement(targetBytes: ByteString): Long
 
   @Throws(IOException::class)

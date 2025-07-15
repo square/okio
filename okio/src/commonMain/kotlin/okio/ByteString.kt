@@ -16,7 +16,6 @@
 
 package okio
 
-import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
@@ -183,7 +182,6 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
 
   companion object {
     /** A singleton empty `ByteString`. */
-    @JvmField
     val EMPTY: ByteString
 
     /** Returns a new byte string containing a clone of the bytes of `data`. */

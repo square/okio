@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   kotlin("multiplatform")
+  id("app.cash.burst")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("build-support")
@@ -45,7 +46,7 @@ plugins {
  *       '-- wasmWasi
  * ```
  *
- * The `nonJvm` source set excludes that platform.
+ * The `nonJvm`, `nonJs`, `nonApple`, etc. source sets exclude the corresponding platforms.
  *
  * The `hashFunctions` source set builds on all platforms. It ships as a main source set on non-JVM
  * platforms and as a test source set on the JVM platform.
@@ -60,6 +61,13 @@ kotlin {
       languageSettings.apply {
         // Required for CPointer etc. since Kotlin 1.9.
         optIn("kotlinx.cinterop.ExperimentalForeignApi")
+        // Required for Contract API. since Kotlin 1.3.
+        optIn("kotlin.contracts.ExperimentalContracts")
+      }
+    }
+    matching { it.name.endsWith("Test") }.all {
+      languageSettings {
+        optIn("kotlin.time.ExperimentalTime")
       }
     }
 
@@ -80,6 +88,7 @@ kotlin {
     }
 
     val nonWasmTest by creating {
+      dependsOn(commonTest)
       dependencies {
         implementation(libs.kotlin.time)
         implementation(projects.okioFakefilesystem)
@@ -88,6 +97,10 @@ kotlin {
 
     val nonJvmMain by creating {
       dependsOn(hashFunctions)
+      dependsOn(commonMain)
+    }
+
+    val nonJsMain by creating {
       dependsOn(commonMain)
     }
 
@@ -113,9 +126,10 @@ kotlin {
     val jvmMain by getting {
       dependsOn(zlibMain)
       dependsOn(systemFileSystemMain)
+      dependsOn(nonJsMain)
     }
     val jvmTest by getting {
-      kotlin.srcDir("src/jvmTest/hashFunctions")
+      kotlin.srcDir("src/hashFunctions")
       dependsOn(nonWasmTest)
       dependsOn(zlibTest)
       dependencies {
@@ -141,12 +155,22 @@ kotlin {
         .also { nativeMain ->
           nativeMain.dependsOn(zlibMain)
           nativeMain.dependsOn(systemFileSystemMain)
-          createSourceSet("mingwMain", parent = nativeMain, children = mingwTargets).also { mingwMain ->
+          createSourceSet(
+              "mingwMain",
+              parent = nativeMain,
+              children = mingwTargets,
+          ).also { mingwMain ->
             mingwMain.dependsOn(nonAppleMain)
+            mingwMain.dependsOn(nonJsMain)
           }
           createSourceSet("unixMain", parent = nativeMain)
             .also { unixMain ->
-              createSourceSet("linuxMain", parent = unixMain, children = linuxTargets).also { linuxMain ->
+              unixMain.dependsOn(nonJsMain)
+              createSourceSet(
+                  "linuxMain",
+                  parent = unixMain,
+                  children = linuxTargets,
+              ).also { linuxMain ->
                 linuxMain.dependsOn(nonAppleMain)
               }
               createSourceSet("appleMain", parent = unixMain, children = appleTargets)
@@ -165,6 +189,7 @@ kotlin {
     if (kmpWasmEnabled) {
       createSourceSet("wasmMain", parent = commonMain, children = wasmTargets)
         .also { wasmMain ->
+          wasmMain.dependsOn(nonJsMain)
           wasmMain.dependsOn(nonJvmMain)
           wasmMain.dependsOn(nonAppleMain)
         }

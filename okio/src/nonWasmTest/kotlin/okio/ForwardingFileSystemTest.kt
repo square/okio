@@ -19,7 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 
@@ -30,6 +30,7 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
   allowClobberingEmptyDirectories = false,
   allowAtomicMoveFromFileToDirectory = false,
   temporaryDirectory = "/".toPath(),
+  closeBehavior = CloseBehavior.Closes,
 ) {
   @Test
   fun pathBlocking() {
@@ -168,5 +169,20 @@ class ForwardingFileSystemTest : AbstractFileSystemTest(
     assertEquals(target, sourceMetadata.symlinkTarget)
 
     assertEquals(listOf("metadataOrNull(path=$source)", "metadataOrNull($target)"), log)
+  }
+
+  /** Closing the ForwardingFileSystem closes the delegate. */
+  @Test
+  fun closeForwards() {
+    val delegate = FakeFileSystem()
+
+    val forwardingFileSystem = object : ForwardingFileSystem(delegate) {
+    }
+
+    forwardingFileSystem.close()
+
+    assertFailsWith<IllegalStateException> {
+      delegate.list(base)
+    }
   }
 }

@@ -1,3 +1,6 @@
+import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
+import com.android.build.gradle.internal.lint.AndroidLintTask
+
 plugins {
   id("com.android.library")
   id("org.jetbrains.kotlin.android")
@@ -16,6 +19,8 @@ val isIDE = properties.containsKey("android.injected.invoked.from.ide") ||
   System.getenv("IDEA_INITIAL_DIRECTORY") != null
 
 android {
+  namespace = "com.squareup.okio"
+
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -56,6 +61,11 @@ android {
       }
     }
   }
+}
+
+// https://issuetracker.google.com/issues/325146674
+tasks.withType<AndroidLintAnalysisTask> {
+  onlyIf { false }
 }
 
 dependencies {

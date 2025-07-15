@@ -187,5 +187,9 @@ internal class NioFileSystemWrappingFileSystem(private val nioFileSystem: NioFil
     source.resolve().createSymbolicLinkPointingTo(target.resolve())
   }
 
+  override fun close() {
+    nioFileSystem.close()
+  }
+
   override fun toString() = nioFileSystem::class.simpleName!!
 }

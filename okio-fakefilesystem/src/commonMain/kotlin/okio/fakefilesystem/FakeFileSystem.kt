@@ -15,11 +15,10 @@
  */
 package okio.fakefilesystem
 
-import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
+import kotlin.time.Instant
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.ByteString
@@ -59,17 +58,53 @@ import okio.fakefilesystem.FakeFileSystem.Operation.WRITE
  * Programs that do not attempt any of the above operations should work fine on both UNIX and
  * Windows systems. Relax these constraints individually or call [emulateWindows] or [emulateUnix];
  * to apply the constraints of a particular operating system.
+ *
+ * Closeable
+ * ---------
+ *
+ * This file system cannot be used after it is closed. Closing it does not close any of its open
+ * streams; those must be closed directly.
  */
-class FakeFileSystem(
-  @JvmField
-  val clock: Clock = Clock.System,
+class FakeFileSystem private constructor(
+  private val clockNowMillis: () -> Long,
 ) : FileSystem() {
+
+  constructor() : this(clockNowMillis = defaultClockNowMillis)
+
+  constructor(clock: kotlin.time.Clock = kotlin.time.Clock.System) : this(
+    clockNowMillis = { clock.now().toEpochMilliseconds() },
+  )
+
+  // Avoid calling kotlinx.datetime.Clock.System.now() because it crashes at runtime if the Kotlin
+  // stdlib isn't 2.1.20+. (That'll be the case when running in Gradle 8.x.)
+  @Deprecated(
+    "Use the constructor that accepts a kotlin.time.Clock, or the no-args constructor",
+    level = DeprecationLevel.HIDDEN,
+  )
+  constructor(clock: Clock = Clock.System) : this(
+    when {
+      clock === Clock.System -> defaultClockNowMillis
+      else -> {
+        { clock.now().toEpochMilliseconds() }
+      }
+    },
+  )
+
+  /** Returns the clock used to timestamp files. */
+  // We construct this on-demand to avoid a NoClassDefFoundError if there's no kotlin.time.Clock.
+  val clock: kotlin.time.Clock
+    get() = object : kotlin.time.Clock {
+      override fun now() = Instant.fromEpochMilliseconds(clockNowMillis())
+    }
 
   /** File system roots. Each element is a Directory and is created on-demand. */
   private val roots = mutableMapOf<Path, Directory>()
 
   /** Files that are currently open and need to be closed to avoid resource leaks. */
   private val openFiles = mutableListOf<OpenFile>()
+
+  /** Forbid all access after [close]. */
+  private var closed = false
 
   /**
    * An absolute path with this file system's current working directory. Relative paths will be
@@ -218,6 +253,7 @@ class FakeFileSystem(
 
   /** Don't throw [FileNotFoundException] if the path doesn't identify a file. */
   private fun canonicalizeInternal(path: Path): Path {
+    check(!closed) { "closed" }
     return workingDirectory.resolve(path, normalize = true)
   }
 
@@ -268,7 +304,7 @@ class FakeFileSystem(
     val element = lookupResult.element as? Directory
       ?: if (throwOnFailure) throw IOException("not a directory: $dir") else return null
 
-    element.access(now = clock.now())
+    element.access(nowMillis = clockNowMillis())
     return element.children.keys.map { dir / it }.sorted()
   }
 
@@ -311,7 +347,7 @@ class FakeFileSystem(
 
     val canonicalPath = canonicalizeInternal(file)
     val lookupResult = lookupPath(canonicalPath, createRootOnDemand = readWrite)
-    val now = clock.now()
+    val nowMillis = clockNowMillis()
     val element: File
     val operation: Operation
 
@@ -340,10 +376,10 @@ class FakeFileSystem(
 
       val parent = lookupResult?.parent
         ?: throw FileNotFoundException("parent directory does not exist")
-      parent.access(now, true)
+      parent.access(nowMillis, true)
 
       val existing = lookupResult.element
-      element = File(createdAt = existing?.createdAt ?: now)
+      element = File(createdAtMillis = existing?.createdAtMillis ?: nowMillis)
       parent.children[lookupResult.segment!!] = element
       operation = WRITE
 
@@ -363,7 +399,7 @@ class FakeFileSystem(
       }
     }
 
-    element.access(now = clock.now(), modified = readWrite)
+    element.access(nowMillis = clockNowMillis(), modified = readWrite)
 
     val openFile = OpenFile(canonicalPath, operation, Exception("file opened for $operation here"))
     openFiles += openFile
@@ -390,7 +426,8 @@ class FakeFileSystem(
     }
 
     val parentDirectory = lookupResult.requireParent()
-    parentDirectory.children[canonicalPath.nameBytes] = Directory(createdAt = clock.now())
+    parentDirectory.children[canonicalPath.nameBytes] =
+      Directory(createdAtMillis = clockNowMillis())
   }
 
   override fun atomicMove(
@@ -475,7 +512,7 @@ class FakeFileSystem(
       throw IOException("symlinks are not supported")
     }
 
-    parent.children[canonicalSource.nameBytes] = Symlink(createdAt = clock.now(), target)
+    parent.children[canonicalSource.nameBytes] = Symlink(createdAtMillis = clockNowMillis(), target)
   }
 
   /**
@@ -521,7 +558,7 @@ class FakeFileSystem(
     // If the path is a root, create it on demand.
     if (root == null) {
       if (!createRootOnDemand) return null
-      root = Directory(createdAt = clock.now())
+      root = Directory(createdAtMillis = clockNowMillis())
       roots[rootPath] = root
     }
 
@@ -548,7 +585,7 @@ class FakeFileSystem(
       val isLastSegment = segmentsTraversed == segments.size
       val followSymlinks = !isLastSegment || resolveLastSymlink
       if (current is Symlink && followSymlinks) {
-        current.access(now = clock.now())
+        current.access(nowMillis = clockNowMillis())
         // We wanna normalize it in case the target is relative and starts with `..`.
         currentPath = currentPath.parent!!.resolve(current.target, normalize = true)
         val symlinkLookupResult = lookupPath(
@@ -590,62 +627,62 @@ class FakeFileSystem(
   }
 
   private sealed class Element(
-    val createdAt: Instant,
+    val createdAtMillis: Long,
   ) {
-    var lastModifiedAt: Instant = createdAt
-    var lastAccessedAt: Instant = createdAt
+    var lastModifiedAtMillis: Long = createdAtMillis
+    var lastAccessedAtMillis: Long = createdAtMillis
     val extras = mutableMapOf<KClass<*>, Any>()
 
-    class File(createdAt: Instant) : Element(createdAt) {
+    class File(createdAtMillis: Long) : Element(createdAtMillis) {
       var data: ByteString = ByteString.EMPTY
 
       override val metadata: FileMetadata
         get() = FileMetadata(
           isRegularFile = true,
           size = data.size.toLong(),
-          createdAt = createdAt,
-          lastModifiedAt = lastModifiedAt,
-          lastAccessedAt = lastAccessedAt,
+          createdAtMillis = createdAtMillis,
+          lastModifiedAtMillis = lastModifiedAtMillis,
+          lastAccessedAtMillis = lastAccessedAtMillis,
           extras = extras,
         )
     }
 
-    class Directory(createdAt: Instant) : Element(createdAt) {
+    class Directory(createdAtMillis: Long) : Element(createdAtMillis) {
       /** Keys are path segments. */
       val children = mutableMapOf<ByteString, Element>()
 
       override val metadata: FileMetadata
         get() = FileMetadata(
           isDirectory = true,
-          createdAt = createdAt,
-          lastModifiedAt = lastModifiedAt,
-          lastAccessedAt = lastAccessedAt,
+          createdAtMillis = createdAtMillis,
+          lastModifiedAtMillis = lastModifiedAtMillis,
+          lastAccessedAtMillis = lastAccessedAtMillis,
           extras = extras,
         )
     }
 
     class Symlink(
-      createdAt: Instant,
+      createdAtMillis: Long,
       /** This may be an absolute or relative path. */
       val target: Path,
-    ) : Element(createdAt) {
+    ) : Element(createdAtMillis) {
       override val metadata: FileMetadata
         get() = FileMetadata(
           symlinkTarget = target,
-          createdAt = createdAt,
-          lastModifiedAt = lastModifiedAt,
-          lastAccessedAt = lastAccessedAt,
+          createdAtMillis = createdAtMillis,
+          lastModifiedAtMillis = lastModifiedAtMillis,
+          lastAccessedAtMillis = lastAccessedAtMillis,
           extras = extras,
         )
     }
 
     fun access(
-      now: Instant,
+      nowMillis: Long,
       modified: Boolean = false,
     ) {
-      lastAccessedAt = now
+      lastAccessedAtMillis = nowMillis
       if (modified) {
-        lastModifiedAt = now
+        lastModifiedAtMillis = nowMillis
       }
     }
 
@@ -702,7 +739,7 @@ class FakeFileSystem(
         file.data = file.data.substring(0, size.toInt())
       }
 
-      file.access(now = clock.now(), modified = true)
+      file.access(nowMillis = clockNowMillis(), modified = true)
     }
 
     override fun protectedSize(): Long {
@@ -722,9 +759,7 @@ class FakeFileSystem(
       val fileOffsetInt = fileOffset.toInt()
       val toCopy = minOf(file.data.size - fileOffsetInt, byteCount)
       if (toCopy <= 0) return -1
-      for (i in 0 until toCopy) {
-        array[i + arrayOffset] = file.data[i + fileOffsetInt]
-      }
+      file.data.copyInto(fileOffsetInt, array, arrayOffset, toCopy)
       return toCopy
     }
 
@@ -747,7 +782,7 @@ class FakeFileSystem(
         buffer.write(file.data, buffer.size.toInt(), file.data.size - buffer.size.toInt())
       }
       file.data = buffer.snapshot()
-      file.access(now = clock.now(), modified = true)
+      file.access(nowMillis = clockNowMillis(), modified = true)
     }
 
     override fun protectedFlush() {
@@ -757,11 +792,15 @@ class FakeFileSystem(
     override fun protectedClose() {
       if (closed) return
       closed = true
-      file.access(now = clock.now(), modified = readWrite)
+      file.access(nowMillis = clockNowMillis(), modified = readWrite)
       openFiles -= openFile
     }
 
     override fun toString() = "FileHandler(${openFile.canonicalPath})"
+  }
+
+  override fun close() {
+    closed = true
   }
 
   override fun toString() = "FakeFileSystem"

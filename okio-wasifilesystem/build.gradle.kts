@@ -79,29 +79,41 @@ val injectWasiInit by tasks.creating {
       import { WASI } from 'wasi';
       import { argv, env } from 'node:process';
 
-      export const wasi = new WASI({
+      const wasi = new WASI({
         version: 'preview1',
+        args: argv,
         preopens: {
           '/tmp': '$base',
           '/a': '$baseA',
           '/b': '$baseB'
-        }
+        },
+        env,
       });
 
-      const module = await import(/* webpackIgnore: true */'node:module');
-      const require = module.default.createRequire(import.meta.url);
-      const fs = require('fs');
-      const path = require('path');
-      const url = require('url');
-      const filepath = url.fileURLToPath(import.meta.url);
-      const dirpath = path.dirname(filepath);
-      const wasmBuffer = fs.readFileSync(path.resolve(dirpath, './$moduleName.wasm'));
+      const fs = await import('node:fs');
+      const url = await import('node:url');
+      const wasmBuffer = fs.readFileSync(url.fileURLToPath(import.meta.resolve('./okio-parent-okio-wasifilesystem-wasm-wasi-test.wasm')));
       const wasmModule = new WebAssembly.Module(wasmBuffer);
       const wasmInstance = new WebAssembly.Instance(wasmModule, wasi.getImportObject());
 
       wasi.initialize(wasmInstance);
 
-      export default wasmInstance.exports;
+      const exports = wasmInstance.exports
+
+      export default new Proxy(exports, {
+          _shownError: false,
+          get(target, prop) {
+              if (!this._shownError) {
+                  this._shownError = true;
+                  throw new Error("Do not use default import. Use the corresponding named import instead.")
+              }
+          }
+      });
+      export const {
+          startUnitTests,
+          _initialize,
+          memory
+      } = exports;
       """.trimIndent()
     )
   }

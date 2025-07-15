@@ -16,6 +16,7 @@
 
 package okio
 
+import app.cash.burst.Burst
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -24,14 +25,8 @@ import kotlin.test.assertTrue
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
 
-class BufferSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.BUFFER)
-class RealBufferedSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.REAL_BUFFERED_SOURCE)
-class OneByteAtATimeBufferedSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE)
-class OneByteAtATimeBufferTest : AbstractBufferedSourceTest(BufferedSourceFactory.ONE_BYTE_AT_A_TIME_BUFFER)
-class PeekBufferTest : AbstractBufferedSourceTest(BufferedSourceFactory.PEEK_BUFFER)
-class PeekBufferedSourceTest : AbstractBufferedSourceTest(BufferedSourceFactory.PEEK_BUFFERED_SOURCE)
-
-abstract class AbstractBufferedSourceTest internal constructor(
+@Burst
+class CommonBufferedSourceTest(
   private val factory: BufferedSourceFactory,
 ) {
   private val sink: BufferedSink
@@ -721,7 +716,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
     var e = assertFailsWith<IllegalArgumentException> {
       source.indexOf(ByteString.of())
     }
-    assertEquals("bytes is empty", e.message)
+    assertEquals("byteCount == 0", e.message)
 
     e = assertFailsWith<IllegalArgumentException> {
       source.indexOf("hi".encodeUtf8(), -1)
@@ -730,7 +725,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   /**
-   * With [BufferedSourceFactory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE], this code was extremely slow.
+   * With [BufferedSourceFactory.OneByteAtATimeSource], this code was extremely slow.
    * https://github.com/square/okio/issues/171
    */
   @Test fun indexOfByteStringAcrossSegmentBoundaries() {
@@ -1247,7 +1242,7 @@ abstract class AbstractBufferedSourceTest internal constructor(
   }
 
   @Test fun rangeEqualsOnlyReadsUntilMismatch() {
-    if (factory !== BufferedSourceFactory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE) return // Other sources read in chunks anyway.
+    if (factory !== BufferedSourceFactory.OneByteAtATimeSource) return // Other sources read in chunks anyway.
 
     sink.writeUtf8("A man, a plan, a canal. Panama.")
     sink.emit()

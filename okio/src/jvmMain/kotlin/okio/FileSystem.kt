@@ -16,6 +16,8 @@
 package okio
 
 import java.nio.file.FileSystem as JavaNioFileSystem
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import okio.Path.Companion.toPath
 import okio.internal.ResourceFileSystem
 import okio.internal.commonCopy
@@ -25,7 +27,7 @@ import okio.internal.commonExists
 import okio.internal.commonListRecursively
 import okio.internal.commonMetadata
 
-actual abstract class FileSystem {
+actual abstract class FileSystem : Closeable {
   @Throws(IOException::class)
   actual abstract fun canonicalize(path: Path): Path
 
@@ -64,6 +66,10 @@ actual abstract class FileSystem {
   @Throws(IOException::class)
   @JvmName("-read")
   actual inline fun <T> read(file: Path, readerAction: BufferedSource.() -> T): T {
+    contract {
+      callsInPlace(readerAction, InvocationKind.EXACTLY_ONCE)
+    }
+
     return source(file).buffer().use {
       it.readerAction()
     }
@@ -77,7 +83,15 @@ actual abstract class FileSystem {
 
   @Throws(IOException::class)
   @JvmName("-write")
-  actual inline fun <T> write(file: Path, mustCreate: Boolean, writerAction: BufferedSink.() -> T): T {
+  actual inline fun <T> write(
+    file: Path,
+    mustCreate: Boolean,
+    writerAction: BufferedSink.() -> T,
+  ): T {
+    contract {
+      callsInPlace(writerAction, InvocationKind.EXACTLY_ONCE)
+    }
+
     return sink(file, mustCreate = mustCreate).buffer().use {
       it.writerAction()
     }
@@ -125,6 +139,10 @@ actual abstract class FileSystem {
   @Throws(IOException::class)
   actual abstract fun createSymlink(source: Path, target: Path)
 
+  @Throws(IOException::class)
+  actual override fun close() {
+  }
+
   actual companion object {
     /**
      * The current process's host file system. Use this instance directly, or dependency inject a
@@ -150,6 +168,8 @@ actual abstract class FileSystem {
      * In applications that compose multiple class loaders, this holds only the resources of
      * whichever class loader includes Okio classes. Use [ClassLoader.asResourceFileSystem] for the
      * resources of a specific class loader.
+     *
+     * This file system does not need to be closed. Calling its close function does nothing.
      */
     @JvmField
     val RESOURCES: FileSystem = ResourceFileSystem(
@@ -157,6 +177,12 @@ actual abstract class FileSystem {
       indexEagerly = false,
     )
 
+    /**
+     * Closing the returned file system will close the underlying [java.nio.file.FileSystem].
+     *
+     * Note that the [default file system][java.nio.file.FileSystems.getDefault] is not closeable
+     * and calling its close function will throw an [UnsupportedOperationException].
+     */
     @JvmName("get")
     @JvmStatic
     fun JavaNioFileSystem.asOkioFileSystem(): FileSystem = NioFileSystemWrappingFileSystem(this)

@@ -15,6 +15,12 @@
  */
 package okio
 
+import app.cash.burst.Burst
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isTrue
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.EOFException
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
@@ -33,126 +39,110 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
-import org.junit.Assume
+import org.junit.Assume.assumeTrue
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
 
-@RunWith(Parameterized::class)
+@Burst
 class BufferedSourceTest(
   private val factory: Factory,
 ) {
-  interface Factory {
-    fun pipe(): Pipe
-    val isOneByteAtATime: Boolean
-
-    companion object {
-      val BUFFER: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(buffer, buffer)
-        }
-
-        override val isOneByteAtATime: Boolean get() = false
-
-        override fun toString() = "Buffer"
+  enum class Factory {
+    NewBuffer {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(buffer, buffer)
       }
 
-      val REAL_BUFFERED_SOURCE: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(
-            sink = buffer,
-            source = (buffer as Source).buffer(),
-          )
-        }
+      override val isOneByteAtATime: Boolean get() = false
+    },
 
-        override val isOneByteAtATime: Boolean get() = false
-
-        override fun toString() = "RealBufferedSource"
+    SourceBuffer {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(
+          sink = buffer,
+          source = (buffer as Source).buffer(),
+        )
       }
 
-      /**
-       * A factory deliberately written to create buffers whose internal segments are always 1 byte
-       * long. We like testing with these segments because are likely to trigger bugs!
-       */
-      val ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(
-            sink = buffer,
-            source = object : ForwardingSource(buffer) {
-              override fun read(sink: Buffer, byteCount: Long): Long {
-                // Read one byte into a new buffer, then clone it so that the segment is shared.
-                // Shared segments cannot be compacted so we'll get a long chain of short segments.
-                val box = Buffer()
-                val result = super.read(box, Math.min(byteCount, 1L))
-                if (result > 0L) sink.write(box.clone(), result)
-                return result
-              }
-            }.buffer(),
-          )
-        }
+      override val isOneByteAtATime: Boolean get() = false
+    },
 
-        override val isOneByteAtATime: Boolean get() = true
-
-        override fun toString() = "OneByteAtATimeBufferedSource"
-      }
-
-      val ONE_BYTE_AT_A_TIME_BUFFER: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          val sink = object : ForwardingSink(buffer) {
-            override fun write(source: Buffer, byteCount: Long) {
-              // Write each byte into a new buffer, then clone it so that the segments are shared.
+    /**
+     * A factory deliberately written to create buffers whose internal segments are always 1 byte
+     * long. We like testing with these segments because are likely to trigger bugs!
+     */
+    OneByteAtATimeSource {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(
+          sink = buffer,
+          source = object : ForwardingSource(buffer) {
+            override fun read(sink: Buffer, byteCount: Long): Long {
+              // Read one byte into a new buffer, then clone it so that the segment is shared.
               // Shared segments cannot be compacted so we'll get a long chain of short segments.
-              for (i in 0 until byteCount) {
-                val box = Buffer()
-                box.write(source, 1)
-                super.write(box.clone(), 1)
-              }
+              val box = Buffer()
+              val result = super.read(box, Math.min(byteCount, 1L))
+              if (result > 0L) sink.write(box.clone(), result)
+              return result
             }
-          }.buffer()
-          return Pipe(
-            sink = sink,
-            source = buffer,
-          )
-        }
-
-        override val isOneByteAtATime: Boolean get() = true
-
-        override fun toString() = "OneByteAtATimeBuffer"
+          }.buffer(),
+        )
       }
 
-      val PEEK_BUFFER: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(
-            sink = buffer,
-            source = buffer.peek(),
-          )
-        }
+      override val isOneByteAtATime: Boolean get() = true
+    },
 
-        override val isOneByteAtATime: Boolean get() = false
-
-        override fun toString() = "PeekBuffer"
+    OneByteAtATimeSink {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        val sink = object : ForwardingSink(buffer) {
+          override fun write(source: Buffer, byteCount: Long) {
+            // Write each byte into a new buffer, then clone it so that the segments are shared.
+            // Shared segments cannot be compacted so we'll get a long chain of short segments.
+            for (i in 0 until byteCount) {
+              val box = Buffer()
+              box.write(source, 1)
+              super.write(box.clone(), 1)
+            }
+          }
+        }.buffer()
+        return Pipe(
+          sink = sink,
+          source = buffer,
+        )
       }
 
-      val PEEK_BUFFERED_SOURCE: Factory = object : Factory {
-        override fun pipe(): Pipe {
-          val buffer = Buffer()
-          return Pipe(
-            sink = buffer,
-            source = (buffer as Source).buffer().peek(),
-          )
-        }
+      override val isOneByteAtATime: Boolean get() = true
+    },
 
-        override val isOneByteAtATime: Boolean get() = false
-
-        override fun toString() = "PeekBufferedSource"
+    PeekSource {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(
+          sink = buffer,
+          source = buffer.peek(),
+        )
       }
-    }
+
+      override val isOneByteAtATime: Boolean get() = false
+    },
+
+    PeekBufferedSource {
+      override fun pipe(): Pipe {
+        val buffer = Buffer()
+        return Pipe(
+          sink = buffer,
+          source = (buffer as Source).buffer().peek(),
+        )
+      }
+
+      override val isOneByteAtATime: Boolean get() = false
+    },
+    ;
+
+    abstract fun pipe(): Pipe
+    abstract val isOneByteAtATime: Boolean
   }
 
   class Pipe(
@@ -813,7 +803,7 @@ class BufferedSourceTest(
       source.indexOf(ByteString.of())
       fail()
     } catch (e: IllegalArgumentException) {
-      assertEquals("bytes is empty", e.message)
+      assertEquals("byteCount == 0", e.message)
     }
     try {
       source.indexOf("hi".encodeUtf8(), -1)
@@ -824,7 +814,7 @@ class BufferedSourceTest(
   }
 
   /**
-   * With [Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE], this code was extremely slow.
+   * With [Factory.OneByteAtATimeSource], this code was extremely slow.
    * https://github.com/square/okio/issues/171
    */
   @Test
@@ -884,6 +874,208 @@ class BufferedSourceTest(
     assertEquals(0, source.indexOf("a".encodeUtf8(), 0))
     assertEquals(1, source.indexOf("a".encodeUtf8(), 1))
     assertEquals(2, source.indexOf("a".encodeUtf8(), 2))
+  }
+
+  @Test
+  fun indexOfByteStringWithFromIndexAndToIndex() {
+    sink.writeUtf8("Don't move! He can't see us if we don't move.")
+    sink.emit()
+    val move = "move".encodeUtf8()
+
+    assertEquals(-1L, source.indexOf(move, 0L, 6L))
+    assertEquals(6L, source.indexOf(move, 0L, 7L))
+    assertEquals(6L, source.indexOf(move, 6L, 7L))
+    assertEquals(-1L, source.indexOf(move, 7L, 40L))
+    assertEquals(40L, source.indexOf(move, 7L, 41L))
+    assertEquals(40L, source.indexOf(move, 40L, 41L))
+    assertEquals(-1L, source.indexOf(move, 41L, 42L))
+  }
+
+  /** In this example we must load 6 bytes to determine the string is not found. */
+  @Test
+  fun indexOfByteStringDocumentationLoadingCase() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("shellxyz")
+    sink.emit()
+    assertEquals(-1, source.indexOf("hello".encodeUtf8(), 0, 4))
+    assertEquals("shellx", source.buffer.readUtf8())
+  }
+
+  /** In this example we must load only 4 bytes to determine the string is not found. */
+  @Test
+  fun indexOfByteStringDocumentationNoLoadingCase() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("lookxyz")
+    sink.emit()
+    assertEquals(-1, source.indexOf("hello".encodeUtf8(), 0, 4))
+    assertEquals("look", source.buffer.readUtf8())
+  }
+
+  /** This demonstrates that `indexOf()` doesn't load ranges beyond the maximum required. */
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenNotFoundSingleByte() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(-1, source.indexOf("X man,".encodeUtf8(), 0, 1))
+    assertEquals("A", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenNotFoundMultipleBytes() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(-1, source.indexOf("A Xan,".encodeUtf8(), 0, 1))
+    assertEquals("A m", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenFoundMultipleBytes() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(0, source.indexOf("A man,".encodeUtf8(), 0, 1))
+    assertEquals("A man,", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenNotFoundWithFromIndex() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(-1, source.indexOf("A man,".encodeUtf8(), 1, 2))
+    assertEquals("A ", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringLoadsOnlyWhatIsRequiredWhenFound() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(9L, source.indexOf("plan".encodeUtf8(), 0L, 10L))
+    assertEquals("A man, a plan", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfByteStringFindsResultEdgeCases() {
+    for (i in 1..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(0L, source.indexOf("a".repeat(i).encodeUtf8(), 0L, 1L))
+      source.skip(5L)
+    }
+
+    for (i in 1..4) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(1L, source.indexOf("a".repeat(i).encodeUtf8(), 1L, 5L))
+      source.skip(5L)
+    }
+
+    for (i in 1..3) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(2L, source.indexOf("a".repeat(i).encodeUtf8(), 2L, 5L))
+      source.skip(5L)
+    }
+
+    for (i in 1..2) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(3L, source.indexOf("a".repeat(i).encodeUtf8(), 3L, 5L))
+      source.skip(5L)
+    }
+
+    for (i in 1..1) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(4L, source.indexOf("a".repeat(i).encodeUtf8(), 4L, 5L))
+      source.skip(5L)
+    }
+  }
+
+  @Test
+  fun indexOfByteStringEmptySearchRange() {
+    for (i in 1..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 0L, 0L))
+      source.skip(5L)
+    }
+  }
+
+  @Test
+  fun indexOfByteStringTooLongAtOffset() {
+    for (i in 5..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 1L, 5L))
+      source.skip(5L)
+    }
+    for (i in 4..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 2L, 5L))
+      source.skip(5L)
+    }
+    for (i in 3..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 3L, 5L))
+      source.skip(5L)
+    }
+    for (i in 2..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 4L, 5L))
+      source.skip(5L)
+    }
+    for (i in 1..5) {
+      sink.writeUtf8("aaaaa")
+      sink.emit()
+      assertEquals(-1L, source.indexOf("a".repeat(i).encodeUtf8(), 5L, 5L))
+      source.skip(5L)
+    }
+  }
+
+  @Test
+  fun indexOfHonorsToIndexWhenAvoidingLoadsAndDoesNotLoad() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    source.require(2) // Source buffer contains 'A '
+    assertEquals(-1L, source.indexOf(" man".encodeUtf8(), 0L, 1L))
+    assertEquals("A ", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfHonorsFromIndexWhenAvoidingLoads() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertEquals(-1, source.indexOf("Panama.".encodeUtf8(), 25L, 27L))
+    assertEquals("A man, a plan, a canal. Pan", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun indexOfHonorsToIndexWhenAvoidingLoadsAndLoads() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    source.require(2) // Source buffer contains 'A '
+    assertEquals(0L, source.indexOf("A ma".encodeUtf8(), 0L, 1L))
+    assertEquals("A ma", source.buffer.readUtf8())
   }
 
   @Test
@@ -989,6 +1181,24 @@ class BufferedSourceTest(
       fail()
     } catch (expected: java.lang.ArrayIndexOutOfBoundsException) {
     }
+  }
+
+  @Test
+  fun inputStreamTransferTo() {
+    try {
+      ByteArrayInputStream(byteArrayOf(1)).transferTo(ByteArrayOutputStream())
+    } catch (e: NoSuchMethodError) {
+      return // This JDK doesn't have transferTo(). Skip this test.
+    }
+
+    val data = "a".repeat(SEGMENT_SIZE * 3 + 1)
+    sink.writeUtf8(data)
+    sink.emit()
+    val inputStream = source.inputStream()
+    val outputStream = ByteArrayOutputStream()
+    inputStream.transferTo(outputStream)
+    assertThat(source.exhausted()).isTrue()
+    assertThat(outputStream.toByteArray().toUtf8String()).isEqualTo(data)
   }
 
   @Test
@@ -1418,11 +1628,20 @@ class BufferedSourceTest(
 
   @Test
   fun rangeEqualsOnlyReadsUntilMismatch() {
-    Assume.assumeTrue(factory === Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE) // Other sources read in chunks anyway.
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
     sink.writeUtf8("A man, a plan, a canal. Panama.")
     sink.emit()
     assertFalse(source.rangeEquals(0, "A man.".encodeUtf8()))
     assertEquals("A man,", source.buffer.readUtf8())
+  }
+
+  @Test
+  fun rangeEqualsBreaksAfterFirstMismatch() {
+    assumeTrue(factory === Factory.OneByteAtATimeSource) // Other sources read in chunks anyway.
+    sink.writeUtf8("A man, a plan, a canal. Panama.")
+    sink.emit()
+    assertFalse(source.rangeEquals(0, "X man,".encodeUtf8()))
+    assertEquals("A", source.buffer.readUtf8())
   }
 
   @Test
@@ -1483,21 +1702,6 @@ class BufferedSourceTest(
       assertEquals(mutableListOf(1, 1, 1), segmentSizes(source.buffer))
     } else {
       assertEquals(listOf(3), segmentSizes(source.buffer))
-    }
-  }
-
-  companion object {
-    @JvmStatic
-    @Parameters(name = "{0}")
-    fun parameters(): List<Array<Any>> {
-      return listOf(
-        arrayOf(Factory.BUFFER),
-        arrayOf(Factory.REAL_BUFFERED_SOURCE),
-        arrayOf(Factory.ONE_BYTE_AT_A_TIME_BUFFERED_SOURCE),
-        arrayOf(Factory.ONE_BYTE_AT_A_TIME_BUFFER),
-        arrayOf(Factory.PEEK_BUFFER),
-        arrayOf(Factory.PEEK_BUFFERED_SOURCE),
-      )
     }
   }
 }

@@ -15,57 +15,28 @@
  */
 package okio.internal
 
+import app.cash.burst.Burst
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random
 import okio.ByteString
 import org.junit.Assert
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 /**
  * Check the [Hmac] implementation against the reference [Mac] JVM implementation.
  */
-@RunWith(Parameterized::class)
-class HmacTest(val parameters: Parameters) {
-
-  companion object {
-    @get:Parameterized.Parameters(name = "{0}")
-    @get:JvmStatic
-    val parameters: List<Parameters>
-      get() {
-        val algorithms = enumValues<Parameters.Algorithm>()
-        val keySizes = listOf(8, 32, 48, 64, 128, 256)
-        val dataSizes = listOf(0, 32, 64, 128, 256, 512)
-        return algorithms.flatMap { algorithm ->
-          keySizes.flatMap { keySize ->
-            dataSizes.map { dataSize ->
-              Parameters(
-                algorithm,
-                keySize,
-                dataSize,
-              )
-            }
-          }
-        }
-      }
-  }
-
-  private val keySize
-    get() = parameters.keySize
-  private val dataSize
-    get() = parameters.dataSize
-  private val algorithm
-    get() = parameters.algorithmName
-
+@Burst
+class HmacTest(
+  keySize: KeySize,
+  dataSize: DataSize,
+  algorithm: Algorithm,
+) {
   private val random = Random(682741861446)
-
-  private val key = random.nextBytes(keySize)
-  private val bytes = random.nextBytes(dataSize)
-  private val mac = parameters.createMac(key)
-
-  private val expected = hmac(algorithm, key, bytes)
+  private val key = random.nextBytes(keySize.size)
+  private val bytes = random.nextBytes(dataSize.size)
+  private val mac = algorithm.HmacFactory(ByteString(key))
+  private val expected = hmac(algorithm.algorithmName, key, bytes)
 
   @Test
   fun hmac() {
@@ -84,27 +55,23 @@ class HmacTest(val parameters: Parameters) {
 
     Assert.assertArrayEquals(expected, hmacValue)
   }
+}
 
-  data class Parameters(
-    val algorithm: Algorithm,
-    val keySize: Int,
-    val dataSize: Int,
-  ) {
-    val algorithmName
-      get() = algorithm.algorithmName
+enum class KeySize(val size: Int) {
+  K8(8), K32(32), K48(48), K64(64), K128(128), K256(256),
+}
 
-    internal fun createMac(key: ByteArray) =
-      algorithm.HmacFactory(ByteString(key))
+enum class DataSize(val size: Int) {
+  V0(0), V32(32), V64(64), V128(128), V256(256), V512(512),
+}
 
-    enum class Algorithm(
-      val algorithmName: String,
-      internal val HmacFactory: (key: ByteString) -> Hmac,
-    ) {
-      SHA_1("HmacSha1", Hmac.Companion::sha1),
-      SHA_256("HmacSha256", Hmac.Companion::sha256),
-      SHA_512("HmacSha512", Hmac.Companion::sha512),
-    }
-  }
+enum class Algorithm(
+  val algorithmName: String,
+  internal val HmacFactory: (key: ByteString) -> Hmac,
+) {
+  Sha1("HmacSha1", Hmac.Companion::sha1),
+  Sha256("HmacSha256", Hmac.Companion::sha256),
+  Sha512("HmacSha512", Hmac.Companion::sha512),
 }
 
 private fun hmac(algorithm: String, key: ByteArray, bytes: ByteArray) =

@@ -15,6 +15,7 @@
  */
 package okio
 
+import app.cash.burst.Burst
 import java.util.Arrays
 import okio.ByteString.Companion.of
 import okio.TestUtil.SEGMENT_SIZE
@@ -27,11 +28,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Assume.assumeTrue
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
 
-@RunWith(Parameterized::class)
+@Burst
 class BufferCursorTest(
   private var bufferFactory: BufferFactory,
 ) {
@@ -141,7 +139,7 @@ class BufferCursorTest(
 
   @Test
   fun seekWithinSegment() {
-    assumeTrue(bufferFactory === BufferFactory.SMALL_SEGMENTED_BUFFER)
+    assumeTrue(bufferFactory === BufferFactory.SmallSegmentedBuffer)
     val buffer = bufferFactory.newBuffer()
     assertEquals("abcdefghijkl", buffer.clone().readUtf8())
     buffer.readUnsafe().use { cursor ->
@@ -442,18 +440,6 @@ class BufferCursorTest(
       val addedByteCount = cursor.expandBuffer(5)
       assertEquals(originalSize + addedByteCount, buffer.size)
       assertEquals(originalSize, cursor.offset)
-    }
-  }
-
-  companion object {
-    @JvmStatic
-    @Parameters(name = "{0}")
-    fun parameters(): List<Array<Any>> {
-      val result = mutableListOf<Array<Any>>()
-      for (bufferFactory in BufferFactory.values()) {
-        result += arrayOf(bufferFactory)
-      }
-      return result
     }
   }
 }

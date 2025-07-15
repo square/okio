@@ -514,6 +514,28 @@ expect sealed interface BufferedSource : Source {
    */
   fun indexOf(bytes: ByteString, fromIndex: Long): Long
 
+  /**
+   * Returns the index of the first match for `bytes` in the buffer that is at or after `fromIndex`,
+   * and that is also less than `toIndex`. Returns -1 if `bytes` isn't found in that range. If
+   * `fromIndex == toIndex` then search range is empty and -1 is returned.
+   *
+   * This may attempt to expand the buffer. It won't attempt to expand the buffer if doing so
+   * couldn't change the result.
+   *
+   * ```java
+   * ByteString MOVE = ByteString.encodeUtf8("move");
+   *
+   * Buffer buffer = new Buffer();
+   * buffer.writeUtf8("Don't move! He can't see us if we don't move.");
+   *
+   * assertEquals( 6, buffer.indexOf(MOVE, 0,  40));
+   * assertEquals( 6, buffer.indexOf(MOVE, 0, 100));
+   * assertEquals(-1, buffer.indexOf(MOVE, 7,  40));
+   * assertEquals(40, buffer.indexOf(MOVE, 7, 100));
+   * ```
+   */
+  fun indexOf(bytes: ByteString, fromIndex: Long, toIndex: Long): Long
+
   /** Equivalent to [indexOfElement(targetBytes, 0)][indexOfElement]. */
   fun indexOfElement(targetBytes: ByteString): Long
 

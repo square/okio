@@ -66,7 +66,7 @@ actual class HashingSink : ForwardingSink, Sink { // Need to explicitly declare 
   )
 
   @Throws(IOException::class)
-  override fun write(source: Buffer, byteCount: Long) {
+  actual override fun write(source: Buffer, byteCount: Long) {
     checkOffsetAndCount(source.size, 0, byteCount)
 
     // Hash byteCount bytes from the prefix of source.

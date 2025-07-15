@@ -15,10 +15,10 @@
  */
 package okio
 
+import app.cash.burst.Burst
 import java.io.EOFException
 import java.util.zip.DeflaterOutputStream
 import java.util.zip.Inflater
-import okio.BufferedSourceFactory.Companion.PARAMETERIZED_TEST_VALUES
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.encodeUtf8
 import okio.TestUtil.SEGMENT_SIZE
@@ -28,11 +28,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Assume.assumeFalse
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
 
-@RunWith(Parameterized::class)
+@Burst
 class InflaterSourceTest(
   private val bufferFactory: BufferedSourceFactory,
 ) {
@@ -201,15 +198,5 @@ class InflaterSourceTest(
     while (source.read(result, Int.MAX_VALUE.toLong()) != -1L) {
     }
     return result
-  }
-
-  companion object {
-    /**
-     * Use a parameterized test to control how many bytes the InflaterSource gets with each request
-     * for more bytes.
-     */
-    @JvmStatic
-    @Parameters(name = "{0}")
-    fun parameters(): List<Array<Any>> = PARAMETERIZED_TEST_VALUES
   }
 }

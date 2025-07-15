@@ -40,36 +40,36 @@ internal actual class RealBufferedSink actual constructor(
   actual val sink: Sink,
 ) : BufferedSink {
   actual var closed: Boolean = false
-  override val buffer = Buffer()
+  actual override val buffer = Buffer()
 
-  override fun write(source: Buffer, byteCount: Long) = commonWrite(source, byteCount)
-  override fun write(byteString: ByteString) = commonWrite(byteString)
-  override fun write(byteString: ByteString, offset: Int, byteCount: Int) =
+  actual override fun write(source: Buffer, byteCount: Long) = commonWrite(source, byteCount)
+  actual override fun write(byteString: ByteString) = commonWrite(byteString)
+  actual override fun write(byteString: ByteString, offset: Int, byteCount: Int) =
     commonWrite(byteString, offset, byteCount)
-  override fun writeUtf8(string: String) = commonWriteUtf8(string)
-  override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int) =
+  actual override fun writeUtf8(string: String) = commonWriteUtf8(string)
+  actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int) =
     commonWriteUtf8(string, beginIndex, endIndex)
 
-  override fun writeUtf8CodePoint(codePoint: Int) = commonWriteUtf8CodePoint(codePoint)
-  override fun write(source: ByteArray) = commonWrite(source)
-  override fun write(source: ByteArray, offset: Int, byteCount: Int) =
+  actual override fun writeUtf8CodePoint(codePoint: Int) = commonWriteUtf8CodePoint(codePoint)
+  actual override fun write(source: ByteArray) = commonWrite(source)
+  actual override fun write(source: ByteArray, offset: Int, byteCount: Int) =
     commonWrite(source, offset, byteCount)
 
-  override fun writeAll(source: Source) = commonWriteAll(source)
-  override fun write(source: Source, byteCount: Long): BufferedSink = commonWrite(source, byteCount)
-  override fun writeByte(b: Int) = commonWriteByte(b)
-  override fun writeShort(s: Int) = commonWriteShort(s)
-  override fun writeShortLe(s: Int) = commonWriteShortLe(s)
-  override fun writeInt(i: Int) = commonWriteInt(i)
-  override fun writeIntLe(i: Int) = commonWriteIntLe(i)
-  override fun writeLong(v: Long) = commonWriteLong(v)
-  override fun writeLongLe(v: Long) = commonWriteLongLe(v)
-  override fun writeDecimalLong(v: Long) = commonWriteDecimalLong(v)
-  override fun writeHexadecimalUnsignedLong(v: Long) = commonWriteHexadecimalUnsignedLong(v)
-  override fun emitCompleteSegments() = commonEmitCompleteSegments()
-  override fun emit() = commonEmit()
-  override fun flush() = commonFlush()
-  override fun close() = commonClose()
-  override fun timeout() = commonTimeout()
+  actual override fun writeAll(source: Source) = commonWriteAll(source)
+  actual override fun write(source: Source, byteCount: Long): BufferedSink = commonWrite(source, byteCount)
+  actual override fun writeByte(b: Int) = commonWriteByte(b)
+  actual override fun writeShort(s: Int) = commonWriteShort(s)
+  actual override fun writeShortLe(s: Int) = commonWriteShortLe(s)
+  actual override fun writeInt(i: Int) = commonWriteInt(i)
+  actual override fun writeIntLe(i: Int) = commonWriteIntLe(i)
+  actual override fun writeLong(v: Long) = commonWriteLong(v)
+  actual override fun writeLongLe(v: Long) = commonWriteLongLe(v)
+  actual override fun writeDecimalLong(v: Long) = commonWriteDecimalLong(v)
+  actual override fun writeHexadecimalUnsignedLong(v: Long) = commonWriteHexadecimalUnsignedLong(v)
+  actual override fun emitCompleteSegments() = commonEmitCompleteSegments()
+  actual override fun emit() = commonEmit()
+  actual override fun flush() = commonFlush()
+  actual override fun close() = commonClose()
+  actual override fun timeout() = commonTimeout()
   override fun toString() = commonToString()
 }

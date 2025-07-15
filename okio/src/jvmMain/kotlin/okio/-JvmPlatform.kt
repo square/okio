@@ -18,6 +18,8 @@ package okio
 
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock as jvmWithLock
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 internal actual fun ByteArray.toUtf8String(): String = String(this, Charsets.UTF_8)
 
@@ -30,7 +32,13 @@ actual typealias Lock = ReentrantLock
 
 internal actual fun newLock(): Lock = ReentrantLock()
 
-actual inline fun <T> Lock.withLock(action: () -> T): T = jvmWithLock(action)
+actual inline fun <T> Lock.withLock(action: () -> T): T {
+  contract {
+    callsInPlace(action, InvocationKind.EXACTLY_ONCE)
+  }
+
+  return jvmWithLock(action)
+}
 
 actual typealias IOException = java.io.IOException
 

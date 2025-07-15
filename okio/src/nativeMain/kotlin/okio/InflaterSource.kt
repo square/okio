@@ -25,7 +25,7 @@ actual class InflaterSource internal actual constructor(
   ) : this(source.buffer(), inflater)
 
   @Throws(IOException::class)
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  actual override fun read(sink: Buffer, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
 
     return inflater.dataProcessor.readBytesToTarget(
@@ -35,11 +35,11 @@ actual class InflaterSource internal actual constructor(
     )
   }
 
-  override fun timeout(): Timeout {
+  actual override fun timeout(): Timeout {
     return source.timeout()
   }
 
-  override fun close() {
+  actual override fun close() {
     if (inflater.dataProcessor.closed) return
 
     inflater.dataProcessor.close()
