@@ -44,7 +44,6 @@ open class AsyncTimeout : Timeout() {
 
   internal var next: AsyncTimeout? = null
 
-  /** Timeouts data for the binary heap.  */
   @JvmField
   internal var parent: AsyncTimeout? = null
 
@@ -318,10 +317,11 @@ open class AsyncTimeout : Timeout() {
         throw AssertionError()
       }
 
-      // Insert the node in sorted order.
+      // Insert the node into the queue.
       dataStructure.insertIntoQueue(now, node)
       if (node.parent === dataStructure.head) {
-        this@Companion.condition.signal()
+        // Wake up the watchdog when inserting at the front.
+        condition.signal()
       }
     }
 
@@ -370,8 +370,8 @@ internal class Heap : DataStructure() {
   internal var heapSize: Int = 0
 
   private fun insertAtEnd(node: AsyncTimeout) {
-    var current = head?.left // The left child of the head is the first element in the heap.
-    if (current == null) {
+    val headLeft = head?.left // The left child of the head is the first element in the heap.
+    if (headLeft == null) {
       // The heap is empty. Insert the node as the first element.
       head!!.left = node
       node.parent = head
@@ -379,23 +379,25 @@ internal class Heap : DataStructure() {
       return
     }
 
+    var current: AsyncTimeout = headLeft
+
     val newSize = heapSize + 1
     var index = newSize
     while (index > 3) {
       if (index % 2 == 0) {
-        current = current!!.left
+        current = current.left!!
       } else {
-        current = current!!.right
+        current = current.right!!
       }
       index /= 2
     }
 
     if (index % 2 == 0) {
       // Insert as the left child.
-      current!!.left = node
+      current.left = node
     } else {
       // Insert as the right child.
-      current!!.right = node
+      current.right = node
     }
     node.parent = current
     heapSize = newSize
@@ -408,13 +410,13 @@ internal class Heap : DataStructure() {
       return null
     }
 
-    var current = head!!.left
+    var current = head!!.left!!
     var index = heapSize
     while (index > 1) {
       if (index % 2 == 0) {
-        current = current!!.left
+        current = current.left!!
       } else {
-        current = current!!.right
+        current = current.right!!
       }
       index /= 2
     }
@@ -448,24 +450,24 @@ internal class Heap : DataStructure() {
     b.right?.let { it.parent = b }
   }
 
-  private fun heapifyUp(node: AsyncTimeout, now: Long = System.nanoTime()) {
-    var current = node
-    while (current.parent !== head && compareTo(current, current.parent!!, now) < 0) {
+  private fun heapifyUp(node: AsyncTimeout) {
+    val current = node
+    while (current.parent !== head && current < current.parent!!) {
       // Swap current with its parent.
       swap(current, current.parent!!)
     }
   }
 
-  private fun heapifyDown(node: AsyncTimeout, now: Long = System.nanoTime()) {
-    var current = node
+  private fun heapifyDown(node: AsyncTimeout) {
+    val current = node
     while (true) {
       var smallest = current
 
-      if (current.left != null && compareTo(current.left!!, smallest, now) < 0) {
+      if (current.left != null && current.left!! < smallest) {
         smallest = current.left!!
       }
 
-      if (current.right != null && compareTo(current.right!!, smallest, now) < 0) {
+      if (current.right != null && current.right!! < smallest) {
         smallest = current.right!!
       }
 
@@ -483,13 +485,12 @@ internal class Heap : DataStructure() {
 
   override fun insertIntoQueue(now: Long, node: AsyncTimeout) {
     insertAtEnd(node)
-    heapifyUp(node, now)
+    heapifyUp(node)
   }
 
   override fun removeFromQueue(node: AsyncTimeout) {
     check(heapSize > 0) { " Cannot remove from an empty queue" }
 
-    val now = System.nanoTime()
     val last = findLast()!!
 
     if (node !== last) {
@@ -501,12 +502,12 @@ internal class Heap : DataStructure() {
     check(node.left == null && node.right == null) { "Node $node is not a leaf" }
     heapSize--
 
-    if (last.parent != null && compareTo(last, last.parent!!, now) < 0) {
+    if (last.parent != null && last < last.parent!!) {
       // The last node has a smaller value than its parent. Heapify up.
-      heapifyUp(last, now)
-    } else if (last.parent != null && compareTo(last, last.parent!!, now) > 0) {
+      heapifyUp(last)
+    } else if (last.parent != null && last > last.parent!!) {
       // The last node has a larger value than its children. Heapify down.
-      heapifyDown(last, now)
+      heapifyDown(last)
     }
   }
 
@@ -514,7 +515,6 @@ internal class Heap : DataStructure() {
     check(heapSize > 0) { "Cannot remove from an empty queue" }
     check(first === head!!.left) { "first node is not the head of the queue" }
 
-    val now = System.nanoTime()
     val last = findLast()!!
     swap(first, last)
 
@@ -524,20 +524,15 @@ internal class Heap : DataStructure() {
     first.right = null
     heapSize--
 
-    heapifyDown(last, now)
+    heapifyDown(last)
   }
+}
 
-  companion object {
-    fun compareTo(nodeA: AsyncTimeout, nodeB: AsyncTimeout, now: Long = System.nanoTime()): Int {
-      val aRemainingNanos = nodeA.timeoutNanos() - now
-      val bRemainingNanos = nodeB.timeoutNanos() - now
-      return when {
-        aRemainingNanos < bRemainingNanos -> -1
-        aRemainingNanos > bRemainingNanos -> 1
-        else -> 0
-      }
-    }
-  }
+@Suppress("NOTHING_TO_INLINE")
+inline operator fun AsyncTimeout.compareTo(other: AsyncTimeout): Int {
+  val a = timeoutNanos()
+  val b = other.timeoutNanos()
+  return 0L.compareTo(b - a)
 }
 
 internal class LinkedList : DataStructure() {
