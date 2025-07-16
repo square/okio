@@ -3,8 +3,8 @@ package okio.internal
 import assertk.assertThat
 import java.util.concurrent.TimeUnit
 import okio.AsyncTimeout
-import okio.compareTo
 import okio.Heap
+import okio.compareTo
 import org.junit.Before
 import org.junit.Test
 
