@@ -1,7 +1,6 @@
 import aQute.bnd.gradle.BundleTaskExtension
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import com.vanniktech.maven.publish.SonatypeHost
 import groovy.util.Node
 import groovy.util.NodeList
 import java.nio.charset.StandardCharsets
@@ -112,7 +111,7 @@ allprojects {
     }
     val publishingExtension = extensions.getByType(PublishingExtension::class.java)
     configure<MavenPublishBaseExtension> {
-      publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+      publishToMavenCentral(automaticRelease = true)
       signAllPublications()
       pom {
         description.set("A modern I/O library for Android, Java, and Kotlin Multiplatform.")
