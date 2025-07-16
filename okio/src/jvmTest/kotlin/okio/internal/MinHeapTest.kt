@@ -3,10 +3,13 @@ package okio.internal
 import assertk.assertThat
 import java.util.concurrent.TimeUnit
 import okio.AsyncTimeout
+import okio.compareTo
 import okio.Heap
-import okio.Heap.Companion.compareTo
 import org.junit.Before
 import org.junit.Test
+
+// https://publicobject.com/2017/02/06/story-code/
+// How to test this?
 
 class MinHeapTest {
 
@@ -85,7 +88,7 @@ internal fun validateHeap(heap: Heap) {
 
     // Check left child
     current.left?.let {
-      assertThat(compareTo(it, current) >= 0) {
+      assertThat(it >= current) {
         "Heap property violated at node $current: left child $it is smaller."
       }
       queue.add(it)
@@ -93,7 +96,7 @@ internal fun validateHeap(heap: Heap) {
 
     // Check right child
     current.right?.let {
-      assertThat(compareTo(it, current) >= 0) {
+      assertThat(it >= current) {
         "Heap property violated at node $current: right child $it is smaller."
       }
       queue.add(it)

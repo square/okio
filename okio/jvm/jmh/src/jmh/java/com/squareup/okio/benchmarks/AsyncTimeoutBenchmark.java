@@ -18,8 +18,8 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 @Fork(1)
-@Warmup(iterations = 5, time = 2)
-@Measurement(iterations = 5, time = 2)
+@Warmup(iterations = 2, time = 2)
+@Measurement(iterations = 3, time = 2)
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
