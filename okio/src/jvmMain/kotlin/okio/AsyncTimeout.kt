@@ -44,14 +44,10 @@ open class AsyncTimeout : Timeout() {
 
   internal var next: AsyncTimeout? = null
 
-  @JvmField
-  internal var parent: AsyncTimeout? = null
+  /** Index in the heap, or -1 if this isn't currently in the heap. */
+  internal var index: Int = -1
 
-  @JvmField
-  internal var left: AsyncTimeout? = null
 
-  @JvmField
-  internal var right: AsyncTimeout? = null
 
   /** If scheduled, this is the time that the watchdog should time this out.  */
   private var timeoutAt = 0L
@@ -319,7 +315,7 @@ open class AsyncTimeout : Timeout() {
 
       // Insert the node into the queue.
       dataStructure.insertIntoQueue(now, node)
-      if (node.parent === dataStructure.head) {
+      if (node.index == 1) {
         // Wake up the watchdog when inserting at the front.
         condition.signal()
       }
@@ -368,163 +364,124 @@ open class AsyncTimeout : Timeout() {
 
 internal class Heap : DataStructure() {
   internal var heapSize: Int = 0
-
-  private fun insertAtEnd(node: AsyncTimeout) {
-    val headLeft = head?.left // The left child of the head is the first element in the heap.
-    if (headLeft == null) {
-      // The heap is empty. Insert the node as the first element.
-      head!!.left = node
-      node.parent = head
-      heapSize = 1
-      return
-    }
-
-    var current: AsyncTimeout = headLeft
-
-    val newSize = heapSize + 1
-    var index = newSize
-    while (index > 3) {
-      if (index % 2 == 0) {
-        current = current.left!!
-      } else {
-        current = current.right!!
-      }
-      index /= 2
-    }
-
-    if (index % 2 == 0) {
-      // Insert as the left child.
-      current.left = node
-    } else {
-      // Insert as the right child.
-      current.right = node
-    }
-    node.parent = current
-    heapSize = newSize
-  }
-
-  private fun findLast(): AsyncTimeout? {
-    // Find the last node in the heap. This is done by traversing the binary heap using the
-    // binary representation of the heap size.
-    if (heapSize == 0) {
-      return null
-    }
-
-    var current = head!!.left!!
-    var index = heapSize
-    while (index > 1) {
-      if (index % 2 == 0) {
-        current = current.left!!
-      } else {
-        current = current.right!!
-      }
-      index /= 2
-    }
-
-    return current
-  }
-
-  private fun swap(a: AsyncTimeout, b: AsyncTimeout) {
-    if (a === b) return
-
-    a.parent?.let { if (it.left === a) it.left = b else it.right = b }
-    b.parent?.let { if (it.right === b) it.right = a else it.left = a }
-
-    // Swap parent references
-    val tempParent = a.parent
-    a.parent = b.parent
-    b.parent = tempParent
-
-    // Swap children references
-    val tempLeft = a.left
-    val tempRight = a.right
-    a.left = b.left
-    a.right = b.right
-    b.left = tempLeft
-    b.right = tempRight
-
-    // Update children's parent references
-    a.left?.let { it.parent = a }
-    a.right?.let { it.parent = a }
-    b.left?.let { it.parent = b }
-    b.right?.let { it.parent = b }
-  }
-
-  private fun heapifyUp(node: AsyncTimeout) {
-    val current = node
-    while (current.parent !== head && current < current.parent!!) {
-      // Swap current with its parent.
-      swap(current, current.parent!!)
-    }
-  }
-
-  private fun heapifyDown(node: AsyncTimeout) {
-    val current = node
-    while (true) {
-      var smallest = current
-
-      if (current.left != null && current.left!! < smallest) {
-        smallest = current.left!!
-      }
-
-      if (current.right != null && current.right!! < smallest) {
-        smallest = current.right!!
-      }
-
-      if (smallest === current) {
-        break
-      }
-      swap(current, smallest)
-    }
-  }
+  internal var array: Array<AsyncTimeout?> = arrayOfNulls(8)
 
   override fun first(): AsyncTimeout? {
-    // The first node is the left child of the head.
-    return head!!.left
+    return when {
+      heapSize > 0 -> array[1]
+      else -> null
+    }
   }
 
   override fun insertIntoQueue(now: Long, node: AsyncTimeout) {
-    insertAtEnd(node)
-    heapifyUp(node)
+    val newHeapSize = heapSize + 1
+    heapSize = newHeapSize
+    if (newHeapSize == array.size) {
+      val doubledArray = arrayOfNulls<AsyncTimeout?>(newHeapSize * 2)
+      array.copyInto(doubledArray,)
+      array = doubledArray
+    }
+
+    heapifyUp(newHeapSize, node)
+  }
+
+  /**
+   * Put [node] in the right position in the heap.
+   *
+   * When this is done it'll put something in [vacantIndex], and [node] somewhere in the heap.
+   *
+   * @param vacantIndex an index in the heap that is empty.
+   */
+  private fun heapifyUp(
+    vacantIndex: Int,
+    node: AsyncTimeout,
+  ) {
+    var vacantIndex = vacantIndex
+    while (true) {
+      val parentIndex = vacantIndex shr 1
+      if (parentIndex == 0) break // No parent.
+
+      val parentNode = array[parentIndex]!!
+      if (parentNode <= node) break // No need to swap with the parent.
+
+      // Put our parent in the vacant index, and its index is the new vacant index.
+      parentNode.index = vacantIndex
+      array[vacantIndex] = parentNode
+      vacantIndex = parentIndex
+    }
+
+    array[vacantIndex] = node
+    node.index = vacantIndex
+  }
+
+  /**
+   * Put [node] in the right position in the heap.
+   *
+   * When this is done it'll put something in [vacantIndex], and [node] somewhere in the heap.
+   *
+   * @param vacantIndex an index in the heap that is empty.
+   */
+  private fun heapifyDown(
+    vacantIndex: Int,
+    node: AsyncTimeout,
+  ) {
+    var vacantIndex = vacantIndex
+    while (true) {
+      val leftIndex = vacantIndex shl 1
+      val rightIndex = leftIndex + 1
+
+      val smallestChild = when {
+        rightIndex <= heapSize -> {
+          val leftNode = array[leftIndex]!!
+          val rightNode = array[rightIndex]!!
+          when {
+            leftNode < rightNode -> leftNode
+            else -> rightNode
+          }
+        }
+        leftIndex <= heapSize -> {
+          array[leftIndex]!! // Left node.
+        }
+        else -> break // No children.
+      }
+
+      if (node <= smallestChild) break // No need to swap with the children.
+
+      // Put our smallest child in the vacant index, and its index is the new vacant index.
+      val newVacantIndex = smallestChild.index
+      smallestChild.index = vacantIndex
+      array[vacantIndex] = smallestChild
+      vacantIndex = newVacantIndex
+    }
+
+    array[vacantIndex] = node
+    node.index = vacantIndex
   }
 
   override fun removeFromQueue(node: AsyncTimeout) {
-    check(heapSize > 0) { " Cannot remove from an empty queue" }
+    require(node.index != -1)
 
-    val last = findLast()!!
-
-    if (node !== last) {
-      swap(node, last)
-    }
-
-    node.parent?.let { if (it.left === node) it.left = null else it.right = null }
-    node.parent = null
-    check(node.left == null && node.right == null) { "Node $node is not a leaf" }
+    val removedIndex = node.index
+    val removedLast = removedIndex == heapSize
+    val last = array[heapSize]!!
+    node.index = -1
+    array[heapSize] = null
     heapSize--
 
-    if (last.parent != null && last < last.parent!!) {
-      // The last node has a smaller value than its parent. Heapify up.
-      heapifyUp(last)
-    } else if (last.parent != null && last > last.parent!!) {
-      // The last node has a larger value than its children. Heapify down.
-      heapifyDown(last)
+    when {
+      removedLast -> return
+      node.compareTo(last) == 0 -> {
+        // We should put nodeToSwap in node's spot.
+        array[removedIndex] = last
+        last.index = removedIndex
+      }
+      node < last -> heapifyDown(removedIndex, last)
+      else -> heapifyUp(removedIndex, last)
     }
   }
 
   override fun removeFirst(first: AsyncTimeout) {
-    check(heapSize > 0) { "Cannot remove from an empty queue" }
-    check(first === head!!.left) { "first node is not the head of the queue" }
-
-    val last = findLast()!!
-    swap(first, last)
-
-    first.parent?.let { if (it.left === first) it.left = null else it.right = null }
-    first.parent = null
-    first.left = null
-    first.right = null
-    heapSize--
-
-    heapifyDown(last)
+    removeFromQueue(first)
   }
 }
 
