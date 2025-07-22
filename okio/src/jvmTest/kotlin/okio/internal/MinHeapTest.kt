@@ -4,9 +4,12 @@ import assertk.assertThat
 import java.util.concurrent.TimeUnit
 import okio.AsyncTimeout
 import okio.Heap
-import okio.Heap.Companion.compareTo
+import okio.compareTo
 import org.junit.Before
 import org.junit.Test
+
+// https://publicobject.com/2017/02/06/story-code/
+// How to test this?
 
 class MinHeapTest {
 
@@ -69,45 +72,51 @@ class MinHeapTest {
 }
 
 internal fun validateHeap(heap: Heap) {
-  val head = heap.head
-  val heapSize = heap.heapSize
-  if (head?.left == null) {
-    assertThat(heapSize == 0) { "Heap root is null but heapSize > 0" }
+  val array = heap.array
+  val arrayHead = array[1]
+  if (arrayHead == null) {
+    assertThat(heap.heapSize == 0) { "Heap root is null but heapSize > 0" }
     return
   }
 
   val queue = ArrayDeque<AsyncTimeout>()
-  queue.add(head.left!!)
+  queue.add(arrayHead)
 
   var index = 1
   while (queue.isNotEmpty()) {
     val current = queue.removeFirst()
 
     // Check left child
-    current.left?.let {
-      assertThat(compareTo(it, current) >= 0) {
+    val leftIndex = current.index shl 1
+    if (leftIndex > heap.heapSize) break
+    val left = array[leftIndex]
+    left?.let {
+      assertThat(it >= current) {
         "Heap property violated at node $current: left child $it is smaller."
       }
       queue.add(it)
     }
 
     // Check right child
-    current.right?.let {
-      assertThat(compareTo(it, current) >= 0) {
+    val rightIndex = leftIndex + 1
+    val right = array[rightIndex]
+    if (rightIndex > heap.heapSize) break
+    right?.let {
+      assertThat(it >= current) {
         "Heap property violated at node $current: right child $it is smaller."
       }
       queue.add(it)
     }
 
     // Ensure the heap is a complete binary tree
-    assertThat(current.left != null || current.right == null) {
+    assertThat(left != null || right == null) {
       "Heap structure violated: node $current has a right child but no left child."
     }
 
     index++
   }
 
-  assertThat(index - 1 == heapSize) {
-    "Heap size mismatch: expected $index, but got $heapSize."
+  assertThat(index == heap.heapSize) {
+    "Heap size mismatch: expected $index, but got ${heap.heapSize}."
   }
 }
