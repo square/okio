@@ -460,22 +460,25 @@ internal class Heap : DataStructure() {
 
   override fun removeFromQueue(node: AsyncTimeout) {
     require(node.index != -1)
+    val originalHeapSize = this@Heap.heapSize
 
+    // Remove the node.
     val removedIndex = node.index
-    val removedLast = removedIndex == heapSize
-    val last = array[heapSize]!!
+    val last = array[originalHeapSize]!!
     node.index = -1
-    array[heapSize] = null
-    heapSize--
+    array[originalHeapSize] = null
+    this.heapSize--
 
+    // Fix the heap to fill the vacated index.
+    if (removedIndex == originalHeapSize) return
+    val nodeCompareToLast = node.compareTo(last)
     when {
-      removedLast -> return
-      node.compareTo(last) == 0 -> {
-        // We should put nodeToSwap in node's spot.
+      // Put last in the removed node's spot.
+      nodeCompareToLast == 0 -> {
         array[removedIndex] = last
         last.index = removedIndex
       }
-      node < last -> heapifyDown(removedIndex, last)
+      nodeCompareToLast < 0 -> heapifyDown(removedIndex, last)
       else -> heapifyUp(removedIndex, last)
     }
   }

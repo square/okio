@@ -1,7 +1,9 @@
 package com.squareup.okio.benchmarks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import okio.AsyncTimeout;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -42,8 +44,11 @@ public class AsyncTimeoutBenchmark {
         }
       };
       timeout.timeout(3600 + i, TimeUnit.SECONDS); // Never time out, insert in order.
-      timeout.enter();
       asyncTimeouts.add(timeout);
+    }
+    Collections.shuffle(asyncTimeouts, new Random(0));
+    for (int i = 0; i < queueSize; i++) {
+      asyncTimeouts.get(i).enter();
     }
   }
 
