@@ -1,25 +1,41 @@
+/*
+ * Copyright (C) 2025 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package okio.internal
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import java.lang.Integer.numberOfTrailingZeros
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.NANOSECONDS
 import okio.AsyncTimeout
-import okio.Heap
+import okio.PriorityQueue
 import org.junit.Test
 
-class MinHeapTest {
-  val TIME_UNIT = TimeUnit.SECONDS
+class PriorityQueueTest {
+  private val TIME_UNIT = TimeUnit.SECONDS
 
   @Test
   fun insertedElementIsSmallerThanItsAncestors() {
-    val now = System.nanoTime()
     val before = """
       |...............5................
       |......10..............20........
       |..28......29......21............
       |""".toHeap()
 
-    before.insertIntoQueue(newAsyncTimeout(2))
+    before.add(AsyncTimeout(2))
 
     assertThat(before.toDebugString()).isEqualTo(
       """
@@ -33,14 +49,13 @@ class MinHeapTest {
 
   @Test
   fun insertedElementIsSmallerThanParent() {
-    val now = System.nanoTime()
     val before = """
       |...............5................
       |......10..............20........
       |..28......29......21............
       |""".toHeap()
 
-    before.insertIntoQueue(newAsyncTimeout(15))
+    before.add(AsyncTimeout(15))
 
     assertThat(before.toDebugString()).isEqualTo(
       """
@@ -60,7 +75,7 @@ class MinHeapTest {
       |..11......12......21......22....
       |""".toHeap()
 
-    before.removeFromQueue(before[10])
+    before.remove(before[10])
 
     assertThat(before.toDebugString()).isEqualTo(
       """
@@ -74,14 +89,13 @@ class MinHeapTest {
 
   @Test
   fun insertedElementIsLargerThanBothItsParent() {
-    val now = System.nanoTime()
     val before = """
       |...............5................
       |......10..............20........
       |..28......29......21............
       |""".toHeap()
 
-    before.insertIntoQueue(newAsyncTimeout(24))
+    before.add(AsyncTimeout(24))
 
     assertThat(before.toDebugString()).isEqualTo(
       """
@@ -101,7 +115,7 @@ class MinHeapTest {
       |..28......29......21......22....
       |""".toHeap()
 
-    before.removeFromQueue(before[10])
+    before.remove(before[10])
 
     assertThat(before.toDebugString()).isEqualTo(
       """
@@ -121,7 +135,7 @@ class MinHeapTest {
       |..21......22......11......12....
       |""".toHeap()
 
-    before.removeFromQueue(before[20])
+    before.remove(before[20])
 
     assertThat(before.toDebugString()).isEqualTo(
       """
@@ -142,7 +156,7 @@ class MinHeapTest {
       |..13......14....................................................
       |""".toHeap()
 
-    before.removeFromQueue(before[21])
+    before.remove(before[21])
 
     assertThat(before.toDebugString()).isEqualTo(
       """
@@ -155,22 +169,21 @@ class MinHeapTest {
     )
   }
 
-  private fun newAsyncTimeout(value: Long) = AsyncTimeout().let {
-    it.timeout(value, TIME_UNIT)
-    return@let it
+  private fun AsyncTimeout(value: Long) = AsyncTimeout().apply {
+    timeout(value, TIME_UNIT)
   }
 
-  private fun String.toHeap(): Heap {
+  private fun String.toHeap(): PriorityQueue {
     val nodeValues = trimMargin()
       .replace(".", " ")
       .trim()
       .split(Regex("\\s+", RegexOption.MULTILINE))
       .map { it.toLong() }
 
-    val result = Heap()
+    val result = PriorityQueue()
 
     for (i in nodeValues) {
-      result.insertIntoQueue(newAsyncTimeout(i))
+      result.add(AsyncTimeout(i))
     }
 
     val formattedBack = result.toDebugString()
@@ -179,7 +192,7 @@ class MinHeapTest {
     return result
   }
 
-  private operator fun Heap.get(value: Long): AsyncTimeout {
+  private operator fun PriorityQueue.get(value: Long): AsyncTimeout {
     return array.single { it?.timeoutNanos() == TIME_UNIT.toNanos(value) }!!
   }
 
@@ -192,18 +205,22 @@ class MinHeapTest {
    * ..21......22......11............
    * ```
    */
-  private fun Heap.toDebugString() = buildString {
+  private fun PriorityQueue.toDebugString() = buildString {
     val nodeWidth = 4
-    val height = Integer.numberOfTrailingZeros(Integer.highestOneBit(heapSize)) + 1
+    val height = numberOfTrailingZeros(Integer.highestOneBit(size)) + 1
     val width = (1 shl height) - 1
     var index = 1 // Heap's first element is at 1!
     for (row in 0 until height) {
       val printAt = height - row - 1
       for (column in 1..width) {
-        if (Integer.numberOfTrailingZeros(column) != printAt || index >= array.size || array[index] == null) {
+        if (
+          numberOfTrailingZeros(column) != printAt ||
+          index >= array.size ||
+          array[index] == null
+        ) {
           append(".".repeat(nodeWidth))
         } else {
-          val nodeValue = TIME_UNIT.convert(array[index++]!!.timeoutNanos(), TimeUnit.NANOSECONDS).toString()
+          val nodeValue = TIME_UNIT.convert(array[index++]!!.timeoutNanos(), NANOSECONDS).toString()
           append(".".repeat(nodeWidth - nodeValue.length))
           append(nodeValue)
         }
