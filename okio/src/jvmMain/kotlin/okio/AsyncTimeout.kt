@@ -42,12 +42,8 @@ import okio.AsyncTimeout.Companion.IDLE_TIMEOUT_NANOS
 open class AsyncTimeout : Timeout() {
   private var state = STATE_IDLE
 
-  internal var next: AsyncTimeout? = null
-
   /** Index in the heap, or -1 if this isn't currently in the heap. */
   internal var index: Int = -1
-
-
 
   /** If scheduled, this is the time that the watchdog should time this out.  */
   private var timeoutAt = 0L
@@ -291,7 +287,6 @@ open class AsyncTimeout : Timeout() {
      * node to time out, or null if the queue is empty. The head is null until the watchdog thread
      * is started and also after being idle for [AsyncTimeout.IDLE_TIMEOUT_MILLIS].
      */
-    // private var head: AsyncTimeout? = null
 
     private fun insertIntoQueue(node: AsyncTimeout, timeoutNanos: Long, hasDeadline: Boolean) {
       // Start the watchdog thread and create the head node when the first timeout is scheduled.
@@ -314,7 +309,7 @@ open class AsyncTimeout : Timeout() {
       }
 
       // Insert the node into the queue.
-      dataStructure.insertIntoQueue(now, node)
+      dataStructure.insertIntoQueue(node)
       if (node.index == 1) {
         // Wake up the watchdog when inserting at the front.
         condition.signal()
@@ -362,18 +357,24 @@ open class AsyncTimeout : Timeout() {
   }
 }
 
-internal class Heap : DataStructure() {
+/**
+ *  Minimum heap implementation.
+ */
+internal class Heap {
   internal var heapSize: Int = 0
   internal var array: Array<AsyncTimeout?> = arrayOfNulls(8)
+  internal var head: AsyncTimeout? = array[0]
 
-  override fun first(): AsyncTimeout? {
+
+  fun first(): AsyncTimeout? {
     return when {
       heapSize > 0 -> array[1]
       else -> null
     }
   }
 
-  override fun insertIntoQueue(now: Long, node: AsyncTimeout) {
+
+  fun insertIntoQueue(node: AsyncTimeout) {
     val newHeapSize = heapSize + 1
     heapSize = newHeapSize
     if (newHeapSize == array.size) {
@@ -385,8 +386,39 @@ internal class Heap : DataStructure() {
     heapifyUp(newHeapSize, node)
   }
 
+
+  fun removeFromQueue(node: AsyncTimeout) {
+    require(node.index != -1)
+    val originalHeapSize = this@Heap.heapSize
+
+    // Remove the node.
+    val removedIndex = node.index
+    val last = array[originalHeapSize]!!
+    node.index = -1
+    array[originalHeapSize] = null
+    this.heapSize--
+
+    // Fix the heap to fill the vacated index.
+    if (removedIndex == originalHeapSize) return
+    val nodeCompareToLast = node.compareTo(last)
+    when {
+      // Put last in the removed node's spot.
+      nodeCompareToLast == 0 -> {
+        array[removedIndex] = last
+        last.index = removedIndex
+      }
+      nodeCompareToLast < 0 -> heapifyDown(removedIndex, last)
+      else -> heapifyUp(removedIndex, last)
+    }
+  }
+
+
+  fun removeFirst(first: AsyncTimeout) {
+    removeFromQueue(first)
+  }
+
   /**
-   * Put [node] in the right position in the heap.
+   * Put [node] in the right position in the heap by moving [node] up the heap.
    *
    * When this is done it'll put something in [vacantIndex], and [node] somewhere in the heap.
    *
@@ -415,7 +447,7 @@ internal class Heap : DataStructure() {
   }
 
   /**
-   * Put [node] in the right position in the heap.
+   * Put [node] in the right position in the heap by moving [node] down the heap.
    *
    * When this is done it'll put something in [vacantIndex], and [node] somewhere in the heap.
    *
@@ -458,34 +490,6 @@ internal class Heap : DataStructure() {
     node.index = vacantIndex
   }
 
-  override fun removeFromQueue(node: AsyncTimeout) {
-    require(node.index != -1)
-    val originalHeapSize = this@Heap.heapSize
-
-    // Remove the node.
-    val removedIndex = node.index
-    val last = array[originalHeapSize]!!
-    node.index = -1
-    array[originalHeapSize] = null
-    this.heapSize--
-
-    // Fix the heap to fill the vacated index.
-    if (removedIndex == originalHeapSize) return
-    val nodeCompareToLast = node.compareTo(last)
-    when {
-      // Put last in the removed node's spot.
-      nodeCompareToLast == 0 -> {
-        array[removedIndex] = last
-        last.index = removedIndex
-      }
-      nodeCompareToLast < 0 -> heapifyDown(removedIndex, last)
-      else -> heapifyUp(removedIndex, last)
-    }
-  }
-
-  override fun removeFirst(first: AsyncTimeout) {
-    removeFromQueue(first)
-  }
 }
 
 @Suppress("NOTHING_TO_INLINE")
@@ -493,54 +497,4 @@ inline operator fun AsyncTimeout.compareTo(other: AsyncTimeout): Int {
   val a = timeoutNanos()
   val b = other.timeoutNanos()
   return 0L.compareTo(b - a)
-}
-
-internal class LinkedList : DataStructure() {
-
-  override fun first(): AsyncTimeout? {
-    return head!!.next
-  }
-
-  override fun removeFirst(first: AsyncTimeout) {
-    head!!.next = first.next
-    first.next = null
-  }
-
-  override fun insertIntoQueue(now: Long, node: AsyncTimeout) {
-    val remainingNanos = node.remainingNanos(now)
-    var prev = head!!
-    while (true) {
-      if (prev.next == null || remainingNanos < prev.next!!.remainingNanos(now)) {
-        node.next = prev.next
-        prev.next = node
-        break
-      }
-      prev = prev.next!!
-    }
-  }
-
-  /** Returns true if the timeout occurred. */
-  override fun removeFromQueue(node: AsyncTimeout) {
-    var prev = head
-    while (prev != null) {
-      if (prev.next === node) {
-        prev.next = node.next
-        node.next = null
-        return
-      }
-      prev = prev.next
-    }
-
-    error("node was not found in the queue")
-  }
-}
-
-internal abstract class DataStructure {
-  @JvmField
-  var head: AsyncTimeout? = null
-
-  abstract fun first(): AsyncTimeout?
-  abstract fun insertIntoQueue(now: Long, node: AsyncTimeout)
-  abstract fun removeFromQueue(node: AsyncTimeout)
-  abstract fun removeFirst(first: AsyncTimeout)
 }

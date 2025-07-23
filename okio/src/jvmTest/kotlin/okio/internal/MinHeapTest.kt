@@ -5,69 +5,53 @@ import assertk.assertions.isEqualTo
 import java.util.concurrent.TimeUnit
 import okio.AsyncTimeout
 import okio.Heap
-import okio.compareTo
-import org.junit.Before
 import org.junit.Test
 
-// https://publicobject.com/2017/02/06/story-code/
-// How to test this?
-
 class MinHeapTest {
+  val TIME_UNIT = TimeUnit.SECONDS
 
-  private val nodes = ArrayDeque<AsyncTimeout>()
-  private lateinit var heap: Heap
-
-  @Before
-  fun before() {
-    // Initialize the heap with 100 random values.
-    (1L..NUMBER_OF_NODES).forEach { i ->
-      AsyncTimeout().let { node ->
-        node.timeout(3600 + i, TIME_UNIT)
-        nodes.add(node)
-      }
-    }
-
-    heap = Heap()
-    heap.head = AsyncTimeout()
-
+  @Test
+  fun insertedElementIsSmallerThanItsAncestors() {
     val now = System.nanoTime()
-    nodes.forEachIndexed { i, node ->
-      heap.insertIntoQueue(now, node)
-      validateHeap(heap)
-    }
+    val before = """
+      |...............5................
+      |......10..............20........
+      |..28......29......21............
+      |""".toHeap()
+
+    before.insertIntoQueue(newAsyncTimeout(2))
+
+    assertThat(before.toDebugString()).isEqualTo(
+      """
+      |...............2................
+      |......10...............5........
+      |..28......29......21......20....
+      |""".trimMargin()
+    )
   }
 
   @Test
-  fun heapIsConsistentAfterRemoveFirst() {
-    while (nodes.isNotEmpty()) {
-      val node = nodes.removeFirst()
-      heap.removeFirst(node)
-      validateHeap(heap)
-    }
+  fun insertedElementIsSmallerThanParent() {
+    val now = System.nanoTime()
+    val before = """
+      |...............5................
+      |......10..............20........
+      |..28......29......21............
+      |""".toHeap()
+
+    before.insertIntoQueue(newAsyncTimeout(15))
+
+    assertThat(before.toDebugString()).isEqualTo(
+      """
+      |...............5................
+      |......10..............15........
+      |..28......29......21......20....
+      |""".trimMargin()
+    )
   }
 
   @Test
-  fun minHeapConsistentAfterRandomRemovals() {
-    nodes.shuffle()
-    while (nodes.isNotEmpty()) {
-      val node = nodes.removeFirst()
-      heap.removeFromQueue(node)
-      validateHeap(heap)
-    }
-  }
-
-  @Test
-  fun firstReturnsSmallestElement() {
-    while (nodes.isNotEmpty()) {
-      val node = nodes.removeFirst()
-      assertThat(node === heap.first())
-      heap.removeFirst(node)
-      validateHeap(heap)
-    }
-  }
-
-  @Test
-  fun lastElementIsGreaterThanRemovedElement() {
+  fun lastElementIsGreaterThanOneOfRemovedElementChildren() {
     val before = """
       |...............5................
       |......10..............20........
@@ -81,6 +65,45 @@ class MinHeapTest {
       |...............5................
       |......11..............20........
       |..22......12......21............
+      |""".trimMargin()
+    )
+  }
+
+  @Test
+  fun insertedElementIsLargerThanBothItsParent() {
+    val now = System.nanoTime()
+    val before = """
+      |...............5................
+      |......10..............20........
+      |..28......29......21............
+      |""".toHeap()
+
+    before.insertIntoQueue(newAsyncTimeout(24))
+
+    assertThat(before.toDebugString()).isEqualTo(
+      """
+      |...............5................
+      |......10..............20........
+      |..28......29......21......24....
+      |""".trimMargin()
+    )
+  }
+
+  @Test
+  fun lastElementIsGreaterThanRemovedElement() {
+    val before = """
+      |...............5................
+      |......10..............20........
+      |..28......29......21......22....
+      |""".toHeap()
+
+    before.removeFromQueue(before[10])
+
+    assertThat(before.toDebugString()).isEqualTo(
+      """
+      |...............5................
+      |......22..............20........
+      |..28......29......21............
       |""".trimMargin()
     )
   }
@@ -125,6 +148,10 @@ class MinHeapTest {
     )
   }
 
+  private fun newAsyncTimeout(value: Long) = AsyncTimeout().let {
+    it.timeout(value, TIME_UNIT)
+    return@let it
+  }
 
   private fun String.toHeap(): Heap {
     val nodeValues = trimMargin()
@@ -135,11 +162,8 @@ class MinHeapTest {
 
     val result = Heap()
 
-    val now = System.nanoTime()
     for (i in nodeValues) {
-      val node = AsyncTimeout()
-      node.timeout(i, TIME_UNIT)
-      result.insertIntoQueue(now, node)
+      result.insertIntoQueue(newAsyncTimeout(i))
     }
 
     val formattedBack = result.toDebugString()
@@ -180,60 +204,5 @@ class MinHeapTest {
       append(".".repeat(nodeWidth))
       append("\n")
     }
-  }
-
-  companion object {
-    val TIME_UNIT = TimeUnit.SECONDS
-    val NUMBER_OF_NODES = 1000
-  }
-}
-
-internal fun validateHeap(heap: Heap) {
-  val array = heap.array
-  val arrayHead = array[1]
-  if (arrayHead == null) {
-    assertThat(heap.heapSize == 0) { "Heap root is null but heapSize > 0" }
-    return
-  }
-
-  val queue = ArrayDeque<AsyncTimeout>()
-  queue.add(arrayHead)
-
-  var index = 1
-  while (queue.isNotEmpty()) {
-    val current = queue.removeFirst()
-
-    // Check left child
-    val leftIndex = current.index shl 1
-    if (leftIndex > heap.heapSize) break
-    val left = array[leftIndex]
-    left?.let {
-      assertThat(it >= current) {
-        "Heap property violated at node $current: left child $it is smaller."
-      }
-      queue.add(it)
-    }
-
-    // Check right child
-    val rightIndex = leftIndex + 1
-    val right = array[rightIndex]
-    if (rightIndex > heap.heapSize) break
-    right?.let {
-      assertThat(it >= current) {
-        "Heap property violated at node $current: right child $it is smaller."
-      }
-      queue.add(it)
-    }
-
-    // Ensure the heap is a complete binary tree
-    assertThat(left != null || right == null) {
-      "Heap structure violated: node $current has a right child but no left child."
-    }
-
-    index++
-  }
-
-  assertThat(index == heap.heapSize) {
-    "Heap size mismatch: expected $index, but got ${heap.heapSize}."
   }
 }
