@@ -56,6 +56,10 @@ public class okio/AsyncTimeout : okio/Timeout {
 	public final fun withTimeout (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 }
 
+public final class okio/AsyncTimeoutKt {
+	public static final fun compareTo (Lokio/AsyncTimeout;Lokio/AsyncTimeout;)I
+}
+
 public final class okio/Buffer : java/lang/Cloneable, java/nio/channels/ByteChannel, okio/BufferedSink, okio/BufferedSource {
 	public final fun -deprecated_getByte (J)B
 	public final fun -deprecated_size ()J
