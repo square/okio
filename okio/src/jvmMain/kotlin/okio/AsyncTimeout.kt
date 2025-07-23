@@ -365,7 +365,6 @@ internal class Heap {
   internal var array: Array<AsyncTimeout?> = arrayOfNulls(8)
   internal var head: AsyncTimeout? = array[0]
 
-
   fun first(): AsyncTimeout? {
     return when {
       heapSize > 0 -> array[1]
@@ -373,19 +372,17 @@ internal class Heap {
     }
   }
 
-
   fun insertIntoQueue(node: AsyncTimeout) {
     val newHeapSize = heapSize + 1
     heapSize = newHeapSize
     if (newHeapSize == array.size) {
       val doubledArray = arrayOfNulls<AsyncTimeout?>(newHeapSize * 2)
-      array.copyInto(doubledArray,)
+      array.copyInto(doubledArray)
       array = doubledArray
     }
 
     heapifyUp(newHeapSize, node)
   }
-
 
   fun removeFromQueue(node: AsyncTimeout) {
     require(node.index != -1)
@@ -411,7 +408,6 @@ internal class Heap {
       else -> heapifyUp(removedIndex, last)
     }
   }
-
 
   fun removeFirst(first: AsyncTimeout) {
     removeFromQueue(first)
@@ -489,7 +485,6 @@ internal class Heap {
     array[vacantIndex] = node
     node.index = vacantIndex
   }
-
 }
 
 @Suppress("NOTHING_TO_INLINE")
