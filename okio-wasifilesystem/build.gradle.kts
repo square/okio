@@ -57,7 +57,7 @@ configure<MavenPublishBaseExtension> {
  */
 val injectWasiInit by tasks.creating {
   dependsOn("compileTestDevelopmentExecutableKotlinWasmWasi")
-  val moduleName = "${rootProject.name}-${project.name}-wasm-wasi-test"
+  val moduleName = "${rootProject.name}-${project.name}-test"
 
   val entryPointMjs = File(
     buildDir,
@@ -92,7 +92,7 @@ val injectWasiInit by tasks.creating {
 
       const fs = await import('node:fs');
       const url = await import('node:url');
-      const wasmBuffer = fs.readFileSync(url.fileURLToPath(import.meta.resolve('./okio-parent-okio-wasifilesystem-wasm-wasi-test.wasm')));
+      const wasmBuffer = fs.readFileSync(url.fileURLToPath(import.meta.resolve('./$moduleName.wasm')));
       const wasmModule = new WebAssembly.Module(wasmBuffer);
       const wasmInstance = new WebAssembly.Instance(wasmModule, wasi.getImportObject());
 
@@ -100,20 +100,11 @@ val injectWasiInit by tasks.creating {
 
       const exports = wasmInstance.exports
 
-      export default new Proxy(exports, {
-          _shownError: false,
-          get(target, prop) {
-              if (!this._shownError) {
-                  this._shownError = true;
-                  throw new Error("Do not use default import. Use the corresponding named import instead.")
-              }
-          }
-      });
       export const {
-          startUnitTests,
-          _initialize,
-          memory
-      } = exports;
+        memory,
+        _initialize,
+        startUnitTests
+      } = exports
       """.trimIndent()
     )
   }
