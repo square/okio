@@ -48,6 +48,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
   override fun toString() = socket.toString()
 
   inner class SocketSink : Sink {
+    private val outputStream = socket.outputStream
     private val timeout = SocketAsyncTimeout(socket)
 
     override fun write(source: Buffer, byteCount: Long) {
@@ -58,7 +59,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
         val head = source.head!!
         val toCopy = minOf(remaining, head.limit - head.pos).toInt()
         timeout.withTimeout {
-          socket.outputStream.write(head.data, head.pos, toCopy)
+          outputStream.write(head.data, head.pos, toCopy)
         }
 
         head.pos += toCopy
@@ -74,7 +75,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
 
     override fun flush() {
       timeout.withTimeout {
-        socket.outputStream.flush()
+        outputStream.flush()
       }
     }
 
@@ -90,7 +91,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
           // Close this stream only.
           else -> {
             if (socket.isClosed || socket.isOutputShutdown) return // Nothing to do.
-            socket.outputStream.flush()
+            outputStream.flush()
             socket.shutdownOutput()
           }
         }
@@ -103,6 +104,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
   }
 
   inner class SocketSource : Source {
+    private val inputStream = socket.inputStream
     private val timeout = SocketAsyncTimeout(socket)
 
     override fun read(sink: Buffer, byteCount: Long): Long {
@@ -113,7 +115,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
       val maxToCopy = minOf(byteCount, Segment.Companion.SIZE - tail.limit).toInt()
       val bytesRead = try {
         timeout.withTimeout {
-          socket.inputStream.read(tail.data, tail.limit, maxToCopy)
+          inputStream.read(tail.data, tail.limit, maxToCopy)
         }
       } catch (e: AssertionError) {
         if (e.isAndroidGetsocknameError) throw IOException(e)
