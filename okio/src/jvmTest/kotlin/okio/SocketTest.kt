@@ -25,6 +25,7 @@ import java.io.InterruptedIOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
+import java.net.SocketException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import javax.net.SocketFactory
@@ -251,6 +252,24 @@ class SocketTest(val factory: Factory = Factory.Default) {
     socket.sink.close()
     assertThat(javaNetSocket.isOutputShutdown).isTrue()
     assertThat(javaNetSocket.isClosed).isFalse()
+  }
+
+  @Test
+  fun cannotCreateOkioSocketFromClosedJavaNetSocket() {
+    val javaNetSocket = (this.socket as? DefaultSocket)?.socket ?: return
+    javaNetSocket.close()
+
+    assertFailsWith<SocketException> {
+      javaNetSocket.asOkioSocket()
+    }
+  }
+
+  @Test
+  fun cannotCreateOkioSocketFromUnconnectedJavaNetSocket() {
+    val unconnected = SocketFactory.getDefault().createSocket()
+    assertFailsWith<SocketException> {
+      unconnected.asOkioSocket()
+    }
   }
 
   @Suppress("ktlint:trailing-comma-on-declaration-site")
