@@ -5,6 +5,21 @@ Change Log
 
  * None yet.
 
+## Version 3.16.0
+
+_2025-07-29_
+
+ * Fix: Change `Socket.asOkioSocket()` to resolve its source `InputStream` and `OutputStream`
+   eagerly. This will throw a `SocketException` immediately if the socket isn’t connected.
+   This behavior is consistent with our similar APIs, `Socket.source()` and `Socket.sink()`.
+
+ * Fix: Optimize `AsyncTimeout` on systems with a very large number of active timeouts. This class
+   originally kept active timeouts in a linked list; with this update the internal data structure is
+   a binary heap. The old runtime was 𝑂(𝑛²) to activate 𝑛 timeouts; with this optimization the
+   runtime is 𝑂(𝑛 log 𝑛).
+
+ * Upgrade: [Kotlin 2.2.0][kotlin_2_2_0].
+
 
 ## Version 3.15.0
 
@@ -1015,6 +1030,7 @@ _2014-04-08_
 [kotlin_1_9_21]: https://github.com/JetBrains/kotlin/releases/tag/v1.9.21
 [kotlin_2_1_20]: https://github.com/JetBrains/kotlin/releases/tag/v2.1.20
 [kotlin_2_1_21]: https://github.com/JetBrains/kotlin/releases/tag/v2.1.21
+[kotlin_2_2_0]: https://github.com/JetBrains/kotlin/releases/tag/v2.2.0
 [loom]: https://wiki.openjdk.org/display/loom/Getting+started
 [maven_provided]: https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html
 [preview1]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md
