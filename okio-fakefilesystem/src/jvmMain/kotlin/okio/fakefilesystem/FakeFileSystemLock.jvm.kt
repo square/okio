@@ -24,7 +24,7 @@ import okio.LockMode
 import okio.Path
 
 actual class FakeFileSystemLock actual constructor(
-  private val path: Path
+  private val path: Path,
 ) {
   private val readWriteLock = StampedLock()
 
