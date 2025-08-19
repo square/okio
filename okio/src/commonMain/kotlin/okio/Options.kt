@@ -33,47 +33,63 @@ class Options private constructor(
   override fun get(index: Int) = byteStrings[index]
 
   companion object {
+    private val EMPTY = Options(emptyArray(), intArrayOf(0, -1))
+
     @JvmStatic
     fun of(vararg byteStrings: ByteString): Options {
       if (byteStrings.isEmpty()) {
         // With no choices we must always return -1. Create a trie that selects from an empty set.
-        return Options(arrayOf(), intArrayOf(0, -1))
+        return EMPTY
       }
+
+      byteStrings as Array<ByteString>
 
       // Sort the byte strings which is required when recursively building the trie. Map the sorted
       // indexes to the caller's indexes.
-      val list = byteStrings.toMutableList()
-      list.sort()
-      val indexes = MutableList(list.size) { -1 }
+      val list = byteStrings.toMutableList().apply { sort() }
+      require(list[0].size > 0) { "the empty byte string is not a supported option" }
+      val indexes = IntArray(list.size) { -1 }
       byteStrings.forEachIndexed { callerIndex, byteString ->
-        val sortedIndex = list.binarySearch(byteString)
+        val sortedIndex = list.binarySearch(byteString) // Array.binarySearch is JVM-only...
         indexes[sortedIndex] = callerIndex
       }
-      require(list[0].size > 0) { "the empty byte string is not a supported option" }
+
+      val isRemoved = BooleanArray(list.size)
 
       // Strip elements that will never be returned because they follow their own prefixes. For
       // example, if the caller provides ["abc", "abcde"] we will never return "abcde" because we
       // return as soon as we encounter "abc".
-      var a = 0
-      while (a < list.size) {
+      for (a in list.indices) {
         val prefix = list[a]
-        var b = a + 1
-        while (b < list.size) {
+        for (b in a + 1 until list.size) {
           val byteString = list[b]
           if (!byteString.startsWith(prefix)) break
           require(byteString.size != prefix.size) { "duplicate option: $byteString" }
           if (indexes[b] > indexes[a]) {
-            list.removeAt(b)
-            indexes.removeAt(b)
-          } else {
-            b++
+            isRemoved[b] = true
           }
         }
-        a++
       }
 
+      // Bulk remove
+      var keepIndex = 0
+      for (i in list.indices) {
+        if (!isRemoved[i]) {
+          if (i != keepIndex) {
+            list[keepIndex] = list[i]
+            indexes[keepIndex] = indexes[i]
+          }
+          keepIndex++
+        }
+      }
+
+      val resizeNeeded = keepIndex != list.size
       val trieBytes = Buffer()
-      buildTrieRecursive(node = trieBytes, byteStrings = list, indexes = indexes)
+      buildTrieRecursive(
+        node = trieBytes,
+        byteStrings = if (resizeNeeded) list.subList(fromIndex = 0, toIndex = keepIndex) else list,
+        indexes = if (resizeNeeded) indexes.copyOfRange(fromIndex = 0, toIndex = keepIndex) else indexes,
+      )
 
       val trie = IntArray(trieBytes.intCount.toInt()) {
         trieBytes.readInt()
@@ -113,7 +129,7 @@ class Options private constructor(
       byteStrings: List<ByteString>,
       fromIndex: Int = 0,
       toIndex: Int = byteStrings.size,
-      indexes: List<Int>,
+      indexes: IntArray,
     ) {
       require(fromIndex < toIndex)
       for (i in fromIndex until toIndex) {
