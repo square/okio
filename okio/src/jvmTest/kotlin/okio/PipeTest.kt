@@ -15,28 +15,24 @@
  */
 package okio
 
+import app.cash.burst.InterceptTest
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.Random
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.milliseconds
 import okio.ByteString.Companion.decodeHex
 import okio.HashingSink.Companion.sha1
 import okio.TestUtil.assumeNotWindows
-import okio.TestingExecutors.newScheduledExecutorService
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
 class PipeTest {
-  private val executorService = newScheduledExecutorService(2)
-
-  @After
-  fun tearDown() {
-    executorService.shutdown()
-  }
+  @InterceptTest
+  private val executorService = TestExecutor(2)
 
   @Test
   fun test() {
@@ -154,7 +150,7 @@ class PipeTest {
     val pipe = Pipe(3L)
     val position = AtomicInteger()
 
-    executorService.execute {
+    executorService.submit {
       val buffer = Buffer()
       Thread.sleep(1000L)
       position.set(1)
@@ -181,13 +177,9 @@ class PipeTest {
   @Test
   fun sinkWriteFailsByClosedReader() {
     val pipe = Pipe(3L)
-    executorService.schedule(
-      {
-        pipe.source.close()
-      },
-      1000,
-      TimeUnit.MILLISECONDS,
-    )
+    executorService.schedule(1000.milliseconds) {
+      pipe.source.close()
+    }
     val start = now()
     try {
       pipe.sink.write(Buffer().writeUtf8("abcdef"), 6)
@@ -290,13 +282,9 @@ class PipeTest {
   @Test
   fun sourceReadUnblockedByClosedSink() {
     val pipe = Pipe(3L)
-    executorService.schedule(
-      {
-        pipe.sink.close()
-      },
-      1000,
-      TimeUnit.MILLISECONDS,
-    )
+    executorService.schedule(1000.milliseconds) {
+      pipe.sink.close()
+    }
     val start = now()
     val readBuffer = Buffer()
     assertEquals(-1, pipe.source.read(readBuffer, Long.MAX_VALUE))
@@ -326,7 +314,7 @@ class PipeTest {
     val pipe = Pipe(100L)
     val position = AtomicInteger()
 
-    executorService.execute {
+    executorService.submit {
       Thread.sleep(1000L)
       position.set(1)
       pipe.sink.write(Buffer().writeUtf8("abc"), 3)

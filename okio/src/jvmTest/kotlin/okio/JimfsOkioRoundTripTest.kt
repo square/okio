@@ -15,12 +15,12 @@
  */
 package okio
 
+import app.cash.burst.InterceptTest
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
-import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import okio.FileSystem.Companion.asOkioFileSystem
 import org.junit.Test
@@ -37,12 +37,10 @@ class JimfsOkioRoundTripTest {
   )
   private val jimFsRoot = jimFs.rootDirectories.first()
   private val okioFs = jimFs.asOkioFileSystem()
-  private val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
 
-  @BeforeTest
-  fun setUp() {
-    okioFs.createDirectory(base)
-  }
+  @InterceptTest
+  private val baseTestDirectory = TestDirectory(okioFs, temporaryDirectory)
+  private val base: Path get() = baseTestDirectory.path
 
   @Test
   fun writeOkioReadJim() {

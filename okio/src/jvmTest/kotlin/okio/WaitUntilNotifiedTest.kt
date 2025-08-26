@@ -16,11 +16,11 @@
 package okio
 
 import app.cash.burst.Burst
+import app.cash.burst.InterceptTest
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 import okio.TestUtil.assumeNotWindows
-import okio.TestingExecutors.newScheduledExecutorService
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -31,27 +31,20 @@ class WaitUntilNotifiedTest(
   factory: TimeoutFactory,
 ) {
   private val timeout = factory.newTimeout()
-  private val executorService = newScheduledExecutorService(0)
 
-  @After
-  fun tearDown() {
-    executorService.shutdown()
-  }
+  @InterceptTest
+  private val testExecutor = TestExecutor(0)
 
   @Test
   @Synchronized
   fun notified() {
     timeout.timeout(5000, TimeUnit.MILLISECONDS)
     val start = now()
-    executorService.schedule(
-      {
-        synchronized(this@WaitUntilNotifiedTest) {
-          (this as Object).notify()
-        }
-      },
-      1000,
-      TimeUnit.MILLISECONDS,
-    )
+    testExecutor.schedule(1000.milliseconds) {
+      synchronized(this@WaitUntilNotifiedTest) {
+        (this as Object).notify()
+      }
+    }
     timeout.waitUntilNotified(this)
     assertElapsed(1000.0, start)
   }
@@ -217,12 +210,8 @@ class WaitUntilNotifiedTest(
   }
 
   private fun Timeout.cancelLater(delay: Long) {
-    executorService.schedule(
-      {
-        cancel()
-      },
-      delay,
-      TimeUnit.MILLISECONDS,
-    )
+    testExecutor.schedule(delay.milliseconds) {
+      cancel()
+    }
   }
 }

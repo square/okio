@@ -15,19 +15,17 @@
  */
 package okio
 
+import app.cash.burst.InterceptTest
 import okio.Path.Companion.toPath
 import org.assertj.core.api.Assertions
-import org.junit.Before
 import org.junit.Test
 
 class ZipFileSystemJavaTest {
   private val fileSystem = FileSystem.SYSTEM
-  private val base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.div(randomToken(16))
 
-  @Before
-  fun setUp() {
-    fileSystem.createDirectory(base)
-  }
+  @InterceptTest
+  private val baseTestDirectory = TestDirectory(fileSystem)
+  private val base: Path get() = baseTestDirectory.path
 
   @Test
   fun zipFileSystemApi() {

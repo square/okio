@@ -15,7 +15,7 @@
  */
 package okio
 
-import kotlin.test.BeforeTest
+import app.cash.burst.InterceptTest
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -43,15 +43,13 @@ abstract class AbstractFileSystemTest(
   val closeBehavior: CloseBehavior,
   temporaryDirectory: Path,
 ) {
-  val base: Path = temporaryDirectory / "${this::class.simpleName}-${randomToken(16)}"
+  @InterceptTest
+  private val baseTestDirectory = TestDirectory(fileSystem, temporaryDirectory)
+  protected val base: Path get() = baseTestDirectory.path
+
   private val isNodeJsFileSystem = fileSystem::class.simpleName?.startsWith("NodeJs") ?: false
   private val isWasiFileSystem = fileSystem::class.simpleName?.startsWith("Wasi") ?: false
   private val isWrappingJimFileSystem = this::class.simpleName?.contains("JimFileSystem") ?: false
-
-  @BeforeTest
-  fun setUp() {
-    fileSystem.createDirectories(base)
-  }
 
   @Test
   fun doesNotExistsWithInvalidPathDoesNotThrow() {

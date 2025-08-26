@@ -15,6 +15,7 @@
  */
 package okio.internal
 
+import app.cash.burst.InterceptTest
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.Enumeration
@@ -30,14 +31,17 @@ import okio.ForwardingFileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
+import okio.TestDirectory
 import okio.ZipBuilder
-import okio.randomToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class ResourceFileSystemTest {
   private val fileSystem = FileSystem.RESOURCES as ResourceFileSystem
-  private var base = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / randomToken(16)
+
+  @InterceptTest
+  private val baseTestDirectory = TestDirectory(FileSystem.SYSTEM)
+  private val base: Path get() = baseTestDirectory.path
 
   @Test
   fun testResourceA() {
