@@ -1,5 +1,6 @@
 plugins {
   kotlin("multiplatform")
+  id("app.cash.burst")
   id("build-support")
 }
 
@@ -17,6 +18,7 @@ kotlin {
       dependencies {
         api(projects.okio)
         api(libs.kotlin.test)
+        api(libs.burst.runtime)
       }
     }
 

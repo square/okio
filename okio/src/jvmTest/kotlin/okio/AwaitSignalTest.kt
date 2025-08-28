@@ -16,12 +16,13 @@
 package okio
 
 import app.cash.burst.Burst
+import app.cash.burst.InterceptTest
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.time.Duration.Companion.milliseconds
 import okio.TestUtil.assumeNotWindows
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -32,25 +33,20 @@ class AwaitSignalTest(
   factory: TimeoutFactory,
 ) {
   private val timeout = factory.newTimeout()
-  val executorService = TestingExecutors.newScheduledExecutorService(0)
+
+  @InterceptTest
+  private val executorService = TestExecutor(0)
 
   val lock: ReentrantLock = ReentrantLock()
   val condition: Condition = lock.newCondition()
-
-  @After
-  fun tearDown() {
-    executorService.shutdown()
-  }
 
   @Test
   fun signaled() = lock.withLock {
     timeout.timeout(5000, TimeUnit.MILLISECONDS)
     val start = now()
-    executorService.schedule(
-      { lock.withLock { condition.signal() } },
-      1000,
-      TimeUnit.MILLISECONDS,
-    )
+    executorService.schedule(1000.milliseconds) {
+      lock.withLock { condition.signal() }
+    }
     timeout.awaitSignal(condition)
     assertElapsed(1000.0, start)
   }
@@ -207,10 +203,8 @@ class AwaitSignalTest(
   }
 
   private fun Timeout.cancelLater(delay: Long) {
-    executorService.schedule(
-      { cancel() },
-      delay,
-      TimeUnit.MILLISECONDS,
-    )
+    executorService.schedule(delay.milliseconds) {
+      cancel()
+    }
   }
 }
