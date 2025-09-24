@@ -63,6 +63,14 @@ kotlin {
         optIn("kotlin.contracts.ExperimentalContracts")
       }
     }
+    // Some sourceSets do not end with Test, easier to use the negative
+    matching { !it.name.endsWith("Test") }.all {
+      // Setting these to allow for backwards compatibility
+      languageSettings {
+        apiVersion = "2.0"
+        languageVersion = "2.0"
+      }
+    }
     matching { it.name.endsWith("Test") }.all {
       languageSettings {
         optIn("kotlin.time.ExperimentalTime")
