@@ -1,5 +1,5 @@
 [versions]
-burst = "2.10.1"
+burst = "2.10.2"
 jmh = "1.37"
 kotlin = "2.2.20"
 ktlint = "0.48.2"
