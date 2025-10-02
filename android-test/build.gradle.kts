@@ -1,9 +1,7 @@
 import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
-import com.android.build.gradle.internal.lint.AndroidLintTask
 
 plugins {
   id("com.android.library")
-  id("org.jetbrains.kotlin.android")
 }
 
 buildscript {
@@ -27,15 +25,11 @@ android {
     isCoreLibraryDesugaringEnabled = true
   }
 
-  kotlinOptions {
-    freeCompilerArgs += "-Xmulti-platform"
-  }
-
-  compileSdkVersion(33)
+  compileSdk = 33
 
   defaultConfig {
-    minSdkVersion(15)
-    targetSdkVersion(33)
+    minSdk = 15
+
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     // AndroidJUnitRunner wasn't finding tests in multidex artifacts when running on Android 4.0.3.
@@ -44,6 +38,11 @@ android {
     multiDexEnabled = true
     multiDexKeepProguard = file("multidex-config.pro")
   }
+
+  testOptions {
+    targetSdk = 33
+  }
+
 
   if (!isIDE) {
     sourceSets {
@@ -60,6 +59,12 @@ android {
         )
       }
     }
+  }
+}
+
+kotlin {
+  compilerOptions {
+    freeCompilerArgs.add("-Xmulti-platform")
   }
 }
 

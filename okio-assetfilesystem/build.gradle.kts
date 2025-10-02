@@ -3,7 +3,6 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
 
 plugins {
   id("com.android.library")
-  kotlin("android")
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("binary-compatibility-validator")
@@ -18,6 +17,11 @@ android {
     minSdk = 14
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
   }
 }
 
