@@ -97,7 +97,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
             } catch (_: UnsupportedOperationException) {
               // Android API 21's SSLSocket doesn't implement this! So close the whole socket.
               // https://github.com/square/okhttp/issues/9123
-              socket.close()
+              outputStream.close()
             }
           }
         }
@@ -157,7 +157,7 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
             } catch (_: UnsupportedOperationException) {
               // Android API 21's SSLSocket doesn't implement this! So close the whole socket.
               // https://github.com/square/okhttp/issues/9123
-              socket.close()
+              inputStream.close()
             }
           }
         }
