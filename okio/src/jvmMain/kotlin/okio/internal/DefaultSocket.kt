@@ -92,7 +92,13 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
           else -> {
             if (socket.isClosed || socket.isOutputShutdown) return // Nothing to do.
             outputStream.flush()
-            socket.shutdownOutput()
+            try {
+              socket.shutdownOutput()
+            } catch (_: UnsupportedOperationException) {
+              // Android API 21's SSLSocket doesn't implement this! So close the whole socket.
+              // https://github.com/square/okhttp/issues/9123
+              outputStream.close()
+            }
           }
         }
       }
@@ -146,7 +152,13 @@ internal class DefaultSocket(val socket: JavaNetSocket) : Socket {
           // Close this stream only.
           else -> {
             if (socket.isClosed || socket.isInputShutdown) return // Nothing to do.
-            socket.shutdownInput()
+            try {
+              socket.shutdownInput()
+            } catch (_: UnsupportedOperationException) {
+              // Android API 21's SSLSocket doesn't implement this! So close the whole socket.
+              // https://github.com/square/okhttp/issues/9123
+              inputStream.close()
+            }
           }
         }
       }
