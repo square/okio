@@ -5,6 +5,15 @@ Change Log
 
  * None yet.
 
+## Version 3.16.1
+
+_2025-10-09_
+
+ * Fix: Don't crash when calling `Socket.shutdownOutput()` or `shutdownInput()` on an `SSLSocket` on
+   Android API 21. This method throws an `UnsupportedOperationException`, so we now catch that and
+   close the underlying stream instead.
+
+
 ## Version 3.16.0
 
 _2025-07-29_
