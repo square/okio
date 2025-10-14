@@ -5,6 +5,13 @@ Change Log
 
  * None yet.
 
+## Version 3.16.2
+
+_2025-10-14_
+
+ * Fix: `okio-assetfilesystem` APIs now correctly restored as visible to Kotlin.
+
+
 ## Version 3.16.1
 
 _2025-10-09_
