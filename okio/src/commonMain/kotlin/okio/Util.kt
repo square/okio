@@ -55,10 +55,12 @@ internal fun Long.reverseBytes(): Long {
 
 /* ktlint-enable no-multi-spaces indent */
 
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline infix fun Int.leftRotate(bitCount: Int): Int {
   return (this shl bitCount) or (this ushr (32 - bitCount))
 }
 
+@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline infix fun Long.rightRotate(bitCount: Int): Long {
   return (this ushr bitCount) or (this shl (64 - bitCount))
 }

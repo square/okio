@@ -22,6 +22,7 @@ import kotlin.jvm.JvmName
 import okio.BufferedSource
 import okio.TypedOptions
 
+@Suppress("NOTHING_TO_INLINE")
 internal inline fun <T : Any> BufferedSource.commonSelect(options: TypedOptions<T>): T? {
   return when (val index = select(options.options)) {
     -1 -> null

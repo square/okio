@@ -10,10 +10,12 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -174,10 +176,16 @@ subprojects {
     }
   }
 
+  tasks.withType<AbstractKotlinCompile<*>>().configureEach {
+    compilerOptions.apply {
+      freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+  }
+
   tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
       jvmTarget = JvmTarget.JVM_1_8
-      freeCompilerArgs.add("-Xjvm-default=all")
+      jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
     }
   }
 
