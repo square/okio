@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>createDirectory</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<link href="../../../images/icon-square.png">
+<link href="../../../styles/dokka-logo.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../index.html">
+                    okio
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+3.17.0-SNAPSHOT        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active=""
+                        data-filter=":okio:dokkaHtml/hashFunctions">common</button>
+                <button class="platform-tag platform-selector js-like" data-active=""
+                        data-filter=":okio:dokkaHtml/jsMain">js</button>
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":okio:dokkaHtml/jvmMain">jvm</button>
+                <button class="platform-tag platform-selector common-like" data-active=""
+                        data-filter=":okio:dokkaHtml/nativeMain">native</button>
+                <button class="platform-tag platform-selector wasm-like" data-active=""
+                        data-filter=":okio:dokkaHtml/wasmMain">wasm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/hashFunctions"
+                                       data-filter=":okio:dokkaHtml/hashFunctions"/>
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option js-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/jsMain"
+                                       data-filter=":okio:dokkaHtml/jsMain"/>
+                                <span class="checkbox--icon"></span>
+                                js
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/jvmMain"
+                                       data-filter=":okio:dokkaHtml/jvmMain"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/nativeMain"
+                                       data-filter=":okio:dokkaHtml/nativeMain"/>
+                                <span class="checkbox--icon"></span>
+                                native
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option wasm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/wasmMain"
+                                       data-filter=":okio:dokkaHtml/wasmMain"/>
+                                <span class="checkbox--icon"></span>
+                                wasm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    okio
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="member" id="content" pageIds="okio::okio/FileSystem/createDirectory/#okio.Path/PointingToDeclaration//1296403286">
+  <div class="breadcrumbs"><a href="../../../index.html">okio</a><span class="delimiter">/</span><a href="../index.html">okio</a><span class="delimiter">/</span><a href="index.html">FileSystem</a><span class="delimiter">/</span><span class="current">createDirectory</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>create</span><wbr></wbr><span><span>Directory</span></span></h1>
+  </div>
+  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jsMain" data-filterable-set=":okio:dokkaHtml/jsMain" data-toggle=":okio:dokkaHtml/jsMain">js</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain" data-toggle=":okio:dokkaHtml/jvmMain">jvm</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/nativeMain" data-filterable-set=":okio:dokkaHtml/nativeMain" data-toggle=":okio:dokkaHtml/nativeMain">native</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/wasmMain" data-filterable-set=":okio:dokkaHtml/wasmMain" data-toggle=":okio:dokkaHtml/wasmMain">wasm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="create-directory.html"><span class="token function">createDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span></div><p class="paragraph">Creates a directory at the path identified by <a href="create-directory.html">dir</a>.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>must</span><wbr></wbr><span><span>Create</span></span></u></div></span></div><div><div class="title"><p class="paragraph">true to throw an <a href="../-i-o-exception/index.html">IOException</a> if the directory already exists.</p></div></div></div></div></div><h4 class="">Throws</h4><div class="table"><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-i-o-exception/index.html"><span><span>IOException</span></span></a></div></span></div><div><div class="title"><p class="paragraph">if <a href="create-directory.html">dir</a>'s parent does not exist, is not a directory, or cannot be written.     A directory cannot be created if the current process doesn't have access, if there's a loop     of symbolic links, or if any name is too long.</p></div></div></div></div></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/jsMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="create-directory.html"><span class="token function">createDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="create-directory.html"><span class="token function">createDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="create-directory.html"><span class="token function">createDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/nativeMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="create-directory.html"><span class="token function">createDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/wasmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="create-directory.html"><span class="token function">createDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div>  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

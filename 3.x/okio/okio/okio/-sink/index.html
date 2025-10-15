@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Sink</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<link href="../../../images/icon-square.png">
+<link href="../../../styles/dokka-logo.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../index.html">
+                    okio
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+3.17.0-SNAPSHOT        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active=""
+                        data-filter=":okio:dokkaHtml/hashFunctions">common</button>
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":okio:dokkaHtml/jvmMain">jvm</button>
+                <button class="platform-tag platform-selector common-like" data-active=""
+                        data-filter=":okio:dokkaHtml/nonJvmMain">nonJvm</button>
+                <button class="platform-tag platform-selector common-like" data-active=""
+                        data-filter=":okio:dokkaHtml/zlibMain">zlib</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/hashFunctions"
+                                       data-filter=":okio:dokkaHtml/hashFunctions"/>
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/jvmMain"
+                                       data-filter=":okio:dokkaHtml/jvmMain"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/nonJvmMain"
+                                       data-filter=":okio:dokkaHtml/nonJvmMain"/>
+                                <span class="checkbox--icon"></span>
+                                nonJvm
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/zlibMain"
+                                       data-filter=":okio:dokkaHtml/zlibMain"/>
+                                <span class="checkbox--icon"></span>
+                                zlib
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    okio
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="okio::okio/Sink///PointingToDeclaration//-1473893935">
+  <div class="breadcrumbs"><a href="../../../index.html">okio</a><span class="delimiter">/</span><a href="../index.html">okio</a><span class="delimiter">/</span><span class="current">Sink</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Sink</span></span></h1>
+    <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain" data-toggle=":okio:dokkaHtml/jvmMain">jvm</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/nonJvmMain" data-toggle=":okio:dokkaHtml/nonJvmMain">nonJvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">interface </span><a href="index.html">Sink</a> : <a href="../-closeable/index.html">Closeable</a></div><p class="paragraph">Receives a stream of bytes. Use this interface to write data wherever it's needed: to the network, storage, or a buffer in memory. Sinks may be layered to transform received data, such as to compress, encrypt, throttle, or add protocol framing.</p><p class="paragraph">Most application code shouldn't operate on a sink directly, but rather on a <a href="../-buffered-sink/index.html">BufferedSink</a> which is both more efficient and more convenient. Use <a href="../buffer.html">buffer</a> to wrap any sink with a buffer.</p><p class="paragraph">Sinks are easy to test: just use a <a href="../-buffer/index.html">Buffer</a> in your tests, and read from it to confirm it received the data that was expected.</p><h3 class="">Comparison with OutputStream</h3><p class="paragraph">This interface is functionally equivalent to java.io.OutputStream.</p><p class="paragraph"><code class="lang-kotlin">OutputStream</code> requires multiple layers when emitted data is heterogeneous: a <code class="lang-kotlin">DataOutputStream</code> for primitive values, a <code class="lang-kotlin">BufferedOutputStream</code> for buffering, and <code class="lang-kotlin">OutputStreamWriter</code> for charset encoding. This library uses <code class="lang-kotlin">BufferedSink</code> for all of the above.</p><p class="paragraph">Sink is also easier to layer: there is no java.io.OutputStream.write method that is awkward to implement efficiently.</p><h3 class="">Interop with OutputStream</h3><p class="paragraph">Use sink to adapt an <code class="lang-kotlin">OutputStream</code> to a sink. Use BufferedSink.outputStream to adapt a sink to an <code class="lang-kotlin">OutputStream</code>.</p><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-buffered-sink/index.html">BufferedSink</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-hashing-sink/index.html">HashingSink</a></div></span></div><div></div></div></div></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">interface </span><a href="index.html">Sink</a> : <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Closeable.html">Closeable</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Flushable.html">Flushable</a></div><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-cipher-sink/index.html">CipherSink</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-forwarding-sink/index.html">ForwardingSink</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-buffered-sink/index.html">BufferedSink</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-hashing-sink/index.html">HashingSink</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-deflater-sink/index.html">DeflaterSink</a></div></span></div><div></div></div></div></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/nonJvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">interface </span><a href="index.html">Sink</a> : <a href="../-closeable/index.html">Closeable</a></div><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-buffered-sink/index.html">BufferedSink</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-hashing-sink/index.html">HashingSink</a></div></span></div><div></div></div></div></div></div>    </div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-833644032%2FFunctions%2F439404261" anchor-label="buffer" id="-833644032%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../buffer.html"><span><span>buffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-833644032%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Sink</a><span class="token punctuation">.</span><a href="../buffer.html"><span class="token function">buffer</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-buffered-sink/index.html">BufferedSink</a></div><div class="brief "><p class="paragraph">Returns a new sink that buffers writes to <code class="lang-kotlin">sink</code>. The returned sink will batch writes to <code class="lang-kotlin">sink</code>. Use this wherever you write to a sink to get an ergonomic and efficient access to data.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-10039324%2FFunctions%2F1773621890" anchor-label="cipherSink" id="-10039324%2FFunctions%2F1773621890" data-filterable-set=":okio:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../cipher-sink.html"><span>cipher</span><wbr></wbr><span><span>Sink</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-10039324%2FFunctions%2F1773621890"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain" data-active="" data-toggle=":okio:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Sink</a><span class="token punctuation">.</span><a href="../cipher-sink.html"><span class="token function">cipherSink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cipher<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html">Cipher</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-cipher-sink/index.html">CipherSink</a></div><div class="brief "><p class="paragraph">Returns a sink that uses <a href="../cipher-sink.html">cipher</a> to encrypt or decrypt <span data-unresolved-link="okio//&amp;lt;this&amp;gt;/#/PointingToCallableParameters(-1)/">this</span>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-928392172%2FFunctions%2F-1473893935" anchor-label="close" id="-928392172%2FFunctions%2F-1473893935" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="close.html"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-928392172%2FFunctions%2F-1473893935"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain" data-toggle=":okio:dokkaHtml/jvmMain">jvm</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/nonJvmMain" data-toggle=":okio:dokkaHtml/nonJvmMain">nonJvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Pushes all buffered bytes to their final destination and releases the resources held by this sink. It is an error to write a closed sink. It is safe to close a sink more than once.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/nonJvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1493428312%2FFunctions%2F-1051420940" anchor-label="deflate" id="-1493428312%2FFunctions%2F-1051420940" data-filterable-set=":okio:dokkaHtml/zlibMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":okio:dokkaHtml/zlibMain" data-filterable-set=":okio:dokkaHtml/zlibMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../deflate.html"><span><span>deflate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1493428312%2FFunctions%2F-1051420940"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/zlibMain" data-filterable-set=":okio:dokkaHtml/zlibMain" data-active="" data-toggle=":okio:dokkaHtml/zlibMain">zlib</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/zlibMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="index.html#-376010351%2FMain%2F-1051420940">Sink</a><span class="token punctuation">.</span><a href="../deflate.html"><span class="token function">deflate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">deflater<span class="token operator">: </span><a href="../-deflater/index.html">Deflater</a><span class="token operator"> = </span>Deflater()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-deflater-sink/index.html">DeflaterSink</a></div><div class="brief "><p class="paragraph">Returns an <a href="../-deflater-sink/index.html">DeflaterSink</a> that DEFLATE-compresses data to this <a href="index.html#-376010351%2FMain%2F-1051420940">Sink</a> while writing.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1965163656%2FFunctions%2F-1473893935" anchor-label="flush" id="1965163656%2FFunctions%2F-1473893935" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="flush.html"><span><span>flush</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1965163656%2FFunctions%2F-1473893935"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain" data-toggle=":okio:dokkaHtml/jvmMain">jvm</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/nonJvmMain" data-toggle=":okio:dokkaHtml/nonJvmMain">nonJvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="flush.html"><span class="token function">flush</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Pushes all buffered bytes to their final destination.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="flush.html"><span class="token function">flush</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/nonJvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="flush.html"><span class="token function">flush</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="809851162%2FFunctions%2F-1051420940" anchor-label="gzip" id="809851162%2FFunctions%2F-1051420940" data-filterable-set=":okio:dokkaHtml/zlibMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":okio:dokkaHtml/zlibMain" data-filterable-set=":okio:dokkaHtml/zlibMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../gzip.html"><span><span>gzip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="809851162%2FFunctions%2F-1051420940"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/zlibMain" data-filterable-set=":okio:dokkaHtml/zlibMain" data-active="" data-toggle=":okio:dokkaHtml/zlibMain">zlib</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/zlibMain"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="index.html#-376010351%2FMain%2F-1051420940">Sink</a><span class="token punctuation">.</span><a href="../gzip.html"><span class="token function">gzip</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-gzip-sink/index.html">GzipSink</a></div><div class="brief "><p class="paragraph">Returns a <a href="../-gzip-sink/index.html">GzipSink</a> that gzip-compresses to this <a href="index.html#-376010351%2FMain%2F-1051420940">Sink</a> while writing.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1554479391%2FFunctions%2F1773621890" anchor-label="hashingSink" id="1554479391%2FFunctions%2F1773621890" data-filterable-set=":okio:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../hashing-sink.html"><span>hashing</span><wbr></wbr><span><span>Sink</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1554479391%2FFunctions%2F1773621890"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain" data-active="" data-toggle=":okio:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Sink</a><span class="token punctuation">.</span><a href="../hashing-sink.html"><span class="token function">hashingSink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">digest<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html">MessageDigest</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-hashing-sink/index.html">HashingSink</a></div><div class="brief "><p class="paragraph">Returns a sink that uses <a href="../hashing-sink.html">digest</a> to hash <span data-unresolved-link="okio//&amp;lt;this&amp;gt;/#/PointingToCallableParameters(-1)/">this</span>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">Sink</a><span class="token punctuation">.</span><a href="../hashing-sink.html"><span class="token function">hashingSink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mac<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/javax/crypto/Mac.html">Mac</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-hashing-sink/index.html">HashingSink</a></div><div class="brief "><p class="paragraph">Returns a sink that uses <a href="../hashing-sink.html">mac</a> to hash <span data-unresolved-link="okio//&amp;lt;this&amp;gt;/#/PointingToCallableParameters(-1)/">this</span>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1450167563%2FFunctions%2F-1473893935" anchor-label="timeout" id="1450167563%2FFunctions%2F-1473893935" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="timeout.html"><span><span>timeout</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1450167563%2FFunctions%2F-1473893935"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain" data-toggle=":okio:dokkaHtml/jvmMain">jvm</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/nonJvmMain" data-toggle=":okio:dokkaHtml/nonJvmMain">nonJvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="timeout.html"><span class="token function">timeout</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-timeout/index.html">Timeout</a></div><div class="brief "><p class="paragraph">Returns the timeout for this sink.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="timeout.html"><span class="token function">timeout</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-timeout/index.html">Timeout</a></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/nonJvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="timeout.html"><span class="token function">timeout</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-timeout/index.html">Timeout</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="143355683%2FFunctions%2F-1473893935" anchor-label="write" id="143355683%2FFunctions%2F-1473893935" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/hashFunctions,:okio:dokkaHtml/jvmMain,:okio:dokkaHtml/nonJvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write.html"><span><span>write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="143355683%2FFunctions%2F-1473893935"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/jvmMain" data-filterable-set=":okio:dokkaHtml/jvmMain" data-toggle=":okio:dokkaHtml/jvmMain">jvm</button><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/nonJvmMain" data-filterable-set=":okio:dokkaHtml/nonJvmMain" data-toggle=":okio:dokkaHtml/nonJvmMain">nonJvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="write.html"><span class="token function">write</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="../-buffer/index.html">Buffer</a><span class="token punctuation">, </span></span><span class="parameter ">byteCount<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Removes <code class="lang-kotlin">byteCount</code> bytes from <code class="lang-kotlin">source</code> and appends them to this.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="write.html"><span class="token function">write</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="../-buffer/index.html">Buffer</a><span class="token punctuation">, </span></span><span class="parameter ">byteCount<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></span></span><span class="token punctuation">)</span></div></div><div class="content sourceset-dependent-content" data-togglable=":okio:dokkaHtml/nonJvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="write.html"><span class="token function">write</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="../-buffer/index.html">Buffer</a><span class="token punctuation">, </span></span><span class="parameter ">byteCount<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></span></span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

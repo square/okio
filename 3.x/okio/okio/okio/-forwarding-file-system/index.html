@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ForwardingFileSystem</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+<link href="../../../images/icon-square.png">
+<link href="../../../styles/dokka-logo.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../index.html">
+                    okio
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+3.17.0-SNAPSHOT        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active=""
+                        data-filter=":okio:dokkaHtml/hashFunctions">common</button>
+                <button class="platform-tag platform-selector common-like" data-active=""
+                        data-filter=":okio:dokkaHtml/zlibMain">zlib</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/hashFunctions"
+                                       data-filter=":okio:dokkaHtml/hashFunctions"/>
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":okio:dokkaHtml/zlibMain"
+                                       data-filter=":okio:dokkaHtml/zlibMain"/>
+                                <span class="checkbox--icon"></span>
+                                zlib
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    okio
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="okio::okio/ForwardingFileSystem///PointingToDeclaration//439404261">
+  <div class="breadcrumbs"><a href="../../../index.html">okio</a><span class="delimiter">/</span><a href="../index.html">okio</a><span class="delimiter">/</span><span class="current">ForwardingFileSystem</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Forwarding</span><wbr></wbr><span>File</span><wbr></wbr><span><span>System</span></span></h1>
+    <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="index.html">ForwardingFileSystem</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>delegate<span class="token operator">: </span><a href="../-file-system/index.html">FileSystem</a></span></span><span class="token punctuation">)</span> : <a href="../-file-system/index.html">FileSystem</a></div><p class="paragraph">A <a href="../-file-system/index.html">FileSystem</a> that forwards calls to another, intended for subclassing.</p><h3 class="">Fault Injection</h3><p class="paragraph">You can use this to deterministically trigger file system failures in tests. This is useful to confirm that your program behaves correctly even if its file system operations fail. For example, this subclass fails every access of files named <code class="lang-kotlin">unlucky.txt</code>:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val faultyFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {<br>  override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {<br>    if (path.name == &quot;unlucky.txt&quot;) throw IOException(&quot;synthetic failure!&quot;)<br>    return path<br>  }<br>}</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">You can fail specific operations by overriding them directly:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val faultyFileSystem = object : ForwardingFileSystem(FileSystem.SYSTEM) {<br>  override fun delete(path: Path) {<br>    throw IOException(&quot;synthetic failure!&quot;)<br>  }<br>}</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><h3 class="">Observability</h3><p class="paragraph">You can extend this to verify which files your program accesses. This is a testing file system that records accesses as they happen:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">class LoggingFileSystem : ForwardingFileSystem(FileSystem.SYSTEM) {<br>  val log = mutableListOf&lt;String&gt;()<br><br>  override fun onPathParameter(path: Path, functionName: String, parameterName: String): Path {<br>    log += &quot;$functionName($parameterName=$path)&quot;<br>    return path<br>  }<br>}</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">This makes it easy for tests to assert exactly which files were accessed.</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">@Test<br>fun testMergeJsonReports() {<br>  createSampleJsonReports()<br>  loggingFileSystem.log.clear()<br><br>  mergeJsonReports()<br><br>  assertThat(loggingFileSystem.log).containsExactly(<br>    &quot;list(dir=json_reports)&quot;,<br>    &quot;source(file=json_reports/2020-10.json)&quot;,<br>    &quot;source(file=json_reports/2020-12.json)&quot;,<br>    &quot;source(file=json_reports/2020-11.json)&quot;,<br>    &quot;sink(file=json_reports/2020-all.json)&quot;<br>  )<br>}</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><h3 class="">Transformations</h3><p class="paragraph">Subclasses can transform file names and content.</p><p class="paragraph">For example, your program may be written to operate on a well-known directory like <code class="lang-kotlin">/etc/</code> or <code class="lang-kotlin">/System</code>. You can rewrite paths to make such operations safer to test.</p><p class="paragraph">You may also transform file content to apply application-layer encryption or compression. This is particularly useful in situations where it's difficult or impossible to enable those features in the underlying file system.</p><h3 class="">Abstract Functions Only</h3><p class="paragraph">Some file system functions like <span data-unresolved-link="okio/ForwardingFileSystem/copy/#okio.Path#okio.Path/PointingToDeclaration/">copy</span> are implemented by using other features. These are the non-abstract functions in the <a href="../-file-system/index.html">FileSystem</a> interface.</p><p class="paragraph"><strong>This class forwards only the abstract functions;</strong> non-abstract functions delegate to the other functions of this class. If desired, subclasses may override non-abstract functions to forward them.</p><h3 class="">Closeable</h3><p class="paragraph">Closing this file system closes the delegate file system.</p></div>    </div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="1912913040%2FConstructors%2F439404261" anchor-label="ForwardingFileSystem" id="1912913040%2FConstructors%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-forwarding-file-system.html"><span>Forwarding</span><wbr></wbr><span>File</span><wbr></wbr><span><span>System</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1912913040%2FConstructors%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">delegate<span class="token operator">: </span><a href="../-file-system/index.html">FileSystem</a></span></span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="2142154750%2FProperties%2F439404261" anchor-label="delegate" id="2142154750%2FProperties%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delegate.html"><span><span>delegate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2142154750%2FProperties%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-name/index.html"><span class="token annotation builtin">JvmName</span></a><span class="token punctuation">(</span><span>name<span class="token operator"> = </span><span class="breakable-word"><span class="token string">&quot;delegate&quot;</span></span></span><wbr></wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="delegate.html">delegate</a><span class="token operator">: </span><a href="../-file-system/index.html">FileSystem</a></div><div class="brief "><p class="paragraph"><a href="../-file-system/index.html">FileSystem</a> to which this instance is delegating.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1654612143%2FFunctions%2F439404261" anchor-label="appendingSink" id="1654612143%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="appending-sink.html"><span>appending</span><wbr></wbr><span><span>Sink</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1654612143%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="appending-sink.html"><span class="token function">appendingSink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustExist<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-sink/index.html">Sink</a></div><div class="brief "><p class="paragraph">Returns a sink that appends bytes to the end of <a href="appending-sink.html">file</a>, creating it if it doesn't already exist.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="268568284%2FFunctions%2F439404261" anchor-label="atomicMove" id="268568284%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="atomic-move.html"><span>atomic</span><wbr></wbr><span><span>Move</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="268568284%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="atomic-move.html"><span class="token function">atomicMove</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">target<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Moves <a href="atomic-move.html">source</a> to <a href="atomic-move.html">target</a> in-place if the underlying file system supports it. If <a href="atomic-move.html">target</a> exists, it is first removed. If <code class="lang-kotlin">source == target</code>, this operation does nothing. This may be used to move a file or a directory.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1784218510%2FFunctions%2F439404261" anchor-label="canonicalize" id="1784218510%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="canonicalize.html"><span><span>canonicalize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1784218510%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="canonicalize.html"><span class="token function">canonicalize</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-path/index.html">Path</a></div><div class="brief "><p class="paragraph">Resolves <a href="canonicalize.html">path</a> against the current working directory and symlinks in this file system. The returned path identifies the same file as <a href="canonicalize.html">path</a>, but with an absolute path that does not include any symbolic links.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="186610783%2FFunctions%2F439404261" anchor-label="close" id="186610783%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="close.html"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="186610783%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Closes this object and releases the resources it holds. It is an error to use an object after it has been closed. It is safe to close an object more than once.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="419090610%2FFunctions%2F439404261" anchor-label="copy" id="419090610%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-file-system/copy.html"><span><span>copy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="419090610%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-file-system/copy.html"><span class="token function">copy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">target<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Copies all the bytes from the file at <a href="../-file-system/copy.html">source</a> to the file at <a href="../-file-system/copy.html">target</a>. This does not copy file metadata like last modified time, permissions, or extended attributes.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1133903352%2FFunctions%2F439404261" anchor-label="createDirectories" id="1133903352%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-file-system/create-directories.html"><span>create</span><wbr></wbr><span><span>Directories</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1133903352%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="../-file-system/create-directories.html"><span class="token function">createDirectories</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Creates a directory at the path identified by <a href="../-file-system/create-directories.html">dir</a>, and any enclosing parent path directories, recursively.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1206004057%2FFunctions%2F439404261" anchor-label="createDirectory" id="1206004057%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-directory.html"><span>create</span><wbr></wbr><span><span>Directory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1206004057%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-directory.html"><span class="token function">createDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Creates a directory at the path identified by <a href="create-directory.html">dir</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-628889103%2FFunctions%2F439404261" anchor-label="createSymlink" id="-628889103%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-symlink.html"><span>create</span><wbr></wbr><span><span>Symlink</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-628889103%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-symlink.html"><span class="token function">createSymlink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">target<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Creates a symbolic link at <a href="create-symlink.html">source</a> that resolves to <a href="create-symlink.html">target</a>. If <a href="create-symlink.html">target</a> is a relative path, it is relative to <code class="lang-kotlin">source.parent</code>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1574712245%2FFunctions%2F439404261" anchor-label="delete" id="-1574712245%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete.html"><span><span>delete</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1574712245%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="delete.html"><span class="token function">delete</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustExist<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Deletes the file or directory at <a href="delete.html">path</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1932614451%2FFunctions%2F439404261" anchor-label="deleteRecursively" id="1932614451%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-file-system/delete-recursively.html"><span>delete</span><wbr></wbr><span><span>Recursively</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1932614451%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-file-system/delete-recursively.html"><span class="token function">deleteRecursively</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileOrDirectory<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustExist<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Recursively deletes all children of <a href="../-file-system/delete-recursively.html">fileOrDirectory</a> if it is a directory, then deletes <a href="../-file-system/delete-recursively.html">fileOrDirectory</a> itself.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1094583673%2FFunctions%2F439404261" anchor-label="exists" id="-1094583673%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-file-system/exists.html"><span><span>exists</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1094583673%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="../-file-system/exists.html"><span class="token function">exists</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Returns true if <a href="../-file-system/exists.html">path</a> identifies an object on this file system.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1686757068%2FFunctions%2F439404261" anchor-label="list" id="1686757068%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list.html"><span><span>list</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1686757068%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="list.html"><span class="token function">list</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-path/index.html">Path</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the children of <a href="list.html">dir</a>. The returned list is sorted using natural ordering. If <a href="list.html">dir</a> is a relative path, the returned elements will also be relative paths. If it is an absolute path, the returned elements will also be absolute paths.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1454148490%2FFunctions%2F439404261" anchor-label="listOrNull" id="-1454148490%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-or-null.html"><span>list</span><wbr></wbr><span>Or</span><wbr></wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1454148490%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="list-or-null.html"><span class="token function">listOrNull</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-path/index.html">Path</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns the children of the directory identified by <a href="list-or-null.html">dir</a>. The returned list is sorted using natural ordering. If <a href="list-or-null.html">dir</a> is a relative path, the returned elements will also be relative paths. If it is an absolute path, the returned elements will also be absolute paths.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1131926935%2FFunctions%2F439404261" anchor-label="listRecursively" id="-1131926935%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-recursively.html"><span>list</span><wbr></wbr><span><span>Recursively</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1131926935%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="list-recursively.html"><span class="token function">listRecursively</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">dir<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">followSymlinks<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.sequences/-sequence/index.html">Sequence</a><span class="token operator">&lt;</span><a href="../-path/index.html">Path</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a sequence that <strong>lazily</strong> traverses the children of <a href="list-recursively.html">dir</a> using repeated calls to <a href="list.html">list</a>. If none of <a href="list-recursively.html">dir</a>'s children are directories this returns the same elements as <a href="list.html">list</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-218291494%2FFunctions%2F439404261" anchor-label="metadata" id="-218291494%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-file-system/metadata.html"><span><span>metadata</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-218291494%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="../-file-system/metadata.html"><span class="token function">metadata</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-file-metadata/index.html">FileMetadata</a></div><div class="brief "><p class="paragraph">Returns metadata of the file, directory, or object identified by <a href="../-file-system/metadata.html">path</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1392114951%2FFunctions%2F439404261" anchor-label="metadataOrNull" id="1392114951%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="metadata-or-null.html"><span>metadata</span><wbr></wbr><span>Or</span><wbr></wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1392114951%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="metadata-or-null.html"><span class="token function">metadataOrNull</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-file-metadata/index.html">FileMetadata</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns metadata of the file, directory, or object identified by <a href="metadata-or-null.html">path</a>. This returns null if there is no file at <a href="metadata-or-null.html">path</a>.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-714554647%2FFunctions%2F439404261" anchor-label="onPathParameter" id="-714554647%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-path-parameter.html"><span>on</span><wbr></wbr><span>Path</span><wbr></wbr><span><span>Parameter</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-714554647%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-path-parameter.html"><span class="token function">onPathParameter</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">functionName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">parameterName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-path/index.html">Path</a></div><div class="brief "><p class="paragraph">Invoked each time a path is passed as a parameter to this file system. This returns the path to pass to <a href="delegate.html">delegate</a>, which should be <a href="on-path-parameter.html">path</a> itself or a path on <a href="delegate.html">delegate</a> that corresponds to it.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-382904844%2FFunctions%2F439404261" anchor-label="onPathResult" id="-382904844%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-path-result.html"><span>on</span><wbr></wbr><span>Path</span><wbr></wbr><span><span>Result</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-382904844%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-path-result.html"><span class="token function">onPathResult</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">path<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">functionName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-path/index.html">Path</a></div><div class="brief "><p class="paragraph">Invoked each time a path is returned by <a href="delegate.html">delegate</a>. This returns the path to return to the caller, which should be <a href="on-path-result.html">path</a> itself or a path on this that corresponds to it.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="543669114%2FFunctions%2F439404261" anchor-label="openReadOnly" id="543669114%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="open-read-only.html"><span>open</span><wbr></wbr><span>Read</span><wbr></wbr><span><span>Only</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="543669114%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="open-read-only.html"><span class="token function">openReadOnly</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-file-handle/index.html">FileHandle</a></div><div class="brief "><p class="paragraph">Returns a handle to read <a href="open-read-only.html">file</a>. This will fail if the file doesn't already exist.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1522221447%2FFunctions%2F439404261" anchor-label="openReadWrite" id="-1522221447%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="open-read-write.html"><span>open</span><wbr></wbr><span>Read</span><wbr></wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1522221447%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="open-read-write.html"><span class="token function">openReadWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">mustExist<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-file-handle/index.html">FileHandle</a></div><div class="brief "><p class="paragraph">Returns a handle to read and write <a href="open-read-write.html">file</a>. This will create the file if it doesn't already exist.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1080644890%2FFunctions%2F-1051420940" anchor-label="openZip" id="-1080644890%2FFunctions%2F-1051420940" data-filterable-set=":okio:dokkaHtml/zlibMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":okio:dokkaHtml/zlibMain" data-filterable-set=":okio:dokkaHtml/zlibMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../open-zip.html"><span>open</span><wbr></wbr><span><span>Zip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1080644890%2FFunctions%2F-1051420940"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/zlibMain" data-filterable-set=":okio:dokkaHtml/zlibMain" data-active="" data-toggle=":okio:dokkaHtml/zlibMain">zlib</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/zlibMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-file-system/index.html#-199436775%2FMain%2F-1051420940">FileSystem</a><span class="token punctuation">.</span><a href="../open-zip.html"><span class="token function">openZip</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">zipPath<span class="token operator">: </span><span data-unresolved-link="okio/Path///PointingToDeclaration/">Path</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-file-system/index.html#-199436775%2FMain%2F-1051420940">FileSystem</a></div><div class="brief "><p class="paragraph">Returns a new read-only file system.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1037056394%2FFunctions%2F439404261" anchor-label="read" id="-1037056394%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-file-system/read.html"><span><span>read</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1037056394%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../-file-system/read.html">T</a><span class="token operator">&gt; </span><a href="../-file-system/read.html"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">readerAction<span class="token operator">: </span><a href="../-buffered-source/index.html">BufferedSource</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../-file-system/read.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-file-system/read.html">T</a></div><div class="brief "><p class="paragraph">Creates a source to read <a href="../-file-system/read.html">file</a>, executes <a href="../-file-system/read.html">readerAction</a> to read it, and then closes the source. This is a compact way to read the contents of a file.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="71578083%2FFunctions%2F439404261" anchor-label="sink" id="71578083%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="sink.html"><span><span>sink</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="71578083%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="sink.html"><span class="token function">sink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-sink/index.html">Sink</a></div><div class="brief "><p class="paragraph">Returns a sink that writes bytes to <a href="sink.html">file</a> from beginning to end. If <a href="sink.html">file</a> already exists it will be replaced with the new data.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-332236663%2FFunctions%2F439404261" anchor-label="source" id="-332236663%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="source.html"><span><span>source</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-332236663%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="source.html"><span class="token function">source</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="../-path/index.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-source/index.html">Source</a></div><div class="brief "><p class="paragraph">Returns a source that reads the bytes of <a href="source.html">file</a> from beginning to end.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1489847049%2FFunctions%2F439404261" anchor-label="toString" id="-1489847049%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-string.html"><span>to</span><wbr></wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1489847049%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1005639157%2FFunctions%2F439404261" anchor-label="write" id="1005639157%2FFunctions%2F439404261" data-filterable-set=":okio:dokkaHtml/hashFunctions"></a>
+          <div class="table-row" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-file-system/write.html"><span><span>write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1005639157%2FFunctions%2F439404261"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":okio:dokkaHtml/hashFunctions" data-filterable-set=":okio:dokkaHtml/hashFunctions" data-active="" data-toggle=":okio:dokkaHtml/hashFunctions">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":okio:dokkaHtml/hashFunctions"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../-file-system/write.html">T</a><span class="token operator">&gt; </span><a href="../-file-system/write.html"><span class="token function">write</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">file<span class="token operator">: </span><a href="../-path/index.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">mustCreate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">writerAction<span class="token operator">: </span><a href="../-buffered-sink/index.html">BufferedSink</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="../-file-system/write.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-file-system/write.html">T</a></div><div class="brief "><p class="paragraph">Creates a sink to write <a href="../-file-system/write.html">file</a>, executes <a href="../-file-system/write.html">writerAction</a> to write it, and then closes the sink. This is a compact way to write a file.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
