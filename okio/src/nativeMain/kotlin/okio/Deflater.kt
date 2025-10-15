@@ -15,8 +15,6 @@
  */
 package okio
 
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.UByteVar
 import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
@@ -78,18 +76,18 @@ actual class Deflater actual constructor(
       require(0 <= sourcePos && sourcePos <= sourceLimit && sourceLimit <= source.size)
       require(0 <= targetPos && targetPos <= targetLimit && targetLimit <= target.size)
 
-      source.usePinned { pinnedSource ->
-        target.usePinned { pinnedTarget ->
+      source.asUByteArray().usePinned { pinnedSource ->
+        target.asUByteArray().usePinned { pinnedTarget ->
           val sourceByteCount = sourceLimit - sourcePos
           zStream.next_in = when {
-            sourceByteCount > 0 -> pinnedSource.addressOf(sourcePos) as CPointer<UByteVar>
+            sourceByteCount > 0 -> pinnedSource.addressOf(sourcePos)
             else -> null
           }
           zStream.avail_in = sourceByteCount.toUInt()
 
           val targetByteCount = targetLimit - targetPos
           zStream.next_out = when {
-            targetByteCount > 0 -> pinnedTarget.addressOf(targetPos) as CPointer<UByteVar>
+            targetByteCount > 0 -> pinnedTarget.addressOf(targetPos)
             else -> null
           }
           zStream.avail_out = targetByteCount.toUInt()
