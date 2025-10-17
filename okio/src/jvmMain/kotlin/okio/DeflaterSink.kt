@@ -73,7 +73,11 @@ actual class DeflaterSink internal actual constructor(
         } else {
           deflater.deflate(s.data, s.limit, Segment.SIZE - s.limit)
         }
+      } catch (ise: IllegalStateException) {
+        // Java 25+ documented behavior.
+        throw IOException("Deflater already closed", ise)
       } catch (npe: NullPointerException) {
+        // Java 24 and earlier undocumented behavior.
         throw IOException("Deflater already closed", npe)
       }
 
