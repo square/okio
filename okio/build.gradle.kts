@@ -1,5 +1,5 @@
 import aQute.bnd.gradle.BundleTaskExtension
-import com.vanniktech.maven.publish.JavadocJar.Dokka
+import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import kotlinx.validation.ApiValidationExtension
@@ -235,7 +235,7 @@ tasks {
 
 configure<MavenPublishBaseExtension> {
   configure(
-    KotlinMultiplatform(javadocJar = Dokka("dokkaGfm")),
+    KotlinMultiplatform(javadocJar = JavadocJar.Empty()),
   )
 }
 
