@@ -1,4 +1,4 @@
-import com.vanniktech.maven.publish.JavadocJar.Dokka
+import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
@@ -52,6 +52,6 @@ kotlin {
 
 configure<MavenPublishBaseExtension> {
   configure(
-    KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
+    KotlinMultiplatform(javadocJar = JavadocJar.Empty())
   )
 }
