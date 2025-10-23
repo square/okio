@@ -81,8 +81,7 @@ val linuxTargets = listOf(
   "linuxX64",
   "linuxArm64",
 
-  // the linuxMain sourceSet does work on androidNative without any modifications.
-  // and android is based on linux, so it's fine to treat androidNative as linux.
+  // The Linux sourceSet works on androidNative without modification.
   "androidNativeArm64",
   "androidNativeArm32",
   "androidNativeX64",
