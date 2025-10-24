@@ -118,7 +118,7 @@ jobs:
 
       - name: Save Test Reports
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-reports
           path: '**/build/reports'
