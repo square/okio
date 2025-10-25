@@ -98,5 +98,8 @@ actual class Path internal actual constructor(
     actual val DIRECTORY_SEPARATOR: String = PLATFORM_DIRECTORY_SEPARATOR
 
     actual fun String.toPath(normalize: Boolean): Path = commonToPath(normalize)
+
+    @UnsafePathApi
+    actual fun unsafeCreate(bytes: ByteString): Path = Path(bytes)
   }
 }

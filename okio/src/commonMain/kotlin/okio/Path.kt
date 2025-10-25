@@ -305,5 +305,17 @@ expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
      * ```
      */
     fun String.toPath(normalize: Boolean = false): Path
+
+    /**
+     * Returns the [Path] representation for this ByteString **as-is**.
+     *
+     * ```
+     * Path.unsafeCreate("./Users/././../notes.txt".encodeUtf8()).toString() => "./Users/././../notes.txt"
+     * Path.unsafeCreate("../Users/jesse/Documents/../notes.txt".encodeUtf8()).toString() => "../Users/jesse/Documents/../notes.txt"
+     * Path.unsafeCreate(".//\\/invalid.txt".encodeUtf8()).toString() => ".//\\/invalid.txt"
+     * ```
+     */
+    @UnsafePathApi
+    fun unsafeCreate(bytes: ByteString): Path
   }
 }

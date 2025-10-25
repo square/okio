@@ -21,6 +21,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import okio.ByteString.Companion.encodeUtf8
 import okio.Path.Companion.toPath
 
 class PathTest {
@@ -791,5 +792,22 @@ class PathTest {
     assertEquals(normalizedRelative, "../a/../b".toPath(normalize = true))
     assertEquals(normalizedRelative, "../a/../b".toPath(normalize = false).normalized())
     assertEquals(normalizedRelative, "../a/../b".toPath(normalize = true).normalized())
+  }
+
+  @Test
+  @OptIn(UnsafePathApi::class)
+  fun unsafePath() {
+    assertEquals(
+      "./Users/././../notes.txt",
+      Path.unsafeCreate("./Users/././../notes.txt".encodeUtf8()).toString()
+    )
+    assertEquals(
+      "../Users/jesse/Documents/../notes.txt",
+      Path.unsafeCreate("../Users/jesse/Documents/../notes.txt".encodeUtf8()).toString()
+    )
+    assertEquals(
+      ".//\\/invalid.txt",
+      Path.unsafeCreate(".//\\/invalid.txt".encodeUtf8()).toString()
+    )
   }
 }

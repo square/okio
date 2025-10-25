@@ -734,6 +734,7 @@ public final class okio/Path$Companion {
 	public static synthetic fun get$default (Lokio/Path$Companion;Ljava/io/File;ZILjava/lang/Object;)Lokio/Path;
 	public static synthetic fun get$default (Lokio/Path$Companion;Ljava/lang/String;ZILjava/lang/Object;)Lokio/Path;
 	public static synthetic fun get$default (Lokio/Path$Companion;Ljava/nio/file/Path;ZILjava/lang/Object;)Lokio/Path;
+	public final fun unsafeCreate (Lokio/ByteString;)Lokio/Path;
 }
 
 public final class okio/Pipe {
@@ -818,6 +819,9 @@ public final class okio/TypedOptions : kotlin/collections/AbstractList, java/uti
 
 public final class okio/TypedOptions$Companion {
 	public final fun of (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lokio/TypedOptions;
+}
+
+public abstract interface annotation class okio/UnsafePathApi : java/lang/annotation/Annotation {
 }
 
 public final class okio/Utf8 {

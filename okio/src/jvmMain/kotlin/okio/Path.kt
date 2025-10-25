@@ -118,6 +118,9 @@ actual class Path internal actual constructor(
     @JvmOverloads
     actual fun String.toPath(normalize: Boolean): Path = commonToPath(normalize)
 
+    @UnsafePathApi
+    actual fun unsafeCreate(bytes: ByteString): Path = Path(bytes)
+
     @JvmName("get")
     @JvmStatic
     @JvmOverloads
