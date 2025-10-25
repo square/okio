@@ -135,7 +135,7 @@ import okio.Path.Companion.toPath
  * <tr><td> `\\server\project\notes.txt` <td> `\\server\project` <td> `\\server` <td> `notes.txt`   <td> UNC absolute path (Windows)    </tr>
  * </table>
  */
-expect class Path internal constructor(bytes: ByteString) : Comparable<Path> {
+expect class Path(bytes: ByteString) : Comparable<Path> {
   /**
    * This is the root path if this is an absolute path, or null if it is a relative path. UNIX paths
    * have a single root, `/`. Each volume on Windows is its own root, like `C:\` and `D:\`. The
