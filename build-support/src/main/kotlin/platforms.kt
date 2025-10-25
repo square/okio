@@ -34,6 +34,10 @@ fun KotlinMultiplatformExtension.configureOrCreateOkioPlatforms() {
 }
 
 fun KotlinMultiplatformExtension.configureOrCreateNativePlatforms() {
+  androidNativeArm64()
+  androidNativeArm32()
+  androidNativeX64()
+  androidNativeX86()
   iosX64()
   iosArm64()
   iosSimulatorArm64()
@@ -76,6 +80,12 @@ val mingwTargets = listOf(
 val linuxTargets = listOf(
   "linuxX64",
   "linuxArm64",
+
+  // The Linux sourceSet works on androidNative without modification.
+  "androidNativeArm64",
+  "androidNativeArm32",
+  "androidNativeX64",
+  "androidNativeX86"
 )
 
 val nativeTargets = appleTargets + linuxTargets + mingwTargets
