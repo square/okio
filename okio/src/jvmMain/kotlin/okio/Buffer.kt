@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 import java.io.Closeable
@@ -102,8 +103,10 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     }
   }
 
+  @IgnorableReturnValue
   actual override fun emitCompleteSegments() = this // Nowhere to emit to!
 
+  @IgnorableReturnValue
   actual override fun emit() = this // Nowhere to emit to!
 
   actual override fun exhausted() = size == 0L
@@ -174,12 +177,14 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return this
   }
 
+  @IgnorableReturnValue
   actual fun copyTo(
     out: Buffer,
     offset: Long,
     byteCount: Long,
   ): Buffer = commonCopyTo(out, offset, byteCount)
 
+  @IgnorableReturnValue
   actual fun copyTo(
     out: Buffer,
     offset: Long,
@@ -188,6 +193,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   /** Write `byteCount` bytes from this to `out`. */
   @Throws(IOException::class)
   @JvmOverloads
+  @IgnorableReturnValue
   fun writeTo(out: OutputStream, byteCount: Long = size): Buffer {
     var byteCount = byteCount
     checkOffsetAndCount(size, 0, byteCount)
@@ -214,6 +220,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   /** Read and exhaust bytes from `input` into this. */
   @Throws(IOException::class)
+  @IgnorableReturnValue
   fun readFrom(input: InputStream): Buffer {
     readFrom(input, Long.MAX_VALUE, true)
     return this
@@ -221,6 +228,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
   /** Read `byteCount` bytes from `input` into this. */
   @Throws(IOException::class)
+  @IgnorableReturnValue
   fun readFrom(input: InputStream, byteCount: Long): Buffer {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     readFrom(input, byteCount, false)
@@ -294,6 +302,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   actual override fun readFully(sink: Buffer, byteCount: Long): Unit = commonReadFully(sink, byteCount)
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual override fun readAll(sink: Sink): Long = commonReadAll(sink)
 
   actual override fun readUtf8() = readString(size, Charsets.UTF_8)
@@ -375,19 +384,25 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   @Throws(EOFException::class)
   actual override fun skip(byteCount: Long) = commonSkip(byteCount)
 
+  @IgnorableReturnValue
   actual override fun write(byteString: ByteString): Buffer = commonWrite(byteString)
 
+  @IgnorableReturnValue
   actual override fun write(byteString: ByteString, offset: Int, byteCount: Int) =
     commonWrite(byteString, offset, byteCount)
 
+  @IgnorableReturnValue
   actual override fun writeUtf8(string: String): Buffer = writeUtf8(string, 0, string.length)
 
+  @IgnorableReturnValue
   actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer =
     commonWriteUtf8(string, beginIndex, endIndex)
 
+  @IgnorableReturnValue
   actual override fun writeUtf8CodePoint(codePoint: Int): Buffer =
     commonWriteUtf8CodePoint(codePoint)
 
+  @IgnorableReturnValue
   override fun writeString(string: String, charset: Charset) = writeString(
     string,
     0,
@@ -395,6 +410,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     charset,
   )
 
+  @IgnorableReturnValue
   override fun writeString(
     string: String,
     beginIndex: Int,
@@ -409,8 +425,10 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
     return write(data, 0, data.size)
   }
 
+  @IgnorableReturnValue
   actual override fun write(source: ByteArray): Buffer = commonWrite(source)
 
+  @IgnorableReturnValue
   actual override fun write(
     source: ByteArray,
     offset: Int,
@@ -436,34 +454,46 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual override fun writeAll(source: Source): Long = commonWriteAll(source)
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual override fun write(source: Source, byteCount: Long): Buffer =
     commonWrite(source, byteCount)
 
+  @IgnorableReturnValue
   actual override fun writeByte(b: Int): Buffer = commonWriteByte(b)
 
+  @IgnorableReturnValue
   actual override fun writeShort(s: Int): Buffer = commonWriteShort(s)
 
+  @IgnorableReturnValue
   actual override fun writeShortLe(s: Int) = writeShort(s.toShort().reverseBytes().toInt())
 
+  @IgnorableReturnValue
   actual override fun writeInt(i: Int): Buffer = commonWriteInt(i)
 
+  @IgnorableReturnValue
   actual override fun writeIntLe(i: Int) = writeInt(i.reverseBytes())
 
+  @IgnorableReturnValue
   actual override fun writeLong(v: Long): Buffer = commonWriteLong(v)
 
+  @IgnorableReturnValue
   actual override fun writeLongLe(v: Long) = writeLong(v.reverseBytes())
 
+  @IgnorableReturnValue
   actual override fun writeDecimalLong(v: Long): Buffer = commonWriteDecimalLong(v)
 
+  @IgnorableReturnValue
   actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer =
     commonWriteHexadecimalUnsignedLong(v)
 
   internal actual fun writableSegment(minimumCapacity: Int): Segment =
     commonWritableSegment(minimumCapacity)
 
+  @IgnorableReturnValue
   actual override fun write(source: Buffer, byteCount: Long): Unit = commonWrite(source, byteCount)
 
   actual override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
@@ -596,9 +626,11 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   actual fun snapshot(byteCount: Int): ByteString = commonSnapshot(byteCount)
 
   @JvmOverloads
+  @IgnorableReturnValue
   actual fun readUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor = commonReadUnsafe(unsafeCursor)
 
   @JvmOverloads
+  @IgnorableReturnValue
   actual fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor =
     commonReadAndWriteUnsafe(unsafeCursor)
 
@@ -633,12 +665,16 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
 
     @JvmField actual var end = -1
 
+    @IgnorableReturnValue
     actual fun next(): Int = commonNext()
 
+    @IgnorableReturnValue
     actual fun seek(offset: Long): Int = commonSeek(offset)
 
+    @IgnorableReturnValue
     actual fun resizeBuffer(newSize: Long): Long = commonResizeBuffer(newSize)
 
+    @IgnorableReturnValue
     actual fun expandBuffer(minByteCount: Int): Long = commonExpandBuffer(minByteCount)
 
     actual override fun close() {

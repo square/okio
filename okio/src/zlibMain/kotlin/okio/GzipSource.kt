@@ -15,6 +15,7 @@
  */
 
 @file:JvmName("-GzipSourceExtensions")
+@file:MustUseReturnValue
 @file:Suppress("NOTHING_TO_INLINE") // Aliases to public API.
 
 package okio

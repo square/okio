@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 import java.io.IOException
@@ -32,72 +33,94 @@ actual sealed interface BufferedSink : Sink, WritableByteChannel {
   actual val buffer: Buffer
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun write(byteString: ByteString): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun write(source: ByteArray): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeAll(source: Source): Long
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun write(source: Source, byteCount: Long): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeUtf8(string: String): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeUtf8CodePoint(codePoint: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   fun writeString(string: String, charset: Charset): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   fun writeString(string: String, beginIndex: Int, endIndex: Int, charset: Charset): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeByte(b: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeShort(s: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeShortLe(s: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeInt(i: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeIntLe(i: Int): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeLong(v: Long): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeLongLe(v: Long): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeDecimalLong(v: Long): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
 
   @Throws(IOException::class)
   actual override fun flush()
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun emit(): BufferedSink
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun emitCompleteSegments(): BufferedSink
 
   /** Returns an output stream that writes to this sink. */

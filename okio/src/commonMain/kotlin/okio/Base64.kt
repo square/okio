@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 @file:JvmName("-Base64") // A leading '-' hides this class from Java.
+@file:MustUseReturnValue
 
 package okio
 
