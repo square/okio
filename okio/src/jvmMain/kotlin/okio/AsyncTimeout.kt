@@ -49,7 +49,8 @@ open class AsyncTimeout : Timeout() {
   @JvmField internal var index: Int = -1
 
   /** If scheduled, this is the time that the watchdog should time this out.  */
-  private var timeoutAt = 0L
+  internal var timeoutAt: Long = 0L
+    private set
 
   fun enter() {
     val timeoutNanos = timeoutNanos()
@@ -61,7 +62,7 @@ open class AsyncTimeout : Timeout() {
     lock.withLock {
       check(state == STATE_IDLE) { "Unbalanced enter/exit" }
       state = STATE_IN_QUEUE
-      insertIntoQueue(this, timeoutNanos, hasDeadline)
+      insertIntoQueue(this)
     }
   }
 
@@ -96,6 +97,25 @@ open class AsyncTimeout : Timeout() {
    * elapsed and the timeout should occur immediately.
    */
   internal fun remainingNanos(now: Long) = timeoutAt - now
+
+  /**
+   * Sets the timeoutAt value as a sum of [now] and the time to wait for this timeout.
+   */
+  internal fun setTimeoutAt(now: Long = System.nanoTime()) {
+    val timeoutNanos = timeoutNanos()
+    val hasDeadline = hasDeadline()
+    if (timeoutNanos() != 0L && hasDeadline()) {
+      // Compute the earliest event; either timeout or deadline. Because nanoTime can wrap
+      // around, minOf() is undefined for absolute values, but meaningful for relative ones.
+      timeoutAt = now + minOf(timeoutNanos, deadlineNanoTime() - now)
+    } else if (timeoutNanos != 0L) {
+      timeoutAt = now + timeoutNanos
+    } else if (hasDeadline) {
+      timeoutAt = deadlineNanoTime()
+    } else {
+      throw AssertionError()
+    }
+  }
 
   /**
    * Invoked by the watchdog thread when the time between calls to [enter] and [exit] has exceeded
@@ -293,26 +313,13 @@ open class AsyncTimeout : Timeout() {
     private const val STATE_TIMED_OUT = 2
     private const val STATE_CANCELED = 3
 
-    private fun insertIntoQueue(node: AsyncTimeout, timeoutNanos: Long, hasDeadline: Boolean) {
+    private fun insertIntoQueue(node: AsyncTimeout) {
       // Start the watchdog thread and create the sentinel node when the first timeout is scheduled.
       if (idleSentinel == null) {
         idleSentinel = AsyncTimeout()
         Watchdog().start()
       }
-
-      val now = System.nanoTime()
-      if (timeoutNanos != 0L && hasDeadline) {
-        // Compute the earliest event; either timeout or deadline. Because nanoTime can wrap
-        // around, minOf() is undefined for absolute values, but meaningful for relative ones.
-        node.timeoutAt = now + minOf(timeoutNanos, node.deadlineNanoTime() - now)
-      } else if (timeoutNanos != 0L) {
-        node.timeoutAt = now + timeoutNanos
-      } else if (hasDeadline) {
-        node.timeoutAt = node.deadlineNanoTime()
-      } else {
-        throw AssertionError()
-      }
-
+      node.setTimeoutAt()
       // Insert the node into the queue.
       queue.add(node)
       if (node.index == 1) {
@@ -494,10 +501,13 @@ internal class PriorityQueue {
     node.index = vacantIndex
   }
 
+  /**
+   * Compares timeouts by their [AsyncTimeout.timeoutAt] values, in ascending order.
+   */
   @Suppress("NOTHING_TO_INLINE")
   private inline operator fun AsyncTimeout.compareTo(other: AsyncTimeout): Int {
-    val a = timeoutNanos()
-    val b = other.timeoutNanos()
+    val a = timeoutAt
+    val b = other.timeoutAt
     return 0L.compareTo(b - a)
   }
 }
