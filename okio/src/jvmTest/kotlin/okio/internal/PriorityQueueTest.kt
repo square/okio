@@ -21,7 +21,6 @@ import java.lang.Integer.numberOfTrailingZeros
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import kotlin.time.Duration.Companion.nanoseconds
-import kotlin.time.Duration.Companion.seconds
 import okio.AsyncTimeout
 import okio.PriorityQueue
 import org.junit.Test
