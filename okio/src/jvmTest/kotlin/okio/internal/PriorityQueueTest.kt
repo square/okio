@@ -27,7 +27,7 @@ import org.junit.Test
 
 class PriorityQueueTest {
   private val TIME_UNIT = TimeUnit.NANOSECONDS
-  var now = 0L
+  val now = 0L
 
   @Test
   fun insertedElementIsSmallerThanItsAncestors() {
