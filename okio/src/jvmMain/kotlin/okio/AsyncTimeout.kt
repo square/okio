@@ -68,6 +68,7 @@ open class AsyncTimeout : Timeout() {
   /** Returns true if the timeout occurred.  */
   fun exit(): Boolean {
     lock.withLock {
+      println("exit ${System.nanoTime()} $this")
       val oldState = this.state
       state = STATE_IDLE
 
@@ -223,6 +224,7 @@ open class AsyncTimeout : Timeout() {
           }
 
           // Close the timed out node, if one was found.
+          println("calling timedOut ${System.nanoTime()} on $timedOut (scheduled at ${timedOut?.timeoutAt})")
           timedOut?.timedOut()
         } catch (_: InterruptedException) {
         }
@@ -313,6 +315,8 @@ open class AsyncTimeout : Timeout() {
         throw AssertionError()
       }
 
+      println("enter ${System.nanoTime()} $timeoutNanos due=${node.timeoutAt} $node")
+
       // Insert the node into the queue.
       queue.add(node)
       if (node.index == 1) {
@@ -349,6 +353,7 @@ open class AsyncTimeout : Timeout() {
 
       // The first node in the queue hasn't timed out yet. Await that.
       if (waitNanos > 0) {
+        println("awaiting ${System.nanoTime()} due=${node.timeoutAt}, duration=${waitNanos}: $node")
         condition.await(waitNanos, TimeUnit.NANOSECONDS)
         return null
       }

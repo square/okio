@@ -91,6 +91,8 @@ allprojects {
   plugins.withId("com.vanniktech.maven.publish.base") {
     configure<PublishingExtension> {
       repositories {
+        mavenLocal()
+
         /**
          * Want to push to an internal repository for testing? Set the following properties in
          * `~/.gradle/gradle.properties`.
