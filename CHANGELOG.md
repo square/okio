@@ -5,6 +5,14 @@ Change Log
 
  * None yet.
 
+## Version 3.16.3
+
+_2025-11-14_
+
+* Fix: Don't delay triggering timeouts. In 3.16.0 we introduced a regression that caused timeouts
+  to fire later than they were supposed to.
+
+
 ## Version 3.16.2
 
 _2025-10-14_
