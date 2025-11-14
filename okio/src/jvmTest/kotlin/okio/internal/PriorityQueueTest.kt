@@ -19,7 +19,6 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import java.lang.Integer.numberOfTrailingZeros
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.NANOSECONDS
 import kotlin.time.Duration.Companion.nanoseconds
 import okio.AsyncTimeout
 import okio.PriorityQueue
@@ -268,7 +267,7 @@ class PriorityQueueTest {
         ) {
           append(".".repeat(nodeWidth))
         } else {
-          val nodeValue = array[index++]!!.timeoutAt().toString()
+          val nodeValue = array[index++]!!.timeoutAt.toString()
           append(".".repeat(nodeWidth - nodeValue.length))
           append(nodeValue)
         }

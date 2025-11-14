@@ -49,7 +49,8 @@ open class AsyncTimeout : Timeout() {
   @JvmField internal var index: Int = -1
 
   /** If scheduled, this is the time that the watchdog should time this out.  */
-  private var timeoutAt: Long = 0L
+  internal var timeoutAt: Long = 0L
+    private set
 
   fun enter() {
     val timeoutNanos = timeoutNanos()
@@ -96,9 +97,6 @@ open class AsyncTimeout : Timeout() {
    * elapsed and the timeout should occur immediately.
    */
   internal fun remainingNanos(now: Long) = timeoutAt - now
-
-  /** If scheduled, this is the expiration time of this timeout  */
-  internal fun timeoutAt(): Long = timeoutAt
 
   /**
    * Sets the timeoutAt value as a sum of [now] and the time to wait for this timeout.
@@ -508,8 +506,8 @@ internal class PriorityQueue {
    */
   @Suppress("NOTHING_TO_INLINE")
   private inline operator fun AsyncTimeout.compareTo(other: AsyncTimeout): Int {
-    val a = timeoutAt()
-    val b = other.timeoutAt()
+    val a = timeoutAt
+    val b = other.timeoutAt
     return 0L.compareTo(b - a)
   }
 }
