@@ -49,7 +49,7 @@ open class AsyncTimeout : Timeout() {
   @JvmField internal var index: Int = -1
 
   /** If scheduled, this is the time that the watchdog should time this out.  */
-  private var timeoutAt = 0L
+  private var timeoutAt: Long = 0L
 
   fun enter() {
     val timeoutNanos = timeoutNanos()
@@ -98,7 +98,7 @@ open class AsyncTimeout : Timeout() {
   internal fun remainingNanos(now: Long) = timeoutAt - now
 
   /** If scheduled, this is the expiration time of this timeout  */
-  internal fun timeoutAt() = timeoutAt
+  internal fun timeoutAt(): Long = timeoutAt
 
   /**
    * Sets the timeoutAt value as a sum of [now] and the time to wait for this timeout.

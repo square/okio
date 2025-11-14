@@ -27,8 +27,8 @@ import okio.PriorityQueue
 import org.junit.Test
 
 class PriorityQueueTest {
-  private val TIME_UNIT = TimeUnit.SECONDS
-  val now = System.nanoTime()
+  private val TIME_UNIT = TimeUnit.NANOSECONDS
+  var now = 0L
 
   @Test
   fun insertedElementIsSmallerThanItsAncestors() {
@@ -59,14 +59,14 @@ class PriorityQueueTest {
       |""".toHeap()
 
     AsyncTimeout(2, false)
-      .apply { setTimeoutAt(now + 28.seconds.inWholeNanoseconds) }
+      .apply { setTimeoutAt(now + 28.nanoseconds.inWholeNanoseconds) }
       .let { before.add(it) }
 
     assertThat(before.toDebugString()).isEqualTo(
       """
       |...............5................
       |......10..............20........
-      |..28......29......21.......2....
+      |..28......29......21......30....
       |
       """.trimMargin(),
     )
@@ -80,13 +80,14 @@ class PriorityQueueTest {
       |..28......29......21............
       |""".toHeap()
 
+    // now=-30, timeoutNanos=30, timeoutAt=0
     AsyncTimeout(30, false)
-      .apply { setTimeoutAt(now - 30.seconds.inWholeNanoseconds) } // timeoutAt is now
+      .apply { setTimeoutAt(now - 30.nanoseconds.inWholeNanoseconds) }
       .let { before.add(it) }
 
     assertThat(before.toDebugString()).isEqualTo(
       """
-      |..............30................
+      |...............0................
       |......10...............5........
       |..28......29......21......20....
       |
@@ -268,7 +269,7 @@ class PriorityQueueTest {
         ) {
           append(".".repeat(nodeWidth))
         } else {
-          val nodeValue = TIME_UNIT.convert(array[index++]!!.timeoutNanos(), NANOSECONDS).toString()
+          val nodeValue = array[index++]!!.timeoutAt().toString()
           append(".".repeat(nodeWidth - nodeValue.length))
           append(nodeValue)
         }
