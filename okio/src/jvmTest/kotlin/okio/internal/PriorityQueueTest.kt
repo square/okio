@@ -20,12 +20,15 @@ import assertk.assertions.isEqualTo
 import java.lang.Integer.numberOfTrailingZeros
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.NANOSECONDS
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 import okio.AsyncTimeout
 import okio.PriorityQueue
 import org.junit.Test
 
 class PriorityQueueTest {
   private val TIME_UNIT = TimeUnit.SECONDS
+  val now = System.nanoTime()
 
   @Test
   fun insertedElementIsSmallerThanItsAncestors() {
@@ -40,6 +43,50 @@ class PriorityQueueTest {
     assertThat(before.toDebugString()).isEqualTo(
       """
       |...............2................
+      |......10...............5........
+      |..28......29......21......20....
+      |
+      """.trimMargin(),
+    )
+  }
+
+  @Test
+  fun insertedElementWithSmallerTimeoutButLargerTimeoutAtIsLargerThanItsAncestors() {
+    val before = """
+      |...............5................
+      |......10..............20........
+      |..28......29......21............
+      |""".toHeap()
+
+    AsyncTimeout(2, false)
+      .apply { setTimeoutAt(now + 28.seconds.inWholeNanoseconds) }
+      .let { before.add(it) }
+
+    assertThat(before.toDebugString()).isEqualTo(
+      """
+      |...............5................
+      |......10..............20........
+      |..28......29......21.......2....
+      |
+      """.trimMargin(),
+    )
+  }
+
+  @Test
+  fun insertedElementWithLargerTimeoutButSmallerTimeoutAtIsSmallerThanItsAncestors() {
+    val before = """
+      |...............5................
+      |......10..............20........
+      |..28......29......21............
+      |""".toHeap()
+
+    AsyncTimeout(30, false)
+      .apply { setTimeoutAt(now - 30.seconds.inWholeNanoseconds) } // timeoutAt is now
+      .let { before.add(it) }
+
+    assertThat(before.toDebugString()).isEqualTo(
+      """
+      |..............30................
       |......10...............5........
       |..28......29......21......20....
       |
@@ -169,8 +216,9 @@ class PriorityQueueTest {
     )
   }
 
-  private fun AsyncTimeout(value: Long) = AsyncTimeout().apply {
+  private fun AsyncTimeout(value: Long, setTimeoutAt: Boolean = true) = AsyncTimeout().apply {
     timeout(value, TIME_UNIT)
+    if (setTimeoutAt) setTimeoutAt(now)
   }
 
   private fun String.toHeap(): PriorityQueue {
@@ -183,7 +231,7 @@ class PriorityQueueTest {
     val result = PriorityQueue()
 
     for (i in nodeValues) {
-      result.add(AsyncTimeout(i))
+      AsyncTimeout(i).let { result.add(it) }
     }
 
     val formattedBack = result.toDebugString()
