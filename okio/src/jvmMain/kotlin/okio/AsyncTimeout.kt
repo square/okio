@@ -101,8 +101,7 @@ open class AsyncTimeout : Timeout() {
   internal fun timeoutAt() = timeoutAt
 
   /**
-   * Sets the timeoutAt value as a sum of current nano time and the time to wait
-   * for this timeout.
+   * Sets the timeoutAt value as a sum of [now] and the time to wait for this timeout.
    */
   internal fun setTimeoutAt(now: Long = System.nanoTime())  {
     val timeoutNanos = timeoutNanos()
