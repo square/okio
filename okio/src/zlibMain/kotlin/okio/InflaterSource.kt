@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @file:JvmName("-InflaterSourceExtensions")
+@file:MustUseReturnValue
 
 package okio
 

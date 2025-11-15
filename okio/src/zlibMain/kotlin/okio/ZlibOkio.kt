@@ -16,6 +16,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("Okio")
+@file:MustUseReturnValue
 
 package okio
 

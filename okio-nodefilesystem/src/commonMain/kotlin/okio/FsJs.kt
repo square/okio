@@ -71,6 +71,7 @@
  */
 @file:JsModule("fs")
 @file:JsNonModule
+@file:MustUseReturnValue
 
 package okio
 

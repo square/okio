@@ -17,6 +17,7 @@
 /** Essential APIs for working with Okio. */
 @file:JvmMultifileClass
 @file:JvmName("Okio")
+@file:MustUseReturnValue
 
 package okio
 
