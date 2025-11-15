@@ -46,8 +46,8 @@ internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetad
   }
 }
 
-internal actual val DEFFILEMODE: Int get() = platform.posix.DEFFILEMODE
-internal actual typealias DIR = cnames.structs.__dirstream
+internal actual val DEFFILEMODE: Int get() = 0b110110110 /* octal 666 */
+internal actual typealias DIR = cnames.structs.DIR
 internal actual fun opendir(path: String) = platform.posix.opendir(path)
 internal actual fun readdir(dir: CValuesRef<DIR>) = platform.posix.readdir(dir)
 internal actual fun closedir(dir: CValuesRef<DIR>) = platform.posix.closedir(dir)
