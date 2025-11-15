@@ -28,6 +28,11 @@ plugins {
  *   |   |-- mingw
  *   |   |   '-- mingwX64
  *   |   '-- unix
+ *   |       |-- androidNative
+ *   |       |   |-- androidNativeArm64
+ *   |       |   |-- androidNativeArm32
+ *   |       |   |-- androidNativeX64
+ *   |       |   |-- androidNativeX86
  *   |       |-- apple
  *   |       |   |-- iosArm64
  *   |       |   |-- iosX64
@@ -165,6 +170,13 @@ kotlin {
             .also { unixMain ->
               unixMain.dependsOn(nonJsMain)
               createSourceSet(
+                  "androidNativeMain",
+                  parent = unixMain,
+                  children = androidNativeTargets,
+              ).also { androidNative ->
+                androidNative.dependsOn(nonAppleMain)
+              }
+              createSourceSet(
                   "linuxMain",
                   parent = unixMain,
                   children = linuxTargets,
@@ -175,7 +187,7 @@ kotlin {
             }
         }
 
-      createSourceSet("nativeTest", parent = commonTest, children = mingwTargets + linuxTargets)
+      createSourceSet("nativeTest", parent = commonTest, children = androidNativeTargets + mingwTargets + linuxTargets)
         .also { nativeTest ->
           nativeTest.dependsOn(nonJvmTest)
           nativeTest.dependsOn(nonWasmTest)
