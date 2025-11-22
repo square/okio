@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 /**
@@ -342,6 +343,7 @@ expect sealed interface BufferedSource : Source {
    * Removes all bytes from this and appends them to `sink`. Returns the total number of bytes
    * written to `sink` which will be 0 if this is exhausted.
    */
+  @IgnorableReturnValue
   fun readAll(sink: Sink): Long
 
   /**
