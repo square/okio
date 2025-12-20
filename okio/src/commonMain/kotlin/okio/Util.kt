@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @file:JvmName("-SegmentedByteString") // A leading '-' hides this class from Java.
+@file:MustUseReturnValue
 
 package okio
 

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 import java.io.IOException
@@ -67,6 +68,7 @@ open class AsyncTimeout : Timeout() {
   }
 
   /** Returns true if the timeout occurred.  */
+  @IgnorableReturnValue
   fun exit(): Boolean {
     lock.withLock {
       val oldState = this.state

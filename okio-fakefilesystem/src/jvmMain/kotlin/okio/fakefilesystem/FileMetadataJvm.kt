@@ -15,6 +15,7 @@
  */
 @file:JvmMultifileClass
 @file:JvmName("-Time")
+@file:MustUseReturnValue
 
 package okio.fakefilesystem
 
