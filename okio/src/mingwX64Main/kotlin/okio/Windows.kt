@@ -15,7 +15,6 @@
  */
 package okio
 
-import kotlinx.cinterop.ByteVarOf
 import kotlinx.cinterop.UShortVarOf
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped

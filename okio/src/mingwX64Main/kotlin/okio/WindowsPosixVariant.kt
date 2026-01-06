@@ -38,16 +38,14 @@ import platform.posix._wfullpath
 import platform.posix._wgetenv
 import platform.posix._wmkdir
 import platform.posix._wopendir
-import platform.posix._wstat64
-import platform.posix.errno
-import platform.posix.fopen
-import platform.posix.free
 import platform.posix._wreaddir
 import platform.posix._wremove
 import platform.posix._wrmdir
+import platform.posix._wstat64
+import platform.posix.errno
+import platform.posix.free
 import platform.posix.set_posix_errno
 import platform.windows.CREATE_NEW
-import platform.windows.CreateFileA
 import platform.windows.CreateFileW
 import platform.windows.FILE_ATTRIBUTE_NORMAL
 import platform.windows.FILE_SHARE_WRITE
@@ -55,7 +53,6 @@ import platform.windows.GENERIC_READ
 import platform.windows.GENERIC_WRITE
 import platform.windows.INVALID_HANDLE_VALUE
 import platform.windows.MOVEFILE_REPLACE_EXISTING
-import platform.windows.MoveFileExA
 import platform.windows.MoveFileExW
 import platform.windows.OPEN_ALWAYS
 import platform.windows.OPEN_EXISTING
@@ -130,7 +127,6 @@ internal actual fun PosixFileSystem.variantList(dir: Path, throwOnFailure: Boole
     _wclosedir(opendir) // Ignore errno from closedir.
   }
 }
-
 
 internal actual fun PosixFileSystem.variantMkdir(dir: Path): Int {
   return _wmkdir(dir.toString().wcstr)

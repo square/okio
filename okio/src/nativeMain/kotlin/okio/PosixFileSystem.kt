@@ -15,17 +15,11 @@
  */
 package okio
 
-import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.EEXIST
-import platform.posix.closedir
-import platform.posix.dirent
 import platform.posix.errno
-import platform.posix.opendir
-import platform.posix.readdir
-import platform.posix.set_posix_errno
 
 internal object PosixFileSystem : FileSystem() {
   internal val SELF_DIRECTORY_ENTRY = ".".toPath()
@@ -39,7 +33,7 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
 
-  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? = variantList(dir,throwOnFailure)
+  private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? = variantList(dir, throwOnFailure)
 
   override fun openReadOnly(file: Path) = variantOpenReadOnly(file)
 
