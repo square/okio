@@ -16,6 +16,7 @@
 package okio
 
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CValuesRef
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
@@ -204,3 +205,8 @@ internal actual fun PosixFileSystem.variantOpenReadWrite(
 internal actual fun PosixFileSystem.variantCreateSymlink(source: Path, target: Path) {
   throw IOException("Not supported")
 }
+
+internal actual typealias DIR = platform.posix.DIR
+internal actual fun opendir(path: String) = platform.posix.opendir(path)
+internal actual fun readdir(dir: CValuesRef<DIR>) = platform.posix.readdir(dir)
+internal actual fun closedir(dir: CValuesRef<DIR>) = platform.posix.closedir(dir)
