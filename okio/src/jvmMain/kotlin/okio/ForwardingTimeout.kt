@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 import java.io.IOException
@@ -32,6 +33,7 @@ open class ForwardingTimeout(
     return this
   }
 
+  @IgnorableReturnValue
   override fun timeout(timeout: Long, unit: TimeUnit) = delegate.timeout(timeout, unit)
 
   override fun timeoutNanos() = delegate.timeoutNanos()
@@ -40,12 +42,15 @@ open class ForwardingTimeout(
 
   override fun deadlineNanoTime() = delegate.deadlineNanoTime()
 
+  @IgnorableReturnValue
   override fun deadlineNanoTime(deadlineNanoTime: Long) = delegate.deadlineNanoTime(
     deadlineNanoTime,
   )
 
+  @IgnorableReturnValue
   override fun clearTimeout() = delegate.clearTimeout()
 
+  @IgnorableReturnValue
   override fun clearDeadline() = delegate.clearDeadline()
 
   @Throws(IOException::class)
