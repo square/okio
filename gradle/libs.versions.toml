@@ -22,7 +22,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 kotlin-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.7.1-0.6.x-compat" }
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "8.0.0" }
-test-assertj = { module = "org.assertj:assertj-core", version = "3.27.6" }
+test-assertj = { module = "org.assertj:assertj-core", version = "3.27.7" }
 test-assertk = "com.willowtreeapps.assertk:assertk:0.28.1"
 test-jimfs = "com.google.jimfs:jimfs:1.3.1"
 test-junit = { module = "junit:junit", version = "4.13.2" }
