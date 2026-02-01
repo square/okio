@@ -15,16 +15,15 @@
  */
 package okio
 
+import kotlinx.cinterop.CPointed
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CValuesRef
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
 import okio.internal.toPath
 import platform.posix.EEXIST
-import platform.posix.closedir
 import platform.posix.dirent
 import platform.posix.errno
-import platform.posix.opendir
-import platform.posix.readdir
 import platform.posix.set_posix_errno
 
 internal object PosixFileSystem : FileSystem() {
@@ -117,3 +116,8 @@ internal object PosixFileSystem : FileSystem() {
 
   override fun toString() = "PosixSystemFileSystem"
 }
+
+internal expect class DIR : CPointed
+internal expect fun opendir(path: String): CPointer<DIR>?
+internal expect fun readdir(dir: CValuesRef<DIR>): CPointer<dirent>?
+internal expect fun closedir(dir: CValuesRef<DIR>): Int
