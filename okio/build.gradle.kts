@@ -6,6 +6,7 @@ import kotlinx.validation.ApiValidationExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   kotlin("multiplatform")
@@ -14,6 +15,7 @@ plugins {
   id("com.vanniktech.maven.publish.base")
   id("build-support")
   id("binary-compatibility-validator")
+  `jvm-test-suite`
 }
 
 /*
@@ -211,17 +213,55 @@ kotlin {
       }
     }
   }
+
+  jvm {
+    withJava()
+  }
+}
+
+val java9 by sourceSets.registering
+
+configurations.named("java9CompileClasspath") {
+  extendsFrom(configurations["jvmCompileClasspath"])
+}
+
+testing {
+  suites {
+    register<JvmTestSuite>("integrationTest") {
+      useKotlinTest(libs.versions.kotlin)
+      dependencies {
+        implementation(project())
+      }
+      targets.configureEach {
+        testTask.configure {
+          onlyIf {
+            !javaLauncher.get().metadata.javaRuntimeVersion.startsWith("1.8")
+          }
+        }
+      }
+    }
+  }
 }
 
 tasks {
-  val jvmJar by getting(Jar::class) {
-    // BundleTaskExtension() crashes unless there's a 'main' source set.
-    sourceSets.create(SourceSet.MAIN_SOURCE_SET_NAME)
+  val compileJava9Java = named<JavaCompile>("compileJava9Java") {
+    dependsOn("compileKotlinJvm")
+    // https://kotlinlang.org/docs/gradle-configure-project.html#configure-with-java-modules-jpms-enabled
+    options.compilerArgumentProviders.add(CommandLineArgumentProvider {
+      listOf("--patch-module", "okio=${sourceSets["main"].output.asPath}")
+    })
+    options.release = 9
+  }
+
+  named<Jar>("jvmJar") {
+    from(compileJava9Java.flatMap { it.destinationDirectory }) {
+      into("META-INF/versions/9")
+    }
     val bndExtension = BundleTaskExtension(this)
     bndExtension.setBnd(
       """
       Export-Package: okio
-      Automatic-Module-Name: okio
+      Multi-Release: true
       Bundle-SymbolicName: com.squareup.okio
       """,
     )
@@ -230,6 +270,20 @@ tasks {
       bndExtension.buildAction()
         .execute(this)
     }
+  }
+
+  named<JavaCompile>("compileIntegrationTestJava") {
+    options.release = 9
+  }
+
+  val integrationTest = named<Test>("integrationTest") {
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+      listOf("--patch-module", "okio.test.integration=${sourceSets["integrationTest"].output.asPath}")
+    })
+  }
+
+  check {
+    dependsOn(integrationTest)
   }
 }
 
