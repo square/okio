@@ -62,6 +62,7 @@
  * </table>
  */
 @file:JvmName("Utf8")
+@file:MustUseReturnValue
 
 package okio
 

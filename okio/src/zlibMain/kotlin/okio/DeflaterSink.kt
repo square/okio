@@ -15,6 +15,7 @@
  */
 
 @file:JvmName("-DeflaterSinkExtensions")
+@file:MustUseReturnValue
 
 package okio
 

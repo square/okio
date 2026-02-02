@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 import java.io.IOException
@@ -101,6 +102,7 @@ actual sealed interface BufferedSource : Source, ReadableByteChannel {
   actual fun readFully(sink: Buffer, byteCount: Long)
 
   @Throws(IOException::class)
+  @IgnorableReturnValue
   actual fun readAll(sink: Sink): Long
 
   @Throws(IOException::class)

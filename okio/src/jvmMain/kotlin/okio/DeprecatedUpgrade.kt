@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @file:JvmName("-DeprecatedUpgrade")
+@file:MustUseReturnValue
 
 package okio
 

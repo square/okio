@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 /**
@@ -23,23 +24,29 @@ expect sealed interface BufferedSink : Sink {
   /** This sink's internal buffer. */
   val buffer: Buffer
 
+  @IgnorableReturnValue
   fun write(byteString: ByteString): BufferedSink
 
+  @IgnorableReturnValue
   fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink
 
   /** Like [OutputStream.write], this writes a complete byte array to this sink. */
+  @IgnorableReturnValue
   fun write(source: ByteArray): BufferedSink
 
   /** Like [OutputStream.write], this writes `byteCount` bytes of `source`, starting at `offset`. */
+  @IgnorableReturnValue
   fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
 
   /**
    * Removes all bytes from `source` and appends them to this sink. Returns the number of bytes read
    * which will be 0 if `source` is exhausted.
    */
+  @IgnorableReturnValue
   fun writeAll(source: Source): Long
 
   /** Removes `byteCount` bytes from `source` and appends them to this sink. */
+  @IgnorableReturnValue
   fun write(source: Source, byteCount: Long): BufferedSink
 
   /**
@@ -54,6 +61,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals("Uh uh uh! You didn't say the magic word!", buffer.readUtf8());
    * ```
    */
+  @IgnorableReturnValue
   fun writeUtf8(string: String): BufferedSink
 
   /**
@@ -71,12 +79,15 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals("hacker nerd hacker!", buffer.readUtf8());
    * ```
    */
+  @IgnorableReturnValue
   fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): BufferedSink
 
   /** Encodes `codePoint` in UTF-8 and writes it to this sink. */
+  @IgnorableReturnValue
   fun writeUtf8CodePoint(codePoint: Int): BufferedSink
 
   /** Writes a byte to this sink. */
+  @IgnorableReturnValue
   fun writeByte(b: Int): BufferedSink
 
   /**
@@ -95,6 +106,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
+  @IgnorableReturnValue
   fun writeShort(s: Int): BufferedSink
 
   /**
@@ -113,6 +125,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
+  @IgnorableReturnValue
   fun writeShortLe(s: Int): BufferedSink
 
   /**
@@ -135,6 +148,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
+  @IgnorableReturnValue
   fun writeInt(i: Int): BufferedSink
 
   /**
@@ -157,6 +171,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
+  @IgnorableReturnValue
   fun writeIntLe(i: Int): BufferedSink
 
   /**
@@ -187,6 +202,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
+  @IgnorableReturnValue
   fun writeLong(v: Long): BufferedSink
 
   /**
@@ -217,6 +233,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(0, buffer.size());
    * ```
    */
+  @IgnorableReturnValue
   fun writeLongLe(v: Long): BufferedSink
 
   /**
@@ -233,6 +250,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals("8675309 -123 1", buffer.readUtf8());
    * ```
    */
+  @IgnorableReturnValue
   fun writeDecimalLong(v: Long): BufferedSink
 
   /**
@@ -249,6 +267,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals("ffff cafebabe 10", buffer.readUtf8());
    * ```
    */
+  @IgnorableReturnValue
   fun writeHexadecimalUnsignedLong(v: Long): BufferedSink
 
   /**
@@ -299,6 +318,7 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(5, b0.buffer().size());
    * ```
    */
+  @IgnorableReturnValue
   fun emit(): BufferedSink
 
   /**
@@ -323,5 +343,6 @@ expect sealed interface BufferedSink : Sink {
    * assertEquals(16_384, b0.buffer().size()); // This example assumes 8192 byte segments.
    * ```
    */
+  @IgnorableReturnValue
   fun emitCompleteSegments(): BufferedSink
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 /**
@@ -35,6 +36,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
     internal set
 
   /** Copy `byteCount` bytes from this, starting at `offset`, to `out`.  */
+  @IgnorableReturnValue
   fun copyTo(
     out: Buffer,
     offset: Long = 0L,
@@ -45,6 +47,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
    * Overload of [copyTo] with byteCount = size - offset, work around for
    *  https://youtrack.jetbrains.com/issue/KT-30847
    */
+  @IgnorableReturnValue
   fun copyTo(
     out: Buffer,
     offset: Long = 0L,
@@ -103,13 +106,17 @@ expect class Buffer() : BufferedSource, BufferedSink {
   /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
   fun snapshot(byteCount: Int): ByteString
 
+  @IgnorableReturnValue
   fun readUnsafe(unsafeCursor: UnsafeCursor = DEFAULT__new_UnsafeCursor): UnsafeCursor
 
+  @IgnorableReturnValue
   fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor = DEFAULT__new_UnsafeCursor): UnsafeCursor
 
   override val buffer: Buffer
   override fun close()
+  @IgnorableReturnValue
   override fun emit(): Buffer
+  @IgnorableReturnValue
   override fun emitCompleteSegments(): Buffer
   override fun exhausted(): Boolean
   override fun flush()
@@ -127,6 +134,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
   override fun read(sink: Buffer, byteCount: Long): Long
   override fun read(sink: ByteArray): Int
   override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
+  @IgnorableReturnValue
   override fun readAll(sink: Sink): Long
   override fun readByte(): Byte
   override fun readByteArray(): ByteArray
@@ -154,24 +162,41 @@ expect class Buffer() : BufferedSource, BufferedSink {
   override fun select(options: Options): Int
   override fun <T : Any> select(options: TypedOptions<T>): T?
   override fun timeout(): Timeout
+  @IgnorableReturnValue
   override fun write(byteString: ByteString): Buffer
+  @IgnorableReturnValue
   override fun write(byteString: ByteString, offset: Int, byteCount: Int): Buffer
   override fun write(source: Buffer, byteCount: Long)
+  @IgnorableReturnValue
   override fun write(source: ByteArray): Buffer
+  @IgnorableReturnValue
   override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
+  @IgnorableReturnValue
   override fun write(source: Source, byteCount: Long): Buffer
   override fun writeAll(source: Source): Long
+  @IgnorableReturnValue
   override fun writeByte(b: Int): Buffer
+  @IgnorableReturnValue
   override fun writeDecimalLong(v: Long): Buffer
+  @IgnorableReturnValue
   override fun writeHexadecimalUnsignedLong(v: Long): Buffer
+  @IgnorableReturnValue
   override fun writeInt(i: Int): Buffer
+  @IgnorableReturnValue
   override fun writeIntLe(i: Int): Buffer
+  @IgnorableReturnValue
   override fun writeLong(v: Long): Buffer
+  @IgnorableReturnValue
   override fun writeLongLe(v: Long): Buffer
+  @IgnorableReturnValue
   override fun writeShort(s: Int): Buffer
+  @IgnorableReturnValue
   override fun writeShortLe(s: Int): Buffer
+  @IgnorableReturnValue
   override fun writeUtf8(string: String): Buffer
+  @IgnorableReturnValue
   override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int): Buffer
+  @IgnorableReturnValue
   override fun writeUtf8CodePoint(codePoint: Int): Buffer
 
   /**
@@ -385,6 +410,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
      * the readable range (at least 1), or -1 if we have reached the end of the buffer and there are
      * no more bytes to read.
      */
+    @IgnorableReturnValue
     fun next(): Int
 
     /**
@@ -392,6 +418,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
      * Returns the number of bytes readable in [data] (at least 1), or -1 if there are no data
      * to read.
      */
+    @IgnorableReturnValue
     fun seek(offset: Long): Int
 
     /**
@@ -410,6 +437,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
      *
      * @return the previous size of the buffer.
      */
+    @IgnorableReturnValue
     fun resizeBuffer(newSize: Long): Long
 
     /**
@@ -434,6 +462,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
      *     than the capacity size of a single segment (8 KiB).
      * @return the number of bytes expanded by. Not less than `minByteCount`.
      */
+    @IgnorableReturnValue
     fun expandBuffer(minByteCount: Int): Long
 
     override fun close()

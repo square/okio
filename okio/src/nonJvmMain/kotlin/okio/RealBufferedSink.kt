@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+@file:MustUseReturnValue
 package okio
 
 import okio.internal.commonClose
@@ -43,30 +43,50 @@ internal actual class RealBufferedSink actual constructor(
   actual override val buffer = Buffer()
 
   actual override fun write(source: Buffer, byteCount: Long) = commonWrite(source, byteCount)
+  @IgnorableReturnValue
   actual override fun write(byteString: ByteString) = commonWrite(byteString)
+  @IgnorableReturnValue
   actual override fun write(byteString: ByteString, offset: Int, byteCount: Int) =
     commonWrite(byteString, offset, byteCount)
+  @IgnorableReturnValue
   actual override fun writeUtf8(string: String) = commonWriteUtf8(string)
+  @IgnorableReturnValue
   actual override fun writeUtf8(string: String, beginIndex: Int, endIndex: Int) =
     commonWriteUtf8(string, beginIndex, endIndex)
 
+  @IgnorableReturnValue
   actual override fun writeUtf8CodePoint(codePoint: Int) = commonWriteUtf8CodePoint(codePoint)
+  @IgnorableReturnValue
   actual override fun write(source: ByteArray) = commonWrite(source)
+  @IgnorableReturnValue
   actual override fun write(source: ByteArray, offset: Int, byteCount: Int) =
     commonWrite(source, offset, byteCount)
 
+  @IgnorableReturnValue
   actual override fun writeAll(source: Source) = commonWriteAll(source)
+  @IgnorableReturnValue
   actual override fun write(source: Source, byteCount: Long): BufferedSink = commonWrite(source, byteCount)
+  @IgnorableReturnValue
   actual override fun writeByte(b: Int) = commonWriteByte(b)
+  @IgnorableReturnValue
   actual override fun writeShort(s: Int) = commonWriteShort(s)
+  @IgnorableReturnValue
   actual override fun writeShortLe(s: Int) = commonWriteShortLe(s)
+  @IgnorableReturnValue
   actual override fun writeInt(i: Int) = commonWriteInt(i)
+  @IgnorableReturnValue
   actual override fun writeIntLe(i: Int) = commonWriteIntLe(i)
+  @IgnorableReturnValue
   actual override fun writeLong(v: Long) = commonWriteLong(v)
+  @IgnorableReturnValue
   actual override fun writeLongLe(v: Long) = commonWriteLongLe(v)
+  @IgnorableReturnValue
   actual override fun writeDecimalLong(v: Long) = commonWriteDecimalLong(v)
+  @IgnorableReturnValue
   actual override fun writeHexadecimalUnsignedLong(v: Long) = commonWriteHexadecimalUnsignedLong(v)
+  @IgnorableReturnValue
   actual override fun emitCompleteSegments() = commonEmitCompleteSegments()
+  @IgnorableReturnValue
   actual override fun emit() = commonEmit()
   actual override fun flush() = commonFlush()
   actual override fun close() = commonClose()
