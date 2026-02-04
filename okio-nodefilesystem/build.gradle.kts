@@ -9,6 +9,7 @@ plugins {
   id("org.jetbrains.dokka")
   id("com.vanniktech.maven.publish.base")
   id("binary-compatibility-validator")
+  id("build-support")
 }
 
 kotlin {
