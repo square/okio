@@ -3,6 +3,7 @@ plugins {
 }
 
 kotlin {
+  jvmToolchain(24)
   jvm {
     binaries {
       executable {

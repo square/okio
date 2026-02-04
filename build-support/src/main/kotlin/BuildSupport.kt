@@ -44,10 +44,10 @@ class BuildSupport : Plugin<Project> {
         languageVersion.set(KotlinVersion.KOTLIN_2_1)
       }
     }
-    afterEvaluate {
-      extensions.findByType(KotlinProjectExtension::class.java)?.apply {
-        coreLibrariesVersion = project.getVersionByName("kotlinCoreLibrariesVersion")
-      }
+
+    extensions.configure(KotlinProjectExtension::class.java) {
+      coreLibrariesVersion = project.getVersionByName("kotlinCoreLibrariesVersion")
+      jvmToolchain(24)
     }
 
     val javaVersion = JavaVersion.VERSION_1_8
