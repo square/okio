@@ -1,9 +1,9 @@
 plugins {
   kotlin("multiplatform")
+  id("com.gradleup.tapmoc")
 }
 
 kotlin {
-  jvmToolchain(24)
   jvm {
     binaries {
       executable {
@@ -24,4 +24,10 @@ kotlin {
       }
     }
   }
+}
+
+tapmoc {
+  java(8)
+  kotlin(project.getVersionByName("kotlinCoreLibrariesVersion"))
+  checkDependencies()
 }

@@ -25,11 +25,6 @@ android {
   }
 }
 
-// AGP 9+ overrides setting coreLibrariesVersion in BuildSupport, so we have to reset it here
-kotlin {
-  coreLibrariesVersion = project.getVersionByName("kotlinCoreLibrariesVersion")
-}
-
 dependencies {
   api(projects.okio)
 

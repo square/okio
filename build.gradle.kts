@@ -27,6 +27,7 @@ buildscript {
     classpath(libs.spotless)
     classpath(libs.bnd)
     classpath(libs.vanniktech.publish.plugin)
+    classpath(libs.tapmoc.gradle.plugin)
   }
 
   repositories {
