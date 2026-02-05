@@ -13,39 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(ExperimentalTime::class)
+
 package okio
 
-import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 actual fun isBrowser() = false
 
 actual fun isWasm() = true
-
-actual interface Clock {
-  actual fun now(): Instant
-}
-
-actual class Instant(
-  private val epochMilliseconds: Long,
-) : Comparable<Instant> {
-  actual val epochSeconds: Long
-    get() = epochMilliseconds / 1_000L
-
-  actual operator fun plus(duration: Duration) =
-    Instant(epochMilliseconds + duration.inWholeMilliseconds)
-
-  actual operator fun minus(duration: Duration) =
-    Instant(epochMilliseconds - duration.inWholeMilliseconds)
-
-  actual override fun compareTo(other: Instant) =
-    epochMilliseconds.compareTo(other.epochMilliseconds)
-}
-
-actual fun fromEpochSeconds(epochSeconds: Long) =
-  Instant(epochSeconds * 1_000L)
-
-actual fun fromEpochMilliseconds(epochMilliseconds: Long) =
-  Instant(epochMilliseconds)
 
 actual val FileSystem.isFakeFileSystem: Boolean
   get() = false
@@ -59,5 +35,3 @@ actual val FileSystem.allowReadsWhileWriting: Boolean
 actual var FileSystem.workingDirectory: Path
   get() = error("unexpected call")
   set(_) = error("unexpected call")
-
-actual fun getEnv(name: String): String? = error("unexpected call")

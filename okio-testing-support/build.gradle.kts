@@ -63,6 +63,9 @@ kotlin {
       createSourceSet("wasmMain", children = wasmTargets)
         .also { wasmMain ->
           wasmMain.dependsOn(commonMain)
+          wasmMain.dependencies {
+            implementation(projects.okioWasifilesystem)
+          }
         }
     }
   }

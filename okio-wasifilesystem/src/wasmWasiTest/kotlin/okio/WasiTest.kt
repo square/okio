@@ -380,4 +380,15 @@ class WasiTest {
       )
     }
   }
+
+  /**
+   * Confirm environment variables are correctly decoded. (These are hardcoded in the test Wasi
+   * config.)
+   */
+  @Test
+  fun testEnv() {
+    assertEquals("", env["WasiTest.testEnv.empty"])
+    assertEquals("hello", env["WasiTest.testEnv.nonempty"])
+    assertEquals("/okio".toPath(), okioRoot)
+  }
 }
