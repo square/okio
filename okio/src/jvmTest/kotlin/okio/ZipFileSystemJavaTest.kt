@@ -16,8 +16,9 @@
 package okio
 
 import app.cash.burst.InterceptTest
+import assertk.assertThat
+import assertk.assertions.isEqualTo
 import okio.Path.Companion.toPath
-import org.assertj.core.api.Assertions
 import org.junit.Test
 
 class ZipFileSystemJavaTest {
@@ -35,7 +36,7 @@ class ZipFileSystemJavaTest {
     val zipFileSystem = fileSystem.openZip(zipPath)
     zipFileSystem.source("hello.txt".toPath(false)).buffer().use { source ->
       val content = source.readUtf8()
-      Assertions.assertThat(content).isEqualTo("Hello World")
+      assertThat(content).isEqualTo("Hello World")
     }
   }
 }

@@ -15,8 +15,10 @@
  */
 package okio
 
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNotEqualTo
 import java.util.concurrent.TimeUnit
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class ForwardingTimeoutTest {

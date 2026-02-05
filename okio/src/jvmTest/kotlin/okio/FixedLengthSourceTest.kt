@@ -15,9 +15,12 @@
  */
 package okio
 
+import assertk.assertThat
+import assertk.assertions.hasMessage
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
 import kotlin.test.fail
 import okio.internal.FixedLengthSource
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 internal class FixedLengthSourceTest {
