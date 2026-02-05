@@ -58,6 +58,9 @@ val FileMetadata.lastAccessedAt: Instant?
     return Instant.fromEpochMilliseconds(lastAccessedAt)
   }
 
+fun fromIso8601String(iso8601String: String): Instant =
+  Instant.fromEpochMilliseconds(Instant.parse(iso8601String).toEpochMilliseconds())
+
 expect val FileSystem.isFakeFileSystem: Boolean
 
 expect val FileSystem.allowSymlinks: Boolean
