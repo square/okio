@@ -12,6 +12,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
 
 plugins {
   id("build-support").apply(false)
@@ -169,6 +170,12 @@ subprojects {
     kotlin {
       target("**/*.kt")
       ktlint(libs.versions.ktlint.get())
+    }
+  }
+
+  tasks.withType<AbstractKotlinCompile<*>>().configureEach {
+    compilerOptions.apply {
+      freeCompilerArgs.add("-Xexpect-actual-classes")
     }
   }
 
