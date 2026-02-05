@@ -134,7 +134,8 @@ class ChannelsTest {
       StandardOpenOption.WRITE,
     )
     private val append = EnumSet.of(
-      StandardOpenOption.WRITE, StandardOpenOption.APPEND,
+      StandardOpenOption.WRITE,
+      StandardOpenOption.APPEND,
     )
   }
 }
