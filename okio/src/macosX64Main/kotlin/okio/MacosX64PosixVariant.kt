@@ -23,22 +23,23 @@ import platform.posix.S_IFDIR
 import platform.posix.S_IFMT
 import platform.posix.S_IFREG
 import platform.posix.errno
-import platform.posix.lstat
-import platform.posix.stat
+import platform.posix.lstat64
+import platform.posix.stat64
 
+/** MacosX64 uses `stat64`; other Apple platforms use `stat`. */
 internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
-    val stat = alloc<stat>()
-    if (lstat(path.toString(), stat.ptr) != 0) {
+    val stat = alloc<stat64>()
+    if (lstat64(path.toString(), stat.ptr) != 0) {
       if (errno == ENOENT) return null
       throw errnoToIOException(errno)
     }
     return@memScoped FileMetadata(
       isRegularFile = stat.st_mode.toInt() and S_IFMT == S_IFREG,
       isDirectory = stat.st_mode.toInt() and S_IFMT == S_IFDIR,
-      symlinkTarget = symlinkTarget(stat, path),
+      symlinkTarget = symlinkTarget(stat.st_mode.toInt(), path),
       size = stat.st_size,
-      createdAtMillis = stat.st_ctimespec.epochMillis,
+      createdAtMillis = stat.st_birthtimespec.epochMillis,
       lastModifiedAtMillis = stat.st_mtimespec.epochMillis,
       lastAccessedAtMillis = stat.st_atimespec.epochMillis,
     )

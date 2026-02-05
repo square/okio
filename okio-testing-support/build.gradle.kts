@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
+
 plugins {
   kotlin("multiplatform")
   id("app.cash.burst")
@@ -19,6 +21,7 @@ kotlin {
         api(projects.okio)
         api(libs.kotlin.test)
         api(libs.burst.runtime)
+        api(libs.test.assertk)
       }
     }
 
@@ -66,4 +69,35 @@ kotlin {
         }
     }
   }
+}
+
+/*
+ * AbstractFileSystemTest expects a file with specific metadata:
+ *
+ *   path: build/AbstractFileSystemTestFiles/metadata.txt
+ *   createdAt: 2026-01-01T01:01:01Z
+ *   lastModifiedAt: 2026-02-02T02:02:02Z
+ *
+ * It would be nicer to do this in the test itself with exec(), but we don't yet have a handy
+ * multiplatform API for that.
+ */
+val touchAbstractFileSystemTestFilesCreatedAt by tasks.registering(Exec::class) {
+  val sampleFile = project.file("build/AbstractFileSystemTestFiles/metadata.txt")
+  doFirst {
+    sampleFile.parentFile.mkdirs()
+  }
+  environment("TZ" to "UTC")
+  commandLine("touch", "-t", "202601010101.01", sampleFile.path)
+}
+val touchAbstractFileSystemTestFilesModifiedAt by tasks.registering(Exec::class) {
+  dependsOn(touchAbstractFileSystemTestFilesCreatedAt)
+  val sampleFile = project.file("build/AbstractFileSystemTestFiles/metadata.txt")
+  environment("TZ" to "UTC")
+  commandLine("touch", "-t", "202602020202.02", sampleFile.path)
+}
+tasks.withType<KotlinCompileTool> {
+  dependsOn(
+    touchAbstractFileSystemTestFilesCreatedAt,
+    touchAbstractFileSystemTestFilesModifiedAt,
+  )
 }

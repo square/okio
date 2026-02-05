@@ -86,6 +86,9 @@ expect fun fromEpochSeconds(
 
 expect fun fromEpochMilliseconds(epochMilliseconds: Long): Instant
 
+fun fromIso8601String(iso8601String: String): Instant =
+  fromEpochMilliseconds(kotlin.time.Instant.parse(iso8601String).toEpochMilliseconds())
+
 expect val FileSystem.isFakeFileSystem: Boolean
 
 expect val FileSystem.allowSymlinks: Boolean
