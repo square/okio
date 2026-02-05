@@ -171,7 +171,17 @@ kotlin {
               ).also { linuxMain ->
                 linuxMain.dependsOn(nonAppleMain)
               }
-              createSourceSet("appleMain", parent = unixMain, children = appleTargets)
+              createSourceSet(
+                name = "appleMain",
+                parent = unixMain,
+                children = appleTargets,
+              ).also { appleMain ->
+                createSourceSet(
+                  name = "appleNonMacosX64Main",
+                  parent = appleMain,
+                  children = appleTargets - "macosX64",
+                )
+              }
             }
         }
 
