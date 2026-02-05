@@ -3,20 +3,16 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import groovy.util.Node
 import groovy.util.NodeList
-import java.nio.charset.StandardCharsets
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED
 import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
 import org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("build-support").apply(false)
@@ -32,6 +28,7 @@ buildscript {
     classpath(libs.spotless)
     classpath(libs.bnd)
     classpath(libs.vanniktech.publish.plugin)
+    classpath(libs.tapmoc.gradle.plugin)
   }
 
   repositories {
@@ -180,19 +177,6 @@ subprojects {
     compilerOptions.apply {
       freeCompilerArgs.add("-Xexpect-actual-classes")
     }
-  }
-
-  tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-      jvmTarget = JvmTarget.JVM_1_8
-      jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
-    }
-  }
-
-  tasks.withType<JavaCompile> {
-    options.encoding = StandardCharsets.UTF_8.toString()
-    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-    targetCompatibility = JavaVersion.VERSION_1_8.toString()
   }
 
   val testJavaVersion = System.getProperty("test.java.version", "").toIntOrNull()
