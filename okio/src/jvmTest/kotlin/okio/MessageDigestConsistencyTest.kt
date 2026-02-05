@@ -15,6 +15,8 @@
  */
 package okio
 
+import assertk.assertThat
+import assertk.assertions.isEqualTo
 import java.security.MessageDigest
 import java.util.Random
 import kotlin.test.Test
@@ -24,7 +26,6 @@ import okio.internal.Md5
 import okio.internal.Sha1
 import okio.internal.Sha256
 import okio.internal.Sha512
-import org.assertj.core.api.Assertions.assertThat
 
 /**
  * Confirm Okio is consistent with the JDK's MessageDigest algorithms for various sizes and slices.

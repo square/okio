@@ -19,8 +19,8 @@ kotlin {
     }
     val jvmTest by getting {
       dependencies {
+        implementation(libs.test.assertk)
         implementation(libs.test.junit)
-        implementation(libs.test.assertj)
       }
     }
   }

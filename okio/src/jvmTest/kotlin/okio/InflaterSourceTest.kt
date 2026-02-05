@@ -16,6 +16,11 @@
 package okio
 
 import app.cash.burst.Burst
+import assertk.assertThat
+import assertk.assertions.hasMessage
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
 import java.io.EOFException
 import java.util.zip.DeflaterOutputStream
 import java.util.zip.Inflater
@@ -23,7 +28,6 @@ import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.encodeUtf8
 import okio.TestUtil.SEGMENT_SIZE
 import okio.TestUtil.randomBytes
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Assume.assumeFalse
@@ -142,7 +146,7 @@ class InflaterSourceTest(
     val inflated = Buffer()
     val inflater = Inflater()
     val source = InflaterSource(deflatedSource, inflater)
-    assertThat(deflatedSource.exhausted()).isFalse
+    assertThat(deflatedSource.exhausted()).isFalse()
     try {
       source.read(inflated, Long.MAX_VALUE)
       fail()
@@ -151,7 +155,7 @@ class InflaterSourceTest(
     }
 
     // Despite the exception, the read() call made forward progress on the underlying stream!
-    assertThat(deflatedSource.exhausted()).isTrue
+    assertThat(deflatedSource.exhausted()).isTrue()
   }
 
   /**
@@ -166,7 +170,7 @@ class InflaterSourceTest(
     val inflated = Buffer()
     val inflater = Inflater()
     val source = InflaterSource(deflatedSource, inflater)
-    assertThat(deflatedSource.exhausted()).isFalse
+    assertThat(deflatedSource.exhausted()).isFalse()
     if (bufferFactory.isOneByteAtATime) {
       for (i in 0 until deflatedByteCount) {
         assertThat(inflater.bytesRead).isEqualTo(i.toLong())
