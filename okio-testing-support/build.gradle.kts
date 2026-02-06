@@ -63,10 +63,12 @@ kotlin {
       createSourceSet("wasmMain", children = wasmTargets)
         .also { wasmMain ->
           wasmMain.dependsOn(commonMain)
-          wasmMain.dependencies {
-            implementation(projects.okioWasifilesystem)
-          }
         }
+      val wasmWasiMain by getting {
+        dependencies {
+          implementation(project(":okio-wasifilesystem"))
+        }
+      }
     }
   }
 }
