@@ -3,8 +3,6 @@
 // https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md
 package okio.internal.preview1
 
-import kotlin.wasm.WasmImport
-
 /** `u32`. */
 typealias size = Int
 

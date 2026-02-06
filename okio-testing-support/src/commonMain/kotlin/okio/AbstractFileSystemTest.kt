@@ -25,9 +25,11 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
@@ -2705,7 +2707,7 @@ abstract class AbstractFileSystemTest(
    */
   private fun Instant.minFileSystemTime(): Instant {
     val paddedInstant = minus(200.milliseconds)
-    return fromEpochSeconds(paddedInstant.epochSeconds)
+    return Instant.fromEpochSeconds(paddedInstant.epochSeconds)
   }
 
   /**
@@ -2720,7 +2722,7 @@ abstract class AbstractFileSystemTest(
    */
   private fun Instant.maxFileSystemTime(): Instant {
     val paddedInstant = plus(200.milliseconds)
-    return fromEpochSeconds(paddedInstant.plus(2.seconds).epochSeconds)
+    return Instant.fromEpochSeconds(paddedInstant.plus(2.seconds).epochSeconds)
   }
 
   /**

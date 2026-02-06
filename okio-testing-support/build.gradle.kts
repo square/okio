@@ -64,6 +64,11 @@ kotlin {
         .also { wasmMain ->
           wasmMain.dependsOn(commonMain)
         }
+      val wasmWasiMain by getting {
+        dependencies {
+          implementation(project(":okio-wasifilesystem"))
+        }
+      }
     }
   }
 }

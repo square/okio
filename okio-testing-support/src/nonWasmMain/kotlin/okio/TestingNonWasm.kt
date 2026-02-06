@@ -17,18 +17,6 @@ package okio
 
 import okio.fakefilesystem.FakeFileSystem
 
-actual typealias Clock = kotlin.time.Clock
-
-actual typealias Instant = kotlin.time.Instant
-
-actual fun fromEpochSeconds(
-  epochSeconds: Long,
-) = Instant.fromEpochSeconds(epochSeconds)
-
-actual fun fromEpochMilliseconds(
-  epochMilliseconds: Long,
-) = Instant.fromEpochMilliseconds(epochMilliseconds)
-
 actual val FileSystem.isFakeFileSystem: Boolean
   get() = this is FakeFileSystem
 

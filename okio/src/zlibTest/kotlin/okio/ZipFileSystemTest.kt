@@ -228,8 +228,6 @@ class ZipFileSystemTest {
     val zipPath = base / "zipWithFileOutOfBoundsModifiedDate.zip"
     val zipFileSystem = fileSystem.openZip(zipPath)
 
-    println(Instant.fromEpochMilliseconds(-2147483648000L))
-
     zipFileSystem.metadata("a.txt".toPath())
       .apply {
         assertThat(isRegularFile).isTrue()

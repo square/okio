@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2020 Square, Inc.
+ * Copyright (C) 2026 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,16 +15,4 @@
  */
 package okio
 
-import kotlin.time.Clock
-import kotlin.time.Duration
-import kotlin.time.Instant
-
-class FakeClock : Clock {
-  var time = Instant.fromEpochSeconds(1609459200L) // 2021-01-01T00:00:00Z
-
-  override fun now() = time
-
-  fun sleep(duration: Duration) {
-    time = time.plus(duration)
-  }
-}
+actual fun getEnv(name: String): String? = error("unexpected call")
