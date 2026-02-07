@@ -38,7 +38,12 @@ plugins {
  *   |       |   |-- watchosArm64
  *   |       '-- linux
  *   |           |-- linuxX64
- *   |           '-- linuxArm64
+ *   |           |-- linuxArm64
+ *   |           '-- androidNative
+ *   |               |-- androidNativeArm64
+ *   |               |-- androidNativeArm32
+ *   |               |-- androidNativeX64
+ *   |               |-- androidNativeX86
  *   '-- wasm
  *       '-- wasmJs
  *       '-- wasmWasi
@@ -169,12 +174,13 @@ kotlin {
                   children = linuxTargets,
               ).also { linuxMain ->
                 linuxMain.dependsOn(nonAppleMain)
+                createSourceSet("androidNativeMain", parent = linuxMain, children = androidNativeTargets)
               }
               createSourceSet("appleMain", parent = unixMain, children = appleTargets)
             }
         }
 
-      createSourceSet("nativeTest", parent = commonTest, children = mingwTargets + linuxTargets)
+      createSourceSet("nativeTest", parent = commonTest, children = androidNativeTargets + mingwTargets + linuxTargets)
         .also { nativeTest ->
           nativeTest.dependsOn(nonJvmTest)
           nativeTest.dependsOn(nonWasmTest)
