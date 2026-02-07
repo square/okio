@@ -28,11 +28,6 @@ plugins {
  *   |   |-- mingw
  *   |   |   '-- mingwX64
  *   |   '-- unix
- *   |       |-- androidNative
- *   |       |   |-- androidNativeArm64
- *   |       |   |-- androidNativeArm32
- *   |       |   |-- androidNativeX64
- *   |       |   |-- androidNativeX86
  *   |       |-- apple
  *   |       |   |-- iosArm64
  *   |       |   |-- iosX64
@@ -43,7 +38,12 @@ plugins {
  *   |       |   |-- watchosArm64
  *   |       '-- linux
  *   |           |-- linuxX64
- *   |           '-- linuxArm64
+ *   |           |-- linuxArm64
+ *   |           '-- androidNative
+ *   |               |-- androidNativeArm64
+ *   |               |-- androidNativeArm32
+ *   |               |-- androidNativeX64
+ *   |               |-- androidNativeX86
  *   '-- wasm
  *       '-- wasmJs
  *       '-- wasmWasi
@@ -169,18 +169,12 @@ kotlin {
             .also { unixMain ->
               unixMain.dependsOn(nonJsMain)
               createSourceSet(
-                  "androidNativeMain",
-                  parent = unixMain,
-                  children = androidNativeTargets,
-              ).also { androidNative ->
-                androidNative.dependsOn(nonAppleMain)
-              }
-              createSourceSet(
                   "linuxMain",
                   parent = unixMain,
                   children = linuxTargets,
               ).also { linuxMain ->
                 linuxMain.dependsOn(nonAppleMain)
+                createSourceSet("androidNativeMain", parent = linuxMain, children = androidNativeTargets)
               }
               createSourceSet("appleMain", parent = unixMain, children = appleTargets)
             }

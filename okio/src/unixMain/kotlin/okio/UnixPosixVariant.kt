@@ -129,7 +129,7 @@ internal actual fun PosixFileSystem.variantOpenReadOnly(file: Path): FileHandle 
   return UnixFileHandle(false, openFile)
 }
 
-internal expect val DEFFILEMODE: Int
+internal const val DEFFILEMODE = 0b110110110 /* octal 666 */
 
 internal actual fun PosixFileSystem.variantOpenReadWrite(
   file: Path,
