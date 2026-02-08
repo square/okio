@@ -1,14 +1,8 @@
 # Linux User API
 
-This directory includes files from the Linux kernel, declaring symbols to build against. The license
-'GPL-2.0 WITH Linux-syscall-note' permits us to build against these symbols without being a derived
-work.
+This directory includes files from the Linux kernel user API, used as symbols to build Okio against.
+The license 'GPL-2.0 WITH Linux-syscall-note' permits us to build against these symbols without
+being a derived work.
 
 https://github.com/torvalds/linux/blob/master/LICENSES/preferred/GPL-2.0
 https://github.com/torvalds/linux/blob/master/LICENSES/exceptions/Linux-syscall-note
-
-# Declaring the __NR_statx symbol
-
-This technique borrows from the `test-statx` sample.
-
-https://github.com/torvalds/linux/blob/master/samples/vfs/test-statx.c

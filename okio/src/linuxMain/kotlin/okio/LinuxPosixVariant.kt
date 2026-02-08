@@ -19,13 +19,13 @@ import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import okio.internal.linux.AT_FDCWD
+import okio.internal.linux.AT_SYMLINK_NOFOLLOW
 import okio.internal.linux.STATX_BASIC_STATS
 import okio.internal.linux.STATX_BTIME
 import okio.internal.linux.__NR_statx
 import okio.internal.linux.statx
 import okio.internal.linux.statx_timestamp
-import platform.posix.AT_FDCWD
-import platform.posix.AT_SYMLINK_NOFOLLOW
 import platform.posix.ENOENT
 import platform.posix.ENOSYS
 import platform.posix.S_IFDIR

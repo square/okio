@@ -155,9 +155,9 @@ kotlin {
           nativeMain.dependsOn(zlibMain)
           nativeMain.dependsOn(systemFileSystemMain)
           createSourceSet(
-              "mingwMain",
-              parent = nativeMain,
-              children = mingwTargets,
+            "mingwMain",
+            parent = nativeMain,
+            children = mingwTargets,
           ).also { mingwMain ->
             mingwMain.dependsOn(nonAppleMain)
             mingwMain.dependsOn(nonJsMain)
@@ -166,9 +166,9 @@ kotlin {
             .also { unixMain ->
               unixMain.dependsOn(nonJsMain)
               createSourceSet(
-                  "linuxMain",
-                  parent = unixMain,
-                  children = linuxTargets,
+                "linuxMain",
+                parent = unixMain,
+                children = linuxTargets,
               ).also { linuxMain ->
                 linuxMain.dependsOn(nonAppleMain)
               }
@@ -213,8 +213,10 @@ kotlin {
     if (konanTarget.family == Family.LINUX) {
       compilations["main"].cinterops.create("linux") {
         packageName("okio.internal.linux")
-        header(File(project.projectDir, "src/linuxMain/headers/include/uapi/linux/stat.h"))
-        header(File(project.projectDir, "src/linuxMain/headers/__NR_statx.h"))
+        headers(
+          File(project.projectDir, "src/linuxMain/headers/include/uapi/linux/stat.h"),
+          File(project.projectDir, "src/linuxMain/headers/okio_statx.h"),
+        )
       }
     }
   }
