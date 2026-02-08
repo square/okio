@@ -23,14 +23,14 @@ import okio.internal.linux.AT_FDCWD
 import okio.internal.linux.AT_SYMLINK_NOFOLLOW
 import okio.internal.linux.STATX_BASIC_STATS
 import okio.internal.linux.STATX_BTIME
+import okio.internal.linux.S_IFDIR
+import okio.internal.linux.S_IFMT
+import okio.internal.linux.S_IFREG
 import okio.internal.linux.__NR_statx
 import okio.internal.linux.statx
 import okio.internal.linux.statx_timestamp
 import platform.posix.ENOENT
 import platform.posix.ENOSYS
-import platform.posix.S_IFDIR
-import platform.posix.S_IFMT
-import platform.posix.S_IFREG
 import platform.posix.errno
 import platform.posix.syscall
 
