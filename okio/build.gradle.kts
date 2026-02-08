@@ -3,9 +3,11 @@ import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import kotlinx.validation.ApiValidationExtension
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
+import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
   kotlin("multiplatform")
@@ -207,6 +209,15 @@ kotlin {
     }
   }
 
+  targets.withType<KotlinNativeTarget> {
+    if (konanTarget.family == Family.LINUX) {
+      compilations["main"].cinterops.create("linux") {
+        packageName("okio.internal.linux")
+        header(File(project.projectDir, "src/linuxMain/headers/include/uapi/linux/stat.h"))
+        header(File(project.projectDir, "src/linuxMain/headers/__NR_statx.h"))
+      }
+    }
+  }
   targets.withType<KotlinNativeTargetWithTests<*>> {
     binaries {
       // Configure a separate test where code runs in background

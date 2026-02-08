@@ -15,32 +15,53 @@
  */
 package okio
 
+import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import okio.internal.linux.STATX_BASIC_STATS
+import okio.internal.linux.STATX_BTIME
+import okio.internal.linux.__NR_statx
+import okio.internal.linux.statx
+import okio.internal.linux.statx_timestamp
+import platform.posix.AT_FDCWD
+import platform.posix.AT_SYMLINK_NOFOLLOW
 import platform.posix.ENOENT
+import platform.posix.ENOSYS
 import platform.posix.S_IFDIR
 import platform.posix.S_IFMT
 import platform.posix.S_IFREG
 import platform.posix.errno
-import platform.posix.lstat
-import platform.posix.stat
+import platform.posix.syscall
 
 internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetadata? {
   return memScoped {
-    val stat = alloc<stat>()
-    if (lstat(path.toString(), stat.ptr) != 0) {
+    val statx = alloc<statx>()
+    val result = syscall(
+      __NR_statx.toLong(),
+      AT_FDCWD,
+      path.toString(),
+      AT_SYMLINK_NOFOLLOW,
+      STATX_BASIC_STATS or STATX_BTIME,
+      statx.ptr,
+    )
+    if (result != 0L) {
+      if (errno == ENOSYS) return null
       if (errno == ENOENT) return null
       throw errnoToIOException(errno)
     }
     return@memScoped FileMetadata(
-      isRegularFile = stat.st_mode.toInt() and S_IFMT == S_IFREG,
-      isDirectory = stat.st_mode.toInt() and S_IFMT == S_IFDIR,
-      symlinkTarget = symlinkTarget(stat.st_mode.toInt(), path),
-      size = stat.st_size,
-      createdAtMillis = stat.st_ctim.epochMillis,
-      lastModifiedAtMillis = stat.st_mtim.epochMillis,
-      lastAccessedAtMillis = stat.st_atim.epochMillis,
+      isRegularFile = statx.stx_mode.toInt() and S_IFMT == S_IFREG,
+      isDirectory = statx.stx_mode.toInt() and S_IFMT == S_IFDIR,
+      symlinkTarget = symlinkTarget(statx.stx_mode.toInt(), path),
+      size = statx.stx_size.toLong(),
+      createdAtMillis = statx.stx_btime.epochMillis,
+      lastModifiedAtMillis = statx.stx_mtime.epochMillis,
+      lastAccessedAtMillis = statx.stx_atime.epochMillis,
     )
   }
 }
+
+@OptIn(UnsafeNumber::class)
+internal val statx_timestamp.epochMillis: Long
+  get() = tv_sec * 1000L + tv_nsec.toLong() / 1_000_000L

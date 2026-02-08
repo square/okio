@@ -187,7 +187,7 @@ internal fun variantPwrite(
 
 @OptIn(UnsafeNumber::class)
 internal val timespec.epochMillis: Long
-  get() = tv_sec * 1000L + tv_sec / 1_000_000L
+  get() = tv_sec * 1000L + tv_nsec / 1_000_000L
 
 @OptIn(UnsafeNumber::class)
 internal fun symlinkTarget(mode: Int, path: Path): Path? {
