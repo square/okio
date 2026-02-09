@@ -15,9 +15,9 @@
  */
 package okio.internal
 
-import kotlinx.cinterop.CPointed
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.CValuesRef
+import okio.Closeable
+import okio.Path
 import platform.posix.dirent
 
 /**
@@ -25,10 +25,11 @@ import platform.posix.dirent
  * POSIX directory APIs (`opendir`, `readdir`, `closedir`) cannot be used
  * directly.
  *
- * These expect declarations provide platform-specific implementations
- * for all `DIR`-related functionality.
+ * [PosixDirectory] provides platform-specific implementation
+ * for `DIR`-related functionality.
  */
-internal expect class DIR : CPointed
-internal expect fun opendir(path: String): CPointer<DIR>?
-internal expect fun readdir(dir: CValuesRef<DIR>): CPointer<dirent>?
-internal expect fun closedir(dir: CValuesRef<DIR>): Int
+internal expect class PosixDirectory(path: Path) : Closeable {
+  val isInvalid: Boolean
+  fun nextEntry(): CPointer<dirent>?
+  override fun close()
+}
