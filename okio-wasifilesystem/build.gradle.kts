@@ -71,6 +71,7 @@ val injectWasiInit by tasks.creating {
     val base = File(System.getProperty("java.io.tmpdir"), "okio-wasifilesystem-test")
     val baseA = File(base, "a")
     val baseB = File(base, "b")
+    val okio = rootDir
     base.mkdirs()
     baseA.mkdirs()
     baseB.mkdirs()
@@ -80,15 +81,21 @@ val injectWasiInit by tasks.creating {
       import { WASI } from 'wasi';
       import { argv, env } from 'node:process';
 
+      var wasiEnv = Object.assign({}, env);
+      wasiEnv['OKIO_ROOT'] = '/okio';
+      wasiEnv['WasiTest.testEnv.empty'] = '';
+      wasiEnv['WasiTest.testEnv.nonempty'] = 'hello';
+
       const wasi = new WASI({
         version: 'preview1',
         args: argv,
         preopens: {
           '/tmp': '$base',
           '/a': '$baseA',
-          '/b': '$baseB'
+          '/b': '$baseB',
+          '/okio': '$okio'
         },
-        env,
+        env: wasiEnv,
       });
 
       const fs = await import('node:fs');

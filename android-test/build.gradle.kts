@@ -79,6 +79,6 @@ dependencies {
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.kotlin.test)
   androidTestImplementation(libs.kotlin.time)
-  androidTestImplementation(libs.test.assertj)
+  androidTestImplementation(libs.test.assertk)
   androidTestImplementation(libs.test.junit)
 }

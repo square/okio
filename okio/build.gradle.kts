@@ -132,7 +132,6 @@ kotlin {
       dependsOn(zlibTest)
       dependencies {
         implementation(libs.test.junit)
-        implementation(libs.test.assertj)
         implementation(libs.test.jimfs)
       }
     }

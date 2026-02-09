@@ -17,7 +17,7 @@ package okio
 
 import kotlin.random.Random
 import kotlin.test.assertEquals
-import kotlin.time.Duration
+import kotlin.time.Instant
 import okio.ByteString.Companion.toByteString
 import okio.Path.Companion.toPath
 
@@ -45,46 +45,20 @@ expect fun isWasm(): Boolean
 val FileMetadata.createdAt: Instant?
   get() {
     val createdAt = createdAtMillis ?: return null
-    return fromEpochMilliseconds(createdAt)
+    return Instant.fromEpochMilliseconds(createdAt)
   }
 
 val FileMetadata.lastModifiedAt: Instant?
   get() {
     val lastModifiedAt = lastModifiedAtMillis ?: return null
-    return fromEpochMilliseconds(lastModifiedAt)
+    return Instant.fromEpochMilliseconds(lastModifiedAt)
   }
 
 val FileMetadata.lastAccessedAt: Instant?
   get() {
     val lastAccessedAt = lastAccessedAtMillis ?: return null
-    return fromEpochMilliseconds(lastAccessedAt)
+    return Instant.fromEpochMilliseconds(lastAccessedAt)
   }
-
-/*
- * This file contains some declarations from kotlinx.datetime used by [AbstractFileSystemTest], but
- * that we can't use because that library isn't yet available for WASM. We should delete these when
- * WASM is supported in kotlinx.datetime.
- */
-
-expect interface Clock {
-  fun now(): Instant
-}
-
-expect class Instant : Comparable<Instant> {
-  val epochSeconds: Long
-
-  operator fun plus(duration: Duration): Instant
-
-  operator fun minus(duration: Duration): Instant
-
-  override operator fun compareTo(other: Instant): Int
-}
-
-expect fun fromEpochSeconds(
-  epochSeconds: Long,
-): Instant
-
-expect fun fromEpochMilliseconds(epochMilliseconds: Long): Instant
 
 expect val FileSystem.isFakeFileSystem: Boolean
 
