@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package platform.posix
+package okio.internal
 
-/**
- * Workaround `platform.posix.DIR` not being available on Android Native.
- */
-internal typealias DIR = cnames.structs.DIR
+import kotlinx.cinterop.CValuesRef
+
+internal actual typealias DIR = cnames.structs.DIR
+internal actual fun opendir(path: String) = platform.posix.opendir(path)
+internal actual fun readdir(dir: CValuesRef<DIR>) = platform.posix.readdir(dir)
+internal actual fun closedir(dir: CValuesRef<DIR>) = platform.posix.closedir(dir)

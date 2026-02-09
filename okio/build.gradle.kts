@@ -178,6 +178,8 @@ kotlin {
               }
               createSourceSet("appleMain", parent = unixMain, children = appleTargets)
             }
+
+          createSourceSet("nativeNonAndroidMain", parent = nativeMain, children = appleTargets + mingwTargets + linuxTargets)
         }
 
       createSourceSet("nativeTest", parent = commonTest, children = androidNativeTargets + mingwTargets + linuxTargets)

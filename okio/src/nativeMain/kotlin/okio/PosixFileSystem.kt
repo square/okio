@@ -18,13 +18,13 @@ package okio
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
+import okio.internal.closedir
+import okio.internal.opendir
+import okio.internal.readdir
 import okio.internal.toPath
 import platform.posix.EEXIST
-import platform.posix.closedir
 import platform.posix.dirent
 import platform.posix.errno
-import platform.posix.opendir
-import platform.posix.readdir
 import platform.posix.set_posix_errno
 
 internal object PosixFileSystem : FileSystem() {
