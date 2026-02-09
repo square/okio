@@ -1477,6 +1477,7 @@ abstract class AbstractFileSystemTest(
     if (fileSystem.isFakeFileSystem) return
     if (fileSystem is ForwardingFileSystem) return
     if (isJimFileSystem()) return
+    if (!fileSystemHasGoodMetadata) return
 
     // These timestamps are hardcoded in the following Gradle tasks:
     //   :okio-testing-support:touchAbstractFileSystemTestFilesCreatedAt

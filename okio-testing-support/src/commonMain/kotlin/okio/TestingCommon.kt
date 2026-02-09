@@ -40,6 +40,14 @@ fun randomToken(length: Int) = Random.nextBytes(length).toByteString(0, length).
 
 expect fun isBrowser(): Boolean
 
+/**
+ * Returns true if the host file system probably exposes metadata like file creation time.
+ *
+ * The file system that GitHub actions gives us doesn't do anything when we `touch` a file.
+ */
+val fileSystemHasGoodMetadata: Boolean
+  get() = getEnv("GITHUB_WORKSPACE") == null
+
 val FileMetadata.createdAt: Instant?
   get() {
     val createdAt = createdAtMillis ?: return null
