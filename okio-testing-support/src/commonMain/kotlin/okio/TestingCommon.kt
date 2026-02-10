@@ -40,8 +40,6 @@ fun randomToken(length: Int) = Random.nextBytes(length).toByteString(0, length).
 
 expect fun isBrowser(): Boolean
 
-expect fun isWasm(): Boolean
-
 val FileMetadata.createdAt: Instant?
   get() {
     val createdAt = createdAtMillis ?: return null

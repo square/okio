@@ -21,8 +21,6 @@ import kotlin.time.ExperimentalTime
 
 actual fun isBrowser() = false
 
-actual fun isWasm() = true
-
 actual val FileSystem.isFakeFileSystem: Boolean
   get() = false
 
