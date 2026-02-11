@@ -93,7 +93,7 @@ internal object PosixFileSystem : FileSystem() {
     if (result != 0) {
       if (errno == EEXIST) {
         if (mustCreate) {
-          errnoToIOException(errno)
+          throw errnoToIOException(errno)
         } else {
           return
         }
