@@ -15,17 +15,21 @@
  */
 package okio.internal
 
+import kotlinx.cinterop.COpaquePointer
+import kotlinx.cinterop.reinterpret
 import okio.Closeable
 import okio.Path
 import platform.posix.closedir
 import platform.posix.opendir
 import platform.posix.readdir
 
-internal actual class PosixDirectory actual constructor(path: Path) : Closeable {
-  private val dir = opendir(path.toString())
-  actual val isInvalid get() = dir == null
-  actual fun nextEntry() = readdir(dir)
+internal actual value class PosixDirectory(private val dir: COpaquePointer) : Closeable {
+  actual fun nextEntry() = readdir(dir.reinterpret())
   actual override fun close() {
-    closedir(dir) // Ignore errno from closedir.
+    closedir(dir.reinterpret()) // Ignore errno from closedir.
   }
+}
+
+internal actual fun openPosixDirectory(path: Path): PosixDirectory? {
+  return opendir(path.toString())?.let(::PosixDirectory)
 }

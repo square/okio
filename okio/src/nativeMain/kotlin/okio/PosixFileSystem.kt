@@ -17,7 +17,7 @@ package okio
 
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
-import okio.internal.PosixDirectory
+import okio.internal.openPosixDirectory
 import okio.internal.toPath
 import platform.posix.EEXIST
 import platform.posix.errno
@@ -36,10 +36,8 @@ internal object PosixFileSystem : FileSystem() {
   override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
 
   private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
-    val posixDir = PosixDirectory(dir)
-    if (posixDir.isInvalid) {
-      if (throwOnFailure) throw errnoToIOException(errno) else return null
-    }
+    val posixDir = openPosixDirectory(dir)
+      ?: if (throwOnFailure) throw errnoToIOException(errno) else return null
     posixDir.use {
       val result = mutableListOf<Path>()
       val buffer = Buffer()
