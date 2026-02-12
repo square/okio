@@ -15,6 +15,12 @@
  */
 package okio
 
+import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.decrementAndFetch
+import kotlin.concurrent.atomics.plusAssign
+
 /**
  * An open file for reading and writing; using either streaming and random access.
  *
@@ -32,6 +38,7 @@ package okio
  * File handles may be used by multiple threads concurrently. But the individual sources and sinks
  * produced by a file handle are not safe for concurrent use.
  */
+@OptIn(ExperimentalAtomicApi::class)
 abstract class FileHandle(
   /**
    * True if this handle supports both reading and writing. If this is false all write operations
@@ -44,15 +51,13 @@ abstract class FileHandle(
    * True once the file handle is closed. Resources should be released with [protectedClose] once
    * this is true and [openStreamCount] is 0.
    */
-  private var closed = false
+  private var closed = AtomicBoolean(false)
 
   /**
    * Reference count of the number of open sources and sinks on this file handle. Resources should
    * be released with [protectedClose] once this is 0 and [closed] is true.
    */
-  private var openStreamCount = 0
-
-  val lock: Lock = newLock()
+  private var openStreamCount = AtomicInt(0)
 
   /**
    * Reads at least 1, and up to [byteCount] bytes from this starting at [fileOffset] and copies
@@ -66,9 +71,7 @@ abstract class FileHandle(
     arrayOffset: Int,
     byteCount: Int,
   ): Int {
-    lock.withLock {
-      check(!closed) { "closed" }
-    }
+    check(!closed.load()) { "closed" }
     return protectedRead(fileOffset, array, arrayOffset, byteCount)
   }
 
@@ -78,9 +81,7 @@ abstract class FileHandle(
    */
   @Throws(IOException::class)
   fun read(fileOffset: Long, sink: Buffer, byteCount: Long): Long {
-    lock.withLock {
-      check(!closed) { "closed" }
-    }
+    check(!closed.load()) { "closed" }
     return readNoCloseCheck(fileOffset, sink, byteCount)
   }
 
@@ -89,9 +90,7 @@ abstract class FileHandle(
    */
   @Throws(IOException::class)
   fun size(): Long {
-    lock.withLock {
-      check(!closed) { "closed" }
-    }
+    check(!closed.load()) { "closed" }
     return protectedSize()
   }
 
@@ -102,9 +101,7 @@ abstract class FileHandle(
   @Throws(IOException::class)
   fun resize(size: Long) {
     check(readWrite) { "file handle is read-only" }
-    lock.withLock {
-      check(!closed) { "closed" }
-    }
+    check(!closed.load()) { "closed" }
     return protectedResize(size)
   }
 
@@ -116,9 +113,7 @@ abstract class FileHandle(
     byteCount: Int,
   ) {
     check(readWrite) { "file handle is read-only" }
-    lock.withLock {
-      check(!closed) { "closed" }
-    }
+    check(!closed.load()) { "closed" }
     return protectedWrite(fileOffset, array, arrayOffset, byteCount)
   }
 
@@ -126,9 +121,7 @@ abstract class FileHandle(
   @Throws(IOException::class)
   fun write(fileOffset: Long, source: Buffer, byteCount: Long) {
     check(readWrite) { "file handle is read-only" }
-    lock.withLock {
-      check(!closed) { "closed" }
-    }
+    check(!closed.load()) { "closed" }
     writeNoCloseCheck(fileOffset, source, byteCount)
   }
 
@@ -136,9 +129,7 @@ abstract class FileHandle(
   @Throws(IOException::class)
   fun flush() {
     check(readWrite) { "file handle is read-only" }
-    lock.withLock {
-      check(!closed) { "closed" }
-    }
+    check(!closed.load()) { "closed" }
     return protectedFlush()
   }
 
@@ -148,10 +139,8 @@ abstract class FileHandle(
    */
   @Throws(IOException::class)
   fun source(fileOffset: Long = 0L): Source {
-    lock.withLock {
-      check(!closed) { "closed" }
-      openStreamCount++
-    }
+    check(!closed.load()) { "closed" }
+    openStreamCount += 1
     return FileHandleSource(this, fileOffset)
   }
 
@@ -218,10 +207,8 @@ abstract class FileHandle(
   @Throws(IOException::class)
   fun sink(fileOffset: Long = 0L): Sink {
     check(readWrite) { "file handle is read-only" }
-    lock.withLock {
-      check(!closed) { "closed" }
-      openStreamCount++
-    }
+    check(!closed.load()) { "closed" }
+    openStreamCount += 1
     return FileHandleSink(this, fileOffset)
   }
 
@@ -284,11 +271,8 @@ abstract class FileHandle(
 
   @Throws(IOException::class)
   final override fun close() {
-    lock.withLock {
-      if (closed) return
-      closed = true
-      if (openStreamCount != 0) return
-    }
+    if (!closed.compareAndSet(expectedValue = false, newValue = true)) return
+    if (openStreamCount.load() != 0) return
     protectedClose()
   }
 
@@ -407,10 +391,8 @@ abstract class FileHandle(
     override fun close() {
       if (closed) return
       closed = true
-      fileHandle.lock.withLock {
-        fileHandle.openStreamCount--
-        if (fileHandle.openStreamCount != 0 || !fileHandle.closed) return@close
-      }
+      if (fileHandle.openStreamCount.decrementAndFetch() != 0) return
+      if (!fileHandle.closed.load()) return
       fileHandle.protectedClose()
     }
   }
@@ -433,10 +415,8 @@ abstract class FileHandle(
     override fun close() {
       if (closed) return
       closed = true
-      fileHandle.lock.withLock {
-        fileHandle.openStreamCount--
-        if (fileHandle.openStreamCount != 0 || !fileHandle.closed) return@close
-      }
+      if (fileHandle.openStreamCount.decrementAndFetch() != 0) return
+      if (!fileHandle.closed.load()) return
       fileHandle.protectedClose()
     }
   }
