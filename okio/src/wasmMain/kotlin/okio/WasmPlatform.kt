@@ -15,5 +15,26 @@
  */
 package okio
 
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+
 internal actual val PLATFORM_DIRECTORY_SEPARATOR: String
   get() = "/"
+
+actual class Lock {
+  companion object {
+    val instance = Lock()
+  }
+}
+
+internal actual fun newLock(): Lock = Lock.instance
+
+@OptIn(ExperimentalContracts::class)
+actual inline fun <T> Lock.withLock(action: () -> T): T {
+  contract {
+    callsInPlace(action, InvocationKind.EXACTLY_ONCE)
+  }
+
+  return action()
+}
