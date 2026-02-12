@@ -26,6 +26,12 @@ internal expect fun String.asUtf8ToByteArray(): ByteArray
 // TODO make internal https://youtrack.jetbrains.com/issue/KT-37316
 expect class ArrayIndexOutOfBoundsException(message: String?) : IndexOutOfBoundsException
 
+expect class Lock
+
+expect inline fun <T> Lock.withLock(action: () -> T): T
+
+internal expect fun newLock(): Lock
+
 expect open class IOException(message: String?, cause: Throwable?) : Exception {
   constructor(message: String?)
   constructor()
