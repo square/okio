@@ -17,29 +17,26 @@ package okio
 
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.ref.createCleaner
 import platform.windows.CloseHandle
 import platform.windows.CreateMutexA
 import platform.windows.INFINITE
 import platform.windows.ReleaseMutex
 import platform.windows.WaitForSingleObject
 
-actual class Lock {
+actual class Lock : Closeable {
   val mutex = CreateMutexA(
     null,
     0,
     null
   ) ?: throw lastErrorToIOException()
 
-  @Suppress("unused")
-  @OptIn(ExperimentalNativeApi::class)
-  private val cleaner = createCleaner(mutex) {
+  override fun close() {
     CloseHandle(mutex)
   }
 }
 
 internal actual fun newLock(): Lock = Lock()
+internal actual inline fun Lock.destroy() = close()
 
 actual inline fun <T> Lock.withLock(action: () -> T): T {
   contract {
