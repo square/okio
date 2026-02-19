@@ -23,7 +23,12 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.free
 import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.ptr
-import platform.posix.*
+import platform.posix.errno
+import platform.posix.pthread_mutex_destroy
+import platform.posix.pthread_mutex_init
+import platform.posix.pthread_mutex_lock
+import platform.posix.pthread_mutex_t
+import platform.posix.pthread_mutex_unlock
 
 actual class Lock {
   val mutex = nativeHeap.alloc<pthread_mutex_t>().apply {
