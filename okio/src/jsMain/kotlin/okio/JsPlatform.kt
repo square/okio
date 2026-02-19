@@ -57,6 +57,7 @@ internal val tmpdir: String
 actual typealias Lock = Unit
 
 internal actual fun newLock(): Lock = Unit
+internal actual inline fun Lock.destroy() = Unit
 
 actual inline fun <T> Lock.withLock(action: () -> T): T {
   contract {

@@ -25,6 +25,7 @@ internal actual val PLATFORM_DIRECTORY_SEPARATOR: String
 actual typealias Lock = Unit
 
 internal actual fun newLock(): Lock = Unit
+internal actual inline fun Lock.destroy() = Unit
 
 @OptIn(ExperimentalContracts::class)
 actual inline fun <T> Lock.withLock(action: () -> T): T {

@@ -17,8 +17,6 @@ package okio
 
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.ref.createCleaner
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.free
 import kotlinx.cinterop.nativeHeap
@@ -30,22 +28,21 @@ import platform.posix.pthread_mutex_lock
 import platform.posix.pthread_mutex_t
 import platform.posix.pthread_mutex_unlock
 
-actual class Lock {
+actual class Lock : Closeable {
   val mutex = nativeHeap.alloc<pthread_mutex_t>().apply {
     if (pthread_mutex_init(ptr, null) != 0) {
       throw errnoToIOException(errno)
     }
   }
 
-  @Suppress("unused")
-  @OptIn(ExperimentalNativeApi::class)
-  private val cleaner = createCleaner(mutex) {
-    pthread_mutex_destroy(it.ptr)
-    nativeHeap.free(it)
+  override fun close() {
+    pthread_mutex_destroy(mutex.ptr)
+    nativeHeap.free(mutex)
   }
 }
 
 internal actual fun newLock(): Lock = Lock()
+internal actual inline fun Lock.destroy() = close()
 
 actual inline fun <T> Lock.withLock(action: () -> T): T {
   contract {
