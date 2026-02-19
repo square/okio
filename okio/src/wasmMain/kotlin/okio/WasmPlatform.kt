@@ -22,13 +22,9 @@ import kotlin.contracts.contract
 internal actual val PLATFORM_DIRECTORY_SEPARATOR: String
   get() = "/"
 
-actual class Lock {
-  companion object {
-    val instance = Lock()
-  }
-}
+actual typealias Lock = Unit
 
-internal actual fun newLock(): Lock = Lock.instance
+internal actual fun newLock(): Lock = Unit
 
 @OptIn(ExperimentalContracts::class)
 actual inline fun <T> Lock.withLock(action: () -> T): T {
