@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:MustUseReturnValue
 package okio
 
 import java.io.IOException
@@ -46,6 +47,7 @@ actual open class Timeout {
    * If `timeout == 0`, operations will run indefinitely. (Operating system timeouts may still
    * apply.)
    */
+  @IgnorableReturnValue
   open fun timeout(timeout: Long, unit: TimeUnit): Timeout {
     require(timeout >= 0) { "timeout < 0: $timeout" }
     timeoutNanos = unit.toNanos(timeout)
@@ -73,6 +75,7 @@ actual open class Timeout {
    * complete before this time. Use a deadline to set a maximum bound on the time spent on a
    * sequence of operations.
    */
+  @IgnorableReturnValue
   open fun deadlineNanoTime(deadlineNanoTime: Long): Timeout {
     this.hasDeadline = true
     this.deadlineNanoTime = deadlineNanoTime
@@ -80,18 +83,21 @@ actual open class Timeout {
   }
 
   /** Set a deadline of now plus `duration` time.  */
+  @IgnorableReturnValue
   fun deadline(duration: Long, unit: TimeUnit): Timeout {
     require(duration > 0) { "duration <= 0: $duration" }
     return deadlineNanoTime(System.nanoTime() + unit.toNanos(duration))
   }
 
   /** Clears the timeout. Operating system timeouts may still apply. */
+  @IgnorableReturnValue
   open fun clearTimeout(): Timeout {
     timeoutNanos = 0
     return this
   }
 
   /** Clears the deadline. */
+  @IgnorableReturnValue
   open fun clearDeadline(): Timeout {
     hasDeadline = false
     return this
