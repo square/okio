@@ -28,7 +28,6 @@ import okio.Segment
 import okio.SegmentedByteString
 import okio.arrayRangeEquals
 import okio.checkOffsetAndCount
-import okio.resolveDefaultParameter
 
 internal fun IntArray.binarySearch(value: Int, fromIndex: Int, toIndex: Int): Int {
   var left = fromIndex
@@ -101,7 +100,6 @@ private inline fun SegmentedByteString.forEachSegment(
 // have to call these functions. Remove all this nonsense when expect class allow actual code.
 
 internal inline fun SegmentedByteString.commonSubstring(beginIndex: Int, endIndex: Int): ByteString {
-  val endIndex = resolveDefaultParameter(endIndex)
   require(beginIndex >= 0) { "beginIndex=$beginIndex < 0" }
   require(endIndex <= size) { "endIndex=$endIndex > length($size)" }
 
