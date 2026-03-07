@@ -103,9 +103,9 @@ expect class Buffer() : BufferedSource, BufferedSink {
   /** Returns an immutable copy of the first `byteCount` bytes of this buffer as a byte string. */
   fun snapshot(byteCount: Int): ByteString
 
-  fun readUnsafe(unsafeCursor: UnsafeCursor = DEFAULT__new_UnsafeCursor): UnsafeCursor
+  fun readUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor
 
-  fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor = DEFAULT__new_UnsafeCursor): UnsafeCursor
+  fun readAndWriteUnsafe(unsafeCursor: UnsafeCursor = UnsafeCursor()): UnsafeCursor
 
   override val buffer: Buffer
   override fun close()
