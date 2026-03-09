@@ -37,7 +37,6 @@ import okio.and
 import okio.asUtf8ToByteArray
 import okio.checkOffsetAndCount
 import okio.minOf
-import okio.resolveDefaultParameter
 import okio.toHexString
 
 internal val HEX_DIGIT_BYTES = "0123456789abcdef".asUtf8ToByteArray()
@@ -1528,7 +1527,6 @@ internal inline fun Buffer.commonSnapshot(byteCount: Int): ByteString {
 }
 
 internal fun Buffer.commonReadUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor {
-  val unsafeCursor = resolveDefaultParameter(unsafeCursor)
   check(unsafeCursor.buffer == null) { "already attached to a buffer" }
 
   unsafeCursor.buffer = this
@@ -1537,7 +1535,6 @@ internal fun Buffer.commonReadUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor {
 }
 
 internal fun Buffer.commonReadAndWriteUnsafe(unsafeCursor: UnsafeCursor): UnsafeCursor {
-  val unsafeCursor = resolveDefaultParameter(unsafeCursor)
   check(unsafeCursor.buffer == null) { "already attached to a buffer" }
 
   unsafeCursor.buffer = this

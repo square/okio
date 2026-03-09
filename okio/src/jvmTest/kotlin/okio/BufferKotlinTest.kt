@@ -15,8 +15,9 @@
  */
 package okio
 
+import assertk.assertThat
+import assertk.assertions.isEqualTo
 import kotlin.test.assertFailsWith
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class BufferKotlinTest {

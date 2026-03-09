@@ -1,5 +1,6 @@
 plugins {
   kotlin("multiplatform")
+  id("com.gradleup.tapmoc")
 }
 
 kotlin {
@@ -18,9 +19,15 @@ kotlin {
     }
     val jvmTest by getting {
       dependencies {
+        implementation(libs.test.assertk)
         implementation(libs.test.junit)
-        implementation(libs.test.assertj)
       }
     }
   }
+}
+
+tapmoc {
+  java(8)
+  kotlin(project.getVersionByName("kotlinCoreLibrariesVersion"))
+  checkDependencies()
 }
