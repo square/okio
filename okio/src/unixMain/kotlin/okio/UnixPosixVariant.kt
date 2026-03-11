@@ -48,7 +48,6 @@ import platform.posix.readlink
 import platform.posix.realpath
 import platform.posix.remove
 import platform.posix.rename
-import platform.posix.stat
 import platform.posix.symlink
 import platform.posix.timespec
 
@@ -188,11 +187,11 @@ internal fun variantPwrite(
 
 @OptIn(UnsafeNumber::class)
 internal val timespec.epochMillis: Long
-  get() = tv_sec * 1000L + tv_sec / 1_000_000L
+  get() = tv_sec * 1000L + tv_nsec / 1_000_000L
 
 @OptIn(UnsafeNumber::class)
-internal fun symlinkTarget(stat: stat, path: Path): Path? {
-  if (stat.st_mode.toInt() and S_IFMT != S_IFLNK) return null
+internal fun symlinkTarget(mode: Int, path: Path): Path? {
+  if (mode and S_IFMT != S_IFLNK) return null
 
   // `path` is a symlink, let's resolve its target.
   memScoped {
