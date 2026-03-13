@@ -4,7 +4,7 @@ plugins {
 }
 
 jmh {
-  includes.set(listOf(".*AsyncTimeoutBenchmark.*"))
+  includes.set(listOf(".*AsyncTimeout.*Benchmark.*"))
 }
 
 dependencies {
