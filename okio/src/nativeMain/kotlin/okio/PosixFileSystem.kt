@@ -15,16 +15,12 @@
  */
 package okio
 
-import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.get
 import okio.Path.Companion.toPath
+import okio.internal.openPosixDirectory
 import okio.internal.toPath
 import platform.posix.EEXIST
-import platform.posix.closedir
-import platform.posix.dirent
 import platform.posix.errno
-import platform.posix.opendir
-import platform.posix.readdir
 import platform.posix.set_posix_errno
 
 internal object PosixFileSystem : FileSystem() {
@@ -40,16 +36,15 @@ internal object PosixFileSystem : FileSystem() {
   override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
 
   private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
-    val opendir = opendir(dir.toString())
+    val posixDir = openPosixDirectory(dir)
       ?: if (throwOnFailure) throw errnoToIOException(errno) else return null
-
-    try {
+    posixDir.use {
       val result = mutableListOf<Path>()
       val buffer = Buffer()
 
       set_posix_errno(0) // If readdir() returns null it's either the end or an error.
       while (true) {
-        val dirent: CPointer<dirent> = readdir(opendir) ?: break
+        val dirent = it.nextEntry() ?: break
         val childPath = buffer.writeNullTerminated(
           bytes = dirent[0].d_name,
         ).toPath(normalize = true)
@@ -71,8 +66,6 @@ internal object PosixFileSystem : FileSystem() {
 
       result.sort()
       return result
-    } finally {
-      closedir(opendir) // Ignore errno from closedir.
     }
   }
 
