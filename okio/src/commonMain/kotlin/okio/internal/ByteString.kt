@@ -30,7 +30,6 @@ import okio.decodeBase64ToArray
 import okio.encodeBase64
 import okio.isIsoControl
 import okio.processUtf8CodePoints
-import okio.resolveDefaultParameter
 import okio.shr
 import okio.toUtf8String
 
@@ -126,7 +125,6 @@ internal inline fun ByteString.commonToAsciiUppercase(): ByteString {
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonSubstring(beginIndex: Int, endIndex: Int): ByteString {
-  val endIndex = resolveDefaultParameter(endIndex)
   require(beginIndex >= 0) { "beginIndex < 0" }
   require(endIndex <= data.size) { "endIndex > length(${data.size})" }
 
@@ -218,7 +216,6 @@ internal inline fun ByteString.commonLastIndexOf(
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonLastIndexOf(other: ByteArray, fromIndex: Int): Int {
-  val fromIndex = resolveDefaultParameter(fromIndex)
   val limit = data.size - other.size
   for (i in minOf(fromIndex, limit) downTo 0) {
     if (arrayRangeEquals(data, i, other, 0, other.size)) {
@@ -270,7 +267,6 @@ internal inline fun commonOf(data: ByteArray) = ByteString(data.copyOf())
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteArray.commonToByteString(offset: Int, byteCount: Int): ByteString {
-  val byteCount = resolveDefaultParameter(byteCount)
   checkOffsetAndCount(size.toLong(), offset.toLong(), byteCount.toLong())
   return ByteString(copyOfRange(offset, offset + byteCount))
 }
