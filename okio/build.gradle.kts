@@ -218,7 +218,7 @@ kotlin {
   }
 
   targets.withType<KotlinNativeTarget> {
-    if (konanTarget.family == Family.LINUX) {
+    if (konanTarget.family == Family.LINUX || konanTarget.family == Family.ANDROID) {
       compilations["main"].cinterops.create("linux") {
         packageName("okio.internal.linux")
         headers(
