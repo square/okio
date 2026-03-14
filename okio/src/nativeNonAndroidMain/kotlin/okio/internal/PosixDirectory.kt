@@ -30,6 +30,7 @@ internal actual value class PosixDirectory(private val dir: COpaquePointer) : Cl
   }
 }
 
-internal actual fun openPosixDirectory(path: Path): PosixDirectory? {
+@Suppress("NOTHING_TO_INLINE")
+internal actual inline fun openPosixDirectory(path: Path): PosixDirectory? {
   return opendir(path.toString())?.let(::PosixDirectory)
 }
