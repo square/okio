@@ -170,6 +170,9 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
 
   override fun equals(other: Any?): Boolean
 
+  @JvmOverloads
+  fun equals(other: ByteString, constantTime: Boolean = false): Boolean
+
   override fun hashCode(): Int
 
   override fun compareTo(other: ByteString): Int

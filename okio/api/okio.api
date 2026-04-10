@@ -310,6 +310,9 @@ public class okio/ByteString : java/io/Serializable, java/lang/Comparable {
 	public final fun endsWith (Lokio/ByteString;)Z
 	public final fun endsWith ([B)Z
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun equals (Lokio/ByteString;)Z
+	public final fun equals (Lokio/ByteString;Z)Z
+	public static synthetic fun equals$default (Lokio/ByteString;Lokio/ByteString;ZILjava/lang/Object;)Z
 	public final fun getByte (I)B
 	public fun hashCode ()I
 	public fun hex ()Ljava/lang/String;
