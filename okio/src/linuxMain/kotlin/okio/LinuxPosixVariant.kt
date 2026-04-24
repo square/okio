@@ -17,6 +17,7 @@ package okio
 
 import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import okio.internal.linux.AT_FDCWD
@@ -40,18 +41,19 @@ import platform.posix.syscall
  * Prefer `statx()` if it's available. Fall back to `stat()` which doesn't have a field for
  * `createdAt`.
  */
+@OptIn(UnsafeNumber::class)
 internal actual fun PosixFileSystem.variantMetadataOrNull(path: Path): FileMetadata? {
   memScoped {
     val statx = alloc<statx>()
     val result = syscall(
-      __NR_statx.toLong(),
+      __NR_statx.convert(),
       AT_FDCWD,
       path.toString(),
       AT_SYMLINK_NOFOLLOW,
       STATX_BASIC_STATS or STATX_BTIME,
       statx.ptr,
-    )
-    if (result == 0L) {
+    ).convert<Int>()
+    if (result == 0) {
       return FileMetadata(
         isRegularFile = statx.stx_mode.toInt() and S_IFMT == S_IFREG,
         isDirectory = statx.stx_mode.toInt() and S_IFMT == S_IFDIR,
