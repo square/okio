@@ -41,7 +41,7 @@ internal actual class SegmentedByteString internal actual constructor(
 
   override fun string(charset: Charset) = toByteString().string(charset)
 
-  override fun base64() = toByteString().base64()
+  override fun base64(includePadding: Boolean) = toByteString().base64(includePadding = includePadding)
 
   override fun hex() = toByteString().hex()
 
@@ -72,7 +72,7 @@ internal actual class SegmentedByteString internal actual constructor(
     }
   }
 
-  override fun base64Url() = toByteString().base64Url()
+  override fun base64Url(includePadding: Boolean) = toByteString().base64Url(includePadding = includePadding)
 
   override fun substring(beginIndex: Int, endIndex: Int): ByteString =
     commonSubstring(beginIndex, endIndex)
