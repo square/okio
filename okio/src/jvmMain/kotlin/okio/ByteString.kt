@@ -106,6 +106,7 @@ internal actual constructor(
     }
   }
 
+  @JvmOverloads
   actual open fun base64Url(includePadding: Boolean) = commonBase64Url(includePadding = includePadding)
 
   actual open fun hex(): String = commonHex()
