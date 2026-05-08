@@ -68,7 +68,8 @@ internal actual constructor(
   /** Constructs a new `String` by decoding the bytes using `charset`.  */
   open fun string(charset: Charset) = String(data, charset)
 
-  actual open fun base64() = commonBase64()
+  @JvmOverloads
+  actual open fun base64(includePadding: Boolean) = commonBase64(includePadding = includePadding)
 
   actual fun md5() = digest("MD5")
 
@@ -105,7 +106,8 @@ internal actual constructor(
     }
   }
 
-  actual open fun base64Url() = commonBase64Url()
+  @JvmOverloads
+  actual open fun base64Url(includePadding: Boolean) = commonBase64Url(includePadding = includePadding)
 
   actual open fun hex(): String = commonHex()
 
