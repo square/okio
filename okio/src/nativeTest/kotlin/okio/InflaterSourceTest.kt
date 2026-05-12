@@ -159,7 +159,7 @@ class InflaterSourceTest {
     var nextException: Throwable? = null
     var closed = false
 
-    override fun read(sink: Buffer, byteCount: Long): Long {
+    override fun read(sink: BufferedSink, byteCount: Long): Long {
       nextException?.let { nextException = null; throw it }
       return data.read(sink, byteCount)
     }

@@ -70,7 +70,7 @@ class GzipSink(sink: Sink) : Sink {
   }
 
   @Throws(IOException::class)
-  override fun write(source: Buffer, byteCount: Long) {
+  override fun write(source: BufferedSource, byteCount: Long) {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     if (byteCount == 0L) return
 
@@ -123,8 +123,8 @@ class GzipSink(sink: Sink) : Sink {
   }
 
   /** Updates the CRC with the given bytes. */
-  private fun updateCrc(buffer: Buffer, byteCount: Long) {
-    var head = buffer.head!!
+  private fun updateCrc(buffer: BufferedSource, byteCount: Long) {
+    var head = buffer.buffer.head!!
     var remaining = byteCount
     while (remaining > 0) {
       val segmentLength = minOf(remaining, head.limit - head.pos).toInt()

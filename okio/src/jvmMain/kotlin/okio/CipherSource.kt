@@ -33,7 +33,7 @@ class CipherSource(
   }
 
   @Throws(IOException::class)
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  override fun read(sink: BufferedSink, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
     if (byteCount == 0L) return 0L

@@ -133,7 +133,7 @@ class PipeKotlinTest {
     pipe.sink.write(Buffer().write(data), data.size.toLong())
     val foldResult = executorService.submit {
       val sink = object : Sink {
-        override fun write(source: Buffer, byteCount: Long) {
+        override fun write(source: BufferedSource, byteCount: Long) {
           writing.countDown()
           closed.await()
           sinkBuffer.write(source, byteCount)
@@ -565,7 +565,7 @@ class PipeKotlinTest {
       val foldFailure = assertFailsWith<IOException> {
         pipe.fold(
           object : ForwardingSink(blackholeSink()) {
-            override fun write(source: Buffer, byteCount: Long) {
+            override fun write(source: BufferedSource, byteCount: Long) {
               throw IOException("boom")
             }
           },
@@ -592,7 +592,7 @@ class PipeKotlinTest {
     pipeSink.emit()
 
     pipe.fold(object : ForwardingSink(blackholeSink()) {
-      override fun write(source: Buffer, byteCount: Long) {
+      override fun write(source: BufferedSource, byteCount: Long) {
         assertFalse(Thread.holdsLock(pipe.buffer))
       }
     })
@@ -776,7 +776,7 @@ class PipeKotlinTest {
 
     var foldedSinkClosed = false
     val foldedSink = object : ForwardingSink(Buffer()) {
-      override fun write(source: Buffer, byteCount: Long) {
+      override fun write(source: BufferedSource, byteCount: Long) {
         assertEquals("hello", source.readUtf8(byteCount))
 
         // Write bytes to the original pipe so the pipe write doesn't complete!
@@ -828,7 +828,7 @@ class PipeKotlinTest {
       }
     }
 
-    override fun write(source: Buffer, byteCount: Long) {
+    override fun write(source: BufferedSource, byteCount: Long) {
       timeout.enter()
       try {
         synchronized(this) {
@@ -857,7 +857,7 @@ class PipeKotlinTest {
       }
     }
 
-    override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
+    override fun write(source: BufferedSource, byteCount: Long) = source.skip(byteCount)
 
     override fun flush() {
       timeout.enter()
@@ -885,7 +885,7 @@ class PipeKotlinTest {
       }
     }
 
-    override fun write(source: Buffer, byteCount: Long) = source.skip(byteCount)
+    override fun write(source: BufferedSource, byteCount: Long) = source.skip(byteCount)
 
     override fun flush() = Unit
 

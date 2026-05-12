@@ -133,7 +133,7 @@ class Throttler internal constructor(
   /** Create a Source which honors this Throttler.  */
   fun source(source: Source): Source {
     return object : ForwardingSource(source) {
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override fun read(sink: BufferedSink, byteCount: Long): Long {
         try {
           val toRead = take(byteCount)
           return super.read(sink, toRead)
@@ -149,7 +149,7 @@ class Throttler internal constructor(
   fun sink(sink: Sink): Sink {
     return object : ForwardingSink(sink) {
       @Throws(IOException::class)
-      override fun write(source: Buffer, byteCount: Long) {
+      override fun write(source: BufferedSource, byteCount: Long) {
         try {
           var remaining = byteCount
           while (remaining > 0L) {

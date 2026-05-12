@@ -129,14 +129,14 @@ open class AsyncTimeout : Timeout() {
    */
   fun sink(sink: Sink): Sink {
     return object : Sink {
-      override fun write(source: Buffer, byteCount: Long) {
-        checkOffsetAndCount(source.size, 0, byteCount)
+      override fun write(source: BufferedSource, byteCount: Long) {
+        checkOffsetAndCount(source.buffer.size, 0, byteCount)
 
         var remaining = byteCount
         while (remaining > 0L) {
           // Count how many bytes to write. This loop guarantees we split on a segment boundary.
           var toWrite = 0L
-          var s = source.head!!
+          var s = source.buffer.head!!
           while (toWrite < TIMEOUT_WRITE_SIZE) {
             val segmentSize = s.limit - s.pos
             toWrite += segmentSize.toLong()
@@ -173,7 +173,7 @@ open class AsyncTimeout : Timeout() {
    */
   fun source(source: Source): Source {
     return object : Source {
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override fun read(sink: BufferedSink, byteCount: Long): Long {
         return withTimeout { source.read(sink, byteCount) }
       }
 

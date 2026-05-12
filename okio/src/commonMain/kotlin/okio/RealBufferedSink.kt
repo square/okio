@@ -30,7 +30,7 @@ internal expect class RealBufferedSink(
   override fun timeout(): Timeout
   override fun write(byteString: ByteString): BufferedSink
   override fun write(byteString: ByteString, offset: Int, byteCount: Int): BufferedSink
-  override fun write(source: Buffer, byteCount: Long)
+  override fun write(source: BufferedSource, byteCount: Long)
   override fun write(source: ByteArray): BufferedSink
   override fun write(source: ByteArray, offset: Int, byteCount: Int): BufferedSink
   override fun write(source: Source, byteCount: Long): BufferedSink

@@ -34,7 +34,7 @@ internal constructor(
 ) : Source {
   constructor(source: Source, inflater: Inflater)
 
-  override fun read(sink: Buffer, byteCount: Long): Long
+  override fun read(sink: BufferedSink, byteCount: Long): Long
   override fun timeout(): Timeout
   override fun close()
 }

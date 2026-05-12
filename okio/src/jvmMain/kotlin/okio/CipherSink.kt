@@ -31,8 +31,8 @@ class CipherSink(
   }
 
   @Throws(IOException::class)
-  override fun write(source: Buffer, byteCount: Long) {
-    checkOffsetAndCount(source.size, 0, byteCount)
+  override fun write(source: BufferedSource, byteCount: Long) {
+    checkOffsetAndCount(source.buffer.size, 0, byteCount)
     check(!closed) { "closed" }
 
     var remaining = byteCount
@@ -42,8 +42,8 @@ class CipherSink(
     }
   }
 
-  private fun update(source: Buffer, remaining: Long): Int {
-    val head = source.head!!
+  private fun update(source: BufferedSource, remaining: Long): Int {
+    val head = source.buffer.head!!
     var size = minOf(remaining, head.limit - head.pos).toInt()
     val buffer = sink.buffer
 
@@ -76,10 +76,10 @@ class CipherSink(
     sink.emitCompleteSegments()
 
     // Mark those bytes as read.
-    source.size -= size
+    source.buffer.size -= size
     head.pos += size
     if (head.pos == head.limit) {
-      source.head = head.pop()
+      source.buffer.head = head.pop()
       SegmentPool.recycle(head)
     }
 

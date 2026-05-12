@@ -175,7 +175,7 @@ class CipherSourceTest(
     SingleByteSource(this)
 
   private class SingleByteSource(source: Source) : ForwardingSource(source) {
-    override fun read(sink: Buffer, byteCount: Long): Long =
+    override fun read(sink: BufferedSink, byteCount: Long): Long =
       delegate.read(sink, 1L)
   }
 }

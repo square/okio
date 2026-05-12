@@ -45,7 +45,7 @@ expect class HashingSink : Sink {
   override fun close()
   override fun flush()
   override fun timeout(): Timeout
-  override fun write(source: Buffer, byteCount: Long)
+  override fun write(source: BufferedSource, byteCount: Long)
 
   companion object {
     /**

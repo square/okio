@@ -27,7 +27,7 @@ class ForwardingSourceTest {
     val forwarder = "Forwarder"
     val newSource = Buffer().writeUtf8(forwarder)
     val forwardingSource = object : ForwardingSource(source) {
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override fun read(sink: BufferedSink, byteCount: Long): Long {
         return newSource.read(sink, byteCount)
       }
     }

@@ -29,7 +29,7 @@ class CommonRealBufferedSourceTest {
     val buffer = Buffer().writeUtf8("abcdef")
     val bufferedSource = (
       object : Source by buffer {
-        override fun read(sink: Buffer, byteCount: Long): Long {
+        override fun read(sink: BufferedSink, byteCount: Long): Long {
           return buffer.read(sink, minOf(1, byteCount))
         }
       }

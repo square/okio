@@ -77,7 +77,7 @@ internal abstract class DataProcessor : Closeable {
    */
   @Throws(IOException::class)
   fun writeBytesFromSource(
-    source: Buffer?,
+    source: BufferedSource?,
     sourceExactByteCount: Long,
     target: BufferedSink,
   ) {
@@ -116,7 +116,7 @@ internal abstract class DataProcessor : Closeable {
   fun readBytesToTarget(
     source: BufferedSource,
     targetMaxByteCount: Long,
-    target: Buffer,
+    target: BufferedSink,
   ): Long {
     check(!closed) { "closed" }
 
@@ -154,7 +154,7 @@ internal abstract class DataProcessor : Closeable {
 
   /** Tell the processor to read up to [maxByteCount] bytes from the source's first segment. */
   private fun prepareSource(
-    source: Buffer?,
+    source: BufferedSource?,
     maxByteCount: Long = Long.MAX_VALUE,
   ): Segment? {
     val head = source?.buffer?.head
@@ -177,7 +177,7 @@ internal abstract class DataProcessor : Closeable {
    * Returns the number of consumed bytes.
    */
   private fun updateSource(
-    source: Buffer?,
+    source: BufferedSource?,
     sourceHead: Segment?,
   ): Int {
     if (sourceLimit == 0) return 0
@@ -185,11 +185,11 @@ internal abstract class DataProcessor : Closeable {
     source!!
     val consumedByteCount = sourcePos - sourceHead!!.pos
     sourceHead.pos = sourcePos
-    source.size -= consumedByteCount
+    source.buffer.size -= consumedByteCount
 
     // If we used up the head segment, recycle it.
     if (sourceHead.pos == sourceHead.limit) {
-      source.head = sourceHead.pop()
+      source.buffer.head = sourceHead.pop()
       SegmentPool.recycle(sourceHead)
     }
 

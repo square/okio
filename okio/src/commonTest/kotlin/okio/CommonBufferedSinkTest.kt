@@ -172,7 +172,7 @@ class CommonBufferedSinkTest(
 
   @Test fun writeSourceReadsFully() {
     val source = object : Source by Buffer() {
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override fun read(sink: BufferedSink, byteCount: Long): Long {
         sink.writeUtf8("abcd")
         return 4
       }
@@ -200,7 +200,7 @@ class CommonBufferedSinkTest(
     // tied to something like a socket which will potentially block trying to read a segment when
     // ultimately we don't want any data.
     val source = object : Source by Buffer() {
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override fun read(sink: BufferedSink, byteCount: Long): Long {
         throw AssertionError()
       }
     }

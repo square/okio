@@ -32,17 +32,17 @@ internal class FileSink(
   private var closed = false
 
   override fun write(
-    source: Buffer,
+    source: BufferedSource,
     byteCount: Long,
   ) {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
-    require(source.size >= byteCount) { "source.size=${source.size} < byteCount=$byteCount" }
+    require(source.buffer.size >= byteCount) { "source.size=${source.buffer.size} < byteCount=$byteCount" }
     check(!closed) { "closed" }
 
     var byteCount = byteCount
     while (byteCount > 0) {
       // Get the first segment, which we will read a contiguous range of bytes from.
-      val cursor = source.readUnsafe(unsafeCursor)
+      val cursor = source.buffer.readUnsafe(unsafeCursor)
       val segmentReadableByteCount = cursor.next()
       val attemptCount = minOf(byteCount, segmentReadableByteCount.toLong()).toInt()
 

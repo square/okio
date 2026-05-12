@@ -66,12 +66,12 @@ actual class HashingSink : ForwardingSink, Sink { // Need to explicitly declare 
   )
 
   @Throws(IOException::class)
-  actual override fun write(source: Buffer, byteCount: Long) {
-    checkOffsetAndCount(source.size, 0, byteCount)
+  actual override fun write(source: BufferedSource, byteCount: Long) {
+    checkOffsetAndCount(source.buffer.size, 0, byteCount)
 
     // Hash byteCount bytes from the prefix of source.
     var hashedCount = 0L
-    var s = source.head!!
+    var s = source.buffer.head!!
     while (hashedCount < byteCount) {
       val toHash = minOf(byteCount - hashedCount, s.limit - s.pos).toInt()
       if (messageDigest != null) {

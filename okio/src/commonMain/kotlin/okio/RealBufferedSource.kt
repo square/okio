@@ -36,7 +36,7 @@ internal expect class RealBufferedSource(
   override fun peek(): BufferedSource
   override fun rangeEquals(offset: Long, bytes: ByteString): Boolean
   override fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
-  override fun read(sink: Buffer, byteCount: Long): Long
+  override fun read(sink: BufferedSink, byteCount: Long): Long
   override fun read(sink: ByteArray): Int
   override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
   override fun readAll(sink: Sink): Long

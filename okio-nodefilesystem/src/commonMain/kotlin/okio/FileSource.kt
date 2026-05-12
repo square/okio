@@ -21,7 +21,7 @@ internal class FileSource(
   private var position_ = 0L
   private var closed = false
 
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  override fun read(sink: BufferedSink, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
 

@@ -20,9 +20,9 @@ internal class FileSink(
 ) : Sink {
   private var closed = false
 
-  override fun write(source: Buffer, byteCount: Long) {
+  override fun write(source: BufferedSource, byteCount: Long) {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
-    require(source.size >= byteCount) { "source.size=${source.size} < byteCount=$byteCount" }
+    require(source.buffer.size >= byteCount) { "source.size=${source.buffer.size} < byteCount=$byteCount" }
     check(!closed) { "closed" }
 
     val data = source.readByteArray(byteCount)

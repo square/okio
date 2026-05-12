@@ -51,7 +51,7 @@ class GzipSource(source: Source) : Source {
   private val crc = CRC32()
 
   @Throws(IOException::class)
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  override fun read(sink: BufferedSink, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     if (byteCount == 0L) return 0L
 
@@ -63,7 +63,7 @@ class GzipSource(source: Source) : Source {
 
     // Attempt to read at least a byte of the body. If we do, we're done.
     if (section == SECTION_BODY) {
-      val offset = sink.size
+      val offset = sink.buffer.size
       val result = inflaterSource.read(sink, byteCount)
       if (result != -1L) {
         updateCrc(sink, offset, result)
@@ -169,11 +169,11 @@ class GzipSource(source: Source) : Source {
   override fun close() = inflaterSource.close()
 
   /** Updates the CRC with the given bytes.  */
-  private fun updateCrc(buffer: Buffer, offset: Long, byteCount: Long) {
+  private fun updateCrc(buffer: BufferedSink, offset: Long, byteCount: Long) {
     var offset = offset
     var byteCount = byteCount
     // Skip segments that we aren't checksumming.
-    var s = buffer.head!!
+    var s = buffer.buffer.head!!
     while (offset >= s.limit - s.pos) {
       offset -= s.limit - s.pos
       s = s.next!!

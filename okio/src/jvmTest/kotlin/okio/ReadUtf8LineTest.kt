@@ -39,7 +39,7 @@ class ReadUtf8LineTest(
       override fun create(data: Buffer): BufferedSource {
         return RealBufferedSource(
           object : ForwardingSource(data) {
-            override fun read(sink: Buffer, byteCount: Long): Long {
+            override fun read(sink: BufferedSink, byteCount: Long): Long {
               return super.read(sink, 1L.coerceAtMost(byteCount))
             }
           },

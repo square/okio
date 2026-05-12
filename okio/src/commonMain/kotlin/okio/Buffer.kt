@@ -36,7 +36,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
 
   /** Copy `byteCount` bytes from this, starting at `offset`, to `out`.  */
   fun copyTo(
-    out: Buffer,
+    out: BufferedSink,
     offset: Long = 0L,
     byteCount: Long,
   ): Buffer
@@ -124,7 +124,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
   override fun peek(): BufferedSource
   override fun rangeEquals(offset: Long, bytes: ByteString): Boolean
   override fun rangeEquals(offset: Long, bytes: ByteString, bytesOffset: Int, byteCount: Int): Boolean
-  override fun read(sink: Buffer, byteCount: Long): Long
+  override fun read(sink: BufferedSink, byteCount: Long): Long
   override fun read(sink: ByteArray): Int
   override fun read(sink: ByteArray, offset: Int, byteCount: Int): Int
   override fun readAll(sink: Sink): Long
@@ -156,7 +156,7 @@ expect class Buffer() : BufferedSource, BufferedSink {
   override fun timeout(): Timeout
   override fun write(byteString: ByteString): Buffer
   override fun write(byteString: ByteString, offset: Int, byteCount: Int): Buffer
-  override fun write(source: Buffer, byteCount: Long)
+  override fun write(source: BufferedSource, byteCount: Long)
   override fun write(source: ByteArray): Buffer
   override fun write(source: ByteArray, offset: Int, byteCount: Int): Buffer
   override fun write(source: Source, byteCount: Long): Buffer

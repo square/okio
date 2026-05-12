@@ -29,13 +29,13 @@ actual class DeflaterSink internal actual constructor(
   private var closed = false
 
   @Throws(IOException::class)
-  actual override fun write(source: Buffer, byteCount: Long) {
-    checkOffsetAndCount(source.size, 0, byteCount)
+  actual override fun write(source: BufferedSource, byteCount: Long) {
+    checkOffsetAndCount(source.buffer.size, 0, byteCount)
 
     var remaining = byteCount
     while (remaining > 0) {
       // Share bytes from the head segment of 'source' with the deflater.
-      val head = source.head!!
+      val head = source.buffer.head!!
       val toDeflate = minOf(remaining, head.limit - head.pos).toInt()
       deflater.setInput(head.data, head.pos, toDeflate)
 
@@ -43,10 +43,10 @@ actual class DeflaterSink internal actual constructor(
       deflate(false)
 
       // Mark those bytes as read.
-      source.size -= toDeflate
+      source.buffer.size -= toDeflate
       head.pos += toDeflate
       if (head.pos == head.limit) {
-        source.head = head.pop()
+        source.buffer.head = head.pop()
         SegmentPool.recycle(head)
       }
 

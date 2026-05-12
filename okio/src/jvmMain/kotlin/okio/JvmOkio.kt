@@ -47,21 +47,21 @@ private class OutputStreamSink(
   private val timeout: Timeout,
 ) : Sink {
 
-  override fun write(source: Buffer, byteCount: Long) {
-    checkOffsetAndCount(source.size, 0, byteCount)
+  override fun write(source: BufferedSource, byteCount: Long) {
+    checkOffsetAndCount(source.buffer.size, 0, byteCount)
     var remaining = byteCount
     while (remaining > 0) {
       timeout.throwIfReached()
-      val head = source.head!!
+      val head = source.buffer.head!!
       val toCopy = minOf(remaining, head.limit - head.pos).toInt()
       out.write(head.data, head.pos, toCopy)
 
       head.pos += toCopy
       remaining -= toCopy
-      source.size -= toCopy
+      source.buffer.size -= toCopy
 
       if (head.pos == head.limit) {
-        source.head = head.pop()
+        source.buffer.head = head.pop()
         SegmentPool.recycle(head)
       }
     }
@@ -84,24 +84,24 @@ private open class InputStreamSource(
   private val timeout: Timeout,
 ) : Source {
 
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  override fun read(sink: BufferedSink, byteCount: Long): Long {
     if (byteCount == 0L) return 0L
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     try {
       timeout.throwIfReached()
-      val tail = sink.writableSegment(1)
+      val tail = sink.buffer.writableSegment(1)
       val maxToCopy = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
       val bytesRead = input.read(tail.data, tail.limit, maxToCopy)
       if (bytesRead == -1) {
         if (tail.pos == tail.limit) {
           // We allocated a tail segment, but didn't end up needing it. Recycle!
-          sink.head = tail.pop()
+          sink.buffer.head = tail.pop()
           SegmentPool.recycle(tail)
         }
         return -1
       }
       tail.limit += bytesRead
-      sink.size += bytesRead
+      sink.buffer.size += bytesRead
       return bytesRead.toLong()
     } catch (e: AssertionError) {
       if (e.isAndroidGetsocknameError) throw IOException(e)

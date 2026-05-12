@@ -87,7 +87,7 @@ class DeflaterSinkTest {
     var nextException: Throwable? = null
     var closed = false
 
-    override fun write(source: Buffer, byteCount: Long) {
+    override fun write(source: BufferedSource, byteCount: Long) {
       nextException?.let { nextException = null; throw it }
       data.write(source, byteCount)
     }

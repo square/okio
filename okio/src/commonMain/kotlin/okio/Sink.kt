@@ -45,7 +45,7 @@ package okio
 expect interface Sink : Closeable {
   /** Removes `byteCount` bytes from `source` and appends them to this.  */
   @Throws(IOException::class)
-  fun write(source: Buffer, byteCount: Long)
+  fun write(source: BufferedSource, byteCount: Long)
 
   /** Pushes all buffered bytes to their final destination.  */
   @Throws(IOException::class)

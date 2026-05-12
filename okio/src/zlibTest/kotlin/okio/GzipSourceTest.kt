@@ -213,7 +213,7 @@ class GzipSourceTest {
   internal class ExhaustableSource(private val source: Source) : Source {
     var exhausted = false
 
-    override fun read(sink: Buffer, byteCount: Long): Long {
+    override fun read(sink: BufferedSink, byteCount: Long): Long {
       val result = source.read(sink, byteCount)
       if (result == -1L) exhausted = true
       return result

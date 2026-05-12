@@ -21,7 +21,7 @@ import java.io.IOException
 
 actual interface Sink : Closeable, Flushable {
   @Throws(IOException::class)
-  actual fun write(source: Buffer, byteCount: Long)
+  actual fun write(source: BufferedSource, byteCount: Long)
 
   @Throws(IOException::class)
   actual override fun flush()

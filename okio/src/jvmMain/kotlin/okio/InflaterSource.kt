@@ -37,7 +37,7 @@ actual class InflaterSource internal actual constructor(
   actual constructor(source: Source, inflater: Inflater) : this(source.buffer(), inflater)
 
   @Throws(IOException::class)
-  actual override fun read(sink: Buffer, byteCount: Long): Long {
+  actual override fun read(sink: BufferedSink, byteCount: Long): Long {
     while (true) {
       val bytesInflated = readOrInflate(sink, byteCount)
       if (bytesInflated > 0) return bytesInflated
@@ -55,14 +55,14 @@ actual class InflaterSource internal actual constructor(
    * doesn't yield inflated bytes.
    */
   @Throws(IOException::class)
-  fun readOrInflate(sink: Buffer, byteCount: Long): Long {
+  fun readOrInflate(sink: BufferedSink, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
     if (byteCount == 0L) return 0L
 
     try {
       // Prepare the destination that we'll write into.
-      val tail = sink.writableSegment(1)
+      val tail = sink.buffer.writableSegment(1)
       val toRead = minOf(byteCount, Segment.SIZE - tail.limit).toInt()
 
       // Prepare the source that we'll read from.
@@ -77,13 +77,13 @@ actual class InflaterSource internal actual constructor(
       // Track produced bytes in the destination.
       if (bytesInflated > 0) {
         tail.limit += bytesInflated
-        sink.size += bytesInflated
+        sink.buffer.size += bytesInflated
         return bytesInflated.toLong()
       }
 
       // We allocated a tail segment, but didn't end up needing it. Recycle!
       if (tail.pos == tail.limit) {
-        sink.head = tail.pop()
+        sink.buffer.head = tail.pop()
         SegmentPool.recycle(tail)
       }
 

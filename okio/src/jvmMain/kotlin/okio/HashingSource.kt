@@ -67,22 +67,22 @@ actual class HashingSource : ForwardingSource, Source { // Need to explicitly de
   )
 
   @Throws(IOException::class)
-  actual override fun read(sink: Buffer, byteCount: Long): Long {
+  actual override fun read(sink: BufferedSink, byteCount: Long): Long {
     val result = super.read(sink, byteCount)
 
     if (result != -1L) {
-      var start = sink.size - result
+      var start = sink.buffer.size - result
 
       // Find the first segment that has new bytes.
-      var offset = sink.size
-      var s = sink.head!!
+      var offset = sink.buffer.size
+      var s = sink.buffer.head!!
       while (offset > start) {
         s = s.prev!!
         offset -= (s.limit - s.pos).toLong()
       }
 
       // Hash that segment and all the rest until the end.
-      while (offset < sink.size) {
+      while (offset < sink.buffer.size) {
         val pos = (s.pos + start - offset).toInt()
         if (messageDigest != null) {
           messageDigest.update(s.data, pos, s.limit - pos)

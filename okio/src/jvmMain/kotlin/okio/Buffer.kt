@@ -175,7 +175,7 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   }
 
   actual fun copyTo(
-    out: Buffer,
+    out: BufferedSink,
     offset: Long,
     byteCount: Long,
   ): Buffer = commonCopyTo(out, offset, byteCount)
@@ -464,9 +464,9 @@ actual class Buffer : BufferedSource, BufferedSink, Cloneable, ByteChannel {
   internal actual fun writableSegment(minimumCapacity: Int): Segment =
     commonWritableSegment(minimumCapacity)
 
-  actual override fun write(source: Buffer, byteCount: Long): Unit = commonWrite(source, byteCount)
+  actual override fun write(source: BufferedSource, byteCount: Long): Unit { commonWrite(source, byteCount) }
 
-  actual override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
+  actual override fun read(sink: BufferedSink, byteCount: Long): Long = commonRead(sink, byteCount)
 
   actual override fun indexOf(b: Byte) = indexOf(b, 0, Long.MAX_VALUE)
 

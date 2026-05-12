@@ -330,14 +330,14 @@ abstract class FileHandle(
   @Throws(IOException::class)
   protected abstract fun protectedClose()
 
-  private fun readNoCloseCheck(fileOffset: Long, sink: Buffer, byteCount: Long): Long {
+  private fun readNoCloseCheck(fileOffset: Long, sink: BufferedSink, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
 
     var currentOffset = fileOffset
     val targetOffset = fileOffset + byteCount
 
     while (currentOffset < targetOffset) {
-      val tail = sink.writableSegment(1)
+      val tail = sink.buffer.writableSegment(1)
       val readByteCount = protectedRead(
         fileOffset = currentOffset,
         array = tail.data,
@@ -348,7 +348,7 @@ abstract class FileHandle(
       if (readByteCount == -1) {
         if (tail.pos == tail.limit) {
           // We allocated a tail segment, but didn't end up needing it. Recycle!
-          sink.head = tail.pop()
+          sink.buffer.head = tail.pop()
           SegmentPool.recycle(tail)
         }
         if (fileOffset == currentOffset) return -1L // We wanted bytes but didn't return any.
@@ -357,29 +357,29 @@ abstract class FileHandle(
 
       tail.limit += readByteCount
       currentOffset += readByteCount
-      sink.size += readByteCount
+      sink.buffer.size += readByteCount
     }
 
     return currentOffset - fileOffset
   }
 
-  private fun writeNoCloseCheck(fileOffset: Long, source: Buffer, byteCount: Long) {
-    checkOffsetAndCount(source.size, 0L, byteCount)
+  private fun writeNoCloseCheck(fileOffset: Long, source: BufferedSource, byteCount: Long) {
+    checkOffsetAndCount(source.buffer.size, 0L, byteCount)
 
     var currentOffset = fileOffset
     val targetOffset = fileOffset + byteCount
 
     while (currentOffset < targetOffset) {
-      val head = source.head!!
+      val head = source.buffer.head!!
       val toCopy = minOf(targetOffset - currentOffset, head.limit - head.pos).toInt()
       protectedWrite(currentOffset, head.data, head.pos, toCopy)
 
       head.pos += toCopy
       currentOffset += toCopy
-      source.size -= toCopy
+      source.buffer.size -= toCopy
 
       if (head.pos == head.limit) {
-        source.head = head.pop()
+        source.buffer.head = head.pop()
         SegmentPool.recycle(head)
       }
     }
@@ -391,7 +391,7 @@ abstract class FileHandle(
   ) : Sink {
     var closed = false
 
-    override fun write(source: Buffer, byteCount: Long) {
+    override fun write(source: BufferedSource, byteCount: Long) {
       check(!closed) { "closed" }
       fileHandle.writeNoCloseCheck(position, source, byteCount)
       position += byteCount
@@ -421,7 +421,7 @@ abstract class FileHandle(
   ) : Source {
     var closed = false
 
-    override fun read(sink: Buffer, byteCount: Long): Long {
+    override fun read(sink: BufferedSink, byteCount: Long): Long {
       check(!closed) { "closed" }
       val result = fileHandle.readNoCloseCheck(position, sink, byteCount)
       if (result != -1L) position += result

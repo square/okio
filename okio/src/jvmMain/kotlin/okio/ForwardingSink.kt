@@ -26,7 +26,7 @@ abstract class ForwardingSink(
   // TODO 'Sink by delegate' once https://youtrack.jetbrains.com/issue/KT-23935 is fixed.
 
   @Throws(IOException::class)
-  override fun write(source: Buffer, byteCount: Long) = delegate.write(source, byteCount)
+  override fun write(source: BufferedSource, byteCount: Long) = delegate.write(source, byteCount)
 
   @Throws(IOException::class)
   override fun flush() = delegate.flush()

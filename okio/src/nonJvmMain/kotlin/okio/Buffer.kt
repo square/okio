@@ -207,9 +207,9 @@ actual class Buffer : BufferedSource, BufferedSink {
   actual override fun writeHexadecimalUnsignedLong(v: Long): Buffer =
     commonWriteHexadecimalUnsignedLong(v)
 
-  actual override fun write(source: Buffer, byteCount: Long): Unit = commonWrite(source, byteCount)
+  actual override fun write(source: BufferedSource, byteCount: Long): Unit { commonWrite(source, byteCount) }
 
-  actual override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
+  actual override fun read(sink: BufferedSink, byteCount: Long): Long = commonRead(sink, byteCount)
 
   actual override fun indexOf(b: Byte): Long = indexOf(b, 0, Long.MAX_VALUE)
 

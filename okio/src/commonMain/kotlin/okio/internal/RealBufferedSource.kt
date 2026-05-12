@@ -23,6 +23,7 @@ package okio.internal
 
 import kotlin.jvm.JvmName
 import okio.Buffer
+import okio.BufferedSink
 import okio.BufferedSource
 import okio.ByteString
 import okio.EOFException
@@ -35,7 +36,7 @@ import okio.buffer
 import okio.checkOffsetAndCount
 import okio.minOf
 
-internal inline fun RealBufferedSource.commonRead(sink: Buffer, byteCount: Long): Long {
+internal inline fun RealBufferedSource.commonRead(sink: BufferedSink, byteCount: Long): Long {
   require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   check(!closed) { "closed" }
 

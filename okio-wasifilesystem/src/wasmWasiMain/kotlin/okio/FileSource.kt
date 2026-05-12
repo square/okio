@@ -29,14 +29,14 @@ internal class FileSource(
   private val unsafeCursor = Buffer.UnsafeCursor()
   private var closed = false
 
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  override fun read(sink: BufferedSink, byteCount: Long): Long {
     require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
     check(!closed) { "closed" }
-    val sinkInitialSize = sink.size
+    val sinkInitialSize = sink.buffer.size
 
     // Request a writable segment in `sink`. We request at least 1024 bytes, unless the request is
     // for smaller than that, in which case we request only that many bytes.
-    val cursor = sink.readAndWriteUnsafe(unsafeCursor)
+    val cursor = sink.buffer.readAndWriteUnsafe(unsafeCursor)
     val addedCapacityCount = cursor.expandBuffer(minByteCount = minOf(byteCount, 1024L).toInt())
 
     // Now that we have a writable segment, figure out how many bytes to read. This is the smaller

@@ -55,7 +55,7 @@ class Pipe(internal val maxBufferSize: Long) {
   val sink = object : Sink {
     private val timeout = Timeout()
 
-    override fun write(source: Buffer, byteCount: Long) {
+    override fun write(source: BufferedSource, byteCount: Long) {
       var byteCount = byteCount
       var delegate: Sink? = null
       lock.withLock {
@@ -131,7 +131,7 @@ class Pipe(internal val maxBufferSize: Long) {
   val source = object : Source {
     private val timeout = Timeout()
 
-    override fun read(sink: Buffer, byteCount: Long): Long {
+    override fun read(sink: BufferedSink, byteCount: Long): Long {
       lock.withLock {
         check(!sourceClosed) { "closed" }
         if (canceled) throw IOException("canceled")

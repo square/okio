@@ -29,8 +29,8 @@ actual class DeflaterSink internal actual constructor(
   ) : this(sink.buffer(), deflater)
 
   @Throws(IOException::class)
-  actual override fun write(source: Buffer, byteCount: Long) {
-    checkOffsetAndCount(source.size, 0, byteCount)
+  actual override fun write(source: BufferedSource, byteCount: Long) {
+    checkOffsetAndCount(source.buffer.size, 0, byteCount)
 
     deflater.flush = Z_NO_FLUSH
     deflater.dataProcessor.writeBytesFromSource(

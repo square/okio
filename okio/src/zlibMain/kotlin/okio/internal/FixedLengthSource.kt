@@ -16,6 +16,7 @@
 package okio.internal
 
 import okio.Buffer
+import okio.BufferedSink
 import okio.ForwardingSource
 import okio.IOException
 import okio.Source
@@ -35,7 +36,7 @@ internal class FixedLengthSource(
 ) : ForwardingSource(delegate) {
   private var bytesReceived = 0L
 
-  override fun read(sink: Buffer, byteCount: Long): Long {
+  override fun read(sink: BufferedSink, byteCount: Long): Long {
     // Figure out how many bytes to attempt to read.
     //
     // If we're truncating, we never attempt to read more than what's remaining.
@@ -60,7 +61,7 @@ internal class FixedLengthSource(
     if ((bytesReceived < size && result == -1L) || bytesReceived > size) {
       if (result > 0L && bytesReceived > size) {
         // If we received bytes beyond the limit, don't return them to the caller.
-        sink.truncateToSize(sink.size - (bytesReceived - size))
+        sink.buffer.truncateToSize(sink.buffer.size - (bytesReceived - size))
       }
       throw IOException("expected $size bytes but got $bytesReceived")
     }

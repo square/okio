@@ -56,7 +56,7 @@ enum class BufferedSourceFactory {
       return Pipe(
         buffer,
         object : Source by buffer {
-          override fun read(sink: Buffer, byteCount: Long): Long {
+          override fun read(sink: BufferedSink, byteCount: Long): Long {
             // Read one byte into a new buffer, then clone it so that the segment is shared.
             // Shared segments cannot be compacted so we'll get a long chain of short segments.
             val box = Buffer()
@@ -77,7 +77,7 @@ enum class BufferedSourceFactory {
       val buffer = Buffer()
       return Pipe(
         object : Sink by buffer {
-          override fun write(source: Buffer, byteCount: Long) {
+          override fun write(source: BufferedSource, byteCount: Long) {
             // Write each byte into a new buffer, then clone it so that the segments are shared.
             // Shared segments cannot be compacted so we'll get a long chain of short segments.
             for (i in 0 until byteCount) {

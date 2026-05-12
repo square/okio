@@ -17,7 +17,7 @@ package okio
 
 actual interface Sink : Closeable {
   @Throws(IOException::class)
-  actual fun write(source: Buffer, byteCount: Long)
+  actual fun write(source: BufferedSink, byteCount: Long)
 
   @Throws(IOException::class)
   actual fun flush()

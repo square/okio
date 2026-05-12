@@ -216,7 +216,7 @@ class AsyncTimeoutTest {
   @Test
   fun wrappedSinkTimesOut() {
     val sink: Sink = object : ForwardingSink(Buffer()) {
-      override fun write(source: Buffer, byteCount: Long) {
+      override fun write(source: BufferedSource, byteCount: Long) {
         Thread.sleep(500)
       }
     }
@@ -268,7 +268,7 @@ class AsyncTimeoutTest {
   @Test
   fun wrappedSourceTimesOut() {
     val source: Source = object : ForwardingSource(Buffer()) {
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override fun read(sink: BufferedSink, byteCount: Long): Long {
         Thread.sleep(500)
         return -1
       }
@@ -303,7 +303,7 @@ class AsyncTimeoutTest {
   @Test
   fun wrappedThrowsWithTimeout() {
     val sink: Sink = object : ForwardingSink(Buffer()) {
-      override fun write(source: Buffer, byteCount: Long) {
+      override fun write(source: BufferedSource, byteCount: Long) {
         Thread.sleep(500)
         throw IOException("exception and timeout")
       }
@@ -324,7 +324,7 @@ class AsyncTimeoutTest {
   @Test
   fun wrappedThrowsWithoutTimeout() {
     val sink: Sink = object : ForwardingSink(Buffer()) {
-      override fun write(source: Buffer, byteCount: Long) {
+      override fun write(source: BufferedSource, byteCount: Long) {
         throw IOException("no timeout occurred")
       }
     }
@@ -354,7 +354,7 @@ class AsyncTimeoutTest {
     val source = bufferWithRandomSegmentLayout(dice, data)
     val target = Buffer()
     val sink: Sink = object : ForwardingSink(Buffer()) {
-      override fun write(source: Buffer, byteCount: Long) {
+      override fun write(source: BufferedSource, byteCount: Long) {
         Thread.sleep(byteCount / 500) // ~500 KiB/s.
         target.write(source, byteCount)
       }

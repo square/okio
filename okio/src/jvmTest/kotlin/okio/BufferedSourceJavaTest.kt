@@ -81,7 +81,7 @@ class BufferedSourceJavaTest {
   fun indexOfStopsReadingAtLimit() {
     val buffer = Buffer().writeUtf8("abcdef")
     val bufferedSource = object : ForwardingSource(buffer) {
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override fun read(sink: BufferedSink, byteCount: Long): Long {
         return super.read(sink, Math.min(1, byteCount))
       }
     }.buffer()

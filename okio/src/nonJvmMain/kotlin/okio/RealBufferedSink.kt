@@ -42,7 +42,7 @@ internal actual class RealBufferedSink actual constructor(
   actual var closed: Boolean = false
   actual override val buffer = Buffer()
 
-  actual override fun write(source: Buffer, byteCount: Long) = commonWrite(source, byteCount)
+  actual override fun write(source: BufferedSource, byteCount: Long) = commonWrite(source, byteCount)
   actual override fun write(byteString: ByteString) = commonWrite(byteString)
   actual override fun write(byteString: ByteString, offset: Int, byteCount: Int) =
     commonWrite(byteString, offset, byteCount)

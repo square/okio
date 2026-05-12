@@ -24,6 +24,8 @@ import kotlin.jvm.JvmName
 import okio.ArrayIndexOutOfBoundsException
 import okio.Buffer
 import okio.Buffer.UnsafeCursor
+import okio.BufferedSink
+import okio.BufferedSource
 import okio.ByteString
 import okio.EOFException
 import okio.Options
@@ -234,7 +236,7 @@ internal fun Buffer.selectPrefix(options: Options, selectTruncated: Boolean = fa
 // have to call these functions. Remove all this nonsense when expect class allow actual code.
 
 internal inline fun Buffer.commonCopyTo(
-  out: Buffer,
+  out: BufferedSink,
   offset: Long,
   byteCount: Long,
 ): Buffer {
@@ -243,7 +245,7 @@ internal inline fun Buffer.commonCopyTo(
   checkOffsetAndCount(size, offset, byteCount)
   if (byteCount == 0L) return this
 
-  out.size += byteCount
+  out.buffer.size += byteCount
 
   // Skip segments that we aren't copying from.
   var s = head
@@ -257,12 +259,12 @@ internal inline fun Buffer.commonCopyTo(
     val copy = s!!.sharedCopy()
     copy.pos += offset.toInt()
     copy.limit = minOf(copy.pos + byteCount.toInt(), copy.limit)
-    if (out.head == null) {
+    if (out.buffer.head == null) {
       copy.prev = copy
       copy.next = copy.prev
-      out.head = copy.next
+      out.buffer.head = copy.next
     } else {
-      out.head!!.prev!!.push(copy)
+      out.buffer.head!!.prev!!.push(copy)
     }
     byteCount -= (copy.limit - copy.pos).toLong()
     offset = 0L
@@ -1148,7 +1150,7 @@ internal inline fun Buffer.commonWriteLong(v: Long): Buffer {
   return this
 }
 
-internal inline fun Buffer.commonWrite(source: Buffer, byteCount: Long) {
+internal inline fun Buffer.commonWrite(source: BufferedSource, byteCount: Long) {
   var byteCount = byteCount
   // Move bytes from the head of the source buffer to the tail of this buffer
   // while balancing two conflicting goals: don't waste CPU and don't waste
@@ -1201,31 +1203,31 @@ internal inline fun Buffer.commonWrite(source: Buffer, byteCount: Long) {
   // yielding sink [51%, 91%, 30%] and source [62%, 82%].
 
   require(source !== this) { "source == this" }
-  checkOffsetAndCount(source.size, 0, byteCount)
+  checkOffsetAndCount(source.buffer.size, 0, byteCount)
 
   while (byteCount > 0L) {
     // Is a prefix of the source's head segment all that we need to move?
-    if (byteCount < source.head!!.limit - source.head!!.pos) {
+    if (byteCount < source.buffer.head!!.limit - source.buffer.head!!.pos) {
       val tail = if (head != null) head!!.prev else null
       if (tail != null && tail.owner &&
         byteCount + tail.limit - (if (tail.shared) 0 else tail.pos) <= Segment.SIZE
       ) {
         // Our existing segments are sufficient. Move bytes from source's head to our tail.
-        source.head!!.writeTo(tail, byteCount.toInt())
-        source.size -= byteCount
+        source.buffer.head!!.writeTo(tail, byteCount.toInt())
+        source.buffer.size -= byteCount
         size += byteCount
         return
       } else {
         // We're going to need another segment. Split the source's head
         // segment in two, then move the first of those two to this buffer.
-        source.head = source.head!!.split(byteCount.toInt())
+        source.buffer.head = source.buffer.head!!.split(byteCount.toInt())
       }
     }
 
     // Remove the source's head segment and append it to our tail.
-    val segmentToMove = source.head
+    val segmentToMove = source.buffer.head
     val movedByteCount = (segmentToMove!!.limit - segmentToMove.pos).toLong()
-    source.head = segmentToMove.pop()
+    source.buffer.head = segmentToMove.pop()
     if (head == null) {
       head = segmentToMove
       segmentToMove.prev = segmentToMove
@@ -1235,13 +1237,13 @@ internal inline fun Buffer.commonWrite(source: Buffer, byteCount: Long) {
       tail = tail!!.push(segmentToMove)
       tail.compact()
     }
-    source.size -= movedByteCount
+    source.buffer.size -= movedByteCount
     size += movedByteCount
     byteCount -= movedByteCount
   }
 }
 
-internal inline fun Buffer.commonRead(sink: Buffer, byteCount: Long): Long {
+internal inline fun Buffer.commonRead(sink: BufferedSink, byteCount: Long): Long {
   var byteCount = byteCount
   require(byteCount >= 0L) { "byteCount < 0: $byteCount" }
   if (size == 0L) return -1L

@@ -64,7 +64,7 @@ internal actual class RealBufferedSource actual constructor(
 
   override fun buffer() = bufferField
 
-  actual override fun read(sink: Buffer, byteCount: Long): Long = commonRead(sink, byteCount)
+  actual override fun read(sink: BufferedSink, byteCount: Long): Long = commonRead(sink, byteCount)
   actual override fun exhausted(): Boolean = commonExhausted()
   actual override fun require(byteCount: Long): Unit = commonRequire(byteCount)
   actual override fun request(byteCount: Long): Boolean = commonRequest(byteCount)

@@ -64,7 +64,7 @@ object TestUtil {
       internal var closed: Boolean = false
 
       @Throws(IOException::class)
-      override fun read(sink: Buffer, byteCount: Long): Long {
+      override fun read(sink: BufferedSink, byteCount: Long): Long {
         var byteCount = byteCount
         if (closed) throw IllegalStateException("closed")
         if (bytesLeft == 0L) return -1L
@@ -72,10 +72,10 @@ object TestUtil {
 
         // If we can read a full segment we can save a copy.
         if (byteCount >= Segment.SIZE) {
-          val segment = sink.writableSegment(Segment.SIZE)
+          val segment = sink.buffer.writableSegment(Segment.SIZE)
           random.nextBytes(segment.data)
           segment.limit += Segment.SIZE
-          sink.size += Segment.SIZE.toLong()
+          sink.buffer.size += Segment.SIZE.toLong()
           bytesLeft -= Segment.SIZE.toLong()
           return Segment.SIZE.toLong()
         } else {

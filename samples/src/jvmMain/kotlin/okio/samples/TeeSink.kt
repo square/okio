@@ -16,6 +16,7 @@
 package okio.samples
 
 import okio.Buffer
+import okio.BufferedSource
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import okio.Sink
@@ -32,11 +33,11 @@ class TeeSink(
 ) : Sink {
   private val timeout = Timeout()
 
-  override fun write(source: Buffer, byteCount: Long) {
+  override fun write(source: BufferedSource, byteCount: Long) {
     // Writing to sink mutates source. Work around that.
     sinkA.timeout().intersectWith(timeout) {
       val buffer = Buffer()
-      source.copyTo(buffer, byteCount = byteCount)
+      source.buffer.copyTo(buffer, byteCount = byteCount)
       sinkA.write(buffer, byteCount)
     }
 

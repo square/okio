@@ -40,7 +40,7 @@ class MockSink : Sink {
     if (exception != null) throw exception
   }
 
-  override fun write(source: Buffer, byteCount: Long) {
+  override fun write(source: BufferedSource, byteCount: Long) {
     log.add("write($source, $byteCount)")
     source.skip(byteCount)
     throwIfScheduled()
