@@ -17,6 +17,9 @@
 package okio
 
 import app.cash.burst.Burst
+import assertk.assertThat
+import assertk.assertions.isLessThanOrEqualTo
+import kotlin.math.absoluteValue
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,6 +29,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlin.time.measureTime
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.decodeHex
 import okio.ByteString.Companion.encodeUtf8
@@ -199,6 +203,40 @@ class ByteStringTest(
     assertEquals(factory.decodeHex(""), ByteString.of())
     assertEquals(ByteString.EMPTY, factory.decodeHex(""))
     assertEquals(ByteString.of(), factory.decodeHex(""))
+  }
+
+  @Test fun equalsConstantTimeTest() {
+    val bytes = Random(1234).nextBytes(1024 * 1024)
+    val subject = bytes.toByteString()
+    val subjectSame = bytes.toByteString()
+
+    // This instance is the same as the subject except with the first byte changed.
+    bytes[0] = (bytes[0] + 1).toByte()
+    val subjectDifferent = bytes.toByteString()
+
+    val iterations = 1000
+    var result = true
+
+    val equalsTime = measureTime {
+      repeat(iterations) {
+        result = result and subject.equals(subjectSame, constantTime = true)
+      }
+    }
+    val notEqualsTime = measureTime {
+      repeat(iterations) {
+        result = result and subject.equals(subjectDifferent, constantTime = true)
+      }
+    }
+    assertFalse(result)
+
+    // If the equals method was short-circuiting then the difference percentage will be huge >99%.
+    // We'll just check if it's under 50% to account for variance, especially on CI machines.
+    val equalsMean = equalsTime.inWholeNanoseconds
+    val notEqualsMean = notEqualsTime.inWholeNanoseconds
+    val maxMean = maxOf(equalsMean, notEqualsMean)
+    val difference = (equalsMean - notEqualsMean).absoluteValue
+    val differencePercentage = 100 * difference / maxMean
+    assertThat(differencePercentage).isLessThanOrEqualTo(50)
   }
 
   private val bronzeHorseman = "На берегу пустынных волн"

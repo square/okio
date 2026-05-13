@@ -229,9 +229,21 @@ internal inline fun ByteString.commonLastIndexOf(other: ByteArray, fromIndex: In
 internal inline fun ByteString.commonEquals(other: Any?): Boolean {
   return when {
     other === this -> true
-    other is ByteString -> other.size == data.size && other.rangeEquals(0, data, 0, data.size)
+    other is ByteString -> equals(other, constantTime = false)
     else -> false
   }
+}
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun ByteString.commonEquals(other: ByteString, constantTime: Boolean): Boolean {
+  if (other.size != data.size) return false
+  if (!constantTime) return other.rangeEquals(0, data, 0, data.size)
+
+  var result = true
+  for (i in data.indices) {
+    result = result and ((data[i].toInt() xor other.data[i].toInt()) == 0)
+  }
+  return result
 }
 
 @Suppress("NOTHING_TO_INLINE")
