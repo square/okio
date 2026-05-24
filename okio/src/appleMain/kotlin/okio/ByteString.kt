@@ -35,6 +35,7 @@ import okio.internal.commonDecodeHex
 import okio.internal.commonEncodeUtf8
 import okio.internal.commonEndsWith
 import okio.internal.commonEquals
+import okio.internal.commonEqualsConstantTime
 import okio.internal.commonGetByte
 import okio.internal.commonGetSize
 import okio.internal.commonHashCode
@@ -167,6 +168,8 @@ internal actual constructor(
   actual open fun lastIndexOf(other: ByteArray, fromIndex: Int) = commonLastIndexOf(other, fromIndex)
 
   actual override fun equals(other: Any?) = commonEquals(other)
+
+  actual fun equals(other: ByteString, constantTime: Boolean) = commonEqualsConstantTime(other)
 
   actual override fun hashCode() = commonHashCode()
 

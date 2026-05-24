@@ -234,6 +234,16 @@ internal inline fun ByteString.commonEquals(other: Any?): Boolean {
   }
 }
 
+internal fun ByteString.commonEqualsConstantTime(other: ByteString): Boolean {
+  if (other === this) return true
+  if (other.size != size) return false
+  var result = 0
+  for (i in 0 until size) {
+    result = result or (this[i].toInt() xor other[i].toInt())
+  }
+  return result == 0
+}
+
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteString.commonHashCode(): Int {
   val result = hashCode

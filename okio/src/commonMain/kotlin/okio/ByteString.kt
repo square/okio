@@ -170,6 +170,14 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
 
   override fun equals(other: Any?): Boolean
 
+  /**
+   * Returns true if the bytes of this equal the bytes of `other`. Unlike [equals], this always
+   * inspects every byte and does not short-circuit on the first mismatch, so its running time does
+   * not depend on where the byte strings differ. Use this for timing-safe comparison of secrets
+   * like hashes or message authentication codes.
+   */
+  fun equals(other: ByteString, constantTime: Boolean): Boolean
+
   override fun hashCode(): Int
 
   override fun compareTo(other: ByteString): Int
