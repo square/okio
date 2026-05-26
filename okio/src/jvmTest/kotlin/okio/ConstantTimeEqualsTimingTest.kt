@@ -15,8 +15,8 @@
  */
 package okio
 
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 /**
  * Statistical timing test for [ByteString.equals] with [constantTime]=true.
@@ -33,8 +33,8 @@ class ConstantTimeEqualsTimingTest {
   fun constantTimeEqualsDoesNotShortCircuit() {
     val n = 1_000_000
     val aBytes = ByteArray(n) { 0 }
-    val bBytes = ByteArray(n) { 0 }          // identical to a
-    val cBytes = ByteArray(n) { 0 }.also { it[0] = 1 }  // differs at byte 0
+    val bBytes = ByteArray(n) { 0 } // identical to a
+    val cBytes = ByteArray(n) { 0 }.also { it[0] = 1 } // differs at byte 0
 
     val a = aBytes.toByteString()
     val b = bBytes.toByteString()
@@ -56,18 +56,26 @@ class ConstantTimeEqualsTimingTest {
     val normalMismatch = median(iterations) { a == c }
 
     // CT(match) and CT(mismatch) should be within 3x of each other: neither short-circuits.
-    val ctRatio = if (ctMatch > ctMismatch) ctMatch.toDouble() / ctMismatch else ctMismatch.toDouble() / ctMatch
-    assertTrue(ctRatio < 3.0,
-      "CT(match)=$ctMatch ns and CT(mismatch)=$ctMismatch ns differ by ${ctRatio}x (expected <3x)")
+    val ctRatio =
+      if (ctMatch > ctMismatch) ctMatch.toDouble() / ctMismatch else ctMismatch.toDouble() / ctMatch
+    assertTrue(
+      "CT(match)=$ctMatch ns and CT(mismatch)=$ctMismatch ns differ by ${ctRatio}x (expected <3x)",
+      ctRatio < 3.0,
+    )
 
     // CT(match) and normal(match) should be in the same ballpark: both scan all n bytes.
-    val matchRatio = if (ctMatch > normalMatch) ctMatch.toDouble() / normalMatch else normalMatch.toDouble() / ctMatch
-    assertTrue(matchRatio < 5.0,
-      "CT(match)=$ctMatch ns and normal(match)=$normalMatch ns differ by ${matchRatio}x (expected <5x)")
+    val matchRatio =
+      if (ctMatch > normalMatch) ctMatch.toDouble() / normalMatch else normalMatch.toDouble() / ctMatch
+    assertTrue(
+      "CT(match)=$ctMatch ns and normal(match)=$normalMatch ns differ by ${matchRatio}x (expected <5x)",
+      matchRatio < 5.0,
+    )
 
     // normal(mismatch) must be significantly faster than CT(mismatch): normal short-circuits at byte 0.
-    assertTrue(normalMismatch * 50L < ctMismatch,
-      "normal(mismatch)=$normalMismatch ns should be <2% of CT(mismatch)=$ctMismatch ns (short-circuit at byte 0)")
+    assertTrue(
+      "normal(mismatch)=$normalMismatch ns should be <2% of CT(mismatch)=$ctMismatch ns (short-circuit at byte 0)",
+      normalMismatch * 50L < ctMismatch,
+    )
   }
 
   private inline fun median(n: Int, block: () -> Unit): Long {
