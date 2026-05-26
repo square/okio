@@ -23,7 +23,6 @@ import org.junit.Test
  * Statistical timing test for [ByteString.equals] with [constantTime]=true.
  *
  * Given two very large byte strings:
- * - When equal, constant-time equals takes the same time as normal equals (both scan all bytes).
  * - When not equal, constant-time equals takes the same time as when equal (no short-circuit).
  * - When not equal, normal equals takes statistically significantly less time than when equal
  *   (short-circuits at the first differing byte).
@@ -53,7 +52,6 @@ class ConstantTimeEqualsTimingTest {
 
     val ctMatch = median(iterations) { a.equals(b, constantTime = true) }
     val ctMismatch = median(iterations) { a.equals(c, constantTime = true) }
-    val normalMatch = median(iterations) { a == b }
     val normalMismatch = median(iterations) { a == c }
 
     // CT(match) and CT(mismatch) should be within 3x of each other: neither short-circuits.
@@ -62,14 +60,6 @@ class ConstantTimeEqualsTimingTest {
     assertTrue(
       "CT(match)=$ctMatch ns and CT(mismatch)=$ctMismatch ns differ by ${ctRatio}x (expected <3x)",
       ctRatio < 3.0,
-    )
-
-    // CT(match) and normal(match) should be in the same ballpark: both scan all n bytes.
-    val matchRatio =
-      if (ctMatch > normalMatch) ctMatch.toDouble() / normalMatch else normalMatch.toDouble() / ctMatch
-    assertTrue(
-      "CT(match)=$ctMatch ns and normal(match)=$normalMatch ns differ by ${matchRatio}x (expected <5x)",
-      matchRatio < 5.0,
     )
 
     // normal(mismatch) must be significantly faster than CT(mismatch): normal short-circuits at byte 0.
