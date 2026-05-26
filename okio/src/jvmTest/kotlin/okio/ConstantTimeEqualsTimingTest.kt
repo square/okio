@@ -15,6 +15,7 @@
  */
 package okio
 
+import okio.ByteString.Companion.toByteString
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
