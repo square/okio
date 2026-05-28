@@ -3,9 +3,11 @@ import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import kotlinx.validation.ApiValidationExtension
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
+import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
   kotlin("multiplatform")
@@ -153,9 +155,9 @@ kotlin {
           nativeMain.dependsOn(zlibMain)
           nativeMain.dependsOn(systemFileSystemMain)
           createSourceSet(
-              "mingwMain",
-              parent = nativeMain,
-              children = mingwTargets,
+            "mingwMain",
+            parent = nativeMain,
+            children = mingwTargets,
           ).also { mingwMain ->
             mingwMain.dependsOn(nonAppleMain)
             mingwMain.dependsOn(nonJsMain)
@@ -164,13 +166,23 @@ kotlin {
             .also { unixMain ->
               unixMain.dependsOn(nonJsMain)
               createSourceSet(
-                  "linuxMain",
-                  parent = unixMain,
-                  children = linuxTargets,
+                "linuxMain",
+                parent = unixMain,
+                children = linuxTargets,
               ).also { linuxMain ->
                 linuxMain.dependsOn(nonAppleMain)
               }
-              createSourceSet("appleMain", parent = unixMain, children = appleTargets)
+              createSourceSet(
+                name = "appleMain",
+                parent = unixMain,
+                children = appleTargets,
+              ).also { appleMain ->
+                createSourceSet(
+                  name = "appleNonMacosX64Main",
+                  parent = appleMain,
+                  children = appleTargets - "macosX64",
+                )
+              }
             }
         }
 
@@ -197,6 +209,17 @@ kotlin {
     }
   }
 
+  targets.withType<KotlinNativeTarget> {
+    if (konanTarget.family == Family.LINUX) {
+      compilations["main"].cinterops.create("linux") {
+        packageName("okio.internal.linux")
+        headers(
+          File(project.projectDir, "src/linuxMain/headers/include/uapi/linux/stat.h"),
+          File(project.projectDir, "src/linuxMain/headers/okio_statx.h"),
+        )
+      }
+    }
+  }
   targets.withType<KotlinNativeTargetWithTests<*>> {
     binaries {
       // Configure a separate test where code runs in background

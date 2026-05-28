@@ -297,8 +297,12 @@ public class okio/ByteString : java/io/Serializable, java/lang/Comparable {
 	public final fun -deprecated_getByte (I)B
 	public final fun -deprecated_size ()I
 	public fun asByteBuffer ()Ljava/nio/ByteBuffer;
-	public fun base64 ()Ljava/lang/String;
-	public fun base64Url ()Ljava/lang/String;
+	public final fun base64 ()Ljava/lang/String;
+	public fun base64 (Z)Ljava/lang/String;
+	public static synthetic fun base64$default (Lokio/ByteString;ZILjava/lang/Object;)Ljava/lang/String;
+	public final fun base64Url ()Ljava/lang/String;
+	public fun base64Url (Z)Ljava/lang/String;
+	public static synthetic fun base64Url$default (Lokio/ByteString;ZILjava/lang/Object;)Ljava/lang/String;
 	public synthetic fun compareTo (Ljava/lang/Object;)I
 	public fun compareTo (Lokio/ByteString;)I
 	public fun copyInto (I[BII)V

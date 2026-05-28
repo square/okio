@@ -279,6 +279,17 @@ class ByteStringTest(
     )
   }
 
+  @Test fun encodeBase64WithoutPadding() {
+    assertEquals("", factory.encodeUtf8("").base64(includePadding = false))
+    assertEquals("AA", factory.encodeUtf8("\u0000").base64(includePadding = false))
+    assertEquals("AAA", factory.encodeUtf8("\u0000\u0000").base64(includePadding = false))
+    assertEquals("AAAA", factory.encodeUtf8("\u0000\u0000\u0000").base64(includePadding = false))
+    assertEquals(
+      "SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU/ICdib3V0IDIgbWlsbGlvbi4",
+      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64(includePadding = false),
+    )
+  }
+
   @Test fun encodeBase64Url() {
     assertEquals("", factory.encodeUtf8("").base64Url())
     assertEquals("AA==", factory.encodeUtf8("\u0000").base64Url())
@@ -287,6 +298,17 @@ class ByteStringTest(
     assertEquals(
       "SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU_ICdib3V0IDIgbWlsbGlvbi4=",
       factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url(),
+    )
+  }
+
+  @Test fun encodeBase64UrlWithoutPadding() {
+    assertEquals("", factory.encodeUtf8("").base64Url(includePadding = false))
+    assertEquals("AA", factory.encodeUtf8("\u0000").base64Url(includePadding = false))
+    assertEquals("AAA", factory.encodeUtf8("\u0000\u0000").base64Url(includePadding = false))
+    assertEquals("AAAA", factory.encodeUtf8("\u0000\u0000\u0000").base64Url(includePadding = false))
+    assertEquals(
+      "SG93IG1hbnkgbGluZXMgb2YgY29kZSBhcmUgdGhlcmU_ICdib3V0IDIgbWlsbGlvbi4",
+      factory.encodeUtf8("How many lines of code are there? 'bout 2 million.").base64Url(includePadding = false),
     )
   }
 

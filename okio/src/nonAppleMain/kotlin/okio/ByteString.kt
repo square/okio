@@ -68,9 +68,9 @@ internal actual constructor(
 
   actual open fun utf8(): String = commonUtf8()
 
-  actual open fun base64(): String = commonBase64()
+  actual open fun base64(includePadding: Boolean): String = commonBase64(includePadding = includePadding)
 
-  actual open fun base64Url(): String = commonBase64Url()
+  actual open fun base64Url(includePadding: Boolean): String = commonBase64Url(includePadding = includePadding)
 
   actual open fun hex(): String = commonHex()
 

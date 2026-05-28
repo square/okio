@@ -5,6 +5,20 @@ Change Log
 
  * None yet.
 
+## Version 3.17.0
+
+_2026-03-11_
+
+ * New: Adjust down the Kotlin stdlib dependency to [Kotlin 2.1.21][kotlin_2_1_21]. Okio is built
+   with an up-to-date Kotlin compiler (2.2.21), but depends on an older kotlin-stdlib. We're doing
+   this so you can update Okio and Kotlin independently.
+
+ * Fix: Return the correct timestamp in `FileMetadata.createdAtMillis` on Kotlin/Native on UNIX
+   platforms. We were incorrectly using the POSIX `ctime` (_change_ time) instead of the
+   `birthtime`. With this fix Okio now prefers `statx()` over `stat()` on native platforms. This
+   API first appeared in Linux in 4.11 (2017) and Android in API 30 (2020).
+
+
 ## Version 3.16.4
 
 _2025-11-17_

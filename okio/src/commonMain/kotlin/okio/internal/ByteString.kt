@@ -48,10 +48,10 @@ internal inline fun ByteString.commonUtf8(): String {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun ByteString.commonBase64(): String = data.encodeBase64()
+internal inline fun ByteString.commonBase64(includePadding: Boolean): String = data.encodeBase64(includePadding = includePadding)
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun ByteString.commonBase64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
+internal inline fun ByteString.commonBase64Url(includePadding: Boolean) = data.encodeBase64(includePadding = includePadding, map = BASE64_URL_SAFE)
 
 internal val HEX_DIGIT_CHARS =
   charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
