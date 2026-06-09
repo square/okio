@@ -163,7 +163,8 @@ internal actual constructor(
 
   actual override fun equals(other: Any?) = commonEquals(other)
 
-  actual fun equals(other: ByteString, constantTime: Boolean) = commonEqualsConstantTime(other)
+  actual fun equals(other: ByteString, constantTime: Boolean) =
+    if (constantTime) commonEqualsConstantTime(other) else this == other
 
   actual override fun hashCode() = commonHashCode()
 
