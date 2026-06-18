@@ -97,7 +97,13 @@ internal actual fun PosixFileSystem.variantDelete(path: Path, mustExist: Boolean
 
 internal actual fun PosixFileSystem.variantList(dir: Path, throwOnFailure: Boolean): List<Path>? {
   val opendir = _wopendir(dir.toString().wcstr)
-    ?: if (throwOnFailure) throw errnoToIOException(errno) else return null
+
+  if (opendir == null) {
+    if (throwOnFailure) {
+      throw errnoToIOException(errno)
+    }
+    return null
+  }
 
   try {
     val result = mutableListOf<Path>()
