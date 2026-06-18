@@ -201,6 +201,31 @@ class ByteStringTest(
     assertEquals(ByteString.of(), factory.decodeHex(""))
   }
 
+  @Test fun equalsConstantTime() {
+    val byteString = factory.decodeHex("000102")
+    assertTrue(byteString.equals(byteString, constantTime = true))
+    assertTrue(byteString.equals("000102".decodeHex(), constantTime = true))
+    assertFalse(byteString.equals("800102".decodeHex(), constantTime = true))
+    assertFalse(byteString.equals("000180".decodeHex(), constantTime = true))
+    assertFalse(byteString.equals("0001".decodeHex(), constantTime = true))
+    assertFalse(byteString.equals("00010203".decodeHex(), constantTime = true))
+  }
+
+  @Test fun equalsConstantTimeEmptyTest() {
+    assertTrue(factory.decodeHex("").equals(ByteString.EMPTY, constantTime = true))
+    assertFalse(factory.decodeHex("").equals("00".decodeHex(), constantTime = true))
+  }
+
+  @Test fun equalsNotConstantTime() {
+    val byteString = factory.decodeHex("000102")
+    assertTrue(byteString.equals(byteString, constantTime = false))
+    assertTrue(byteString.equals("000102".decodeHex(), constantTime = false))
+    assertFalse(byteString.equals("800102".decodeHex(), constantTime = false))
+    assertFalse(byteString.equals("000180".decodeHex(), constantTime = false))
+    assertFalse(byteString.equals("0001".decodeHex(), constantTime = false))
+    assertFalse(byteString.equals("00010203".decodeHex(), constantTime = false))
+  }
+
   private val bronzeHorseman = "На берегу пустынных волн"
 
   @Test fun utf8() {
