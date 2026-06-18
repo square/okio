@@ -248,10 +248,10 @@ inline fun BufferedSource.readUShortLe(): UShort {
  *   .writeByte(0x00)
  *   .writeByte(0x00)
  *   .writeByte(0x0f)
- * assertEquals(4, buffer.size)
+ * assertEquals(8, buffer.size)
  *
  * assertEquals(4294967294u, buffer.readUInt())
- * assertEquals(2, buffer.size)
+ * assertEquals(4, buffer.size)
  *
  * assertEquals(15u, buffer.readUInt())
  * assertEquals(0, buffer.size)
