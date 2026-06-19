@@ -31,6 +31,7 @@ import okio.internal.commonDecodeHex
 import okio.internal.commonEncodeUtf8
 import okio.internal.commonEndsWith
 import okio.internal.commonEquals
+import okio.internal.commonEqualsConstantTime
 import okio.internal.commonGetByte
 import okio.internal.commonGetSize
 import okio.internal.commonHashCode
@@ -68,9 +69,9 @@ internal actual constructor(
 
   actual open fun utf8(): String = commonUtf8()
 
-  actual open fun base64(): String = commonBase64()
+  actual open fun base64(includePadding: Boolean): String = commonBase64(includePadding = includePadding)
 
-  actual open fun base64Url(): String = commonBase64Url()
+  actual open fun base64Url(includePadding: Boolean): String = commonBase64Url(includePadding = includePadding)
 
   actual open fun hex(): String = commonHex()
 
@@ -161,6 +162,9 @@ internal actual constructor(
   actual open fun lastIndexOf(other: ByteArray, fromIndex: Int) = commonLastIndexOf(other, fromIndex)
 
   actual override fun equals(other: Any?) = commonEquals(other)
+
+  actual fun equals(other: ByteString, constantTime: Boolean) =
+    if (constantTime) commonEqualsConstantTime(other) else this == other
 
   actual override fun hashCode() = commonHashCode()
 

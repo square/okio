@@ -48,10 +48,10 @@ internal inline fun ByteString.commonUtf8(): String {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun ByteString.commonBase64(): String = data.encodeBase64()
+internal inline fun ByteString.commonBase64(includePadding: Boolean): String = data.encodeBase64(includePadding = includePadding)
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun ByteString.commonBase64Url() = data.encodeBase64(map = BASE64_URL_SAFE)
+internal inline fun ByteString.commonBase64Url(includePadding: Boolean) = data.encodeBase64(includePadding = includePadding, map = BASE64_URL_SAFE)
 
 internal val HEX_DIGIT_CHARS =
   charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
@@ -232,6 +232,16 @@ internal inline fun ByteString.commonEquals(other: Any?): Boolean {
     other is ByteString -> other.size == data.size && other.rangeEquals(0, data, 0, data.size)
     else -> false
   }
+}
+
+internal fun ByteString.commonEqualsConstantTime(other: ByteString): Boolean {
+  if (other === this) return true
+  if (other.size != size) return false
+  var result = 0
+  for (i in 0 until size) {
+    result = result or (this[i].toInt() xor other[i].toInt())
+  }
+  return result == 0
 }
 
 @Suppress("NOTHING_TO_INLINE")

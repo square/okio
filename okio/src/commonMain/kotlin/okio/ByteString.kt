@@ -48,10 +48,10 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
    * Returns this byte string encoded as [Base64](http://www.ietf.org/rfc/rfc2045.txt). In violation
    * of the RFC, the returned string does not wrap lines at 76 columns.
    */
-  fun base64(): String
+  fun base64(includePadding: Boolean = true): String
 
   /** Returns this byte string encoded as [URL-safe Base64](http://www.ietf.org/rfc/rfc4648.txt). */
-  fun base64Url(): String
+  fun base64Url(includePadding: Boolean = true): String
 
   /** Returns this byte string encoded in hexadecimal. */
   fun hex(): String
@@ -169,6 +169,15 @@ internal constructor(data: ByteArray) : Comparable<ByteString> {
   fun lastIndexOf(other: ByteArray, fromIndex: Int = size): Int
 
   override fun equals(other: Any?): Boolean
+
+  /**
+   * Returns true if the bytes of this equal the bytes of `other`. If [constantTime] is true this
+   * always inspects every byte and does not short-circuit on the first mismatch, so its running
+   * time does not depend on where the byte strings differ. Use that for timing-safe comparison of
+   * secrets like hashes or message authentication codes. If [constantTime] is false this behaves
+   * like [equals] and may return as soon as a mismatch is found.
+   */
+  fun equals(other: ByteString, constantTime: Boolean): Boolean
 
   override fun hashCode(): Int
 
