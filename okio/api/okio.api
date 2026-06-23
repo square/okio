@@ -43,6 +43,23 @@ public final class okio/-InflaterSourceExtensions {
 	public static synthetic fun inflate$default (Lokio/Source;Ljava/util/zip/Inflater;ILjava/lang/Object;)Lokio/InflaterSource;
 }
 
+public final class okio/-Unsigned {
+	public static final fun readUByte (Lokio/BufferedSource;)B
+	public static final fun readUInt (Lokio/BufferedSource;)I
+	public static final fun readUIntLe (Lokio/BufferedSource;)I
+	public static final fun readULong (Lokio/BufferedSource;)J
+	public static final fun readULongLe (Lokio/BufferedSource;)J
+	public static final fun readUShort (Lokio/BufferedSource;)S
+	public static final fun readUShortLe (Lokio/BufferedSource;)S
+	public static final fun writeUByte-EK-6454 (Lokio/BufferedSink;B)Lokio/BufferedSink;
+	public static final fun writeUInt-Qn1smSk (Lokio/BufferedSink;I)Lokio/BufferedSink;
+	public static final fun writeUIntLe-Qn1smSk (Lokio/BufferedSink;I)Lokio/BufferedSink;
+	public static final fun writeULong-2TYgG_w (Lokio/BufferedSink;J)Lokio/BufferedSink;
+	public static final fun writeULongLe-2TYgG_w (Lokio/BufferedSink;J)Lokio/BufferedSink;
+	public static final fun writeUShort-i8woANY (Lokio/BufferedSink;S)Lokio/BufferedSink;
+	public static final fun writeUShortLe-i8woANY (Lokio/BufferedSink;S)Lokio/BufferedSink;
+}
+
 public class okio/AsyncTimeout : okio/Timeout {
 	public fun <init> ()V
 	public final fun access$newTimeoutException (Ljava/io/IOException;)Ljava/io/IOException;
